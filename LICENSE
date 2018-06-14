@@ -264,3 +264,12 @@ This product bundles and repackages the following code in Google Guava 16.0.1, w
  * com.google.common.util.concurrent.ExecutionList
  * com.google.common.util.concurrent.ListenableFuture
  * com.google.common.util.concurrent.ListenableFutureTask
+
+For the package com.alibaba.dubbo.common.threadlocal:
+
+This product contains a modified portion of 'Netty', an event-driven asynchronous network application framework also
+ under a "Apache License 2.0" license, see https://github.com/netty/netty/blob/4.1/LICENSE.txt:
+
+ * io.netty.util.concurrent.FastThreadLocal
+ * io.netty.util.internal.InternalThreadLocalMap
+

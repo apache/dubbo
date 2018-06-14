@@ -16,7 +16,7 @@
  */
 package com.alibaba.dubbo.qos.textui;
 
-import org.apache.commons.lang3.StringUtils;
+import com.alibaba.dubbo.common.utils.StringUtils;
 
 import java.util.Scanner;
 

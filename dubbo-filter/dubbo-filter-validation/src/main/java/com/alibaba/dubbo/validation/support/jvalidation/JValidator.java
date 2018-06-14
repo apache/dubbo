@@ -65,6 +65,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * JValidator
@@ -74,6 +75,8 @@ public class JValidator implements Validator {
     private static final Logger logger = LoggerFactory.getLogger(JValidator.class);
 
     private final Class<?> clazz;
+
+    private final Map<String, Class> methodClassMap;
 
     private final javax.validation.Validator validator;
 
@@ -88,6 +91,7 @@ public class JValidator implements Validator {
             factory = Validation.buildDefaultValidatorFactory();
         }
         this.validator = factory.getValidator();
+        this.methodClassMap = new ConcurrentHashMap<String, Class>();
     }
 
     private static boolean isPrimitives(Class<?> cls) {
@@ -236,12 +240,9 @@ public class JValidator implements Validator {
     @Override
     public void validate(String methodName, Class<?>[] parameterTypes, Object[] arguments) throws Exception {
         List<Class<?>> groups = new ArrayList<Class<?>>();
-        String methodClassName = clazz.getName() + "$" + toUpperMethoName(methodName);
-        Class<?> methodClass = null;
-        try {
-            methodClass = Class.forName(methodClassName, false, Thread.currentThread().getContextClassLoader());
+        Class<?> methodClass = methodClass(methodName);
+        if (methodClass != null) {
             groups.add(methodClass);
-        } catch (ClassNotFoundException e) {
         }
         Set<ConstraintViolation<?>> violations = new HashSet<ConstraintViolation<?>>();
         Method method = clazz.getMethod(methodName, parameterTypes);
@@ -270,6 +271,22 @@ public class JValidator implements Validator {
             logger.error("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations);
             throw new ConstraintViolationException("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations, violations);
         }
+    }
+
+    private Class methodClass(String methodName) {
+        Class<?> methodClass = null;
+        String methodClassName = clazz.getName() + "$" + toUpperMethoName(methodName);
+        Class cached = methodClassMap.get(methodClassName);
+        if (cached != null) {
+            return cached == clazz ? null : cached;
+        }
+        try {
+            methodClass = Class.forName(methodClassName, false, Thread.currentThread().getContextClassLoader());
+            methodClassMap.put(methodClassName, methodClass);
+        } catch (ClassNotFoundException e) {
+            methodClassMap.put(methodClassName, clazz);
+        }
+        return methodClass;
     }
 
     private void validate(Set<ConstraintViolation<?>> violations, Object arg, Class<?>... groups) {
