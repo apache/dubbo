@@ -1,0 +1,11 @@
+map=org.apache.dubbo.rpc.cluster.merger.MapMerger
+set=org.apache.dubbo.rpc.cluster.merger.SetMerger
+list=org.apache.dubbo.rpc.cluster.merger.ListMerger
+byte=org.apache.dubbo.rpc.cluster.merger.ByteArrayMerger
+char=org.apache.dubbo.rpc.cluster.merger.CharArrayMerger
+short=org.apache.dubbo.rpc.cluster.merger.ShortArrayMerger
+int=org.apache.dubbo.rpc.cluster.merger.IntArrayMerger
+long=org.apache.dubbo.rpc.cluster.merger.LongArrayMerger
+float=org.apache.dubbo.rpc.cluster.merger.FloatArrayMerger
+double=org.apache.dubbo.rpc.cluster.merger.DoubleArrayMerger
+boolean=org.apache.dubbo.rpc.cluster.merger.BooleanArrayMerger

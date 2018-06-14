@@ -44,7 +44,7 @@
                     <archive>
                         <addMavenDescriptor>true</addMavenDescriptor>
                         <manifest>
-                            <mainClass>com.alibaba.dubbo.container.Main</mainClass>
+                            <mainClass>org.apache.dubbo.container.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

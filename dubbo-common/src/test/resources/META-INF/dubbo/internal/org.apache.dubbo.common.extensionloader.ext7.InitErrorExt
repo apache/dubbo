@@ -1,0 +1,2 @@
+error=org.apache.dubbo.common.extensionloader.ext7.impl.Ext7InitErrorImpl
+ok=org.apache.dubbo.common.extensionloader.ext7.impl.Ext7Impl
