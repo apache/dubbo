@@ -23,6 +23,7 @@ import com.alibaba.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Abstract benchmark server Usage: BenchmarkServer listenPort maxThreads responseSize
@@ -56,8 +57,8 @@ public abstract class AbstractBenchmarkServer {
         Exchangers.bind(url.toString(), new ExchangeHandlerAdapter() {
 
             @Override
-            public Object reply(ExchangeChannel channel, Object message) throws RemotingException {
-                return new ResponseObject(responseSize); // send response
+            public CompletableFuture<Object> reply(ExchangeChannel channel, Object message) throws RemotingException {
+                return CompletableFuture.completedFuture(new ResponseObject(responseSize)); // send response
             }
         });
     }

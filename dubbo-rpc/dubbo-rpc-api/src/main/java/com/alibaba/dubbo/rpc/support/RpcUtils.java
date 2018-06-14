@@ -18,6 +18,7 @@ package com.alibaba.dubbo.rpc.support;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.config.AsyncFor;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
@@ -26,6 +27,7 @@ import com.alibaba.dubbo.rpc.RpcInvocation;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -153,6 +155,15 @@ public class RpcUtils {
             isAsync = url.getMethodParameter(getMethodName(inv), Constants.ASYNC_KEY, false);
         }
         return isAsync;
+    }
+
+    public static boolean isAsyncFuture(URL url, Invocation inv) {
+        return Boolean.TRUE.toString().equals(inv.getAttachment(Constants.FUTURE_KEY));
+    }
+
+    public static boolean isAsyncFuture(Method method) {
+        Class<?> clazz = method.getDeclaringClass();
+        return clazz.isAnnotationPresent(AsyncFor.class) && method.getName().endsWith(Constants.ASYNC_SUFFIX) && method.getReturnType().equals(CompletableFuture.class);
     }
 
     public static boolean isOneway(URL url, Invocation inv) {

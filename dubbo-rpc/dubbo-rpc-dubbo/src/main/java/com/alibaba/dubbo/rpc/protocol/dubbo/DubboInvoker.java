@@ -24,6 +24,7 @@ import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.TimeoutException;
 import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
 import com.alibaba.dubbo.remoting.exchange.ResponseFuture;
+import com.alibaba.dubbo.rpc.AsyncRpcResult;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
@@ -88,8 +89,15 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 return new RpcResult();
             } else if (isAsync) {
                 ResponseFuture future = currentClient.request(inv, timeout);
-                RpcContext.getContext().setFuture(new FutureAdapter<Object>(future));
-                return new RpcResult();
+                FutureAdapter<T> futureAdapter = new FutureAdapter<>(future);
+                RpcContext.getContext().setFuture(futureAdapter);
+                Result result;
+                if (RpcUtils.isAsyncFuture(getUrl(), inv)) {
+                    result = new AsyncRpcResult<>(futureAdapter);
+                } else {
+                    result = new RpcResult();
+                }
+                return result;
             } else {
                 RpcContext.getContext().setFuture(null);
                 return (Result) currentClient.request(inv, timeout).get();

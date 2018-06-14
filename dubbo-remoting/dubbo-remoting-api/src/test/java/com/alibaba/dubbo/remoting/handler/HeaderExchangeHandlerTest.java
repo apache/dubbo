@@ -29,6 +29,7 @@ import com.alibaba.dubbo.remoting.exchange.support.header.HeaderExchangeHandler;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
 //TODO response test
@@ -75,8 +76,8 @@ public class HeaderExchangeHandlerTest {
         };
         ExchangeHandler exhandler = new MockedExchangeHandler() {
             @Override
-            public Object reply(ExchangeChannel channel, Object request) throws RemotingException {
-                return request;
+            public CompletableFuture<Object> reply(ExchangeChannel channel, Object request) throws RemotingException {
+                return CompletableFuture.completedFuture(request);
             }
 
             @Override
@@ -116,7 +117,7 @@ public class HeaderExchangeHandlerTest {
         };
         ExchangeHandler exhandler = new MockedExchangeHandler() {
             @Override
-            public Object reply(ExchangeChannel channel, Object request) throws RemotingException {
+            public CompletableFuture<Object> reply(ExchangeChannel channel, Object request) throws RemotingException {
                 throw new BizException();
             }
         };
@@ -177,7 +178,7 @@ public class HeaderExchangeHandlerTest {
         HeaderExchangeHandler hexhandler = new HeaderExchangeHandler(new MockedExchangeHandler() {
 
             @Override
-            public Object reply(ExchangeChannel channel, Object request) throws RemotingException {
+            public CompletableFuture reply(ExchangeChannel channel, Object request) throws RemotingException {
                 Assert.fail();
                 throw new RemotingException(channel, "");
             }
@@ -201,7 +202,7 @@ public class HeaderExchangeHandlerTest {
             throw new UnsupportedOperationException();
         }
 
-        public Object reply(ExchangeChannel channel, Object request) throws RemotingException {
+        public CompletableFuture<Object> reply(ExchangeChannel channel, Object request) throws RemotingException {
             throw new UnsupportedOperationException();
         }
     }

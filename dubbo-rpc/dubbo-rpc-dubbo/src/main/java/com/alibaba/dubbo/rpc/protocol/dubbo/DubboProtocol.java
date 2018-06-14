@@ -34,10 +34,12 @@ import com.alibaba.dubbo.remoting.exchange.ExchangeHandler;
 import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
 import com.alibaba.dubbo.remoting.exchange.Exchangers;
 import com.alibaba.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
+import com.alibaba.dubbo.rpc.AsyncContextImpl;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
+import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
@@ -49,6 +51,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -73,7 +76,7 @@ public class DubboProtocol extends AbstractProtocol {
     private ExchangeHandler requestHandler = new ExchangeHandlerAdapter() {
 
         @Override
-        public Object reply(ExchangeChannel channel, Object message) throws RemotingException {
+        public CompletableFuture<Object> reply(ExchangeChannel channel, Object message) throws RemotingException {
             if (message instanceof Invocation) {
                 Invocation inv = (Invocation) message;
                 Invoker<?> invoker = getInvoker(channel, inv);
@@ -81,7 +84,7 @@ public class DubboProtocol extends AbstractProtocol {
                 if (Boolean.TRUE.toString().equals(inv.getAttachments().get(IS_CALLBACK_SERVICE_INVOKE))) {
                     String methodsStr = invoker.getUrl().getParameters().get("methods");
                     boolean hasMethod = false;
-                    if (methodsStr == null || methodsStr.indexOf(",") == -1) {
+                    if (methodsStr == null || !methodsStr.contains(",")) {
                         hasMethod = inv.getMethodName().equals(methodsStr);
                     } else {
                         String[] methods = methodsStr.split(",");
@@ -100,8 +103,23 @@ public class DubboProtocol extends AbstractProtocol {
                         return null;
                     }
                 }
-                RpcContext.getContext().setRemoteAddress(channel.getRemoteAddress());
-                return invoker.invoke(inv);
+                boolean supportServerAsync = invoker.getUrl().getMethodParameter(inv.getMethodName(), Constants.ASYNC_KEY, false);
+                CompletableFuture<Object> resultFuture = new CompletableFuture<>();
+                RpcContext rpcContext = RpcContext.getContext();
+                if (supportServerAsync) {
+                    rpcContext.setAsyncContext(new AsyncContextImpl(resultFuture));
+                }
+                rpcContext.setRemoteAddress(channel.getRemoteAddress());
+                Result result = invoker.invoke(inv);
+                if (!rpcContext.isAsyncStarted()) {
+                    resultFuture.complete(result);
+                } else if (rpcContext.isAsyncStarted() && result.hasException()) {
+                    if (rpcContext.stopAsync()) {
+                        resultFuture.complete(result);
+                    }
+                }
+
+                return resultFuture;
             }
             throw new RemotingException(channel, "Unsupported request: "
                     + (message == null ? null : (message.getClass().getName() + ": " + message))

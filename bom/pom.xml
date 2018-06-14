@@ -280,6 +280,11 @@
             </dependency>
             <dependency>
                 <groupId>com.alibaba</groupId>
+                <artifactId>dubbo-bootstrap</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba</groupId>
                 <artifactId>hessian-lite</artifactId>
                 <version>3.2.3</version>
             </dependency>

@@ -18,24 +18,43 @@ package com.alibaba.dubbo.rpc.protocol.dubbo;
 
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.RemotingException;
+import com.alibaba.dubbo.remoting.exchange.ResponseCallback;
 import com.alibaba.dubbo.remoting.exchange.ResponseFuture;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
  * FutureAdapter
  */
-public class FutureAdapter<V> implements Future<V> {
+public class FutureAdapter<V> extends CompletableFuture<V> {
 
     private final ResponseFuture future;
 
     public FutureAdapter(ResponseFuture future) {
         this.future = future;
+        future.setCallback(new ResponseCallback() {
+            @Override
+            public void done(Object response) {
+                Result result = (Result) response;
+                V value = null;
+                try {
+                    value = (V) result.recreate();
+                } catch (Throwable t) {
+                    FutureAdapter.this.completeExceptionally(t);
+                }
+                FutureAdapter.this.complete(value);
+            }
+
+            @Override
+            public void caught(Throwable exception) {
+                FutureAdapter.this.completeExceptionally(exception);
+            }
+        });
     }
 
     public ResponseFuture getFuture() {
@@ -83,5 +102,6 @@ public class FutureAdapter<V> implements Future<V> {
             throw new RpcException(e);
         }
     }
+
 
 }
