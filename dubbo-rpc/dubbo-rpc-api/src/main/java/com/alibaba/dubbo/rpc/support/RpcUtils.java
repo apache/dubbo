@@ -26,8 +26,11 @@ import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -59,6 +62,7 @@ public class RpcUtils {
         return null;
     }
 
+    // TODO why not get return type when initialize Invocation?
     public static Type[] getReturnTypes(Invocation invocation) {
         try {
             if (invocation != null && invocation.getInvoker() != null
@@ -71,7 +75,17 @@ public class RpcUtils {
                     if (method.getReturnType() == void.class) {
                         return null;
                     }
-                    return new Type[]{method.getReturnType(), method.getGenericReturnType()};
+                    Class<?> returnType = method.getReturnType();
+                    Type genericReturnType = method.getGenericReturnType();
+                    if (Future.class.isAssignableFrom(returnType)) {
+                        if (genericReturnType instanceof ParameterizedType) {
+                            returnType = (Class<?>) ((ParameterizedType) genericReturnType).getActualTypeArguments()[0];
+                        }
+                        genericReturnType = returnType; // TODO Can we handle nested generic? for example CompletableFuture<Map<String>>
+                    } else {
+                        genericReturnType = returnType;
+                    }
+                    return new Type[]{returnType, genericReturnType};
                 }
             }
         } catch (Throwable t) {
@@ -157,13 +171,21 @@ public class RpcUtils {
         return isAsync;
     }
 
-    public static boolean isAsyncFuture(URL url, Invocation inv) {
-        return Boolean.TRUE.toString().equals(inv.getAttachment(Constants.FUTURE_KEY));
+    public static boolean isGeneratedFuture(Invocation inv) {
+        return Boolean.TRUE.toString().equals(inv.getAttachment(Constants.FUTURE_GENERATED_KEY));
     }
 
-    public static boolean isGeneratedAsyncFuture(Method method) {
+    public static boolean hasGeneratedFuture(Method method) {
         Class<?> clazz = method.getDeclaringClass();
-        return clazz.isAnnotationPresent(AsyncFor.class) && method.getName().endsWith(Constants.ASYNC_SUFFIX) && method.getReturnType().equals(CompletableFuture.class);
+        return clazz.isAnnotationPresent(AsyncFor.class) && method.getName().endsWith(Constants.ASYNC_SUFFIX) && hasFutureReturnType(method);
+    }
+
+    public static boolean isFutureReturnType(Invocation inv) {
+        return Boolean.TRUE.toString().equals(inv.getAttachment(Constants.FUTURE_RETURNTYPE_KEY));
+    }
+
+    public static boolean hasFutureReturnType(Method method) {
+        return CompletableFuture.class.isAssignableFrom(method.getReturnType());
     }
 
     public static boolean isOneway(URL url, Invocation inv) {
@@ -174,6 +196,15 @@ public class RpcUtils {
             isOneway = !url.getMethodParameter(getMethodName(inv), Constants.RETURN_KEY, true);
         }
         return isOneway;
+    }
+
+    public static Map<String, String> getNecessaryAttachments(Invocation inv) {
+        Map<String, String> attachments = inv.getAttachments();
+        if (attachments != null) {
+            attachments.remove(Constants.ASYNC_KEY);
+            attachments.remove(Constants.FUTURE_GENERATED_KEY);
+        }
+        return attachments;
     }
 
 }

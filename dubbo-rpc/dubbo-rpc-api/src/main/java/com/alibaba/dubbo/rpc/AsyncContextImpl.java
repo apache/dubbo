@@ -72,4 +72,9 @@ public class AsyncContextImpl implements AsyncContext {
     public void start() {
         this.started.set(true);
     }
+
+    @Override
+    public CompletableFuture getInternalFuture() {
+        return future;
+    }
 }

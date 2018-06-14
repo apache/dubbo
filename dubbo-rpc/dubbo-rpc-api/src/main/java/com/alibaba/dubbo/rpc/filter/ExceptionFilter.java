@@ -63,10 +63,10 @@ public class ExceptionFilter implements PostProcessFilter {
         try {
             Result result = invoker.invoke(invocation);
             if (result instanceof AsyncResult) {
-                AsyncResult asyncResultesult = (AsyncResult) result;
-                CompletableFuture<Result> future = asyncResultesult.getResultFuture();
-                asyncResultesult.setResultFuture(future.thenApply(r -> postProcessResult(r, invoker, invocation)));
-                return asyncResultesult;
+                AsyncResult asyncResult = (AsyncResult) result;
+                CompletableFuture<Result> future = asyncResult.getResultFuture();
+                asyncResult.setResultFuture(future.thenApply(r -> postProcessResult(r, invoker, invocation)));
+                return asyncResult;
             } else {
                 return postProcessResult(result, invoker, invocation);
             }

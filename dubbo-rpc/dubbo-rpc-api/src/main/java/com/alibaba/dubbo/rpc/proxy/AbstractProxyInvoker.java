@@ -17,7 +17,6 @@
 package com.alibaba.dubbo.rpc.proxy;
 
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.rpc.AsyncContextImpl;
 import com.alibaba.dubbo.rpc.AsyncRpcResult;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
@@ -79,22 +78,12 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
         try {
-            RpcContext rpcContext = RpcContext.getContext();
-            if (RpcUtils.isAsyncFuture(null, invocation)) {
-                CompletableFuture<Object> future = new CompletableFuture<>();
-                rpcContext.setAsyncContext(new AsyncContextImpl(future));
-                Object obj = doInvoke(proxy, invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
-                // ignore obj in case of RpcContext.startAsync()? always rely on user to write back.
-                if (rpcContext.isAsyncStarted()) {
-                    return new AsyncRpcResult(future);
-                } else {
-                    return new RpcResult(obj);
-                }
+            Object obj = doInvoke(proxy, invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
+            if (RpcUtils.isFutureReturnType(invocation)) {
+                return new AsyncRpcResult((CompletableFuture<Object>) obj);
+            } else if (RpcContext.getContext().isAsyncStarted()) { // ignore obj in case of RpcContext.startAsync()? always rely on user to write back.
+                return new AsyncRpcResult(RpcContext.getContext().getAsyncContext().getInternalFuture());
             } else {
-                Object obj = doInvoke(proxy, invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
-                if (obj instanceof CompletableFuture) {
-                    return new AsyncRpcResult((CompletableFuture<Object>) obj);
-                }
                 return new RpcResult(obj);
             }
         } catch (InvocationTargetException e) {

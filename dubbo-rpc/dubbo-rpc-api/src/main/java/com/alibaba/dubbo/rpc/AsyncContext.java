@@ -16,7 +16,11 @@
  */
 package com.alibaba.dubbo.rpc;
 
+import java.util.concurrent.CompletableFuture;
+
 public interface AsyncContext {
+
+    CompletableFuture getInternalFuture();
 
     void addListener(Runnable run);
 

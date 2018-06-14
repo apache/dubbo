@@ -33,9 +33,6 @@ public abstract class AsyncResult implements Result {
 
     protected CompletableFuture<Result> resultFuture;
 
-    // TODO remove
-    protected Result rpcResult;
-
     protected AsyncResult(CompletableFuture<Object> future) {
         this(future, true);
     }
@@ -44,6 +41,7 @@ public abstract class AsyncResult implements Result {
         if (registerCallback) {
             resultFuture = new CompletableFuture<>();
             future.whenComplete((v, t) -> {
+                RpcResult rpcResult;
                 if (t != null) {
                     if (t instanceof CompletionException) {
                         rpcResult = new RpcResult(t.getCause());
@@ -61,37 +59,37 @@ public abstract class AsyncResult implements Result {
 
     @Override
     public Object getValue() {
-        return rpcResult.getValue();
+        return getRpcResult().getValue();
     }
 
     @Override
     public Throwable getException() {
-        return rpcResult.getException();
+        return getRpcResult().getException();
     }
 
     @Override
     public boolean hasException() {
-        return rpcResult.hasException();
+        return getRpcResult().hasException();
     }
 
     @Override
     public Object getResult() {
-        return rpcResult.getResult();
+        return getRpcResult().getResult();
     }
 
     @Override
     public Map<String, String> getAttachments() {
-        return rpcResult.getAttachments();
+        return getRpcResult().getAttachments();
     }
 
     @Override
     public String getAttachment(String key) {
-        return rpcResult.getAttachment(key);
+        return getRpcResult().getAttachment(key);
     }
 
     @Override
     public String getAttachment(String key, String defaultValue) {
-        return rpcResult.getAttachment(key, defaultValue);
+        return getRpcResult().getAttachment(key, defaultValue);
     }
 
     public CompletableFuture getValueFuture() {
