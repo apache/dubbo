@@ -68,6 +68,13 @@ public class DubboShutdownHook extends Thread {
         // destroy all the registries
         AbstractRegistryFactory.destroyAll();
         // destroy all the protocols
+        destroyProtocols();
+    }
+
+    /**
+     * Destroy all the protocols.
+     */
+    private void destroyProtocols() {
         ExtensionLoader<Protocol> loader = ExtensionLoader.getExtensionLoader(Protocol.class);
         for (String protocolName : loader.getLoadedExtensions()) {
             try {
@@ -80,6 +87,5 @@ public class DubboShutdownHook extends Thread {
             }
         }
     }
-
 
 }

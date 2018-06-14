@@ -34,6 +34,7 @@ import com.alibaba.dubbo.remoting.exchange.support.DefaultFuture;
 import com.alibaba.dubbo.remoting.transport.ChannelHandlerDelegate;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * ExchangeReceiver
@@ -75,7 +76,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         }
     }
 
-    Response handleRequest(ExchangeChannel channel, Request req) throws RemotingException {
+    void handleRequest(ExchangeChannel channel, Request req) throws RemotingException {
         Response res = new Response(req.getId(), req.getVersion());
         if (req.isBroken()) {
             Object data = req.getData();
@@ -87,20 +88,41 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
             res.setErrorMessage("Fail to decode request due to: " + msg);
             res.setStatus(Response.BAD_REQUEST);
 
-            return res;
+            channel.send(res);
+            return;
         }
         // find handler by message class.
         Object msg = req.getData();
         try {
             // handle data.
-            Object result = handler.reply(channel, msg);
-            res.setStatus(Response.OK);
-            res.setResult(result);
+            CompletableFuture<Object> future = handler.reply(channel, msg);
+            if (future.isDone()) {
+                res.setStatus(Response.OK);
+                res.setResult(future.get());
+                channel.send(res);
+                return;
+            }
+            future.whenCompleteAsync((result, t) -> {
+                try {
+                    if (t == null) {
+                        res.setStatus(Response.OK);
+                        res.setResult(result);
+                    } else {
+                        res.setStatus(Response.SERVICE_ERROR);
+                        res.setErrorMessage(StringUtils.toString(t));
+                    }
+                    channel.send(res);
+                } catch (RemotingException e) {
+                    logger.warn("Send result to consumer failed, channel is " + channel + ", msg is " + e);
+                } finally {
+                    // HeaderExchangeChannel.removeChannelIfDisconnected(channel);
+                }
+            });
         } catch (Throwable e) {
             res.setStatus(Response.SERVICE_ERROR);
             res.setErrorMessage(StringUtils.toString(e));
+            channel.send(res);
         }
-        return res;
     }
 
     @Override
@@ -169,8 +191,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
                     handlerEvent(channel, request);
                 } else {
                     if (request.isTwoWay()) {
-                        Response response = handleRequest(exchangeChannel, request);
-                        channel.send(response);
+                        handleRequest(exchangeChannel, request);
                     } else {
                         handler.received(exchangeChannel, request.getData());
                     }

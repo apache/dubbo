@@ -14,14 +14,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba;
+package com.alibaba.dubbo.rpc;
 
-import org.junit.Test;
+import java.util.Map;
 
-public class StringSplitTest {
-    @Test
-    public void stringSplitTest(){
-        String str = new String("?\\\\      helloworld ac");
-        String[] result = str.split("(?<![\\\\]) ");
+/**
+ *
+ */
+public abstract class AsyncResult<T> implements Result {
+
+    @Override
+    public Object getValue() {
+        return null;
+    }
+
+    @Override
+    public Throwable getException() {
+        return null;
+    }
+
+    @Override
+    public boolean hasException() {
+        return false;
+    }
+
+    @Override
+    public Object getResult() {
+        return null;
+    }
+
+    @Override
+    public Map<String, String> getAttachments() {
+        return null;
+    }
+
+    @Override
+    public String getAttachment(String key) {
+        return null;
+    }
+
+    @Override
+    public String getAttachment(String key, String defaultValue) {
+        return null;
     }
 }

@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
@@ -90,6 +91,7 @@ public class RpcContext {
     // we want these objects to be as generic as possible
     private Object request;
     private Object response;
+    private AsyncContext asyncContext;
 
     protected RpcContext() {
     }
@@ -131,12 +133,33 @@ public class RpcContext {
     }
 
     /**
+     * TODO call multiple times in different thread?
+     *
+     * @return
+     * @throws IllegalStateException
+     */
+    @SuppressWarnings("unchecked")
+    public static AsyncContext startAsync() throws IllegalStateException {
+        RpcContext currentContext = getContext();
+        if (currentContext.asyncContext != null) {
+            currentContext.asyncContext.start();
+            return currentContext.asyncContext;
+        } else {
+            throw new IllegalStateException("This service does not support asynchronous operations, you should open async explicitly before use.");
+        }
+    }
+
+    /**
      * Get the request object of the underlying RPC protocol, e.g. HttpServletRequest
      *
      * @return null if the underlying protocol doesn't provide support for getting request
      */
     public Object getRequest() {
         return request;
+    }
+
+    public void setRequest(Object request) {
+        this.request = request;
     }
 
     /**
@@ -149,11 +172,6 @@ public class RpcContext {
         return (request != null && clazz.isAssignableFrom(request.getClass())) ? (T) request : null;
     }
 
-
-    public void setRequest(Object request) {
-        this.request = request;
-    }
-
     /**
      * Get the response object of the underlying RPC protocol, e.g. HttpServletResponse
      *
@@ -161,6 +179,10 @@ public class RpcContext {
      */
     public Object getResponse() {
         return response;
+    }
+
+    public void setResponse(Object response) {
+        this.response = response;
     }
 
     /**
@@ -171,10 +193,6 @@ public class RpcContext {
     @SuppressWarnings("unchecked")
     public <T> T getResponse(Class<T> clazz) {
         return (response != null && clazz.isAssignableFrom(response.getClass())) ? (T) response : null;
-    }
-
-    public void setResponse(Object response) {
-        this.response = response;
     }
 
     /**
@@ -193,6 +211,17 @@ public class RpcContext {
      */
     public boolean isConsumerSide() {
         return getUrl().getParameter(Constants.SIDE_KEY, Constants.PROVIDER_SIDE).equals(Constants.CONSUMER_SIDE);
+    }
+
+    /**
+     * get CompletableFuture.
+     *
+     * @param <T>
+     * @return future
+     */
+    @SuppressWarnings("unchecked")
+    public <T> CompletableFuture<T> getCompletableFuture() {
+        return (CompletableFuture<T>) future;
     }
 
     /**
@@ -678,5 +707,22 @@ public class RpcContext {
         } finally {
             removeAttachment(Constants.RETURN_KEY);
         }
+    }
+
+    public boolean isAsyncStarted() {
+        if (this.asyncContext == null) {
+            return false;
+        }
+        return asyncContext.isAsyncStarted();
+    }
+
+    public boolean stopAsync() {
+        boolean stoped = asyncContext.stop();
+        asyncContext = null;
+        return stoped;
+    }
+
+    public void setAsyncContext(AsyncContext asyncContext) {
+        this.asyncContext = asyncContext;
     }
 }

@@ -20,6 +20,7 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.bytecode.Wrapper;
+import com.alibaba.dubbo.common.config.AsyncFor;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.common.utils.NetUtils;
@@ -73,6 +74,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     // interface name
     private String interfaceName;
     private Class<?> interfaceClass;
+    private Class<?> asyncInterfaceClass;
     // client type
     private String client;
     // url for peer-to-peer invocation
@@ -278,6 +280,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         checkApplication();
         checkStubAndMock(interfaceClass);
         Map<String, String> map = new HashMap<String, String>();
+        resolveAsyncInterface(interfaceClass, map);
         Map<Object, Object> attributes = new HashMap<Object, Object>();
         map.put(Constants.SIDE_KEY, Constants.CONSUMER_SIDE);
         map.put(Constants.DUBBO_VERSION_KEY, Version.getProtocolVersion());
@@ -434,6 +437,18 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
         appendProperties(consumer);
     }
+
+    private void resolveAsyncInterface(Class<?> interfaceClass, Map<String, String> map) {
+        AsyncFor annotation = interfaceClass.getAnnotation(AsyncFor.class);
+        if (annotation == null) return;
+        Class<?> target = annotation.value();
+        if (!target.isAssignableFrom(interfaceClass)) return;
+        this.asyncInterfaceClass = interfaceClass;
+        this.interfaceClass = target;
+        setInterface(this.interfaceClass.getName());
+        map.put(Constants.INTERFACES, interfaceClass.getName());
+    }
+
 
     public Class<?> getInterfaceClass() {
         if (interfaceClass != null) {

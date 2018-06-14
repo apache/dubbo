@@ -17,6 +17,7 @@
 package com.alibaba.dubbo.demo.consumer;
 
 import com.alibaba.dubbo.demo.DemoService;
+
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class Consumer {
