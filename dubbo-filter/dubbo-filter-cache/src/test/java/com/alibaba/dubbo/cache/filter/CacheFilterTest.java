@@ -17,6 +17,7 @@
 package com.alibaba.dubbo.cache.filter;
 
 import com.alibaba.dubbo.cache.CacheFactory;
+import com.alibaba.dubbo.cache.support.expiring.ExpiringCacheFactory;
 import com.alibaba.dubbo.cache.support.jcache.JCacheFactory;
 import com.alibaba.dubbo.cache.support.lru.LruCacheFactory;
 import com.alibaba.dubbo.cache.support.threadlocal.ThreadLocalCacheFactory;
@@ -33,7 +34,7 @@ import org.junit.runners.Parameterized;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.runners.Parameterized.*;
+import static org.junit.runners.Parameterized.Parameters;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -59,7 +60,8 @@ public class CacheFilterTest {
         return Arrays.asList(new Object[][]{
                 {"lru", new LruCacheFactory()},
                 {"jcache", new JCacheFactory()},
-                {"threadlocal", new ThreadLocalCacheFactory()}
+                {"threadlocal", new ThreadLocalCacheFactory()},
+                {"expiring", new ExpiringCacheFactory()}
         });
     }
 
