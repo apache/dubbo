@@ -48,8 +48,9 @@ public class AsyncContextImpl implements AsyncContext {
                 // TODO check exception type like ExceptionFilter do.
                 Throwable bizExe = (Throwable) value;
                 future.complete(new RpcResult(bizExe));
+            } else {
+                future.complete(new RpcResult(value));
             }
-            future.complete(new RpcResult(value));
         } else {
             throw new IllegalStateException("The async response has probably been wrote back by another thread, or the asyncContext has been closed.");
         }
@@ -62,11 +63,7 @@ public class AsyncContextImpl implements AsyncContext {
 
     @Override
     public boolean stop() {
-        if (started.compareAndSet(true, false)) {
-//            future.cancel(true);
-            return true;
-        }
-        return false;
+        return started.compareAndSet(true, false);
     }
 
     @Override
