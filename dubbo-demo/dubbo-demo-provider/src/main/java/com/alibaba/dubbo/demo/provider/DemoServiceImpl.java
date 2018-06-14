@@ -17,6 +17,7 @@
 package com.alibaba.dubbo.demo.provider;
 
 import com.alibaba.dubbo.demo.DemoService;
+import com.alibaba.dubbo.rpc.AsyncContext;
 import com.alibaba.dubbo.rpc.RpcContext;
 
 import java.text.SimpleDateFormat;
@@ -28,12 +29,34 @@ public class DemoServiceImpl implements DemoService {
     @Override
     public String sayHello(String name) {
         System.out.println("[" + new SimpleDateFormat("HH:mm:ss").format(new Date()) + "] Hello " + name + ", request from consumer: " + RpcContext.getContext().getRemoteAddress());
+        startAsync(name);
         return "Hello " + name + ", response from provider: " + RpcContext.getContext().getLocalAddress();
     }
 
     @Override
-    public CompletableFuture<String> sayHelloAsync(String name) {
-        return CompletableFuture.completedFuture("CompletableFuture");
+    public CompletableFuture<String> originalFuture(String name) {
+        return CompletableFuture.supplyAsync(() ->{
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return "test Async";
+        });
+    }
+
+    private void startAsync(String name) {
+        AsyncContext asyncContext = RpcContext.startAsync();
+        new Thread(() -> {
+            System.out.println("    -- Async start.");
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            asyncContext.write("Hello " + name + ", response from async provider.");
+            System.out.println("    -- Async end.");
+        }).start();
     }
 
 }

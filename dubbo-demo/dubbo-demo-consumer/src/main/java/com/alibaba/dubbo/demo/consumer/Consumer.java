@@ -16,82 +16,38 @@
  */
 package com.alibaba.dubbo.demo.consumer;
 
+import com.alibaba.dubbo.demo.DemoService;
+import com.alibaba.dubbo.demo.DemoServiceAsync;
 import com.alibaba.dubbo.rpc.RpcResult;
+
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.concurrent.CompletableFuture;
 
 public class Consumer {
 
     public static void main(String[] args) throws InterruptedException {
-       /* //Prevent to get IPV6 address,this way only work in debug mode
+        //Prevent to get IPV6 address,this way only work in debug mode
         //But you can pass use -Djava.net.preferIPv4Stack=true,then it work well whether in debug mode or not
         System.setProperty("java.net.preferIPv4Stack", "true");
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"META-INF/spring/dubbo-demo-consumer.xml"});
         context.start();
         DemoService demoService = (DemoService) context.getBean("demoService"); // get remote service proxy
+        DemoServiceAsync demoServiceAsync = (DemoServiceAsync) context.getBean("demoServiceAsync");
 
         while (true) {
             try {
-                Thread.sleep(1000);
-                CompletableFuture<String> future = demoService.sayHelloAsync("world"); // call remote method
+                CompletableFuture<String> future = demoService.originalFuture("world"); // call remote method
                 System.out.println(future.get()); // get result
 
+                System.out.println(demoService.sayHello("world"));
+
+                CompletableFuture<String> generatedFuture = demoServiceAsync.sayHelloAsync("generated async");
+                System.out.println(generatedFuture.get());
+                Thread.sleep(1000);
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
             }
-
-
-        }*/
-
-
-        RpcResult resultCreated = new RpcResult();
-        CompletableFuture<Object> futureCreated = new CompletableFuture();
-        futureCreated.whenComplete((Object i, Throwable err) -> {
-            if (err != null) {
-                resultCreated.setException(err);
-            } else {
-                resultCreated.setValue(i);
-            }
-        });
-
-        RpcResult result = new RpcResult();
-        CompletableFuture future = CompletableFuture.supplyAsync(() -> {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            throw new RuntimeException("1");
-        }).whenComplete((i, err) -> {
-            if (err != null) {
-                result.setException(err);
-            } else {
-                result.setValue(i);
-            }
-        });
-
-
-        future.complete(new RuntimeException("aaa"));
-        Thread.sleep(500);
-        System.out.println(result.getException());
-        System.out.println(result.getValue());
-
-        futureCreated.completeExceptionally(new RuntimeException("aaa"));
-        Thread.sleep(500);
-        System.out.println(resultCreated.getException());
-        System.out.println(resultCreated.getValue());
-//
-//        try {
-////            future.completeExceptionally(new RuntimeException("aaa"));
-//
-//            Object obj =future.get();
-//            System.out.println(future.isCompletedExceptionally());
-//            System.out.println(obj);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        } catch (ExecutionException e) {
-//            e.printStackTrace();
-//        }
-
+        }
     }
 }
