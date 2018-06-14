@@ -71,8 +71,8 @@ public class Main {
                             } catch (Throwable t) {
                                 logger.error(t.getMessage(), t);
                             }
+                            LOCK.lock();
                             try {
-                                LOCK.lock();
                                 STOP.signal();
                             } finally {
                                 LOCK.unlock();
@@ -92,8 +92,8 @@ public class Main {
             logger.error(e.getMessage(), e);
             System.exit(1);
         }
+        LOCK.lock();
         try {
-            LOCK.lock();
             STOP.await();
         } catch (InterruptedException e) {
             logger.warn("Dubbo service server stopped, interrupted by other thread!", e);

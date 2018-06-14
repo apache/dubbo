@@ -23,12 +23,7 @@ import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -312,8 +307,8 @@ public class ExplicitCallbackTest {
 
         private void startThread() {
             if (t == null || callbacks.size() == 0) {
+                lock.lock();
                 try {
-                    lock.lock();
                     t = new Thread(new Runnable() {
                         public void run() {
                             while (callbacks.size() > 0) {
