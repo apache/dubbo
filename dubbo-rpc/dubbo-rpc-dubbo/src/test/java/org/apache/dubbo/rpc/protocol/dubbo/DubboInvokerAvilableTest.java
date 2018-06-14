@@ -81,7 +81,6 @@ public class DubboInvokerAvilableTest {
 
     @Test
     public void test_normal_channel_close_wait_gracefully() throws Exception {
-
         URL url = URL.valueOf("dubbo://127.0.0.1:20883/hi?scope=true&lazy=false");
         Exporter<IDemoService> exporter = ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
         Exporter<IDemoService> exporter0 = ProtocolUtils.export(new DemoServiceImpl0(), IDemoService.class, url);
