@@ -41,6 +41,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -83,14 +84,14 @@ public class AbstractInterfaceConfigTest {
     public void checkApplication1() throws Exception {
         try {
             ConfigUtils.setProperties(null);
-            System.out.println("properties file content:\n" + IOUtils.readLines(new FileInputStream(dubboProperties)));
+            System.out.println("properties file content:\n" + Arrays.toString(IOUtils.readLines(dubboProperties)));
             writeDubboProperties(Constants.SHUTDOWN_WAIT_KEY, "100");
             System.setProperty("dubbo.application.name", "demo");
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.checkApplication();
             ApplicationConfig appConfig = interfaceConfig.getApplication();
             TestCase.assertEquals("demo", appConfig.getName());
-            System.out.println("properties file content:\n" + IOUtils.readLines(new FileInputStream(dubboProperties)));
+            System.out.println("properties file content:\n" + Arrays.toString(IOUtils.readLines(dubboProperties)));
             System.out.println("system properties: \n" + System.getProperties());
             TestCase.assertEquals("100", System.getProperty(Constants.SHUTDOWN_WAIT_KEY));
 
