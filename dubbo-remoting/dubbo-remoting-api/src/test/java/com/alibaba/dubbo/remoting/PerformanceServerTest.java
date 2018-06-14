@@ -30,6 +30,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * PerformanceServer
@@ -78,17 +79,17 @@ public class PerformanceServerTest extends TestCase {
                 return "echo: " + message + "\r\ntelnet> ";
             }
 
-            public Object reply(ExchangeChannel channel, Object request) throws RemotingException {
+            public CompletableFuture<Object> reply(ExchangeChannel channel, Object request) throws RemotingException {
                 if ("environment".equals(request)) {
-                    return PerformanceUtils.getEnvironment();
+                    return CompletableFuture.completedFuture(PerformanceUtils.getEnvironment());
                 }
                 if ("scene".equals(request)) {
                     List<String> scene = new ArrayList<String>();
                     scene.add("Transporter: " + transporter);
                     scene.add("Service Threads: " + threads);
-                    return scene;
+                    return CompletableFuture.completedFuture(scene);
                 }
-                return request;
+                return CompletableFuture.completedFuture(request);
             }
         });
 

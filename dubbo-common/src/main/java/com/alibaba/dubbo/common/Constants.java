@@ -281,6 +281,10 @@ public class Constants {
 
     public static final String ASYNC_KEY = "async";
 
+    public static final String FUTURE_KEY = "async_future";
+
+    public static final String ASYNC_SUFFIX = "Async";
+
     public static final String RETURN_KEY = "return";
 
     public static final String TOKEN_KEY = "token";
@@ -322,6 +326,8 @@ public class Constants {
     public static final String PATH_KEY = "path";
 
     public static final String INTERFACE_KEY = "interface";
+
+    public static final String INTERFACES = "interfaces";
 
     public static final String GENERIC_KEY = "generic";
 

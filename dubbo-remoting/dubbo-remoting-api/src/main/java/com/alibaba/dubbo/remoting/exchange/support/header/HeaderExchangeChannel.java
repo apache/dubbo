@@ -75,7 +75,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
 
     @Override
     public void send(Object message) throws RemotingException {
-        send(message, getUrl().getParameter(Constants.SENT_KEY, false));
+        send(message, false);
     }
 
     @Override

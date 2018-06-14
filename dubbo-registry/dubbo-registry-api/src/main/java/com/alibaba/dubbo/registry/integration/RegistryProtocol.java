@@ -48,6 +48,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static com.alibaba.dubbo.common.Constants.ACCEPT_FOREIGN_IP;
+import static com.alibaba.dubbo.common.Constants.INTERFACES;
 import static com.alibaba.dubbo.common.Constants.QOS_ENABLE;
 import static com.alibaba.dubbo.common.Constants.QOS_PORT;
 import static com.alibaba.dubbo.common.Constants.VALIDATION_KEY;
@@ -229,7 +230,8 @@ public class RegistryProtocol implements Protocol {
                 .removeParameter(QOS_ENABLE)
                 .removeParameter(QOS_PORT)
                 .removeParameter(ACCEPT_FOREIGN_IP)
-                .removeParameter(VALIDATION_KEY);
+                .removeParameter(VALIDATION_KEY)
+                .removeParameter(INTERFACES);
         return registedProviderUrl;
     }
 

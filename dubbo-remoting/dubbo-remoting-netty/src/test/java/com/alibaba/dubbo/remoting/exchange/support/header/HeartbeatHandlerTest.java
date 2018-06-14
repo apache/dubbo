@@ -34,6 +34,8 @@ import org.junit.Assert;
 import org.junit.After;
 import org.junit.Test;
 
+import java.util.concurrent.CompletableFuture;
+
 public class HeartbeatHandlerTest {
 
     private static final Logger logger = LoggerFactory.getLogger(HeartbeatHandlerTest.class);
@@ -107,8 +109,8 @@ public class HeartbeatHandlerTest {
         public int disconnectCount = 0;
         public int connectCount = 0;
 
-        public Object reply(ExchangeChannel channel, Object request) throws RemotingException {
-            return request;
+        public CompletableFuture<Object> reply(ExchangeChannel channel, Object request) throws RemotingException {
+            return CompletableFuture.completedFuture(request);
         }
 
         @Override

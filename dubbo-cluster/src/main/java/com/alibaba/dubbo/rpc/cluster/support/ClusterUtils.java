@@ -60,6 +60,9 @@ public class ClusterUtils {
 
             map.remove(Constants.TRANSPORTER_KEY);
             map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.TRANSPORTER_KEY);
+
+            map.remove(Constants.ASYNC_KEY);
+            map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.ASYNC_KEY);
         }
 
         if (localMap != null && localMap.size() > 0) {
