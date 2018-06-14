@@ -32,6 +32,7 @@ import junit.framework.TestCase;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
@@ -81,6 +82,7 @@ public class AbstractInterfaceConfigTest {
     }
 
     @Test
+    @Ignore
     public void checkApplication1() throws Exception {
         try {
             ConfigUtils.setProperties(null);
