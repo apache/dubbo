@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.IOUtils;
 import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.mock.GreetingLocal1;
 import org.apache.dubbo.config.mock.GreetingLocal2;
@@ -36,6 +37,7 @@ import org.junit.rules.TemporaryFolder;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -81,12 +83,15 @@ public class AbstractInterfaceConfigTest {
     public void checkApplication1() throws Exception {
         try {
             ConfigUtils.setProperties(null);
+            System.out.println("properties file content:\n" + IOUtils.readLines(new FileInputStream(dubboProperties)));
             writeDubboProperties(Constants.SHUTDOWN_WAIT_KEY, "100");
             System.setProperty("dubbo.application.name", "demo");
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.checkApplication();
             ApplicationConfig appConfig = interfaceConfig.getApplication();
             TestCase.assertEquals("demo", appConfig.getName());
+            System.out.println("properties file content:\n" + IOUtils.readLines(new FileInputStream(dubboProperties)));
+            System.out.println("system properties: \n" + System.getProperties());
             TestCase.assertEquals("100", System.getProperty(Constants.SHUTDOWN_WAIT_KEY));
 
             System.clearProperty(Constants.SHUTDOWN_WAIT_KEY);
