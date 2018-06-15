@@ -411,7 +411,7 @@ public class TTable implements TComponent {
 
     /**
      * visible width for the given string.
-     *
+     * <p>
      * for example: "abc\n1234"'s width is 4.
      *
      * @param string the given string

@@ -30,7 +30,7 @@ public class TelnetCommandDecoder {
                 String name = array[0];
                 String[] targetArgs = new String[array.length - 1];
                 System.arraycopy(array, 1, targetArgs, 0, array.length - 1);
-                commandContext = CommandContextFactory.newInstance( name, targetArgs,false);
+                commandContext = CommandContextFactory.newInstance(name, targetArgs, false);
                 commandContext.setOrginRequest(str);
             }
         }

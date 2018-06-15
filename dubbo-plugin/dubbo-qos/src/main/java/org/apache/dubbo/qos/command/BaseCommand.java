@@ -20,5 +20,5 @@ import org.apache.dubbo.common.extension.SPI;
 
 @SPI
 public interface BaseCommand {
-    String execute(CommandContext commandContext,String[] args);
+    String execute(CommandContext commandContext, String[] args);
 }
