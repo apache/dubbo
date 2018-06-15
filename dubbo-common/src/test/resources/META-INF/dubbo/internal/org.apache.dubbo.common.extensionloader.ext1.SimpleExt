@@ -1,0 +1,4 @@
+# Comment 1
+impl1=org.apache.dubbo.common.extensionloader.ext1.impl.SimpleExtImpl1#Hello World
+impl2=org.apache.dubbo.common.extensionloader.ext1.impl.SimpleExtImpl2  # Comment 2
+   impl3=org.apache.dubbo.common.extensionloader.ext1.impl.SimpleExtImpl3 # with head space

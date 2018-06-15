@@ -1,0 +1,2 @@
+impl1=org.apache.dubbo.common.extensionloader.ext6_inject.impl.Ext6Impl1
+impl2=org.apache.dubbo.common.extensionloader.ext6_inject.impl.Ext6Impl2

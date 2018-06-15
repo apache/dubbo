@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.bootstrap;
 
-import com.alibaba.dubbo.config.DubboShutdownHook;
-import com.alibaba.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.DubboShutdownHook;
+import org.apache.dubbo.config.ServiceConfig;
 
 import java.util.ArrayList;
 import java.util.List;
