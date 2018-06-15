@@ -1132,72 +1132,133 @@
     <xsd:element name="annotation" type="annotationType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ The annotation config ]]></xsd:documentation>
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports type="org.apache.dubbo.config.ServiceConfig"/>
+                    <tool:exports type="org.apache.dubbo.config.ReferenceConfig"/>
+                </tool:annotation>
+            </xsd:appinfo>
         </xsd:annotation>
     </xsd:element>
 
     <xsd:element name="application" type="applicationType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ The application config ]]></xsd:documentation>
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports type="org.apache.dubbo.config.ApplicationConfig"/>
+                </tool:annotation>
+            </xsd:appinfo>
         </xsd:annotation>
     </xsd:element>
 
     <xsd:element name="module" type="moduleType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ The module config ]]></xsd:documentation>
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports type="org.apache.dubbo.config.ModuleConfig"/>
+                </tool:annotation>
+            </xsd:appinfo>
         </xsd:annotation>
     </xsd:element>
 
     <xsd:element name="registry" type="registryType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ The registry config ]]></xsd:documentation>
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports type="org.apache.dubbo.config.RegistryConfig"/>
+                </tool:annotation>
+            </xsd:appinfo>
         </xsd:annotation>
     </xsd:element>
 
     <xsd:element name="monitor" type="monitorType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ The logstat monitor config ]]></xsd:documentation>
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports type="org.apache.dubbo.config.MonitorConfig"/>
+                </tool:annotation>
+            </xsd:appinfo>
         </xsd:annotation>
     </xsd:element>
 
     <xsd:element name="provider" type="providerType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ Export service default config ]]></xsd:documentation>
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports type="org.apache.dubbo.config.ProviderConfig"/>
+                </tool:annotation>
+            </xsd:appinfo>
         </xsd:annotation>
     </xsd:element>
 
     <xsd:element name="consumer" type="consumerType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ Service reference default config ]]></xsd:documentation>
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports type="org.apache.dubbo.config.ConsumerConfig"/>
+                </tool:annotation>
+            </xsd:appinfo>
         </xsd:annotation>
     </xsd:element>
 
     <xsd:element name="protocol" type="protocolType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ Service provider config ]]></xsd:documentation>
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports type="org.apache.dubbo.config.ProtocolConfig"/>
+                </tool:annotation>
+            </xsd:appinfo>
         </xsd:annotation>
     </xsd:element>
 
     <xsd:element name="service" type="serviceType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ Export service config ]]></xsd:documentation>
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports type="org.apache.dubbo.config.ServiceConfig"/>
+                </tool:annotation>
+            </xsd:appinfo>
         </xsd:annotation>
     </xsd:element>
 
     <xsd:element name="reference" type="referenceType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ Reference service config ]]></xsd:documentation>
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports type="org.apache.dubbo.config.ReferenceConfig"/>
+                </tool:annotation>
+            </xsd:appinfo>
         </xsd:annotation>
     </xsd:element>
 
     <xsd:element name="method" type="methodType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ The service method config ]]></xsd:documentation>
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports type="org.apache.dubbo.config.MethodConfig"/>
+                </tool:annotation>
+            </xsd:appinfo>
         </xsd:annotation>
     </xsd:element>
 
     <xsd:element name="argument" type="argumentType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ The service argument config ]]></xsd:documentation>
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports type="org.apache.dubbo.config.ArgumentConfig"/>
+                </tool:annotation>
+            </xsd:appinfo>
         </xsd:annotation>
     </xsd:element>
 
