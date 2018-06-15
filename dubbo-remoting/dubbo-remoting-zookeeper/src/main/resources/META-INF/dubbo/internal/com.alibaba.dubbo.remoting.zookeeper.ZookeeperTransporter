@@ -1,2 +1,0 @@
-zkclient=com.alibaba.dubbo.remoting.zookeeper.zkclient.ZkclientZookeeperTransporter
-curator=com.alibaba.dubbo.remoting.zookeeper.curator.CuratorZookeeperTransporter

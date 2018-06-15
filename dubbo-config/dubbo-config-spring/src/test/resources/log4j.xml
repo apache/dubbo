@@ -23,7 +23,7 @@
         </layout>
     </appender>
 
-    <logger name="com.alibaba.dubbo.config.spring" additivity="false">
+    <logger name="org.apache.dubbo.config.spring" additivity="false">
         <level value="DEBUG"/>
         <appender-ref ref="CONSOLE"/>
     </logger>
