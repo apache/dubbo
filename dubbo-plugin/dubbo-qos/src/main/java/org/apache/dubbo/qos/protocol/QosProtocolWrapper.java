@@ -76,13 +76,13 @@ public class QosProtocolWrapper implements Protocol {
         }
 
         try {
-            boolean qosEnable = Boolean.parseBoolean(url.getParameter(QOS_ENABLE,"true"));
+            boolean qosEnable = Boolean.parseBoolean(url.getParameter(QOS_ENABLE, "true"));
             if (!qosEnable) {
                 return;
             }
 
-            int port = Integer.parseInt(url.getParameter(QOS_PORT,"22222"));
-            boolean acceptForeignIp = Boolean.parseBoolean(url.getParameter(ACCEPT_FOREIGN_IP,"true"));
+            int port = Integer.parseInt(url.getParameter(QOS_PORT, "22222"));
+            boolean acceptForeignIp = Boolean.parseBoolean(url.getParameter(ACCEPT_FOREIGN_IP, "true"));
             Server server = org.apache.dubbo.qos.server.Server.getInstance();
             server.setPort(port);
             server.setAcceptForeignIp(acceptForeignIp);

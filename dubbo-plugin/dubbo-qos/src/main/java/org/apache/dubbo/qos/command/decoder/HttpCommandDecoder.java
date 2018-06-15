@@ -50,7 +50,7 @@ public class HttpCommandDecoder {
                         for (List<String> values : queryStringDecoder.parameters().values()) {
                             valueList.addAll(values);
                         }
-                        commandContext = CommandContextFactory.newInstance(name, valueList.toArray(new String[]{}),true);
+                        commandContext = CommandContextFactory.newInstance(name, valueList.toArray(new String[]{}), true);
                     }
                 } else if (request.getMethod() == HttpMethod.POST) {
                     HttpPostRequestDecoder httpPostRequestDecoder = new HttpPostRequestDecoder(request);
@@ -69,7 +69,7 @@ public class HttpCommandDecoder {
                         commandContext = CommandContextFactory.newInstance(name);
                         commandContext.setHttp(true);
                     } else {
-                        commandContext = CommandContextFactory.newInstance(name, valueList.toArray(new String[]{}),true);
+                        commandContext = CommandContextFactory.newInstance(name, valueList.toArray(new String[]{}), true);
                     }
                 }
             }
