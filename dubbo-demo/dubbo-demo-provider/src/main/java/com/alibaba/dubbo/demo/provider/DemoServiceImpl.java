@@ -30,7 +30,8 @@ public class DemoServiceImpl implements DemoService {
     public String sayHello(String name) {
         System.out.println("[" + new SimpleDateFormat("HH:mm:ss").format(new Date()) + "] Hello " + name + ", request from consumer: " + RpcContext.getContext().getRemoteAddress());
         startAsync(name);
-        return "Hello " + name + ", response from provider: " + RpcContext.getContext().getLocalAddress();
+        throw new RuntimeException("bbb");
+//        return "Hello " + name + ", response from provider: " + RpcContext.getContext().getLocalAddress();
     }
 
     @Override
@@ -41,7 +42,8 @@ public class DemoServiceImpl implements DemoService {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            return "test Async";
+            throw new RuntimeException("aaa");
+//            return "test Async";
         });
     }
 

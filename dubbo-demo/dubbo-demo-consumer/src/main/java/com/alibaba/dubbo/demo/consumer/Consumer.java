@@ -18,7 +18,6 @@ package com.alibaba.dubbo.demo.consumer;
 
 import com.alibaba.dubbo.demo.DemoService;
 import com.alibaba.dubbo.demo.DemoServiceAsync;
-import com.alibaba.dubbo.rpc.RpcResult;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -37,13 +36,20 @@ public class Consumer {
 
         while (true) {
             try {
-                CompletableFuture<String> future = demoService.originalFuture("world"); // call remote method
-                System.out.println(future.get()); // get result
+                try {
+                    CompletableFuture<String> future = demoService.originalFuture("world"); // call remote method
+                    System.out.println(future.get()); // get result
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
-                System.out.println(demoService.sayHello("world"));
-
-                CompletableFuture<String> generatedFuture = demoServiceAsync.sayHelloAsync("generated async");
-                System.out.println(generatedFuture.get());
+//                System.out.println(demoService.sayHello("world"));
+                try {
+                    CompletableFuture<String> generatedFuture = demoServiceAsync.sayHelloAsync("generated async");
+                    System.out.println(generatedFuture.get());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 Thread.sleep(1000);
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
