@@ -29,7 +29,7 @@ public class CommandContext {
         this.commandName = commandName;
     }
 
-    public CommandContext(String commandName, String[] args, boolean isHttp) {
+    public CommandContext(String commandName, String[] args,boolean isHttp) {
         this.commandName = commandName;
         this.args = args;
         this.isHttp = isHttp;
