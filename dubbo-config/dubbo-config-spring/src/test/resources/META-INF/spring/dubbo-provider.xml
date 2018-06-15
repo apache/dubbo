@@ -29,6 +29,6 @@
 
     <dubbo:protocol name="dubbo" port="12345" />
 
-    <dubbo:annotation package="com.alibaba.dubbo.config.spring.annotation.provider"/>
+    <dubbo:annotation package="org.apache.dubbo.config.spring.annotation.provider"/>
 
 </beans>
