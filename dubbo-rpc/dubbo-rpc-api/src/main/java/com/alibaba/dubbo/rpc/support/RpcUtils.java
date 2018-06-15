@@ -28,6 +28,7 @@ import com.alibaba.dubbo.rpc.RpcInvocation;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -199,11 +200,9 @@ public class RpcUtils {
     }
 
     public static Map<String, String> getNecessaryAttachments(Invocation inv) {
-        Map<String, String> attachments = inv.getAttachments();
-        if (attachments != null) {
-            attachments.remove(Constants.ASYNC_KEY);
-            attachments.remove(Constants.FUTURE_GENERATED_KEY);
-        }
+        Map<String, String> attachments = new HashMap<>(inv.getAttachments());
+        attachments.remove(Constants.ASYNC_KEY);
+        attachments.remove(Constants.FUTURE_GENERATED_KEY);
         return attachments;
     }
 

@@ -102,7 +102,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
                 channel.send(res);
                 return;
             }
-            future.whenCompleteAsync((result, t) -> {
+            future.whenComplete((result, t) -> {
                 try {
                     if (t == null) {
                         res.setStatus(Response.OK);

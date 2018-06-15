@@ -31,4 +31,6 @@ public interface AsyncContext {
     boolean stop();
 
     void start();
+
+    void signalContextSwitch();
 }

@@ -74,6 +74,11 @@ public class AsyncContextImpl implements AsyncContext {
     }
 
     @Override
+    public void signalContextSwitch() {
+
+    }
+
+    @Override
     public CompletableFuture getInternalFuture() {
         return future;
     }

@@ -94,7 +94,8 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 RpcContext.getContext().setFuture(futureAdapter);
                 Result result;
                 if (isAsyncFuture) {
-                    result = new AsyncRpcResult(futureAdapter, false);
+                    // register resultCallback, sometimes we need the result being processed in the filter chain.
+                    result = new AsyncRpcResult(futureAdapter, true);
                 } else {
                     result = new RpcResult();
                 }

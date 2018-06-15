@@ -22,7 +22,7 @@ import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
-import com.alibaba.dubbo.rpc.AsyncResult;
+import com.alibaba.dubbo.rpc.AsyncRpcResult;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.PostProcessFilter;
@@ -62,8 +62,8 @@ public class ExceptionFilter implements PostProcessFilter {
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         try {
             Result result = invoker.invoke(invocation);
-            if (result instanceof AsyncResult) {
-                AsyncResult asyncResult = (AsyncResult) result;
+            if (result instanceof AsyncRpcResult) {
+                AsyncRpcResult asyncResult = (AsyncRpcResult) result;
                 CompletableFuture<Result> future = asyncResult.getResultFuture();
                 asyncResult.setResultFuture(future.thenApply(r -> postProcessResult(r, invoker, invocation)));
                 return asyncResult;

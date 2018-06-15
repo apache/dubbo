@@ -35,7 +35,7 @@ import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
 import com.alibaba.dubbo.remoting.exchange.Exchangers;
 import com.alibaba.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 import com.alibaba.dubbo.rpc.AsyncContextImpl;
-import com.alibaba.dubbo.rpc.AsyncResult;
+import com.alibaba.dubbo.rpc.AsyncRpcResult;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
@@ -113,8 +113,8 @@ public class DubboProtocol extends AbstractProtocol {
                 rpcContext.setRemoteAddress(channel.getRemoteAddress());
                 Result result = invoker.invoke(inv);
 
-                if (result instanceof AsyncResult) {
-                    return ((AsyncResult) result).getResultFuture().thenApply(r -> (Object) r);
+                if (result instanceof AsyncRpcResult) {
+                    return ((AsyncRpcResult) result).getResultFuture().thenApply(r -> (Object) r);
                 } else {
                     return CompletableFuture.completedFuture(result);
                 }

@@ -16,19 +16,97 @@
  */
 package com.alibaba.dubbo.rpc;
 
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 /**
  *
  */
-public class AsyncRpcResult extends AsyncResult {
+public class AsyncRpcResult extends AbstractResult {
+    private static final Logger logger = LoggerFactory.getLogger(AsyncRpcResult.class);
+
+    private Map<String, String> attachments = new HashMap<String, String>();
+
+    protected CompletableFuture<Object> valueFuture;
+
+    protected CompletableFuture<Result> resultFuture;
 
     public AsyncRpcResult(CompletableFuture<Object> future) {
-        super(future);
+        this(future, true);
     }
 
     public AsyncRpcResult(CompletableFuture<Object> future, boolean registerCallback) {
-        super(future, registerCallback);
+        if (registerCallback) {
+            resultFuture = new CompletableFuture<>();
+            /**
+             * We do not know whether future already completed or not, it's a future exposed or even created by end user.
+             * 1. future complete before whenComplete. whenComplete fn (resultFuture.complete) will be executed in thread subscribing, in our case, is Dubbo thread.
+             * 2. future complete after whenComplete. whenComplete fn (resultFuture.complete) will be executed in thread calling complete, normally is User thread.
+             */
+            future.whenComplete((v, t) -> {
+                RpcResult rpcResult;
+                if (t != null) {
+                    if (t instanceof CompletionException) {
+                        rpcResult = new RpcResult(t.getCause());
+                    } else {
+                        rpcResult = new RpcResult(t);
+                    }
+                } else {
+                    rpcResult = new RpcResult(v);
+                }
+                resultFuture.complete(rpcResult);
+            });
+        }
+        this.valueFuture = future;
+    }
+
+    @Override
+    public Object getValue() {
+        return getRpcResult().getValue();
+    }
+
+    @Override
+    public Throwable getException() {
+        return getRpcResult().getException();
+    }
+
+    @Override
+    public boolean hasException() {
+        return getRpcResult().hasException();
+    }
+
+    @Override
+    public Object getResult() {
+        return getRpcResult().getResult();
+    }
+
+    public CompletableFuture getValueFuture() {
+        return valueFuture;
+    }
+
+    public CompletableFuture<Result> getResultFuture() {
+        return resultFuture;
+    }
+
+    public void setResultFuture(CompletableFuture<Result> resultFuture) {
+        this.resultFuture = resultFuture;
+    }
+
+    public Result getRpcResult() {
+        Result result;
+        try {
+            result = resultFuture.get();
+        } catch (Exception e) {
+            // This should never happen;
+            logger.error("", e);
+            result = new RpcResult();
+        }
+        return result;
     }
 
     @Override
