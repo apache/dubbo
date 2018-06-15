@@ -312,8 +312,8 @@ public class ExplicitCallbackTest {
 
         private void startThread() {
             if (t == null || callbacks.size() == 0) {
+                lock.lock();
                 try {
-                    lock.lock();
                     t = new Thread(new Runnable() {
                         public void run() {
                             while (callbacks.size() > 0) {
