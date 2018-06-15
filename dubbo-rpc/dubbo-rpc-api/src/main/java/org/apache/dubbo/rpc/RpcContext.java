@@ -35,6 +35,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+
 /**
  * Thread local context. (API, ThreadLocal, ThreadSafe)
  * <p>
@@ -43,7 +44,7 @@ import java.util.concurrent.TimeoutException;
  * starts invoking C, and saves invocation info from B to C after B invokes C.
  *
  * @export
- * @see org.apache.dubbo.rpc.filter.ContextFilter
+ * @see com.alibaba.dubbo.rpc.filter.ContextFilter
  */
 public class RpcContext {
 
@@ -108,7 +109,7 @@ public class RpcContext {
     /**
      * remove server side context.
      *
-     * @see org.apache.dubbo.rpc.filter.ContextFilter
+     * @see com.alibaba.dubbo.rpc.filter.ContextFilter
      */
     public static void removeServerContext() {
         SERVER_LOCAL.remove();
@@ -126,27 +127,10 @@ public class RpcContext {
     /**
      * remove context.
      *
-     * @see org.apache.dubbo.rpc.filter.ContextFilter
+     * @see com.alibaba.dubbo.rpc.filter.ContextFilter
      */
     public static void removeContext() {
         LOCAL.remove();
-    }
-
-    /**
-     * TODO call multiple times in different thread?
-     *
-     * @return
-     * @throws IllegalStateException
-     */
-    @SuppressWarnings("unchecked")
-    public static AsyncContext startAsync() throws IllegalStateException {
-        RpcContext currentContext = getContext();
-        if (currentContext.asyncContext != null) {
-            currentContext.asyncContext.start();
-            return currentContext.asyncContext;
-        } else {
-            throw new IllegalStateException("This service does not support asynchronous operations, you should open async explicitly before use.");
-        }
     }
 
     /**
@@ -709,6 +693,21 @@ public class RpcContext {
         }
     }
 
+    /**
+     * @return
+     * @throws IllegalStateException
+     */
+    @SuppressWarnings("unchecked")
+    public static AsyncContext startAsync() throws IllegalStateException {
+        RpcContext currentContext = getContext();
+        if (currentContext.asyncContext != null) {
+            currentContext.asyncContext.start();
+            return currentContext.asyncContext;
+        } else {
+            throw new IllegalStateException("This service does not support asynchronous operations, you should open async explicitly before use.");
+        }
+    }
+
     public boolean isAsyncStarted() {
         if (this.asyncContext == null) {
             return false;
@@ -724,5 +723,9 @@ public class RpcContext {
 
     public void setAsyncContext(AsyncContext asyncContext) {
         this.asyncContext = asyncContext;
+    }
+
+    public AsyncContext getAsyncContext() {
+        return asyncContext;
     }
 }

@@ -14,23 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc;
+package org.apache.dubbo.rpc;
 
-import java.util.concurrent.CompletableFuture;
-
-public interface AsyncContext {
-
-    CompletableFuture getInternalFuture();
-
-    void addListener(Runnable run);
-
-    void write(Object value);
-
-    boolean isAsyncStarted();
-
-    boolean stop();
-
-    void start();
-
-    void signalContextSwitch();
+/**
+ *
+ */
+public interface PostProcessFilter extends Filter {
+    /**
+     * TODO Filter is singleton, so we have to add invoker & invocation as parameters for every invoke.
+     *
+     * @param result
+     * @param invoker
+     * @param invocation
+     * @return
+     */
+    Result postProcessResult(Result result, Invoker<?> invoker, Invocation invocation);
 }

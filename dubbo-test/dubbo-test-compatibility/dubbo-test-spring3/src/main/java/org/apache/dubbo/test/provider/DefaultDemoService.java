@@ -19,6 +19,8 @@ package org.apache.dubbo.test.provider;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.demo.DemoService;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * Default {@link DemoService} implementation
  *
@@ -35,6 +37,11 @@ public class DefaultDemoService implements DemoService {
     @Override
     public String sayHello(String name) {
         return "DefaultDemoService - sayHell() : " + name;
+    }
+
+    @Override
+    public CompletableFuture<String> originalFuture(String name) {
+        return null;
     }
 
 }

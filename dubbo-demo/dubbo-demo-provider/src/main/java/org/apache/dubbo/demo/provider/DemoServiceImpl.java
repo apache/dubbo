@@ -17,17 +17,50 @@
 package org.apache.dubbo.demo.provider;
 
 import org.apache.dubbo.demo.DemoService;
+import org.apache.dubbo.rpc.AsyncContext;
 import org.apache.dubbo.rpc.RpcContext;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.CompletableFuture;
+
 
 public class DemoServiceImpl implements DemoService {
 
     @Override
     public String sayHello(String name) {
         System.out.println("[" + new SimpleDateFormat("HH:mm:ss").format(new Date()) + "] Hello " + name + ", request from consumer: " + RpcContext.getContext().getRemoteAddress());
+        startAsync(name);
+//        throw new RuntimeException("bbb");
         return "Hello " + name + ", response from provider: " + RpcContext.getContext().getLocalAddress();
     }
 
+    @Override
+    public CompletableFuture<String> originalFuture(String name) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+//            throw new RuntimeException("aaa");
+            return "test Async";
+        });
+    }
+
+    private void startAsync(String name) {
+        AsyncContext asyncContext = RpcContext.startAsync();
+        new Thread(() -> {
+            System.out.println("    -- Async start.");
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            asyncContext.write("Hello " + name + ", response from async provider.");
+            System.out.println("    -- Async end.");
+        }).start();
+    }
+
 }
+

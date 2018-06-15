@@ -21,7 +21,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 public class AsyncContextImpl implements AsyncContext {
     private static final Logger logger = LoggerFactory.getLogger(AsyncContextImpl.class);
 
@@ -46,10 +45,9 @@ public class AsyncContextImpl implements AsyncContext {
         if (stop()) {
             if (value instanceof Throwable) {
                 // TODO check exception type like ExceptionFilter do.
-                Throwable bizExe = (Throwable) value;
-                future.complete(new RpcResult(bizExe));
+                future.completeExceptionally((Throwable) value);
             }
-            future.complete(new RpcResult(value));
+            future.complete(value);
         } else {
             throw new IllegalStateException("The async response has probably been wrote back by another thread, or the asyncContext has been closed.");
         }
@@ -72,5 +70,15 @@ public class AsyncContextImpl implements AsyncContext {
     @Override
     public void start() {
         this.started.set(true);
+    }
+
+    @Override
+    public void signalContextSwitch() {
+
+    }
+
+    @Override
+    public CompletableFuture getInternalFuture() {
+        return future;
     }
 }

@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.demo;
+package org.apache.dubbo.demo;
 
-import com.alibaba.dubbo.common.config.AsyncFor;
+import org.apache.dubbo.common.config.AsyncFor;
 
 import java.util.concurrent.CompletableFuture;
 

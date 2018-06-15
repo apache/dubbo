@@ -32,6 +32,6 @@
     local regular interface -->
     <dubbo:reference id="demoService" check="false" interface="org.apache.dubbo.demo.DemoService"/>
 
-    <dubbo:reference id="demoServiceAsync" check="false" interface="com.alibaba.dubbo.demo.DemoServiceAsync"/>
+    <dubbo:reference id="demoServiceAsync" check="false" interface="org.apache.dubbo.demo.DemoServiceAsync"/>
 
 </beans>

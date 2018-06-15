@@ -42,7 +42,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
 public class ThriftProtocol extends AbstractProtocol {
 
     public static final int DEFAULT_PORT = 40880;

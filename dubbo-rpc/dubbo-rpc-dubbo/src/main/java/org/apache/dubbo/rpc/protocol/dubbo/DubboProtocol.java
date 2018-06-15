@@ -35,6 +35,7 @@ import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 import org.apache.dubbo.rpc.AsyncContextImpl;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -103,23 +104,20 @@ public class DubboProtocol extends AbstractProtocol {
                         return null;
                     }
                 }
-                boolean supportServerAsync = invoker.getUrl().getMethodParameter(inv.getMethodName(), Constants.ASYNC_KEY, false);
-                CompletableFuture<Object> resultFuture = new CompletableFuture<>();
                 RpcContext rpcContext = RpcContext.getContext();
+                boolean supportServerAsync = invoker.getUrl().getMethodParameter(inv.getMethodName(), Constants.ASYNC_KEY, false);
                 if (supportServerAsync) {
-                    rpcContext.setAsyncContext(new AsyncContextImpl(resultFuture));
+                    CompletableFuture<Object> future = new CompletableFuture<>();
+                    rpcContext.setAsyncContext(new AsyncContextImpl(future));
                 }
                 rpcContext.setRemoteAddress(channel.getRemoteAddress());
                 Result result = invoker.invoke(inv);
-                if (!rpcContext.isAsyncStarted()) {
-                    resultFuture.complete(result);
-                } else if (rpcContext.isAsyncStarted() && result.hasException()) {
-                    if (rpcContext.stopAsync()) {
-                        resultFuture.complete(result);
-                    }
-                }
 
-                return resultFuture;
+                if (result instanceof AsyncRpcResult) {
+                    return ((AsyncRpcResult) result).getResultFuture().thenApply(r -> (Object) r);
+                } else {
+                    return CompletableFuture.completedFuture(result);
+                }
             }
             throw new RemotingException(channel, "Unsupported request: "
                     + (message == null ? null : (message.getClass().getName() + ": " + message))

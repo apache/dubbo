@@ -26,7 +26,6 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.RpcResult;
 
 /**
  * ConsumerContextInvokerFilter
@@ -46,7 +45,7 @@ public class ConsumerContextFilter implements Filter {
             ((RpcInvocation) invocation).setInvoker(invoker);
         }
         try {
-            RpcResult result = (RpcResult) invoker.invoke(invocation);
+            Result result = invoker.invoke(invocation);
             RpcContext.getServerContext().setAttachments(result.getAttachments());
             return result;
         } finally {

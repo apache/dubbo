@@ -16,7 +16,11 @@
  */
 package org.apache.dubbo.rpc;
 
+import java.util.concurrent.CompletableFuture;
+
 public interface AsyncContext {
+
+    CompletableFuture getInternalFuture();
 
     void addListener(Runnable run);
 
@@ -27,4 +31,7 @@ public interface AsyncContext {
     boolean stop();
 
     void start();
+
+    void signalContextSwitch();
 }
+

@@ -25,7 +25,6 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.RpcResult;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -70,7 +69,7 @@ public class ContextFilter implements Filter {
             ((RpcInvocation) invocation).setInvoker(invoker);
         }
         try {
-            RpcResult result = (RpcResult) invoker.invoke(invocation);
+            Result result = invoker.invoke(invocation);
             // pass attachments to result
             result.addAttachments(RpcContext.getServerContext().getAttachments());
             return result;
