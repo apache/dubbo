@@ -29,10 +29,8 @@
         <skip_maven_deploy>true</skip_maven_deploy>
     </properties>
     <modules>
-        <module>dubbo-test-benchmark</module>
         <module>dubbo-test-compatibility</module>
         <module>dubbo-test-integration</module>
-        <module>dubbo-test-examples</module>
     </modules>
 
     <dependencyManagement>
