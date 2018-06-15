@@ -27,12 +27,8 @@ public class DemoServiceImpl implements DemoService {
         super();
     }
 
-    public void sayHello(String name) {
-        System.out.println("hello " + name);
-    }
-
-    public String echo(String text) {
-        return text;
+    public String sayHello(String name) {
+        return "hello " + name;
     }
 
     public long timestamp() {

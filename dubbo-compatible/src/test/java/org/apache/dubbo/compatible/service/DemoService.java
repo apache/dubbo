@@ -17,9 +17,7 @@
 package org.apache.dubbo.compatible.service;
 
 public interface DemoService {
-    void sayHello(String name);
-
-    String echo(String text);
+    String sayHello(String name);
 
     long timestamp();
 
