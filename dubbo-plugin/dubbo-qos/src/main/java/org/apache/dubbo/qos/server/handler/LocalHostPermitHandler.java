@@ -30,7 +30,7 @@ import java.net.InetSocketAddress;
 public class LocalHostPermitHandler extends ChannelHandlerAdapter {
 
     // true means to accept foreign IP
-    private boolean acceptForeignIp;
+    private  boolean acceptForeignIp;
 
     public LocalHostPermitHandler(boolean acceptForeignIp) {
         this.acceptForeignIp = acceptForeignIp;
