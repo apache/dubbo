@@ -327,6 +327,13 @@
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-compatible</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
             <artifactId>hessian-lite</artifactId>
             <scope>compile</scope>
             <optional>true</optional>
@@ -380,6 +387,7 @@
                             <artifactSet>
                                 <includes>
                                     <include>com.alibaba:hessian-lite</include>
+                                    <include>com.alibaba:dubbo-compatible</include>
                                     <include>com.alibaba:dubbo-common</include>
                                     <include>com.alibaba:dubbo-remoting-api</include>
                                     <include>com.alibaba:dubbo-remoting-netty</include>
