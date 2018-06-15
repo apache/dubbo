@@ -1,0 +1,3 @@
+impl1=org.apache.dubbo.common.extensionloader.ext3.impl.UseProtocolKeyExtImpl1
+impl2=org.apache.dubbo.common.extensionloader.ext3.impl.UseProtocolKeyExtImpl2
+impl3=org.apache.dubbo.common.extensionloader.ext3.impl.UseProtocolKeyExtImpl3
