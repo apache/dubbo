@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo;
 
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ResponseCallback;
 import org.apache.dubbo.remoting.exchange.ResponseFuture;
 import org.apache.dubbo.rpc.Result;
@@ -38,11 +36,12 @@ public class FutureAdapter<V> extends CompletableFuture<V> {
 
     public FutureAdapter(ResponseFuture future) {
         this.future = future;
+        this.resultFuture = new CompletableFuture<>();
         future.setCallback(new ResponseCallback() {
             @Override
             public void done(Object response) {
                 Result result = (Result) response;
-                FutureAdapter.this.resultFuture = CompletableFuture.completedFuture(result);
+                FutureAdapter.this.resultFuture.complete(result);
                 V value = null;
                 try {
                     value = (V) result.recreate();
@@ -75,16 +74,16 @@ public class FutureAdapter<V> extends CompletableFuture<V> {
 
     @Override
     public boolean isDone() {
-        return future.isDone();
+        return this.isDone();
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public V get() throws InterruptedException, ExecutionException {
         try {
-            return (V) (((Result) future.get()).recreate());
-        } catch (RemotingException e) {
-            throw new ExecutionException(e.getMessage(), e);
+            return super.get();
+        } catch (ExecutionException | InterruptedException e) {
+            throw e;
         } catch (Throwable e) {
             throw new RpcException(e);
         }
@@ -93,13 +92,10 @@ public class FutureAdapter<V> extends CompletableFuture<V> {
     @Override
     @SuppressWarnings("unchecked")
     public V get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        int timeoutInMillis = (int) TimeUnit.MILLISECONDS.convert(timeout, unit);
         try {
-            return (V) (((Result) future.get(timeoutInMillis)).recreate());
-        } catch (org.apache.dubbo.remoting.TimeoutException e) {
-            throw new TimeoutException(StringUtils.toString(e));
-        } catch (RemotingException e) {
-            throw new ExecutionException(e.getMessage(), e);
+            return super.get(timeout, unit);
+        } catch (TimeoutException | ExecutionException | InterruptedException e) {
+            throw e;
         } catch (Throwable e) {
             throw new RpcException(e);
         }

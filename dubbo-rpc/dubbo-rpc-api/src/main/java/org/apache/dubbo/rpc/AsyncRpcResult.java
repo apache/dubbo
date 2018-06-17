@@ -44,7 +44,7 @@ public class AsyncRpcResult extends AbstractResult {
     }
 
     public AsyncRpcResult(CompletableFuture<Object> future, boolean registerCallback) {
-        this(future, null, registerCallback);
+        this(future, new CompletableFuture<>(), registerCallback);
     }
 
     /**
@@ -53,12 +53,10 @@ public class AsyncRpcResult extends AbstractResult {
      * @param registerCallback
      */
     public AsyncRpcResult(CompletableFuture<Object> future, CompletableFuture<Result> rFuture, boolean registerCallback) {
-
         if (rFuture == null) {
-            resultFuture = new CompletableFuture<>();
-        } else {
-            resultFuture = rFuture;
+            throw new IllegalArgumentException("");
         }
+        resultFuture = rFuture;
         if (registerCallback) {
             /**
              * We do not know whether future already completed or not, it's a future exposed or even created by end user.
@@ -76,11 +74,13 @@ public class AsyncRpcResult extends AbstractResult {
                 } else {
                     rpcResult = new RpcResult(v);
                 }
-                resultFuture.complete(rpcResult);
+                // instead of resultFuture we must use rFuture here, resultFuture may being changed before complete when building filter chain, but rFuture was guaranteed never changed by closure.
+                rFuture.complete(rpcResult);
             });
         }
         this.valueFuture = future;
         this.storedContext = RpcContext.getContext();
+        this.storedServerContext = RpcContext.getServerContext();
     }
 
     @Override
@@ -133,9 +133,7 @@ public class AsyncRpcResult extends AbstractResult {
     }
 
     public void thenApplyWithContext(Function<Result, Result> fn) {
-        this.setResultFuture(
-                resultFuture.thenApply(fn.compose(beforeContext).andThen(afterContext))
-        );
+        this.resultFuture = resultFuture.thenApply(fn.compose(beforeContext).andThen(afterContext));
     }
 
     @Override

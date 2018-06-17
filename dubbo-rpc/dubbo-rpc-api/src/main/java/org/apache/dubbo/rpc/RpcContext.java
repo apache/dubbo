@@ -107,7 +107,7 @@ public class RpcContext {
     }
 
     public static void restoreServerContext(RpcContext oldServerContext) {
-        LOCAL.set(oldServerContext);
+        SERVER_LOCAL.set(oldServerContext);
     }
 
     /**

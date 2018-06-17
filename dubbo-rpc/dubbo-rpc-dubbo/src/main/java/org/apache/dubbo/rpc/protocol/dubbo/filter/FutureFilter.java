@@ -22,15 +22,15 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.exchange.ResponseCallback;
 import org.apache.dubbo.remoting.exchange.ResponseFuture;
-import org.apache.dubbo.rpc.Filter;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.PostProcessFilter;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.StaticContext;
 import org.apache.dubbo.rpc.protocol.dubbo.FutureAdapter;
-import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -40,24 +40,31 @@ import java.util.concurrent.Future;
  * EventFilter
  */
 @Activate(group = Constants.CONSUMER)
-public class FutureFilter implements Filter {
+public class FutureFilter implements PostProcessFilter {
 
     protected static final Logger logger = LoggerFactory.getLogger(FutureFilter.class);
 
     @Override
     public Result invoke(final Invoker<?> invoker, final Invocation invocation) throws RpcException {
-        final boolean isAsync = RpcUtils.isAsync(invoker.getUrl(), invocation);
-
         fireInvokeCallback(invoker, invocation);
         // need to configure if there's return value before the invocation in order to help invoker to judge if it's
         // necessary to return future.
-        Result result = invoker.invoke(invocation);
-        if (isAsync) {
-            asyncCallback(invoker, invocation);
+        return postProcessResult(invoker.invoke(invocation), invoker, invocation);
+    }
+
+    @Override
+    public Result postProcessResult(Result result, Invoker<?> invoker, Invocation invocation) {
+        if (result instanceof AsyncRpcResult) {
+            AsyncRpcResult asyncResult = (AsyncRpcResult) result;
+            asyncResult.thenApplyWithContext(r -> {
+                asyncCallback(invoker, invocation);
+                return r;
+            });
+            return asyncResult;
         } else {
             syncCallback(invoker, invocation, result);
+            return result;
         }
-        return result;
     }
 
     private void syncCallback(final Invoker<?> invoker, final Invocation invocation, final Result result) {

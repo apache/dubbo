@@ -45,9 +45,11 @@ public class ConsumerContextFilter extends AbstractPostProcessFilter {
             ((RpcInvocation) invocation).setInvoker(invoker);
         }
         try {
+            // TODO should we clear server context?
+            RpcContext.removeServerContext();
             return postProcessResult(invoker.invoke(invocation), invoker, invocation);
         } finally {
-            RpcContext.getContext().clearAttachments();
+            RpcContext.removeContext();
         }
     }
 
