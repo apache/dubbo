@@ -28,11 +28,16 @@ public class AsyncContextImpl implements AsyncContext {
 
     private CompletableFuture<Object> future;
 
+    private RpcContext storedContext;
+    private RpcContext storedServerContext;
+
     public AsyncContextImpl() {
     }
 
     public AsyncContextImpl(CompletableFuture<Object> future) {
         this.future = future;
+        this.storedContext = RpcContext.getContext();
+        this.storedServerContext = RpcContext.getServerContext();
     }
 
     @Override
@@ -72,9 +77,10 @@ public class AsyncContextImpl implements AsyncContext {
         this.started.set(true);
     }
 
-    @Override
     public void signalContextSwitch() {
-
+        RpcContext.restoreContext(storedContext);
+        RpcContext.restoreServerContext(storedServerContext);
+        // Restore any other contexts in here if necessary.
     }
 
     @Override

@@ -109,4 +109,6 @@ public interface Result extends Serializable {
      */
     String getAttachment(String key, String defaultValue);
 
+    void setAttachment(String key, String value);
+
 }

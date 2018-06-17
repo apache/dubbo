@@ -34,6 +34,7 @@ import java.util.concurrent.TimeoutException;
 public class FutureAdapter<V> extends CompletableFuture<V> {
 
     private final ResponseFuture future;
+    private CompletableFuture<Result> resultFuture;
 
     public FutureAdapter(ResponseFuture future) {
         this.future = future;
@@ -41,6 +42,7 @@ public class FutureAdapter<V> extends CompletableFuture<V> {
             @Override
             public void done(Object response) {
                 Result result = (Result) response;
+                FutureAdapter.this.resultFuture = CompletableFuture.completedFuture(result);
                 V value = null;
                 try {
                     value = (V) result.recreate();
@@ -103,5 +105,15 @@ public class FutureAdapter<V> extends CompletableFuture<V> {
         }
     }
 
+    /**
+     * FIXME
+     * This method has no need open to the the end user.
+     * Mostly user use RpcContext.getFuture() to refer the instance of this class, so the user will get a CompletableFuture, this method will rarely be noticed.
+     *
+     * @return
+     */
+    public CompletableFuture<Result> getResultFuture() {
+        return resultFuture;
+    }
 
 }

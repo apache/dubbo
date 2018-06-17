@@ -19,16 +19,21 @@ package org.apache.dubbo.rpc;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.function.Function;
 
 
 public class AsyncRpcResult extends AbstractResult {
     private static final Logger logger = LoggerFactory.getLogger(AsyncRpcResult.class);
 
-    private Map<String, String> attachments = new HashMap<String, String>();
+    /**
+     * RpcContext can be changed, because thread may have been used by other thread. It should be cloned before store.
+     * So we use Invocation instead, Invocation will create for every invoke, but invocation only support attachments of string type.
+     */
+    private RpcContext storedContext;
+    private RpcContext storedServerContext;
 
     protected CompletableFuture<Object> valueFuture;
 
@@ -39,12 +44,26 @@ public class AsyncRpcResult extends AbstractResult {
     }
 
     public AsyncRpcResult(CompletableFuture<Object> future, boolean registerCallback) {
-        if (registerCallback) {
+        this(future, null, registerCallback);
+    }
+
+    /**
+     * @param future
+     * @param rFuture
+     * @param registerCallback
+     */
+    public AsyncRpcResult(CompletableFuture<Object> future, CompletableFuture<Result> rFuture, boolean registerCallback) {
+
+        if (rFuture == null) {
             resultFuture = new CompletableFuture<>();
+        } else {
+            resultFuture = rFuture;
+        }
+        if (registerCallback) {
             /**
              * We do not know whether future already completed or not, it's a future exposed or even created by end user.
-             * 1. future complete before whenComplete. whenComplete fn (resultFuture.complete) will be executed in thread subscribing, in our case, is Dubbo thread.
-             * 2. future complete after whenComplete. whenComplete fn (resultFuture.complete) will be executed in thread calling complete, normally is User thread.
+             * 1. future complete before whenComplete. whenComplete fn (resultFuture.complete) will be executed in thread subscribing, in our case, it's Dubbo thread.
+             * 2. future complete after whenComplete. whenComplete fn (resultFuture.complete) will be executed in thread calling complete, normally its User thread.
              */
             future.whenComplete((v, t) -> {
                 RpcResult rpcResult;
@@ -61,6 +80,7 @@ public class AsyncRpcResult extends AbstractResult {
             });
         }
         this.valueFuture = future;
+        this.storedContext = RpcContext.getContext();
     }
 
     @Override
@@ -111,5 +131,60 @@ public class AsyncRpcResult extends AbstractResult {
     public Object recreate() throws Throwable {
         return valueFuture;
     }
+
+    public void thenApplyWithContext(Function<Result, Result> fn) {
+        this.setResultFuture(
+                resultFuture.thenApply(fn.compose(beforeContext).andThen(afterContext))
+        );
+    }
+
+    @Override
+    public Map<String, String> getAttachments() {
+        return getRpcResult().getAttachments();
+    }
+
+    @Override
+    public void setAttachments(Map<String, String> map) {
+        getRpcResult().setAttachments(map);
+    }
+
+    @Override
+    public void addAttachments(Map<String, String> map) {
+        getRpcResult().addAttachments(map);
+    }
+
+    @Override
+    public String getAttachment(String key) {
+        return getRpcResult().getAttachment(key);
+    }
+
+    @Override
+    public String getAttachment(String key, String defaultValue) {
+        return getRpcResult().getAttachment(key, defaultValue);
+    }
+
+    public void setAttachment(String key, String value) {
+        getRpcResult().setAttachment(key, value);
+    }
+
+    /**
+     *
+     */
+    private RpcContext tmpContext;
+    private RpcContext tmpServerContext;
+
+    private Function<Result, Result> beforeContext = (result) -> {
+        tmpContext = RpcContext.getContext();
+        tmpServerContext = RpcContext.getServerContext();
+        RpcContext.restoreContext(storedContext);
+        RpcContext.restoreServerContext(storedServerContext);
+        return result;
+    };
+
+    private Function<Result, Result> afterContext = (result) -> {
+        RpcContext.restoreContext(tmpContext);
+        RpcContext.restoreServerContext(tmpServerContext);
+        return result;
+    };
 }
 

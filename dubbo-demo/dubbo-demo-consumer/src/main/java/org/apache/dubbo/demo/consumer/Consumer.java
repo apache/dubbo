@@ -42,7 +42,7 @@ public class Consumer {
                     e.printStackTrace();
                 }
 
-//                System.out.println(demoService.sayHello("world"));
+                System.out.println(demoService.sayHello("world"));
                 try {
                     CompletableFuture<String> generatedFuture = demoServiceAsync.sayHelloAsync("generated async");
                     System.out.println(generatedFuture.get());

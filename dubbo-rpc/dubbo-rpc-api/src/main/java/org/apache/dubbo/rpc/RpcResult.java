@@ -45,7 +45,7 @@ public class RpcResult extends AbstractResult {
     }
 
     /**
-     * @see com.alibaba.dubbo.rpc.RpcResult#getValue()
+     * @see org.apache.dubbo.rpc.RpcResult#getValue()
      * @deprecated Replace to getValue()
      */
     @Override
@@ -55,7 +55,7 @@ public class RpcResult extends AbstractResult {
     }
 
     /**
-     * @see com.alibaba.dubbo.rpc.RpcResult#setValue(Object)
+     * @see org.apache.dubbo.rpc.RpcResult#setValue(Object)
      * @deprecated Replace to setValue()
      */
     @Deprecated

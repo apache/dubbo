@@ -90,12 +90,14 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 return new RpcResult();
             } else if (isAsync) {
                 ResponseFuture future = currentClient.request(inv, timeout);
+                // For compatibility
                 FutureAdapter<Object> futureAdapter = new FutureAdapter<>(future);
                 RpcContext.getContext().setFuture(futureAdapter);
+
                 Result result;
                 if (isAsyncFuture) {
-                    // register resultCallback, sometimes we need the result being processed in the filter chain.
-                    result = new AsyncRpcResult(futureAdapter, true);
+                    // register resultCallback, sometimes we need the asyn result being processed by the filter chain.
+                    result = new AsyncRpcResult(futureAdapter, futureAdapter.getResultFuture(), false);
                 } else {
                     result = new RpcResult();
                 }

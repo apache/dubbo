@@ -44,7 +44,7 @@ import java.util.concurrent.TimeoutException;
  * starts invoking C, and saves invocation info from B to C after B invokes C.
  *
  * @export
- * @see com.alibaba.dubbo.rpc.filter.ContextFilter
+ * @see org.apache.dubbo.rpc.filter.ContextFilter
  */
 public class RpcContext {
 
@@ -106,10 +106,14 @@ public class RpcContext {
         return SERVER_LOCAL.get();
     }
 
+    public static void restoreServerContext(RpcContext oldServerContext) {
+        LOCAL.set(oldServerContext);
+    }
+
     /**
      * remove server side context.
      *
-     * @see com.alibaba.dubbo.rpc.filter.ContextFilter
+     * @see org.apache.dubbo.rpc.filter.ContextFilter
      */
     public static void removeServerContext() {
         SERVER_LOCAL.remove();
@@ -124,10 +128,14 @@ public class RpcContext {
         return LOCAL.get();
     }
 
+    public static void restoreContext(RpcContext oldContext) {
+        LOCAL.set(oldContext);
+    }
+
     /**
      * remove context.
      *
-     * @see com.alibaba.dubbo.rpc.filter.ContextFilter
+     * @see org.apache.dubbo.rpc.filter.ContextFilter
      */
     public static void removeContext() {
         LOCAL.remove();
@@ -728,4 +736,5 @@ public class RpcContext {
     public AsyncContext getAsyncContext() {
         return asyncContext;
     }
+
 }

@@ -22,10 +22,9 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.rpc.AsyncRpcResult;
+import org.apache.dubbo.rpc.AbstractPostProcessFilter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.PostProcessFilter;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
@@ -33,7 +32,6 @@ import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.service.GenericService;
 
 import java.lang.reflect.Method;
-import java.util.concurrent.CompletableFuture;
 
 
 /**
@@ -47,7 +45,7 @@ import java.util.concurrent.CompletableFuture;
  * </ol>
  */
 @Activate(group = Constants.PROVIDER)
-public class ExceptionFilter implements PostProcessFilter {
+public class ExceptionFilter extends AbstractPostProcessFilter {
 
     private final Logger logger;
 
@@ -62,15 +60,7 @@ public class ExceptionFilter implements PostProcessFilter {
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         try {
-            Result result = invoker.invoke(invocation);
-            if (result instanceof AsyncRpcResult) {
-                AsyncRpcResult asyncResult = (AsyncRpcResult) result;
-                CompletableFuture<Result> future = asyncResult.getResultFuture();
-                asyncResult.setResultFuture(future.thenApply(r -> postProcessResult(r, invoker, invocation)));
-                return asyncResult;
-            } else {
-                return postProcessResult(result, invoker, invocation);
-            }
+            return postProcessResult(invoker.invoke(invocation), invoker, invocation);
         } catch (RuntimeException e) {
             logger.error("Got unchecked and undeclared exception which called by " + RpcContext.getContext().getRemoteHost()
                     + ". service: " + invoker.getInterface().getName() + ", method: " + invocation.getMethodName()
@@ -79,7 +69,8 @@ public class ExceptionFilter implements PostProcessFilter {
         }
     }
 
-    public Result postProcessResult(Result result, Invoker<?> invoker, Invocation invocation) {
+    @Override
+    protected Result doPostProcess(Result result, Invoker<?> invoker, Invocation invocation) {
         if (result.hasException() && GenericService.class != invoker.getInterface()) {
             try {
                 Throwable exception = result.getException();

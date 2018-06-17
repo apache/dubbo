@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc.filter;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.rpc.Filter;
+import org.apache.dubbo.rpc.AbstractPostProcessFilter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -31,7 +31,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
  * ConsumerContextInvokerFilter
  */
 @Activate(group = Constants.CONSUMER, order = -10000)
-public class ConsumerContextFilter implements Filter {
+public class ConsumerContextFilter extends AbstractPostProcessFilter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -45,12 +45,15 @@ public class ConsumerContextFilter implements Filter {
             ((RpcInvocation) invocation).setInvoker(invoker);
         }
         try {
-            Result result = invoker.invoke(invocation);
-            RpcContext.getServerContext().setAttachments(result.getAttachments());
-            return result;
+            return postProcessResult(invoker.invoke(invocation), invoker, invocation);
         } finally {
             RpcContext.getContext().clearAttachments();
         }
     }
 
+    @Override
+    protected Result doPostProcess(Result result, Invoker<?> invoker, Invocation invocation) {
+        RpcContext.getServerContext().setAttachments(result.getAttachments());
+        return result;
+    }
 }
