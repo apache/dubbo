@@ -17,42 +17,30 @@
 package org.apache.dubbo.demo.consumer;
 
 import org.apache.dubbo.demo.DemoService;
-import org.apache.dubbo.demo.DemoServiceAsync;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import java.util.concurrent.CompletableFuture;
 
 public class Consumer {
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) {
         //Prevent to get IPV6 address,this way only work in debug mode
         //But you can pass use -Djava.net.preferIPv4Stack=true,then it work well whether in debug mode or not
         System.setProperty("java.net.preferIPv4Stack", "true");
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"META-INF/spring/dubbo-demo-consumer.xml"});
         context.start();
         DemoService demoService = (DemoService) context.getBean("demoService"); // get remote service proxy
-        DemoServiceAsync demoServiceAsync = (DemoServiceAsync) context.getBean("demoServiceAsync");
 
         while (true) {
             try {
-                try {
-                    CompletableFuture<String> future = demoService.originalFuture("world"); // call remote method
-                    System.out.println(future.get()); // get result
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-                System.out.println(demoService.sayHello("world"));
-                try {
-                    CompletableFuture<String> generatedFuture = demoServiceAsync.sayHelloAsync("generated async");
-                    System.out.println(generatedFuture.get());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
                 Thread.sleep(1000);
+                String hello = demoService.sayHello("world"); // call remote method
+                System.out.println(hello); // get result
+
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
             }
+
+
         }
+
     }
 }
