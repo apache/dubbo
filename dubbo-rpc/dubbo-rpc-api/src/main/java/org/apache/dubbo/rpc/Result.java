@@ -86,14 +86,14 @@ public interface Result extends Serializable {
      *
      * @param map
      */
-    public void addAttachments(Map<String, String> map);
+    void addAttachments(Map<String, String> map);
 
     /**
      * Replace the existing attachments with the specified param.
      *
      * @param map
      */
-    public void setAttachments(Map<String, String> map);
+    void setAttachments(Map<String, String> map);
 
     /**
      * get attachment by key.
