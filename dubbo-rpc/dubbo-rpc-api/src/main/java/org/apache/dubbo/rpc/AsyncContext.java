@@ -16,15 +16,36 @@
  */
 package org.apache.dubbo.rpc;
 
+/**
+ * AsyncContext works like {@see javax.servlet.AsyncContext} in the Servlet 3.0.
+ * An AsyncContext is stated by a call to {@link RpcContext#startAsync()}.
+ * <p>
+ * The demo is {@see com.alibaba.dubbo.examples.async.AsyncConsumer}
+ * and {@see com.alibaba.dubbo.examples.async.AsyncProvider}
+ */
 public interface AsyncContext {
 
     void addListener(Runnable run);
 
+    /**
+     * write value and complete the async context.
+     *
+     * @param value invoke result
+     */
     void write(Object value);
 
+    /**
+     * @return true if the aysnc context is started
+     */
     boolean isAsyncStarted();
 
+    /**
+     * change the context state to stop
+     */
     boolean stop();
 
+    /**
+     * change the context state to stop
+     */
     void start();
 }
