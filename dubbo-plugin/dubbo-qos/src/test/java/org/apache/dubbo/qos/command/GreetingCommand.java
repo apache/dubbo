@@ -20,6 +20,6 @@ package org.apache.dubbo.qos.command;
 public class GreetingCommand implements BaseCommand {
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-        return args != null && args.length > 0 ? "greeting" + args[0] : "greeting";
+        return args != null && args.length > 0 ? "greeting " + args[0] : "greeting";
     }
 }
