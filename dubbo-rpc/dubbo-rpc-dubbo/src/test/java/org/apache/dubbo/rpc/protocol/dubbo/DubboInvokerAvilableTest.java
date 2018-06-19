@@ -91,6 +91,7 @@ public class DubboInvokerAvilableTest {
 
         try{
             System.setProperty(Constants.SHUTDOWN_WAIT_KEY, "2000");
+            System.out.println("------------ConfigUtils.getServerShutdownTimeout(): " + ConfigUtils.getServerShutdownTimeout());
             protocol.destroy();
         }finally {
             System.getProperties().remove(Constants.SHUTDOWN_WAIT_KEY);

@@ -15,41 +15,107 @@
  * limitations under the License.
  */
 package org.apache.dubbo.remoting.zookeeper.curator;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.remoting.zookeeper.ChildListener;
+import org.apache.curator.framework.api.CuratorWatcher;
 import org.apache.curator.test.TestingServer;
+import org.apache.zookeeper.WatchedEvent;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import static org.hamcrest.core.Is.is;
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
-@Ignore
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+
 public class CuratorZookeeperClientTest {
     private TestingServer zkServer;
-    private int zkServerPort;
+    private CuratorZookeeperClient curatorClient;
 
     @Before
     public void setUp() throws Exception {
-        zkServerPort = NetUtils.getAvailablePort();
-        zkServer = new TestingServer(this.zkServerPort, true);
+        int zkServerPort = NetUtils.getAvailablePort();
+        zkServer = new TestingServer(zkServerPort, true);
+        curatorClient = new CuratorZookeeperClient(URL.valueOf("zookeeper://127.0.0.1:" +
+                zkServerPort + "/org.apache.dubbo.registry.RegistryService"));
     }
 
     @Test
     public void testCheckExists() {
-        CuratorZookeeperClient curatorClient = new CuratorZookeeperClient(URL.valueOf("zookeeper://127.0.0.1:" + this.zkServerPort + "/org.apache.dubbo.registry.RegistryService"));
         String path = "/dubbo/org.apache.dubbo.demo.DemoService/providers";
         curatorClient.create(path, false);
-        Assert.assertThat(curatorClient.checkExists(path), is(true));
-        Assert.assertThat(curatorClient.checkExists(path + "/noneexits"), is(false));
+        assertThat(curatorClient.checkExists(path), is(true));
+        assertThat(curatorClient.checkExists(path + "/noneexits"), is(false));
+    }
+
+    @Test
+    public void testChildrenPath() {
+        String path = "/dubbo/org.apache.dubbo.demo.DemoService/providers";
+        curatorClient.create(path, false);
+        curatorClient.create(path + "/provider1", false);
+        curatorClient.create(path + "/provider2", false);
+
+        List<String> children = curatorClient.getChildren(path);
+        assertThat(children.size(), is(2));
+    }
+
+    @Test
+    public void testChildrenListener() throws InterruptedException {
+        String path = "/dubbo/org.apache.dubbo.demo.DemoService/providers";
+        curatorClient.create(path, false);
+        final CountDownLatch countDownLatch = new CountDownLatch(1);
+        curatorClient.addTargetChildListener(path, new CuratorWatcher() {
+            @Override
+            public void process(WatchedEvent watchedEvent) throws Exception {
+                countDownLatch.countDown();
+            }
+        });
+        curatorClient.createPersistent(path + "/provider1");
+        countDownLatch.await();
     }
 
 
+    @Test(expected = IllegalStateException.class)
+    public void testWithInvalidServer() {
+        curatorClient = new CuratorZookeeperClient(URL.valueOf("zookeeper://127.0.0.1:1/service"));
+        curatorClient.create("/testPath", true);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testWithStoppedServer() throws IOException {
+        curatorClient.create("/testPath", true);
+        zkServer.stop();
+        curatorClient.delete("/testPath");
+    }
+
+    @Test
+    public void testRemoveChildrenListener() {
+        ChildListener childListener = mock(ChildListener.class);
+        curatorClient.addChildListener("/children", childListener);
+        curatorClient.removeChildListener("/children", childListener);
+    }
+
+    @Test
+    public void testCreateExistingPath() {
+        curatorClient.create("/pathOne", false);
+        curatorClient.create("/pathOne", false);
+    }
+
+    @Test
+    public void testConnectedStatus() {
+        curatorClient.createEphemeral("/testPath");
+        boolean connected = curatorClient.isConnected();
+        assertThat(connected, is(true));
+    }
+
     @After
     public void tearDown() throws Exception {
+        curatorClient.close();
         zkServer.stop();
     }
 }

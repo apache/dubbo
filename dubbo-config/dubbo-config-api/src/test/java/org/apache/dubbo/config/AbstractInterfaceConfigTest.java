@@ -88,16 +88,12 @@ public class AbstractInterfaceConfigTest {
             System.clearProperty(Constants.SHUTDOWN_WAIT_KEY);
             System.clearProperty(Constants.SHUTDOWN_WAIT_SECONDS_KEY);
 
-            System.out.println("1 system properties: \n" + System.getProperties());
-            System.out.println("2 properties file content:\n" + Arrays.toString(IOUtils.readLines(dubboProperties)));
             writeDubboProperties(Constants.SHUTDOWN_WAIT_KEY, "100");
             System.setProperty("dubbo.application.name", "demo");
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.checkApplication();
             ApplicationConfig appConfig = interfaceConfig.getApplication();
             TestCase.assertEquals("demo", appConfig.getName());
-            System.out.println("3 properties file content:\n" + Arrays.toString(IOUtils.readLines(dubboProperties)));
-            System.out.println("4 system properties: \n" + System.getProperties());
             TestCase.assertEquals("100", System.getProperty(Constants.SHUTDOWN_WAIT_KEY));
 
             System.clearProperty(Constants.SHUTDOWN_WAIT_KEY);

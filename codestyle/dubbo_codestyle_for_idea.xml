@@ -3,7 +3,7 @@
     <option name="NAMES_COUNT_TO_USE_IMPORT_ON_DEMAND" value="99"/>
     <option name="IMPORT_LAYOUT_TABLE">
         <value>
-            <package name="com.alibaba" withSubpackages="true" static="false"/>
+            <package name="org.apache.dubbo" withSubpackages="true" static="false"/>
             <emptyLine/>
             <package name="com.taobao" withSubpackages="true" static="false"/>
             <emptyLine/>
