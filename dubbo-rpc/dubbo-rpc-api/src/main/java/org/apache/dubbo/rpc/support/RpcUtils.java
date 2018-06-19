@@ -80,11 +80,18 @@ public class RpcUtils {
                     Type genericReturnType = method.getGenericReturnType();
                     if (Future.class.isAssignableFrom(returnType)) {
                         if (genericReturnType instanceof ParameterizedType) {
-                            returnType = (Class<?>) ((ParameterizedType) genericReturnType).getActualTypeArguments()[0];
+                            Type actualArgType = ((ParameterizedType) genericReturnType).getActualTypeArguments()[0];
+                            if (actualArgType instanceof ParameterizedType) {
+                                returnType = (Class<?>) ((ParameterizedType) actualArgType).getRawType();
+                                genericReturnType = actualArgType;
+                            } else {
+                                returnType = (Class<?>) actualArgType;
+                                genericReturnType = returnType;
+                            }
+                        } else {
+                            returnType = null;
+                            genericReturnType = null;
                         }
-                        genericReturnType = returnType; // TODO Can we handle nested generic? for example CompletableFuture<Map<String>>
-                    } else {
-                        genericReturnType = returnType;
                     }
                     return new Type[]{returnType, genericReturnType};
                 }
