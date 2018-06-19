@@ -1,0 +1,2 @@
+adaptive=org.apache.dubbo.common.extensionloader.adaptive.impl.HasAdaptiveExt_ManualAdaptive
+impl1=org.apache.dubbo.common.extensionloader.adaptive.impl.HasAdaptiveExtImpl1

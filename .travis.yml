@@ -1,6 +1,13 @@
 language: java
-jdk:
-    - oraclejdk8
-    - openjdk7
+sudo: false # faster builds
 
-script: mvn clean package
+jdk:
+    - oraclejdk10
+    - oraclejdk9
+    - oraclejdk8
+
+script:
+    - travis_wait 30 ./mvnw clean package
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
