@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcResult;
+import org.apache.dubbo.rpc.SimpleAsyncRpcResult;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
@@ -99,7 +100,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                     // register resultCallback, sometimes we need the asyn result being processed by the filter chain.
                     result = new AsyncRpcResult(futureAdapter, futureAdapter.getResultFuture(), false);
                 } else {
-                    result = new RpcResult();
+                    result = new SimpleAsyncRpcResult(futureAdapter, futureAdapter.getResultFuture(), false);
                 }
                 return result;
             } else {
