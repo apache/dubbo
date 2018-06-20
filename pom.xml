@@ -144,6 +144,7 @@
         <module>bom</module>
         <module>all</module>
         <module>distribution</module>
+        <module>dubbo-metrics</module>
     </modules>
 
     <dependencyManagement>
