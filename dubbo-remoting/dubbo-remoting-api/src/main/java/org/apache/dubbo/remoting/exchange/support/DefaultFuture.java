@@ -19,6 +19,11 @@ package org.apache.dubbo.remoting.exchange.support;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.timer.HashedWheelTimer;
+import org.apache.dubbo.common.timer.Timeout;
+import org.apache.dubbo.common.timer.Timer;
+import org.apache.dubbo.common.timer.TimerTask;
+import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
@@ -47,11 +52,10 @@ public class DefaultFuture implements ResponseFuture {
 
     private static final Map<Long, DefaultFuture> FUTURES = new ConcurrentHashMap<Long, DefaultFuture>();
 
-    static {
-        Thread th = new Thread(new RemotingInvocationTimeoutScan(), "DubboResponseTimeoutScanTimer");
-        th.setDaemon(true);
-        th.start();
-    }
+    public static final Timer TIME_OUT_TIMER = new HashedWheelTimer(
+            new NamedThreadFactory("dubbo-future-timeout", true),
+            30,
+            TimeUnit.MILLISECONDS);
 
     // invoke id.
     private final long id;
@@ -65,7 +69,7 @@ public class DefaultFuture implements ResponseFuture {
     private volatile Response response;
     private volatile ResponseCallback callback;
 
-    public DefaultFuture(Channel channel, Request request, int timeout) {
+    private DefaultFuture(Channel channel, Request request, int timeout) {
         this.channel = channel;
         this.request = request;
         this.id = request.getId();
@@ -73,6 +77,20 @@ public class DefaultFuture implements ResponseFuture {
         // put into waiting map.
         FUTURES.put(id, this);
         CHANNELS.put(id, channel);
+    }
+
+    /**
+     * check time out of the future
+     */
+    private static void timeoutCheck(final DefaultFuture future) {
+        TimeoutCheckTask task = new TimeoutCheckTask(future);
+        TIME_OUT_TIMER.newTimeout(task, future.getTimeout(), TimeUnit.MILLISECONDS);
+    }
+
+    public static DefaultFuture newFuture(Channel channel, Request request, int timeout) {
+        final DefaultFuture defaultFuture = new DefaultFuture(channel, request, timeout);
+        timeoutCheck(defaultFuture);
+        return defaultFuture;
     }
 
     public static DefaultFuture getFuture(long id) {
@@ -171,6 +189,26 @@ public class DefaultFuture implements ResponseFuture {
             if (isdone) {
                 invokeCallback(callback);
             }
+        }
+    }
+
+    private static class TimeoutCheckTask implements TimerTask {
+
+        private final DefaultFuture future;
+
+        TimeoutCheckTask(DefaultFuture future) {
+            this.future = future;
+        }
+
+        @Override
+        public void run(Timeout timeout) throws Exception {
+            // create exception response.
+            Response timeoutResponse = new Response(future.getId());
+            // set timeout status.
+            timeoutResponse.setStatus(future.isSent() ? Response.SERVER_TIMEOUT : Response.CLIENT_TIMEOUT);
+            timeoutResponse.setErrorMessage(future.getTimeoutMessage(true));
+            // handle response.
+            DefaultFuture.received(future.getChannel(), timeoutResponse);
         }
     }
 
@@ -277,33 +315,4 @@ public class DefaultFuture implements ResponseFuture {
                 + timeout + " ms, request: " + request + ", channel: " + channel.getLocalAddress()
                 + " -> " + channel.getRemoteAddress();
     }
-
-    private static class RemotingInvocationTimeoutScan implements Runnable {
-
-        @Override
-        public void run() {
-            while (true) {
-                try {
-                    for (DefaultFuture future : FUTURES.values()) {
-                        if (future == null || future.isDone()) {
-                            continue;
-                        }
-                        if (System.currentTimeMillis() - future.getStartTimestamp() > future.getTimeout()) {
-                            // create exception response.
-                            Response timeoutResponse = new Response(future.getId());
-                            // set timeout status.
-                            timeoutResponse.setStatus(future.isSent() ? Response.SERVER_TIMEOUT : Response.CLIENT_TIMEOUT);
-                            timeoutResponse.setErrorMessage(future.getTimeoutMessage(true));
-                            // handle response.
-                            DefaultFuture.received(future.getChannel(), timeoutResponse);
-                        }
-                    }
-                    Thread.sleep(30);
-                } catch (Throwable e) {
-                    logger.error("Exception when scan the timeout invocation of remoting.", e);
-                }
-            }
-        }
-    }
-
 }
