@@ -17,6 +17,10 @@
 
 package org.apache.dubbo.qos.command;
 
+import org.apache.dubbo.qos.command.annotation.Cmd;
+
+
+@Cmd(name = "greeting", summary = "greeting message", example = {"greeting dubbo",})
 public class GreetingCommand implements BaseCommand {
     @Override
     public String execute(CommandContext commandContext, String[] args) {
