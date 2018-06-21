@@ -49,6 +49,7 @@ public class ReferenceConfigTest {
         rc.setRegistry(registry);
         rc.setInterface(DemoService.class.getName());
         rc.setInjvm(false);
+        rc.setProtocol("dubbo");
 
         try {
             demoService.export();
@@ -58,6 +59,17 @@ public class ReferenceConfigTest {
         } finally {
             demoService.unexport();
         }
+    }
+
+    @Test
+    public void testProtocol() throws Exception {
+        ReferenceConfig<DemoService> rc = new ReferenceConfig<DemoService>();
+        try {
+            rc.setProtocol("dubbo://");
+        } catch (IllegalStateException e) {
+            Assert.assertEquals(e.getMessage(), "Invalid protocol=\"dubbo://\" contains illegal character, only digit, letter, '-', '_' or '.' is legal.");
+        }
+        Assert.assertNull(rc.getProtocol());
     }
 
 }

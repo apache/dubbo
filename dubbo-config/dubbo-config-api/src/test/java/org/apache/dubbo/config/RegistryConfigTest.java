@@ -18,6 +18,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -153,10 +154,32 @@ public class RegistryConfigTest {
     }
 
     @Test
+    public void testGroupIllegalCharacter() throws Exception {
+        RegistryConfig registry = new RegistryConfig();
+        try {
+            registry.setGroup("dubbo/TEST");
+        } catch (IllegalStateException e) {
+            Assert.assertEquals(e.getMessage(), "Invalid group=\"dubbo/TEST\" contains illegal character, only digit, letter, '-', '_' or '.' is legal.");
+        }
+        Assert.assertNull(registry.getGroup());
+    }
+
+    @Test
     public void testVersion() throws Exception {
         RegistryConfig registry = new RegistryConfig();
         registry.setVersion("1.0.0");
         assertThat(registry.getVersion(), equalTo("1.0.0"));
+    }
+
+    @Test
+    public void testVersionIllegalCharacter() throws Exception {
+        RegistryConfig registry = new RegistryConfig();
+        try {
+            registry.setVersion("1.0/0");
+        } catch (IllegalStateException e) {
+            Assert.assertEquals(e.getMessage(), "Invalid version=\"1.0/0\" contains illegal character, only digit, letter, '-', '_' or '.' is legal.");
+        }
+        Assert.assertNull(registry.getVersion());
     }
 
     @Test
