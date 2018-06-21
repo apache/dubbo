@@ -293,6 +293,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setGroup(String group) {
+        checkKey("group", group);
         this.group = group;
     }
 
@@ -301,6 +302,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setVersion(String version) {
+        checkKey("version", version);
         this.version = version;
     }
 
