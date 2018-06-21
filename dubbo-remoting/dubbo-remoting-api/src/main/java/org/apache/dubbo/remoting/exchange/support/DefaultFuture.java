@@ -82,7 +82,7 @@ public class DefaultFuture implements ResponseFuture {
     /**
      * check time out of the future
      */
-    private static void timeoutCheck(final DefaultFuture future) {
+    private static void timeoutCheck(DefaultFuture future) {
         TimeoutCheckTask task = new TimeoutCheckTask(future);
         TIME_OUT_TIMER.newTimeout(task, future.getTimeout(), TimeUnit.MILLISECONDS);
     }
@@ -194,14 +194,17 @@ public class DefaultFuture implements ResponseFuture {
 
     private static class TimeoutCheckTask implements TimerTask {
 
-        private final DefaultFuture future;
+        private DefaultFuture future;
 
         TimeoutCheckTask(DefaultFuture future) {
             this.future = future;
         }
 
         @Override
-        public void run(Timeout timeout) throws Exception {
+        public void run(Timeout timeout) {
+            if (future == null || future.isDone()) {
+                return;
+            }
             // create exception response.
             Response timeoutResponse = new Response(future.getId());
             // set timeout status.
