@@ -538,6 +538,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     }
 
     public void setProtocol(String protocol) {
+        checkName("protocol", protocol);
         this.protocol = protocol;
     }
 
