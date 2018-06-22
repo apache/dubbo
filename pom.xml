@@ -24,7 +24,7 @@
         <version>7</version>
     </parent>
 
-    <groupId>com.alibaba</groupId>
+    <groupId>org.apache.dubbo</groupId>
     <artifactId>dubbo-parent</artifactId>
     <version>2.7.0-SNAPSHOT</version>
     <packaging>pom</packaging>
@@ -139,6 +139,7 @@
         <module>dubbo-plugin</module>
         <module>dubbo-serialization</module>
         <module>dubbo-bootstrap</module>
+        <module>dubbo-compatible</module>
         <module>dependencies-bom</module>
         <module>bom</module>
         <module>all</module>
@@ -148,7 +149,7 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>com.alibaba</groupId>
+                <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-dependencies-bom</artifactId>
                 <version>2.7.0-SNAPSHOT</version>
                 <type>pom</type>
@@ -460,6 +461,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven_compiler_version}</version>
                 <configuration>
+                    <compilerArgument>-proc:none</compilerArgument>
                     <fork>true</fork>
                     <source>${java_source_version}</source>
                     <target>${java_target_version}</target>
@@ -533,8 +535,8 @@
                                 <exclude>**/codestyle/*</exclude>
                                 <exclude>**/resources/META-INF/**</exclude>
                                 <!-- exclude the internal threadlocal files -->
-                                <exclude>**/com/alibaba/common/threadlocal/InternalThreadLocal.java</exclude>
-                                <exclude>**/com/alibaba/common/threadlocal/InternalThreadLocalMap.java</exclude>
+                                <exclude>**/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java</exclude>
+                                <exclude>**/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java</exclude>
                             </excludes>
                         </configuration>
                     </execution>

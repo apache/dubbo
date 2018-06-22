@@ -40,7 +40,7 @@
             <outputDirectory>/libs</outputDirectory>
             <scope>runtime</scope>
             <includes>
-                <include>com.alibaba:*</include>
+                <include>org.apache.dubbo:*</include>
             </includes>
             <excludes>
                 <exclude>com.alibaba:fastjson</exclude>

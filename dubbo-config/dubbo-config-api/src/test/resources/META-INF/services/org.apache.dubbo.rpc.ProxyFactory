@@ -1,0 +1,2 @@
+mockproxyfactory=org.apache.dubbo.config.mock.MockProxyFactory
+testproxyfactory=org.apache.dubbo.config.mock.TestProxyFactory

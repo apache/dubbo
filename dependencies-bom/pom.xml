@@ -8,7 +8,7 @@
         <version>7</version>
     </parent>
 
-    <groupId>com.alibaba</groupId>
+    <groupId>org.apache.dubbo</groupId>
     <artifactId>dubbo-dependencies-bom</artifactId>
     <version>2.7.0-SNAPSHOT</version>
     <packaging>pom</packaging>
@@ -106,7 +106,6 @@
         <jcl_version>1.2</jcl_version>
         <log4j_version>1.2.16</log4j_version>
         <logback_version>1.2.2</logback_version>
-        <commons_lang3_version>3.4</commons_lang3_version>
         <embedded_redis_version>0.6</embedded_redis_version>
 
         <jaxb_version>2.2.7</jaxb_version>
@@ -326,11 +325,6 @@
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
                 <version>${logback_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>${commons_lang3_version}</version>
             </dependency>
 
             <!-- for dubbo-rpc-webservice -->
