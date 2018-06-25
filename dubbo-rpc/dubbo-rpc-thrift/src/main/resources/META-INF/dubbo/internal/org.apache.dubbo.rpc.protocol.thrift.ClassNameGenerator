@@ -1,0 +1,2 @@
+dubbo=org.apache.dubbo.rpc.protocol.thrift.DubboClassNameGenerator
+thrift=org.apache.dubbo.rpc.protocol.thrift.ThriftClassNameGenerator

@@ -1,5 +1,4 @@
 
-
                                  Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
@@ -187,6 +186,7 @@
       file or class name and description of purpose be included on the
       same "printed page" as the copyright notice for easier
       identification within third-party archives.
+
    Copyright [yyyy] [name of copyright owner]
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -200,3 +200,28 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+
+
+Apache Dubbo Submodules:
+
+Apache Dubbo includes a number of submodules with separate copyright notices
+and license terms. Your use of these submodules is subject to the terms and
+conditions of the following licenses.
+
+For the org.apache.dubbo.common.concurrent package:
+
+This product bundles and repackages the following code in Google Guava 16.0.1, which is available under a
+"Apache License 2.0" license. For details, see https://github.com/google/guava/blob/v16.0.1/COPYING.
+
+ * com.google.common.util.concurrent.ExecutionList
+ * com.google.common.util.concurrent.ListenableFuture
+ * com.google.common.util.concurrent.ListenableFutureTask
+
+For the package org.apache.dubbo.common.threadlocal:
+
+This product contains a modified portion of 'Netty', an event-driven asynchronous network application framework also
+ under a "Apache License 2.0" license, see https://github.com/netty/netty/blob/4.1/LICENSE.txt:
+
+ * io.netty.util.concurrent.FastThreadLocal
+ * io.netty.util.internal.InternalThreadLocalMap
+
