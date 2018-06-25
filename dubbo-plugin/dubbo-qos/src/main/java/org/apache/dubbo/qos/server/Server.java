@@ -61,7 +61,7 @@ public class Server {
 
     private String welcome;
 
-    private AtomicBoolean hasStarted = new AtomicBoolean();
+    private AtomicBoolean started = new AtomicBoolean();
 
     /**
      * welcome message
@@ -78,7 +78,7 @@ public class Server {
      * start server, bind port
      */
     public void start() throws Throwable {
-        if (!hasStarted.compareAndSet(false, true)) {
+        if (!started.compareAndSet(false, true)) {
             return;
         }
         boss = new NioEventLoopGroup(0, new DefaultThreadFactory("qos-boss", true));
@@ -131,5 +131,9 @@ public class Server {
 
     public String getWelcome() {
         return welcome;
+    }
+
+    public boolean isStarted() {
+        return started.get();
     }
 }

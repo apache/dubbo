@@ -83,13 +83,20 @@ public class QosProtocolWrapper implements Protocol {
 
             int port = Integer.parseInt(url.getParameter(QOS_PORT,"22222"));
             boolean acceptForeignIp = Boolean.parseBoolean(url.getParameter(ACCEPT_FOREIGN_IP,"true"));
-            Server server = org.apache.dubbo.qos.server.Server.getInstance();
+            Server server = Server.getInstance();
             server.setPort(port);
             server.setAcceptForeignIp(acceptForeignIp);
             server.start();
 
         } catch (Throwable throwable) {
             //throw new RpcException("fail to start qos server", throwable);
+        }
+    }
+
+    /*package*/ void stopServer() {
+        if (hasStarted.compareAndSet(true, false)) {
+            Server server = Server.getInstance();
+            server.stop();
         }
     }
 }
