@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.proxy;
+package org.apache.dubbo.rpc.proxy;
 
-import com.alibaba.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Invoker;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

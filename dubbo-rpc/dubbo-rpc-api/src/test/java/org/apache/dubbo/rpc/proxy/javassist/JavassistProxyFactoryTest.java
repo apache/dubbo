@@ -14,13 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.proxy.javassist;
+package org.apache.dubbo.rpc.proxy.javassist;
 
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.bytecode.Proxy;
-import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.support.DemoService;
-import com.alibaba.dubbo.rpc.support.MyInvoker;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.support.DemoService;
+import org.apache.dubbo.rpc.support.MyInvoker;
 import org.junit.Assert;
 import org.junit.Test;
 

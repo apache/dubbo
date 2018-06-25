@@ -1,16 +1,17 @@
-package com.alibaba.dubbo.rpc.filter;
+package org.apache.dubbo.rpc.filter;
 
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.rpc.*;
-import com.alibaba.dubbo.rpc.support.DemoService;
-import com.alibaba.dubbo.rpc.support.MyInvoker;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.support.DemoService;
+import org.apache.dubbo.rpc.support.MyInvoker;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import java.io.File;
 import java.net.URLClassLoader;
-import java.util.HashMap;
 
 public class ClassLoaderFilterTest {
 

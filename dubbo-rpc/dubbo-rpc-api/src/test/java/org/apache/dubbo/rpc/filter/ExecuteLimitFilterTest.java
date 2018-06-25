@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.filter;
+package org.apache.dubbo.rpc.filter;
 
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.rpc.*;
-import com.alibaba.dubbo.rpc.support.BlockMyInvoker;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.*;
+import org.apache.dubbo.rpc.support.BlockMyInvoker;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
