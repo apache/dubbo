@@ -1,0 +1,95 @@
+package org.apache.dubbo.common.serialize.avro;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Arrays;
+
+import org.apache.avro.io.BinaryEncoder;
+import org.apache.avro.io.EncoderFactory;
+import org.apache.avro.reflect.ReflectDatumWriter;
+import org.apache.avro.util.Utf8;
+import org.apache.dubbo.common.serialize.ObjectOutput;
+
+public class AvroObjectOutput implements ObjectOutput{
+	private OutputStream out;
+	private EncoderFactory encoderFactory=EncoderFactory.get();
+	private BinaryEncoder encoder;
+	
+
+    public AvroObjectOutput(OutputStream out) {
+    	this.out=out;
+    	init(out);
+    }
+
+    public void init(OutputStream out){
+    	encoder=encoderFactory.binaryEncoder(out, null);
+    }
+
+	@Override
+	public void writeBool(boolean v) throws IOException {
+		encoder.writeBoolean(v);
+	}
+
+	@Override
+	public void writeByte(byte v) throws IOException {
+		encoder.writeFixed(new byte[]{v});
+	}
+
+	@Override
+	public void writeShort(short v) throws IOException {
+		encoder.writeInt(v);
+	}
+
+	@Override
+	public void writeInt(int v) throws IOException {
+		encoder.writeInt(v);
+	}
+
+	@Override
+	public void writeLong(long v) throws IOException {
+		encoder.writeLong(v);
+	}
+
+	@Override
+	public void writeFloat(float v) throws IOException {
+		encoder.writeFloat(v);
+	}
+
+	@Override
+	public void writeDouble(double v) throws IOException {
+		encoder.writeDouble(v);
+	}
+
+	@Override
+	public void writeUTF(String v) throws IOException {
+		encoder.writeString(new Utf8(v));
+	}
+
+	@Override
+	public void writeBytes(byte[] v) throws IOException {
+		encoder.writeString(new String(v, "utf8"));
+	}
+
+	@Override
+	public void writeBytes(byte[] v, int off, int len) throws IOException {
+		byte[] v2 = Arrays.copyOfRange(v, off, off+len);
+		encoder.writeString(new String(v2, "utf8"));
+	}
+
+	@Override
+	public void flushBuffer() throws IOException {
+		encoder.flush();
+		out.flush();
+	}
+
+	@Override
+	public void writeObject(Object obj) throws IOException {
+		if(obj==null) {
+			encoder.writeNull();
+			return ;
+		}
+		ReflectDatumWriter dd=new ReflectDatumWriter<>(obj.getClass());
+		dd.write(obj, encoder);
+	}
+
+}
