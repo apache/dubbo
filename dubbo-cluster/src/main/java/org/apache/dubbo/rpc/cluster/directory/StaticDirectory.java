@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.cluster.directory;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
@@ -53,7 +54,14 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
 
     @Override
     public Class<T> getInterface() {
-        return invokers.get(0).getInterface();
+        if (CollectionUtils.isEmpty(invokers)) {
+            throw new IllegalArgumentException("invokers == null");
+        }
+        Invoker<T> invoker = invokers.get(0);
+        if (invoker == null) {
+            throw new NullPointerException("invokes[0] == null");
+        }
+        return invoker.getInterface();
     }
 
     @Override
