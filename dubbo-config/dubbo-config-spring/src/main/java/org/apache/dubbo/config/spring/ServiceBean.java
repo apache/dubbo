@@ -214,7 +214,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                         registryConfigs.add(config);
                     }
                 }
-                if (registryConfigs != null && !registryConfigs.isEmpty()) {
+                if (!registryConfigs.isEmpty()) {
                     super.setRegistries(registryConfigs);
                 }
             }
@@ -248,7 +248,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                         protocolConfigs.add(config);
                     }
                 }
-                if (protocolConfigs != null && !protocolConfigs.isEmpty()) {
+                if (!protocolConfigs.isEmpty()) {
                     super.setProtocols(protocolConfigs);
                 }
             }
