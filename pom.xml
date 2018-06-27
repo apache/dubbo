@@ -18,11 +18,11 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <!--<parent>-->
-        <!--<groupId>org.sonatype.oss</groupId>-->
-        <!--<artifactId>oss-parent</artifactId>-->
-        <!--<version>7</version>-->
-    <!--</parent>-->
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>7</version>
+    </parent>
 
     <groupId>org.apache.dubbo</groupId>
     <artifactId>dubbo-parent</artifactId>
@@ -186,17 +186,17 @@
     </dependencies>
 
     <profiles>
-        <!--<profile>-->
-            <!--<id>java6</id>-->
-            <!--<properties>-->
-                <!--<maven_jar_version>3.0.2</maven_jar_version>-->
-                <!--<maven_surefire_version>2.19.1</maven_surefire_version>-->
-                <!--<maven_deploy_version>2.7</maven_deploy_version>-->
-                <!--<maven_compiler_version>3.1</maven_compiler_version>-->
-                <!--<maven_source_version>3.0.1</maven_source_version>-->
-                <!--<maven_javadoc_version>2.10.1</maven_javadoc_version>-->
-            <!--</properties>-->
-        <!--</profile>-->
+        <profile>
+            <id>java6</id>
+            <properties>
+                <maven_jar_version>3.0.2</maven_jar_version>
+                <maven_surefire_version>2.19.1</maven_surefire_version>
+                <maven_deploy_version>2.7</maven_deploy_version>
+                <maven_compiler_version>3.1</maven_compiler_version>
+                <maven_source_version>3.0.1</maven_source_version>
+                <maven_javadoc_version>2.10.1</maven_javadoc_version>
+            </properties>
+        </profile>
         <profile>
             <id>test</id>
             <activation>
@@ -208,20 +208,20 @@
                 <module>dubbo-test</module>
             </modules>
         </profile>
-        <!--<profile>-->
-            <!--<id>hudson</id>-->
-            <!--<build>-->
-                <!--<plugins>-->
-                    <!--<plugin>-->
-                        <!--<groupId>org.apache.maven.plugins</groupId>-->
-                        <!--<artifactId>maven-surefire-plugin</artifactId>-->
-                        <!--<configuration>-->
-                            <!--<testFailureIgnore>true</testFailureIgnore>-->
-                        <!--</configuration>-->
-                    <!--</plugin>-->
-                <!--</plugins>-->
-            <!--</build>-->
-        <!--</profile>-->
+        <profile>
+            <id>hudson</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <testFailureIgnore>true</testFailureIgnore>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>java8-vm-args</id>
             <activation>
@@ -235,74 +235,74 @@
                 </argline>
             </properties>
         </profile>
-        <!--<profile>-->
-            <!--<id>checkstyle</id>-->
-            <!--<activation>-->
-                <!--<jdk>[1.8,)</jdk>-->
-            <!--</activation>-->
-            <!--<build>-->
-                <!--<plugins>-->
-                    <!--<plugin>-->
-                        <!--<groupId>org.apache.maven.plugins</groupId>-->
-                        <!--<artifactId>maven-checkstyle-plugin</artifactId>-->
-                        <!--<version>${maven_checkstyle_version}</version>-->
-                        <!--<dependencies>-->
-                            <!--<dependency>-->
-                                <!--<groupId>com.puppycrawl.tools</groupId>-->
-                                <!--<artifactId>checkstyle</artifactId>-->
-                                <!--<version>8.9</version>-->
-                            <!--</dependency>-->
-                        <!--</dependencies>-->
-                        <!--<executions>-->
-                            <!--<execution>-->
-                                <!--<id>checkstyle-validation</id>-->
-                                <!--<phase>validate</phase>-->
-                                <!--<configuration>-->
-                                    <!--<configLocation>codestyle/checkstyle.xml</configLocation>-->
-                                    <!--<suppressionsLocation>codestyle/checkstyle-suppressions.xml</suppressionsLocation>-->
-                                    <!--<headerLocation>codestyle/checkstyle-header.txt</headerLocation>-->
-                                    <!--<linkXRef>false</linkXRef>-->
-                                    <!--<encoding>UTF-8</encoding>-->
-                                    <!--<consoleOutput>true</consoleOutput>-->
-                                    <!--<failOnViolation>true</failOnViolation>-->
-                                <!--</configuration>-->
-                                <!--<goals>-->
-                                    <!--<goal>check</goal>-->
-                                <!--</goals>-->
-                            <!--</execution>-->
-                        <!--</executions>-->
-                    <!--</plugin>-->
-                <!--</plugins>-->
-            <!--</build>-->
-        <!--</profile>-->
+        <profile>
+            <id>checkstyle</id>
+            <activation>
+                <jdk>[1.8,)</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-checkstyle-plugin</artifactId>
+                        <version>${maven_checkstyle_version}</version>
+                        <dependencies>
+                            <dependency>
+                                <groupId>com.puppycrawl.tools</groupId>
+                                <artifactId>checkstyle</artifactId>
+                                <version>8.9</version>
+                            </dependency>
+                        </dependencies>
+                        <executions>
+                            <execution>
+                                <id>checkstyle-validation</id>
+                                <phase>validate</phase>
+                                <configuration>
+                                    <configLocation>codestyle/checkstyle.xml</configLocation>
+                                    <suppressionsLocation>codestyle/checkstyle-suppressions.xml</suppressionsLocation>
+                                    <headerLocation>codestyle/checkstyle-header.txt</headerLocation>
+                                    <linkXRef>false</linkXRef>
+                                    <encoding>UTF-8</encoding>
+                                    <consoleOutput>true</consoleOutput>
+                                    <failOnViolation>true</failOnViolation>
+                                </configuration>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>release</id>
             <build>
                 <plugins>
-                    <!--<plugin>-->
-                        <!--<artifactId>maven-javadoc-plugin</artifactId>-->
-                        <!--<version>${maven_javadoc_version}</version>-->
-                        <!--<executions>-->
-                            <!--<execution>-->
-                                <!--<id>attach-javadoc</id>-->
-                                <!--<goals>-->
-                                    <!--<goal>jar</goal>-->
-                                <!--</goals>-->
-                                <!--<configuration>-->
-                                    <!--<doclint>none</doclint>-->
-                                <!--</configuration>-->
-                            <!--</execution>-->
-                        <!--</executions>-->
-                        <!--<configuration>-->
-                            <!--<show>public</show>-->
-                            <!--<charset>UTF-8</charset>-->
-                            <!--<encoding>UTF-8</encoding>-->
-                            <!--<docencoding>UTF-8</docencoding>-->
-                            <!--<links>-->
-                                <!--<link>http://docs.oracle.com/javase/7/docs/api</link>-->
-                            <!--</links>-->
-                        <!--</configuration>-->
-                    <!--</plugin>-->
+                    <plugin>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>${maven_javadoc_version}</version>
+                        <executions>
+                            <execution>
+                                <id>attach-javadoc</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <configuration>
+                                    <doclint>none</doclint>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <show>public</show>
+                            <charset>UTF-8</charset>
+                            <encoding>UTF-8</encoding>
+                            <docencoding>UTF-8</docencoding>
+                            <links>
+                                <link>http://docs.oracle.com/javase/7/docs/api</link>
+                            </links>
+                        </configuration>
+                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
@@ -377,77 +377,77 @@
                     </archive>
                 </configuration>
             </plugin>
-            <!--<plugin>-->
-                <!--<groupId>org.apache.maven.plugins</groupId>-->
-                <!--<artifactId>maven-surefire-plugin</artifactId>-->
-                <!--<version>${maven_surefire_version}</version>-->
-                <!--<configuration>-->
-                    <!--<useSystemClassLoader>true</useSystemClassLoader>-->
-                    <!--<forkMode>once</forkMode>-->
-                    <!--<argLine>${argline} ${jacocoArgLine}</argLine>-->
-                    <!--<systemProperties>-->
-                        <!--&lt;!&ndash; common shared &ndash;&gt;-->
-                        <!--<property>-->
-                            <!--<name>transporter</name>-->
-                            <!--<value>${transporter}</value>-->
-                        <!--</property>-->
-                        <!--<property>-->
-                            <!--<name>serialization</name>-->
-                            <!--<value>${serialization}</value>-->
-                        <!--</property>-->
-                        <!--&lt;!&ndash; server side &ndash;&gt;-->
-                        <!--<property>-->
-                            <!--<name>port</name>-->
-                            <!--<value>${port}</value>-->
-                        <!--</property>-->
-                        <!--<property>-->
-                            <!--<name>threadpool</name>-->
-                            <!--<value>${threadpool}</value>-->
-                        <!--</property>-->
-                        <!--<property>-->
-                            <!--<name>threads</name>-->
-                            <!--<value>${threads}</value>-->
-                        <!--</property>-->
-                        <!--<property>-->
-                            <!--<name>iothreads</name>-->
-                            <!--<value>${iothreads}</value>-->
-                        <!--</property>-->
-                        <!--&lt;!&ndash; client side &ndash;&gt;-->
-                        <!--<property>-->
-                            <!--<name>server</name>-->
-                            <!--<value>${server}</value>-->
-                        <!--</property>-->
-                        <!--<property>-->
-                            <!--<name>timeout</name>-->
-                            <!--<value>${timeout}</value>-->
-                        <!--</property>-->
-                        <!--<property>-->
-                            <!--<name>length</name>-->
-                            <!--<value>${length}</value>-->
-                        <!--</property>-->
-                        <!--<property>-->
-                            <!--<name>connections</name>-->
-                            <!--<value>${connections}</value>-->
-                        <!--</property>-->
-                        <!--<property>-->
-                            <!--<name>base</name>-->
-                            <!--<value>${base}</value>-->
-                        <!--</property>-->
-                        <!--<property>-->
-                            <!--<name>concurrent</name>-->
-                            <!--<value>${concurrent}</value>-->
-                        <!--</property>-->
-                        <!--<property>-->
-                            <!--<name>runs</name>-->
-                            <!--<value>${runs}</value>-->
-                        <!--</property>-->
-                        <!--<property>-->
-                            <!--<name>onerror</name>-->
-                            <!--<value>${onerror}</value>-->
-                        <!--</property>-->
-                    <!--</systemProperties>-->
-                <!--</configuration>-->
-            <!--</plugin>-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven_surefire_version}</version>
+                <configuration>
+                    <useSystemClassLoader>true</useSystemClassLoader>
+                    <forkMode>once</forkMode>
+                    <argLine>${argline} ${jacocoArgLine}</argLine>
+                    <systemProperties>
+                        <!-- common shared -->
+                        <property>
+                            <name>transporter</name>
+                            <value>${transporter}</value>
+                        </property>
+                        <property>
+                            <name>serialization</name>
+                            <value>${serialization}</value>
+                        </property>
+                        <!-- server side -->
+                        <property>
+                            <name>port</name>
+                            <value>${port}</value>
+                        </property>
+                        <property>
+                            <name>threadpool</name>
+                            <value>${threadpool}</value>
+                        </property>
+                        <property>
+                            <name>threads</name>
+                            <value>${threads}</value>
+                        </property>
+                        <property>
+                            <name>iothreads</name>
+                            <value>${iothreads}</value>
+                        </property>
+                        <!-- client side -->
+                        <property>
+                            <name>server</name>
+                            <value>${server}</value>
+                        </property>
+                        <property>
+                            <name>timeout</name>
+                            <value>${timeout}</value>
+                        </property>
+                        <property>
+                            <name>length</name>
+                            <value>${length}</value>
+                        </property>
+                        <property>
+                            <name>connections</name>
+                            <value>${connections}</value>
+                        </property>
+                        <property>
+                            <name>base</name>
+                            <value>${base}</value>
+                        </property>
+                        <property>
+                            <name>concurrent</name>
+                            <value>${concurrent}</value>
+                        </property>
+                        <property>
+                            <name>runs</name>
+                            <value>${runs}</value>
+                        </property>
+                        <property>
+                            <name>onerror</name>
+                            <value>${onerror}</value>
+                        </property>
+                    </systemProperties>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
@@ -468,80 +468,80 @@
                     <encoding>${file_encoding}</encoding>
                 </configuration>
             </plugin>
-            <!--<plugin>-->
-                <!--<groupId>org.jacoco</groupId>-->
-                <!--<artifactId>jacoco-maven-plugin</artifactId>-->
-                <!--<version>${maven_jacoco_version}</version>-->
-                <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<id>jacoco-initialize</id>-->
-                        <!--<goals>-->
-                            <!--<goal>prepare-agent</goal>-->
-                        <!--</goals>-->
-                        <!--<configuration>-->
-                            <!--<propertyName>jacocoArgLine</propertyName>-->
-                        <!--</configuration>-->
-                    <!--</execution>-->
-                    <!--<execution>-->
-                        <!--<id>jacoco-site</id>-->
-                        <!--<phase>package</phase>-->
-                        <!--<goals>-->
-                            <!--<goal>report</goal>-->
-                        <!--</goals>-->
-                    <!--</execution>-->
-                <!--</executions>-->
-            <!--</plugin>-->
-            <!--<plugin>-->
-                <!--<groupId>org.apache.rat</groupId>-->
-                <!--<artifactId>apache-rat-plugin</artifactId>-->
-                <!--<version>${apache-rat-plugin.version}</version>-->
-                <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<id>verify.rat</id>-->
-                        <!--<phase>verify</phase>-->
-                        <!--<goals>-->
-                            <!--<goal>check</goal>-->
-                        <!--</goals>-->
-                        <!--<configuration>-->
-                            <!--<excludes>-->
-                                <!--<exclude>**/*.versionsBackup</exclude>-->
-                                <!--<exclude>**/.idea/</exclude>-->
-                                <!--<exclude>**/*.iml</exclude>-->
-                                <!--<exclude>**/*.txt</exclude>-->
-                                <!--<exclude>**/*.load</exclude>-->
-                                <!--<exclude>**/*.flex</exclude>-->
-                                <!--<exclude>**/*.fc</exclude>-->
-                                <!--<exclude>**/*.javascript</exclude>-->
-                                <!--<exclude>**/*.properties</exclude>-->
-                                <!--<exclude>**/*.thrift</exclude>-->
-                                <!--<exclude>**/*.sh</exclude>-->
-                                <!--<exclude>**/*.bat</exclude>-->
-                                <!--<exclude>**/*.md</exclude>-->
-                                <!--<exclude>.git/</exclude>-->
-                                <!--<exclude>.gitignore</exclude>-->
-                                <!--&lt;!&ndash; ASF jenkins box puts the Maven repo in our root directory. &ndash;&gt;-->
-                                <!--<exclude>.repository/</exclude>-->
-                                <!--<exclude>**/.settings/*</exclude>-->
-                                <!--<exclude>**/.classpath</exclude>-->
-                                <!--<exclude>**/.project</exclude>-->
-                                <!--<exclude>**/target/**</exclude>-->
-                                <!--<exclude>**/*.log</exclude>-->
-                                <!--<exclude>CODE_OF_CONDUCT.md</exclude>-->
-                                <!--<exclude>.codecov.yml</exclude>-->
-                                <!--<exclude>.travis.yml</exclude>-->
-                                <!--<exclude>PULL_REQUEST_TEMPLATE.md</exclude>-->
-                                <!--<exclude>CONTRIBUTING.md</exclude>-->
-                                <!--<exclude>README.md</exclude>-->
-                                <!--<exclude>**/codestyle/*</exclude>-->
-                                <!--<exclude>**/resources/META-INF/**</exclude>-->
-                                <!--&lt;!&ndash; exclude the internal threadlocal files &ndash;&gt;-->
-                                <!--<exclude>**/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java</exclude>-->
-                                <!--<exclude>**/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java</exclude>-->
-                            <!--</excludes>-->
-                        <!--</configuration>-->
-                    <!--</execution>-->
-                <!--</executions>-->
-            <!--</plugin>-->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${maven_jacoco_version}</version>
+                <executions>
+                    <execution>
+                        <id>jacoco-initialize</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <propertyName>jacocoArgLine</propertyName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jacoco-site</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <version>${apache-rat-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>verify.rat</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/*.versionsBackup</exclude>
+                                <exclude>**/.idea/</exclude>
+                                <exclude>**/*.iml</exclude>
+                                <exclude>**/*.txt</exclude>
+                                <exclude>**/*.load</exclude>
+                                <exclude>**/*.flex</exclude>
+                                <exclude>**/*.fc</exclude>
+                                <exclude>**/*.javascript</exclude>
+                                <exclude>**/*.properties</exclude>
+                                <exclude>**/*.thrift</exclude>
+                                <exclude>**/*.sh</exclude>
+                                <exclude>**/*.bat</exclude>
+                                <exclude>**/*.md</exclude>
+                                <exclude>.git/</exclude>
+                                <exclude>.gitignore</exclude>
+                                <!-- ASF jenkins box puts the Maven repo in our root directory. -->
+                                <exclude>.repository/</exclude>
+                                <exclude>**/.settings/*</exclude>
+                                <exclude>**/.classpath</exclude>
+                                <exclude>**/.project</exclude>
+                                <exclude>**/target/**</exclude>
+                                <exclude>**/*.log</exclude>
+                                <exclude>CODE_OF_CONDUCT.md</exclude>
+                                <exclude>.codecov.yml</exclude>
+                                <exclude>.travis.yml</exclude>
+                                <exclude>PULL_REQUEST_TEMPLATE.md</exclude>
+                                <exclude>CONTRIBUTING.md</exclude>
+                                <exclude>README.md</exclude>
+                                <exclude>**/codestyle/*</exclude>
+                                <exclude>**/resources/META-INF/**</exclude>
+                                <!-- exclude the internal threadlocal files -->
+                                <exclude>**/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java</exclude>
+                                <exclude>**/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
@@ -617,17 +617,4 @@
             </plugins>
         </pluginManagement>
     </build>
-
-    <distributionManagement>
-        <repository>
-            <id>nexus-releases</id>
-            <name>nexus-releases</name>
-            <url>http://192.168.163.25:8081/nexus/content/repositories/releases</url>
-        </repository>
-        <snapshotRepository>
-            <id>nexus-snapshots</id>
-            <name>nexus-snapshots</name>
-            <url>http://192.168.163.25:8081/nexus/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
 </project>
