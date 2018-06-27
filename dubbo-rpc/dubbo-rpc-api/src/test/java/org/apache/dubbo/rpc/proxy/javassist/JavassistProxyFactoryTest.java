@@ -16,29 +16,12 @@
  */
 package org.apache.dubbo.rpc.proxy.javassist;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.support.DemoService;
-import org.apache.dubbo.rpc.support.MyInvoker;
-import org.junit.Assert;
-import org.junit.Test;
+import org.apache.dubbo.rpc.proxy.AbstractProxyTest;
 
-public class JavassistProxyFactoryTest {
+public class JavassistProxyFactoryTest extends AbstractProxyTest {
 
-    private JavassistProxyFactory javassistProxyFactory = new JavassistProxyFactory();
-
-    @Test
-    public void testGetProxy() throws Exception {
-        URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1");
-
-        DemoService proxy = javassistProxyFactory.getProxy(new MyInvoker<DemoService>(url), new Class[]{DemoService.class});
-
-        Assert.assertNotNull(proxy);
-
-        Invoker<DemoService> invoker = javassistProxyFactory.getInvoker(proxy, DemoService.class, url);
-
-        Class<?>[] classes = invoker.getClass().getInterfaces();
-
+    static {
+        factory = new JavassistProxyFactory();
     }
 
 }
