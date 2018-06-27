@@ -47,12 +47,22 @@ public class NettyClientHandler extends ChannelDuplexHandler {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        ctx.fireChannelActive();
+        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
+        try {
+            handler.connected(channel);
+        } finally {
+            NettyChannel.removeChannelIfDisconnected(ctx.channel());
+        }
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        ctx.fireChannelInactive();
+        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
+        try {
+            handler.disconnected(channel);
+        } finally {
+            NettyChannel.removeChannelIfDisconnected(ctx.channel());
+        }
     }
 
     @Override
