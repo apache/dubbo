@@ -17,13 +17,9 @@ public class AvroObjectInput implements ObjectInput{
 	private BinaryDecoder decoder;
 	
 	public AvroObjectInput(InputStream in){
-		init(in);
-	}
-	
-	public void init(InputStream in){
 		decoder=decoderFactory.binaryDecoder(in, null);
 	}
-
+	
 	@Override
 	public boolean readBool() throws IOException {
 		return decoder.readBoolean();
@@ -84,6 +80,7 @@ public class AvroObjectInput implements ObjectInput{
 	}
 
 	@Override
+	@SuppressWarnings(value={"unchecked"})
 	public <T> T readObject(Class<T> cls) throws IOException, ClassNotFoundException {
 		//Map interface class change to HashMap implement
 		if(cls==Map.class){

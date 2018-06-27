@@ -11,17 +11,10 @@ import org.apache.avro.util.Utf8;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 
 public class AvroObjectOutput implements ObjectOutput{
-	private OutputStream out;
 	private EncoderFactory encoderFactory=EncoderFactory.get();
 	private BinaryEncoder encoder;
 	
-
     public AvroObjectOutput(OutputStream out) {
-    	this.out=out;
-    	init(out);
-    }
-
-    public void init(OutputStream out){
     	encoder=encoderFactory.binaryEncoder(out, null);
     }
 
@@ -79,10 +72,10 @@ public class AvroObjectOutput implements ObjectOutput{
 	@Override
 	public void flushBuffer() throws IOException {
 		encoder.flush();
-		out.flush();
 	}
 
 	@Override
+	@SuppressWarnings(value = { "rawtypes", "unchecked" })
 	public void writeObject(Object obj) throws IOException {
 		if(obj==null) {
 			encoder.writeNull();
