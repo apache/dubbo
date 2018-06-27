@@ -80,13 +80,6 @@ public class NettyServerHandler extends ChannelDuplexHandler {
         }
     }
 
-
-    @Override
-    public void disconnect(ChannelHandlerContext ctx, ChannelPromise future)
-            throws Exception {
-
-    }
-
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
