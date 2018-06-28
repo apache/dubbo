@@ -1,2 +1,2 @@
-[2018-06-27 21:25:23] null:0 -> 10.240.37.27:0 - org.apache.dubbo.rpc.support.DemoService echo(java.lang.String) ["aa"]
-[2018-06-27 21:29:58] null:0 -> 10.240.37.27:0 - org.apache.dubbo.rpc.support.DemoService echo(java.lang.String) ["aa"]
+[2018-06-28 17:44:05] null:0 -> 10.240.37.27:0 - org.apache.dubbo.rpc.support.DemoService echo(java.lang.String) ["aa"]
+[2018-06-28 21:04:17] null:0 -> 10.240.37.27:0 - org.apache.dubbo.rpc.support.DemoService echo(java.lang.String) ["aa"]
