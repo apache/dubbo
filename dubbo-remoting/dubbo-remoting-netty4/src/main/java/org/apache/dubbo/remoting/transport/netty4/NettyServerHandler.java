@@ -58,8 +58,6 @@ public class NettyServerHandler extends ChannelDuplexHandler {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        ctx.fireChannelActive();
-
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
         try {
             if (channel != null) {
@@ -80,13 +78,6 @@ public class NettyServerHandler extends ChannelDuplexHandler {
         } finally {
             NettyChannel.removeChannelIfDisconnected(ctx.channel());
         }
-    }
-
-
-    @Override
-    public void disconnect(ChannelHandlerContext ctx, ChannelPromise future)
-            throws Exception {
-
     }
 
     @Override
