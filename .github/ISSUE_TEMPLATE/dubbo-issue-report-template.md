@@ -1,6 +1,6 @@
 ---
 name: Dubbo issue report template
-about: Describe this issue template's purpose here.
+about: If you would like to report a issue to Dubbo, please use this template.
 
 ---
 
