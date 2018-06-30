@@ -29,8 +29,6 @@ public interface AsyncContext {
 
     CompletableFuture getInternalFuture();
 
-    void addListener(Runnable run);
-
     /**
      * write value and complete the async context.
      *
@@ -49,7 +47,7 @@ public interface AsyncContext {
     boolean stop();
 
     /**
-     * change the context state to stop
+     * change the context state to start
      */
     void start();
 

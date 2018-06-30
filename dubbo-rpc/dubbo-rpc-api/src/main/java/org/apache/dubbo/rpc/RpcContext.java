@@ -719,9 +719,7 @@ public class RpcContext {
     }
 
     public boolean stopAsync() {
-        boolean stoped = asyncContext.stop();
-        asyncContext = null;
-        return stoped;
+        return asyncContext.stop();
     }
 
     public void setAsyncContext(AsyncContext asyncContext) {
