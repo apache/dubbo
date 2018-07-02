@@ -7,6 +7,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.support.DemoService;
 import org.apache.dubbo.rpc.support.MyInvoker;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -34,15 +35,15 @@ public class ClassLoaderFilterTest {
         };
         final Class<?> clazz = cl.loadClass(DemoService.class.getCanonicalName());
         Invoker invoker = new MyInvoker(url) {
-             @Override
-             public Class getInterface() {
+            @Override
+            public Class getInterface() {
                 return clazz;
             }
 
             @Override
             public Result invoke(Invocation invocation) throws RpcException {
-                 Assert.assertEquals(cl, Thread.currentThread().getContextClassLoader());
-                 return null;
+                Assert.assertEquals(cl, Thread.currentThread().getContextClassLoader());
+                return null;
             }
         };
         Invocation invocation = Mockito.mock(Invocation.class);

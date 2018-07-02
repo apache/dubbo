@@ -18,7 +18,12 @@ package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.*;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.RpcResult;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -51,7 +56,7 @@ public class TokenFilterTest {
         Assert.assertEquals("result", result.getValue());
     }
 
-    @Test (expected = RpcException.class)
+    @Test(expected = RpcException.class)
     public void testInvokeWithWrongToken() throws Exception {
         String token = "token";
 
@@ -68,7 +73,7 @@ public class TokenFilterTest {
         tokenFilter.invoke(invoker, invocation);
     }
 
-    @Test (expected = RpcException.class)
+    @Test(expected = RpcException.class)
     public void testInvokeWithoutToken() throws Exception {
         String token = "token";
 
