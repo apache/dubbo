@@ -73,4 +73,9 @@ public class MyInvoker<T> implements Invoker<T> {
     public void destroy() {
     }
 
+    @Override
+    public String toString() {
+        return "MyInvoker.toString()";
+    }
+
 }
