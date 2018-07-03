@@ -22,6 +22,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -51,6 +52,7 @@ import java.util.concurrent.TimeoutException;
 public class RedisProtocol extends AbstractProtocol {
 
     public static final int DEFAULT_PORT = 6379;
+    private JedisPool jedisPool = null;
 
     @Override
     public int getDefaultPort() {
@@ -89,8 +91,15 @@ public class RedisProtocol extends AbstractProtocol {
                 config.setTimeBetweenEvictionRunsMillis(url.getParameter("time.between.eviction.runs.millis", 0));
             if (url.getParameter("min.evictable.idle.time.millis", 0) > 0)
                 config.setMinEvictableIdleTimeMillis(url.getParameter("min.evictable.idle.time.millis", 0));
-            final JedisPool jedisPool = new JedisPool(config, url.getHost(), url.getPort(DEFAULT_PORT),
-                    url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
+            if (StringUtils.isBlank(url.getPassword())) {
+                jedisPool = new JedisPool(config, url.getHost(), url.getPort(DEFAULT_PORT),
+                        url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT), null,
+                        url.getParameter("db.index", 0));
+            } else {
+                jedisPool = new JedisPool(config, url.getHost(), url.getPort(DEFAULT_PORT),
+                        url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT), url.getPassword(),
+                        url.getParameter("db.index", 0));
+            }
             final int expiry = url.getParameter("expiry", 0);
             final String get = url.getParameter("get", "get");
             final String set = url.getParameter("set", Map.class.equals(type) ? "put" : "set");
