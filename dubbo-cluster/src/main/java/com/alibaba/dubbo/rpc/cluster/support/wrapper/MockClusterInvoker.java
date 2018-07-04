@@ -69,7 +69,7 @@ public class MockClusterInvoker<T> implements Invoker<T> {
             //no mock
             result = this.invoker.invoke(invocation);
         } else if (value.startsWith("force")) {
-            if (logger.isWarnEnabled()) {
+            if (logger.isInfoEnabled()) {
                 logger.info("force-mock: " + invocation.getMethodName() + " force-mock enabled , url : " + directory.getUrl());
             }
             //force:direct mock
@@ -82,7 +82,7 @@ public class MockClusterInvoker<T> implements Invoker<T> {
                 if (e.isBiz()) {
                     throw e;
                 } else {
-                    if (logger.isWarnEnabled()) {
+                    if (logger.isInfoEnabled()) {
                         logger.info("fail-mock: " + invocation.getMethodName() + " fail-mock enabled , url : " + directory.getUrl(), e);
                     }
                     result = doMockInvoke(invocation, e);
