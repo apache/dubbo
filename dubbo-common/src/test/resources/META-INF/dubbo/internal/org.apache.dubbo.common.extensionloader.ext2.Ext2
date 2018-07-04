@@ -1,0 +1,3 @@
+impl1=org.apache.dubbo.common.extensionloader.ext2.impl.Ext2Impl1
+impl2=org.apache.dubbo.common.extensionloader.ext2.impl.Ext2Impl2
+impl3=org.apache.dubbo.common.extensionloader.ext2.impl.Ext2Impl3

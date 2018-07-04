@@ -1,0 +1,1 @@
+fastjson=org.apache.dubbo.common.serialize.fastjson.FastJsonSerialization

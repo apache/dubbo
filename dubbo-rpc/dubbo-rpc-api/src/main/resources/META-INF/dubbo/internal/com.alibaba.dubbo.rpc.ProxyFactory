@@ -1,3 +1,0 @@
-stub=com.alibaba.dubbo.rpc.proxy.wrapper.StubProxyFactoryWrapper
-jdk=com.alibaba.dubbo.rpc.proxy.jdk.JdkProxyFactory
-javassist=com.alibaba.dubbo.rpc.proxy.javassist.JavassistProxyFactory
