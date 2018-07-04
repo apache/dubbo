@@ -87,6 +87,10 @@ public class DemoServiceImpl implements DemoService {
         return arg;
     }
 
+    public Person getPerson(Person person) {
+        return person;
+    }
+
     @Override
     public String testReturnType(String str) {
         return null;
@@ -115,9 +119,5 @@ public class DemoServiceImpl implements DemoService {
     @Override
     public CompletableFuture<Map<String, String>> testReturnType5(String str) {
         return null;
-    }
-
-    public Person gerPerson(Person person) {
-        return person;
     }
 }

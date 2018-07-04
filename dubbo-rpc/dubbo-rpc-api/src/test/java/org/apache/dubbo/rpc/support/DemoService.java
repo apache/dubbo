@@ -47,6 +47,8 @@ public interface DemoService {
 
     byte getbyte(byte arg);
 
+    Person getPerson(Person person);
+
     String testReturnType(String str);
 
     List<String> testReturnType1(String str);

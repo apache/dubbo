@@ -98,15 +98,15 @@ public class RedisProtocol extends AbstractProtocol {
             return new AbstractInvoker<T>(type, url) {
                 @Override
                 protected Result doInvoke(Invocation invocation) throws Throwable {
-                    Jedis resource = null;
+                    Jedis jedis = null;
                     try {
-                        resource = jedisPool.getResource();
+                        jedis = jedisPool.getResource();
 
                         if (get.equals(invocation.getMethodName())) {
                             if (invocation.getArguments().length != 1) {
                                 throw new IllegalArgumentException("The redis get method arguments mismatch, must only one arguments. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url);
                             }
-                            byte[] value = resource.get(String.valueOf(invocation.getArguments()[0]).getBytes());
+                            byte[] value = jedis.get(String.valueOf(invocation.getArguments()[0]).getBytes());
                             if (value == null) {
                                 return new RpcResult();
                             }
@@ -120,16 +120,16 @@ public class RedisProtocol extends AbstractProtocol {
                             ByteArrayOutputStream output = new ByteArrayOutputStream();
                             ObjectOutput value = getSerialization(url).serialize(url, output);
                             value.writeObject(invocation.getArguments()[1]);
-                            resource.set(key, output.toByteArray());
+                            jedis.set(key, output.toByteArray());
                             if (expiry > 1000) {
-                                resource.expire(key, expiry / 1000);
+                                jedis.expire(key, expiry / 1000);
                             }
                             return new RpcResult();
                         } else if (delete.equals(invocation.getMethodName())) {
                             if (invocation.getArguments().length != 1) {
                                 throw new IllegalArgumentException("The redis delete method arguments mismatch, must only one arguments. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url);
                             }
-                            resource.del(String.valueOf(invocation.getArguments()[0]).getBytes());
+                            jedis.del(String.valueOf(invocation.getArguments()[0]).getBytes());
                             return new RpcResult();
                         } else {
                             throw new UnsupportedOperationException("Unsupported method " + invocation.getMethodName() + " in redis service.");
@@ -145,9 +145,9 @@ public class RedisProtocol extends AbstractProtocol {
                         }
                         throw re;
                     } finally {
-                        if (resource != null) {
+                        if (jedis != null) {
                             try {
-                                jedisPool.returnResource(resource);
+                                jedis.close();
                             } catch (Throwable t) {
                                 logger.warn("returnResource error: " + t.getMessage(), t);
                             }
