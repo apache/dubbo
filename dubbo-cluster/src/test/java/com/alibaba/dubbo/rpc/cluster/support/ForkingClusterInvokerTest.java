@@ -19,6 +19,7 @@ package com.alibaba.dubbo.rpc.cluster.support;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
+import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
@@ -30,6 +31,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertFalse;
 import static org.mockito.BDDMockito.given;
@@ -120,8 +122,32 @@ public class ForkingClusterInvokerTest {
         }
     }
 
+    @Test
+    public void testClearRpcContext() {
+        resetInvokerToException();
+        ForkingClusterInvoker<ForkingClusterInvokerTest> invoker = new ForkingClusterInvoker<ForkingClusterInvokerTest>(
+                dic);
+
+        String attachKey = "attach";
+        String attachValue = "value";
+
+        RpcContext.getContext().setAttachment(attachKey, attachValue);
+
+        Map<String, String> attachments = RpcContext.getContext().getAttachments();
+        Assert.assertTrue("set attachment failed!", attachments != null && attachments.size() == 1);
+        try {
+            invoker.invoke(invocation);
+            Assert.fail();
+        } catch (RpcException expected) {
+            Assert.assertTrue(expected.getMessage().contains("Failed to forking invoke provider"));
+            assertFalse(expected.getCause() instanceof RpcException);
+        }
+        Map<String, String> afterInvoke = RpcContext.getContext().getAttachments();
+        Assert.assertTrue("", afterInvoke != null && afterInvoke.size() == 0);
+    }
+
     @Test()
-    public void testInvokeNoExceptoin() {
+    public void testInvokeNoException() {
 
         resetInvokerToNoException();
 
