@@ -218,13 +218,17 @@ public class JavaSerializer extends AbstractSerializer {
                 else
                     repl = _writeReplace.invoke(obj);
 
-                out.removeRef(obj);
+                //Some class would return itself for wrapReplace, which would cause infinite recursion
+                //In this case, we could just write the object just like normal cases
+                if (repl != obj) {
+                    out.removeRef(obj);
 
-                out.writeObject(repl);
+                    out.writeObject(repl);
 
-                out.replaceRef(repl, obj);
+                    out.replaceRef(repl, obj);
 
-                return;
+                    return;
+                }
             }
         } catch (RuntimeException e) {
             throw e;
