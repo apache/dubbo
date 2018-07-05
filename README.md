@@ -20,7 +20,7 @@ We are now collecting dubbo user info in order to help us to improve dubbo bette
 * [Dubbo docs](https://github.com/apache/incubator-dubbo-docs) - Apache Dubbo (incubating) documentation  
 
 ## Links
-* [Developer Mailing list](https://github.com/apache/incubator-dubbo/issues/1393) - Any questions or suggestions? Please follow this [guide](https://github.com/apache/incubator-dubbo/issues/1393) to subscribe to (dev@dubbo.incubator.apache.org) and discuss with us.
+* [Developer Mailing list](https://github.com/apache/incubator-dubbo/issues/1393) - Any questions or suggestions? Please follow this [mailing list subscription guide](https://github.com/apache/incubator-dubbo/wiki/Mailing-list-subscription-guide) to subscribe to (dev@dubbo.incubator.apache.org) and discuss with us.
 * [Gitter channel](https://gitter.im/alibaba/dubbo) - Online chat room with Dubbo developers.
 * [Dubbo user manual](http://dubbo.apache.org/#/docs/user/preface/background.md) - How to use Dubbo and all its features.
 * [Dubbo developer guide](http://dubbo.apache.org/#/docs/dev/build.md) - How to invovle in Dubbo development.
