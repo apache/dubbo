@@ -22,7 +22,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -43,19 +42,19 @@ public class DubboLazyConnectTest {
 
     @Test(expected = RpcException.class)
     public void testSticky1() {
-        URL url = URL.valueOf("dubbo://127.0.0.1:9090/hi");
+        URL url = URL.valueOf("dubbo://127.0.0.1:9090/org.apache.dubbo.rpc.protocol.dubbo.IDemoService");
         ProtocolUtils.refer(IDemoService.class, url);
     }
 
     @Test
     public void testSticky2() {
-        URL url = URL.valueOf("dubbo://127.0.0.1:9090/hi?" + Constants.LAZY_CONNECT_KEY + "=true");
+        URL url = URL.valueOf("dubbo://127.0.0.1:9090/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?" + Constants.LAZY_CONNECT_KEY + "=true");
         ProtocolUtils.refer(IDemoService.class, url);
     }
 
     @Test(expected = RpcException.class)
     public void testSticky3() {
-        URL url = URL.valueOf("dubbo://127.0.0.1:9090/hi?" + Constants.LAZY_CONNECT_KEY + "=true");
+        URL url = URL.valueOf("dubbo://127.0.0.1:9090/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?" + Constants.LAZY_CONNECT_KEY + "=true");
         IDemoService service = (IDemoService) ProtocolUtils.refer(IDemoService.class, url);
         service.get();
     }
@@ -63,16 +62,12 @@ public class DubboLazyConnectTest {
     @Test
     public void testSticky4() {
         int port = NetUtils.getAvailablePort();
-        URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/hi?" + Constants.LAZY_CONNECT_KEY + "=true");
+        URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?" + Constants.LAZY_CONNECT_KEY + "=true&timeout=20000");
 
         ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
 
         IDemoService service = (IDemoService) ProtocolUtils.refer(IDemoService.class, url);
         Assert.assertEquals("ok", service.get());
-    }
-
-    public interface IDemoService {
-        public String get();
     }
 
     public class DemoServiceImpl implements IDemoService {
