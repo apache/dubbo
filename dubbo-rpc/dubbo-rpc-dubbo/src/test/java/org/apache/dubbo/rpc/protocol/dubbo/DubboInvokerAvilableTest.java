@@ -22,15 +22,12 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
-import org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeServer;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
@@ -54,7 +51,7 @@ public class DubboInvokerAvilableTest {
 
     @Test
     public void test_Normal_available() {
-        URL url = URL.valueOf("dubbo://127.0.0.1:20883/hi");
+        URL url = URL.valueOf("dubbo://127.0.0.1:20883/org.apache.dubbo.rpc.protocol.dubbo.IDemoService");
         ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
 
         DubboInvoker<?> invoker = (DubboInvoker<?>) protocol.refer(IDemoService.class, url);
@@ -65,7 +62,7 @@ public class DubboInvokerAvilableTest {
 
     @Test
     public void test_Normal_ChannelReadOnly() throws Exception {
-        URL url = URL.valueOf("dubbo://127.0.0.1:20883/hi");
+        URL url = URL.valueOf("dubbo://127.0.0.1:20883/org.apache.dubbo.rpc.protocol.dubbo.IDemoService");
         ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
 
         DubboInvoker<?> invoker = (DubboInvoker<?>) protocol.refer(IDemoService.class, url);
@@ -81,7 +78,7 @@ public class DubboInvokerAvilableTest {
 
     @Test
     public void test_normal_channel_close_wait_gracefully() throws Exception {
-        URL url = URL.valueOf("dubbo://127.0.0.1:20883/hi?scope=true&lazy=false");
+        URL url = URL.valueOf("dubbo://127.0.0.1:20883/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?scope=true&lazy=false");
         Exporter<IDemoService> exporter = ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
         Exporter<IDemoService> exporter0 = ProtocolUtils.export(new DemoServiceImpl0(), IDemoService.class, url);
 
@@ -105,7 +102,7 @@ public class DubboInvokerAvilableTest {
 
     @Test
     public void test_NoInvokers() throws Exception {
-        URL url = URL.valueOf("dubbo://127.0.0.1:20883/hi?connections=1");
+        URL url = URL.valueOf("dubbo://127.0.0.1:20883/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?connections=1");
         ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
 
         DubboInvoker<?> invoker = (DubboInvoker<?>) protocol.refer(IDemoService.class, url);
@@ -118,7 +115,7 @@ public class DubboInvokerAvilableTest {
 
     @Test
     public void test_Lazy_ChannelReadOnly() throws Exception {
-        URL url = URL.valueOf("dubbo://127.0.0.1:20883/hi?lazy=true&connections=1");
+        URL url = URL.valueOf("dubbo://127.0.0.1:20883/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?lazy=true&connections=1&timeout=10000");
         ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
 
         DubboInvoker<?> invoker = (DubboInvoker<?>) protocol.refer(IDemoService.class, url);
@@ -146,10 +143,6 @@ public class DubboInvokerAvilableTest {
         ExchangeClient[] clients = (ExchangeClient[]) field.get(invoker);
         Assert.assertEquals(1, clients.length);
         return clients;
-    }
-
-    public interface IDemoService {
-        public String get();
     }
 
     public class DemoServiceImpl implements IDemoService {
