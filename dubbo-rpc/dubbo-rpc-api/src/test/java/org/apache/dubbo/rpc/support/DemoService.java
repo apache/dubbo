@@ -43,4 +43,6 @@ public interface DemoService {
 
     byte getbyte(byte arg);
 
+    Person getPerson(Person person);
+
 }

@@ -16,12 +16,13 @@
  */
 package org.apache.dubbo.rpc.proxy;
 
+import com.alibaba.dubbo.rpc.service.EchoService;
+
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.service.EchoService;
 import org.apache.dubbo.rpc.service.GenericService;
 
 /**
@@ -54,12 +55,12 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
             interfaces = new Class<?>[]{invoker.getInterface(), EchoService.class};
         }
 
-        if (!invoker.getInterface().equals(GenericService.class) && generic) {
+        if (!GenericService.class.isAssignableFrom(invoker.getInterface()) && generic) {
             int len = interfaces.length;
             Class<?>[] temp = interfaces;
             interfaces = new Class<?>[len + 1];
             System.arraycopy(temp, 0, interfaces, 0, len);
-            interfaces[len] = GenericService.class;
+            interfaces[len] = com.alibaba.dubbo.rpc.service.GenericService.class;
         }
 
         return getProxy(invoker, interfaces);

@@ -54,7 +54,7 @@ public class GenericFilter implements Filter {
         if (inv.getMethodName().equals(Constants.$INVOKE)
                 && inv.getArguments() != null
                 && inv.getArguments().length == 3
-                && !invoker.getInterface().equals(GenericService.class)) {
+                && !GenericService.class.isAssignableFrom(invoker.getInterface())) {
             String name = ((String) inv.getArguments()[0]).trim();
             String[] types = (String[]) inv.getArguments()[1];
             Object[] args = (Object[]) inv.getArguments()[2];
