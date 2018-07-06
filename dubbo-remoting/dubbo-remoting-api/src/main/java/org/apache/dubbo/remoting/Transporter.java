@@ -21,8 +21,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
 
-import javax.sound.midi.Receiver;
-
 /**
  * Transporter. (SPI, Singleton, ThreadSafe)
  * <p>
@@ -33,15 +31,14 @@ import javax.sound.midi.Receiver;
  */
 @SPI("netty")
 public interface Transporter {
-
     /**
      * Bind a server.
      *
      * @param url     server url
-     * @param handler
-     * @return server
+     * @param handler channel handler
+     * @return server remoting server instance
      * @throws RemotingException
-     * @see org.apache.dubbo.remoting.Transporters#bind(URL, Receiver, ChannelHandler)
+     * @see Transporters#bind(String, ChannelHandler...)
      */
     @Adaptive({Constants.SERVER_KEY, Constants.TRANSPORTER_KEY})
     Server bind(URL url, ChannelHandler handler) throws RemotingException;
@@ -50,12 +47,11 @@ public interface Transporter {
      * Connect to a server.
      *
      * @param url     server url
-     * @param handler
-     * @return client
+     * @param handler channel handler
+     * @return client remoting client instance
      * @throws RemotingException
-     * @see org.apache.dubbo.remoting.Transporters#connect(URL, Receiver, ChannelListener)
+     * @see Transporters#connect(String, ChannelHandler...)
      */
     @Adaptive({Constants.CLIENT_KEY, Constants.TRANSPORTER_KEY})
     Client connect(URL url, ChannelHandler handler) throws RemotingException;
-
 }
