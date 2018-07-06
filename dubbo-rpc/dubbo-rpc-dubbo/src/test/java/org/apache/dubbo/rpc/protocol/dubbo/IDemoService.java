@@ -14,35 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.support;
+package org.apache.dubbo.rpc.protocol.dubbo;
 
-import org.apache.dubbo.rpc.CustomArgument;
-
-public interface DemoService {
-    void sayHello(String name);
-
-    String echo(String text);
-
-    long timestamp();
-
-    String getThreadName();
-
-    int getSize(String[] strs);
-
-    int getSize(Object[] os);
-
-    Object invoke(String service, String method) throws Exception;
-
-    int stringLength(String str);
-
-    Type enumlength(Type... types);
-
-//	Type enumlength(Type type);
-
-    String get(CustomArgument arg1);
-
-    byte getbyte(byte arg);
-
-    Person getPerson(Person person);
-
+public interface IDemoService {
+    public String get();
 }

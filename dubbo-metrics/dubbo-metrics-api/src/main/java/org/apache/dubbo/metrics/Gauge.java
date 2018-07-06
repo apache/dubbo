@@ -14,35 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.support;
+package org.apache.dubbo.metrics;
 
-import org.apache.dubbo.rpc.CustomArgument;
 
-public interface DemoService {
-    void sayHello(String name);
-
-    String echo(String text);
-
-    long timestamp();
-
-    String getThreadName();
-
-    int getSize(String[] strs);
-
-    int getSize(Object[] os);
-
-    Object invoke(String service, String method) throws Exception;
-
-    int stringLength(String str);
-
-    Type enumlength(Type... types);
-
-//	Type enumlength(Type type);
-
-    String get(CustomArgument arg1);
-
-    byte getbyte(byte arg);
-
-    Person getPerson(Person person);
-
+/**
+ * <pre>
+ * A gauge metric is an instantaneous reading of a particular value. To instrument a queue's depth,
+ * for example:
+ *
+ * final Queue&lt;String&gt; queue = new ConcurrentLinkedQueue&lt;String&gt;();
+ * final Gauge&lt;Integer&gt; queueDepth = new Gauge&lt;Integer&gt;() {
+ *     public Integer getValue() {
+ *         return queue.size();
+ *     }
+ * };
+ * </pre>
+ *
+ * @param <T> the type of the metric's value
+ */
+public interface Gauge<T> extends Metric {
+    /**
+     * Returns the metric's current value.
+     *
+     * @return the metric's current value
+     */
+    T getValue();
 }

@@ -83,7 +83,7 @@ public class DemoServiceImpl implements DemoService {
         return arg;
     }
 
-    public Person gerPerson(Person person) {
+    public Person getPerson(Person person) {
         return person;
     }
 }

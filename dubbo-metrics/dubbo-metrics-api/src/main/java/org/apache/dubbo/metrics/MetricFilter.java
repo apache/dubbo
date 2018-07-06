@@ -14,35 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.support;
+package org.apache.dubbo.metrics;
 
-import org.apache.dubbo.rpc.CustomArgument;
+/**
+ * A filter used to determine whether or not a metric should be reported, among other things.
+ */
+public interface MetricFilter {
 
-public interface DemoService {
-    void sayHello(String name);
+    /**
+     * Matches all metrics, regardless of type or name.
+     */
+    MetricFilter ALL = new MetricFilter() {
+        @Override
+        public boolean matches(MetricName name, Metric metric) {
+            return true;
+        }
+    };
 
-    String echo(String text);
-
-    long timestamp();
-
-    String getThreadName();
-
-    int getSize(String[] strs);
-
-    int getSize(Object[] os);
-
-    Object invoke(String service, String method) throws Exception;
-
-    int stringLength(String str);
-
-    Type enumlength(Type... types);
-
-//	Type enumlength(Type type);
-
-    String get(CustomArgument arg1);
-
-    byte getbyte(byte arg);
-
-    Person getPerson(Person person);
-
+    /**
+     * Returns {@code true} if the metric matches the filter; {@code false} otherwise.
+     *
+     * @param name      the metric's name
+     * @param metric    the metric
+     * @return {@code true} if the metric matches the filter
+     */
+    boolean matches(MetricName name, Metric metric);
 }

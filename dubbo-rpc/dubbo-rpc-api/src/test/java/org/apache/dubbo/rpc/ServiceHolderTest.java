@@ -14,35 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.support;
+package org.apache.dubbo.rpc;
 
-import org.apache.dubbo.rpc.CustomArgument;
+import org.junit.Assert;
+import org.junit.Test;
 
-public interface DemoService {
-    void sayHello(String name);
+public class ServiceHolderTest {
 
-    String echo(String text);
+    @Test
+    public void testHolderClass() {
 
-    long timestamp();
+        ServiceClassHolder holder = ServiceClassHolder.getInstance();
 
-    String getThreadName();
+        holder.pushServiceClass(ServiceHolderTest.class);
 
-    int getSize(String[] strs);
+        Assert.assertEquals(ServiceHolderTest.class, holder.popServiceClass());
 
-    int getSize(Object[] os);
-
-    Object invoke(String service, String method) throws Exception;
-
-    int stringLength(String str);
-
-    Type enumlength(Type... types);
-
-//	Type enumlength(Type type);
-
-    String get(CustomArgument arg1);
-
-    byte getbyte(byte arg);
-
-    Person getPerson(Person person);
-
+    }
 }

@@ -14,35 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.support;
+package org.apache.dubbo.metrics;
 
-import org.apache.dubbo.rpc.CustomArgument;
+/**
+ * <pre>
+ * An incrementing and decrementing counter metric.
+ * </pre>
+ */
+public interface Counter extends Metric, Counting {
 
-public interface DemoService {
-    void sayHello(String name);
+    /**
+     * Increment the counter by one.
+     */
+    void inc();
 
-    String echo(String text);
+    /**
+     * Increment the counter by {@code n}.
+     *
+     * @param n the amount by which the counter will be increased
+     */
+    void inc(long n);
 
-    long timestamp();
+    /**
+     * Decrement the counter by one.
+     */
+    void dec();
 
-    String getThreadName();
-
-    int getSize(String[] strs);
-
-    int getSize(Object[] os);
-
-    Object invoke(String service, String method) throws Exception;
-
-    int stringLength(String str);
-
-    Type enumlength(Type... types);
-
-//	Type enumlength(Type type);
-
-    String get(CustomArgument arg1);
-
-    byte getbyte(byte arg);
-
-    Person getPerson(Person person);
+    /**
+     * Decrement the counter by {@code n}.
+     *
+     * @param n the amount by which the counter will be decreased
+     */
+    void dec(long n);
 
 }
