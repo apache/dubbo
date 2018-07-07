@@ -89,11 +89,11 @@ public class Constants {
 
     public static final String DEFAULT_EXCHANGER = "header";
 
-    public static final String DEFAULT_TRANSPORTER = "netty";
+    public static final String DEFAULT_TRANSPORTER = "netty4";
 
-    public static final String DEFAULT_REMOTING_SERVER = "netty";
+    public static final String DEFAULT_REMOTING_SERVER = "netty4";
 
-    public static final String DEFAULT_REMOTING_CLIENT = "netty";
+    public static final String DEFAULT_REMOTING_CLIENT = "netty4";
 
     public static final String DEFAULT_REMOTING_CODEC = "dubbo";
 

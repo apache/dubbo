@@ -110,7 +110,7 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-remoting-netty3</artifactId>
+                <artifactId>dubbo-remoting-netty4</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
