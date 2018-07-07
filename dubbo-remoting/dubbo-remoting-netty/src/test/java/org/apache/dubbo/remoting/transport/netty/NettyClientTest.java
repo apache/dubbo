@@ -73,7 +73,7 @@ public class NettyClientTest {
     @Test
     public void testServerClose() throws Exception {
         for (int i = 0; i < 100; i++) {
-            Server aServer = Exchangers.bind(URL.valueOf("exchange://localhost:" + (5000 + i) + "?client=netty"), new TelnetServerHandler());
+            Server aServer = Exchangers.bind(URL.valueOf("exchange://localhost:" + (5000 + i) + "?server=netty"), new TelnetServerHandler());
             aServer.close();
         }
     }
