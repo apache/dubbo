@@ -120,7 +120,7 @@ See [CONTRIBUTING](https://github.com/apache/incubator-dubbo/blob/master/CONTRI
 
 ## Reporting bugs
 
-See [reporting bugs](https://github.com/coreos/etcd/blob/master/Documentation/reporting_bugs.md) for details about reporting any issues.
+Please follow the [template](https://github.com/apache/incubator-dubbo/issues/new?template=dubbo-issue-report-template.md) for reporting any issues.
 
 ## Reporting a security vulnerability
 
