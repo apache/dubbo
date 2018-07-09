@@ -36,7 +36,7 @@ import org.apache.thrift.transport.TIOStreamTransport;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 /**
- * @since 2.7.0, use https://github.com/dubbo/dubbo-rpc-native-thrift to instead of this module
+ * @since 2.7.0, use https://github.com/dubbo/dubbo-rpc-native-thrift instead
  */
 @Deprecated
 public class ThriftNativeCodec implements Codec2 {

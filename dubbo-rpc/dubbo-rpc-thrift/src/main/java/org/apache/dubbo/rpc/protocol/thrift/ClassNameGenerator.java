@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc.protocol.thrift;
 
 import org.apache.dubbo.common.extension.SPI;
 /**
- * @since 2.7.0, use https://github.com/dubbo/dubbo-rpc-native-thrift to instead of this module
+ * @since 2.7.0, use https://github.com/dubbo/dubbo-rpc-native-thrift instead
  */
 @Deprecated
 @SPI(DubboClassNameGenerator.NAME)
