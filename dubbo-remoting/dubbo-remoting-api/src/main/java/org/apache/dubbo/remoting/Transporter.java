@@ -31,7 +31,7 @@ import javax.sound.midi.Receiver;
  *
  * @see org.apache.dubbo.remoting.Transporters
  */
-@SPI("netty4")
+@SPI("netty")
 public interface Transporter {
 
     /**
