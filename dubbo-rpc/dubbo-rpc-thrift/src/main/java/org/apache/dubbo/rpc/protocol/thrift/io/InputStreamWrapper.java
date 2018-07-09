@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc.protocol.thrift.io;
 
 import java.io.IOException;
 import java.io.InputStream;
-
+@Deprecated
 public class InputStreamWrapper extends InputStream {
 
     private InputStream is;
