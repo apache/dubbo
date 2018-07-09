@@ -17,6 +17,8 @@
 package org.apache.dubbo.config.spring.extension;
 
 import org.apache.dubbo.common.extension.ExtensionFactory;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
@@ -51,6 +53,16 @@ public class SpringExtensionFactory implements ExtensionFactory {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T getExtension(Class<T> type, String name) {
+
+        //SPI never get from spring bean factory
+        if (type.isInterface() && type.isAnnotationPresent(SPI.class)) {
+            ExtensionLoader<T> loader = ExtensionLoader.getExtensionLoader(type);
+            if (!loader.getSupportedExtensions().isEmpty()) {
+                return loader.getAdaptiveExtension();
+            }
+            return null;
+        }
+
         for (ApplicationContext context : contexts) {
             if (context.containsBean(name)) {
                 Object bean = context.getBean(name);
