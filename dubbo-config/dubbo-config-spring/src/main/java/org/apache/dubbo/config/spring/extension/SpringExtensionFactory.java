@@ -54,12 +54,8 @@ public class SpringExtensionFactory implements ExtensionFactory {
     @SuppressWarnings("unchecked")
     public <T> T getExtension(Class<T> type, String name) {
 
-        //SPI never get from spring bean factory
+        //SPI should be get from SpiExtensionFactory
         if (type.isInterface() && type.isAnnotationPresent(SPI.class)) {
-            ExtensionLoader<T> loader = ExtensionLoader.getExtensionLoader(type);
-            if (!loader.getSupportedExtensions().isEmpty()) {
-                return loader.getAdaptiveExtension();
-            }
             return null;
         }
 

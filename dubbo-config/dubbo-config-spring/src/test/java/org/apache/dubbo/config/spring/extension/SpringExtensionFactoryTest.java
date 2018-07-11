@@ -53,7 +53,7 @@ public class SpringExtensionFactoryTest {
     @Test
     public void testGetExtensionBySPI() {
         Protocol protocol = springExtensionFactory.getExtension(Protocol.class, "protocol");
-        Assert.assertNotNull(protocol);
+        Assert.assertNull(protocol);
     }
 
     @Test
