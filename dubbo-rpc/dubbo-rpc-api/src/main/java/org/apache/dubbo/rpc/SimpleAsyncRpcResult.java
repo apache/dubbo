@@ -19,37 +19,21 @@ package org.apache.dubbo.rpc;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * AsyncContext works like {@see javax.servlet.AsyncContext} in the Servlet 3.0.
- * An AsyncContext is stated by a call to {@link RpcContext#startAsync()}.
- * <p>
- * The demo is {@see com.alibaba.dubbo.examples.async.AsyncConsumer}
- * and {@see com.alibaba.dubbo.examples.async.AsyncProvider}
+ * A sub class used for normal async invoke.
+ * TODO AsyncRpcResult, AsyncNormalRpcResult should not be a parent-child hierarchy.
  */
-public interface AsyncContext {
+public class SimpleAsyncRpcResult extends AsyncRpcResult {
+    public SimpleAsyncRpcResult(CompletableFuture<Object> future, boolean registerCallback) {
+        super(future, registerCallback);
+    }
 
-    CompletableFuture getInternalFuture();
+    public SimpleAsyncRpcResult(CompletableFuture<Object> future, CompletableFuture<Result> rFuture, boolean registerCallback) {
+        super(future, rFuture, registerCallback);
+    }
 
-    /**
-     * write value and complete the async context.
-     *
-     * @param value invoke result
-     */
-    void write(Object value);
-
-    /**
-     * @return true if the aysnc context is started
-     */
-    boolean isAsyncStarted();
-
-    /**
-     * change the context state to stop
-     */
-    boolean stop();
-
-    /**
-     * change the context state to start
-     */
-    void start();
-
-    void signalContextSwitch();
+    @Override
+    public Object recreate() throws Throwable {
+        // TODO should we check the status of valueFuture here?
+        return null;
+    }
 }

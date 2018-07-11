@@ -19,6 +19,10 @@ package org.apache.dubbo.rpc.support;
 import org.apache.dubbo.rpc.CustomArgument;
 import org.apache.dubbo.rpc.RpcContext;
 
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+
 /**
  * DemoServiceImpl
  */
@@ -85,5 +89,35 @@ public class DemoServiceImpl implements DemoService {
 
     public Person getPerson(Person person) {
         return person;
+    }
+
+    @Override
+    public String testReturnType(String str) {
+        return null;
+    }
+
+    @Override
+    public List<String> testReturnType1(String str) {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture<String> testReturnType2(String str) {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture<List<String>> testReturnType3(String str) {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture testReturnType4(String str) {
+        return CompletableFuture.completedFuture("");
+    }
+
+    @Override
+    public CompletableFuture<Map<String, String>> testReturnType5(String str) {
+        return null;
     }
 }
