@@ -31,9 +31,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
 
 /**
  * Thread local context. (API, ThreadLocal, ThreadSafe)
@@ -105,6 +105,10 @@ public class RpcContext {
         return SERVER_LOCAL.get();
     }
 
+    public static void restoreServerContext(RpcContext oldServerContext) {
+        SERVER_LOCAL.set(oldServerContext);
+    }
+
     /**
      * remove server side context.
      *
@@ -123,6 +127,10 @@ public class RpcContext {
         return LOCAL.get();
     }
 
+    public static void restoreContext(RpcContext oldContext) {
+        LOCAL.set(oldContext);
+    }
+
     /**
      * remove context.
      *
@@ -130,23 +138,6 @@ public class RpcContext {
      */
     public static void removeContext() {
         LOCAL.remove();
-    }
-
-    /**
-     * TODO call multiple times in different thread?
-     *
-     * @return
-     * @throws IllegalStateException
-     */
-    @SuppressWarnings("unchecked")
-    public static AsyncContext startAsync() throws IllegalStateException {
-        RpcContext currentContext = getContext();
-        if (currentContext.asyncContext != null) {
-            currentContext.asyncContext.start();
-            return currentContext.asyncContext;
-        } else {
-            throw new IllegalStateException("This service does not support asynchronous operations, you should open async explicitly before use.");
-        }
     }
 
     /**
@@ -636,23 +627,19 @@ public class RpcContext {
      * @return get the return result from <code>future.get()</code>
      */
     @SuppressWarnings("unchecked")
-    public <T> Future<T> asyncCall(Callable<T> callable) {
+    public <T> CompletableFuture<T> asyncCall(Callable<T> callable) {
         try {
             try {
                 setAttachment(Constants.ASYNC_KEY, Boolean.TRUE.toString());
                 final T o = callable.call();
                 //local invoke will return directly
                 if (o != null) {
-                    FutureTask<T> f = new FutureTask<T>(new Callable<T>() {
-                        @Override
-                        public T call() throws Exception {
-                            return o;
-                        }
-                    });
-                    f.run();
-                    return f;
+                    if (o instanceof CompletableFuture) {
+                        return (CompletableFuture<T>) o;
+                    }
+                    CompletableFuture.completedFuture(o);
                 } else {
-
+                    // The service has a normal sync method signature, should get future from RpcContext.
                 }
             } catch (Exception e) {
                 throw new RpcException(e);
@@ -660,7 +647,7 @@ public class RpcContext {
                 removeAttachment(Constants.ASYNC_KEY);
             }
         } catch (final RpcException e) {
-            return new Future<T>() {
+            return new CompletableFuture<T>() {
                 @Override
                 public boolean cancel(boolean mayInterruptIfRunning) {
                     return false;
@@ -689,7 +676,7 @@ public class RpcContext {
                 }
             };
         }
-        return ((Future<T>) getContext().getFuture());
+        return ((CompletableFuture<T>) getContext().getFuture());
     }
 
     /**
@@ -709,6 +696,21 @@ public class RpcContext {
         }
     }
 
+    /**
+     * @return
+     * @throws IllegalStateException
+     */
+    @SuppressWarnings("unchecked")
+    public static AsyncContext startAsync() throws IllegalStateException {
+        RpcContext currentContext = getContext();
+        if (currentContext.asyncContext != null) {
+            currentContext.asyncContext.start();
+            return currentContext.asyncContext;
+        } else {
+            throw new IllegalStateException("This service does not support asynchronous operations, you should open async explicitly before use.");
+        }
+    }
+
     public boolean isAsyncStarted() {
         if (this.asyncContext == null) {
             return false;
@@ -717,12 +719,15 @@ public class RpcContext {
     }
 
     public boolean stopAsync() {
-        boolean stoped = asyncContext.stop();
-        asyncContext = null;
-        return stoped;
+        return asyncContext.stop();
     }
 
     public void setAsyncContext(AsyncContext asyncContext) {
         this.asyncContext = asyncContext;
     }
+
+    public AsyncContext getAsyncContext() {
+        return asyncContext;
+    }
+
 }

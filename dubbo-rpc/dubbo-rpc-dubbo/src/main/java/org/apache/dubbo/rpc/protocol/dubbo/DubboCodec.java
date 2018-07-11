@@ -37,6 +37,7 @@ import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -188,7 +189,7 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
             for (int i = 0; i < args.length; i++) {
                 out.writeObject(encodeInvocationArgument(channel, inv, i));
             }
-        out.writeObject(inv.getAttachments());
+        out.writeObject(RpcUtils.getNecessaryAttachments(inv));
     }
 
     @Override
