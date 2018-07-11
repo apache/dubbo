@@ -26,30 +26,30 @@ public class AsyncContextImpl implements AsyncContext {
     private static final Logger logger = LoggerFactory.getLogger(AsyncContextImpl.class);
 
     private final AtomicBoolean started = new AtomicBoolean(false);
+    private final AtomicBoolean stoped = new AtomicBoolean(false);
 
     private CompletableFuture<Object> future;
+
+    private RpcContext storedContext;
+    private RpcContext storedServerContext;
 
     public AsyncContextImpl() {
     }
 
     public AsyncContextImpl(CompletableFuture<Object> future) {
         this.future = future;
-    }
-
-    @Override
-    public void addListener(Runnable run) {
-
+        this.storedContext = RpcContext.getContext();
+        this.storedServerContext = RpcContext.getServerContext();
     }
 
     @Override
     public void write(Object value) {
-        if (stop()) {
+        if (isAsyncStarted() && stop()) {
             if (value instanceof Throwable) {
-                // TODO check exception type like ExceptionFilter do.
                 Throwable bizExe = (Throwable) value;
-                future.complete(new RpcResult(bizExe));
+                future.completeExceptionally(bizExe);
             } else {
-                future.complete(new RpcResult(value));
+                future.complete(value);
             }
         } else {
             throw new IllegalStateException("The async response has probably been wrote back by another thread, or the asyncContext has been closed.");
@@ -63,11 +63,22 @@ public class AsyncContextImpl implements AsyncContext {
 
     @Override
     public boolean stop() {
-        return started.compareAndSet(true, false);
+        return stoped.compareAndSet(false, true);
     }
 
     @Override
     public void start() {
         this.started.set(true);
+    }
+
+    public void signalContextSwitch() {
+        RpcContext.restoreContext(storedContext);
+        RpcContext.restoreServerContext(storedServerContext);
+        // Restore any other contexts in here if necessary.
+    }
+
+    @Override
+    public CompletableFuture getInternalFuture() {
+        return future;
     }
 }
