@@ -74,7 +74,7 @@ public class FutureAdapter<V> extends CompletableFuture<V> {
 
     @Override
     public boolean isDone() {
-        return this.isDone();
+        return super.isDone();
     }
 
     @Override
