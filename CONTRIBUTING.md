@@ -23,6 +23,30 @@ Our code style is almost in line with the standard java conventions (Popular IDE
 
 * When writing a commit message please follow these conventions, if you are fixing an existing issue please add Fixes #XXX at the end of the commit message (where XXX is the issue number).
 
+### Contribution flow
+
+This is a rough outline of what a contributor's workflow looks like:
+
+* Fork the current repository
+* Create a topic branch from where to base the contribution. This is usually master.
+* Make commits of logical units.
+* Make sure commit messages are in the proper format (see below).
+* Push changes in a topic branch to your forked repository.
+* Follow the checklist in the [pull request template](https://github.com/apache/incubator-dubbo/blob/master/PULL_REQUEST_TEMPLATE.md)
+* Before you sending out the pull request, please sync your forked repository with remote repository, this will make your pull request simple and clear. See guide below:
+```
+git remote add upstream git@github.com:apache/incubator-dubbo.git
+git fetch upstream
+git rebase upstream/master
+git checkout -b your_awesome_patch
+... add some work
+git push origin your_awesome_patch
+```
+* Submit a pull request to apache/incubator-dubbo and wait for the reply.
+
+Thanks for contributing!
+
+
 ### Code style
 
 We provide a template file [dubbo_codestyle_for_idea.xml](https://github.com/apache/incubator-dubbo/tree/master/codestyle/dubbo_codestyle_for_idea.xml) for IntelliJ idea, you can import it to you IDE. 
