@@ -124,6 +124,22 @@ public class Consumer {
 
 See [CONTRIBUTING](https://github.com/apache/incubator-dubbo/blob/master/CONTRIBUTING.md) for details on submitting patches and the contribution workflow.
 
+### How can I contribute?
+
+* Take a look at issues with tag called [`Good first issue`](https://github.com/apache/incubator-dubbo/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22).
+* Join the discussion on mailing list, subscription [guide](https://github.com/apache/incubator-dubbo/wiki/Mailing-list-subscription-guide).
+* Answer questions on [issues](https://github.com/apache/incubator-dubbo/issues).
+* Fix bugs reported on [issues](https://github.com/apache/incubator-dubbo/issues), and send us pull request.
+* Review the existing [pull request](https://github.com/apache/incubator-dubbo/pulls).
+* Improve the [website](https://github.com/apache/incubator-dubbo-website), typically we need
+  * blog post
+  * translation on documentation
+  * use cases about how Dubbo is being used in enterprise system.
+* Improve the [dubbo-ops/dubbo-monitor](https://github.com/apache/incubator-dubbo-ops).
+* Contribute to the projects listed in [ecosystem](https://github.com/dubbo).
+* Any form of contribution that is not mentioned above.
+* If you would like to contribute, please send an email to dev@dubbo.incubator.apache.org to let us know!
+
 ## Reporting bugs
 
 Please follow the [template](https://github.com/apache/incubator-dubbo/issues/new?template=dubbo-issue-report-template.md) for reporting any issues.
