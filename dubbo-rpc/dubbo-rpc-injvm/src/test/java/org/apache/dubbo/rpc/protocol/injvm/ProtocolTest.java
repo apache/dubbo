@@ -36,6 +36,10 @@ public class ProtocolTest {
         }
     };
 
+    static{
+        InjvmProtocol injvm = InjvmProtocol.getInjvmProtocol();
+    }
+
     ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getExtension("javassist");
 
     URL url = URL.valueOf("injvm://localhost:0/org.apache.dubbo.rpc.support.IEcho?interface=org.apache.dubbo.rpc.support.IEcho");
@@ -47,6 +51,8 @@ public class ProtocolTest {
         Protocol autowireProtocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
         Protocol InjvmProtocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension("injvm");
+
+        assertEquals(0,InjvmProtocol.getDefaultPort());
 
         InjvmProtocol.export(invoker);
 

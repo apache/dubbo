@@ -18,6 +18,10 @@ package org.apache.dubbo.rpc.support;
 
 import org.apache.dubbo.rpc.CustomArgument;
 
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+
 public interface DemoService {
     void sayHello(String name);
 
@@ -44,5 +48,17 @@ public interface DemoService {
     byte getbyte(byte arg);
 
     Person getPerson(Person person);
+
+    String testReturnType(String str);
+
+    List<String> testReturnType1(String str);
+
+    CompletableFuture<String> testReturnType2(String str);
+
+    CompletableFuture<List<String>> testReturnType3(String str);
+
+    CompletableFuture testReturnType4(String str);
+
+    CompletableFuture<Map<String, String>> testReturnType5(String str);
 
 }

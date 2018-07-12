@@ -16,40 +16,20 @@
  */
 package org.apache.dubbo.rpc;
 
-import java.util.concurrent.CompletableFuture;
-
 /**
- * AsyncContext works like {@see javax.servlet.AsyncContext} in the Servlet 3.0.
- * An AsyncContext is stated by a call to {@link RpcContext#startAsync()}.
- * <p>
- * The demo is {@see com.alibaba.dubbo.examples.async.AsyncConsumer}
- * and {@see com.alibaba.dubbo.examples.async.AsyncProvider}
+ *
  */
-public interface AsyncContext {
+public abstract class AbstractPostProcessFilter implements PostProcessFilter {
+    @Override
+    public Result postProcessResult(Result result, Invoker<?> invoker, Invocation invocation) {
+        if (result instanceof AsyncRpcResult) {
+            AsyncRpcResult asyncResult = (AsyncRpcResult) result;
+            asyncResult.thenApplyWithContext(r -> doPostProcess(r, invoker, invocation));
+            return asyncResult;
+        } else {
+            return doPostProcess(result, invoker, invocation);
+        }
+    }
 
-    CompletableFuture getInternalFuture();
-
-    /**
-     * write value and complete the async context.
-     *
-     * @param value invoke result
-     */
-    void write(Object value);
-
-    /**
-     * @return true if the aysnc context is started
-     */
-    boolean isAsyncStarted();
-
-    /**
-     * change the context state to stop
-     */
-    boolean stop();
-
-    /**
-     * change the context state to start
-     */
-    void start();
-
-    void signalContextSwitch();
+    protected abstract Result doPostProcess(Result result, Invoker<?> invoker, Invocation invocation);
 }

@@ -142,7 +142,7 @@ public class RpcContextTest {
         Assert.assertTrue(future.isDone());
 
         rpcContext.stopAsync();
-        Assert.assertFalse(rpcContext.isAsyncStarted());
+        Assert.assertTrue(rpcContext.isAsyncStarted());
     }
 
 }
