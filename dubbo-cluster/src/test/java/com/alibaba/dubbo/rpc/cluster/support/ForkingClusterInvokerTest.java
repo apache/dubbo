@@ -25,7 +25,7 @@ import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.cluster.Directory;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,13 +33,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
 /**
  * ForkingClusterInvokerTest
- *
  */
 @SuppressWarnings("unchecked")
 public class ForkingClusterInvokerTest {
@@ -73,6 +75,7 @@ public class ForkingClusterInvokerTest {
         invokers.add(invoker3);
 
     }
+
     private void resetInvokerToException() {
         given(invoker1.invoke(invocation)).willThrow(new RuntimeException());
         given(invoker1.getUrl()).willReturn(url);
@@ -108,7 +111,7 @@ public class ForkingClusterInvokerTest {
     }
 
     @Test
-    public void testInvokeExceptoin() {
+    public void testInvokeException() {
         resetInvokerToException();
         ForkingClusterInvoker<ForkingClusterInvokerTest> invoker = new ForkingClusterInvoker<ForkingClusterInvokerTest>(
                 dic);
@@ -117,7 +120,7 @@ public class ForkingClusterInvokerTest {
             invoker.invoke(invocation);
             Assert.fail();
         } catch (RpcException expected) {
-            Assert.assertTrue(expected.getMessage().contains("Failed to forking invoke provider"));
+            assertThat(expected.getMessage().contains("Failed to forking invoke provider"), is(true));
             assertFalse(expected.getCause() instanceof RpcException);
         }
     }
@@ -134,16 +137,16 @@ public class ForkingClusterInvokerTest {
         RpcContext.getContext().setAttachment(attachKey, attachValue);
 
         Map<String, String> attachments = RpcContext.getContext().getAttachments();
-        Assert.assertTrue("set attachment failed!", attachments != null && attachments.size() == 1);
+        assertThat("set attachment failed!", attachments != null && attachments.size() == 1, is(true));
         try {
             invoker.invoke(invocation);
             Assert.fail();
         } catch (RpcException expected) {
-            Assert.assertTrue(expected.getMessage().contains("Failed to forking invoke provider"));
+            assertThat(expected.getMessage().contains("Failed to forking invoke provider"), is(true));
             assertFalse(expected.getCause() instanceof RpcException);
         }
         Map<String, String> afterInvoke = RpcContext.getContext().getAttachments();
-        Assert.assertTrue("", afterInvoke != null && afterInvoke.size() == 0);
+        assertThat(afterInvoke != null && afterInvoke.size() == 0, is(true));
     }
 
     @Test()
@@ -154,7 +157,7 @@ public class ForkingClusterInvokerTest {
         ForkingClusterInvoker<ForkingClusterInvokerTest> invoker = new ForkingClusterInvoker<ForkingClusterInvokerTest>(
                 dic);
         Result ret = invoker.invoke(invocation);
-        Assert.assertSame(result, ret);
+        assertSame(result, ret);
     }
 
 }
