@@ -81,17 +81,17 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         if (applicationContext != null) {
             SPRING_CONTEXT = applicationContext;
             try {
-                Method method = applicationContext.getClass().getMethod("addApplicationListener", new Class<?>[]{ApplicationListener.class}); // backward compatibility to spring 2.0.1
-                method.invoke(applicationContext, new Object[]{this});
+                Method method = applicationContext.getClass().getMethod("addApplicationListener", ApplicationListener.class); // backward compatibility to spring 2.0.1
+                method.invoke(applicationContext, this);
                 supportedApplicationListener = true;
             } catch (Throwable t) {
                 if (applicationContext instanceof AbstractApplicationContext) {
                     try {
-                        Method method = AbstractApplicationContext.class.getDeclaredMethod("addListener", new Class<?>[]{ApplicationListener.class}); // backward compatibility to spring 2.0.1
+                        Method method = AbstractApplicationContext.class.getDeclaredMethod("addListener", ApplicationListener.class); // backward compatibility to spring 2.0.1
                         if (!method.isAccessible()) {
                             method.setAccessible(true);
                         }
-                        method.invoke(applicationContext, new Object[]{this});
+                        method.invoke(applicationContext, this);
                         supportedApplicationListener = true;
                     } catch (Throwable t2) {
                     }
@@ -144,7 +144,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                         && providerConfigMap.size() > 1) { // backward compatibility
                     List<ProviderConfig> providerConfigs = new ArrayList<ProviderConfig>();
                     for (ProviderConfig config : providerConfigMap.values()) {
-                        if (config.isDefault() != null && config.isDefault().booleanValue()) {
+                        if (config.isDefault() != null && config.isDefault()) {
                             providerConfigs.add(config);
                         }
                     }
@@ -154,7 +154,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                 } else {
                     ProviderConfig providerConfig = null;
                     for (ProviderConfig config : providerConfigMap.values()) {
-                        if (config.isDefault() == null || config.isDefault().booleanValue()) {
+                        if (config.isDefault() == null || config.isDefault()) {
                             if (providerConfig != null) {
                                 throw new IllegalStateException("Duplicate provider configs: " + providerConfig + " and " + config);
                             }
@@ -173,7 +173,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             if (applicationConfigMap != null && applicationConfigMap.size() > 0) {
                 ApplicationConfig applicationConfig = null;
                 for (ApplicationConfig config : applicationConfigMap.values()) {
-                    if (config.isDefault() == null || config.isDefault().booleanValue()) {
+                    if (config.isDefault() == null || config.isDefault()) {
                         if (applicationConfig != null) {
                             throw new IllegalStateException("Duplicate application configs: " + applicationConfig + " and " + config);
                         }
@@ -191,7 +191,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             if (moduleConfigMap != null && moduleConfigMap.size() > 0) {
                 ModuleConfig moduleConfig = null;
                 for (ModuleConfig config : moduleConfigMap.values()) {
-                    if (config.isDefault() == null || config.isDefault().booleanValue()) {
+                    if (config.isDefault() == null || config.isDefault()) {
                         if (moduleConfig != null) {
                             throw new IllegalStateException("Duplicate module configs: " + moduleConfig + " and " + config);
                         }
@@ -210,7 +210,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             if (registryConfigMap != null && registryConfigMap.size() > 0) {
                 List<RegistryConfig> registryConfigs = new ArrayList<RegistryConfig>();
                 for (RegistryConfig config : registryConfigMap.values()) {
-                    if (config.isDefault() == null || config.isDefault().booleanValue()) {
+                    if (config.isDefault() == null || config.isDefault()) {
                         registryConfigs.add(config);
                     }
                 }
@@ -226,7 +226,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             if (monitorConfigMap != null && monitorConfigMap.size() > 0) {
                 MonitorConfig monitorConfig = null;
                 for (MonitorConfig config : monitorConfigMap.values()) {
-                    if (config.isDefault() == null || config.isDefault().booleanValue()) {
+                    if (config.isDefault() == null || config.isDefault()) {
                         if (monitorConfig != null) {
                             throw new IllegalStateException("Duplicate monitor configs: " + monitorConfig + " and " + config);
                         }
@@ -244,7 +244,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             if (protocolConfigMap != null && protocolConfigMap.size() > 0) {
                 List<ProtocolConfig> protocolConfigs = new ArrayList<ProtocolConfig>();
                 for (ProtocolConfig config : protocolConfigMap.values()) {
-                    if (config.isDefault() == null || config.isDefault().booleanValue()) {
+                    if (config.isDefault() == null || config.isDefault()) {
                         protocolConfigs.add(config);
                     }
                 }
