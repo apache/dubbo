@@ -94,7 +94,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
             try {
                 // init scanner
                 Class<?> scannerClass = ReflectUtils.forName("org.springframework.context.annotation.ClassPathBeanDefinitionScanner");
-                Object scanner = scannerClass.getConstructor(new Class<?>[]{BeanDefinitionRegistry.class, boolean.class}).newInstance(new Object[]{(BeanDefinitionRegistry) beanFactory, true});
+                Object scanner = scannerClass.getConstructor(new Class<?>[]{BeanDefinitionRegistry.class, boolean.class}).newInstance((BeanDefinitionRegistry) beanFactory, true);
                 // add filter
                 Class<?> filterClass = ReflectUtils.forName("org.springframework.core.type.filter.AnnotationTypeFilter");
                 Object filter = filterClass.getConstructor(Class.class).newInstance(Service.class);
@@ -102,7 +102,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                 addIncludeFilter.invoke(scanner, filter);
                 // scan packages
                 String[] packages = Constants.COMMA_SPLIT_PATTERN.split(annotationPackage);
-                Method scan = scannerClass.getMethod("scan", new Class<?>[]{String[].class});
+                Method scan = scannerClass.getMethod("scan", String[].class);
                 scan.invoke(scanner, new Object[]{packages});
             } catch (Throwable e) {
                 // spring 2.0

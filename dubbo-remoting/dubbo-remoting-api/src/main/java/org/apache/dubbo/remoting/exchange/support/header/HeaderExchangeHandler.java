@@ -36,6 +36,7 @@ import org.apache.dubbo.remoting.transport.ChannelHandlerDelegate;
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
 
+
 /**
  * ExchangeReceiver
  */
@@ -102,7 +103,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
                 channel.send(res);
                 return;
             }
-            future.whenCompleteAsync((result, t) -> {
+            future.whenComplete((result, t) -> {
                 try {
                     if (t == null) {
                         res.setStatus(Response.OK);
