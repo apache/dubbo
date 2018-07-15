@@ -25,9 +25,8 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.StaticContext;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
-
-import org.junit.Assert;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -37,6 +36,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -272,7 +272,7 @@ public class ImplicitCallBackTest {
     }
 
     @Test(expected = RuntimeException.class)
-    public void test_Async_Future_Ex() throws Exception {
+    public void test_Async_Future_Ex() throws Throwable {
         try {
             initOrResetUrl(true);
             destroyService();
@@ -285,6 +285,8 @@ public class ImplicitCallBackTest {
             Future<Person> pFuture = RpcContext.getContext().getFuture();
             ret = pFuture.get(1000 * 1000, TimeUnit.MICROSECONDS);
             Assert.assertEquals(requestId, ret.getId());
+        } catch (ExecutionException e) {
+            throw e.getCause();
         } finally {
             destroyService();
         }
