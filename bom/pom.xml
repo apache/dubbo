@@ -2,6 +2,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
+    <properties>
+        <hessian_lite_version>3.2.3</hessian_lite_version>
+    </properties>
 
     <parent>
         <groupId>org.sonatype.oss</groupId>
@@ -281,7 +284,7 @@
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>hessian-lite</artifactId>
-                <version>3.2.3</version>
+                <version>${hessian_lite_version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

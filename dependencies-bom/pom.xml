@@ -111,6 +111,7 @@
 
         <jaxb_version>2.2.7</jaxb_version>
         <activation_version>1.2.0</activation_version>
+        <hessian_lite_version>3.2.3</hessian_lite_version>
     </properties>
 
     <dependencyManagement>
@@ -352,7 +353,11 @@
                 <artifactId>javax.activation</artifactId>
                 <version>${activation_version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>hessian-lite</artifactId>
+                <version>${hessian_lite_version}</version>
+            </dependency>
             <!-- Test lib -->
             <dependency>
                 <groupId>org.apache.curator</groupId>
