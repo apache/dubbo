@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
-
+@Deprecated
 public class RandomAccessByteArrayOutputStream extends OutputStream {
 
     protected byte buffer[];

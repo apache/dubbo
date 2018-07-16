@@ -38,8 +38,8 @@ public class NettyStringTest {
         //int port = (int) (1000 * Math.random() + 10000);
         int port = 10001;
         System.out.println(port);
-        server = Exchangers.bind(URL.valueOf("telnet://0.0.0.0:" + port + "?server=netty"), new TelnetServerHandler());
-        client = Exchangers.connect(URL.valueOf("telnet://127.0.0.1:" + port + "?client=netty"), new TelnetClientHandler());
+        server = Exchangers.bind(URL.valueOf("telnet://0.0.0.0:" + port + "?server=netty3"), new TelnetServerHandler());
+        client = Exchangers.connect(URL.valueOf("telnet://127.0.0.1:" + port + "?client=netty3"), new TelnetClientHandler());
     }
 
     @AfterClass
