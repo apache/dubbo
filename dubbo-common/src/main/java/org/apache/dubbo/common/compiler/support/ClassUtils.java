@@ -23,6 +23,8 @@ import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
@@ -262,11 +264,21 @@ public class ClassUtils {
             if (genericClass instanceof ParameterizedType) {
                 return (Class<?>) ((ParameterizedType) genericClass).getRawType();
             } else if (genericClass instanceof GenericArrayType) {
-                return (Class<?>) ((GenericArrayType) genericClass).getGenericComponentType();
+                Type type = ((GenericArrayType) genericClass).getGenericComponentType();
+                if (type instanceof TypeVariable) {
+                    return type.getClass();
+                }
+                return (((GenericArrayType) genericClass).getGenericComponentType() instanceof Class<?>)
+                        ? (Class<?>) ((GenericArrayType) genericClass).getGenericComponentType()
+                        : ((GenericArrayType) genericClass).getGenericComponentType().getClass();
             } else if (genericClass != null) {
+                if (genericClass instanceof TypeVariable) {
+                    return genericClass.getClass();
+                }
                 return (Class<?>) genericClass;
             }
         } catch (Throwable e) {
+
         }
         if (cls.getSuperclass() != null) {
             return getGenericClass(cls.getSuperclass(), i);
