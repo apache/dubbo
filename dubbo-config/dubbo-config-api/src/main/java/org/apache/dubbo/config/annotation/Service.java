@@ -263,5 +263,4 @@ public @interface Service {
      * Registry spring bean name
      */
     String[] registry() default {};
-
 }
