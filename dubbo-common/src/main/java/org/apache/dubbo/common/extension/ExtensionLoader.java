@@ -131,6 +131,7 @@ public class ExtensionLoader<T> {
     }
 
     public String getExtensionName(Class<?> extensionClass) {
+        getExtensionClasses();// load class
         return cachedNames.get(extensionClass);
     }
 
