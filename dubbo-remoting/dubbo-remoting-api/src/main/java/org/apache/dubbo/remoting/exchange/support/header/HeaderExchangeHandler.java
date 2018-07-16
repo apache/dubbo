@@ -77,7 +77,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         }
     }
 
-    void handleRequest(ExchangeChannel channel, Request req) throws RemotingException {
+    void handleRequest(final ExchangeChannel channel, Request req) throws RemotingException {
         Response res = new Response(req.getId(), req.getVersion());
         if (req.isBroken()) {
             Object data = req.getData();
@@ -183,7 +183,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
     @Override
     public void received(Channel channel, Object message) throws RemotingException {
         channel.setAttribute(KEY_READ_TIMESTAMP, System.currentTimeMillis());
-        ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
+        final ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
         try {
             if (message instanceof Request) {
                 // handle request.
