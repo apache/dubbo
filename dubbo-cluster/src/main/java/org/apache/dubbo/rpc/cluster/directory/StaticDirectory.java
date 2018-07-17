@@ -54,14 +54,7 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
 
     @Override
     public Class<T> getInterface() {
-        if (CollectionUtils.isEmpty(invokers)) {
-            throw new IllegalArgumentException("invokers == null");
-        }
-        Invoker<T> invoker = invokers.get(0);
-        if (invoker == null) {
-            throw new NullPointerException("invokes[0] == null");
-        }
-        return invoker.getInterface();
+        return invokers.get(0).getInterface();
     }
 
     @Override
