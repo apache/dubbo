@@ -54,7 +54,7 @@ public class RedisProtocolTest {
             this.redisServer = RedisServer.builder().port(redisPort).setting("requirepass " + password).build();
             this.registryUrl = URL.valueOf("redis://username:"+password+"@localhost:"+redisPort+"?db.index=0");
         } else {
-            this.redisServer = RedisServer.builder().port(redisPort).setting("maxheap 51200000").build();
+            this.redisServer = RedisServer.builder().port(redisPort).build();
             this.registryUrl = URL.valueOf("redis://localhost:" + redisPort);
         }
         this.redisServer.start();
