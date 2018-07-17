@@ -15,7 +15,10 @@
  * limitations under the License.
  */
 package org.apache.dubbo.rpc.protocol.thrift;
-
+/**
+ * @since 2.7.0, use https://github.com/dubbo/dubbo-rpc-native-thrift instead
+ */
+@Deprecated
 public final class ThriftConstants {
 
     public static final String THRIFT_PROTOCOL_KEY = "thrift.protocol";

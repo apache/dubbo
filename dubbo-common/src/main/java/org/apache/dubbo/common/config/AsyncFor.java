@@ -39,3 +39,4 @@ public @interface AsyncFor {
     Class<?> value();
 
 }
+

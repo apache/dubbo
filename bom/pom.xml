@@ -4,9 +4,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.sonatype.oss</groupId>
-        <artifactId>oss-parent</artifactId>
-        <version>7</version>
+        <groupId>org.apache</groupId>
+        <artifactId>apache</artifactId>
+        <version>19</version>
     </parent>
 
     <groupId>org.apache.dubbo</groupId>

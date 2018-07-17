@@ -1,1 +1,1 @@
-netty=org.apache.dubbo.remoting.transport.netty.NettyTransporter
+netty3=org.apache.dubbo.remoting.transport.netty.NettyTransporter
