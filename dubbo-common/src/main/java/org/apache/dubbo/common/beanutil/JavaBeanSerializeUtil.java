@@ -344,7 +344,7 @@ public final class JavaBeanSerializeUtil {
         return cl.newInstance();
     }
 
-    private static Object getConstructorArg(Class<?> cl) {
+    public static Object getConstructorArg(Class<?> cl) {
         if (boolean.class.equals(cl) || Boolean.class.equals(cl)) {
             return Boolean.FALSE;
         } else if (byte.class.equals(cl) || Byte.class.equals(cl)) {
