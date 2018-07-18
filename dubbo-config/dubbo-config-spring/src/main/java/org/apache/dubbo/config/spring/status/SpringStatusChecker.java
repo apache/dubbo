@@ -66,7 +66,13 @@ public class SpringStatusChecker implements StatusChecker {
                 if (!method.isAccessible()) {
                     method.setAccessible(true);
                 }
-                String[] configs = (String[]) method.invoke(context, new Object[0]);
+                String[] configs = null;
+                try {
+                    //getConfigLocations may throw exception, ignore it
+                    configs = (String[])method.invoke(context, new Object[0]);
+                } catch (UnsupportedOperationException e) {
+                    logger.warn(e.getMessage(), e);
+                }
                 if (configs != null && configs.length > 0) {
                     for (String config : configs) {
                         if (buf.length() > 0) {
