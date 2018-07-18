@@ -19,6 +19,7 @@ about: If you would like to report a issue to Dubbo, please use this template.
 2. xxx
 3. xxx
 
+Pls. provide [GitHub address] to reproduce this issue.
 
 ### Expected Result
 
