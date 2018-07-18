@@ -126,7 +126,7 @@ See [CONTRIBUTING](https://github.com/apache/incubator-dubbo/blob/master/CONTRI
 
 ### How can I contribute?
 
-* Take a look at issues with tag called [`Good first issue`](https://github.com/apache/incubator-dubbo/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22).
+* Take a look at issues with tag called [`Good first issue`](https://github.com/apache/incubator-dubbo/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22) or [`Help wanted`](https://github.com/apache/incubator-dubbo/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22).
 * Join the discussion on mailing list, subscription [guide](https://github.com/apache/incubator-dubbo/wiki/Mailing-list-subscription-guide).
 * Answer questions on [issues](https://github.com/apache/incubator-dubbo/issues).
 * Fix bugs reported on [issues](https://github.com/apache/incubator-dubbo/issues), and send us pull request.
