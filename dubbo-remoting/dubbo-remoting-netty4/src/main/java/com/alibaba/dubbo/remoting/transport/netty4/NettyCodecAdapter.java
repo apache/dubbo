@@ -77,7 +77,7 @@ final class NettyCodecAdapter {
 
         protected void decode(ChannelHandlerContext ctx, ByteBuf input, List<Object> out) throws Exception {
 
-            ChannelBuffer message = new NettyBackedChannelBuffer(input);
+             ChannelBuffer message = new NettyBackedChannelBuffer(input);
 
             NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
 

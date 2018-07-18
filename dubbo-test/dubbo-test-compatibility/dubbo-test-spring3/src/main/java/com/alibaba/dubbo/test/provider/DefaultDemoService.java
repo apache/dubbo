@@ -18,6 +18,7 @@ package com.alibaba.dubbo.test.provider;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.dubbo.demo.DemoService;
+import com.alibaba.dubbo.demo.SimpleObject;
 
 /**
  * Default {@link DemoService} implementation
@@ -35,6 +36,16 @@ public class DefaultDemoService implements DemoService {
     @Override
     public String sayHello(String name) {
         return "DefaultDemoService - sayHell() : " + name;
+    }
+
+    @Override
+    public SimpleObject changeSimple(SimpleObject simpleObject) {
+        return null;
+    }
+
+    @Override
+    public void throwsEx() {
+
     }
 
 }

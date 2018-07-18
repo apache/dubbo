@@ -79,6 +79,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     private static final ScheduledExecutorService delayExportExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboServiceDelayExporter", true));
     private final List<URL> urls = new ArrayList<URL>();
+    /**
+     * 所有的暴露的Exporter
+     */
     private final List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
     // interface type
     private String interfaceName;
@@ -223,7 +226,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (exported) {
             return;
         }
-        exported = true;
+        exported = true; //只会暴露一次
         if (interfaceName == null || interfaceName.length() == 0) {
             throw new IllegalStateException("<dubbo:service interface=\"\" /> interface not allow null!");
         }
@@ -278,7 +281,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             checkRef();
             generic = Boolean.FALSE.toString();
         }
-        if (local != null) {
+        if (local != null) {  //TODO 本地
             if ("true".equals(local)) {
                 local = interfaceName + "Local";
             }
@@ -445,8 +448,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             if (revision != null && revision.length() > 0) {
                 map.put("revision", revision);
             }
-
-            String[] methods = Wrapper.getWrapper(interfaceClass).getMethodNames(); //TODO ?
+            //使用Wrapper包装类来获取方法，可以避免频繁使用反射
+            String[] methods = Wrapper.getWrapper(interfaceClass).getMethodNames();
             if (methods.length == 0) {
                 logger.warn("NO method found in service interface " + interfaceClass.getName());
                 map.put("methods", Constants.ANY_VALUE);
@@ -528,6 +531,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void exportLocal(URL url) {
         if (!Constants.LOCAL_PROTOCOL.equalsIgnoreCase(url.getProtocol())) {
+            /**
+             * injvm://127.0.0.1/com.alibaba.dubbo.demo.DemoService?anyhost=true&application=demo-provider&bind.ip=192.168.2.101&bind.port=20880&default.server=netty4&dubbo=2.0.0&generic=false&interface=com.alibaba.dubbo.demo.DemoService&methods=changeSimple,sayHello,throwsEx&pid=56779&qos.port=22222&side=provider&timestamp=1526793306007
+             */
             URL local = URL.valueOf(url.toFullString())
                     .setProtocol(Constants.LOCAL_PROTOCOL)
                     .setHost(LOCALHOST)
@@ -628,6 +634,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
      * Configuration priority: environment variable -> java system properties -> port property in protocol config file
      * -> protocol default port
      *
+     * provider注册&监听端口，注册与监听port可独立配置
+     * 配置优先级：启动环境变量 -> java命令参数-D -> protocol配置文件port属性配置 -> 协议默认端口
      * @param protocolConfig
      * @param name
      * @return
@@ -646,9 +654,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 portToBind = provider.getPort();
             }
             final int defaultPort = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(name).getDefaultPort();
+            //0的时候使用默认端口默认20880
             if (portToBind == null || portToBind == 0) {
                 portToBind = defaultPort;
             }
+            //负数的时候 ，从20880开始寻找可以使用的端口
             if (portToBind == null || portToBind <= 0) {
                 portToBind = getRandomPort(name);
                 if (portToBind == null || portToBind < 0) {
@@ -672,6 +682,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         return portToRegistry;
     }
 
+    //判断参数的可取性
     private Integer parsePort(String configPort) {
         Integer port = null;
         if (configPort != null && configPort.length() > 0) {
@@ -688,6 +699,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         return port;
     }
 
+    //从环境中获取对应的参数
     private String getValueFromConfig(ProtocolConfig protocolConfig, String key) {
         String protocolPrefix = protocolConfig.getName().toUpperCase() + "_";
         String port = ConfigUtils.getSystemProperty(protocolPrefix + key);

@@ -190,7 +190,7 @@ public class Bytes {
     }
 
     /**
-     * to byte array.
+     * to byte array. TODO
      *
      * @param v   value.
      * @param b   byte array.

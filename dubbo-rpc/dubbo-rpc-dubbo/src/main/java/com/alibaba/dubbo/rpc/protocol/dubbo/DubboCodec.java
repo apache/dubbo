@@ -161,6 +161,7 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
 
     @Override
     protected void encodeRequestData(Channel channel, ObjectOutput out, Object data) throws IOException {
+        //序列化Request对象
         RpcInvocation inv = (RpcInvocation) data;
 
         out.writeUTF(inv.getAttachment(Constants.DUBBO_VERSION_KEY, DUBBO_VERSION));

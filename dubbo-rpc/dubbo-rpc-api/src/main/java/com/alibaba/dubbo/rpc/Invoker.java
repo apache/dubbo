@@ -37,6 +37,7 @@ public interface Invoker<T> extends Node {
     /**
      * invoke.
      *
+     *
      * @param invocation
      * @return result
      * @throws RpcException

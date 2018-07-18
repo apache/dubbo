@@ -42,6 +42,8 @@ import java.lang.reflect.Method;
  * exception not declared on the interface</li>
  * <li>Wrap the exception not introduced in API package into RuntimeException. Framework will serialize the outer exception but stringnize its cause in order to avoid of possible serialization problem on client side</li>
  * </ol>
+ *
+ * 异常拦截器
  */
 @Activate(group = Constants.PROVIDER)
 public class ExceptionFilter implements Filter {
@@ -64,10 +66,12 @@ public class ExceptionFilter implements Filter {
                     Throwable exception = result.getException();
 
                     // directly throw if it's checked exception
+                    //如果是 checked 类型的异常 直接抛出
                     if (!(exception instanceof RuntimeException) && (exception instanceof Exception)) {
                         return result;
                     }
                     // directly throw if the exception appears in the signature
+                    //声明过的异常也直接抛出
                     try {
                         Method method = invoker.getInterface().getMethod(invocation.getMethodName(), invocation.getParameterTypes());
                         Class<?>[] exceptionClassses = method.getExceptionTypes();
@@ -88,6 +92,7 @@ public class ExceptionFilter implements Filter {
                     // directly throw if exception class and interface class are in the same jar file.
                     String serviceFile = ReflectUtils.getCodeBase(invoker.getInterface());
                     String exceptionFile = ReflectUtils.getCodeBase(exception.getClass());
+                    //当调用服务 和 异常服务没有目录或者相同的时候直接抛出
                     if (serviceFile == null || exceptionFile == null || serviceFile.equals(exceptionFile)) {
                         return result;
                     }

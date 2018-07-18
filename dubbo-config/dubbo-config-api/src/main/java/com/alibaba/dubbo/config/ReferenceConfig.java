@@ -281,7 +281,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
         }
         checkApplication();
-        checkStubAndMock(interfaceClass);
+        checkStubAndMock(interfaceClass); //对mock stub 数据进行检查
         Map<String, String> map = new HashMap<String, String>();
         Map<Object, Object> attributes = new HashMap<Object, Object>();
         map.put(Constants.SIDE_KEY, Constants.CONSUMER_SIDE);

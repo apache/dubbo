@@ -18,12 +18,15 @@ package com.alibaba.dubbo.remoting.zookeeper.curator;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
+import com.alibaba.dubbo.remoting.zookeeper.ChildListener;
 import org.apache.curator.test.TestingServer;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import java.util.List;
 
 import static org.hamcrest.core.Is.is;
 
@@ -45,6 +48,35 @@ public class CuratorZookeeperClientTest {
         curatorClient.create(path, false);
         Assert.assertThat(curatorClient.checkExists(path), is(true));
         Assert.assertThat(curatorClient.checkExists(path + "/noneexits"), is(false));
+    }
+
+    @Test
+    public void testCreateClient() {
+        //创建节点服务
+        CuratorZookeeperClient curatorClient = new CuratorZookeeperClient(URL.valueOf("zookeeper://127.0.0.1:2181"));
+        String path = "/lkTest12/123";
+        curatorClient.create(path, true); //True 的时候是临时节点
+        Assert.assertThat(curatorClient.checkExists(path), is(true));
+        Assert.assertThat(curatorClient.checkExists(path + "/noneexits"), is(false));
+        curatorClient.doClose();
+    }
+
+    @Test
+    public void testCreateLinster() {
+        //创建节点服务
+        CuratorZookeeperClient curatorClient = new CuratorZookeeperClient(URL.valueOf("zookeeper://127.0.0.1:2181"));
+        String path = "/lkTest12/1111";
+        curatorClient.create(path, true);
+        List<String> children = curatorClient.addChildListener(path, new ChildListener() {
+            @Override
+            public void childChanged(String path, List<String> children) {
+                System.out.println("path " + path);
+                System.out.println("children " + children);
+            }
+        });
+        System.out.println("aa");
+
+
     }
 
 

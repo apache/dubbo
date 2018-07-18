@@ -201,6 +201,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                         url = url.addParameter(Constants.REGISTRY_KEY, url.getProtocol());
                         url = url.setProtocol(Constants.REGISTRY_PROTOCOL);
                         //查询provide 的register 值 ，若没有或者设置了为false 这添加到registryList里，在远程里不进行暴露
+                        //此处控制不进行暴露
                         if ((provider && url.getParameter(Constants.REGISTER_KEY, true))
                                 || (!provider && url.getParameter(Constants.SUBSCRIBE_KEY, true))) {
                             registryList.add(url);
@@ -311,8 +312,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 throw new IllegalStateException("No such constructor \"public " + localClass.getSimpleName() + "(" + interfaceClass.getName() + ")\" in local implementation class " + localClass.getName());
             }
         }
-        if (ConfigUtils.isNotEmpty(mock)) {
-            if (mock.startsWith(Constants.RETURN_PREFIX)) {
+        if (ConfigUtils.isNotEmpty(mock)) { //mock配置
+            if (mock.startsWith(Constants.RETURN_PREFIX)) { //TODO
                 String value = mock.substring(Constants.RETURN_PREFIX.length());
                 try {
                     MockInvoker.parseMockValue(value);

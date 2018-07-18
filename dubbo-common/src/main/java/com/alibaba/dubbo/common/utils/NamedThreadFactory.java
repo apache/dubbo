@@ -51,6 +51,7 @@ public class NamedThreadFactory implements ThreadFactory {
     public Thread newThread(Runnable runnable) {
         String name = mPrefix + mThreadNum.getAndIncrement();
         Thread ret = new Thread(mGroup, runnable, name, 0);
+        //设置true为守护线程
         ret.setDaemon(mDaemon);
         return ret;
     }

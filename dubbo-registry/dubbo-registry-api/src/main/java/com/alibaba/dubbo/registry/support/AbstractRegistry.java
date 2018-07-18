@@ -90,8 +90,9 @@ public abstract class AbstractRegistry implements Registry {
             }
         }
         this.file = file;
+        //本地保存相关信息 //TODO 什么时候刷新并使用
         loadProperties();
-        notify(url.getBackupUrls());
+        notify(url.getBackupUrls()); //监听 TODO
     }
 
     protected static List<URL> filterEmpty(URL url, List<URL> urls) {

@@ -33,6 +33,7 @@ public class InvokerInvocationHandler implements InvocationHandler {
         this.invoker = handler;
     }
 
+    //使用了动态代理的原理来实现动态代理 ,除了几个基本基本方法，其他调用invoker
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String methodName = method.getName();
         Class<?>[] parameterTypes = method.getParameterTypes();

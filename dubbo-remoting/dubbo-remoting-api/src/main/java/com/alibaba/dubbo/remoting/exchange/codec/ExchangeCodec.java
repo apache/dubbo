@@ -204,6 +204,18 @@ public class ExchangeCodec extends TelnetCodec {
         return req.getData();
     }
 
+    /**
+     * 把 写入协议内容
+     * 协议头 固定HEADER_LENGTH 长度
+     * =  2 //short类型的MAGIC = (short) 0xdabb
+     * 1 //一个字节的消息标志位，用来表示消息是request还是//response,twoway还是oneway,是心跳还是正常请求以及采用//的序列化反序列化协议
+     * 1 //状态位， 消息类型为response时，设置请求响应状态
+     * 8 //设置消息的id long类型
+     * 4 //设置消息体body长度 int类型
+     *
+     *
+     *
+     */
     protected void encodeRequest(Channel channel, ChannelBuffer buffer, Request req) throws IOException {
         Serialization serialization = getSerialization(channel);
         // header.
@@ -217,12 +229,12 @@ public class ExchangeCodec extends TelnetCodec {
         if (req.isTwoWay()) header[2] |= FLAG_TWOWAY;
         if (req.isEvent()) header[2] |= FLAG_EVENT;
 
-        // set request id.
+        // 放request ID long 类型，并把long转换成bytes 4偏移
         Bytes.long2bytes(req.getId(), header, 4);
 
-        // encode request data.
+        //region encode request data.  获取request Date的序列化对象，Invation对象
         int savedWriteIndex = buffer.writerIndex();
-        buffer.writerIndex(savedWriteIndex + HEADER_LENGTH);
+        buffer.writerIndex(savedWriteIndex + HEADER_LENGTH); //先写入date的数据
         ChannelBufferOutputStream bos = new ChannelBufferOutputStream(buffer);
         ObjectOutput out = serialization.serialize(channel.getUrl(), bos);
         if (req.isEvent()) {
@@ -237,11 +249,12 @@ public class ExchangeCodec extends TelnetCodec {
         bos.flush();
         bos.close();
         int len = bos.writtenBytes();
-        checkPayload(channel, len);
+        checkPayload(channel, len); //长度不能太长
         Bytes.int2bytes(len, header, 12);
+        //endregion
 
         // write
-        buffer.writerIndex(savedWriteIndex);
+        buffer.writerIndex(savedWriteIndex); //从开始的位置
         buffer.writeBytes(header); // write header.
         buffer.writerIndex(savedWriteIndex + HEADER_LENGTH + len);
     }

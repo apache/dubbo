@@ -56,7 +56,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
 
     private final ZookeeperClient zkClient;
 
-    public ZookeeperRegistry(URL url, ZookeeperTransporter zookeeperTransporter) {
+    public  ZookeeperRegistry(URL url, ZookeeperTransporter zookeeperTransporter) {
         super(url);
         if (url.isAnyHost()) {
             throw new IllegalStateException("registry address == null");
@@ -66,7 +66,9 @@ public class ZookeeperRegistry extends FailbackRegistry {
             group = Constants.PATH_SEPARATOR + group;
         }
         this.root = group;
+        //有两种实现方式 更具url加载器自动加载，默认使用curatorZookeeperClient 链接
         zkClient = zookeeperTransporter.connect(url);
+        //TODO 监听器
         zkClient.addStateListener(new StateListener() {
             public void stateChanged(int state) {
                 if (state == RECONNECTED) {
@@ -123,6 +125,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
 
     protected void doSubscribe(final URL url, final NotifyListener listener) {
         try {
+            //TODO 接口为* 的时候
             if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
                 String root = toRootPath();
                 ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
@@ -176,6 +179,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                     zkClient.create(path, false);
                     List<String> children = zkClient.addChildListener(path, zkListener);
                     if (children != null) {
+                        //监听到后对url进行empty包装
                         urls.addAll(toUrlsWithEmpty(url, path, children));
                     }
                 }
@@ -256,6 +260,12 @@ public class ZookeeperRegistry extends FailbackRegistry {
         return toCategoryPath(url) + Constants.PATH_SEPARATOR + URL.encode(url.toFullString());
     }
 
+    /**
+     * 对url进行校验
+     * @param consumer
+     * @param providers
+     * @return
+     */
     private List<URL> toUrlsWithoutEmpty(URL consumer, List<String> providers) {
         List<URL> urls = new ArrayList<URL>();
         if (providers != null && !providers.isEmpty()) {
@@ -263,6 +273,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 provider = URL.decode(provider);
                 if (provider.contains("://")) {
                     URL url = URL.valueOf(provider);
+                    //判断url是否是合理的
                     if (UrlUtils.isMatch(consumer, url)) {
                         urls.add(url);
                     }

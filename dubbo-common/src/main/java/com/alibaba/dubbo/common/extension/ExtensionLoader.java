@@ -125,6 +125,7 @@ public class ExtensionLoader<T> {
         return type.isAnnotationPresent(SPI.class);
     }
 
+    //静态工厂方法(简单工厂方法) 工厂和产品是同一个类
     @SuppressWarnings("unchecked")
     public static <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
         //类型校验
@@ -185,6 +186,8 @@ public class ExtensionLoader<T> {
 
     /**
      * This is equivalent to {@code getActivateExtension(url, url.getParameter(key).split(","), null)}
+     * 先获取所有group对应的类，并排序
+     * 通过key获取的view进行排序，把default替换成group获取的类
      *
      * @param url   url
      * @param key   url parameter key which used to get extension point names
@@ -209,13 +212,16 @@ public class ExtensionLoader<T> {
     public List<T> getActivateExtension(URL url, String[] values, String group) {
         List<T> exts = new ArrayList<T>();
         List<String> names = values == null ? new ArrayList<String>(0) : Arrays.asList(values);
+        //获取group对应的类，若有 -default不进行
         if (!names.contains(Constants.REMOVE_VALUE_PREFIX + Constants.DEFAULT_KEY)) {
             getExtensionClasses();
             for (Map.Entry<String, Activate> entry : cachedActivates.entrySet()) {
                 String name = entry.getKey();
                 Activate activate = entry.getValue();
+                //Activate 进行组进行校验
                 if (isMatchGroup(group, activate.group())) {
                     T ext = getExtension(name);
+                    //除去带 -号的
                     if (!names.contains(name)
                             && !names.contains(Constants.REMOVE_VALUE_PREFIX + name)
                             && isActive(activate, url)) {
@@ -223,13 +229,16 @@ public class ExtensionLoader<T> {
                     }
                 }
             }
+            //进行排序
             Collections.sort(exts, ActivateComparator.COMPARATOR);
         }
         List<T> usrs = new ArrayList<T>();
+        //遍历 把group 替换 default的位置
         for (int i = 0; i < names.size(); i++) {
             String name = names.get(i);
             if (!name.startsWith(Constants.REMOVE_VALUE_PREFIX)
                     && !names.contains(Constants.REMOVE_VALUE_PREFIX + name)) {
+
                 if (Constants.DEFAULT_KEY.equals(name)) {
                     if (!usrs.isEmpty()) {
                         exts.addAll(0, usrs);
@@ -539,6 +548,7 @@ public class ExtensionLoader<T> {
 
     /**
      * 注入属性
+     *
      * @param instance
      * @return
      */
@@ -776,6 +786,7 @@ public class ExtensionLoader<T> {
     /**
      * 产生自适应的对应的查找类 class文件
      * TODO compiler ？
+     *
      * @return
      */
     private Class<?> createAdaptiveExtensionClass() {
@@ -787,6 +798,7 @@ public class ExtensionLoader<T> {
 
     /**
      * 产生自适应的对应的查找类 code
+     *
      * @return
      */
     private String createAdaptiveExtensionClassCode() {

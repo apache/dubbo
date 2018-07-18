@@ -74,6 +74,7 @@ public class NetUtils {
         }
     }
 
+    //获取可以使用的ServerSocket端口，若端口占用，递增
     public static int getAvailablePort(int port) {
         if (port <= 0) {
             return getAvailablePort();
