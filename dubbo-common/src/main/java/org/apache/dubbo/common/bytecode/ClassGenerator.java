@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.common.bytecode;
 
-import org.apache.dubbo.common.utils.ClassHelper;
-import org.apache.dubbo.common.utils.ReflectUtils;
-
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -29,6 +26,8 @@ import javassist.CtNewConstructor;
 import javassist.CtNewMethod;
 import javassist.LoaderClassPath;
 import javassist.NotFoundException;
+import org.apache.dubbo.common.utils.ClassHelper;
+import org.apache.dubbo.common.utils.ReflectUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -92,10 +91,15 @@ public final class ClassGenerator {
     }
 
     private static String modifier(int mod) {
-        if (Modifier.isPublic(mod)) return "public";
-        if (Modifier.isProtected(mod)) return "protected";
-        if (Modifier.isPrivate(mod)) return "private";
-        return "";
+        StringBuilder modifier = new StringBuilder();
+        if (Modifier.isPublic(mod)) modifier.append("public");
+        if (Modifier.isProtected(mod)) modifier.append("protected");
+        if (Modifier.isPrivate(mod)) modifier.append("private");
+
+        if (Modifier.isStatic(mod)) modifier.append(" static");
+        if (Modifier.isVolatile(mod)) modifier.append(" volatile");
+
+        return modifier.toString();
     }
 
     public String getClassName() {
