@@ -21,6 +21,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
 
 import java.io.ByteArrayOutputStream;
@@ -34,7 +35,7 @@ import java.net.URL;
  */
 public class HttpClientConnection implements HessianConnection {
 
-    private final HttpClient httpClient;
+    private final HttpClientBuilder httpClient;
 
     private final ByteArrayOutputStream output;
 
@@ -42,7 +43,7 @@ public class HttpClientConnection implements HessianConnection {
 
     private volatile HttpResponse response;
 
-    public HttpClientConnection(HttpClient httpClient, URL url) {
+    public HttpClientConnection(HttpClientBuilder httpClient, URL url) {
         this.httpClient = httpClient;
         this.output = new ByteArrayOutputStream();
         this.request = new HttpPost(url.toString());
@@ -61,7 +62,7 @@ public class HttpClientConnection implements HessianConnection {
     @Override
     public void sendRequest() throws IOException {
         request.setEntity(new ByteArrayEntity(output.toByteArray()));
-        this.response = httpClient.execute(request);
+        this.response = httpClient.build().execute(request);
     }
 
     @Override
