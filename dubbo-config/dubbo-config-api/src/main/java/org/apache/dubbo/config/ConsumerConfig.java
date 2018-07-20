@@ -31,7 +31,7 @@ public class ConsumerConfig extends AbstractReferenceConfig {
     // networking framework client uses: netty, mina, etc.
     private String client;
 
-    // client thread pool type: cached, fixed, limit
+    // client thread pool type: cached, fixed, limit, eager
     private String threadpool;
 
     @Override
