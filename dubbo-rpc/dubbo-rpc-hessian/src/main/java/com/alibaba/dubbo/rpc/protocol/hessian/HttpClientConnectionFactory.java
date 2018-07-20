@@ -16,22 +16,17 @@
  */
 package com.alibaba.dubbo.rpc.protocol.hessian;
 
+import java.io.IOException;
+import java.net.URL;
+
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.rpc.RpcContext;
 
 import com.caucho.hessian.client.HessianConnection;
 import com.caucho.hessian.client.HessianConnectionFactory;
 import com.caucho.hessian.client.HessianProxyFactory;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.params.HttpConnectionParams;
-
-import java.io.IOException;
-import java.net.URL;
 
 /**
  * HttpClientConnectionFactory
