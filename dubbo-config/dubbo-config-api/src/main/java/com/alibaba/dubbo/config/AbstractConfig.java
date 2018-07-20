@@ -103,8 +103,8 @@ public abstract class AbstractConfig implements Serializable {
      * 从 系统配置文件 JVM环境中
      *    xml配置文件中
      *    dubbo.pro 默认配置文件
-     *    legacyProperties 中获取对应的属性  TODO legacyProperties从哪里来？
-     *    如果有Id先会获取有Id的属性配置  属性名为  prefix + id + "." + property
+     *    legacyProperties 中获取对应的属性 类遗留的名字 //FIXME  ？
+     *    如果有Id先会获取有Id的属性配置  属性名为  prefix + id + "." + property  Config#id` 的配置中获取，例如：`dubbo.application.demo-provider.name
      *    没有获取到value再依次执行别面
      *
      * @param config

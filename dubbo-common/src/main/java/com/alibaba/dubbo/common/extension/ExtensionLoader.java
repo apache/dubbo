@@ -134,7 +134,7 @@ public class ExtensionLoader<T> {
         if (!type.isInterface()) {
             throw new IllegalArgumentException("Extension type(" + type + ") is not interface!");
         }
-        //一定要是API
+        //一定要是SPI
         if (!withExtensionAnnotation(type)) {
             throw new IllegalArgumentException("Extension type(" + type +
                     ") is not extension, because WITHOUT @" + SPI.class.getSimpleName() + " Annotation!");
@@ -785,7 +785,7 @@ public class ExtensionLoader<T> {
 
     /**
      * 产生自适应的对应的查找类 class文件
-     * TODO compiler ？
+     * compiler 默认使用javassist 来产生Class 类
      *
      * @return
      */

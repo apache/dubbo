@@ -195,7 +195,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         return unexported;
     }
 
-    public synchronized void export() {
+    public synchronized void export() { //同步机制 只能进来一个线程
         if (provider != null) {
             if (export == null) {
                 export = provider.getExport();
@@ -219,7 +219,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
     }
 
-    protected synchronized void doExport() {
+    protected synchronized void doExport() { //同步机制 只能进来一个线程
         if (unexported) {
             throw new IllegalStateException("Already unexported!");
         }
@@ -264,7 +264,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 monitor = application.getMonitor();
             }
         }
-        if (ref instanceof GenericService) {
+        if (ref instanceof GenericService) { //TODO 泛化调用
             interfaceClass = GenericService.class;
             if (StringUtils.isEmpty(generic)) {
                 generic = Boolean.TRUE.toString();
@@ -313,7 +313,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         checkRegistry();
         checkProtocol();
         appendProperties(this);
-        checkStubAndMock(interfaceClass); //local 和 stub 和mock三种 TODO
+        checkStubAndMock(interfaceClass); //local 和 stub 和mock三种
         if (path == null || path.length() == 0) {
             path = interfaceName;
         }
@@ -500,7 +500,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 if (registryURLs != null && !registryURLs.isEmpty()) {
                     for (URL registryURL : registryURLs) {
                         url = url.addParameterIfAbsent(Constants.DYNAMIC_KEY, registryURL.getParameter(Constants.DYNAMIC_KEY));
-                        URL monitorUrl = loadMonitor(registryURL); //TODO 检测中心
+                        URL monitorUrl = loadMonitor(registryURL);
                         if (monitorUrl != null) {
                             url = url.addParameterAndEncoded(Constants.MONITOR_KEY, monitorUrl.toFullString());
                         }

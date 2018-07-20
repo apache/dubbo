@@ -2,7 +2,7 @@ package com.alibaba.dubbo.remoting;
 
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 
-public class Transporter$Adaptive implements com.alibaba.dubbo.remoting.Transporter {
+public class  Transporter$Adaptive implements com.alibaba.dubbo.remoting.Transporter {
     public com.alibaba.dubbo.remoting.Client connect(com.alibaba.dubbo.common.URL arg0, com.alibaba.dubbo.remoting.ChannelHandler arg1) throws com.alibaba.dubbo.remoting.RemotingException {
         if (arg0 == null) throw new IllegalArgumentException("url == null");
         com.alibaba.dubbo.common.URL url = arg0;
