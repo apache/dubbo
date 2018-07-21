@@ -50,7 +50,6 @@ import static org.mockito.Mockito.mock;
 
 /**
  * AbstractClusterInvokerTest
- *
  */
 @SuppressWarnings("rawtypes")
 public class AbstractClusterInvokerTest {
@@ -140,14 +139,15 @@ public class AbstractClusterInvokerTest {
 
     @Test
     public void testSelect_Invokersize0() throws Exception {
+        LoadBalance loadBalance = cluster.initLoadBalance(invokers, invocation);
         {
-            Invoker invoker = cluster.select(null, null, null, null);
+            Invoker invoker = cluster.select(loadBalance, null, null, null);
             Assert.assertEquals(null, invoker);
         }
         {
             invokers.clear();
             selectedInvokers.clear();
-            Invoker invoker = cluster.select(null, null, invokers, null);
+            Invoker invoker = cluster.select(loadBalance, null, invokers, null);
             Assert.assertEquals(null, invoker);
         }
     }
@@ -156,7 +156,8 @@ public class AbstractClusterInvokerTest {
     public void testSelect_Invokersize1() throws Exception {
         invokers.clear();
         invokers.add(invoker1);
-        Invoker invoker = cluster.select(null, null, invokers, null);
+        LoadBalance loadBalance = cluster.initLoadBalance(invokers, invocation);
+        Invoker invoker = cluster.select(loadBalance, null, invokers, null);
         Assert.assertEquals(invoker1, invoker);
     }
 
@@ -165,16 +166,17 @@ public class AbstractClusterInvokerTest {
         invokers.clear();
         invokers.add(invoker2);
         invokers.add(invoker4);
+        LoadBalance loadBalance = cluster.initLoadBalance(invokers, invocation);
         {
             selectedInvokers.clear();
             selectedInvokers.add(invoker4);
-            Invoker invoker = cluster.select(null, invocation, invokers, selectedInvokers);
+            Invoker invoker = cluster.select(loadBalance, invocation, invokers, selectedInvokers);
             Assert.assertEquals(invoker2, invoker);
         }
         {
             selectedInvokers.clear();
             selectedInvokers.add(invoker2);
-            Invoker invoker = cluster.select(null, invocation, invokers, selectedInvokers);
+            Invoker invoker = cluster.select(loadBalance, invocation, invokers, selectedInvokers);
             Assert.assertEquals(invoker4, invoker);
         }
     }
