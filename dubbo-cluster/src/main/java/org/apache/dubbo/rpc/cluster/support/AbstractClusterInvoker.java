@@ -225,7 +225,6 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
     @Override
     public Result invoke(final Invocation invocation) throws RpcException {
         checkWhetherDestroyed();
-        LoadBalance loadbalance = null;
 
         // binding attachments into invocation.
         Map<String, String> contextAttachments = RpcContext.getContext().getAttachments();
@@ -234,18 +233,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         }
 
         List<Invoker<T>> invokers = list(invocation);
-
-        // if need init LoadBalance:
-        //   if invokers is not empty, init from the first invoke's url and invocation
-        //   if invokes is empty, init a default LoadBalance(RandomLoadBalance)
-        if (needInitLoadBalance()) {
-            if (CollectionUtils.isNotEmpty(invokers)) {
-                loadbalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(invokers.get(0).getUrl()
-                        .getMethodParameter(RpcUtils.getMethodName(invocation), Constants.LOADBALANCE_KEY, Constants.DEFAULT_LOADBALANCE));
-            } else {
-                loadbalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(Constants.DEFAULT_LOADBALANCE);
-            }
-        }
+        LoadBalance loadbalance = initLoadBalance(invokers, invocation);
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
         return doInvoke(invocation, invokers, loadbalance);
     }
@@ -291,5 +279,28 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
     protected List<Invoker<T>> list(Invocation invocation) throws RpcException {
         List<Invoker<T>> invokers = directory.list(invocation);
         return invokers;
+    }
+
+    /**
+     * Init LoadBalance if needed. If not return null directly.
+     * <p>
+     * if invokers is not empty, init from the first invoke's url and invocation
+     * if invokes is empty, init a default LoadBalance(RandomLoadBalance)
+     * </p>
+     *
+     * @param invokers   invokers
+     * @param invocation invocation
+     * @return LoadBalance instance. if not need init, return null.
+     */
+    protected LoadBalance initLoadBalance(List<Invoker<T>> invokers, Invocation invocation) {
+        if (needInitLoadBalance()) {
+            if (CollectionUtils.isNotEmpty(invokers)) {
+                return ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(invokers.get(0).getUrl()
+                        .getMethodParameter(RpcUtils.getMethodName(invocation), Constants.LOADBALANCE_KEY, Constants.DEFAULT_LOADBALANCE));
+            } else {
+                return ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(Constants.DEFAULT_LOADBALANCE);
+            }
+        }
+        return null;
     }
 }
