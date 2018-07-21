@@ -54,7 +54,7 @@ public class ConsumerConfigTest {
     @Test
     public void testThreadpool() throws Exception {
         ConsumerConfig consumer = new ConsumerConfig();
-        consumer.setClient("fixed");
+        consumer.setThreadpool("fixed");
         assertThat(consumer.getThreadpool(), equalTo("fixed"));
     }
 }
