@@ -22,6 +22,7 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -94,16 +95,17 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
     /**
      * Select a invoker using loadbalance policy.</br>
-     * a)Firstly, select an invoker using loadbalance. If this invoker is in previously selected list, or,
+     * a) Firstly, select an invoker using loadbalance. If this invoker is in previously selected list, or,
      * if this invoker is unavailable, then continue step b (reselect), otherwise return the first selected invoker</br>
-     * b)Reslection, the validation rule for reselection: selected > available. This rule guarantees that
+     * <p>
+     * b) Reslection, the validation rule for reselection: selected > available. This rule guarantees that
      * the selected invoker has the minimum chance to be one in the previously selected list, and also
      * guarantees this invoker is available.
      *
      * @param loadbalance load balance policy
-     * @param invocation
-     * @param invokers invoker candidates
-     * @param selected  exclude selected invokers or not
+     * @param invocation  invocation
+     * @param invokers    invoker candidates
+     * @param selected    exclude selected invokers or not
      * @return
      * @throws RpcException
      */
@@ -138,9 +140,6 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
             return null;
         if (invokers.size() == 1)
             return invokers.get(0);
-        if (loadbalance == null) {
-            loadbalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(Constants.DEFAULT_LOADBALANCE);
-        }
         Invoker<T> invoker = loadbalance.select(invokers, getUrl(), invocation);
 
         //If the `invoker` is in the  `selected` or invoker is unavailable && availablecheck is true, reselect.
@@ -235,9 +234,17 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         }
 
         List<Invoker<T>> invokers = list(invocation);
-        if (invokers != null && !invokers.isEmpty()) {
-            loadbalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(invokers.get(0).getUrl()
-                    .getMethodParameter(RpcUtils.getMethodName(invocation), Constants.LOADBALANCE_KEY, Constants.DEFAULT_LOADBALANCE));
+
+        // if need init LoadBalance:
+        //   if invokers is not empty, init from the first invoke's url and invocation
+        //   if invokes is empty, init a default LoadBalance(RandomLoadBalance)
+        if (needInitLoadBalance()) {
+            if (CollectionUtils.isNotEmpty(invokers)) {
+                loadbalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(invokers.get(0).getUrl()
+                        .getMethodParameter(RpcUtils.getMethodName(invocation), Constants.LOADBALANCE_KEY, Constants.DEFAULT_LOADBALANCE));
+            } else {
+                loadbalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(Constants.DEFAULT_LOADBALANCE);
+            }
         }
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
         return doInvoke(invocation, invokers, loadbalance);
@@ -271,6 +278,15 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
     protected abstract Result doInvoke(Invocation invocation, List<Invoker<T>> invokers,
                                        LoadBalance loadbalance) throws RpcException;
+
+    /**
+     * if true, init LoadBalance before doInvoke.
+     *
+     * @return true for default
+     */
+    protected boolean needInitLoadBalance() {
+        return true;
+    }
 
     protected List<Invoker<T>> list(Invocation invocation) throws RpcException {
         List<Invoker<T>> invokers = directory.list(invocation);
