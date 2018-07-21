@@ -64,4 +64,9 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
         return result;
     }
 
+    @Override
+    protected boolean needInitLoadBalance() {
+        // no need to init LoadBalance
+        return false;
+    }
 }

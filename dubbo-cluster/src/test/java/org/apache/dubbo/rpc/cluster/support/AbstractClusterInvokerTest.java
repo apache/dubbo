@@ -120,6 +120,12 @@ public class AbstractClusterInvokerTest {
                     throws RpcException {
                 return null;
             }
+
+            @Override
+            protected boolean needInitLoadBalance() {
+                // no need to init LoadBalance
+                return false;
+            }
         };
 
         cluster_nocheck = new AbstractClusterInvoker(dic, url.addParameterIfAbsent(Constants.CLUSTER_AVAILABLE_CHECK_KEY, Boolean.FALSE.toString())) {
@@ -127,6 +133,12 @@ public class AbstractClusterInvokerTest {
             protected Result doInvoke(Invocation invocation, List invokers, LoadBalance loadbalance)
                     throws RpcException {
                 return null;
+            }
+
+            @Override
+            protected boolean needInitLoadBalance() {
+                // no need to init LoadBalance
+                return false;
             }
         };
 

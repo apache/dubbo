@@ -653,6 +653,13 @@ public class MockClusterInvokerTest {
 
         Directory<IHelloService> dic = new StaticDirectory<IHelloService>(durl, invokers, null);
         AbstractClusterInvoker<IHelloService> cluster = new AbstractClusterInvoker(dic) {
+
+            @Override
+            protected boolean needInitLoadBalance() {
+                // no need to init LoadBalance
+                return false;
+            }
+
             @Override
             protected Result doInvoke(Invocation invocation, List invokers, LoadBalance loadbalance)
                     throws RpcException {
