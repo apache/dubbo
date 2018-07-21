@@ -23,9 +23,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.store.DataStore;
-import org.apache.dubbo.common.utils.ExecutorUtil;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
-import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.*;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Client;
@@ -113,7 +111,12 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
     protected static ChannelHandler wrapChannelHandler(URL url, ChannelHandler handler) {
         url = ExecutorUtil.setThreadName(url, CLIENT_THREAD_POOL_NAME);
-        url = url.addParameterIfAbsent(Constants.THREADPOOL_KEY, Constants.DEFAULT_CLIENT_THREADPOOL);
+        String key = Constants.DEFAULT_KEY + Constants.HIDE_KEY_PREFIX + Constants.THREADPOOL_KEY;
+        String threadpool = url.getParameter(key);
+        if (StringUtils.isNotEmpty(threadpool)) {
+            url = url.removeParameter(key);
+        }
+        url = url.addParameterIfAbsent(Constants.THREADPOOL_KEY, StringUtils.isNotEmpty(threadpool) ? threadpool : Constants.DEFAULT_CLIENT_THREADPOOL);
         return ChannelHandlers.wrap(handler, url);
     }
 
