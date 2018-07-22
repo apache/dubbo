@@ -111,12 +111,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
     protected static ChannelHandler wrapChannelHandler(URL url, ChannelHandler handler) {
         url = ExecutorUtil.setThreadName(url, CLIENT_THREAD_POOL_NAME);
-        String key = Constants.DEFAULT_KEY + Constants.HIDE_KEY_PREFIX + Constants.THREADPOOL_KEY;
-        String threadpool = url.getParameter(key);
-        if (StringUtils.isNotEmpty(threadpool)) {
-            url = url.removeParameter(key);
-        }
-        url = url.addParameterIfAbsent(Constants.THREADPOOL_KEY, StringUtils.isNotEmpty(threadpool) ? threadpool : Constants.DEFAULT_CLIENT_THREADPOOL);
+        url = url.addParameterIfAbsent(Constants.THREADPOOL_KEY, Constants.DEFAULT_CLIENT_THREADPOOL);
         return ChannelHandlers.wrap(handler, url);
     }
 
