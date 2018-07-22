@@ -352,11 +352,11 @@ public class ExtensionLoader<T> {
     }
 
     /**
-     * Register new extension via API
+     * Register new extension via API（编程式添加新扩展点）
      *
-     * @param name  extension name
-     * @param clazz extension class
-     * @throws IllegalStateException when extension with the same name has already been registered.
+     * @param name  扩展名称
+     * @param clazz 扩展类
+     * @throws IllegalStateException 要添加扩展点名已经存在
      */
     public void addExtension(String name, Class<?> clazz) {
         getExtensionClasses(); // load classes
