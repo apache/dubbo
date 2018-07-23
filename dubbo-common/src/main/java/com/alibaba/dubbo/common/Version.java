@@ -72,7 +72,7 @@ public final class Version {
             return false;
         }
 
-        return getIntVersion(version) >= LOWEST_VERSION_FOR_RESPONSE_ATTATCHMENT;
+        return iVersion >= LOWEST_VERSION_FOR_RESPONSE_ATTATCHMENT;
     }
 
     public static int getIntVersion(String version) {
