@@ -106,7 +106,7 @@ public class ForkingClusterInvokerTest {
     }
 
     @Test
-    public void testInvokeExceptoin() {
+    public void testInvokeException() {
         resetInvokerToException();
         ForkingClusterInvoker<ForkingClusterInvokerTest> invoker = new ForkingClusterInvoker<ForkingClusterInvokerTest>(
                 dic);
@@ -121,7 +121,7 @@ public class ForkingClusterInvokerTest {
     }
 
     @Test()
-    public void testInvokeNoExceptoin() {
+    public void testInvokeNoException() {
 
         resetInvokerToNoException();
 

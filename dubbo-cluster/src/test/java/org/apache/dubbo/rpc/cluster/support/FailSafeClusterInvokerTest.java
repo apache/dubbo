@@ -89,7 +89,7 @@ public class FailSafeClusterInvokerTest {
     }
 
     @Test()
-    public void testInvokeNoExceptoin() {
+    public void testInvokeNoException() {
 
         resetInvokerToNoException();
 
