@@ -262,7 +262,6 @@
                                     <configLocation>codestyle/checkstyle.xml</configLocation>
                                     <suppressionsLocation>codestyle/checkstyle-suppressions.xml</suppressionsLocation>
                                     <headerLocation>codestyle/checkstyle-header.txt</headerLocation>
-                                    <linkXRef>false</linkXRef>
                                     <encoding>UTF-8</encoding>
                                     <consoleOutput>true</consoleOutput>
                                     <failOnViolation>true</failOnViolation>
