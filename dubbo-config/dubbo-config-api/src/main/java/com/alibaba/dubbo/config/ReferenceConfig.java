@@ -300,6 +300,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
         }
         map.put(Constants.INTERFACE_KEY, interfaceName);
+        if(consumer != null && consumer.getThreads() != null){
+            map.put(Constants.THREADS_KEY, String.valueOf(consumer.getThreads()));
+        }
         appendParameters(map, application);
         appendParameters(map, module);
         appendParameters(map, consumer, Constants.DEFAULT_KEY);
