@@ -30,6 +30,8 @@ public class ConsumerConfig extends AbstractReferenceConfig {
 
     // networking framework client uses: netty, mina, etc.
     private String client;
+    // max thread number
+    private Integer threads;
 
     @Override
     public void setTimeout(Integer timeout) {
@@ -55,5 +57,13 @@ public class ConsumerConfig extends AbstractReferenceConfig {
 
     public void setClient(String client) {
         this.client = client;
+    }
+
+    public Integer getThreads() {
+        return threads;
+    }
+
+    public void setThreads(Integer threads) {
+        this.threads = threads;
     }
 }

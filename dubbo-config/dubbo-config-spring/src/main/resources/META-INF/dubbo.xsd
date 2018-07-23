@@ -708,6 +708,11 @@
                         <xsd:documentation><![CDATA[ Transporter layer framework: netty mina.... ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="threads" type="xsd:int" use="optional">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ Thread Number ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>
             </xsd:extension>
         </xsd:complexContent>
