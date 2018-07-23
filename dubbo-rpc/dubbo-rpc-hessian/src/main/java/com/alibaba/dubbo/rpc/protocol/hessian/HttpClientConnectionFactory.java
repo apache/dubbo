@@ -25,6 +25,7 @@ import com.alibaba.dubbo.rpc.RpcContext;
 import com.caucho.hessian.client.HessianConnection;
 import com.caucho.hessian.client.HessianConnectionFactory;
 import com.caucho.hessian.client.HessianProxyFactory;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.HttpClientBuilder;
 
@@ -33,19 +34,22 @@ import org.apache.http.impl.client.HttpClientBuilder;
  */
 public class HttpClientConnectionFactory implements HessianConnectionFactory {
 
-    private final HttpClientBuilder httpClient = HttpClientBuilder.create();
+    private final HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+
+    private HessianProxyFactory hessianProxyFactory;
 
     @Override
     public void setHessianProxyFactory(HessianProxyFactory factory) {
-        RequestConfig requestConfig = RequestConfig.custom()
-            .setConnectionRequestTimeout((int)factory.getConnectTimeout())
-            .setSocketTimeout((int)factory.getReadTimeout())
-            .build();
-        httpClient.setDefaultRequestConfig(requestConfig);
+        this.hessianProxyFactory = factory;
     }
 
     @Override
     public HessianConnection open(URL url) throws IOException {
+        RequestConfig requestConfig = RequestConfig.custom()
+            .setConnectionRequestTimeout((int)this.hessianProxyFactory.getConnectTimeout())
+            .setSocketTimeout((int)this.hessianProxyFactory.getReadTimeout())
+            .build();
+        HttpClient httpClient = httpClientBuilder.setDefaultRequestConfig(requestConfig).build();
         HttpClientConnection httpClientConnection = new HttpClientConnection(httpClient, url);
         RpcContext context = RpcContext.getContext();
         for (String key : context.getAttachments().keySet()) {
