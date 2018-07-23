@@ -14,6 +14,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
   -->
+<<<<<<< HEAD:dubbo-test/dubbo-test-examples/src/main/resources/log4j.xml
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
     <appender name="DUBBO" class="com.alibaba.dubbo.common.utils.DubboAppender">
@@ -26,3 +27,17 @@
         <appender-ref ref="DUBBO"/>
     </root>
 </log4j:configuration>
+=======
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.alibaba</groupId>
+        <artifactId>dubbo-parent</artifactId>
+        <version>2.7.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>hessian-lite</artifactId>
+    <packaging>jar</packaging>
+    <version>3.2.3</version>
+    <name>Hessian Lite(Alibaba embed version)</name>
+</project>
+>>>>>>> bump version to 2.7.0-SNAPSHOT:hessian-lite/pom.xml
