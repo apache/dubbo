@@ -40,7 +40,7 @@ We are now collecting dubbo user info in order to help us to improve dubbo bette
 ```java
 package org.apache.dubbo.demo;
 
-public interface DemoService {
+public interface GreetingService {
     String sayHello(String name);
 }
 ```
@@ -50,9 +50,9 @@ public interface DemoService {
 ```java
 package org.apache.dubbo.demo.provider;
  
-import org.apache.dubbo.demo.DemoService;
+import org.apache.dubbo.demo.GreetingService;
  
-public class DemoServiceImpl implements DemoService {
+public class GreetingServiceImpl implements GreetingService {
     public String sayHello(String name) {
         return "Hello " + name;
     }
