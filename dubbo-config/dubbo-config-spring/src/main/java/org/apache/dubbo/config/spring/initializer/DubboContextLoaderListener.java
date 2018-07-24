@@ -34,7 +34,6 @@ public class DubboContextLoaderListener extends ContextLoaderListener {
      * This is used for xml configuration, which does not require servlet version to be 3.0+
      */
     public DubboContextLoaderListener(){
-        super();
         this.context = new XmlWebApplicationContext();
         ((XmlWebApplicationContext)context).addApplicationListener(new DubboApplicationListener());
     }
