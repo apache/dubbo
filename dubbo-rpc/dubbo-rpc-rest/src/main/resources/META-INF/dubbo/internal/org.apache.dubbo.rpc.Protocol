@@ -1,0 +1,1 @@
+rest=org.apache.dubbo.rpc.protocol.rest.RestProtocol
