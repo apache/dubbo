@@ -31,6 +31,18 @@ public class ConsumerConfig extends AbstractReferenceConfig {
     // networking framework client uses: netty, mina, etc.
     private String client;
 
+    // consumer thread pool type: cached, fixed, limit, eager
+    private String threadpool;
+
+    // consumer threadpool core thread size
+    private Integer corethreads;
+
+    // consumer threadpool thread size
+    private Integer threads;
+
+    // consumer threadpool queue size
+    private Integer queues;
+
     @Override
     public void setTimeout(Integer timeout) {
         super.setTimeout(timeout);
@@ -55,5 +67,41 @@ public class ConsumerConfig extends AbstractReferenceConfig {
 
     public void setClient(String client) {
         this.client = client;
+    }
+
+    public String getThreadpool() {
+        return threadpool;
+    }
+
+    public void setThreadpool(String threadpool) {
+        this.threadpool = threadpool;
+    }
+
+    public Boolean getDefault() {
+        return isDefault;
+    }
+
+    public Integer getCorethreads() {
+        return corethreads;
+    }
+
+    public void setCorethreads(Integer corethreads) {
+        this.corethreads = corethreads;
+    }
+
+    public Integer getThreads() {
+        return threads;
+    }
+
+    public void setThreads(Integer threads) {
+        this.threads = threads;
+    }
+
+    public Integer getQueues() {
+        return queues;
+    }
+
+    public void setQueues(Integer queues) {
+        this.queues = queues;
     }
 }
