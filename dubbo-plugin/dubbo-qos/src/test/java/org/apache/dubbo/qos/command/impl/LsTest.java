@@ -32,7 +32,7 @@ public class LsTest {
 
         Invoker providerInvoker = mock(Invoker.class);
         URL registryUrl = mock(URL.class);
-        when(registryUrl.toFullString()).thenReturn("registry://localhost:8080");
+        when(registryUrl.toFullString()).thenReturn("test://localhost:8080");
         URL providerUrl = mock(URL.class);
         when(providerUrl.getServiceKey()).thenReturn("org.apache.dubbo.BarService");
         when(providerUrl.toFullString()).thenReturn("dubbo://localhost:8888/org.apache.dubbo.BarService");

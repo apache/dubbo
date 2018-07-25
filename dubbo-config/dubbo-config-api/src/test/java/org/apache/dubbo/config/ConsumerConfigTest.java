@@ -50,4 +50,32 @@ public class ConsumerConfigTest {
         consumer.setClient("client");
         assertThat(consumer.getClient(), equalTo("client"));
     }
+
+    @Test
+    public void testThreadpool() throws Exception {
+        ConsumerConfig consumer = new ConsumerConfig();
+        consumer.setThreadpool("fixed");
+        assertThat(consumer.getThreadpool(), equalTo("fixed"));
+    }
+
+    @Test
+    public void testCorethreads() throws Exception {
+        ConsumerConfig consumer = new ConsumerConfig();
+        consumer.setCorethreads(10);
+        assertThat(consumer.getCorethreads(), equalTo(10));
+    }
+
+    @Test
+    public void testThreads() throws Exception {
+        ConsumerConfig consumer = new ConsumerConfig();
+        consumer.setThreads(20);
+        assertThat(consumer.getThreads(), equalTo(20));
+    }
+
+    @Test
+    public void testQueues() throws Exception {
+        ConsumerConfig consumer = new ConsumerConfig();
+        consumer.setQueues(5);
+        assertThat(consumer.getQueues(), equalTo(5));
+    }
 }

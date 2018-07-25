@@ -25,7 +25,7 @@ import org.apache.dubbo.remoting.Transporter;
 
 public class NettyTransporter implements Transporter {
 
-    public static final String NAME = "netty";
+    public static final String NAME = "netty3";
 
     @Override
     public Server bind(URL url, ChannelHandler listener) throws RemotingException {
