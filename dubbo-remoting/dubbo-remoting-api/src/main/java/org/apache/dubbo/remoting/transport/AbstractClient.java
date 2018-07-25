@@ -53,6 +53,12 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     private static final AtomicInteger CLIENT_THREAD_POOL_ID = new AtomicInteger();
     private static final ScheduledThreadPoolExecutor reconnectExecutorService = new ScheduledThreadPoolExecutor(2, new NamedThreadFactory("DubboClientReconnectTimer", true));
     private final Lock connectLock = new ReentrantLock();
+
+    /**
+     * reConnectLock
+     */
+    private final Lock reConnectLock = new ReentrantLock();
+
     private final boolean send_reconnect;
     private final AtomicInteger reconnect_count = new AtomicInteger(0);
     // Reconnection error log has been called before?
@@ -321,8 +327,17 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
     @Override
     public void reconnect() throws RemotingException {
-        disconnect();
-        connect();
+        if (!isConnected()) {
+            reConnectLock.lock();
+            try {
+                if (!isConnected()) {
+                    disconnect();
+                    connect();
+                }
+            } finally {
+                reConnectLock.unlock();
+            }
+        }
     }
 
     @Override
