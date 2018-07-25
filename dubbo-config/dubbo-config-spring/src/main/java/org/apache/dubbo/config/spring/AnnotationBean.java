@@ -34,6 +34,7 @@ import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.annotation.Service;
 
+import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
@@ -136,19 +137,23 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName)
         throws BeansException {
-        if (!isMatchPackage(bean)) {
+        Class targetClass=bean.getClass();
+        if(AopUtils.isAopProxy(targetClass)){
+            targetClass=AopUtils.getTargetClass(bean.getClass());
+        }
+        if (!isMatchPackage(targetClass)) {
             return bean;
         }
-        Service service = bean.getClass().getAnnotation(Service.class);
+        Service service = (Service) targetClass.getAnnotation(Service.class);
         if (service != null) {
             ServiceBean<Object> serviceConfig = new ServiceBean<Object>(service);
             serviceConfig.setRef(bean);
             if (void.class.equals(service.interfaceClass())
                 && "".equals(service.interfaceName())) {
-                if (bean.getClass().getInterfaces().length > 0) {
-                    serviceConfig.setInterface(bean.getClass().getInterfaces()[0]);
+                if (targetClass.getInterfaces().length > 0) {
+                    serviceConfig.setInterface(targetClass.getInterfaces()[0]);
                 } else {
-                    throw new IllegalStateException("Failed to export remote service class " + bean.getClass().getName() + ", cause: The @Service undefined interfaceClass or interfaceName, and the service class unimplemented any interfaces.");
+                    throw new IllegalStateException("Failed to export remote service class " + targetClass.getName() + ", cause: The @Service undefined interfaceClass or interfaceName, and the service class unimplemented any interfaces.");
                 }
             }
             if (applicationContext != null) {
@@ -203,10 +208,14 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName)
         throws BeansException {
-        if (!isMatchPackage(bean)) {
+        Class targetClass=bean.getClass();
+        if(AopUtils.isAopProxy(targetClass)){
+            targetClass=AopUtils.getTargetClass(bean.getClass());
+        }
+        if (!isMatchPackage(targetClass)) {
             return bean;
         }
-        Method[] methods = bean.getClass().getMethods();
+        Method[] methods = targetClass.getClass().getMethods();
         for (Method method : methods) {
             String name = method.getName();
             if (name.length() > 3 && name.startsWith("set")
@@ -222,11 +231,11 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                         }
                     }
                 } catch (Throwable e) {
-                    logger.error("Failed to init remote service reference at method " + name + " in class " + bean.getClass().getName() + ", cause: " + e.getMessage(), e);
+                    logger.error("Failed to init remote service reference at method " + name + " in class " + targetClass.getName() + ", cause: " + e.getMessage(), e);
                 }
             }
         }
-        Field[] fields = bean.getClass().getDeclaredFields();
+        Field[] fields = targetClass.getDeclaredFields();
         for (Field field : fields) {
             try {
                 if (!field.isAccessible()) {
@@ -240,7 +249,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                     }
                 }
             } catch (Throwable e) {
-                logger.error("Failed to init remote service reference at filed " + field.getName() + " in class " + bean.getClass().getName() + ", cause: " + e.getMessage(), e);
+                logger.error("Failed to init remote service reference at filed " + field.getName() + " in class " + targetClass.getName() + ", cause: " + e.getMessage(), e);
             }
         }
         return bean;
@@ -306,11 +315,11 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
         return referenceConfig.get();
     }
 
-    private boolean isMatchPackage(Object bean) {
+    private boolean isMatchPackage(Class targetClass) {
         if (annotationPackages == null || annotationPackages.length == 0) {
             return true;
         }
-        String beanClassName = bean.getClass().getName();
+        String beanClassName = targetClass.getName();
         for (String pkg : annotationPackages) {
             if (beanClassName.startsWith(pkg)) {
                 return true;
