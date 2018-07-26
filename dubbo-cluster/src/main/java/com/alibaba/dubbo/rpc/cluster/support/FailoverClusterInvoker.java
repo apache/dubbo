@@ -32,6 +32,7 @@ import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.cluster.Directory;
 import com.alibaba.dubbo.rpc.cluster.LoadBalance;
+import com.alibaba.dubbo.rpc.support.RpcUtils;
 
 /**
  * 失败转移，当出现失败，重试其它服务器，通常用于读操作，但重试会带来更长延迟。
@@ -53,7 +54,8 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
     public Result doInvoke(Invocation invocation, final List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
     	List<Invoker<T>> copyinvokers = invokers;
     	checkInvokers(copyinvokers, invocation);
-        int len = getUrl().getMethodParameter(invocation.getMethodName(), Constants.RETRIES_KEY, Constants.DEFAULT_RETRIES) + 1;
+        String methodName = RpcUtils.getMethodName(invocation);
+        int len = getUrl().getMethodParameter(methodName, Constants.RETRIES_KEY, Constants.DEFAULT_RETRIES) + 1;
         if (len <= 0) {
             len = 1;
         }
@@ -76,7 +78,7 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
             try {
                 Result result = invoker.invoke(invocation);
                 if (le != null && logger.isWarnEnabled()) {
-                    logger.warn("Although retry the method " + invocation.getMethodName()
+                    logger.warn("Although retry the method " + methodName
                             + " in the service " + getInterface().getName()
                             + " was successful by the provider " + invoker.getUrl().getAddress()
                             + ", but there have been failed providers " + providers 
@@ -99,7 +101,7 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
             }
         }
         throw new RpcException(le != null ? le.getCode() : 0, "Failed to invoke the method "
-                + invocation.getMethodName() + " in the service " + getInterface().getName() 
+                + methodName + " in the service " + getInterface().getName()
                 + ". Tried " + len + " times of the providers " + providers 
                 + " (" + providers.size() + "/" + copyinvokers.size() 
                 + ") from the registry " + directory.getUrl().getAddress()
