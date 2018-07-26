@@ -72,6 +72,12 @@ public class CompatibleTypeUtilsTest {
             assertEquals(2, ((char[]) result).length);
             assertEquals('a', ((char[]) result)[0]);
             assertEquals('b', ((char[]) result)[1]);
+
+            result = CompatibleTypeUtils.compatibleTypeConvert("", char[].class);
+            assertEquals(0, ((char[]) result).length);
+
+            result = CompatibleTypeUtils.compatibleTypeConvert(null, char[].class);
+            assertEquals(null, result);
         }
 
         {

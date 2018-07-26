@@ -92,7 +92,9 @@ public class CompatibleTypeUtils {
                     throw new RuntimeException(e.getMessage(), e);
                 }
             } else if (char[].class.equals(type)) {
-                // #2003, process string to char array for generic invoke
+                // Process string to char array for generic invoke
+                // See
+                // - https://github.com/apache/incubator-dubbo/issues/2003
                 if (string == null) {
                     return null;
                 }
