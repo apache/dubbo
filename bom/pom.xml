@@ -3,7 +3,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <properties>
-        <hessian_lite_version>3.2.3</hessian_lite_version>
+        <hessian_lite_version>3.2.4</hessian_lite_version>
     </properties>
 
     <parent>
