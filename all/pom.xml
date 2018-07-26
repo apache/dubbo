@@ -29,7 +29,7 @@
     <description>The all in one project of dubbo</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
-        <hessian_lite_version>3.2.3</hessian_lite_version>
+        <hessian_lite_version>3.2.4</hessian_lite_version>
     </properties>
     <dependencies>
         <dependency>
