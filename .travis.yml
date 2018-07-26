@@ -7,7 +7,7 @@ jdk:
     - oraclejdk8
 
 script:
-    - travis_wait 30 ./mvnw clean package
+    - travis_wait 30 ./mvnw clean package -Dcheckstyle.skip=false -Drat.skip=false
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
