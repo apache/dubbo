@@ -67,6 +67,17 @@ public class CompatibleTypeUtilsTest {
 
             result = CompatibleTypeUtils.compatibleTypeConvert("2011-12-11 12:24:12", Date.class);
             assertEquals(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("2011-12-11 12:24:12"), (Date) result);
+
+            result = CompatibleTypeUtils.compatibleTypeConvert("ab", char[].class);
+            assertEquals(2, ((char[]) result).length);
+            assertEquals('a', ((char[]) result)[0]);
+            assertEquals('b', ((char[]) result)[1]);
+
+            result = CompatibleTypeUtils.compatibleTypeConvert("", char[].class);
+            assertEquals(0, ((char[]) result).length);
+
+            result = CompatibleTypeUtils.compatibleTypeConvert(null, char[].class);
+            assertEquals(null, result);
         }
 
         {
