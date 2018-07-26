@@ -321,8 +321,17 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
     @Override
     public void reconnect() throws RemotingException {
-        disconnect();
-        connect();
+        if (!isConnected()) {
+            connectLock.lock();
+            try {
+                if (!isConnected()) {
+                    disconnect();
+                    connect();
+                }
+            } finally {
+                connectLock.unlock();
+            }
+        }
     }
 
     @Override
