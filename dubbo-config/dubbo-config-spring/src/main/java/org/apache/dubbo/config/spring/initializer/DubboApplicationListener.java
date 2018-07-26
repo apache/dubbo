@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.config.spring.initializer;
+package org.apache.dubbo.config.spring.initializer;
 
 import org.apache.dubbo.bootstrap.DubboBootstrap;
 import org.springframework.context.ApplicationEvent;
