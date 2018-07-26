@@ -91,6 +91,17 @@ public class CompatibleTypeUtils {
                 } catch (ClassNotFoundException e) {
                     throw new RuntimeException(e.getMessage(), e);
                 }
+            } else if (char[].class.equals(type)) {
+                // #2003, process string to char array for generic invoke
+                if (string == null) {
+                    return null;
+                }
+                else {
+                    int len = string.length();
+                    char[] chars = new char[len];
+                    string.getChars(0, len, chars, 0);
+                    return chars;
+                }
             }
         } else if (value instanceof Number) {
             Number number = (Number) value;
