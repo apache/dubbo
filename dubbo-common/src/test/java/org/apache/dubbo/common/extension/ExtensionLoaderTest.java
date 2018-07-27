@@ -19,11 +19,7 @@ package org.apache.dubbo.common.extension;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.activate.ActivateExt1;
-import org.apache.dubbo.common.extension.activate.impl.ActivateExt1Impl1;
-import org.apache.dubbo.common.extension.activate.impl.GroupActivateExtImpl;
-import org.apache.dubbo.common.extension.activate.impl.OrderActivateExtImpl1;
-import org.apache.dubbo.common.extension.activate.impl.OrderActivateExtImpl2;
-import org.apache.dubbo.common.extension.activate.impl.ValueActivateExtImpl;
+import org.apache.dubbo.common.extension.activate.impl.*;
 import org.apache.dubbo.common.extension.ext1.SimpleExt;
 import org.apache.dubbo.common.extension.ext1.impl.SimpleExtImpl1;
 import org.apache.dubbo.common.extension.ext1.impl.SimpleExtImpl2;
@@ -377,6 +373,14 @@ public class ExtensionLoaderTest {
                 .getActivateExtension(url, new String[]{}, "group1");
         Assert.assertEquals(1, list.size());
         Assert.assertTrue(list.get(0).getClass() == GroupActivateExtImpl.class);
+
+        // test old @Activate group
+        url = url.addParameter(Constants.GROUP_KEY, "old_group");
+        list = ExtensionLoader.getExtensionLoader(ActivateExt1.class)
+                .getActivateExtension(url, new String[]{}, "old_group");
+        Assert.assertEquals(2, list.size());
+        Assert.assertTrue(list.get(0).getClass() == OldActivateExt1Impl2.class
+                || list.get(0).getClass() == OldActivateExt1Impl3.class);
 
         // test value
         url = url.removeParameter(Constants.GROUP_KEY);
