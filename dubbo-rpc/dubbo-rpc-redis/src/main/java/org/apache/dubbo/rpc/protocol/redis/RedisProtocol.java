@@ -90,7 +90,7 @@ public class RedisProtocol extends AbstractProtocol {
                 config.setTimeBetweenEvictionRunsMillis(url.getParameter("time.between.eviction.runs.millis", 0));
             if (url.getParameter("min.evictable.idle.time.millis", 0) > 0)
                 config.setMinEvictableIdleTimeMillis(url.getParameter("min.evictable.idle.time.millis", 0));
-            JedisPool jedisPool = new JedisPool(config, url.getHost(), url.getPort(DEFAULT_PORT),
+            final JedisPool jedisPool = new JedisPool(config, url.getHost(), url.getPort(DEFAULT_PORT),
                     url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT),
                     StringUtils.isBlank(url.getPassword()) ? null : url.getPassword(),
                     url.getParameter("db.index", 0));
