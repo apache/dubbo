@@ -18,6 +18,7 @@ package org.apache.dubbo.qos.protocol;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.qos.common.QosConstants;
 import org.apache.dubbo.qos.server.Server;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
@@ -81,8 +82,8 @@ public class QosProtocolWrapper implements Protocol {
                 return;
             }
 
-            int port = Integer.parseInt(url.getParameter(QOS_PORT,"22222"));
-            boolean acceptForeignIp = Boolean.parseBoolean(url.getParameter(ACCEPT_FOREIGN_IP,"true"));
+            int port = url.getParameter(QOS_PORT, QosConstants.DEFAULT_PORT);
+            boolean acceptForeignIp = Boolean.parseBoolean(url.getParameter(ACCEPT_FOREIGN_IP,"false"));
             Server server = Server.getInstance();
             server.setPort(port);
             server.setAcceptForeignIp(acceptForeignIp);
