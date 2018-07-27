@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.RpcContext;
-
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 
 import javax.annotation.Priority;
@@ -70,9 +69,17 @@ public class RpcContextFilter implements ContainerRequestFilter, ClientRequestFi
     public void filter(ClientRequestContext requestContext) throws IOException {
         int size = 0;
         for (Map.Entry<String, String> entry : RpcContext.getContext().getAttachments().entrySet()) {
-            if (entry.getValue().contains(",") || entry.getValue().contains("=")
-                    || entry.getKey().contains(",") || entry.getKey().contains("=")) {
-                throw new IllegalArgumentException("The attachments of " + RpcContext.class.getSimpleName() + " must not contain ',' or '=' when using rest protocol");
+            String key = entry.getKey();
+            String value = entry.getValue();
+            if (StringUtils.isNotEmpty(key)) {
+                if (illegalForRest(key)) {
+                    throw new IllegalArgumentException("The attachments of " + RpcContext.class.getSimpleName() + " must not contain ',' or '=' when using rest protocol");
+                }
+            }
+            if (StringUtils.isNotEmpty(value)) {
+                if (illegalForRest(value)) {
+                    throw new IllegalArgumentException("The attachments of " + RpcContext.class.getSimpleName() + " must not contain ',' or '=' when using rest protocol");
+                }
             }
 
             // TODO for now we don't consider the differences of encoding and server limit
@@ -84,5 +91,15 @@ public class RpcContextFilter implements ContainerRequestFilter, ClientRequestFi
             String attachments = entry.getKey() + "=" + entry.getValue();
             requestContext.getHeaders().add(DUBBO_ATTACHMENT_HEADER, attachments);
         }
+    }
+
+    /**
+     * If a string value illegal for rest protocol(',' and '=' is illegal for rest protocol).
+     *
+     * @param v string value
+     * @return true for illegal
+     */
+    private boolean illegalForRest(String v) {
+        return v.contains(",") || v.contains("=");
     }
 }
