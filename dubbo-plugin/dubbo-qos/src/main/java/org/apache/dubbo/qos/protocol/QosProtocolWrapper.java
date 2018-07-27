@@ -18,6 +18,8 @@ package org.apache.dubbo.qos.protocol;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.qos.common.QosConstants;
 import org.apache.dubbo.qos.server.Server;
 import org.apache.dubbo.rpc.Exporter;
@@ -32,6 +34,9 @@ import static org.apache.dubbo.common.Constants.QOS_ENABLE;
 import static org.apache.dubbo.common.Constants.QOS_PORT;
 
 public class QosProtocolWrapper implements Protocol {
+
+    private final Logger logger = LoggerFactory.getLogger(QosProtocolWrapper.class);
+
     private static AtomicBoolean hasStarted = new AtomicBoolean(false);
 
     private Protocol protocol;
@@ -90,7 +95,7 @@ public class QosProtocolWrapper implements Protocol {
             server.start();
 
         } catch (Throwable throwable) {
-            //throw new RpcException("fail to start qos server", throwable);
+            logger.warn("Fail to start qos server: ", throwable);
         }
     }
 
