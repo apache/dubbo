@@ -1,203 +1,166 @@
-[![Build Status](https://travis-ci.org/alibaba/dubbo.svg?branch=master)](https://travis-ci.org/alibaba/dubbo) [![Gitter](https://badges.gitter.im/alibaba/dubbo.svg)](https://gitter.im/alibaba/dubbo?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+# Apache Dubbo (incubating) Project
 
-Dubbo is a distributed, high performance RPC framework which empowers applications with service import/export capabilities.
+[![Build Status](https://travis-ci.org/apache/incubator-dubbo.svg?branch=master)](https://travis-ci.org/apache/incubator-dubbo)
+[![codecov](https://codecov.io/gh/apache/incubator-dubbo/branch/master/graph/badge.svg)](https://codecov.io/gh/apache/incubator-dubbo)
+[![Gitter](https://badges.gitter.im/alibaba/dubbo.svg)](https://gitter.im/alibaba/dubbo?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+![license](https://img.shields.io/github/license/alibaba/dubbo.svg)
+![maven](https://img.shields.io/maven-central/v/com.alibaba/dubbo.svg)
 
-It contains three key parts, which include:
+Apache Dubbo (incubating) is a high-performance, java based open source RPC framework. Please visit [official site ](http://dubbo.incubator.apache.org) for quick start and documentations, as well as [Wiki](https://github.com/apache/incubator-dubbo/wiki) for news, FAQ, and release notes.
 
-* **Remoting**: a network communication framework providing sync-over-async and request-response messaging.
-* **Clustering**: a remote procedure call abstraction with load-balancing/failover/clustering capabilities.
-* **Registration**: a service directory framework for service registration and service event publish/subscription
+We are now collecting dubbo user info in order to help us to improve dubbo better, pls. kindly help us by providing yours on [issue#1012: Wanted: who's using dubbo](https://github.com/apache/incubator-dubbo/issues/1012), thanks :)
 
-For more details, please refer to [wiki](https://github.com/alibaba/dubbo/wiki) or [dubbo.io](http://dubbo.io).
+## Architecture
 
-## Quick Start
+![Architecture](http://dubbo.apache.org/img/architecture.png)
 
+## Features
 
-Export service:
+* Transparent interface based RPC
+* Intelligent load balancing
+* Automatic service registration and discovery
+* High extensibility
+* Runtime traffic routing
+* Visualized service governance
+
+## Getting started
+
+### Maven dependency
 
 ```xml
-<bean id="barService" class="com.foo.BarServiceImpl" />
-<dubbo:service interface="com.foo.BarService" ref="barService" />
+<dependency>
+    <groupId>com.alibaba</groupId>
+    <artifactId>dubbo</artifactId>
+    <version>2.6.2</version>
+</dependency>
 ```
 
-Refer to service:
+### Defining service interfaces
 
-```xml
-<dubbo:reference id="barService" interface="com.foo.BarService" />
-	
-<bean id="barAction" class="com.foo.BarAction">
-    <property name="barService" ref="barService" />
-</bean>
+```java
+package org.apache.dubbo.demo;
+
+public interface GreetingService {
+    String sayHello(String name);
+}
 ```
 
-## Source Building
+### Implement interface in service provider
 
-
-0. Install the git and maven command line:
-
-    ```sh
-yum install git
-or: apt-get install git
-cd ~
-wget http://www.apache.org/dist//maven/binaries/apache-maven-2.2.1-bin.tar.gz
-tar zxvf apache-maven-2.2.1-bin.tar.gz
-vi .bash_profile
-append: export PATH=$PATH:~/apache-maven-2.2.1/bin
-source .bash_profile
+```java
+package org.apache.dubbo.demo.provider;
+ 
+import org.apache.dubbo.demo.GreetingService;
+ 
+public class GreetingServiceImpl implements GreetingService {
+    public String sayHello(String name) {
+        return "Hello " + name;
+    }
+}
 ```
 
-0. Checkout the dubbo source code:
+### Starting service provider
 
-    ```sh
-cd ~
-git clone https://github.com/alibaba/dubbo.git dubbo
-git checkout master
-or: git checkout -b dubbo-2.4.0
+```java
+package org.apache.dubbo.demo.provider;
+
+import com.alibaba.dubbo.config.ApplicationConfig;
+import com.alibaba.dubbo.config.RegistryConfig;
+import com.alibaba.dubbo.config.ServiceConfig;
+import org.apache.dubbo.demo.GreetingService;
+
+import java.io.IOException;
+ 
+public class Provider {
+
+    public static void main(String[] args) throws IOException {
+        ServiceConfig<GreetingService> serviceConfig = new ServiceConfig<GreetingService>();
+        serviceConfig.setApplication(new ApplicationConfig("first-dubbo-provider"));
+        serviceConfig.setRegistry(new RegistryConfig("multicast://224.5.6.7:1234"));
+        serviceConfig.setInterface(GreetingService.class);
+        serviceConfig.setRef(new GreetingServiceImpl());
+        serviceConfig.export();
+        System.in.read();
+    }
+}
 ```
 
-0. Import the dubbo source code to eclipse project:
+### Call remote service in consumer
 
-    ```sh
-cd ~/dubbo
-mvn eclipse:eclipse
+```java
+package org.apache.dubbo.demo.consumer;
+
+import com.alibaba.dubbo.config.ApplicationConfig;
+import com.alibaba.dubbo.config.ReferenceConfig;
+import com.alibaba.dubbo.config.RegistryConfig;
+import org.apache.dubbo.demo.GreetingService;
+
+public class Consumer {
+    public static void main(String[] args) {
+        ReferenceConfig<GreetingService> referenceConfig = new ReferenceConfig<GreetingService>();
+        referenceConfig.setApplication(new ApplicationConfig("first-dubbo-consumer"));
+        referenceConfig.setRegistry(new RegistryConfig("multicast://224.5.6.7:1234"));
+        referenceConfig.setInterface(GreetingService.class);
+        GreetingService greetingService = referenceConfig.get();
+        System.out.println(greetingService.sayHello("world"));
+    }
+}
 ```
 
-    Then configure the project in eclipse by following the steps below:
-    * Eclipse -> Menu -> File -> Import -> Exsiting Projects to Workspace -> Browse -> Finish
-    * Context Menu -> Run As -> Java Application:
-        * dubbo-demo-provider/src/test/java/com.alibaba.dubbo.demo.provider.DemoProvider
-        * dubbo-demo-consumer/src/test/java/com.alibaba.dubbo.demo.consumer.DemoConsumer
-        * dubbo-monitor-simple/src/test/java/com.alibaba.dubbo.monitor.simple.SimpleMonitor
-        * dubbo-registry-simple/src/test/java/com.alibaba.dubbo.registry.simple.SimpleRegistry
-    * Edit Config:
-        * dubbo-demo-provider/src/test/resources/dubbo.properties
-        * dubbo-demo-consumer/src/test/resources/dubbo.properties
-        * dubbo-monitor-simple/src/test/resources/dubbo.properties
-        * dubbo-registry-simple/src/test/resources/dubbo.properties
+### Next steps
 
-0. Build the dubbo binary package:
+* [Dubbo user manual](http://dubbo.apache.org/#/docs/user/preface/background.md) - How to use Dubbo and all its features.
+* [Dubbo developer guide](http://dubbo.apache.org/#/docs/dev/build.md) - How to invovle in Dubbo development.
+* [Dubbo admin manual](http://dubbo.apache.org/#/docs/admin/install/provider-demo.md) - How to admin and manage Dubbo services.
 
-    ```sh
-cd ~/dubbo
-mvn clean install -Dmaven.test.skip
-cd dubbo/target
-ls
-```
+## Contact
 
-0. Install the demo provider:
+* Mailing list: [dev@dubbo.incubator.apache.org](mailto:[dev-subscribe@dubbo.incubator.apache.org]) (subscription [guide](https://github.com/apache/incubator-dubbo/wiki/Mailing-list-subscription-guide))
+* Bugs: [Issues](https://github.com/apache/incubator-dubbo/issues/new?template=dubbo-issue-report-template.md)
+* Gitter: [Gitter channel](https://gitter.im/alibaba/dubbo) 
+* Twitter: [@ApacheDubbo](https://twitter.com/ApacheDubbo)
 
-    ```sh
-cd ~/dubbo/dubbo-demo-provider/target
-tar zxvf dubbo-demo-provider-2.4.0-assembly.tar.gz
-cd dubbo-demo-provider-2.4.0/bin
-./start.sh
-```
+## Contributing
 
-0. Install the demo consumer:
+See [CONTRIBUTING](https://github.com/apache/incubator-dubbo/blob/master/CONTRIBUTING.md) for details on submitting patches and the contribution workflow.
 
-    ```sh
-cd ~/dubbo/dubbo-demo-consumer/target
-tar zxvf dubbo-demo-consumer-2.4.0-assembly.tar.gz
-cd dubbo-demo-consumer-2.4.0/bin
-./start.sh
-cd ../logs
-tail -f stdout.log
-```
+### How can I contribute?
 
-0. Install the simple monitor:
+* Take a look at issues with tag called [`Good first issue`](https://github.com/apache/incubator-dubbo/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22) or [`Help wanted`](https://github.com/apache/incubator-dubbo/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22).
+* Join the discussion on mailing list, subscription [guide](https://github.com/apache/incubator-dubbo/wiki/Mailing-list-subscription-guide).
+* Answer questions on [issues](https://github.com/apache/incubator-dubbo/issues).
+* Fix bugs reported on [issues](https://github.com/apache/incubator-dubbo/issues), and send us pull request.
+* Review the existing [pull request](https://github.com/apache/incubator-dubbo/pulls).
+* Improve the [website](https://github.com/apache/incubator-dubbo-website), typically we need
+  * blog post
+  * translation on documentation
+  * use cases about how Dubbo is being used in enterprise system.
+* Improve the [dubbo-ops/dubbo-monitor](https://github.com/apache/incubator-dubbo-ops).
+* Contribute to the projects listed in [ecosystem](https://github.com/dubbo).
+* Any form of contribution that is not mentioned above.
+* If you would like to contribute, please send an email to dev@dubbo.incubator.apache.org to let us know!
 
-    ```sh
-cd ~/dubbo/dubbo-simple-monitor/target
-tar zxvf dubbo-simple-monitor-2.4.0-assembly.tar.gz
-cd dubbo-simple-monitor-2.4.0/bin
-./start.sh
-http://127.0.0.1:8080
-```
+## Reporting bugs
 
-0. Install the simple registry:
+Please follow the [template](https://github.com/apache/incubator-dubbo/issues/new?template=dubbo-issue-report-template.md) for reporting any issues.
 
-    ```sh
-cd ~/dubbo/dubbo-simple-registry/target
-tar zxvf dubbo-simple-registry-2.4.0-assembly.tar.gz
-cd dubbo-simple-registry-2.4.0/bin
-./start.sh
-cd ~/dubbo/dubbo-demo-provider/conf
-vi dubbo.properties
-- edit: dubbo.registry.adddress=dubbo://127.0.0.1:9090
-cd ../bin
-./restart.sh
-cd ~/dubbo/dubbo-demo-consumer/conf
-vi dubbo.properties
-- edit: dubbo.registry.adddress=dubbo://127.0.0.1:9090
-cd ../bin
-./restart.sh
-cd ~/dubbo/dubbo-simple-monitor/conf
-vi dubbo.properties
-- edit: dubbo.registry.adddress=dubbo://127.0.0.1:9090
-cd ../bin
-./restart.sh
-```
+## Reporting a security vulnerability
 
-0. Install the zookeeper registry:
+Please report security vulnerability to security@dubbo.incubator.apache.org (private mailing list).
 
-    ```sh
-cd ~
-wget http://www.apache.org/dist//zookeeper/zookeeper-3.3.3/zookeeper-3.3.3.tar.gz
-tar zxvf zookeeper-3.3.3.tar.gz
-cd zookeeper-3.3.3/conf
-cp zoo_sample.cfg zoo.cfg
-vi zoo.cfg
-- edit: dataDir=/home/xxx/data
-cd ../bin
-./zkServer.sh start
-cd ~/dubbo/dubbo-demo-provider/conf
-vi dubbo.properties
-- edit: dubbo.registry.adddress=zookeeper://127.0.0.1:2181
-cd ../bin
-./restart.sh
-cd ~/dubbo/dubbo-demo-consumer/conf
-vi dubbo.properties
-- edit: dubbo.registry.adddress=zookeeper://127.0.0.1:2181
-cd ../bin
-./restart.sh
-cd ~/dubbo/dubbo-simple-monitor/conf
-vi dubbo.properties
-- edit: dubbo.registry.adddress=zookeeper://127.0.0.1:2181
-cd ../bin
-./restart.sh
-```
+## Ecosystem
 
-0. Install the redis registry:
+* [Dubbo website](https://github.com/apache/incubator-dubbo-website) - Apache Dubbo (incubating) official website
+* [Dubbo samples](https://github.com/dubbo/dubbo-samples) - samples for Apache Dubbo (incubating)
+* [Dubbo Spring Boot](https://github.com/apache/incubator-dubbo-spring-boot-project) - Spring Boot Project for Dubbo
+* [Dubbo ops](https://github.com/apache/incubator-dubbo-ops) - The reference implementation for dubbo ops (dubbo-admin, dubbo-monitor, dubbo-registry-simple, etc.)
 
-    ```sh
-cd ~
-wget http://redis.googlecode.com/files/redis-2.4.8.tar.gz
-tar xzf redis-2.4.8.tar.gz
-cd redis-2.4.8
-make
-nohup ./src/redis-server redis.conf &
-cd ~/dubbo/dubbo-demo-provider/conf
-vi dubbo.properties
-- edit: dubbo.registry.adddress=redis://127.0.0.1:6379
-cd ../bin
-./restart.sh
-cd ~/dubbo/dubbo-demo-consumer/conf
-vi dubbo.properties
-- edit: dubbo.registry.adddress=redis://127.0.0.1:6379
-cd ../bin
-./restart.sh
-cd ~/dubbo/dubbo-simple-monitor/conf
-vi dubbo.properties
-- edit: dubbo.registry.adddress=redis://127.0.0.1:6379
-cd ../bin
-./restart.sh
-```
+#### Language
 
-0. Install the admin console:
+* [Node.js](https://github.com/dubbo/dubbo2.js)
+* [Python](https://github.com/dubbo/dubbo-client-py)
+* [Php](https://github.com/dubbo/dubbo-php-framework)
 
-    ```sh
-    cd ~/dubbo/dubbo-admin
-    mvn jetty:run -Ddubbo.registry.address=zookeeper://127.0.0.1:2181
-    http://root:root@127.0.0.1:8080
-```
+## License
 
+Apache Dubbo is under the Apache 2.0 license. See the [LICENSE](https://github.com/apache/incubator-dubbo/blob/master/LICENSE) file for details.

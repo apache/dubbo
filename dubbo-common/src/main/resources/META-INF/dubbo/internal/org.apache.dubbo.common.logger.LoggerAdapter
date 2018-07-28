@@ -1,0 +1,4 @@
+slf4j=org.apache.dubbo.common.logger.slf4j.Slf4jLoggerAdapter
+jcl=org.apache.dubbo.common.logger.jcl.JclLoggerAdapter
+log4j=org.apache.dubbo.common.logger.log4j.Log4jLoggerAdapter
+jdk=org.apache.dubbo.common.logger.jdk.JdkLoggerAdapter

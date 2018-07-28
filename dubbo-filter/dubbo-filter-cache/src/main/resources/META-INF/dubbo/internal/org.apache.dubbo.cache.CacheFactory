@@ -1,0 +1,4 @@
+threadlocal=org.apache.dubbo.cache.support.threadlocal.ThreadLocalCacheFactory
+lru=org.apache.dubbo.cache.support.lru.LruCacheFactory
+jcache=org.apache.dubbo.cache.support.jcache.JCacheFactory
+expiring=org.apache.dubbo.cache.support.expiring.ExpiringCacheFactory

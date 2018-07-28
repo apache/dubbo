@@ -22,10 +22,9 @@ import java.net.SocketTimeoutException;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.commons.pool.impl.GenericObjectPool;
-
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 
@@ -68,26 +67,38 @@ public class RedisProtocol extends AbstractProtocol {
 
     public <T> Invoker<T> refer(final Class<T> type, final URL url) throws RpcException {
         try {
-            GenericObjectPool.Config config = new GenericObjectPool.Config();
-            config.testOnBorrow = url.getParameter("test.on.borrow", true);
-            config.testOnReturn = url.getParameter("test.on.return", false);
-            config.testWhileIdle = url.getParameter("test.while.idle", false);
+            JedisPoolConfig config = new JedisPoolConfig();  
+            config.setTestOnBorrow(url.getParameter("test.on.borrow", true));
+            config.setTestOnReturn(url.getParameter("test.on.return", false));
+            config.setTestWhileIdle(url.getParameter("test.while.idle", false));
+            
             if (url.getParameter("max.idle", 0) > 0)
-                config.maxIdle = url.getParameter("max.idle", 0);
+            	config.setMaxIdle(url.getParameter("max.idle", 0));
             if (url.getParameter("min.idle", 0) > 0)
-                config.minIdle = url.getParameter("min.idle", 0);
+            	config.setMinIdle(url.getParameter("min.idle", 0));
             if (url.getParameter("max.active", 0) > 0)
-                config.maxActive = url.getParameter("max.active", 0);
-            if (url.getParameter("max.wait", 0) > 0)
-                config.maxWait = url.getParameter("max.wait", 0);
+            	config.setMaxTotal(url.getParameter("min.active", 0));
+            if (url.getParameter("max.wait", url.getParameter("timeout", 0)) > 0)
+            	config.setMaxWaitMillis(url.getParameter("max.wait", url.getParameter("timeout", 0)));
             if (url.getParameter("num.tests.per.eviction.run", 0) > 0)
-                config.numTestsPerEvictionRun = url.getParameter("num.tests.per.eviction.run", 0);
+            	config.setNumTestsPerEvictionRun(url.getParameter("num.tests.per.eviction.run", 0));
             if (url.getParameter("time.between.eviction.runs.millis", 0) > 0)
-                config.timeBetweenEvictionRunsMillis = url.getParameter("time.between.eviction.runs.millis", 0);
+            	config.setTimeBetweenEvictionRunsMillis(url.getParameter("time.between.eviction.runs.millis", 0));
             if (url.getParameter("min.evictable.idle.time.millis", 0) > 0)
-                config.minEvictableIdleTimeMillis = url.getParameter("min.evictable.idle.time.millis", 0);
-            final JedisPool jedisPool = new JedisPool(config, url.getHost(), url.getPort(DEFAULT_PORT), 
-                url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
+            	config.setMinEvictableIdleTimeMillis(url.getParameter("min.evictable.idle.time.millis", 0));
+
+            String auth = url.getParameter(Constants.AUTH_KEY, Constants.DEFAULT_EMPTY);
+
+        	JedisPool jedisPool_t = null;
+            if(Constants.DEFAULT_EMPTY.equals(auth)){
+            	jedisPool_t = new JedisPool(config, url.getHost(), url.getPort(DEFAULT_PORT), 
+                        url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
+            }else{
+            	jedisPool_t = new JedisPool(config, url.getHost(), url.getPort(DEFAULT_PORT), 
+                        url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT),auth);
+            }
+            final JedisPool jedisPool = jedisPool_t;
+
             final int expiry = url.getParameter("expiry", 0);
             final String get = url.getParameter("get", "get");
             final String set = url.getParameter("set", Map.class.equals(type) ? "put" : "set");
@@ -132,7 +143,7 @@ public class RedisProtocol extends AbstractProtocol {
                         }
                     }
                     catch (Throwable t) {
-                        RpcException re = new RpcException("Failed to invoke redis service method. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url + ", cause: " + t.getMessage(), t);
+                        RpcException re = new RpcException("Failed to invoke memecached service method. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url + ", cause: " + t.getMessage(), t);
                         if (t instanceof TimeoutException || t instanceof SocketTimeoutException) {
                             re.setCode(RpcException.TIMEOUT_EXCEPTION);
                         } else if (t instanceof JedisConnectionException || t instanceof IOException) {
@@ -164,7 +175,7 @@ public class RedisProtocol extends AbstractProtocol {
                 }
             };
         } catch (Throwable t) {
-            throw new RpcException("Failed to refer redis service. interface: " + type.getName() + ", url: " + url + ", cause: " + t.getMessage(), t);
+            throw new RpcException("Failed to refer memecached service. interface: " + type.getName() + ", url: " + url + ", cause: " + t.getMessage(), t);
         }
     }
 
