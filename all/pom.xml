@@ -349,8 +349,8 @@
             <artifactId>javassist</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.netty</groupId>
-            <artifactId>netty</artifactId>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
         </dependency>
 
         <!-- Temporarily add this part to exclude transitive dependency -->
