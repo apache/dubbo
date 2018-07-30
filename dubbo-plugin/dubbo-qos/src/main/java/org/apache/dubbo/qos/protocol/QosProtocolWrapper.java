@@ -33,6 +33,7 @@ import static org.apache.dubbo.common.Constants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.Constants.QOS_ENABLE;
 import static org.apache.dubbo.common.Constants.QOS_PORT;
 
+
 public class QosProtocolWrapper implements Protocol {
 
     private final Logger logger = LoggerFactory.getLogger(QosProtocolWrapper.class);
@@ -82,7 +83,7 @@ public class QosProtocolWrapper implements Protocol {
         }
 
         try {
-            boolean qosEnable = Boolean.parseBoolean(url.getParameter(QOS_ENABLE,"true"));
+            boolean qosEnable = url.getParameter(QOS_ENABLE,true);
             if (!qosEnable) {
                 return;
             }
