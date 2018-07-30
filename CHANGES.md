@@ -1,7 +1,7 @@
 # Release Notes
 
 ## 2.6.3
-Eahancements / Features
+Enhancements / Features
 
 - Support implicit delivery of attachments from provider to consumer, #889
 - Support inject Spring bean to SPI by bean type, #1837
@@ -10,7 +10,7 @@ Eahancements / Features
 - Remove validation key from provider url on Consumer side, config depedently, #1386
 - Introducing the Bootstrap module as a unified entry for Dubbo startup and resource destruction, #1820
 - Open TCP_NODELAY on Netty 3, #1746
-- Support specify proxy type on provide side, #1873
+- Support specify proxy type on provider side, #1873
 - Support dbindex in redis, #1831
 - Upgrade tomcat to 8.5.31, #1781
 
@@ -31,7 +31,7 @@ Performance Tuning
 
 - ChannelState branch prediction optimization. #1643
 - Optimize AtomicPositiveInteger, less memory and compute cost, #348
-- Introduce embeded Threadlocal to replace the JDK implementation, #1745
+- Introduce embedded Threadlocal to replace the JDK implementation, #1745
 
 Hessian-lite
 
@@ -44,11 +44,11 @@ Issues and Pull Requests, check [milestone-2.6.3](https://github.com/apache/incu
 ## 2.6.2
 
 1. Hessian-lite serialization: revert locale serialization for compatibility, #1413
-2. Asset transfer to ASF, includeing pom, license, DISCLAIMER and so on, #1491
+2. Asset transfer to ASF, including pom, license, DISCLAIMER and so on, #1491
 3. Introduce of new dispatcher policy: EagerThreadpool, #1568
 4. Separate monitor data with group and version, #1407
 5. Spring Boot Enhancenment, #1611
-6. Gaceful shutdown enhancement
+6. Graceful shutdown enhancement
    - Remove exporter destroy logic in AnnotationBean.
    - Waiting for registry notification on consumer side by checking channel state.
 7. Simplify consumer/provider side check in RpcContext, #1444.
