@@ -135,9 +135,7 @@ public class AbstractClusterInvokerTest {
                 return false;
             }
         };
-
     }
-
 
     @Test
     public void testBindingAttachment() {
