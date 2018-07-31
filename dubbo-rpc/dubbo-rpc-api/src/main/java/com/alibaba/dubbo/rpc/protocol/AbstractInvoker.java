@@ -135,7 +135,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
             invocation.addAttachmentsIfAbsent(attachment);
         }
         Map<String, String> contextAttachments = RpcContext.getContext().getAttachments();
-        if (contextAttachments != null) {
+        if (contextAttachments != null && contextAttachments.size() != 0) {
             /**
              * invocation.addAttachmentsIfAbsent(context){@link RpcInvocation#addAttachmentsIfAbsent(Map)}should not be used here,
              * because the {@link RpcContext#setAttachment(String, String)} is passed in the Filter when the call is triggered
