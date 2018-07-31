@@ -45,4 +45,8 @@ public class AvailableClusterInvoker<T> extends AbstractClusterInvoker<T> {
         throw new RpcException("No provider available in " + invokers);
     }
 
+    @Override
+    protected boolean needInitLoadBalance() {
+        return false;
+    }
 }
