@@ -120,7 +120,6 @@ public class RedisRegistry extends FailbackRegistry {
             addresses.addAll(Arrays.asList(backups));
         }
 
-        String password = url.getPassword();
         for (String address : addresses) {
             int i = address.indexOf(':');
             String host;
@@ -132,15 +131,9 @@ public class RedisRegistry extends FailbackRegistry {
                 host = address;
                 port = DEFAULT_REDIS_PORT;
             }
-            if (StringUtils.isEmpty(password)) {
-                this.jedisPools.put(address, new JedisPool(config, host, port,
-                        url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT), null,
-                        url.getParameter("db.index", 0)));
-            } else {
-                this.jedisPools.put(address, new JedisPool(config, host, port,
-                        url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT), password,
-                        url.getParameter("db.index", 0)));
-            }
+            this.jedisPools.put(address, new JedisPool(config, host, port,
+                    url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT), StringUtils.isEmpty(url.getPassword()) ? null : url.getPassword(),
+                    url.getParameter("db.index", 0)));
         }
 
         this.reconnectPeriod = url.getParameter(Constants.REGISTRY_RECONNECT_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RECONNECT_PERIOD);
