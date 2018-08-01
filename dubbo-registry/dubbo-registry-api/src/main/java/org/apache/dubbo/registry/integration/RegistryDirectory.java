@@ -25,10 +25,10 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.dynamic.ConfigChangeType;
-import org.apache.dubbo.config.dynamic.parser.ConfigParser;
 import org.apache.dubbo.config.dynamic.ConfigType;
 import org.apache.dubbo.config.dynamic.ConfigurationListener;
 import org.apache.dubbo.config.dynamic.DynamicConfiguration;
+import org.apache.dubbo.config.dynamic.parser.ConfigParser;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.rpc.Invocation;
@@ -61,7 +61,6 @@ import java.util.stream.Collectors;
 
 /**
  * RegistryDirectory
- *
  */
 public class RegistryDirectory<T> extends AbstractDirectory<T> implements NotifyListener, ConfigurationListener {
 
@@ -154,6 +153,14 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         return configurators;
     }
 
+    public static List<Configurator> configToConfiguratiors(String rawConfig) {
+        if (StringUtils.isEmpty(rawConfig)) {
+            return new ArrayList<>();
+        }
+        List<URL> urls = ConfigParser.parseConfigurators(rawConfig);
+        return urls.stream().map(configuratorFactory::getConfigurator).collect(Collectors.toList());
+    }
+
     public void setProtocol(Protocol protocol) {
         this.protocol = protocol;
     }
@@ -168,14 +175,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 //        String rawConfigApp = (String) dynamicConfiguration.getProperty("");
         this.dynamicConfigurators = configToConfiguratiors(rawConfig);
         registry.subscribe(url, this);
-    }
-
-    public static List<Configurator> configToConfiguratiors(String rawConfig) {
-        if (StringUtils.isEmpty(rawConfig)) {
-            return new ArrayList<>();
-        }
-        List<URL> urls = ConfigParser.parseConfigurators(rawConfig);
-        return urls.stream().map(configuratorFactory::getConfigurator).collect(Collectors.toList());
     }
 
     @Override
@@ -621,8 +620,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         if (forbidden) {
             // 1. No service provider 2. Service providers are disabled
             throw new RpcException(RpcException.FORBIDDEN_EXCEPTION,
-                "No provider available from registry " + getUrl().getAddress() + " for service " + getConsumerUrl().getServiceKey() + " on consumer " +  NetUtils.getLocalHost()
-                        + " use dubbo version " + Version.getVersion() + ", please check status of providers(disabled, not registered or in blacklist).");
+                    "No provider available from registry " + getUrl().getAddress() + " for service " + getConsumerUrl().getServiceKey() + " on consumer " + NetUtils.getLocalHost()
+                            + " use dubbo version " + Version.getVersion() + ", please check status of providers(disabled, not registered or in blacklist).");
         }
         List<Invoker<T>> invokers = null;
         Map<String, List<Invoker<T>>> localMethodInvokerMap = this.methodInvokerMap; // local reference

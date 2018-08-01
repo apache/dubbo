@@ -23,7 +23,7 @@ import org.apache.dubbo.common.extension.SPI;
  *
  */
 @SPI("zookeeper")
-public interface DynamicConfiguration{
+public interface DynamicConfiguration {
     String TYPE_KEY = "dubbo.config.type";
     String ENV_KEY = "dubbo.config.env";
     String ADDRESS_KEY = "dubbo.config.address";
