@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.dynamic;
 
 import org.apache.dubbo.common.URL;
+
 /**
  *
  */

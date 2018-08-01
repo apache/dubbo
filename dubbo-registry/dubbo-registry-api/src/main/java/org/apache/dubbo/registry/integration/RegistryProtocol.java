@@ -26,11 +26,11 @@ import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.dynamic.ConfigChangeType;
-import org.apache.dubbo.config.dynamic.parser.ConfigParser;
 import org.apache.dubbo.config.dynamic.ConfigType;
 import org.apache.dubbo.config.dynamic.ConfigurationListener;
 import org.apache.dubbo.config.dynamic.DynamicConfiguration;
 import org.apache.dubbo.config.dynamic.DynamicConfigurationFactory;
+import org.apache.dubbo.config.dynamic.parser.ConfigParser;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
@@ -80,12 +80,6 @@ public class RegistryProtocol implements Protocol {
         INSTANCE = this;
     }
 
-    public void initDynamicConfiguration(URL url) {
-        if (dynamicConfiguration == null) {
-            dynamicConfiguration = ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getAdaptiveExtension().getDynamicConfiguration(getConfigUrl(url));
-        }
-    }
-
     public static RegistryProtocol getRegistryProtocol() {
         if (INSTANCE == null) {
             ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(Constants.REGISTRY_PROTOCOL); // load
@@ -106,6 +100,12 @@ public class RegistryProtocol implements Protocol {
             return filteredKeys.toArray(new String[filteredKeys.size()]);
         } else {
             return new String[]{};
+        }
+    }
+
+    public void initDynamicConfiguration(URL url) {
+        if (dynamicConfiguration == null) {
+            dynamicConfiguration = ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getAdaptiveExtension().getDynamicConfiguration(getConfigUrl(url));
         }
     }
 
