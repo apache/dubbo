@@ -27,7 +27,7 @@ import org.apache.dubbo.common.extension.SPI;
 @SPI("nop")
 public interface DynamicConfigurationFactory {
 
-    @Adaptive(Constants.CONFIG_TYPE_KEY)
+    @Adaptive({Constants.CONFIG_TYPE_KEY})
     DynamicConfiguration getDynamicConfiguration(URL url);
 
 }
