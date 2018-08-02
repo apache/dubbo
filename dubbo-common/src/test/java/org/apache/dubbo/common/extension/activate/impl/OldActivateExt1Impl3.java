@@ -14,20 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.demo.provider;
+package org.apache.dubbo.common.extension.activate.impl;
 
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import com.alibaba.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.extension.activate.ActivateExt1;
 
-public class Provider {
-
-    /**
-     * To get ipv6 address to work, add
-     * System.setProperty("java.net.preferIPv6Addresses", "true");
-     * before running your application.
-     */
-    public static void main(String[] args) throws Exception {
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"META-INF/spring/dubbo-demo-provider.xml"});
-        context.start();
-        System.in.read(); // press any key to exit
+@Activate(group = "old_group")
+public class OldActivateExt1Impl3 implements ActivateExt1 {
+    public String echo(String msg) {
+        return msg;
     }
 }

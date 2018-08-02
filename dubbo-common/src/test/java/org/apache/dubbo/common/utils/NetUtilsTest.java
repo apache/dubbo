@@ -17,8 +17,10 @@
 package org.apache.dubbo.common.utils;
 
 
+import org.junit.Ignore;
 import org.junit.Test;
 
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
@@ -179,5 +181,32 @@ public class NetUtilsTest {
     public void testToURL() throws Exception {
         String url = NetUtils.toURL("dubbo", "host", 1234, "foo");
         assertThat(url, equalTo("dubbo://host:1234/foo"));
+    }
+
+    @Test
+    public void testIsValidV6Address() {
+        String saved = System.getProperty("java.net.preferIPv6Addresses", "false");
+        System.setProperty("java.net.preferIPv6Addresses", "true");
+        InetAddress address = NetUtils.getLocalAddress();
+        if (address instanceof Inet6Address) {
+            assertThat(NetUtils.isValidV6Address((Inet6Address) address), equalTo(true));
+        }
+        System.setProperty("java.net.preferIPv6Addresses", saved);
+    }
+
+    /**
+     * Mockito starts to support mocking final classes since 2.1.0
+     * see https://github.com/mockito/mockito/wiki/What%27s-new-in-Mockito-2#unmockable
+     * But enable it will cause other UT to fail.
+     * Therefore currently disabling this UT.
+     */
+    @Ignore
+    @Test
+    public void testNormalizeV6Address() {
+        Inet6Address address = mock(Inet6Address.class);
+        when(address.getHostAddress()).thenReturn("fe80:0:0:0:894:aeec:f37d:23e1%en0");
+        when(address.getScopeId()).thenReturn(5);
+        InetAddress normalized = NetUtils.normalizeV6Address(address);
+        assertThat(normalized.getHostAddress(), equalTo("fe80:0:0:0:894:aeec:f37d:23e1%5"));
     }
 }
