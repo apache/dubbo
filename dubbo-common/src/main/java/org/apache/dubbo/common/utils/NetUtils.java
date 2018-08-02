@@ -245,6 +245,9 @@ public class NetUtils {
         }
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            if (null == interfaces) {
+                return localAddress;
+            }
             while (interfaces.hasMoreElements()) {
                 try {
                     NetworkInterface network = interfaces.nextElement();
