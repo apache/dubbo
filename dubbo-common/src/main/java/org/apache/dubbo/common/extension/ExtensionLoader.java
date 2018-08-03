@@ -82,7 +82,7 @@ public class ExtensionLoader<T> {
 
     private final Holder<Map<String, Class<?>>> cachedClasses = new Holder<Map<String, Class<?>>>();
 
-    private final Map<String, Activate> cachedActivates = new ConcurrentHashMap<String, Activate>();
+    private final Map<String, Object> cachedActivates = new ConcurrentHashMap<String, Object>();
     private final ConcurrentMap<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<String, Holder<Object>>();
     private final Holder<Object> cachedAdaptiveInstance = new Holder<Object>();
     private volatile Class<?> cachedAdaptiveClass = null;
@@ -187,14 +187,26 @@ public class ExtensionLoader<T> {
         List<String> names = values == null ? new ArrayList<String>(0) : Arrays.asList(values);
         if (!names.contains(Constants.REMOVE_VALUE_PREFIX + Constants.DEFAULT_KEY)) {
             getExtensionClasses();
-            for (Map.Entry<String, Activate> entry : cachedActivates.entrySet()) {
+            for (Map.Entry<String, Object> entry : cachedActivates.entrySet()) {
                 String name = entry.getKey();
-                Activate activate = entry.getValue();
-                if (isMatchGroup(group, activate.group())) {
+                Object activate = entry.getValue();
+
+                String[] activateGroup, activateValue;
+
+                if (activate instanceof Activate) {
+                    activateGroup = ((Activate) activate).group();
+                    activateValue = ((Activate) activate).value();
+                } else if (activate instanceof com.alibaba.dubbo.common.extension.Activate) {
+                    activateGroup = ((com.alibaba.dubbo.common.extension.Activate) activate).group();
+                    activateValue = ((com.alibaba.dubbo.common.extension.Activate) activate).value();
+                } else {
+                    continue;
+                }
+                if (isMatchGroup(group, activateGroup)) {
                     T ext = getExtension(name);
                     if (!names.contains(name)
                             && !names.contains(Constants.REMOVE_VALUE_PREFIX + name)
-                            && isActive(activate, url)) {
+                            && isActive(activateValue, url)) {
                         exts.add(ext);
                     }
                 }
@@ -237,8 +249,7 @@ public class ExtensionLoader<T> {
         return false;
     }
 
-    private boolean isActive(Activate activate, URL url) {
-        String[] keys = activate.value();
+    private boolean isActive(String[] keys, URL url) {
         if (keys.length == 0) {
             return true;
         }
@@ -677,6 +688,12 @@ public class ExtensionLoader<T> {
                 Activate activate = clazz.getAnnotation(Activate.class);
                 if (activate != null) {
                     cachedActivates.put(names[0], activate);
+                } else {
+                    // support com.alibaba.dubbo.common.extension.Activate
+                    com.alibaba.dubbo.common.extension.Activate oldActivate = clazz.getAnnotation(com.alibaba.dubbo.common.extension.Activate.class);
+                    if (oldActivate != null) {
+                        cachedActivates.put(names[0], oldActivate);
+                    }
                 }
                 for (String n : names) {
                     if (!cachedNames.containsKey(clazz)) {
