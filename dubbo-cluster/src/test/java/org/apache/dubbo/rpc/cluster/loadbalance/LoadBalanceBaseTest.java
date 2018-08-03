@@ -145,4 +145,34 @@ public class LoadBalanceBaseTest {
         return AbstractLoadBalance.calculateWarmupWeight(uptime, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT);
     }
 
+    /*------------------------------------test invokers for weight---------------------------------------*/
+
+    protected List<Invoker<LoadBalanceBaseTest>> weightInvokers = new ArrayList<Invoker<LoadBalanceBaseTest>>();
+    protected Invoker<LoadBalanceBaseTest> weightInvoker1;
+    protected Invoker<LoadBalanceBaseTest> weightInvoker2;
+    protected Invoker<LoadBalanceBaseTest> weightInvoker3;
+
+    @Before
+    public void before() throws Exception {
+        weightInvoker1 = mock(Invoker.class);
+        weightInvoker2 = mock(Invoker.class);
+        weightInvoker3 = mock(Invoker.class);
+
+        URL url1 = URL.valueOf("test1://0:1/DemoService");
+        URL url2 = URL.valueOf("test2://0:9/DemoService");
+        URL url3 = URL.valueOf("test3://1:6/DemoService");
+
+        given(weightInvoker1.isAvailable()).willReturn(true);
+        given(weightInvoker1.getUrl()).willReturn(url1);
+
+        given(weightInvoker2.isAvailable()).willReturn(true);
+        given(weightInvoker2.getUrl()).willReturn(url2);
+
+        given(weightInvoker3.isAvailable()).willReturn(true);
+        given(weightInvoker3.getUrl()).willReturn(url3);
+
+        weightInvokers.add(weightInvoker1);
+        weightInvokers.add(weightInvoker2);
+        weightInvokers.add(weightInvoker3);
+    }
 }

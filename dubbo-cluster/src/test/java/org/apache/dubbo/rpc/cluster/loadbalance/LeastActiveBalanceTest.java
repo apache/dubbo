@@ -19,20 +19,14 @@ package org.apache.dubbo.rpc.cluster.loadbalance;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
-
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
-
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
 
 public class LeastActiveBalanceTest extends LoadBalanceBaseTest {
     @Ignore
@@ -48,41 +42,15 @@ public class LeastActiveBalanceTest extends LoadBalanceBaseTest {
         }
     }
 
-    private List<Invoker<LoadBalanceBaseTest>> invokers = new ArrayList<Invoker<LoadBalanceBaseTest>>();
-    private Invoker<LoadBalanceBaseTest> invoker1;
-    private Invoker<LoadBalanceBaseTest> invoker2;
-
-    @Before
-    public void before() throws Exception {
-        invoker1 = mock(Invoker.class);
-        invoker2 = mock(Invoker.class);
-        invoker3 = mock(Invoker.class);
-
-        URL url1 = URL.valueOf("test1://0:1/DemoService");
-        URL url2 = URL.valueOf("test2://0:9/DemoService");
-        URL url3 = URL.valueOf("test3://1:6/DemoService");
-
-        given(invoker1.isAvailable()).willReturn(true);
-        given(invoker1.getUrl()).willReturn(url1);
-
-        given(invoker2.isAvailable()).willReturn(true);
-        given(invoker2.getUrl()).willReturn(url2);
-
-        given(invoker3.isAvailable()).willReturn(true);
-        given(invoker3.getUrl()).willReturn(url3);
-
-        invokers.add(invoker1);
-        invokers.add(invoker2);
-        invokers.add(invoker3);
-    }
-
     @Test
-    public void testSelect() {
+    public void testSelectByWeight() {
         int sumInvoker1 = 0;
         int sumInvoker2 = 0;
+        int loop = 100000;
+
+        MyLeastActiveLoadBalance lb = new MyLeastActiveLoadBalance();
         for (int i = 0; i < 100000; i++) {
-            MyLeastActiveLoadBalance lb = new MyLeastActiveLoadBalance();
-            Invoker selected = lb.select(invokers, null, null);
+            Invoker selected = lb.select(weightInvokers, null, null);
 
             if (selected.getUrl().getProtocol().equals("test1")) {
                 sumInvoker1++;
@@ -98,6 +66,8 @@ public class LeastActiveBalanceTest extends LoadBalanceBaseTest {
         // the sumInvoker1 : sumInvoker2 approximately equal to 1: 9
         System.out.println(sumInvoker1);
         System.out.println(sumInvoker2);
+
+        Assert.assertEquals("select failed!", sumInvoker1 + sumInvoker2, loop);
     }
 
     class MyLeastActiveLoadBalance extends AbstractLoadBalance {

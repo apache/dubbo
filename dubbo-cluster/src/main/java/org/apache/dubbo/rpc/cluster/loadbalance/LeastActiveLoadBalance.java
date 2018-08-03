@@ -37,8 +37,8 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
         int leastActive = -1; // The least active value of all invokers
         int leastCount = 0; // The number of invokers having the same least active value (leastActive)
         int[] leastIndexes = new int[length]; // The index of invokers having the same least active value (leastActive)
-        int totalWeightAfterWarmUp = 0; // The sum of after warmup weights
-        int firstWeightAfterWarmUp = 0; // Initial value, used for comparision
+        int taotalWeightWithWarmUp = 0; // The sum of with warmup weights
+        int firstWeightWithWarmUp = 0; // Initial value, used for comparision
         boolean sameWeight = true; // Every invoker has the same weight value?
         for (int i = 0; i < length; i++) {
             Invoker<T> invoker = invokers.get(i);
@@ -48,15 +48,15 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
                 leastActive = active; // Record the current least active value
                 leastCount = 1; // Reset leastCount, count again based on current leastCount
                 leastIndexes[0] = i; // Reset
-                totalWeightAfterWarmUp = afterWarmup; // Reset
-                firstWeightAfterWarmUp = afterWarmup; // Record the weight the first invoker
+                taotalWeightWithWarmUp = afterWarmup; // Reset
+                firstWeightWithWarmUp = afterWarmup; // Record the weight the first invoker
                 sameWeight = true; // Reset, every invoker has the same weight value?
             } else if (active == leastActive) { // If current invoker's active value equals with leaseActive, then accumulating.
                 leastIndexes[leastCount++] = i; // Record index number of this invoker
-                totalWeightAfterWarmUp += afterWarmup; // Add this invoker's after warmup weight to totalWeightAfterWarmUp.
+                taotalWeightWithWarmUp += afterWarmup; // Add this invoker's with warmup weight to totalWeightWithWarmUp.
                 // If every invoker has the same weight?
                 if (sameWeight && i > 0
-                        && afterWarmup != firstWeightAfterWarmUp) {
+                        && afterWarmup != firstWeightWithWarmUp) {
                     sameWeight = false;
                 }
             }
@@ -66,9 +66,9 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
             // If we got exactly one invoker having the least active value, return this invoker directly.
             return invokers.get(leastIndexes[0]);
         }
-        if (!sameWeight && totalWeightAfterWarmUp > 0) {
-            // If (not every invoker has the same weight & at least one invoker's weight>0), select randomly based on totalWeightAfterWarmUp.
-            int offsetWeight = ThreadLocalRandom.current().nextInt(totalWeightAfterWarmUp) + 1;
+        if (!sameWeight && taotalWeightWithWarmUp > 0) {
+            // If (not every invoker has the same weight & at least one invoker's weight>0), select randomly based on totalWeightWithWarmUp.
+            int offsetWeight = ThreadLocalRandom.current().nextInt(taotalWeightWithWarmUp) + 1;
             // Return a invoker based on the random value.
             for (int i = 0; i < leastCount; i++) {
                 int leastIndex = leastIndexes[i];
@@ -77,7 +77,7 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
                     return invokers.get(leastIndex);
             }
         }
-        // If all invokers have the same weight value or totalWeightAfterWarmUp=0, return evenly.
+        // If all invokers have the same weight value or totalWeightWithWarmUp=0, return evenly.
         return invokers.get(leastIndexes[ThreadLocalRandom.current().nextInt(leastCount)]);
     }
 }
