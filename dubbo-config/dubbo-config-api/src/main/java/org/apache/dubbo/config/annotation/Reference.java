@@ -164,7 +164,7 @@ public @interface Reference {
      *
      * @see Constants#DEFAULT_RETRIES
      */
-    int retries() default 0;
+    int retries() default 2;
 
     /**
      * Load balance strategy, legal values include: random, roundrobin, leastactive
