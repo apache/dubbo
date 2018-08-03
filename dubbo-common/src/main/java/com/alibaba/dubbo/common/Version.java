@@ -35,7 +35,7 @@ public final class Version {
     private static final Logger logger = LoggerFactory.getLogger(Version.class);
 
     // Dubbo RPC protocol version, for compatibility, it must not be between 2.0.10 ~ 2.6.2
-    public static final String DEFAULT_DUBBO_PROTOCOL_VERSION = "2.0.1";
+    public static final String DEFAULT_DUBBO_PROTOCOL_VERSION = "2.0.2";
     // Dubbo implementation version, usually is jar version.
     private static final String VERSION = getVersion(Version.class, "");
 
@@ -43,7 +43,7 @@ public final class Version {
      * For protocol compatibility purpose.
      * Because {@link #isSupportResponseAttatchment} is checked for every call, int compare expect to has higher performance than string.
      */
-    private static final int LOWEST_VERSION_FOR_RESPONSE_ATTATCHMENT = 20001; // 2.0.1
+    private static final int LOWEST_VERSION_FOR_RESPONSE_ATTATCHMENT = 20002; // 2.0.2
     private static final Map<String, Integer> VERSION2INT = new HashMap<String, Integer>();
 
     static {
