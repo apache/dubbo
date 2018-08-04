@@ -124,9 +124,9 @@ public class ReferenceCountExchangeClientTest {
         // counter is incorrect, invocation still succeeds
         client.close();
 
-        // sleep 5 seconds to wait the lazy client
+        // sleep 1 seconds to wait the lazy client
         try {
-            Thread.sleep(5000);
+            Thread.sleep(10);
         } catch (InterruptedException e) {
             Assert.fail();
         }
