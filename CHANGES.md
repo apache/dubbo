@@ -38,6 +38,11 @@ Hessian-lite
 - Hessian deserialization optimization, #1705
 - Support Locale type, #1761
 
+Compatibilities  
+This release is compatible with other versions since 2.5.3, and you can upgrade smoothly.
+- The RPC protocol version has been upgraded from 2.0.1 to 2.0.2, to support attachments delivery in #889, 
+generally, the protocol version is used internally, so it should have no side effects on users.
+
 Issues and Pull Requests, check [milestone-2.6.3](https://github.com/apache/incubator-dubbo/milestone/17).
 
 
