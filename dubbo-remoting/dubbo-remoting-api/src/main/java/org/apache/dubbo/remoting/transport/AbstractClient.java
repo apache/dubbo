@@ -30,9 +30,13 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Client;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.exchange.Request;
+import org.apache.dubbo.remoting.exchange.Response;
+import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
 
 import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
@@ -314,9 +318,33 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
             } catch (Throwable e) {
                 logger.warn(e.getMessage(), e);
             }
+            try {
+                Channel channel = getChannel();
+                List<Request> unFinishRequests = channel.unFinishRequests();
+                for (Request r : unFinishRequests) {
+                    Response timeoutResponse = new Response(r.getId());
+                    // set timeout status.
+                    timeoutResponse.setStatus(Response.SERVER_DISCONNECT);
+                    timeoutResponse.setErrorMessage("Remote server disconnect, the address : " + channel.getRemoteAddress());
+                    DefaultFuture.received(channel, timeoutResponse);
+                    channel.finishRequest(timeoutResponse);
+                }
+            } catch (Throwable e) {
+                logger.warn(e.getMessage(), e);
+            }
         } finally {
             connectLock.unlock();
         }
+    }
+
+    @Override
+    public List<Request> unFinishRequests() {
+        return getChannel().unFinishRequests();
+    }
+
+    @Override
+    public void finishRequest(Response response) {
+        getChannel().finishRequest(response);
     }
 
     @Override

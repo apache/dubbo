@@ -19,6 +19,8 @@ package org.apache.dubbo.remoting.exchange;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
 
+import java.util.List;
+
 /**
  * ExchangeChannel. (API/SPI, Prototype, ThreadSafe)
  */
@@ -58,4 +60,17 @@ public interface ExchangeChannel extends Channel {
     @Override
     void close(int timeout);
 
+    @Override
+    default List<Request> unFinishRequests() {
+        return null;
+    }
+
+    @Override
+    default void finishRequest(Response response) {
+    }
+
+    @Override
+    default void clearUnFinishedRequests() {
+
+    }
 }

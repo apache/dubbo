@@ -41,6 +41,11 @@ public class Response {
     public static final byte SERVER_TIMEOUT = 31;
 
     /**
+     * server side disconnect
+     */
+    public static final byte SERVER_DISCONNECT = 32;
+
+    /**
      * request format error.
      */
     public static final byte BAD_REQUEST = 40;

@@ -60,6 +60,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
     static void handleResponse(Channel channel, Response response) throws RemotingException {
         if (response != null && !response.isHeartbeat()) {
             DefaultFuture.received(channel, response);
+            channel.finishRequest(response);
         }
     }
 
@@ -144,6 +145,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         channel.setAttribute(KEY_WRITE_TIMESTAMP, System.currentTimeMillis());
         ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
         try {
+            channel.clearUnFinishedRequests();
             handler.disconnected(exchangeChannel);
         } finally {
             HeaderExchangeChannel.removeChannelIfDisconnected(channel);

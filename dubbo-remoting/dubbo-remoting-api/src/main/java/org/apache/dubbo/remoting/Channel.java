@@ -16,12 +16,14 @@
  */
 package org.apache.dubbo.remoting;
 
+import org.apache.dubbo.remoting.exchange.Request;
+import org.apache.dubbo.remoting.exchange.Response;
+
 import java.net.InetSocketAddress;
+import java.util.List;
 
 /**
  * Channel. (API/SPI, Prototype, ThreadSafe)
- *
- *
  *
  * @see org.apache.dubbo.remoting.Client
  * @see org.apache.dubbo.remoting.Server#getChannels()
@@ -74,4 +76,22 @@ public interface Channel extends Endpoint {
      */
     void removeAttribute(String key);
 
+    /**
+     * requests via this channel and not finished
+     *
+     * @return the request that unfinished
+     */
+    List<Request> unFinishRequests();
+
+    /**
+     * finish a request
+     *
+     * @param response response
+     */
+    void finishRequest(Response response);
+
+    /**
+     * clear un finished requests
+     */
+    void clearUnFinishedRequests();
 }

@@ -20,11 +20,21 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.exchange.Request;
+import org.apache.dubbo.remoting.exchange.Response;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * AbstractChannel
  */
 public abstract class AbstractChannel extends AbstractPeer implements Channel {
+
+    private static final Map<Long, Request> UN_FINISH_REQUESTS_MAP = new ConcurrentHashMap<Long, Request>();
 
     public AbstractChannel(URL url, ChannelHandler handler) {
         super(url, handler);
@@ -37,6 +47,27 @@ public abstract class AbstractChannel extends AbstractPeer implements Channel {
                     + (message == null ? "" : message.getClass().getName()) + ":" + message
                     + ", cause: Channel closed. channel: " + getLocalAddress() + " -> " + getRemoteAddress());
         }
+        if (message instanceof Request) {
+            Request r = (Request) message;
+            UN_FINISH_REQUESTS_MAP.put(r.getId(), r);
+        }
+    }
+
+    @Override
+    public List<Request> unFinishRequests() {
+        Collection<Request> c = UN_FINISH_REQUESTS_MAP.values();
+        return new ArrayList<>(c);
+    }
+
+    @Override
+    public void finishRequest(Response response) {
+        UN_FINISH_REQUESTS_MAP.remove(response.getId());
+    }
+
+    @Override
+    public void clearUnFinishedRequests() {
+        // clear unfinish requests when close the channel.
+        UN_FINISH_REQUESTS_MAP.clear();
     }
 
     @Override
@@ -44,4 +75,9 @@ public abstract class AbstractChannel extends AbstractPeer implements Channel {
         return getLocalAddress() + " -> " + getRemoteAddress();
     }
 
+    @Override
+    public void close() {
+        super.close();
+        clearUnFinishedRequests();
+    }
 }
