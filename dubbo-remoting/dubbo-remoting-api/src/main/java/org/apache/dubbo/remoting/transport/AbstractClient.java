@@ -308,19 +308,9 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
             destroyConnectStatusCheckCommand();
             try {
                 Channel channel = getChannel();
-                if (channel != null) {
-                    channel.close();
+                if (channel == null) {
+                    return;
                 }
-            } catch (Throwable e) {
-                logger.warn(e.getMessage(), e);
-            }
-            try {
-                doDisConnect();
-            } catch (Throwable e) {
-                logger.warn(e.getMessage(), e);
-            }
-            try {
-                Channel channel = getChannel();
                 List<Request> unFinishRequests = channel.unFinishRequests();
                 if (CollectionUtils.isNotEmpty(unFinishRequests)) {
                     for (Request r : unFinishRequests) {
@@ -331,6 +321,19 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                         channel.finishRequest(disconnectResponse);
                     }
                 }
+            } catch (Throwable e) {
+                logger.warn(e.getMessage(), e);
+            }
+            try {
+                Channel channel = getChannel();
+                if (channel != null) {
+                    channel.close();
+                }
+            } catch (Throwable e) {
+                logger.warn(e.getMessage(), e);
+            }
+            try {
+                doDisConnect();
             } catch (Throwable e) {
                 logger.warn(e.getMessage(), e);
             }
@@ -351,16 +354,12 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
     @Override
     public void reconnect() throws RemotingException {
-        if (!isConnected()) {
-            connectLock.lock();
-            try {
-                if (!isConnected()) {
-                    disconnect();
-                    connect();
-                }
-            } finally {
-                connectLock.unlock();
-            }
+        connectLock.lock();
+        try {
+            disconnect();
+            connect();
+        } finally {
+            connectLock.unlock();
         }
     }
 
