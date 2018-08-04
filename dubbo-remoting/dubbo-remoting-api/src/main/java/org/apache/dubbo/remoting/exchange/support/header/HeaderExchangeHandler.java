@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
@@ -147,13 +148,15 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
         try {
             List<Request> unFinishRequests = channel.unFinishRequests();
-            for (Request r : unFinishRequests) {
-                Response timeoutResponse = new Response(r.getId());
-                // set timeout status.
-                timeoutResponse.setStatus(Response.SERVER_DISCONNECT);
-                timeoutResponse.setErrorMessage("Remote server disconnect, the address : " + channel.getRemoteAddress());
-                DefaultFuture.received(channel, timeoutResponse);
-                channel.finishRequest(timeoutResponse);
+            if (CollectionUtils.isNotEmpty(unFinishRequests)) {
+                for (Request r : unFinishRequests) {
+                    Response timeoutResponse = new Response(r.getId());
+                    // set timeout status.
+                    timeoutResponse.setStatus(Response.SERVER_DISCONNECT);
+                    timeoutResponse.setErrorMessage("Remote server disconnect, the address : " + channel.getRemoteAddress());
+                    DefaultFuture.received(channel, timeoutResponse);
+                    channel.finishRequest(timeoutResponse);
+                }
             }
             channel.clearUnFinishedRequests();
             handler.disconnected(exchangeChannel);
