@@ -81,17 +81,21 @@ public interface Channel extends Endpoint {
      *
      * @return the request that unfinished
      */
-    List<Request> unFinishRequests();
+    default List<Request> unFinishRequests() {
+        return null;
+    }
 
     /**
      * finish a request
      *
      * @param response response
      */
-    void finishRequest(Response response);
+    default void finishRequest(Response response) {
+    }
 
     /**
      * clear un finished requests
      */
-    void clearUnFinishedRequests();
+    default void clearUnFinishedRequests() {
+    }
 }
