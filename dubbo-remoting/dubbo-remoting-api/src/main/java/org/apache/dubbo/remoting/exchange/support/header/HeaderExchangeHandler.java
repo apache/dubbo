@@ -34,6 +34,7 @@ import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 import org.apache.dubbo.remoting.transport.ChannelHandlerDelegate;
 
 import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 
@@ -145,6 +146,15 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         channel.setAttribute(KEY_WRITE_TIMESTAMP, System.currentTimeMillis());
         ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
         try {
+            List<Request> unFinishRequests = channel.unFinishRequests();
+            for (Request r : unFinishRequests) {
+                Response timeoutResponse = new Response(r.getId());
+                // set timeout status.
+                timeoutResponse.setStatus(Response.SERVER_DISCONNECT);
+                timeoutResponse.setErrorMessage("Remote server disconnect, the address : " + channel.getRemoteAddress());
+                DefaultFuture.received(channel, timeoutResponse);
+                channel.finishRequest(timeoutResponse);
+            }
             channel.clearUnFinishedRequests();
             handler.disconnected(exchangeChannel);
         } finally {
