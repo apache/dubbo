@@ -324,12 +324,11 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                 List<Request> unFinishRequests = channel.unFinishRequests();
                 if (CollectionUtils.isNotEmpty(unFinishRequests)) {
                     for (Request r : unFinishRequests) {
-                        Response timeoutResponse = new Response(r.getId());
-                        // set timeout status.
-                        timeoutResponse.setStatus(Response.SERVER_DISCONNECT);
-                        timeoutResponse.setErrorMessage("Remote server disconnect, the address : " + channel.getRemoteAddress());
-                        DefaultFuture.received(channel, timeoutResponse);
-                        channel.finishRequest(timeoutResponse);
+                        Response disconnectResponse = new Response(r.getId());
+                        disconnectResponse.setStatus(Response.SERVER_DISCONNECT);
+                        disconnectResponse.setErrorMessage("Remote server disconnect, the address : " + channel.getRemoteAddress());
+                        DefaultFuture.received(channel, disconnectResponse);
+                        channel.finishRequest(disconnectResponse);
                     }
                 }
             } catch (Throwable e) {
