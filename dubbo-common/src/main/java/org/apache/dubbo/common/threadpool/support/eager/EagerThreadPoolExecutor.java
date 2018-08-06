@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.common.threadpool.support.eager;
 
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -79,7 +80,7 @@ public class EagerThreadPoolExecutor extends ThreadPoolExecutor {
         } catch (Throwable t) {
             // decrease any way
             submittedTaskCount.decrementAndGet();
-            throw t;
+            throw new CompletionException(t);
         }
     }
 }
