@@ -19,6 +19,7 @@ package org.apache.dubbo.common;
 
 import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
+
 /**
  * Constants
  */
@@ -44,7 +45,21 @@ public class Constants {
 
     public static final String ROUTERS_CATEGORY = "routers";
 
+    public static final String DYNAMIC_ROUTERS_CATEGORY = "dynamicrouters";
+
     public static final String CONFIGURATORS_CATEGORY = "configurators";
+
+    public static final String DYNAMIC_CONFIGURATORS_CATEGORY = "dynamicconfigurators";
+
+    public static final String CONFIGURATORS_SUFFIX = ".CONFIGURATORS";
+
+    public static final String ROUTERS_SUFFIX = ".ROUTERS";
+
+    public static final String CONFIG_TYPE_KEY = "config.type";
+    public static final String CONFIG_ADDRESS_KEY = "config.address";
+    public static final String CONFIG_ENV_KEY = "config.env";
+    public static final String CONFIG_CLUSTER_KEY = "config.cluster";
+    public static final String CONFIG_NAMESPACE_KEY = "config.namespace";
 
     public static final String DEFAULT_CATEGORY = PROVIDERS_CATEGORY;
 

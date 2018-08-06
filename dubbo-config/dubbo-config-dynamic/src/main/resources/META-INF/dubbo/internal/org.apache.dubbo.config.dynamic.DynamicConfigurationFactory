@@ -1,0 +1,4 @@
+zookeeper=org.apache.dubbo.config.dynamic.support.archaius.ArchaiusDynamicConfigurationFactory
+archaius=org.apache.dubbo.config.dynamic.support.archaius.ArchaiusDynamicConfigurationFactory
+apollo=org.apache.dubbo.config.dynamic.support.apollo.ApolloDynamicConfigurationFactory
+nop=org.apache.dubbo.config.dynamic.support.nop.NopDynamicConfigurationFactory
