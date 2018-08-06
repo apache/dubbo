@@ -107,6 +107,13 @@ public class DefaultFuture implements ResponseFuture {
         }
     }
 
+    public static void disconnected(Channel channel) {
+        for (long id: FUTURES.keySet()) {
+            DefaultFuture future = FUTURES.get(id);
+            future.doDisconnected();
+        }
+    }
+
     @Override
     public Object get() throws RemotingException {
         return get(timeout);
@@ -117,11 +124,11 @@ public class DefaultFuture implements ResponseFuture {
         if (timeout <= 0) {
             timeout = Constants.DEFAULT_TIMEOUT;
         }
-        if (!isDone()) {
+        if (channel.isConnected() && !isDone()) {
             long start = System.currentTimeMillis();
             lock.lock();
             try {
-                while (!isDone()) {
+                while (channel.isConnected() && !isDone()) {
                     done.await(timeout, TimeUnit.MILLISECONDS);
                     if (isDone() || System.currentTimeMillis() - start > timeout) {
                         break;
@@ -131,6 +138,9 @@ public class DefaultFuture implements ResponseFuture {
                 throw new RuntimeException(e);
             } finally {
                 lock.unlock();
+            }
+            if (!channel.isConnected()) {
+                throw new RemotingException(channel, "Connection broken");
             }
             if (!isDone()) {
                 throw new TimeoutException(sent > 0, channel, getTimeoutMessage(false));
@@ -263,6 +273,12 @@ public class DefaultFuture implements ResponseFuture {
         if (callback != null) {
             invokeCallback(callback);
         }
+    }
+
+    private void doDisconnected() {
+        lock.lock();
+        done.signal();
+        lock.unlock();
     }
 
     private String getTimeoutMessage(boolean scan) {
