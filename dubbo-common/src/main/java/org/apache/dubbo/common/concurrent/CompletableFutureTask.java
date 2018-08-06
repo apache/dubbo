@@ -1,9 +1,6 @@
 package org.apache.dubbo.common.concurrent;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.concurrent.RunnableFuture;
+import java.util.concurrent.*;
 
 public class CompletableFutureTask<V> extends CompletableFuture<V> implements RunnableFuture<V> {
     private final Callable<V> target;
@@ -19,6 +16,10 @@ public class CompletableFutureTask<V> extends CompletableFuture<V> implements Ru
 
     public static <V> CompletableFutureTask<V> create(Callable<V> callable) {
         return new CompletableFutureTask(callable);
+    }
+
+    public static <V> CompletableFutureTask<V> create(Runnable runnable, V result){
+        return new CompletableFutureTask(Executors.callable(runnable, result));
     }
 
     @Override

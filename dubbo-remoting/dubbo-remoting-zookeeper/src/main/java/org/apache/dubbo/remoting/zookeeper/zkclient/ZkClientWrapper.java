@@ -17,7 +17,6 @@
 package org.apache.dubbo.remoting.zookeeper.zkclient;
 
 import org.apache.dubbo.common.concurrent.CompletableFutureTask;
-import org.apache.dubbo.common.concurrent.ListenableFutureTask;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;

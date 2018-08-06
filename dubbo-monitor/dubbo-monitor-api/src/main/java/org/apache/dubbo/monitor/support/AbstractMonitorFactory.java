@@ -19,8 +19,6 @@ package org.apache.dubbo.monitor.support;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.concurrent.CompletableFutureTask;
-import org.apache.dubbo.common.concurrent.ListenableFuture;
-import org.apache.dubbo.common.concurrent.ListenableFutureTask;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
