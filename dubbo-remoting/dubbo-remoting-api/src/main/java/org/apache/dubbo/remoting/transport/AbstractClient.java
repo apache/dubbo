@@ -320,6 +320,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                         DefaultFuture.received(channel, disconnectResponse);
                         channel.finishRequest(disconnectResponse);
                     }
+                    channel.clearUnFinishedRequests();
                 }
             } catch (Throwable e) {
                 logger.warn(e.getMessage(), e);
