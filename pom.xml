@@ -116,7 +116,7 @@
         <maven_compiler_version>3.6.0</maven_compiler_version>
         <maven_source_version>3.0.1</maven_source_version>
         <maven_javadoc_version>3.0.1</maven_javadoc_version>
-        <maven_jetty_version>6.1.26</maven_jetty_version>
+        <maven_jetty_version>9.4.11</maven_jetty_version>
         <maven_checkstyle_version>3.0.0</maven_checkstyle_version>
         <maven_jacoco_version>0.8.1</maven_jacoco_version>
         <apache-rat-plugin.version>0.12</apache-rat-plugin.version>
