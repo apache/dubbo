@@ -313,6 +313,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                 }
                 List<Request> unFinishRequests = channel.unFinishRequests();
                 if (CollectionUtils.isNotEmpty(unFinishRequests)) {
+                    System.out.println("---------client disconnect--------triggered");
                     for (Request r : unFinishRequests) {
                         Response disconnectResponse = new Response(r.getId());
                         disconnectResponse.setStatus(Response.SERVER_DISCONNECT);
