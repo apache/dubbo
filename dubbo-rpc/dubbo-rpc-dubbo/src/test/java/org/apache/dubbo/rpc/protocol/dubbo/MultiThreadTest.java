@@ -37,7 +37,8 @@ public class MultiThreadTest extends TestCase {
     private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
     public void testDubboMultiThreadInvoke() throws Exception {
-        Exporter<?> rpcExporter = protocol.export(proxy.getInvoker(new DemoServiceImpl(), DemoService.class, URL.valueOf("dubbo://127.0.0.1:20259/TestService")));
+        URL url = URL.valueOf("dubbo://127.0.0.1:20259/TestService?heartbeat=0");
+        Exporter<?> rpcExporter = protocol.export(proxy.getInvoker(new DemoServiceImpl(), DemoService.class, url));
 
         final AtomicInteger counter = new AtomicInteger();
         final DemoService service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:20259/TestService")));
