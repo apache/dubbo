@@ -16,17 +16,26 @@
  */
 package org.apache.dubbo.common.serialize.kryo;
 
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.serialize.kryo.utils.ReflectionUtils;
-
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
-import com.esotericsoftware.kryo.serializers.JavaSerializer;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.serialize.kryo.serializer.CommonJavaSerializer;
+import org.apache.dubbo.common.serialize.kryo.utils.ReflectionUtils;
+import sun.reflect.ReflectionFactory;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class CompatibleKryo extends Kryo {
 
+    private static ReflectionFactory reflectionFactory = ReflectionFactory
+            .getReflectionFactory();
+
     private static final Logger logger = LoggerFactory.getLogger(CompatibleKryo.class);
+
+    private static ConcurrentHashMap<Class<?>, Constructor<?>> constructorCache = new ConcurrentHashMap<>();
 
     @Override
     public Serializer getDefaultSerializer(Class type) {
@@ -34,12 +43,43 @@ public class CompatibleKryo extends Kryo {
             throw new IllegalArgumentException("type cannot be null.");
         }
 
+        // 对于这些类型的  ：array 、enum、没有默认构造器的类
         if (!type.isArray() && !type.isEnum() && !ReflectionUtils.checkZeroArgConstructor(type)) {
             if (logger.isWarnEnabled()) {
                 logger.warn(type + " has no zero-arg constructor and this will affect the serialization performance");
             }
-            return new JavaSerializer();
+            return new CommonJavaSerializer();
         }
         return super.getDefaultSerializer(type);
+    }
+
+    @Override
+    public <T> T newInstance(Class<T> type) {
+        try {
+            return super.newInstance(type);
+        } catch (Exception e) {
+            return newInstanceByReflection(type);
+        }
+    }
+
+    @SuppressWarnings("all")
+    private <T> T newInstanceByReflection(Class<T> type) {
+        Object instance = null;
+        try {
+            Constructor<?> constructor = constructorCache.get(type);
+            if (constructor == null) {
+                constructor = reflectionFactory.newConstructorForSerialization(type,
+                        Object.class.getDeclaredConstructor());
+                constructorCache.putIfAbsent(type, constructor);
+                // in order to improve reflection performance
+                constructor.setAccessible(true);
+            }
+            instance = constructor.newInstance();
+            return (T) instance;
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            logger.error(type.getName() + "unable to be serialized", e);
+            e.printStackTrace();
+        }
+        return (T) instance;
     }
 }
