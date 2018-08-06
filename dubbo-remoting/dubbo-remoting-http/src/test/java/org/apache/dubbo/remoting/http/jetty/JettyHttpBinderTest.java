@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.http.HttpHandler;
 import org.apache.dubbo.remoting.http.HttpServer;
 import org.apache.http.client.fluent.Request;
+import org.apache.http.conn.HttpHostConnectException;
 import org.junit.Test;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,6 +33,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
 public class JettyHttpBinderTest {
+
     @Test
     public void shouldAbleHandleRequestForJettyBinder() throws Exception {
         int port = NetUtils.getAvailablePort();
@@ -45,6 +47,74 @@ public class JettyHttpBinderTest {
         });
 
         String response = Request.Get(url.toJavaURL().toURI()).execute().returnContent().asString();
+
+        assertThat(response, is("Jetty"));
+
+        httpServer.close();
+    }
+
+
+    @Test
+    public void testAnyHostForJettyBinder() throws Exception {
+        int port = NetUtils.getAvailablePort();
+        URL url = new URL("http", "0.0.0.0", port,
+                new String[]{Constants.BIND_PORT_KEY, String.valueOf(port)});
+        HttpServer httpServer = new JettyHttpServer(url, new HttpHandler() {
+            @Override
+            public void handle(HttpServletRequest request, HttpServletResponse response) throws IOException {
+                response.getWriter().write("Jetty");
+            }
+        });
+
+        URL requestUrl = new URL("http", "localhost", port,
+                new String[]{Constants.BIND_PORT_KEY, String.valueOf(port)});
+
+        String response = Request.Get(requestUrl.toJavaURL().toURI()).execute().returnContent().asString();
+
+        assertThat(response, is("Jetty"));
+
+        httpServer.close();
+    }
+
+
+    @Test
+    public void testHostIsBlankForJettyBinder() throws Exception {
+        int port = NetUtils.getAvailablePort();
+        URL url = new URL("http", null, port,
+                new String[]{Constants.BIND_PORT_KEY, String.valueOf(port)});
+        HttpServer httpServer = new JettyHttpServer(url, new HttpHandler() {
+            @Override
+            public void handle(HttpServletRequest request, HttpServletResponse response) throws IOException {
+                response.getWriter().write("Jetty");
+            }
+        });
+
+        URL requestUrl = new URL("http", "localhost", port,
+                new String[]{Constants.BIND_PORT_KEY, String.valueOf(port)});
+
+        String response = Request.Get(requestUrl.toJavaURL().toURI()).execute().returnContent().asString();
+
+        assertThat(response, is("Jetty"));
+
+        httpServer.close();
+    }
+
+    @Test
+    public void testHostLengthIsZeroForJettyBinder() throws Exception {
+        int port = NetUtils.getAvailablePort();
+        URL url = new URL("http", "", port,
+                new String[]{Constants.BIND_PORT_KEY, String.valueOf(port)});
+        HttpServer httpServer = new JettyHttpServer(url, new HttpHandler() {
+            @Override
+            public void handle(HttpServletRequest request, HttpServletResponse response) throws IOException {
+                response.getWriter().write("Jetty");
+            }
+        });
+
+        URL requestUrl = new URL("http", "localhost", port,
+                new String[]{Constants.BIND_PORT_KEY, String.valueOf(port)});
+
+        String response = Request.Get(requestUrl.toJavaURL().toURI()).execute().returnContent().asString();
 
         assertThat(response, is("Jetty"));
 
