@@ -1,6 +1,10 @@
 package org.apache.dubbo.common.concurrent;
 
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.RunnableFuture;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Executor;
 
 public class CompletableFutureTask<V> extends CompletableFuture<V> implements RunnableFuture<V> {
     private final Callable<V> target;
