@@ -62,7 +62,7 @@ public class NettyClientHandler extends ChannelDuplexHandler {
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
         try {
-            System.out.println("-------------------------------------------------------server inactive");
+            System.out.println("-------------------------------------------------------client inactive");
             handler.disconnected(channel);
         } finally {
             NettyChannel.removeChannelIfDisconnected(ctx.channel());
