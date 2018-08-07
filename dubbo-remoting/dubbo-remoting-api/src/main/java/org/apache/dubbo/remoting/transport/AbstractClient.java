@@ -323,8 +323,8 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     }
 
     @Override
-    public List<Request> unFinishRequests() {
-        return getChannel().unFinishRequests();
+    public void clearUnFinishedRequests() {
+        getChannel().clearUnFinishedRequests();
     }
 
     @Override

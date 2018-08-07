@@ -150,16 +150,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
             handler.disconnected(exchangeChannel);
         } finally {
             // clear unfinished requests
-            List<Request> requests = channel.unFinishRequests();
-            if (CollectionUtils.isNotEmpty(requests)) {
-                for (Request r : requests) {
-                    Response disconnectResponse = new Response(r.getId());
-                    disconnectResponse.setStatus(Response.SERVER_DISCONNECT);
-                    disconnectResponse.setErrorMessage("Channel " + channel + " is inactive. Directly return the unFinished request.");
-                    channel.finishRequest(disconnectResponse);
-                    DefaultFuture.received(channel, disconnectResponse);
-                }
-            }
+            channel.clearUnFinishedRequests();
             HeaderExchangeChannel.removeChannelIfDisconnected(channel);
         }
     }

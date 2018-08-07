@@ -24,9 +24,6 @@ import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -55,39 +52,27 @@ public abstract class AbstractChannel extends AbstractPeer implements Channel {
     }
 
     @Override
-    public List<Request> unFinishRequests() {
-        Collection<Request> c = UN_FINISH_REQUESTS_MAP.values();
-        return new ArrayList<>(c);
-    }
-
-    @Override
     public void finishRequest(Response response) {
         UN_FINISH_REQUESTS_MAP.remove(response.getId());
     }
 
-    private void clearUnFinishedRequests() {
+    @Override
+    public void clearUnFinishedRequests() {
         // clear unfinish requests when close the channel.
-        UN_FINISH_REQUESTS_MAP.clear();
+        if (UN_FINISH_REQUESTS_MAP.size() > 0) {
+            for (Request r : UN_FINISH_REQUESTS_MAP.values()) {
+                Response disconnectResponse = new Response(r.getId());
+                disconnectResponse.setStatus(Response.SERVER_DISCONNECT);
+                disconnectResponse.setErrorMessage("Channel " + this + " is inactive. Directly return the unFinished request.");
+                finishRequest(disconnectResponse);
+                DefaultFuture.received(this, disconnectResponse);
+            }
+            UN_FINISH_REQUESTS_MAP.clear();
+        }
     }
 
     @Override
     public String toString() {
         return getLocalAddress() + " -> " + getRemoteAddress();
-    }
-
-    @Override
-    public void close() {
-        super.close();
-        // clear unfinished requests and direct return
-        if (UN_FINISH_REQUESTS_MAP.size() > 0) {
-            for (Request r : UN_FINISH_REQUESTS_MAP.values()) {
-                Response disconnectResponse = new Response(r.getId());
-                disconnectResponse.setStatus(Response.SERVER_DISCONNECT);
-                disconnectResponse.setErrorMessage("Local channel disconnect. Directly return the unFinished request.");
-                DefaultFuture.received(this, disconnectResponse);
-                finishRequest(disconnectResponse);
-            }
-            clearUnFinishedRequests();
-        }
     }
 }

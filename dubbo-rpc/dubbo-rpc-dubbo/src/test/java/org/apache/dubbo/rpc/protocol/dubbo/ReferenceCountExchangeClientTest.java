@@ -128,7 +128,7 @@ public class ReferenceCountExchangeClientTest {
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Assert.fail();
         }
 
         Assert.assertEquals("hello", helloService.hello());
