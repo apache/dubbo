@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.zookeeper.zkclient;
 
-import org.apache.dubbo.common.concurrent.ListenableFutureTask;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;
@@ -24,12 +23,11 @@ import org.apache.dubbo.common.utils.Assert;
 import org.I0Itec.zkclient.IZkChildListener;
 import org.I0Itec.zkclient.IZkStateListener;
 import org.I0Itec.zkclient.ZkClient;
+import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
 
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * Zkclient wrapper class that can monitor the state of the connection automatically after the connection is out of time
@@ -43,28 +41,26 @@ public class ZkClientWrapper {
     private long timeout;
     private ZkClient client;
     private volatile KeeperState state;
-    private ListenableFutureTask<ZkClient> listenableFutureTask;
+    private CompletableFuture<ZkClient> completableFuture;
     private volatile boolean started = false;
+    private static final ExecutorService executor = new ThreadPoolExecutor(0, 10, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new NamedThreadFactory("DubboMonitorCreator", true));
 
 
     public ZkClientWrapper(final String serverAddr, long timeout) {
         this.timeout = timeout;
-        listenableFutureTask = ListenableFutureTask.create(new Callable<ZkClient>() {
-            @Override
-            public ZkClient call() throws Exception {
+        completableFuture = CompletableFuture.supplyAsync(()->{
                 return new ZkClient(serverAddr, Integer.MAX_VALUE);
-            }
-        });
+        },executor);
     }
 
     public void start() {
         if (!started) {
-            Thread connectThread = new Thread(listenableFutureTask);
+            Thread connectThread = new Thread();
             connectThread.setName("DubboZkclientConnector");
             connectThread.setDaemon(true);
             connectThread.start();
             try {
-                client = listenableFutureTask.get(timeout, TimeUnit.MILLISECONDS);
+                client = completableFuture.get(timeout, TimeUnit.MILLISECONDS);
             } catch (Throwable t) {
                 logger.error("Timeout! zookeeper server can not be connected in : " + timeout + "ms!", t);
             }
@@ -75,11 +71,11 @@ public class ZkClientWrapper {
     }
 
     public void addListener(final IZkStateListener listener) {
-        listenableFutureTask.addListener(new Runnable() {
+        completableFuture.thenRunAsync(new Runnable() {
             @Override
             public void run() {
                 try {
-                    client = listenableFutureTask.get();
+                    client = completableFuture.get();
                     client.subscribeStateChanges(listener);
                 } catch (InterruptedException e) {
                     logger.warn(Thread.currentThread().getName() + " was interrupted unexpectedly, which may cause unpredictable exception!");
