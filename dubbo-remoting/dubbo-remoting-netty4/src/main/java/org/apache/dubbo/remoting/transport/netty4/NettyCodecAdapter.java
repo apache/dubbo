@@ -33,7 +33,7 @@ import java.util.List;
 /**
  * NettyCodecAdapter.
  */
-final class NettyCodecAdapter {
+public final class NettyCodecAdapter {
 
     private final ChannelHandler encoder = new InternalEncoder();
 

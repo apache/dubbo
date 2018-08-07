@@ -16,6 +16,15 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
+import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.concurrent.DefaultThreadFactory;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
@@ -26,16 +35,6 @@ import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.transport.AbstractClient;
 
-import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.util.concurrent.DefaultThreadFactory;
-
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -45,11 +44,11 @@ public class NettyClient extends AbstractClient {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyClient.class);
 
-    private static final NioEventLoopGroup nioEventLoopGroup = new NioEventLoopGroup(Constants.DEFAULT_IO_THREADS, new DefaultThreadFactory("NettyClientWorker", true));
+    protected static final NioEventLoopGroup nioEventLoopGroup = new NioEventLoopGroup(Constants.DEFAULT_IO_THREADS, new DefaultThreadFactory("NettyClientWorker", true));
 
-    private Bootstrap bootstrap;
+    protected Bootstrap bootstrap;
 
-    private volatile Channel channel; // volatile, please copy reference to use
+    protected volatile Channel channel; // volatile, please copy reference to use
 
     public NettyClient(final URL url, final ChannelHandler handler) throws RemotingException {
         super(url, wrapChannelHandler(url, handler));
@@ -63,7 +62,7 @@ public class NettyClient extends AbstractClient {
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                //.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getTimeout())
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getConnectTimeout())
                 .channel(NioSocketChannel.class);
 
         if (getTimeout() < 3000) {
@@ -90,7 +89,7 @@ public class NettyClient extends AbstractClient {
         long start = System.currentTimeMillis();
         ChannelFuture future = bootstrap.connect(getConnectAddress());
         try {
-            boolean ret = future.awaitUninterruptibly(3000, TimeUnit.MILLISECONDS);
+            boolean ret = future.awaitUninterruptibly(getConnectTimeout(), TimeUnit.MILLISECONDS);
 
             if (ret && future.isSuccess()) {
                 Channel newChannel = future.channel();
@@ -133,7 +132,7 @@ public class NettyClient extends AbstractClient {
             }
         } finally {
             if (!isConnected()) {
-                //future.cancel(true);
+                future.cancel(true);
             }
         }
     }

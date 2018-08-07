@@ -61,6 +61,10 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     // group
     protected String group;
 
+    // procotol configuation
+    // eg: ssl, certificate configuration
+    protected ProtocolConfig protocolConfig;
+
     public Boolean isCheck() {
         return check;
     }
@@ -198,4 +202,12 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         this.group = group;
     }
 
+
+    public ProtocolConfig getProtocolConfig() {
+        return protocolConfig;
+    }
+
+    public void setProtocolConfig(ProtocolConfig protocolConfig) {
+        this.protocolConfig = protocolConfig;
+    }
 }

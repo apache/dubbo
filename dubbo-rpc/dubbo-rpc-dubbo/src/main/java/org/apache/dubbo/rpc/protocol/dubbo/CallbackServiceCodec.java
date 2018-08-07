@@ -29,10 +29,13 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcInvocation;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -44,7 +47,8 @@ class CallbackServiceCodec {
     private static final Logger logger = LoggerFactory.getLogger(CallbackServiceCodec.class);
 
     private static final ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-    private static final DubboProtocol protocol = DubboProtocol.getDubboProtocol();
+    // private static final DubboProtocol protocol = DubboProtocol.getDubboProtocol();
+    private static final Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
     private static final byte CALLBACK_NONE = 0x0;
     private static final byte CALLBACK_CREATE = 0x1;
     private static final byte CALLBACK_DESTROY = 0x2;
@@ -96,7 +100,8 @@ class CallbackServiceCodec {
         tmpmap.putAll(params);
         tmpmap.remove(Constants.VERSION_KEY);// doesn't need to distinguish version for callback
         tmpmap.put(Constants.INTERFACE_KEY, clazz.getName());
-        URL exporturl = new URL(DubboProtocol.NAME, channel.getLocalAddress().getAddress().getHostAddress(), channel.getLocalAddress().getPort(), clazz.getName() + "." + instid, tmpmap);
+        URL exporturl = new URL(/*DubboProtocol.NAME*/ url.getProtocol() == null ? DubboProtocol.NAME : url.getProtocol(),
+                channel.getLocalAddress().getAddress().getHostAddress(), channel.getLocalAddress().getPort(), clazz.getName() + "." + instid, tmpmap);
 
         // no need to generate multiple exporters for different channel in the same JVM, cache key cannot collide.
         String cacheKey = getClientSideCallbackServiceCacheKey(instid);
@@ -150,7 +155,7 @@ class CallbackServiceCodec {
                     increaseInstanceCount(channel, countkey);
 
                     //convert error fail fast .
-                    //ignore concurrent problem. 
+                    //ignore concurrent problem.
                     Set<Invoker<?>> callbackInvokers = (Set<Invoker<?>>) channel.getAttribute(Constants.CHANNEL_CALLBACK_KEY);
                     if (callbackInvokers == null) {
                         callbackInvokers = new ConcurrentHashSet<Invoker<?>>(1);
@@ -267,7 +272,23 @@ class CallbackServiceCodec {
         // need get URL from channel and env when decode
         URL url = null;
         try {
-            url = DubboProtocol.getDubboProtocol().getInvoker(channel, inv).getUrl();
+
+            String name = channel.getUrl().getProtocol();
+
+            if (Constants.DEFAULT_PROTOCOL.equals(name)) {
+                url = DubboProtocol.getDubboProtocol().getInvoker(channel, inv).getUrl();
+            } else if (Constants.DEFAULT_HTTP2_REMOTING_CLIENT.equals(name)) {
+                try {
+                    // http2 protocol reuse dubbo feature
+                    Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(channel.getUrl().getProtocol());
+                    protocol = nestedProtocol(protocol);
+                    Method method = protocol.getClass().getDeclaredMethod("getInvoker", new Class[]{Channel.class, Invocation.class});
+                    Invoker<?> invoker = (Invoker<?>) method.invoke(protocol, channel, inv);
+                    url = invoker.getUrl();
+                } catch (Exception ignored) {
+                }
+            }
+
         } catch (RemotingException e) {
             if (logger.isInfoEnabled()) {
                 logger.info(e.getMessage(), e);
@@ -294,5 +315,27 @@ class CallbackServiceCodec {
             default:
                 return inObject;
         }
+    }
+
+    private static Protocol nestedProtocol(Protocol protocol) {
+        if (protocol == null) return null;
+
+        Protocol found = protocol;
+        try {
+            Field field = protocol.getClass().getDeclaredField("protocol");
+            if (!field.isAccessible()) field.setAccessible(true);
+
+            Protocol search = (Protocol) field.get(protocol);
+            while (search != null) {
+                found = search;
+
+                field = search.getClass().getDeclaredField("protocol");
+                if (!field.isAccessible()) field.setAccessible(true);
+                search = (Protocol) field.get(search);
+            }
+        } catch (NoSuchFieldException ignored) {
+        } catch (IllegalAccessException ignored) {
+        }
+        return found;
     }
 }

@@ -84,6 +84,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     // default config
     private ConsumerConfig consumer;
     private String protocol;
+
     // interface proxy reference
     private transient volatile T ref;
     private transient volatile Invoker<?> invoker;
@@ -260,6 +261,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             if (monitor == null) {
                 monitor = consumer.getMonitor();
             }
+            if (protocolConfig == null) {
+                protocolConfig = consumer.getProtocolConfig();
+            }
         }
         if (module != null) {
             if (registries == null) {
@@ -306,6 +310,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         appendParameters(map, application);
         appendParameters(map, module);
         appendParameters(map, consumer, Constants.DEFAULT_KEY);
+        appendParameters(map, protocolConfig);
         appendParameters(map, this);
         String prefix = StringUtils.getServiceKey(map);
         if (methods != null && !methods.isEmpty()) {
@@ -558,5 +563,4 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
         return buf.toString();
     }
-
 }

@@ -63,6 +63,15 @@ public class ClusterUtils {
 
             map.remove(Constants.ASYNC_KEY);
             map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.ASYNC_KEY);
+
+            map.remove(Constants.SSL_CERTIFICATE_KEY);
+            map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.SSL_CERTIFICATE_KEY);
+
+            map.remove(Constants.SSL_PRIVATE_KEY);
+            map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.SSL_PRIVATE_KEY);
+
+            map.remove(Constants.SSL_PRIVATE_KEY_PASSWORD);
+            map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.SSL_PRIVATE_KEY_PASSWORD);
         }
 
         if (localMap != null && localMap.size() > 0) {
@@ -86,6 +95,7 @@ public class ClusterUtils {
             if (methods != null && methods.length() > 0) {
                 map.put(Constants.METHODS_KEY, methods);
             }
+
             // Reserve timestamp of provider url.
             String remoteTimestamp = remoteMap.get(Constants.TIMESTAMP_KEY);
             if (remoteTimestamp != null && remoteTimestamp.length() > 0) {

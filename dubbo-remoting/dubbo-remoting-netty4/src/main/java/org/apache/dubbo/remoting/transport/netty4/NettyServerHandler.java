@@ -58,6 +58,8 @@ public class NettyServerHandler extends ChannelDuplexHandler {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        ctx.fireChannelActive();
+
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
         try {
             if (channel != null) {

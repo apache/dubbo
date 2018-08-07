@@ -133,6 +133,16 @@ public class ProtocolConfig extends AbstractConfig {
     // if it's default
     private Boolean isDefault;
 
+    private boolean ssl;
+
+    private String negotiate;
+
+    private String certificate;
+
+    private String privateKey;
+
+    private String keyPassword;
+
     public ProtocolConfig() {
     }
 
@@ -467,5 +477,48 @@ public class ProtocolConfig extends AbstractConfig {
     @Deprecated
     public static void destroyAll() {
         DubboShutdownHook.getDubboShutdownHook().destroyAll();
+    }
+
+    public boolean isSsl() {
+        return ssl;
+    }
+
+    public void setSsl(boolean ssl) {
+        this.ssl = ssl;
+    }
+
+    public String getCertificate() {
+        return certificate;
+    }
+
+    @Parameter(excluded = true)
+    public void setCertificate(String certificate) {
+        this.certificate = certificate;
+    }
+
+    @Parameter(excluded = true)
+    public String getPrivateKey() {
+        return privateKey;
+    }
+
+    public void setPrivateKey(String privateKey) {
+        this.privateKey = privateKey;
+    }
+
+    @Parameter(excluded = true)
+    public String getKeyPassword() {
+        return keyPassword;
+    }
+
+    public void setKeyPassword(String keyPassword) {
+        this.keyPassword = keyPassword;
+    }
+
+    public String getNegotiate() {
+        return negotiate;
+    }
+
+    public void setNegotiate(String negotiate) {
+        this.negotiate = negotiate;
     }
 }

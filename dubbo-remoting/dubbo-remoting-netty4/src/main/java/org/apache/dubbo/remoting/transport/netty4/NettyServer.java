@@ -52,14 +52,14 @@ public class NettyServer extends AbstractServer implements Server {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyServer.class);
 
-    private Map<String, Channel> channels; // <ip:port, channel>
+    protected Map<String, Channel> channels; // <ip:port, channel>
 
-    private ServerBootstrap bootstrap;
+    protected ServerBootstrap bootstrap;
 
-    private io.netty.channel.Channel channel;
+    protected io.netty.channel.Channel channel;
 
-    private EventLoopGroup bossGroup;
-    private EventLoopGroup workerGroup;
+    protected EventLoopGroup bossGroup;
+    protected EventLoopGroup workerGroup;
 
     public NettyServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, ChannelHandlers.wrap(handler, ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME)));

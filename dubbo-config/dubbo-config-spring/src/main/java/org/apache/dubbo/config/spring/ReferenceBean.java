@@ -20,6 +20,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
+import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.annotation.Reference;
@@ -165,6 +166,25 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
                 }
                 if (monitorConfig != null) {
                     setMonitor(monitorConfig);
+                }
+            }
+        }
+        if ((getProtocolConfig() == null)
+                && (getConsumer() == null || getConsumer().getProtocolConfig() == null)) {
+            Map<String, ProtocolConfig> protocolConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProtocolConfig.class, false, false);
+            if (protocolConfigMap != null && protocolConfigMap.size() > 0) {
+                List<ProtocolConfig> protocolConfigs = new ArrayList<ProtocolConfig>();
+                ProtocolConfig protocolConfig = null;
+                for (ProtocolConfig config : protocolConfigMap.values()) {
+                    if (config.isDefault() == null || config.isDefault().booleanValue()) {
+                        if (protocolConfig != null) {
+                            throw new IllegalStateException("Duplicate protocol configs: " + protocolConfig + " and " + config);
+                        }
+                        protocolConfig = config;
+                    }
+                }
+                if (protocolConfig != null) {
+                    setProtocolConfig(protocolConfig);
                 }
             }
         }

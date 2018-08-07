@@ -95,6 +95,10 @@ public class Constants {
 
     public static final String DEFAULT_REMOTING_CLIENT = "netty";
 
+    public static final String DEFAULT_HTTP2_REMOTING_SERVER = "http2";
+
+    public static final String DEFAULT_HTTP2_REMOTING_CLIENT = "http2";
+
     public static final String DEFAULT_REMOTING_CODEC = "dubbo";
 
     public static final String DEFAULT_REMOTING_SERIALIZATION = "hessian2";
@@ -640,6 +644,50 @@ public class Constants {
     public static final boolean DEFAULT_HESSIAN_OVERLOAD_METHOD = false;
 
     public static final String MULTICAST = "multicast";
+
+    public static final String MAX_HTTP_CONTENT_BYTES_KEY = "max.http.content.bytes";
+
+    public static final int MAX_HTTP_CONTENT_BYTES = 16 * 1024;
+
+    public static final String POST_KEY = "POST";
+
+    public static final String GET_KEY = "POST";
+
+    public static final String SSL_ENABLE_KEY = "ssl";
+
+    public static final String NEGOTIATE_KEY = "negotiate";
+
+    public static final String DEFAULT_NEGOTIATE = "http/2.0";
+
+    public static final String NEGOTIATE_HTTP_1_0 = "http/1.0";
+
+    public static final String SSL_CERTIFICATE_KEY = "certificate";
+
+    public static final String SSL_PRIVATE_KEY = "privateKey";
+
+    public static final String SSL_PRIVATE_KEY_PASSWORD = "keyPassword";
+
+    public static final String HTTP2_SERVICE_KEY = "service.name";
+
+    public static final String HTTP2_SERVICE_METHOD_KEY = "service.method";
+
+    public static final String HTTP2_SCHEME_KEY = ":scheme";
+
+    public static final String HTTP2_AUTHORITY_KEY = ":authority";
+
+    public static final String HTTP2_USER_AGENT_KEY = "user-agent";
+
+    public static final String HTTP2_CONTENT_TYPE_KEY = "content-type";
+
+    public static final String HTTP2_DUBBO_CONTENT_TYPE = "application/dubbo-http2";
+
+    public static final String EVENT_PATH = "/_event_";
+
+    public static final String HTTP2_OK_STATUS = "200";
+
+    public static final String HTTP2_DUBBO_RPC_MESSAGE = "rpc-message";
+
+    public static final String HTTP2_TRANCE_ID = "trace-id";
 
     /*
      * private Constants(){ }
