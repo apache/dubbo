@@ -24,9 +24,7 @@ import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
 import org.apache.dubbo.rpc.service.EchoService;
 
-import junit.framework.TestCase;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class RpcFilterTest {
