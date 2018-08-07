@@ -24,6 +24,10 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+
 public class CompatibleKryo extends Kryo {
 
     private static final Logger logger = LoggerFactory.getLogger(CompatibleKryo.class);
@@ -34,7 +38,7 @@ public class CompatibleKryo extends Kryo {
             throw new IllegalArgumentException("type cannot be null.");
         }
 
-        if (!type.isArray() && !type.isEnum() && !ReflectionUtils.checkZeroArgConstructor(type)) {
+        if (!type.isArray() && !type.isEnum() && !type.equals(LocalDate.class) && !type.equals(LocalDateTime.class) && !type.equals(LocalTime.class) && !ReflectionUtils.checkZeroArgConstructor(type)) {
             if (logger.isWarnEnabled()) {
                 logger.warn(type + " has no zero-arg constructor and this will affect the serialization performance");
             }
