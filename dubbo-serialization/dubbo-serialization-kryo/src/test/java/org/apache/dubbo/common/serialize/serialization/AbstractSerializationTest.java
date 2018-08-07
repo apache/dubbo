@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Time;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -876,6 +877,16 @@ public abstract class AbstractSerializationTest {
     @Test
     public void test_Date_withType() throws Exception {
         assertObjectWithType(new Date(), Date.class);
+    }
+
+    @Test
+    public void test_LocalDateTime() throws Exception {
+        assertObject(LocalDateTime.now());
+    }
+
+    @Test
+    public void test_LocalDateTime_withType() throws Exception {
+        assertObjectWithType(LocalDateTime.now(), LocalDateTime.class);
     }
 
     @Test
