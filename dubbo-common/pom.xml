@@ -28,6 +28,7 @@
     <description>The common module of dubbo project</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
+        <hessian_lite_version>3.2.3</hessian_lite_version>
     </properties>
     <dependencies>
         <dependency>
@@ -50,7 +51,7 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>hessian-lite</artifactId>
-            <version>3.2.3</version>
+            <version>${hessian_lite_version}</version>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
