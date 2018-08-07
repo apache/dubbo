@@ -62,7 +62,7 @@ public abstract class AbstractChannel extends AbstractPeer implements Channel {
         if (UN_FINISH_REQUESTS_MAP.size() > 0) {
             for (Request r : UN_FINISH_REQUESTS_MAP.values()) {
                 Response disconnectResponse = new Response(r.getId());
-                disconnectResponse.setStatus(Response.SERVER_TIMEOUT);
+                disconnectResponse.setStatus(Response.CHANNEL_INACTIVE);
                 disconnectResponse.setErrorMessage("Channel " + this + " is inactive. Directly return the unFinished request.");
                 DefaultFuture.received(this, disconnectResponse);
             }
