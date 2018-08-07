@@ -308,26 +308,6 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
             destroyConnectStatusCheckCommand();
             try {
                 Channel channel = getChannel();
-                if (channel == null) {
-                    return;
-                }
-                List<Request> unFinishRequests = channel.unFinishRequests();
-                if (CollectionUtils.isNotEmpty(unFinishRequests)) {
-                    System.out.println("---------client disconnect--------triggered");
-                    for (Request r : unFinishRequests) {
-                        Response disconnectResponse = new Response(r.getId());
-                        disconnectResponse.setStatus(Response.SERVER_DISCONNECT);
-                        disconnectResponse.setErrorMessage("Remote server disconnect, the address : " + channel.getRemoteAddress());
-                        DefaultFuture.received(channel, disconnectResponse);
-                        channel.finishRequest(disconnectResponse);
-                    }
-                    channel.clearUnFinishedRequests();
-                }
-            } catch (Throwable e) {
-                logger.warn(e.getMessage(), e);
-            }
-            try {
-                Channel channel = getChannel();
                 if (channel != null) {
                     channel.close();
                 }
@@ -374,6 +354,29 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         } catch (Throwable e) {
             logger.warn(e.getMessage(), e);
         }
+
+        // clear unfinished requests and direct return
+        try {
+            Channel channel = getChannel();
+            if (channel == null) {
+                return;
+            }
+            List<Request> unFinishRequests = channel.unFinishRequests();
+            if (CollectionUtils.isNotEmpty(unFinishRequests)) {
+                System.out.println("---------client disconnect--------triggered");
+                for (Request r : unFinishRequests) {
+                    Response disconnectResponse = new Response(r.getId());
+                    disconnectResponse.setStatus(Response.SERVER_DISCONNECT);
+                    disconnectResponse.setErrorMessage("Local server has closed...");
+                    DefaultFuture.received(channel, disconnectResponse);
+                    channel.finishRequest(disconnectResponse);
+                }
+                channel.clearUnFinishedRequests();
+            }
+        } catch (Throwable e) {
+            logger.warn(e.getMessage(), e);
+        }
+
         try {
             super.close();
         } catch (Throwable e) {
