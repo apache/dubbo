@@ -286,6 +286,7 @@ public abstract class AbstractRegistry implements Registry {
         registered.remove(url);
     }
 
+
     @Override
     public void subscribe(URL url, NotifyListener listener) {
         if (url == null) {
