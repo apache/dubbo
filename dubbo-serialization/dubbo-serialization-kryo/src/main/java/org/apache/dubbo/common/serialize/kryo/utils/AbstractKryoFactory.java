@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.common.serialize.kryo.utils;
 
+import com.esotericsoftware.kryo.Serializer;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
 import org.apache.dubbo.common.serialize.kryo.CompatibleKryo;
 import org.apache.dubbo.common.serialize.support.SerializableClassRegistry;
 
@@ -37,6 +40,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -129,6 +133,20 @@ public abstract class AbstractKryoFactory implements KryoFactory {
         kryo.register(int[].class);
         kryo.register(float[].class);
         kryo.register(double[].class);
+
+        kryo.register(LocalDateTime.class, new Serializer<LocalDateTime>() {
+            @Override
+            public void write(Kryo kryo, Output output, LocalDateTime localDateTime) {
+                output.writeInts(new int[]{localDateTime.getYear(), localDateTime.getMonthValue(), localDateTime.getDayOfMonth(),
+                    localDateTime.getHour(), localDateTime.getMinute(), localDateTime.getSecond(), localDateTime.getNano()});
+            }
+
+            @Override
+            public LocalDateTime read(Kryo kryo, Input input, Class<LocalDateTime> type) {
+                int[] array = input.readInts(7);
+                return LocalDateTime.of(array[0], array[1], array[2], array[3], array[4],array[5],array[6]);
+            }
+        });
 
         for (Class clazz : registrations) {
             kryo.register(clazz);
