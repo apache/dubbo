@@ -23,7 +23,6 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.store.DataStore;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -33,7 +32,6 @@ import org.apache.dubbo.remoting.Client;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
-import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
 
 import java.net.InetSocketAddress;
@@ -306,25 +304,6 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         connectLock.lock();
         try {
             destroyConnectStatusCheckCommand();
-            // clear unfinished requests and direct return
-            try {
-                Channel channel = getChannel();
-                if (channel != null) {
-                    List<Request> unFinishRequests = channel.unFinishRequests();
-                    if (CollectionUtils.isNotEmpty(unFinishRequests)) {
-                        for (Request r : unFinishRequests) {
-                            Response disconnectResponse = new Response(r.getId());
-                            disconnectResponse.setStatus(Response.SERVER_DISCONNECT);
-                            disconnectResponse.setErrorMessage("Local server disconnect. Directly return the unFinished request.");
-                            DefaultFuture.received(channel, disconnectResponse);
-                            channel.finishRequest(disconnectResponse);
-                        }
-                        channel.clearUnFinishedRequests();
-                    }
-                }
-            } catch (Throwable e) {
-                logger.warn(e.getMessage(), e);
-            }
             try {
                 Channel channel = getChannel();
                 if (channel != null) {

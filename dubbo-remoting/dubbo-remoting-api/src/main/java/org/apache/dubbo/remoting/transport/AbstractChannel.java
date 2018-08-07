@@ -22,6 +22,7 @@ import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
+import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -78,6 +79,16 @@ public abstract class AbstractChannel extends AbstractPeer implements Channel {
     @Override
     public void close() {
         super.close();
-        clearUnFinishedRequests();
+        // clear unfinished requests and direct return
+        if (UN_FINISH_REQUESTS_MAP.size() > 0) {
+            for (Request r : UN_FINISH_REQUESTS_MAP.values()) {
+                Response disconnectResponse = new Response(r.getId());
+                disconnectResponse.setStatus(Response.SERVER_DISCONNECT);
+                disconnectResponse.setErrorMessage("Local channel disconnect. Directly return the unFinished request.");
+                DefaultFuture.received(this, disconnectResponse);
+                finishRequest(disconnectResponse);
+            }
+            clearUnFinishedRequests();
+        }
     }
 }
