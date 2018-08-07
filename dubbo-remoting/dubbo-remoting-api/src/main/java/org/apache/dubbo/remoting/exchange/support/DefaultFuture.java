@@ -292,14 +292,8 @@ public class DefaultFuture implements ResponseFuture {
     }
 
     private void doReceived(Response res) {
-        if (isDone()) {
-            return;
-        }
         lock.lock();
         try {
-            if (isDone()) {
-                return;
-            }
             response = res;
             if (done != null) {
                 done.signal();
