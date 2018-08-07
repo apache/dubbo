@@ -51,4 +51,10 @@ public class CompletableFutureTask<V> extends CompletableFuture<V> implements Ru
         executionList.execute();
         return super.complete(value);
     }
+
+    @Override
+    public boolean completeExceptionally(Throwable ex) {
+        executionList.execute();
+        return super.completeExceptionally(ex);
+    }
 }
