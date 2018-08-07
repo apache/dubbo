@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public abstract class AbstractChannel extends AbstractPeer implements Channel {
 
-    private static final Map<Long, Request> UN_FINISH_REQUESTS_MAP = new ConcurrentHashMap<Long, Request>();
+    private final Map<Long, Request> UN_FINISH_REQUESTS_MAP = new ConcurrentHashMap<Long, Request>();
 
     public AbstractChannel(URL url, ChannelHandler handler) {
         super(url, handler);
