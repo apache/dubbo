@@ -77,7 +77,7 @@ public class JettyHttpServer extends AbstractHttpServer {
 
         // dubbo's original impl can't support the use of ServletContext
         //        server.addHandler(servletHandler);
-        // TODO Context.SESSIONS is the best option here?
+        // TODO Context.SESSIONS is the best option here? (In jetty 9.x, it becomes ServletContextHandler.SESSIONS)
         ServletContextHandler context = new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
         context.setServletHandler(servletHandler);
         ServletManager.getInstance().addServletContext(url.getParameter(Constants.BIND_PORT_KEY, url.getPort()), context.getServletContext());
