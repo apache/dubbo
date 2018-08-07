@@ -309,19 +309,18 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
             // clear unfinished requests and direct return
             try {
                 Channel channel = getChannel();
-                if (channel == null) {
-                    return;
-                }
-                List<Request> unFinishRequests = channel.unFinishRequests();
-                if (CollectionUtils.isNotEmpty(unFinishRequests)) {
-                    for (Request r : unFinishRequests) {
-                        Response disconnectResponse = new Response(r.getId());
-                        disconnectResponse.setStatus(Response.SERVER_DISCONNECT);
-                        disconnectResponse.setErrorMessage("Local server disconnect. Directly return the unFinished request.");
-                        DefaultFuture.received(channel, disconnectResponse);
-                        channel.finishRequest(disconnectResponse);
+                if (channel != null) {
+                    List<Request> unFinishRequests = channel.unFinishRequests();
+                    if (CollectionUtils.isNotEmpty(unFinishRequests)) {
+                        for (Request r : unFinishRequests) {
+                            Response disconnectResponse = new Response(r.getId());
+                            disconnectResponse.setStatus(Response.SERVER_DISCONNECT);
+                            disconnectResponse.setErrorMessage("Local server disconnect. Directly return the unFinished request.");
+                            DefaultFuture.received(channel, disconnectResponse);
+                            channel.finishRequest(disconnectResponse);
+                        }
+                        channel.clearUnFinishedRequests();
                     }
-                    channel.clearUnFinishedRequests();
                 }
             } catch (Throwable e) {
                 logger.warn(e.getMessage(), e);
