@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
@@ -34,6 +35,7 @@ import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 import org.apache.dubbo.remoting.transport.ChannelHandlerDelegate;
 
 import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 
@@ -147,6 +149,17 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         try {
             handler.disconnected(exchangeChannel);
         } finally {
+            // clear unfinished requests
+            List<Request> requests = channel.unFinishRequests();
+            if (CollectionUtils.isNotEmpty(requests)) {
+                for (Request r : requests) {
+                    Response disconnectResponse = new Response(r.getId());
+                    disconnectResponse.setStatus(Response.SERVER_DISCONNECT);
+                    disconnectResponse.setErrorMessage("Channel " + channel + " is inactive. Directly return the unFinished request.");
+                    channel.finishRequest(disconnectResponse);
+                    DefaultFuture.received(channel, disconnectResponse);
+                }
+            }
             HeaderExchangeChannel.removeChannelIfDisconnected(channel);
         }
     }

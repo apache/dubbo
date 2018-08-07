@@ -92,10 +92,4 @@ public interface Channel extends Endpoint {
      */
     default void finishRequest(Response response) {
     }
-
-    /**
-     * clear un finished requests
-     */
-    default void clearUnFinishedRequests() {
-    }
 }

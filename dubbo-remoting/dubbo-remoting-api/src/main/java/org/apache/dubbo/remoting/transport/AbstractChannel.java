@@ -65,8 +65,7 @@ public abstract class AbstractChannel extends AbstractPeer implements Channel {
         UN_FINISH_REQUESTS_MAP.remove(response.getId());
     }
 
-    @Override
-    public void clearUnFinishedRequests() {
+    private void clearUnFinishedRequests() {
         // clear unfinish requests when close the channel.
         UN_FINISH_REQUESTS_MAP.clear();
     }
