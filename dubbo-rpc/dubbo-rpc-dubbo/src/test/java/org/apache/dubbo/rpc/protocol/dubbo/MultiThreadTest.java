@@ -23,10 +23,7 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
-
-import junit.framework.TestCase;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.concurrent.ExecutorService;
