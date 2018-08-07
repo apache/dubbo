@@ -133,6 +133,8 @@ public class ProtocolConfig extends AbstractConfig {
     // if it's default
     private Boolean isDefault;
 
+    private Boolean decodeInIo;
+
     public ProtocolConfig() {
     }
 
@@ -452,6 +454,14 @@ public class ProtocolConfig extends AbstractConfig {
 
     public void setExtension(String extension) {
         this.extension = extension;
+    }
+
+    public Boolean getDecodeInIo() {
+        return decodeInIo;
+    }
+
+    public void setDecodeInIo(Boolean decodeInIo) {
+        this.decodeInIo = decodeInIo;
     }
 
     public void destroy() {

@@ -90,6 +90,7 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
                             result = new DecodeableRpcResult(channel, res, is,
                                     (Invocation) getRequestData(id), proto);
                             result.decode();
+                            System.out.println(Thread.currentThread().getName());
                         } else {
                             result = new DecodeableRpcResult(channel, res,
                                     new UnsafeByteArrayInputStream(readMessageData(is)),
