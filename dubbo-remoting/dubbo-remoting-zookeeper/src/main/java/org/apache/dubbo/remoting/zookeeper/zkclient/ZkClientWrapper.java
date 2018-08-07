@@ -16,55 +16,54 @@
  */
 package org.apache.dubbo.remoting.zookeeper.zkclient;
 
-import org.apache.dubbo.common.concurrent.ListenableFutureTask;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.Assert;
-
 import org.I0Itec.zkclient.IZkChildListener;
 import org.I0Itec.zkclient.IZkStateListener;
 import org.I0Itec.zkclient.ZkClient;
+import org.apache.dubbo.common.concurrent.CompletableFutureTask;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.Assert;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
 
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 /**
  * Zkclient wrapper class that can monitor the state of the connection automatically after the connection is out of time
  * It is also consistent with the use of curator
- *
  * @date 2017/10/29
  */
 public class ZkClientWrapper {
+
     Logger logger = LoggerFactory.getLogger(ZkClientWrapper.class);
 
     private long timeout;
     private ZkClient client;
     private volatile KeeperState state;
-    private ListenableFutureTask<ZkClient> listenableFutureTask;
+    private CompletableFutureTask<ZkClient> completableFutureTask;
     private volatile boolean started = false;
 
-
-    public ZkClientWrapper(final String serverAddr, long timeout) {
+    public ZkClientWrapper(final String serverAddress, long timeout) {
         this.timeout = timeout;
-        listenableFutureTask = ListenableFutureTask.create(new Callable<ZkClient>() {
+        completableFutureTask = CompletableFutureTask.create(new Supplier<ZkClient>() {
             @Override
-            public ZkClient call() throws Exception {
-                return new ZkClient(serverAddr, Integer.MAX_VALUE);
+            public ZkClient get() {
+                return new ZkClient(serverAddress, Integer.MAX_VALUE);
             }
         });
     }
 
     public void start() {
         if (!started) {
-            Thread connectThread = new Thread(listenableFutureTask);
+            Thread connectThread = new Thread();
             connectThread.setName("DubboZkclientConnector");
             connectThread.setDaemon(true);
-            connectThread.start();
+
+            completableFutureTask.start(connectThread);
+
             try {
-                client = listenableFutureTask.get(timeout, TimeUnit.MILLISECONDS);
+                client = completableFutureTask.get(timeout, TimeUnit.MILLISECONDS);
             } catch (Throwable t) {
                 logger.error("Timeout! zookeeper server can not be connected in : " + timeout + "ms!", t);
             }
@@ -75,19 +74,10 @@ public class ZkClientWrapper {
     }
 
     public void addListener(final IZkStateListener listener) {
-        listenableFutureTask.addListener(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    client = listenableFutureTask.get();
-                    client.subscribeStateChanges(listener);
-                } catch (InterruptedException e) {
-                    logger.warn(Thread.currentThread().getName() + " was interrupted unexpectedly, which may cause unpredictable exception!");
-                } catch (ExecutionException e) {
-                    logger.error("Got an exception when trying to create zkclient instance, can not connect to zookeeper server, please check!", e);
-                }
-            }
-        });
+        client = completableFutureTask.get(timeout, TimeUnit.MILLISECONDS);
+        if (client != null) {
+            client.subscribeStateChanges(listener);
+        }
     }
 
     public boolean isConnected() {
@@ -133,6 +123,5 @@ public class ZkClientWrapper {
         Assert.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
         client.unsubscribeChildChanges(path, listener);
     }
-
 
 }
