@@ -71,6 +71,10 @@
         <url>https://github.com/apache/incubator-dubbo/issues</url>
     </issueManagement>
 
+    <properties>
+        <hessian_lite_version>3.2.3</hessian_lite_version>
+    </properties>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -291,7 +295,7 @@
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>hessian-lite</artifactId>
-                <version>3.2.3</version>
+                <version>${hessian_lite_version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
