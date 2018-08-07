@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.remoting.zookeeper.zkclient;
 
-import org.apache.dubbo.common.concurrent.ListenableFutureTask;
+import org.apache.dubbo.common.concurrent.CompletableFutureTask;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;
@@ -43,13 +43,13 @@ public class ZkClientWrapper {
     private long timeout;
     private ZkClient client;
     private volatile KeeperState state;
-    private ListenableFutureTask<ZkClient> listenableFutureTask;
+    private CompletableFutureTask<ZkClient> completableFutureTask;
     private volatile boolean started = false;
 
 
     public ZkClientWrapper(final String serverAddr, long timeout) {
         this.timeout = timeout;
-        listenableFutureTask = ListenableFutureTask.create(new Callable<ZkClient>() {
+        completableFutureTask = CompletableFutureTask.create(new Callable<ZkClient>() {
             @Override
             public ZkClient call() throws Exception {
                 return new ZkClient(serverAddr, Integer.MAX_VALUE);
@@ -59,12 +59,12 @@ public class ZkClientWrapper {
 
     public void start() {
         if (!started) {
-            Thread connectThread = new Thread(listenableFutureTask);
+            Thread connectThread = new Thread(completableFutureTask);
             connectThread.setName("DubboZkclientConnector");
             connectThread.setDaemon(true);
             connectThread.start();
             try {
-                client = listenableFutureTask.get(timeout, TimeUnit.MILLISECONDS);
+                client = completableFutureTask.get(timeout, TimeUnit.MILLISECONDS);
             } catch (Throwable t) {
                 logger.error("Timeout! zookeeper server can not be connected in : " + timeout + "ms!", t);
             }
@@ -75,11 +75,11 @@ public class ZkClientWrapper {
     }
 
     public void addListener(final IZkStateListener listener) {
-        listenableFutureTask.addListener(new Runnable() {
+        completableFutureTask.addListener(new Runnable() {
             @Override
             public void run() {
                 try {
-                    client = listenableFutureTask.get();
+                    client = completableFutureTask.get();
                     client.subscribeStateChanges(listener);
                 } catch (InterruptedException e) {
                     logger.warn(Thread.currentThread().getName() + " was interrupted unexpectedly, which may cause unpredictable exception!");
