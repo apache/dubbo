@@ -4,10 +4,10 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
-import org.apache.dubbo.common.serialize.kryo.CompatibleKryo;
+import org.apache.dubbo.common.serialize.kryo.ExtensionKryo;
 
 public class CommonJavaSerializer extends JavaSerializer {
-    private Kryo kryo = new CompatibleKryo();
+    private Kryo kryo = new ExtensionKryo();
 
     @Override
     public void write(Kryo kryo, Output output, Object object) {
