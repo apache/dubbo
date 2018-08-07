@@ -20,17 +20,14 @@ import java.util.concurrent.*;
 import java.util.function.Supplier;
 
 /**
- * A {@link FutureTask} that also implements the {@link ListenableFuture} interface.  Unlike {@code FutureTask}, {@code
- * ListenableFutureTask} does not provide an overrideable {@link FutureTask#done() done()} method.  For similar
- * functionality, call {@link #addListener}.
+ * CompletableFutureTask
  */
 public class CompletableFutureTask<V> {
 
     /**
-     * The execution list to hold our listeners.
+     * A {@link Future} that may be explicitly completed (setting its value and status), and may be used as a {@link
+     * CompletionStage}, supporting dependent functions and actions that trigger upon its completion.
      */
-    private final ExecutionList executionList = new ExecutionList();
-
     private CompletableFuture<V> completableFuture;
 
     CompletableFutureTask(CompletableFuture<V> completableFuture) {
@@ -39,7 +36,7 @@ public class CompletableFutureTask<V> {
 
     /**
      * Creates a {@code ListenableFutureTask} that will upon running, execute the given {@code Callable}.
-     * @param supplier
+     * @param supplier a function returning the value to be used to complete the returned CompletableFuture
      * @since 10.0
      */
     public static <V> CompletableFutureTask<V> create(Supplier<V> supplier) {
@@ -48,8 +45,8 @@ public class CompletableFutureTask<V> {
     }
 
     /**
-     * @param supplier
-     * @param executor
+     * @param supplier a function returning the value to be used to complete the returned CompletableFuture
+     * @param executor the executor to use for asynchronous execution
      * @return
      */
     public CompletableFutureTask create(Supplier<V> supplier, Executor executor) {
@@ -57,6 +54,11 @@ public class CompletableFutureTask<V> {
         return new CompletableFutureTask(completableFuture);
     }
 
+    /**
+     * @param timeout the maximum time to wait
+     * @param unit    the time unit of the timeout argument
+     * @return
+     */
     public V get(long timeout, TimeUnit unit) {
         V v = null;
         try {
@@ -67,6 +69,10 @@ public class CompletableFutureTask<V> {
         return v;
     }
 
+    /**
+     * @param connectThread the action to run before completing the returned CompletableFuture
+     * @return the new CompletableFuture
+     */
     public void start(Thread connectThread) {
         CompletableFuture.runAsync(connectThread);
     }

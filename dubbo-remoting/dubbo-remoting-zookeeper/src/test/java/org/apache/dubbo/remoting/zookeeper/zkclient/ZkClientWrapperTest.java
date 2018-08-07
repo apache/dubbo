@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.remoting.zookeeper.zkclient;
 
-import org.apache.dubbo.common.utils.NetUtils;
 import org.I0Itec.zkclient.IZkChildListener;
 import org.apache.curator.test.TestingServer;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,6 +28,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 
 public class ZkClientWrapperTest {
+
     private TestingServer zkServer;
     private ZkClientWrapper zkClientWrapper;
 
