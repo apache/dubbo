@@ -65,7 +65,7 @@ public class AbstractRegistryTest {
 
     }
     @Test
-    public void test_register_null() throws Exception{
+    public void testRegisterNull() throws Exception{
         try {
             abstractRegistry.register(nullURL);
             fail();
@@ -75,14 +75,14 @@ public class AbstractRegistryTest {
     }
 
     @Test
-    public  void register()throws Exception{
+    public  void testRegister()throws Exception{
         abstractRegistry.register(registryUrl);
         System.out.println("register"+registryUrl);
         assertTrue(abstractRegistry.getRegistered().contains(registryUrl));
 
     }
     @Test
-    public void test_unregister_null() throws Exception{
+    public void testUnregisterNull() throws Exception{
         try {
             abstractRegistry.unregister(nullURL);
             fail();
@@ -92,14 +92,14 @@ public class AbstractRegistryTest {
     }
 
     @Test
-    public void unregister() throws Exception {
+    public void testUnregister() throws Exception {
         abstractRegistry.unregister(registryUrl);
         System.out.println("unregister"+registryUrl);
         assertFalse(abstractRegistry.getRegistered().contains(registryUrl));
     }
 
     @Test
-    public void test_subscribe_null() throws Exception{
+    public void testSubscribeNull() throws Exception{
         try {
             NotifyListener notifyListener=Mockito.mock(NotifyListener.class);
             abstractRegistry.subscribe(nullURL,notifyListener);
@@ -125,7 +125,7 @@ public class AbstractRegistryTest {
 
 
     @Test
-    public void test_unsubscribe_null() throws Exception{
+    public void testUnsubscribeNull() throws Exception{
         try {
             NotifyListener notifyListener=Mockito.mock(NotifyListener.class);
             abstractRegistry.unsubscribe(nullURL,notifyListener);
@@ -152,7 +152,7 @@ public class AbstractRegistryTest {
     }
 
     @Test
-    public void recover() throws Exception {
+    public void testRecover() throws Exception {
         NotifyListener notifyListener=Mockito.mock(NotifyListener.class);
         abstractRegistry.register(registryUrl);
         abstractRegistry.register(serviceUrl);
@@ -170,7 +170,7 @@ public class AbstractRegistryTest {
 
 
     @Test
-    public void test_notify_null() throws Exception{
+    public void testNotifyNull() throws Exception{
         try {
             NotifyListener notifyListener=Mockito.mock(NotifyListener.class);
             abstractRegistry.notify(nullURL,notifyListener,urls);
@@ -186,7 +186,7 @@ public class AbstractRegistryTest {
         }
     }
     @Test
-    public void notify1() throws Exception {
+    public void testnotify() throws Exception {
         NotifyListener notifyListener=Mockito.mock(NotifyListener.class);
         AbstractRegistry abstractRegistry=Mockito.mock(AbstractRegistry.class);
         abstractRegistry.notify(registryUrl,notifyListener,urls);
