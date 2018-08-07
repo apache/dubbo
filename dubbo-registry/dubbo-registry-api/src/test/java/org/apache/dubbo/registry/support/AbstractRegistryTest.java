@@ -89,6 +89,10 @@ public class AbstractRegistryTest {
         abstractRegistry.unregister(url);
         Assert.assertThat(false, Matchers.equalTo(abstractRegistry.getRegistered().contains(url)));
 
+        //测试重复注销
+        abstractRegistry.unregister(url);
+        Assert.assertThat(false,Matchers.equalTo(abstractRegistry.getRegistered().contains(url)));
+
         //测试多个注销注册
         abstractRegistry.getRegistered().clear();
 
