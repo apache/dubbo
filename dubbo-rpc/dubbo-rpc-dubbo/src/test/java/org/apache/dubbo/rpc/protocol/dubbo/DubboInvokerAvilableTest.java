@@ -117,7 +117,6 @@ public class DubboInvokerAvilableTest {
     }
 
     @Test
-    @Ignore
     public void test_Lazy_ChannelReadOnly() throws Exception {
         URL url = URL.valueOf("dubbo://127.0.0.1:20883/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?lazy=true&connections=1&timeout=10000");
         ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);

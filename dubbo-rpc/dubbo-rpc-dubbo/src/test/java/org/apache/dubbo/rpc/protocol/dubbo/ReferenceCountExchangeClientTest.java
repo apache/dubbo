@@ -91,7 +91,6 @@ public class ReferenceCountExchangeClientTest {
      * test counter won't count down incorrectly when invoker is destroyed for multiple times
      */
     @Test
-    @Ignore
     public void test_multi_destory() {
         init(0);
         DubboAppender.doStart();

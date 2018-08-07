@@ -34,7 +34,6 @@ public class RpcFilterTest {
     private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
     @Test
-    @Ignore
     public void testRpcFilter() throws Exception {
         DemoService service = new DemoServiceImpl();
         URL url = URL.valueOf("dubbo://127.0.0.1:9010/org.apache.dubbo.rpc.DemoService?service.filter=echo");
