@@ -147,7 +147,6 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         try {
             handler.disconnected(exchangeChannel);
         } finally {
-            // clear unfinished requests
             channel.clearUnFinishedRequests();
             HeaderExchangeChannel.removeChannelIfDisconnected(channel);
         }
