@@ -152,12 +152,15 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
                 for (Request r : unFinishRequests) {
                     Response disconnectResponse = new Response(r.getId());
                     disconnectResponse.setStatus(Response.SERVER_DISCONNECT);
-                    disconnectResponse.setErrorMessage("Remote server disconnect, the address : " + channel.getRemoteAddress());
+                    disconnectResponse.setErrorMessage("Channel disconnect, the remote address : " +
+                            channel.getRemoteAddress() +
+                            ", the local address : " +
+                            channel.getLocalAddress());
                     DefaultFuture.received(channel, disconnectResponse);
                     channel.finishRequest(disconnectResponse);
                 }
+                channel.clearUnFinishedRequests();
             }
-            channel.clearUnFinishedRequests();
             handler.disconnected(exchangeChannel);
         } finally {
             HeaderExchangeChannel.removeChannelIfDisconnected(channel);
