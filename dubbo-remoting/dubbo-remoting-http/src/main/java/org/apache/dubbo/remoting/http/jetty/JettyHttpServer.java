@@ -26,14 +26,15 @@ import org.apache.dubbo.remoting.http.servlet.DispatcherServlet;
 import org.apache.dubbo.remoting.http.servlet.ServletManager;
 import org.apache.dubbo.remoting.http.support.AbstractHttpServer;
 
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.nio.SelectChannelConnector;
-import org.mortbay.jetty.servlet.Context;
-import org.mortbay.jetty.servlet.ServletHandler;
-import org.mortbay.jetty.servlet.ServletHolder;
-import org.mortbay.log.Log;
-import org.mortbay.log.StdErrLog;
-import org.mortbay.thread.QueuedThreadPool;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.log.Log;
+
+import org.eclipse.jetty.util.log.StdErrLog;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.eclipse.jetty.servlet.ServletHandler;
 
 public class JettyHttpServer extends AbstractHttpServer {
 
@@ -59,16 +60,13 @@ public class JettyHttpServer extends AbstractHttpServer {
         threadPool.setMaxThreads(threads);
         threadPool.setMinThreads(threads);
 
-        SelectChannelConnector connector = new SelectChannelConnector();
-
+        server = new Server(threadPool);
+        ServerConnector connector = new ServerConnector(server);
         String bindIp = url.getParameter(Constants.BIND_IP_KEY, url.getHost());
         if (!url.isAnyHost() && NetUtils.isValidLocalHost(bindIp)) {
             connector.setHost(bindIp);
         }
         connector.setPort(url.getParameter(Constants.BIND_PORT_KEY, url.getPort()));
-
-        server = new Server();
-        server.setThreadPool(threadPool);
         server.addConnector(connector);
 
         ServletHandler servletHandler = new ServletHandler();
@@ -76,9 +74,9 @@ public class JettyHttpServer extends AbstractHttpServer {
         servletHolder.setInitOrder(2);
 
         // dubbo's original impl can't support the use of ServletContext
-//        server.addHandler(servletHandler);
+        // server.addHandler(servletHandler);
         // TODO Context.SESSIONS is the best option here?
-        Context context = new Context(server, "/", Context.SESSIONS);
+        ServletContextHandler context = new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
         context.setServletHandler(servletHandler);
         ServletManager.getInstance().addServletContext(url.getParameter(Constants.BIND_PORT_KEY, url.getPort()), context.getServletContext());
 
