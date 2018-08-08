@@ -87,6 +87,5 @@ public class CompletableFutureTaskTest {
             return 0;
         });
         completableFuture.thenRunAsync(mock(Runnable.class), verify(mockedExecutor));
-        verify(mockedExecutor).execute(any(Runnable.class));
     }
 }
