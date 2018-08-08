@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.remoting.exchange.support.header;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -70,7 +71,8 @@ final class HeartBeatTask implements Runnable {
                     if (lastRead != null && now - lastRead > heartbeatTimeout) {
                         logger.warn("Close channel " + channel
                                 + ", because heartbeat read idle time out: " + heartbeatTimeout + "ms");
-                        if (channel instanceof Client) {
+
+                        if (channel instanceof Client && channel.getUrl().getParameter(Constants.HEARTBEAT_RECONNECT, Constants.DEFAULT_HEARTBEAT_RECONNECT)) {
                             try {
                                 ((Client) channel).reconnect();
                             } catch (Exception e) {
