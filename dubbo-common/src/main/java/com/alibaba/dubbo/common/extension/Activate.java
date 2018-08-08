@@ -35,8 +35,10 @@ public @interface Activate {
 
     String[] value() default {};
 
+    @Deprecated
     String[] before() default {};
 
+    @Deprecated
     String[] after() default {};
 
     int order() default 0;
