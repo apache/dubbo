@@ -41,12 +41,18 @@
         </license>
     </licenses>
 
+    <!--<scm>-->
+        <!--<url>https://github.com/apache/incubator-dubbo</url>-->
+        <!--<connection>scm:git:https://github.com/apache/incubator-dubbo.git</connection>-->
+        <!--<developerConnection>scm:git:https://github.com/apache/incubator-dubbo.git</developerConnection>-->
+        <!--<tag>HEAD</tag>-->
+    <!--</scm>-->
     <scm>
-        <url>https://github.com/apache/incubator-dubbo</url>
-        <connection>scm:git:https://github.com/apache/incubator-dubbo.git</connection>
-        <developerConnection>scm:git:https://github.com/apache/incubator-dubbo.git</developerConnection>
-      <tag>HEAD</tag>
-  </scm>
+        <connection>http://git.dev.qianmi.com/commons/dubbo.git</connection>
+        <developerConnection>scm:git:http://git.dev.qianmi.com/tda/freez-vcenter.git</developerConnection>
+        <url>http://git.dev.qianmi.com/commons/dubbo</url>
+        <tag>freez-vcenter-1.0.0</tag>
+    </scm>
     <mailingLists>
         <mailingList>
             <name>Development List</name>
@@ -542,18 +548,18 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-                <version>2.5.3</version>
-                <configuration>
-                    <autoVersionSubmodules>true</autoVersionSubmodules>
-                    <useReleaseProfile>false</useReleaseProfile>
-                    <releaseProfiles>release</releaseProfiles>
-                    <goals>deploy</goals>
-                    <arguments>${arguments}</arguments>
-                </configuration>
-            </plugin>
+            <!--<plugin>-->
+                <!--<groupId>org.apache.maven.plugins</groupId>-->
+                <!--<artifactId>maven-release-plugin</artifactId>-->
+                <!--<version>2.5.3</version>-->
+                <!--<configuration>-->
+                    <!--<autoVersionSubmodules>true</autoVersionSubmodules>-->
+                    <!--<useReleaseProfile>false</useReleaseProfile>-->
+                    <!--<releaseProfiles>release</releaseProfiles>-->
+                    <!--<goals>deploy</goals>-->
+                    <!--<arguments>${arguments}</arguments>-->
+                <!--</configuration>-->
+            <!--</plugin>-->
         </plugins>
 
         <pluginManagement>
@@ -572,11 +578,11 @@
                     <artifactId>maven-clean-plugin</artifactId>
                     <version>3.0.0</version>
                 </plugin>
-                <plugin>
-                    <groupId>org.ops4j.pax.exam</groupId>
-                    <artifactId>maven-paxexam-plugin</artifactId>
-                    <version>1.2.4</version>
-                </plugin>
+                <!--<plugin>-->
+                    <!--<groupId>org.ops4j.pax.exam</groupId>-->
+                    <!--<artifactId>maven-paxexam-plugin</artifactId>-->
+                    <!--<version>1.2.4</version>-->
+                <!--</plugin>-->
                 <plugin>
                     <artifactId>maven-dependency-plugin</artifactId>
                     <version>2.10</version>
@@ -603,10 +609,11 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-shade-plugin</artifactId>
-                    <version>2.4.3</version>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>2.5.2</version>
                     <configuration>
-                        <createDependencyReducedPom>false</createDependencyReducedPom>
+                        <username>${git.username}</username>
+                        <password>${git.password}</password>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -617,4 +624,28 @@
             </plugins>
         </pluginManagement>
     </build>
+
+    <repositories>
+        <repository>
+            <id>nexus repository</id>
+            <name>intranet public groups</name>
+            <url>http://nexus.dev.qianmi.com/nexus/content/groups/public</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <distributionManagement>
+        <repository>
+            <id>qianmi-releases</id>
+            <name>releases</name>
+            <url>http://nexus.dev.qianmi.com/nexus/content/repositories/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>qianmi-snapshots</id>
+            <name>snapshots</name>
+            <url>http://nexus.dev.qianmi.com/nexus/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 </project>

@@ -61,6 +61,9 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     // group
     protected String group;
 
+    // requestTag
+    protected String requestTag;
+
     public Boolean isCheck() {
         return check;
     }
@@ -198,4 +201,11 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         this.group = group;
     }
 
+    public String getRequestTag() {
+        return requestTag;
+    }
+
+    public void setRequestTag(String requestTag) {
+        this.requestTag = requestTag;
+    }
 }

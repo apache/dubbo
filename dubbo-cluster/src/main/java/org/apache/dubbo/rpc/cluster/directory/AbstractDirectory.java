@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.RouterFactory;
 import org.apache.dubbo.rpc.cluster.router.MockInvokersSelector;
+import org.apache.dubbo.rpc.cluster.router.tag.TagRouter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -108,6 +109,8 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         // append mock invoker selector
         routers.add(new MockInvokersSelector());
         Collections.sort(routers);
+        // 2018-8-4 all request route by tag
+        routers.add(new TagRouter());
         this.routers = routers;
     }
 
