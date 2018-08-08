@@ -49,7 +49,7 @@
     <!--</scm>-->
     <scm>
         <connection>http://git.dev.qianmi.com/commons/dubbo.git</connection>
-        <developerConnection>scm:git:http://git.dev.qianmi.com/tda/freez-vcenter.git</developerConnection>
+        <developerConnection>scm:git:http://git.dev.qianmi.com/commons/dubbo.git</developerConnection>
         <url>http://git.dev.qianmi.com/commons/dubbo</url>
         <tag>freez-vcenter-1.0.0</tag>
     </scm>

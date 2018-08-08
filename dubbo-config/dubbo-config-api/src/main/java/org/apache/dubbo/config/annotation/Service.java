@@ -264,5 +264,8 @@ public @interface Service {
      */
     String[] registry() default {};
 
+    /**
+     * Service tag name
+     */
     String tag() default "";
 }
