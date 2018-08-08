@@ -127,6 +127,7 @@
 
     <modules>
         <module>dubbo-common</module>
+        <module>dubbo-metrics</module>
         <module>dubbo-container</module>
         <module>dubbo-remoting</module>
         <module>dubbo-rpc</module>
@@ -140,11 +141,10 @@
         <module>dubbo-serialization</module>
         <module>dubbo-bootstrap</module>
         <module>dubbo-compatible</module>
-        <module>dependencies-bom</module>
-        <module>bom</module>
-        <module>all</module>
-        <module>distribution</module>
-        <module>dubbo-metrics</module>
+        <module>dubbo-dependencies-bom</module>
+        <module>dubbo-bom</module>
+        <module>dubbo-all</module>
+        <module>dubbo-distribution</module>
     </modules>
 
     <dependencyManagement>
