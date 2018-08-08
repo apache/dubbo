@@ -74,8 +74,8 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
                 Monitor newMonitor = AbstractMonitorFactory.this.createMonitor(monitorUrl);
                 return newMonitor;
 
-            },executor);
-            completableFuture.thenRunAsync(new MonitorListener(key));
+            });
+            completableFuture.thenRunAsync(new MonitorListener(key),executor);
             FUTURES.put(key, completableFuture);
 
             return null;

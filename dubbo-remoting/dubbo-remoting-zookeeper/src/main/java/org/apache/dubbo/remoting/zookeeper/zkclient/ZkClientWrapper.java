@@ -43,22 +43,22 @@ public class ZkClientWrapper {
     private volatile KeeperState state;
     private CompletableFuture<ZkClient> completableFuture;
     private volatile boolean started = false;
-    private static final ExecutorService executor = new ThreadPoolExecutor(0, 10, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new NamedThreadFactory("DubboMonitorCreator", true));
-
+    private String serverAddr;
+    private static final ExecutorService executor =
+            new ThreadPoolExecutor(0, 10, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
+                    new NamedThreadFactory("DubboMonitorCreator", true));
 
     public ZkClientWrapper(final String serverAddr, long timeout) {
         this.timeout = timeout;
-        completableFuture = CompletableFuture.supplyAsync(()->{
-                return new ZkClient(serverAddr, Integer.MAX_VALUE);
-        },executor);
+        this.serverAddr = serverAddr;
     }
 
     public void start() {
         if (!started) {
-            Thread connectThread = new Thread();
-            connectThread.setName("DubboZkclientConnector");
-            connectThread.setDaemon(true);
-            connectThread.start();
+            completableFuture = CompletableFuture.supplyAsync(() -> {
+                ZkClient client = new ZkClient(serverAddr, Integer.MAX_VALUE);
+                return client;
+            }, executor);
             try {
                 client = completableFuture.get(timeout, TimeUnit.MILLISECONDS);
             } catch (Throwable t) {
@@ -71,18 +71,10 @@ public class ZkClientWrapper {
     }
 
     public void addListener(final IZkStateListener listener) {
-        completableFuture.thenRunAsync(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    client = completableFuture.get();
-                    client.subscribeStateChanges(listener);
-                } catch (InterruptedException e) {
-                    logger.warn(Thread.currentThread().getName() + " was interrupted unexpectedly, which may cause unpredictable exception!");
-                } catch (ExecutionException e) {
-                    logger.error("Got an exception when trying to create zkclient instance, can not connect to zookeeper server, please check!", e);
-                }
-            }
+        completableFuture.whenComplete((v,e)->{
+            client = v;
+            client.subscribeStateChanges(listener);
+
         });
     }
 
@@ -129,6 +121,5 @@ public class ZkClientWrapper {
         Assert.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
         client.unsubscribeChildChanges(path, listener);
     }
-
 
 }
