@@ -17,14 +17,15 @@
 package org.apache.dubbo.config.dynamic.parser.model;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  *
  */
 public class ConfigItem {
     private List<String> addresses;
-    private List<Map<String, String>> rules;
+    private List<String> services;
+    private List<String> applications;
+    private ConfiguratorRule rules;
     private String app;
     private String side;
 
@@ -36,11 +37,27 @@ public class ConfigItem {
         this.addresses = addresses;
     }
 
-    public List<Map<String, String>> getRules() {
+    public List<String> getServices() {
+        return services;
+    }
+
+    public void setServices(List<String> services) {
+        this.services = services;
+    }
+
+    public List<String> getApplications() {
+        return applications;
+    }
+
+    public void setApplications(List<String> applications) {
+        this.applications = applications;
+    }
+
+    public ConfiguratorRule getRules() {
         return rules;
     }
 
-    public void setRules(List<Map<String, String>> rules) {
+    public void setRules(ConfiguratorRule rules) {
         this.rules = rules;
     }
 

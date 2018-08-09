@@ -16,39 +16,40 @@
  */
 package org.apache.dubbo.config.dynamic.parser.model;
 
-import java.util.Map;
+import java.util.List;
 
 /**
  *
  */
-public class ConfiguratorRule {
-    private Map<String, String> threadpool;
+public class ConfiguratorConfig {
+    public static final String SCOPE_SERVICE = "service";
+    public static final String SCOPE_APPLICATION = "application";
 
-    private Map<String, String> cluster;
+    private String scope;
+    private String key;
+    private List<ConfigItem> configs;
 
-    private Map<String, String> config;
-
-    public Map<String, String> getThreadpool() {
-        return threadpool;
+    public String getScope() {
+        return scope;
     }
 
-    public void setThreadpool(Map<String, String> threadpool) {
-        this.threadpool = threadpool;
+    public void setScope(String scope) {
+        this.scope = scope;
     }
 
-    public Map<String, String> getCluster() {
-        return cluster;
+    public String getKey() {
+        return key;
     }
 
-    public void setCluster(Map<String, String> cluster) {
-        this.cluster = cluster;
+    public void setKey(String key) {
+        this.key = key;
     }
 
-    public Map<String, String> getConfig() {
-        return config;
+    public List<ConfigItem> getConfigs() {
+        return configs;
     }
 
-    public void setConfig(Map<String, String> config) {
-        this.config = config;
+    public void setConfigs(List<ConfigItem> configs) {
+        this.configs = configs;
     }
 }

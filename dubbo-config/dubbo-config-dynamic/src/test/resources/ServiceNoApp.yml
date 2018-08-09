@@ -1,0 +1,16 @@
+---
+scope: service/application
+key: serviceKey/appName
+configs:
+ - addresses:[127.0.0.1, 0.0.0.0]
+   apps: [app1, app2]
+   services: [*]
+   side: provider
+   rules:
+    cluster:
+     loadbalance: random
+     cluster: failfast
+    config:
+     timeout: 6666
+     weight: 222
+...
