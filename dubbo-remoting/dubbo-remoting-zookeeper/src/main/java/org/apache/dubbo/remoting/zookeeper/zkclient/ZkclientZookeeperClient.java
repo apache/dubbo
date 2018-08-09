@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.zookeeper.zkclient;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.zookeeper.ChildListener;
 import org.apache.dubbo.remoting.zookeeper.StateListener;
@@ -37,7 +38,8 @@ public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildLis
 
     public ZkclientZookeeperClient(URL url) {
         super(url);
-        client = new ZkClientWrapper(url.getBackupAddress(), 30000);
+        long timeout = url.getParameter(Constants.TIMEOUT_KEY, 30000L);
+        client = new ZkClientWrapper(url.getBackupAddress(), timeout);
         client.addListener(new IZkStateListener() {
             @Override
             public void handleStateChanged(KeeperState state) throws Exception {
