@@ -29,8 +29,8 @@
         <url>https://github.com/apache/incubator-dubbo</url>
         <connection>scm:git:https://github.com/apache/incubator-dubbo.git</connection>
         <developerConnection>scm:git:https://github.com/apache/incubator-dubbo.git</developerConnection>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
     <mailingLists>
         <mailingList>
             <name>Development List</name>
@@ -89,7 +89,7 @@
         <thrift_version>0.8.0</thrift_version>
         <hessian_version>4.0.38</hessian_version>
         <servlet_version>3.1.0</servlet_version>
-        <jetty_version>6.1.26</jetty_version>
+        <jetty_version>9.4.11.v20180605</jetty_version>
         <validation_version>1.1.0.Final</validation_version>
         <hibernate_validator_version>5.4.1.Final</hibernate_validator_version>
         <jel_version>3.0.1-b08</jel_version>
@@ -215,8 +215,13 @@
                 <version>${servlet_version}</version>
             </dependency>
             <dependency>
-                <groupId>org.mortbay.jetty</groupId>
-                <artifactId>jetty</artifactId>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-server</artifactId>
+                <version>${jetty_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-servlet</artifactId>
                 <version>${jetty_version}</version>
             </dependency>
             <dependency>
