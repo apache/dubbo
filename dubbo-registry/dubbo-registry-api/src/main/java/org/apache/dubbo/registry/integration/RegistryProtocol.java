@@ -151,6 +151,9 @@ public class RegistryProtocol implements Protocol {
             List<Configurator> dynamicConfigurators = RegistryDirectory.configToConfiguratiors(rawConfig);
             providerUrl = getConfigedInvokerUrl(dynamicConfigurators, providerUrl);
         }
+        String appRawConfig = dynamicConfiguration.getConfig(providerUrl.getParameter(Constants.APPLICATION_KEY) + Constants.CONFIGURATORS_SUFFIX, "dubbo");
+
+
         //export invoker
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker, providerUrl);
 
