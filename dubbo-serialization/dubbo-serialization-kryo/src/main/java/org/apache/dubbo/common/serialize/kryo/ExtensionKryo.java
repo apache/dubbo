@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.serialize.kryo;
 
-import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -28,12 +27,12 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class CompatibleKryo extends Kryo {
+public class ExtensionKryo extends CompatibleKryo {
 
     private static ReflectionFactory reflectionFactory = ReflectionFactory
             .getReflectionFactory();
 
-    private static final Logger logger = LoggerFactory.getLogger(CompatibleKryo.class);
+    private static final Logger logger = LoggerFactory.getLogger(ExtensionKryo.class);
 
     private static ConcurrentHashMap<Class<?>, Constructor<?>> constructorCache = new ConcurrentHashMap<>();
 
@@ -45,9 +44,6 @@ public class CompatibleKryo extends Kryo {
 
         // 对于这些类型的  ：array 、enum、没有默认构造器的类
         if (!type.isArray() && !type.isEnum() && !ReflectionUtils.checkZeroArgConstructor(type)) {
-            if (logger.isWarnEnabled()) {
-                logger.warn(type + " has no zero-arg constructor and this will affect the serialization performance");
-            }
             return new CommonJavaSerializer();
         }
         return super.getDefaultSerializer(type);
