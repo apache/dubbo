@@ -50,15 +50,14 @@ public class ZkClientWrapper {
 
     public ZkClientWrapper(final String serverAddr, long timeout) {
         this.timeout = timeout;
-        this.serverAddr = serverAddr;
+        completableFuture = CompletableFuture.supplyAsync(() -> {
+            ZkClient client = new ZkClient(serverAddr, Integer.MAX_VALUE);
+            return client;
+        });
     }
 
     public void start() {
         if (!started) {
-            completableFuture = CompletableFuture.supplyAsync(() -> {
-                ZkClient client = new ZkClient(serverAddr, Integer.MAX_VALUE);
-                return client;
-            }, executor);
             try {
                 client = completableFuture.get(timeout, TimeUnit.MILLISECONDS);
             } catch (Throwable t) {
