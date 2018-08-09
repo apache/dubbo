@@ -256,9 +256,4 @@ public @interface Reference {
      * Protocol spring bean names
      */
     String protocol() default "";
-
-    /**
-     * Request tag
-     */
-    String requestTag() default "";
 }

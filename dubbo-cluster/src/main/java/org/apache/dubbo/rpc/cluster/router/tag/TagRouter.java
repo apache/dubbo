@@ -54,12 +54,8 @@ public class TagRouter implements Router, Comparable<Router> {
         // filter
         List<Invoker<T>> result = new ArrayList<>();
         try {
-            // static config
-            String tag = url.getParameter(Constants.REQUEST_TAG_KEY);
-            // dynamic param
-            if (!StringUtils.isEmpty(RpcContext.getContext().getAttachment(Constants.REQUEST_TAG_KEY))) {
-                tag = RpcContext.getContext().getAttachment(Constants.REQUEST_TAG_KEY);
-            }
+            // Dynamic param
+            String tag = RpcContext.getContext().getAttachment(Constants.REQUEST_TAG_KEY);
             // Tag request
             if (!StringUtils.isEmpty(tag)) {
                 // Select tag invokers first
@@ -79,6 +75,7 @@ public class TagRouter implements Router, Comparable<Router> {
                 // Normal request
             } else {
                 for (Invoker<T> invoker : invokers) {
+                    // Can't access tag invoker,only normal invoker should be selected
                     if (StringUtils.isEmpty(invoker.getUrl().getParameter(Constants.TAG_KEY))) {
                         result.add(invoker);
                     }

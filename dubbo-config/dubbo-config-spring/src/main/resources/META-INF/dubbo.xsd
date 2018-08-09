@@ -216,12 +216,6 @@
                         <xsd:documentation><![CDATA[ lazy create connection. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
-                <xsd:attribute name="requestTag" type="xsd:string" use="optional">
-                    <xsd:annotation>
-                        <xsd:documentation>
-                            <![CDATA[ Defines the request tag]]></xsd:documentation>
-                    </xsd:annotation>
-                </xsd:attribute>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
