@@ -71,6 +71,14 @@ public class ZkClientWrapper {
 
     public void addListener(final IZkStateListener listener) {
         completableFuture.whenComplete((v,e)->{
+            if (e instanceof InterruptedException) {
+                logger.warn(Thread.currentThread().getName() + " was interrupted unexpectedly, which may cause unpredictable exception!");
+                return;
+            }
+            if(e instanceof ExecutionException) {
+                logger.error("Got an exception when trying to create zkclient instance, can not connect to zookeeper server, please check!", e);
+                return;
+            }
             client = v;
             client.subscribeStateChanges(listener);
 
