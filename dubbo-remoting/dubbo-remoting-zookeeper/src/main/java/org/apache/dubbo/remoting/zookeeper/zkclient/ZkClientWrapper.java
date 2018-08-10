@@ -82,7 +82,7 @@ public class ZkClientWrapper {
                     client = value;
                     client.subscribeStateChanges(listener);
                 } catch (Exception e){
-                    logger.error("Got an exception when trying to create zkclient instance, can not connect to zookeeper server, please check!", e);
+                    logger.error("Got an exception when trying to create zkclient, can not connect to zookeeper server, please check!", e);
                 }
 
             }
