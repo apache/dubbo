@@ -17,7 +17,7 @@
 package com.alibaba.dubbo.rpc.cluster.support;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.utils.NamedThreadFactory;
+import com.alibaba.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
@@ -43,7 +43,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
-    private final ExecutorService executor = Executors.newCachedThreadPool(new NamedThreadFactory("forking-cluster-timer", true));
+    /**
+     * Use {@link NamedInternalThreadFactory} to produce {@link com.alibaba.dubbo.common.threadlocal.InternalThread}
+     * which with the use of {@link com.alibaba.dubbo.common.threadlocal.InternalThreadLocal} in {@link RpcContext}.
+     */
+    private final ExecutorService executor = Executors.newCachedThreadPool(
+            new NamedInternalThreadFactory("forking-cluster-timer", true));
 
     public ForkingClusterInvoker(Directory<T> directory) {
         super(directory);
@@ -52,50 +57,55 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public Result doInvoke(final Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
-        checkInvokers(invokers, invocation);
-        final List<Invoker<T>> selected;
-        final int forks = getUrl().getParameter(Constants.FORKS_KEY, Constants.DEFAULT_FORKS);
-        final int timeout = getUrl().getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
-        if (forks <= 0 || forks >= invokers.size()) {
-            selected = invokers;
-        } else {
-            selected = new ArrayList<Invoker<T>>();
-            for (int i = 0; i < forks; i++) {
-                // TODO. Add some comment here, refer chinese version for more details.
-                Invoker<T> invoker = select(loadbalance, invocation, invokers, selected);
-                if (!selected.contains(invoker)) {//Avoid add the same invoker several times.
-                    selected.add(invoker);
-                }
-            }
-        }
-        RpcContext.getContext().setInvokers((List) selected);
-        final AtomicInteger count = new AtomicInteger();
-        final BlockingQueue<Object> ref = new LinkedBlockingQueue<Object>();
-        for (final Invoker<T> invoker : selected) {
-            executor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        Result result = invoker.invoke(invocation);
-                        ref.offer(result);
-                    } catch (Throwable e) {
-                        int value = count.incrementAndGet();
-                        if (value >= selected.size()) {
-                            ref.offer(e);
-                        }
+        try {
+            checkInvokers(invokers, invocation);
+            final List<Invoker<T>> selected;
+            final int forks = getUrl().getParameter(Constants.FORKS_KEY, Constants.DEFAULT_FORKS);
+            final int timeout = getUrl().getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+            if (forks <= 0 || forks >= invokers.size()) {
+                selected = invokers;
+            } else {
+                selected = new ArrayList<Invoker<T>>();
+                for (int i = 0; i < forks; i++) {
+                    // TODO. Add some comment here, refer chinese version for more details.
+                    Invoker<T> invoker = select(loadbalance, invocation, invokers, selected);
+                    if (!selected.contains(invoker)) {//Avoid add the same invoker several times.
+                        selected.add(invoker);
                     }
                 }
-            });
-        }
-        try {
-            Object ret = ref.poll(timeout, TimeUnit.MILLISECONDS);
-            if (ret instanceof Throwable) {
-                Throwable e = (Throwable) ret;
-                throw new RpcException(e instanceof RpcException ? ((RpcException) e).getCode() : 0, "Failed to forking invoke provider " + selected + ", but no luck to perform the invocation. Last error is: " + e.getMessage(), e.getCause() != null ? e.getCause() : e);
             }
-            return (Result) ret;
-        } catch (InterruptedException e) {
-            throw new RpcException("Failed to forking invoke provider " + selected + ", but no luck to perform the invocation. Last error is: " + e.getMessage(), e);
+            RpcContext.getContext().setInvokers((List) selected);
+            final AtomicInteger count = new AtomicInteger();
+            final BlockingQueue<Object> ref = new LinkedBlockingQueue<Object>();
+            for (final Invoker<T> invoker : selected) {
+                executor.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Result result = invoker.invoke(invocation);
+                            ref.offer(result);
+                        } catch (Throwable e) {
+                            int value = count.incrementAndGet();
+                            if (value >= selected.size()) {
+                                ref.offer(e);
+                            }
+                        }
+                    }
+                });
+            }
+            try {
+                Object ret = ref.poll(timeout, TimeUnit.MILLISECONDS);
+                if (ret instanceof Throwable) {
+                    Throwable e = (Throwable) ret;
+                    throw new RpcException(e instanceof RpcException ? ((RpcException) e).getCode() : 0, "Failed to forking invoke provider " + selected + ", but no luck to perform the invocation. Last error is: " + e.getMessage(), e.getCause() != null ? e.getCause() : e);
+                }
+                return (Result) ret;
+            } catch (InterruptedException e) {
+                throw new RpcException("Failed to forking invoke provider " + selected + ", but no luck to perform the invocation. Last error is: " + e.getMessage(), e);
+            }
+        } finally {
+            // clear attachments which is binding to current thread.
+            RpcContext.getContext().clearAttachments();
         }
     }
 }

@@ -23,6 +23,7 @@ import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
+import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.cluster.Directory;
@@ -130,6 +131,31 @@ public class AbstractClusterInvokerTest {
             }
         };
 
+    }
+
+    @Test
+    public void testBindingAttachment() {
+        final String attachKey = "attach";
+        final String attachValue = "value";
+
+        // setup attachment
+        RpcContext.getContext().setAttachment(attachKey, attachValue);
+        Map<String, String> attachments = RpcContext.getContext().getAttachments();
+        Assert.assertTrue("set attachment failed!", attachments != null && attachments.size() == 1);
+
+        cluster = new AbstractClusterInvoker(dic) {
+            @Override
+            protected Result doInvoke(Invocation invocation, List invokers, LoadBalance loadbalance)
+                    throws RpcException {
+                // attachment will be bind to invocation
+                String value = invocation.getAttachment(attachKey);
+                Assert.assertTrue("binding attachment failed!", value != null && value.equals(attachValue));
+                return null;
+            }
+        };
+
+        // invoke
+        cluster.invoke(invocation);
     }
 
     @Test

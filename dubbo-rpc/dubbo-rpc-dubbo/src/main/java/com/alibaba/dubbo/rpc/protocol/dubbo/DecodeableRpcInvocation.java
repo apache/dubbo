@@ -90,7 +90,10 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         ObjectInput in = CodecSupport.getSerialization(channel.getUrl(), serializationType)
                 .deserialize(channel.getUrl(), input);
 
-        setAttachment(Constants.DUBBO_VERSION_KEY, in.readUTF());
+        String dubboVersion = in.readUTF();
+        request.setVersion(dubboVersion);
+        setAttachment(Constants.DUBBO_VERSION_KEY, dubboVersion);
+
         setAttachment(Constants.PATH_KEY, in.readUTF());
         setAttachment(Constants.VERSION_KEY, in.readUTF());
 

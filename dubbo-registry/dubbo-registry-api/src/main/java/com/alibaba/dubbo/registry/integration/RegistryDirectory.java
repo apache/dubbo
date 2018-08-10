@@ -557,10 +557,10 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                         try {
                             invoker.destroy();
                             if (logger.isDebugEnabled()) {
-                                logger.debug("destory invoker[" + invoker.getUrl() + "] success. ");
+                                logger.debug("destroy invoker[" + invoker.getUrl() + "] success. ");
                             }
                         } catch (Exception e) {
-                            logger.warn("destory invoker[" + invoker.getUrl() + "] faild. " + e.getMessage(), e);
+                            logger.warn("destroy invoker[" + invoker.getUrl() + "] faild. " + e.getMessage(), e);
                         }
                     }
                 }

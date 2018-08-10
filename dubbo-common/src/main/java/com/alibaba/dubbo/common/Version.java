@@ -23,17 +23,28 @@ import com.alibaba.dubbo.common.utils.ClassHelper;
 import java.net.URL;
 import java.security.CodeSource;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
  * Version
  */
 public final class Version {
-
-    private static final String DEFAULT_DUBBO_VERSION = "2.0.0";
     private static final Logger logger = LoggerFactory.getLogger(Version.class);
-    private static final String VERSION = getVersion(Version.class, DEFAULT_DUBBO_VERSION);
+
+    // Dubbo RPC protocol version, for compatibility, it must not be between 2.0.10 ~ 2.6.2
+    public static final String DEFAULT_DUBBO_PROTOCOL_VERSION = "2.0.2";
+    // Dubbo implementation version, usually is jar version.
+    private static final String VERSION = getVersion(Version.class, "");
+
+    /**
+     * For protocol compatibility purpose.
+     * Because {@link #isSupportResponseAttatchment} is checked for every call, int compare expect to has higher performance than string.
+     */
+    private static final int LOWEST_VERSION_FOR_RESPONSE_ATTATCHMENT = 20002; // 2.0.2
+    private static final Map<String, Integer> VERSION2INT = new HashMap<String, Integer>();
 
     static {
         // check if there's duplicated jar
@@ -43,10 +54,64 @@ public final class Version {
     private Version() {
     }
 
+    public static String getProtocolVersion() {
+        return DEFAULT_DUBBO_PROTOCOL_VERSION;
+    }
+
     public static String getVersion() {
         return VERSION;
     }
 
+    public static boolean isSupportResponseAttatchment(String version) {
+        if (version == null || version.length() == 0) {
+            return false;
+        }
+        // for previous dubbo version(2.0.10/020010~2.6.2/020602), this version is the jar's version, so they need to be ignore
+        int iVersion = getIntVersion(version);
+        if (iVersion >= 20010 && iVersion <= 20602) {
+            return false;
+        }
+
+        return iVersion >= LOWEST_VERSION_FOR_RESPONSE_ATTATCHMENT;
+    }
+
+    public static int getIntVersion(String version) {
+        Integer v = VERSION2INT.get(version);
+        if (v == null) {
+            v = parseInt(version);
+            VERSION2INT.put(version, v);
+        }
+        return v;
+    }
+
+    private static int parseInt(String version) {
+        int v = 0;
+        String[] vArr = version.split("\\.");
+        int len = vArr.length;
+        for (int i = 0; i < len; i++) {
+            v += Integer.parseInt(getDigital(vArr[i])) * Math.pow(10, (len - i - 1) * 2);
+        }
+        return v;
+    }
+
+    private static String getDigital(String v) {
+        int index = 0;
+        for (int i = 0; i < v.length(); i++) {
+            char c = v.charAt(i);
+            if (Character.isDigit(c)) {
+                if (i == v.length() - 1) {
+                    index = i + 1;
+                } else {
+                    index = i;
+                }
+                continue;
+            } else {
+                index = i;
+                break;
+            }
+        }
+        return v.substring(0, index);
+    }
 
     private static boolean hasResource(String path) {
         try {
