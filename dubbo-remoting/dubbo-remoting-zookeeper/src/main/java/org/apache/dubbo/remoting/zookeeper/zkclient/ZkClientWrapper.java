@@ -27,7 +27,11 @@ import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
 
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Zkclient wrapper class that can monitor the state of the connection automatically after the connection is out of time
