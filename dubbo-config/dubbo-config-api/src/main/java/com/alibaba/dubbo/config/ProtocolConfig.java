@@ -16,6 +16,7 @@
  */
 package com.alibaba.dubbo.config;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.serialize.Serialization;
 import com.alibaba.dubbo.common.status.StatusChecker;
@@ -132,6 +133,8 @@ public class ProtocolConfig extends AbstractConfig {
 
     // if it's default
     private Boolean isDefault;
+
+    private Boolean decodeInIo;
 
     public ProtocolConfig() {
     }
@@ -452,6 +455,15 @@ public class ProtocolConfig extends AbstractConfig {
 
     public void setExtension(String extension) {
         this.extension = extension;
+    }
+
+    @Parameter(key = Constants.DECODE_IN_IO_THREAD_KEY)
+    public Boolean getDecodeInIo() {
+        return decodeInIo;
+    }
+
+    public void setDecodeInIo(Boolean decodeInIo) {
+        this.decodeInIo = decodeInIo;
     }
 
     public void destroy() {

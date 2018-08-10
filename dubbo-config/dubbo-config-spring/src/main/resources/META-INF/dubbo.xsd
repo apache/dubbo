@@ -925,6 +925,11 @@
                 <xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="decode.in.io" type="xsd:boolean" use="optional">
+            <xsd:annotation>
+                <xsd:documentation>![CDATA[ switch serialization/deser between IO and Dubbo Threads ]</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:anyAttribute namespace="##other" processContents="lax"/>
     </xsd:complexType>
 
