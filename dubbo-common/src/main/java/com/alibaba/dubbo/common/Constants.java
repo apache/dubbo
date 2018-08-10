@@ -589,8 +589,7 @@ public class Constants {
 
     public static final long DEFAULT_TPS_LIMIT_INTERVAL = 60 * 1000;
 
-    //public static final String DECODE_IN_IO_THREAD_KEY = "decode.in.io";
-    public static final String DECODE_IN_IO_THREAD_KEY = "decodeinio";
+    public static final String DECODE_IN_IO_THREAD_KEY = "decode.in.io";
 
     public static final boolean DEFAULT_DECODE_IN_IO_THREAD = true;
 

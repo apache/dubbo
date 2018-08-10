@@ -16,6 +16,7 @@
  */
 package com.alibaba.dubbo.config;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.serialize.Serialization;
 import com.alibaba.dubbo.common.status.StatusChecker;
@@ -456,6 +457,7 @@ public class ProtocolConfig extends AbstractConfig {
         this.extension = extension;
     }
 
+    @Parameter(key = Constants.DECODE_IN_IO_THREAD_KEY)
     public Boolean getDecodeInIo() {
         return decodeInIo;
     }
