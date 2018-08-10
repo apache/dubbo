@@ -170,7 +170,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 registry.unsubscribe(getConsumerUrl(), this);
             }
         } catch (Throwable t) {
-            logger.warn("unexpeced error when unsubscribe service " + serviceKey + "from registry" + registry.getUrl(), t);
+            logger.warn("unexpected error when unsubscribe service " + serviceKey + "from registry" + registry.getUrl(), t);
         }
         super.destroy(); // must be executed after unsubscribing
         try {

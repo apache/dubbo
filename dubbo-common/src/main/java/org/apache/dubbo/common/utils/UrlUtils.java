@@ -27,12 +27,17 @@ import java.util.Set;
 
 public class UrlUtils {
 
+    /**
+     *  in the url string,mark the param begin
+     */
+    private final static String URL_PARAM_STARTING_SYMBOL = "?";
+
     public static URL parseURL(String address, Map<String, String> defaults) {
         if (address == null || address.length() == 0) {
             return null;
         }
         String url;
-        if (address.indexOf("://") >= 0) {
+        if (address.contains("://") || address.contains(URL_PARAM_STARTING_SYMBOL)) {
             url = address;
         } else {
             String[] addresses = Constants.COMMA_SPLIT_PATTERN.split(address);
@@ -45,7 +50,7 @@ public class UrlUtils {
                     }
                     backup.append(addresses[i]);
                 }
-                url += "?" + Constants.BACKUP_KEY + "=" + backup.toString();
+                url += URL_PARAM_STARTING_SYMBOL + Constants.BACKUP_KEY + "=" + backup.toString();
             }
         }
         String defaultProtocol = defaults == null ? null : defaults.get("protocol");
@@ -335,7 +340,7 @@ public class UrlUtils {
             version = service.substring(i + 1);
             service = service.substring(0, i);
         }
-        return URL.valueOf(Constants.EMPTY_PROTOCOL + "://0.0.0.0/" + service + "?"
+        return URL.valueOf(Constants.EMPTY_PROTOCOL + "://0.0.0.0/" + service + URL_PARAM_STARTING_SYMBOL
                 + Constants.CATEGORY_KEY + "=" + category
                 + (group == null ? "" : "&" + Constants.GROUP_KEY + "=" + group)
                 + (version == null ? "" : "&" + Constants.VERSION_KEY + "=" + version));
