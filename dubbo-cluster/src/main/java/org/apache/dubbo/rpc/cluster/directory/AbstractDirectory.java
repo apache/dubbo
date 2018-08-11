@@ -109,8 +109,6 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         // append mock invoker selector
         routers.add(new MockInvokersSelector());
         Collections.sort(routers);
-        // 2018-8-4 all request route by tag
-        routers.add(new TagRouter());
         this.routers = routers;
     }
 
