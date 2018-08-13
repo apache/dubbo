@@ -229,15 +229,7 @@ public class AbstractRegistryTest {
         Assert.assertEquals(AbstractRegistry.filterEmpty(testUrl, testUrls), testUrls);
 
     }
-
-
-    public void doSaveProperties() {
-        abstractRegistry.doSaveProperties(0);
-    }
-
-    public void getCacheUrls() {
-
-    }
+    
 
     @Test
     public void lookupTest(){
