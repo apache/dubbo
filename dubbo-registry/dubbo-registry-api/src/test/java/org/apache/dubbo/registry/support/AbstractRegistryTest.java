@@ -32,6 +32,9 @@ import java.util.List;
 public class AbstractRegistryTest {
 
     private URL testUrl;
+    //add another testUrl
+    private URL testUrl2;
+
     private NotifyListener listener;
     private AbstractRegistry abstractRegistry;
     private boolean notifySuccess;
@@ -40,6 +43,7 @@ public class AbstractRegistryTest {
     public void init() {
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":2233");
         testUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A&interface=com.test");
+        testUrl2 = URL.valueOf("http://2.2.3.4:9090/registry?check=true&file=N/A&interface=com.test");
 
         //init the object
         abstractRegistry = new AbstractRegistry(url) {
@@ -70,6 +74,7 @@ public class AbstractRegistryTest {
         //check register when the url is the same
         abstractRegistry.register(testUrl);
         Assert.assertEquals(beginSize + 1, abstractRegistry.getRegistered().size());
+
     }
 
     @Test
@@ -151,13 +156,21 @@ public class AbstractRegistryTest {
 
     @Test
     public void recoverTest() throws Exception {
+        //check if recover unsuccessfully
+        abstractRegistry.recover();
+        Assert.assertFalse(abstractRegistry.getRegistered().contains(testUrl));
+        Assert.assertNull(abstractRegistry.getSubscribed().get(testUrl));
+
+        // check if recover successfully
         abstractRegistry.register(testUrl);
         abstractRegistry.subscribe(testUrl, listener);
         abstractRegistry.recover();
-        // check if recover successfully
         Assert.assertTrue(abstractRegistry.getRegistered().contains(testUrl));
         Assert.assertNotNull(abstractRegistry.getSubscribed().get(testUrl));
         Assert.assertTrue(abstractRegistry.getSubscribed().get(testUrl).contains(listener));
+
+
+
     }
 
     @Test
@@ -169,6 +182,13 @@ public class AbstractRegistryTest {
         Assert.assertFalse(notifySuccess);
         abstractRegistry.notify(urls);
         Assert.assertTrue(notifySuccess);
+
+        //check if notify successfully when urls.size()>1
+        notifySuccess = false;
+        urls.add(testUrl2);
+        abstractRegistry.notify(urls);
+        Assert.assertTrue(notifySuccess);
+
     }
 
     @Test
@@ -187,6 +207,22 @@ public class AbstractRegistryTest {
         } catch (Exception e) {
             Assert.assertTrue(e instanceof IllegalArgumentException);
         }
+        //check parameters
+        try {
+            List<URL> urls2 = new ArrayList<>();
+            urls2.add(testUrl);
+            abstractRegistry.notify(null, null, urls2);
+            Assert.fail();
+        } catch (Exception e) {
+            Assert.assertTrue(e instanceof IllegalArgumentException);
+        }
+        //check parameters
+        try {
+            abstractRegistry.notify(null, listener, null);
+            Assert.fail();
+        } catch (Exception e) {
+            Assert.assertTrue(e instanceof IllegalArgumentException);
+        }
 
         List<URL> urls = new ArrayList<>();
         urls.add(testUrl);
@@ -194,5 +230,30 @@ public class AbstractRegistryTest {
         Assert.assertFalse(notifySuccess);
         abstractRegistry.notify(testUrl, listener, urls);
         Assert.assertTrue(notifySuccess);
+
+        //check if notify successfully when ruls.size()>1
+        urls.add(testUrl2);
+        notifySuccess = false;
+        abstractRegistry.notify(testUrl,listener,urls);
+        Assert.assertTrue(notifySuccess);
+
+    }
+    @Test
+    public void destoryTest(){
+        // check if destory successfully
+        abstractRegistry.register(testUrl);
+        abstractRegistry.subscribe(testUrl, listener);
+        abstractRegistry.destroy();
+        Assert.assertFalse(abstractRegistry.getRegistered().contains(testUrl));
+
+        //check if destory a not exist url successfully
+        abstractRegistry.destroy();
+        Assert.assertFalse(abstractRegistry.getRegistered().contains(testUrl2));
+
+        //check if destory when the url is already destoried
+        abstractRegistry.destroy();
+        Assert.assertFalse(abstractRegistry.getRegistered().contains(testUrl));
+
+
     }
 }
