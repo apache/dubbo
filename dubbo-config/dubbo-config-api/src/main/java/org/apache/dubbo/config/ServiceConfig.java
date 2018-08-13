@@ -366,11 +366,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     doExportUrlsFor1Protocol(protocolConfig, registryURLs);
                     break;
                 } catch (RpcException e) {
-                    if (e.getMessage().contains("Failed to bind")) {
-                        logger.error("doExportUrls port failure and try again: " + e.getMessage(), e);
+                    if (e.getMessage().contains("Already in use")) {
+                        //logger.error("doExportUrls port failure and try again: " + e.getMessage(), e);
                         clearRandomPort(getProtocolName(protocolConfig));
                         try {
-                            Thread.sleep(1000);
+                            Thread.sleep(500);
                         } catch (InterruptedException ignored) {}
                     } else {
                         throw e;
