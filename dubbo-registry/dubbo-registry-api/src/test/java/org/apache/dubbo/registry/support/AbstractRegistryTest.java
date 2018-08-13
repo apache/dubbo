@@ -23,6 +23,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -88,13 +89,27 @@ public class AbstractRegistryTest {
 
     @Test
     public void getCacheUrlsTest(){
-        abstractRegistry.doSaveProperties(1);
         abstractRegistry.getCacheUrls(testUrl);
+        try{
+            abstractRegistry.getCacheUrls(null);
+            Assert.fail();
+        }catch (Exception e){
+
+        }
     }
 
     @Test
     public void doSavePropertiesTest(){
-        abstractRegistry.doSaveProperties(-1);
+        try {
+            abstractRegistry.doSaveProperties(-1);
+        }catch (Exception e){
+            Assert.assertTrue(e instanceof IOException);
+        }
+        try {
+            abstractRegistry.doSaveProperties(10);
+        }catch (Exception e){
+            Assert.assertTrue(e instanceof IOException);
+        }
     }
 
     @Test
