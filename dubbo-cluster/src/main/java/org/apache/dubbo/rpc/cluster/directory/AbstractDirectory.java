@@ -28,7 +28,6 @@ import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.RouterFactory;
 import org.apache.dubbo.rpc.cluster.router.MockInvokersSelector;
-import org.apache.dubbo.rpc.cluster.router.tag.TagRouter;
 
 import java.util.ArrayList;
 import java.util.Collections;
