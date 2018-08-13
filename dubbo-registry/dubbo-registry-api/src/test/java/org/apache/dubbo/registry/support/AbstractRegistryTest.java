@@ -163,6 +163,9 @@ public class AbstractRegistryTest {
 
     @Test
     public void recoverTest() throws Exception {
+        int beginSize = abstractRegistry.getRegistered().size();
+        abstractRegistry.recover();
+        Assert.assertEquals(beginSize, abstractRegistry.getRegistered().size());
         abstractRegistry.register(testUrl);
         abstractRegistry.subscribe(testUrl, listener);
         abstractRegistry.recover();
