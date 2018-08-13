@@ -253,6 +253,26 @@ public class AbstractRegistryTest {
         Assert.assertEquals(1, abstractRegistry.getCacheUrls(testUrl).size());
     }
 
+    @Test
+    public void setNullUrlTest () {
+        try {
+            abstractRegistry.setUrl(null);
+        } catch (Exception e) {
+            Assert.assertTrue(e instanceof IllegalArgumentException);
+        }
+    }
+
+    @Test
+    public void filterEmptyTest() {
+        try {
+            AbstractRegistry.filterEmpty(null, null);
+            Assert.fail();
+        } catch (NullPointerException e) {
+            Assert.assertNotNull(e);
+        }
+        AbstractRegistry.filterEmpty(testUrl, null);
+    }
+
     @After
     public void destroy() {
         abstractRegistry.destroy();
