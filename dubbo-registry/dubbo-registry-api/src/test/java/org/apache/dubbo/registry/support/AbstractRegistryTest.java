@@ -192,7 +192,6 @@ public class AbstractRegistryTest {
         Assert.assertEquals(0, abstractRegistry.lookup(testUrl2).size());
         abstractRegistry.notify(urls);
         Assert.assertEquals(1, abstractRegistry.lookup(testUrl).size());
-        abstractRegistry.notify(urls);
         Assert.assertTrue(notifySuccess);
     }
 
@@ -222,7 +221,9 @@ public class AbstractRegistryTest {
         abstractRegistry.notify(testUrl, listener, urls);
         Assert.assertTrue(notifySuccess);
         urls.add(testUrl2);
+        // additional url added, test notifying with cache
         abstractRegistry.notify(testUrl, listener, urls);
+        // no-cache for another url
         abstractRegistry.notify(testUrl2, listener, urls);
         Assert.assertTrue(notifySuccess);
     }
