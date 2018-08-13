@@ -193,6 +193,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     public synchronized void export() {
+        System.out.println("Start exporting");
         if (provider != null) {
             if (export == null) {
                 export = provider.getExport();
@@ -204,16 +205,18 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (export != null && !export) {
             return;
         }
-
+        appendProperties(this);
         if (delay != null && delay > 0) {
             delayExportExecutor.schedule(new Runnable() {
                 @Override
                 public void run() {
                     doExport();
+                    System.out.println("Exported with delay");
                 }
             }, delay, TimeUnit.MILLISECONDS);
         } else {
             doExport();
+            System.out.println("Exported without delay");
         }
     }
 
