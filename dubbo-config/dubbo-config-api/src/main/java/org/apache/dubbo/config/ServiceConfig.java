@@ -193,7 +193,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     public synchronized void export() {
-        System.out.println("Start exporting");
         if (provider != null) {
             if (export == null) {
                 export = provider.getExport();
@@ -211,12 +210,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 @Override
                 public void run() {
                     doExport();
-                    System.out.println("Exported with delay");
                 }
             }, delay, TimeUnit.MILLISECONDS);
         } else {
             doExport();
-            System.out.println("Exported without delay");
         }
     }
 
@@ -312,7 +309,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         checkApplication();
         checkRegistry();
         checkProtocol();
-        appendProperties(this);
         checkStubAndMock(interfaceClass);
         if (path == null || path.length() == 0) {
             path = interfaceName;
