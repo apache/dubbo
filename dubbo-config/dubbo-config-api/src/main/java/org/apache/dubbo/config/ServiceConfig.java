@@ -30,6 +30,7 @@ import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.model.ApplicationModel;
 import org.apache.dubbo.config.model.ProviderModel;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -351,12 +352,40 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         unexported = true;
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static void clearRandomPort(String protocol) {
+        protocol = protocol.toLowerCase();
+        RANDOM_PORT_MAP.remove(protocol);
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private void doExportUrls() {
         List<URL> registryURLs = loadRegistries(true);
         for (ProtocolConfig protocolConfig : protocols) {
-            doExportUrlsFor1Protocol(protocolConfig, registryURLs);
+            while(true) {
+                try {
+                    doExportUrlsFor1Protocol(protocolConfig, registryURLs);
+                    break;
+                } catch (RpcException e) {
+                    if (e.getMessage().contains("Failed to bind to")) {
+                        logger.error("doExportUrls port failure and try again: " + e.getMessage(), e);
+                        clearRandomPort(getProtocolName(protocolConfig));
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ignored) {}
+                    } else {
+                        throw e;
+                    }
+                }
+            }
         }
+    }
+
+    private String getProtocolName(ProtocolConfig protocolConfig) {
+        String name = protocolConfig.getName();
+        if (name == null || name.length() == 0) {
+            name = "dubbo";
+        }
+        return name;
     }
 
     private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
