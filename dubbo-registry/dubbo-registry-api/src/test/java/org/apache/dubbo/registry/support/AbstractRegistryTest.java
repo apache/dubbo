@@ -123,7 +123,6 @@ public class AbstractRegistryTest {
     @Test
     public void unsubscribeTest() {
         //check parameters
-        //TODO: empty
         try {
             abstractRegistry.unsubscribe(null, listener);
             Assert.fail();
