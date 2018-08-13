@@ -34,6 +34,7 @@ import static com.alibaba.dubbo.config.spring.util.BeanFactoryUtils.getOptionalB
 
 /**
  * Abstract Configurable {@link Annotation} Bean Builder
+ *
  * @since 2.5.7
  */
 abstract class AbstractAnnotationConfigBeanBuilder<A extends Annotation, B extends AbstractInterfaceConfig> {
@@ -76,7 +77,7 @@ abstract class AbstractAnnotationConfigBeanBuilder<A extends Annotation, B exten
         configureBean(bean);
 
         if (logger.isInfoEnabled()) {
-            logger.info(bean + " has been built.");
+            logger.info("The bean[type:" + bean.getClass().getSimpleName() + "] has been built.");
         }
 
         return bean;

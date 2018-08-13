@@ -16,6 +16,7 @@
  */
 package com.alibaba.dubbo.config.spring.beans.factory.annotation;
 
+import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.spring.ReferenceBean;
 import com.alibaba.dubbo.config.spring.api.DemoService;
@@ -56,7 +57,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
         System.setProperty("package1", "com.alibaba.dubbo.config.spring.annotation.provider");
         System.setProperty("packagesToScan", "${package1}");
         System.setProperty("consumer.version", "1.2");
-        System.setProperty("consumer.url", "dubbo://127.0.0.1:12345");
+        System.setProperty("consumer.url", "dubbo://" + NetUtils.getLocalHost() + ":12345");
     }
 
     @Before
@@ -136,13 +137,13 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
             InjectionMetadata.InjectedElement injectedElement = entry.getKey();
 
-            Assert.assertEquals("com.alibaba.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor$ReferenceFieldElement",
+            Assert.assertEquals("com.alibaba.spring.beans.factory.annotation.CustomizedAnnotationBeanPostProcessor$AnnotatedFieldElement",
                     injectedElement.getClass().getName());
 
             ReferenceBean<?> referenceBean = entry.getValue();
 
             Assert.assertEquals("1.2", referenceBean.getVersion());
-            Assert.assertEquals("dubbo://127.0.0.1:12345", referenceBean.getUrl());
+            Assert.assertEquals("dubbo://" + NetUtils.getLocalHost() + ":12345", referenceBean.getUrl());
 
         }
 
@@ -166,7 +167,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
             InjectionMetadata.InjectedElement injectedElement = entry.getKey();
 
-            Assert.assertEquals("com.alibaba.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor$ReferenceMethodElement",
+            Assert.assertEquals("com.alibaba.spring.beans.factory.annotation.CustomizedAnnotationBeanPostProcessor$AnnotatedMethodlement",
                     injectedElement.getClass().getName());
 
             ReferenceBean<?> referenceBean = entry.getValue();
@@ -192,7 +193,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
         for (Map.Entry<InjectionMetadata.InjectedElement, ReferenceBean<?>> entry : referenceBeanMap.entrySet()) {
             ReferenceBean<?> referenceBean = entry.getValue();
 
-            assertThat(referenceBean.getModule().getName(),is("defaultModule"));
+            assertThat(referenceBean.getModule().getName(), is("defaultModule"));
             assertThat(referenceBean.getMonitor(), not(nullValue()));
         }
     }
