@@ -44,14 +44,14 @@ public class TagRouterTest {
 
         RpcContext.getContext().setAttachment(Constants.REQUEST_TAG_KEY, "red");
 
-        List<Invoker<String>> invokers = new ArrayList<Invoker<String>>();
-        Invoker<String> redInvoker = new MockInvoker<String>(URL.valueOf(
+        List<Invoker<String>> invokers = new ArrayList<>();
+        Invoker<String> redInvoker = new MockInvoker<>(URL.valueOf(
                 "dubbo://10.20.3.1:20880/com.foo.BarService?tag=red"));
-        Invoker<String> yellowInvoker = new MockInvoker<String>(URL.valueOf(
+        Invoker<String> yellowInvoker = new MockInvoker<>(URL.valueOf(
                 "dubbo://10.20.3.2:20880/com.foo.BarService?tag=yellow"));
-        Invoker<String> blueInvoker = new MockInvoker<String>(URL.valueOf(
+        Invoker<String> blueInvoker = new MockInvoker<>(URL.valueOf(
                 "dubbo://10.20.3.3:20880/com.foo.BarService?tag=blue"));
-        Invoker<String> defaultInvoker = new MockInvoker<String>(URL.valueOf(
+        Invoker<String> defaultInvoker = new MockInvoker<>(URL.valueOf(
                 "dubbo://10.20.3.4:20880/com.foo.BarService"));
 
         invokers.add(redInvoker);
@@ -70,14 +70,16 @@ public class TagRouterTest {
     @Test
     public void testRoute_matchDefault() {
 
-        List<Invoker<String>> invokers = new ArrayList<Invoker<String>>();
-        Invoker<String> redInvoker = new MockInvoker<String>(URL.valueOf(
+        RpcContext.getContext().setAttachment(Constants.REQUEST_TAG_KEY, "");
+
+        List<Invoker<String>> invokers = new ArrayList<>();
+        Invoker<String> redInvoker = new MockInvoker<>(URL.valueOf(
                 "dubbo://10.20.3.1:20880/com.foo.BarService?tag=red"));
-        Invoker<String> yellowInvoker = new MockInvoker<String>(URL.valueOf(
+        Invoker<String> yellowInvoker = new MockInvoker<>(URL.valueOf(
                 "dubbo://10.20.3.2:20880/com.foo.BarService?tag=yellow"));
-        Invoker<String> blueInvoker = new MockInvoker<String>(URL.valueOf(
+        Invoker<String> blueInvoker = new MockInvoker<>(URL.valueOf(
                 "dubbo://10.20.3.3:20880/com.foo.BarService?tag=blue"));
-        Invoker<String> defaultInvoker = new MockInvoker<String>(URL.valueOf(
+        Invoker<String> defaultInvoker = new MockInvoker<>(URL.valueOf(
                 "dubbo://10.20.3.4:20880/com.foo.BarService"));
 
         invokers.add(redInvoker);
@@ -98,14 +100,14 @@ public class TagRouterTest {
 
         RpcContext.getContext().setAttachment(Constants.REQUEST_TAG_KEY, "black");
 
-        List<Invoker<String>> invokers = new ArrayList<Invoker<String>>();
-        Invoker<String> redInvoker = new MockInvoker<String>(URL.valueOf(
+        List<Invoker<String>> invokers = new ArrayList<>();
+        Invoker<String> redInvoker = new MockInvoker<>(URL.valueOf(
                 "dubbo://10.20.3.1:20880/com.foo.BarService?tag=red"));
-        Invoker<String> yellowInvoker = new MockInvoker<String>(URL.valueOf(
+        Invoker<String> yellowInvoker = new MockInvoker<>(URL.valueOf(
                 "dubbo://10.20.3.2:20880/com.foo.BarService?tag=yellow"));
-        Invoker<String> blueInvoker = new MockInvoker<String>(URL.valueOf(
+        Invoker<String> blueInvoker = new MockInvoker<>(URL.valueOf(
                 "dubbo://10.20.3.3:20880/com.foo.BarService?tag=blue"));
-        Invoker<String> defaultInvoker = new MockInvoker<String>(URL.valueOf(
+        Invoker<String> defaultInvoker = new MockInvoker<>(URL.valueOf(
                 "dubbo://10.20.3.4:20880/com.foo.BarService"));
 
         invokers.add(redInvoker);
@@ -124,12 +126,14 @@ public class TagRouterTest {
     @Test
     public void testRoute_requestWithoutTag_shouldNotDowngrade() {
 
-        List<Invoker<String>> invokers = new ArrayList<Invoker<String>>();
-        Invoker<String> redInvoker = new MockInvoker<String>(URL.valueOf(
+        RpcContext.getContext().setAttachment(Constants.REQUEST_TAG_KEY, "");
+
+        List<Invoker<String>> invokers = new ArrayList<>();
+        Invoker<String> redInvoker = new MockInvoker<>(URL.valueOf(
                 "dubbo://10.20.3.1:20880/com.foo.BarService?tag=red"));
-        Invoker<String> yellowInvoker = new MockInvoker<String>(URL.valueOf(
+        Invoker<String> yellowInvoker = new MockInvoker<>(URL.valueOf(
                 "dubbo://10.20.3.2:20880/com.foo.BarService?tag=yellow"));
-        Invoker<String> blueInvoker = new MockInvoker<String>(URL.valueOf(
+        Invoker<String> blueInvoker = new MockInvoker<>(URL.valueOf(
                 "dubbo://10.20.3.3:20880/com.foo.BarService?tag=blue"));
 
         invokers.add(redInvoker);
