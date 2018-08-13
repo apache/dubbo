@@ -355,7 +355,21 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private void doExportUrls() {
         List<URL> registryURLs = loadRegistries(true);
         for (ProtocolConfig protocolConfig : protocols) {
-            doExportUrlsFor1Protocol(protocolConfig, registryURLs);
+            while (true) {
+                try {
+                    doExportUrlsFor1Protocol(protocolConfig, registryURLs);
+                    break;
+                } catch (Exception e) {
+                    if (e.getMessage().contains("Address already in use")) {
+                        RANDOM_PORT_MAP.remove(protocolConfig.getName() != null ? protocolConfig.getName().toLowerCase() : "dubbo");
+                        try {
+                            Thread.sleep(500);
+                        } catch (Exception e1) {}
+                    } else {
+                        throw e;
+                    }
+                }
+            }
         }
     }
 
