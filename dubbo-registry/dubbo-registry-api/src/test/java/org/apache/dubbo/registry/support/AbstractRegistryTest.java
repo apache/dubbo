@@ -34,7 +34,8 @@ public class AbstractRegistryTest {
     private URL testUrl;
     //add another testUrl
     private URL testUrl2;
-
+    private URL registerTestUrl1,unregisterTestUrl1,unregisterTestUrl2,unregisterTestUrlfordynamic1,unregisterTestUrlfordynamic2;
+    private URL subscribeTestUrlforcatagory1,subscribeTestUrlforcatagory2,subscribeTestUrlforcatagory3,subscribeTestUrlforcatagory4,subscribeTestUrlforcatagory5;
     private NotifyListener listener;
     private AbstractRegistry abstractRegistry;
     private boolean notifySuccess;
@@ -44,7 +45,10 @@ public class AbstractRegistryTest {
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":2233");
         testUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A&interface=com.test");
         testUrl2 = URL.valueOf("http://2.2.3.4:9090/registry?check=true&file=N/A&interface=com.test");
-
+        registerTestUrl1 = URL.valueOf("http://1.2.3.4:9090/registry?check=true&file=N/A&interface=com.test");
+        unregisterTestUrl1 = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A");
+        unregisterTestUrlfordynamic1 = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A&interface=com.test&dynamic=false");
+        unregisterTestUrlfordynamic2 = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A");
         //init the object
         abstractRegistry = new AbstractRegistry(url) {
             @Override
@@ -75,6 +79,9 @@ public class AbstractRegistryTest {
         abstractRegistry.register(testUrl);
         Assert.assertEquals(beginSize + 1, abstractRegistry.getRegistered().size());
 
+        // check register when the same URL but different parameters to coexist
+        abstractRegistry.register(registerTestUrl1);
+        Assert.assertEquals(beginSize + 2, abstractRegistry.getRegistered().size());
     }
 
     @Test
@@ -94,6 +101,19 @@ public class AbstractRegistryTest {
         // check if unregister a not exist url successfully
         abstractRegistry.unregister(testUrl);
         Assert.assertEquals(beginSize - 1, abstractRegistry.getRegistered().size());
+
+        // check if unregister url  according to the not full url match
+        beginSize = abstractRegistry.getRegistered().size();
+        abstractRegistry.register(testUrl);
+        abstractRegistry.unregister(unregisterTestUrl1);
+        Assert.assertEquals(beginSize+1 , abstractRegistry.getRegistered().size());
+
+      /*  // check if unregister url  according to the not full url match
+        abstractRegistry.register(unregisterTestUrlfordynamic1);
+        abstractRegistry.unregister(unregisterTestUrlfordynamic2);
+        Assert.assertEquals(beginSize+1 , abstractRegistry.getRegistered().size());*/
+
+
     }
 
     @Test
@@ -123,6 +143,31 @@ public class AbstractRegistryTest {
         abstractRegistry.subscribe(testUrl, listener);
         Assert.assertNotNull(abstractRegistry.getSubscribed().get(testUrl));
         Assert.assertTrue(abstractRegistry.getSubscribed().get(testUrl).contains(listener));
+
+        //check subscribe when the url is the same
+        int size=abstractRegistry.getSubscribed().size();
+        abstractRegistry.subscribe(testUrl, listener);
+        Assert.assertEquals(size , abstractRegistry.getSubscribed().size());
+
+
+       /* // check parameter of interface and category
+        abstractRegistry.getSubscribed().clear();
+        abstractRegistry.getRegistered().clear();
+        abstractRegistry.register(URL.valueOf("http://1.2.3.4:9090/registry?interface=com.test&category=provider"));
+        abstractRegistry.register(URL.valueOf("http://1.2.3.4:9090/registry?interface=com.test&category=comsumer"));
+        abstractRegistry.register(URL.valueOf("http://1.2.3.4:9090/registry?interface=com.alibaba&category=provider"));
+        abstractRegistry.register(URL.valueOf("http://1.2.3.4:9090/registry?interface=com.alibaba&category=comsumer"));
+       // abstractRegistry.subscribe(URL.valueOf("http://1.2.3.4:9090/registry?interface=com.test&category=*"),listener);
+
+        abstractRegistry.subscribe(URL.valueOf("http://1.2.3.4:9090/registry?interface=com.test&category=provider"),listener);
+        abstractRegistry.subscribe(URL.valueOf("http://1.2.3.4:9090/registry?interface=com.test&category=comsumer"),listener);
+
+
+        Assert.assertEquals(2 , abstractRegistry.getSubscribed().size());
+        abstractRegistry.subscribe(URL.valueOf("http://1.2.3.4:9090/registry?interface=*&category=*"),listener);
+        Assert.assertEquals(4 , abstractRegistry.getSubscribed().size());*/
+
+
     }
 
     @Test
@@ -152,6 +197,30 @@ public class AbstractRegistryTest {
         abstractRegistry.subscribe(testUrl, listener);
         abstractRegistry.unsubscribe(testUrl, listener);
         Assert.assertFalse(abstractRegistry.getSubscribed().get(testUrl).contains(listener));
+
+        // check unsubscribe when the url is the same
+        abstractRegistry.unsubscribe(testUrl, listener);
+        Assert.assertFalse(abstractRegistry.getSubscribed().get(testUrl).contains(listener));
+
+        // check unsubscribe when the url is not exist
+        abstractRegistry.unsubscribe(URL.valueOf("http://1.2.3.4:9090/registry?interface=com.test&category=provider"), listener);
+        Assert.assertNull(abstractRegistry.getSubscribed().get(URL.valueOf("http://1.2.3.4:9090/registry?interface=com.test&category=provider")));
+
+
+
+       /* abstractRegistry.getSubscribed().clear();
+        abstractRegistry.getRegistered().clear();
+        abstractRegistry.register(URL.valueOf("http://1.2.3.4:9090/registry?interface=com.test&category=provider"));
+        abstractRegistry.register(URL.valueOf("http://1.2.3.4:9090/registry?interface=com.test&category=comsumer"));
+        abstractRegistry.register(URL.valueOf("http://1.2.3.4:9090/registry?interface=com.alibaba&category=provider"));
+        abstractRegistry.register(URL.valueOf("http://1.2.3.4:9090/registry?interface=com.alibaba&category=comsumer"));
+        abstractRegistry.subscribe(URL.valueOf("http://1.2.3.4:9090/registry?interface=com.test&category=*"),listener);
+    //    Assert.assertEquals(2 , abstractRegistry.getSubscribed().size());
+        abstractRegistry.subscribe(URL.valueOf("http://1.2.3.4:9090/registry?interface=*&category=*"),listener);
+        int size=abstractRegistry.getSubscribed().size();
+        abstractRegistry.unsubscribe(URL.valueOf("http://1.2.3.4:9090/registry?interface=*&category=*"),listener);
+        Assert.assertEquals(size-4 , abstractRegistry.getSubscribed().size());
+      // Assert.assertFalse(abstractRegistry.getSubscribed().get(testUrl).contains(listener));*/
     }
 
     @Test
