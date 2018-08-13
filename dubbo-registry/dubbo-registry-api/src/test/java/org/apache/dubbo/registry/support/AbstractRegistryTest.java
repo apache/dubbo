@@ -209,7 +209,6 @@ public class AbstractRegistryTest {
         Assert.assertNotNull(abstractRegistry.getSubscribed().get(testUrl));
         Assert.assertTrue(abstractRegistry.getSubscribed().get(testUrl).contains(listener));
     }
-
     @Test
     public void notifyTest() {
         abstractRegistry.subscribe(testUrl, listener);
