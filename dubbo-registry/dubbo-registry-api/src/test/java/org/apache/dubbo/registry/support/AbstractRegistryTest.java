@@ -54,6 +54,45 @@ public class AbstractRegistryTest {
         notifySuccess = false;
     }
 
+
+    @Test
+    public void getCacheUrlsTest(){
+        abstractRegistry.doSaveProperties(1);
+        abstractRegistry.getCacheUrls(testUrl);
+    }
+
+    @Test
+    public void doSavePropertiesTest(){
+        abstractRegistry.doSaveProperties(-1);
+    }
+
+    @Test
+    public void toStringTest(){
+        abstractRegistry.toString();
+    }
+
+    @Test
+    public void getCacheFileTest(){
+        abstractRegistry.getCacheFile();
+    }
+
+    @Test
+    public void getCachePropertiesTest(){
+        abstractRegistry.getCacheProperties();
+    }
+
+    @Test
+    public void getLastCacheChangedTest(){
+        abstractRegistry.getLastCacheChanged();
+    }
+
+    @Test
+    public void destroyTest(){
+        abstractRegistry.register(testUrl);
+        abstractRegistry.subscribe(testUrl, listener);
+        abstractRegistry.destroy();
+    }
+
     @Test
     public void registerTest() {
         //check parameters
