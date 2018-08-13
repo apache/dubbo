@@ -30,11 +30,7 @@ import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.model.ApplicationModel;
 import org.apache.dubbo.config.model.ProviderModel;
 import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Protocol;
-import org.apache.dubbo.rpc.ProxyFactory;
-import org.apache.dubbo.rpc.ServiceClassHolder;
+import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
@@ -45,13 +41,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -352,12 +342,48 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
+//    private void doExportUrls() {
+//        List<URL> registryURLs = loadRegistries(true);
+//        for (ProtocolConfig protocolConfig : protocols) {
+//            doExportUrlsFor1Protocol(protocolConfig, registryURLs);
+//        }
+//    }
+
+    private static void clearRandomPort(String protocol) {
+        protocol = protocol.toLowerCase();
+        RANDOM_PORT_MAP.remove(protocol);
+    }
+
     private void doExportUrls() {
         List<URL> registryURLs = loadRegistries(true);
         for (ProtocolConfig protocolConfig : protocols) {
-            doExportUrlsFor1Protocol(protocolConfig, registryURLs);
+            while(true) {
+                try {
+                    doExportUrlsFor1Protocol(protocolConfig, registryURLs);
+                    break;
+                } catch (RpcException e) {
+                    if (e.getMessage().contains("Failed to bind")) {
+                        logger.error("doExportUrls port failure and try again: " + e.getMessage(), e);
+                        clearRandomPort(getProtocolName(protocolConfig));
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ignored) {}
+                    } else {
+                        throw e;
+                    }
+                }
+            }
         }
     }
+
+    private String getProtocolName(ProtocolConfig protocolConfig) {
+        String name = protocolConfig.getName();
+        if (name == null || name.length() == 0) {
+            name = "dubbo";
+        }
+        return name;
+    }
+
 
     private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
         String name = protocolConfig.getName();
