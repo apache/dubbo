@@ -19,10 +19,12 @@ package org.apache.dubbo.registry.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,7 +33,8 @@ import java.util.List;
  */
 public class AbstractRegistryTest {
 
-    private URL testUrl;
+    private URL testUrl, testUrl2;
+
     private NotifyListener listener;
     private AbstractRegistry abstractRegistry;
     private boolean notifySuccess;
@@ -40,6 +43,23 @@ public class AbstractRegistryTest {
     public void init() {
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":2233");
         testUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A&interface=com.test");
+        testUrl2 = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A&interface=com.test2");
+
+        // test uncreatable file
+        try {
+            File nonExistDir = File.createTempFile("non", "tmp");
+            abstractRegistry = new AbstractRegistry(
+                    URL.valueOf(url.getAbsolutePath() + "/?file="
+                            + nonExistDir + File.separator + "impossible-folder" + File.separator + "impossible-file")) {
+                @Override
+                public boolean isAvailable() {
+                    return false;
+                }
+            };
+            Assert.fail();
+        } catch (Exception e) {
+            Assert.assertTrue(e instanceof IllegalArgumentException);
+        }
 
         //init the object
         abstractRegistry = new AbstractRegistry(url) {
@@ -163,10 +183,15 @@ public class AbstractRegistryTest {
     @Test
     public void notifyTest() {
         abstractRegistry.subscribe(testUrl, listener);
+        abstractRegistry.subscribe(testUrl2, listener);
         List<URL> urls = new ArrayList<>();
         urls.add(testUrl);
+        urls.add(testUrl2);
         // check if notify successfully
         Assert.assertFalse(notifySuccess);
+        Assert.assertEquals(0, abstractRegistry.lookup(testUrl2).size());
+        abstractRegistry.notify(urls);
+        Assert.assertEquals(1, abstractRegistry.lookup(testUrl).size());
         abstractRegistry.notify(urls);
         Assert.assertTrue(notifySuccess);
     }
@@ -189,10 +214,46 @@ public class AbstractRegistryTest {
         }
 
         List<URL> urls = new ArrayList<>();
+        // try empty urls
+        abstractRegistry.notify(testUrl, listener, urls);
         urls.add(testUrl);
         // check if notify successfully
         Assert.assertFalse(notifySuccess);
         abstractRegistry.notify(testUrl, listener, urls);
         Assert.assertTrue(notifySuccess);
+        urls.add(testUrl2);
+        abstractRegistry.notify(testUrl, listener, urls);
+        abstractRegistry.notify(testUrl2, listener, urls);
+        Assert.assertTrue(notifySuccess);
+    }
+
+    @Test
+    public void toStringTest() {
+        Assert.assertEquals(abstractRegistry.toString(), "dubbo://wentaodeMacBook-Air.local:2233");
+    }
+
+    @Test
+    public void getCacheFileTest() {
+        Assert.assertNotNull(abstractRegistry.getCacheFile());
+    }
+
+    @Test
+    public void getCachePropertiesTest() {
+        Assert.assertNotNull(abstractRegistry.getCacheProperties());
+    }
+
+    @Test
+    public void getLastCacheChangedTest() {
+        Assert.assertEquals(0, abstractRegistry.getLastCacheChanged().longValue());
+    }
+
+    @Test
+    public void getCacheUrlsTest() {
+        Assert.assertEquals(1, abstractRegistry.getCacheUrls(testUrl).size());
+    }
+
+    @After
+    public void destroy() {
+        abstractRegistry.destroy();
     }
 }
