@@ -16,69 +16,72 @@
  */
 package org.apache.dubbo.common.concurrent;
 
-import org.junit.Test;
-
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-public class ListenableFutureTaskTest {
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.junit.Test;
+
+
+public class CompletableFutureTaskTest {
+
+    private static final ExecutorService executor = new ThreadPoolExecutor(0, 10, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new NamedThreadFactory("DubboMonitorCreator", true));
+
     @Test
     public void testCreate() throws InterruptedException {
+
         final CountDownLatch countDownLatch = new CountDownLatch(1);
-        ListenableFutureTask<Boolean> futureTask = ListenableFutureTask.create(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                countDownLatch.countDown();
-                return true;
-            }
-        });
-        futureTask.run();
+        CompletableFuture<Boolean> completableFuture = CompletableFuture.supplyAsync(() -> {
+            countDownLatch.countDown();
+            return true;
+        },executor);
         countDownLatch.await();
     }
 
     @Test
     public void testRunnableResponse() throws ExecutionException, InterruptedException {
-        ListenableFutureTask<Boolean> futureTask = ListenableFutureTask.create(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+        CompletableFuture<Boolean> completableFuture = CompletableFuture.supplyAsync(() -> {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-        }, true);
-        futureTask.run();
+            return true;
+        }, executor);
 
-        Boolean result = futureTask.get();
+        Boolean result = completableFuture.get();
         assertThat(result, is(true));
     }
 
     @Test
     public void testListener() throws InterruptedException {
-        ListenableFutureTask<String> futureTask = ListenableFutureTask.create(new Callable<String>() {
-            @Override
-            public String call() throws Exception {
+        CompletableFuture<String> completableFuture = CompletableFuture.supplyAsync(() -> {
+            try {
                 Thread.sleep(500);
-                return "hello";
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-        });
+            return "hello";
+
+        },executor);
         final CountDownLatch countDownLatch = new CountDownLatch(1);
-        futureTask.addListener(new Runnable() {
+        completableFuture.thenRunAsync(new Runnable() {
             @Override
             public void run() {
                 countDownLatch.countDown();
             }
         });
-        futureTask.run();
         countDownLatch.await();
     }
 
@@ -86,15 +89,9 @@ public class ListenableFutureTaskTest {
     @Test
     public void testCustomExecutor() {
         Executor mockedExecutor = mock(Executor.class);
-        ListenableFutureTask<Integer> futureTask = ListenableFutureTask.create(new Callable<Integer>() {
-            @Override
-            public Integer call() throws Exception {
-                return 0;
-            }
+        CompletableFuture<Integer> completableFuture = CompletableFuture.supplyAsync(() -> {
+            return 0;
         });
-        futureTask.addListener(mock(Runnable.class), mockedExecutor);
-        futureTask.run();
-
-        verify(mockedExecutor).execute(any(Runnable.class));
+        completableFuture.thenRunAsync(mock(Runnable.class), verify(mockedExecutor));
     }
 }
