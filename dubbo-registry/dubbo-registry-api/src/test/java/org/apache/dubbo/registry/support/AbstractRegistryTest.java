@@ -17,14 +17,18 @@
 package org.apache.dubbo.registry.support;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Level;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
+import org.apache.log4j.BasicConfigurator;
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * AbstractRegistryTest
@@ -35,6 +39,46 @@ public class AbstractRegistryTest {
     private NotifyListener listener;
     private AbstractRegistry abstractRegistry;
     private boolean notifySuccess;
+
+    private static final Map<String,String> parametersProvider=new LinkedHashMap<>();
+    private static final Map<String,String> parametersConsumer=new LinkedHashMap<>();
+
+    private URL mockUrl = new URL("dubbo", "127.0.0.0", 2200);
+    static{
+        parametersProvider.put("anyhost","true");
+        parametersProvider.put("application","demo-provider");
+        parametersProvider.put("dubbo","2.0.2");
+        parametersProvider.put("generic","false");
+        parametersProvider.put("interface","org.apache.dubbo.demo.DemoService");
+        parametersProvider.put("methods","sayHello");
+        parametersProvider.put("pid","1489");
+        parametersProvider.put("side","provider");
+        parametersProvider.put("timestamp",String.valueOf(System.currentTimeMillis()));
+
+        parametersConsumer.put("application", "demo-consumer");
+        parametersConsumer.put("category", "consumer");
+        parametersConsumer.put("check", "false");
+        parametersConsumer.put("dubbo", "2.0.2");
+        parametersConsumer.put("interface", "org.apache.dubbo.demo.DemoService");
+        parametersConsumer.put("methods", "sayHello");
+        parametersConsumer.put("pid", "1676");
+        parametersConsumer.put("qos.port", "333333");
+        parametersConsumer.put("side", "consumer");
+        parametersConsumer.put("timestamp", String.valueOf(System.currentTimeMillis()));
+
+
+    }
+
+    private List<URL> getList() {
+        List<URL> list = new ArrayList<>();
+        URL url_1 = new URL("dubbo", "127.0.0.0", 1000);
+        URL url_2 = new URL("dubbo", "127.0.0.1", 1001);
+        URL url_3 = new URL("dubbo", "127.0.0.2", 1002);
+        list.add(url_1);
+        list.add(url_2);
+        list.add(url_3);
+        return list;
+    }
 
     @Before
     public void init() {
@@ -52,7 +96,13 @@ public class AbstractRegistryTest {
         listener = urls -> notifySuccess = true;
         //notify flag
         notifySuccess = false;
+
+        LoggerFactory.setLevel(Level.INFO);
+        Level level = LoggerFactory.getLevel();
+        // BasicConfigurator.configure();
     }
+
+
 
     @Test
     public void registerTest() {
@@ -195,4 +245,133 @@ public class AbstractRegistryTest {
         abstractRegistry.notify(testUrl, listener, urls);
         Assert.assertTrue(notifySuccess);
     }
+
+
+
+    /**
+     * test register
+     */
+    @Test
+    public void testRegister() {
+        //test one url
+        abstractRegistry.register(mockUrl);
+        assert abstractRegistry.getRegistered().contains(mockUrl);
+        //test multiple urls
+        abstractRegistry.getRegistered().clear();
+        List<URL> urlList = getList();
+        for (URL url : urlList) {
+            abstractRegistry.register(url);
+        }
+        Assert.assertThat(abstractRegistry.getRegistered().size(), Matchers.equalTo(urlList.size()));
+    }
+    /**
+     * test unregister
+     */
+    @Test
+    public void testUnregister() {
+        //test one unregister
+        URL url = new URL("dubbo", "127.0.0.0", 2200);
+        abstractRegistry.getRegistered().add(url);
+        abstractRegistry.unregister(url);
+        Assert.assertThat(false, Matchers.equalTo(abstractRegistry.getRegistered().contains(url)));
+        //test multiple unregisters
+        abstractRegistry.getRegistered().clear();
+        List<URL> urlList = getList();
+        for (URL urlSub : urlList) {
+            abstractRegistry.getRegistered().add(urlSub);
+        }
+        for (URL urlSub : urlList) {
+            abstractRegistry.unregister(urlSub);
+        }
+        Assert.assertThat(0, Matchers.equalTo(abstractRegistry.getRegistered().size()));
+    }
+    /**
+     * test subscribe and unsubscribe
+     */
+    @Test
+    public void testSubscribeAndUnsubscribe() {
+        //test subscribe
+        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+        NotifyListener listener = urls -> notified.set(Boolean.TRUE);
+        URL url = new URL("dubbo", "127.0.0.0", 2200);
+        abstractRegistry.subscribe(url, listener);
+        Set<NotifyListener> subscribeListeners = abstractRegistry.getSubscribed().get(url);
+        Assert.assertThat(true, Matchers.equalTo(subscribeListeners.contains(listener)));
+        //test unsubscribe
+        abstractRegistry.unsubscribe(url, listener);
+        Set<NotifyListener> unsubscribeListeners = abstractRegistry.getSubscribed().get(url);
+        Assert.assertThat(false, Matchers.equalTo(unsubscribeListeners.contains(listener)));
+    }
+    /**
+     * test recover
+     */
+    @Test
+    public void testRecover() {
+        List<URL> list = getList();
+        try {
+            abstractRegistry.recover();
+            Assert.assertEquals(0, abstractRegistry.getRegistered().size());
+            for (URL url : list) {
+                abstractRegistry.register(url);
+            }
+            Assert.assertEquals(3, abstractRegistry.getRegistered().size());
+            abstractRegistry.recover();
+            Assert.assertEquals(3, abstractRegistry.getRegistered().size());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    /**
+     * test notifyList
+     */
+    @Test
+    public void testNotifyList() {
+        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+        NotifyListener listner1 = urls -> notified.set(Boolean.TRUE);
+        URL url1 = new URL("dubbo", "127.0.0.0", 2200, parametersConsumer);
+        abstractRegistry.subscribe(url1, listner1);
+        NotifyListener listner2 = urls -> notified.set(Boolean.TRUE);
+        URL url2 = new URL("dubbo", "127.0.0.1", 2201, parametersConsumer);
+        abstractRegistry.subscribe(url2, listner2);
+        NotifyListener listner3 = urls -> notified.set(Boolean.TRUE);
+        URL url3 = new URL("dubbo", "127.0.0.2", 2202, parametersConsumer);
+        abstractRegistry.subscribe(url3, listner3);
+        List<URL> urls = new ArrayList<>();
+        urls.add(url1);
+        urls.add(url2);
+        urls.add(url3);
+        abstractRegistry.notify(urls);
+        Map<URL, Map<String, List<URL>>> map = abstractRegistry.getNotified();
+        Assert.assertThat(true, Matchers.equalTo(map.containsKey(url1)));
+        Assert.assertThat(true, Matchers.equalTo(map.containsKey(url2)));
+        Assert.assertThat(true, Matchers.equalTo(map.containsKey(url3)));
+    }
+    /**
+     * test notify
+     */
+    @Test
+    public void testNotify() {
+        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+        NotifyListener listner1 = urls -> notified.set(Boolean.TRUE);
+        URL url1 = new URL("dubbo", "127.0.0.0", 2200, parametersConsumer);
+        abstractRegistry.subscribe(url1, listner1);
+        NotifyListener listner2 = urls -> notified.set(Boolean.TRUE);
+        URL url2 = new URL("dubbo", "127.0.0.1", 2201, parametersConsumer);
+        abstractRegistry.subscribe(url2, listner2);
+        NotifyListener listner3 = urls -> notified.set(Boolean.TRUE);
+        URL url3 = new URL("dubbo", "127.0.0.2", 2202, parametersConsumer);
+        abstractRegistry.subscribe(url3, listner3);
+        List<URL> urls = new ArrayList<>();
+        urls.add(url1);
+        urls.add(url2);
+        urls.add(url3);
+        abstractRegistry.notify(url1, listner1, urls);
+        Map<URL, Map<String, List<URL>>> map = abstractRegistry.getNotified();
+        Assert.assertThat(true, Matchers.equalTo(map.containsKey(url1)));
+        Assert.assertThat(false, Matchers.equalTo(map.containsKey(url2)));
+        Assert.assertThat(false, Matchers.equalTo(map.containsKey(url3)));
+    }
+
+
+
 }
