@@ -30,7 +30,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -48,33 +50,35 @@ public class ReferenceAnnotationBeanPostProcessor extends CustomizedAnnotationBe
      */
     public static final String BEAN_NAME = "referenceAnnotationBeanPostProcessor";
 
+    /**
+     * Cache size
+     */
+    private static final int CACHE_SIZE = Integer.getInteger(BEAN_NAME + ".cache.size", 32);
+
+    private final ConcurrentMap<String, ReferenceBean<?>> referenceBeanCache =
+            new ConcurrentHashMap<String, ReferenceBean<?>>(CACHE_SIZE);
+
+    private final ConcurrentHashMap<String, Object> proxyCache = new ConcurrentHashMap<String, Object>(CACHE_SIZE);
+
+    private final ConcurrentHashMap<String, ReferenceBeanInvocationHandler> referenceBeanInvocationHandlerCache =
+            new ConcurrentHashMap<String, ReferenceBeanInvocationHandler>(CACHE_SIZE);
+
+    private final ConcurrentMap<InjectionMetadata.InjectedElement, ReferenceBean<?>> injectedFieldReferenceBeanCache =
+            new ConcurrentHashMap<InjectionMetadata.InjectedElement, ReferenceBean<?>>(CACHE_SIZE);
+
+    private final ConcurrentMap<InjectionMetadata.InjectedElement, ReferenceBean<?>> injectedMethodReferenceBeanCache =
+            new ConcurrentHashMap<InjectionMetadata.InjectedElement, ReferenceBean<?>>(CACHE_SIZE);
+
     private ApplicationContext applicationContext;
-
-    private final List<ReferenceBean<?>> referenceBeans = new LinkedList<ReferenceBean<?>>();
-
-    private final List<ReferenceBeanInvocationHandler> referenceBeanInvocationHandlers =
-            new LinkedList<ReferenceBeanInvocationHandler>();
-
-    private final ConcurrentMap<InjectionMetadata.InjectedElement, ReferenceBean<?>> injectedFieldReferenceBeanMap =
-            new ConcurrentHashMap<InjectionMetadata.InjectedElement, ReferenceBean<?>>();
-
-    private final ConcurrentMap<InjectionMetadata.InjectedElement, ReferenceBean<?>> injectedMethodReferenceBeanMap =
-            new ConcurrentHashMap<InjectionMetadata.InjectedElement, ReferenceBean<?>>();
-
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
-    }
 
     /**
      * Gets all beans of {@link ReferenceBean}
      *
-     * @return non-null {@link Collection}
+     * @return non-null read-only {@link Collection}
      * @since 2.5.9
      */
     public Collection<ReferenceBean<?>> getReferenceBeans() {
-        return Collections.unmodifiableCollection(referenceBeans);
+        return referenceBeanCache.values();
     }
 
     private static String resolveInterfaceName(Reference reference, Class<?> beanClass)
@@ -105,7 +109,7 @@ public class ReferenceAnnotationBeanPostProcessor extends CustomizedAnnotationBe
      * @since 2.5.11
      */
     public Map<InjectionMetadata.InjectedElement, ReferenceBean<?>> getInjectedFieldReferenceBeanMap() {
-        return Collections.unmodifiableMap(injectedFieldReferenceBeanMap);
+        return Collections.unmodifiableMap(injectedFieldReferenceBeanCache);
     }
 
     /**
@@ -115,25 +119,46 @@ public class ReferenceAnnotationBeanPostProcessor extends CustomizedAnnotationBe
      * @since 2.5.11
      */
     public Map<InjectionMetadata.InjectedElement, ReferenceBean<?>> getInjectedMethodReferenceBeanMap() {
-        return Collections.unmodifiableMap(injectedMethodReferenceBeanMap);
+        return Collections.unmodifiableMap(injectedMethodReferenceBeanCache);
     }
 
     @Override
     protected Object doGetInjectedBean(Reference reference, Object bean, String beanName, Class<?> injectedType,
                                        InjectionMetadata.InjectedElement injectedElement) throws Exception {
 
-        ReferenceBean referenceBean = buildReferenceBean(reference, injectedType, getClassLoader(), injectedElement);
+        String referenceBeanCacheKey = buildReferenceBeanCacheKey(reference, injectedType);
 
-        InvocationHandler handler = buildReferenceBeanInvocationHandler(referenceBean);
+        ReferenceBean referenceBean = buildReferenceBeanIfAbsent(referenceBeanCacheKey, reference, injectedType, getClassLoader());
 
-        Object proxy = Proxy.newProxyInstance(getClassLoader(), new Class[]{injectedType}, handler);
+        cacheInjectedReferenceBean(referenceBean, injectedElement);
+
+        Object proxy = buildProxyIfAbsent(referenceBeanCacheKey, referenceBean, injectedType);
 
         return proxy;
     }
 
-    private InvocationHandler buildReferenceBeanInvocationHandler(ReferenceBean referenceBean) {
-        ReferenceBeanInvocationHandler handler = new ReferenceBeanInvocationHandler(referenceBean);
-        referenceBeanInvocationHandlers.add(handler);
+    private Object buildProxyIfAbsent(String referenceBeanCacheKey, ReferenceBean referenceBean, Class<?> injectedType) {
+
+        Object proxy = proxyCache.get(referenceBeanCacheKey);
+
+        if (proxy == null) {
+            InvocationHandler handler = buildInvocationHandlerIfAbsent(referenceBeanCacheKey, referenceBean);
+            proxy = Proxy.newProxyInstance(getClassLoader(), new Class[]{injectedType}, handler);
+            proxyCache.put(referenceBeanCacheKey, proxy);
+        }
+
+        return proxy;
+    }
+
+    private InvocationHandler buildInvocationHandlerIfAbsent(String referenceBeanCacheKey, ReferenceBean referenceBean) {
+
+        ReferenceBeanInvocationHandler handler = referenceBeanInvocationHandlerCache.get(referenceBeanCacheKey);
+
+        if (handler == null) {
+            handler = new ReferenceBeanInvocationHandler(referenceBean);
+            referenceBeanInvocationHandlerCache.put(referenceBeanCacheKey, handler);
+        }
+
         return handler;
     }
 
@@ -141,61 +166,99 @@ public class ReferenceAnnotationBeanPostProcessor extends CustomizedAnnotationBe
 
         private final ReferenceBean referenceBean;
 
+        private Object bean;
+
         private ReferenceBeanInvocationHandler(ReferenceBean referenceBean) {
             this.referenceBean = referenceBean;
         }
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            Object bean = referenceBean.get();
             return method.invoke(bean, args);
+        }
+
+        private void init() {
+            this.bean = referenceBean.get();
         }
     }
 
     @Override
-    protected String buildInjectedObjectCacheKey(Reference reference, Object bean, String beanName, Class<?> injectedType) {
+    protected String buildInjectedObjectCacheKey(Reference reference, Object bean, String beanName,
+                                                 Class<?> injectedType, InjectionMetadata.InjectedElement injectedElement) {
 
-        String interfaceName = resolveInterfaceName(reference, injectedType);
-
-        String key = reference.url() + "/" + interfaceName +
-                "/" + reference.version() +
-                "/" + reference.group();
-
-        key = getEnvironment().resolvePlaceholders(key);
+        String key = buildReferenceBeanCacheKey(reference, injectedType) +
+                "?source=" + (injectedElement.getMember());
 
         return key;
     }
 
-    private ReferenceBean buildReferenceBean(Reference reference, Class<?> referencedType,
-                                             ClassLoader classLoader, InjectionMetadata.InjectedElement injectedElement) throws Exception {
+    private String buildReferenceBeanCacheKey(Reference reference, Class<?> injectedType) {
 
-        ReferenceBeanBuilder beanBuilder = ReferenceBeanBuilder
-                .create(reference, classLoader, applicationContext)
-                .interfaceClass(referencedType);
+        String interfaceName = resolveInterfaceName(reference, injectedType);
 
-        ReferenceBean<?> referenceBean = beanBuilder.build();
+        String key = reference.url() +
+                "/" + interfaceName +
+                "/" + reference.version() +
+                "/" + reference.group();
 
-        referenceBeans.add(referenceBean);
+        return getEnvironment().resolvePlaceholders(key);
+    }
 
-        if (injectedElement.getMember() instanceof Field) {
-            injectedFieldReferenceBeanMap.put(injectedElement, referenceBean);
-        } else if (injectedElement.getMember() instanceof Method) {
-            injectedMethodReferenceBeanMap.put(injectedElement, referenceBean);
+    private ReferenceBean buildReferenceBeanIfAbsent(String referenceBeanCacheKey, Reference reference,
+                                                     Class<?> referencedType, ClassLoader classLoader)
+            throws Exception {
+
+        ReferenceBean<?> referenceBean = referenceBeanCache.get(referenceBeanCacheKey);
+
+        if (referenceBean == null) {
+            ReferenceBeanBuilder beanBuilder = ReferenceBeanBuilder
+                    .create(reference, classLoader, applicationContext)
+                    .interfaceClass(referencedType);
+            referenceBean = beanBuilder.build();
+            referenceBeanCache.put(referenceBeanCacheKey, referenceBean);
         }
 
         return referenceBean;
-
     }
 
+    private void cacheInjectedReferenceBean(ReferenceBean referenceBean,
+                                            InjectionMetadata.InjectedElement injectedElement) {
+        if (injectedElement.getMember() instanceof Field) {
+            injectedFieldReferenceBeanCache.put(injectedElement, referenceBean);
+        } else if (injectedElement.getMember() instanceof Method) {
+            injectedMethodReferenceBeanCache.put(injectedElement, referenceBean);
+        }
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
 
-        if (referenceBeanInvocationHandlers.isEmpty()) {
+        if (proxyCache.isEmpty() || referenceBeanCache.isEmpty() || referenceBeanInvocationHandlerCache.isEmpty()) {
             return;
         }
 
-        // clear all
-        referenceBeanInvocationHandlers.clear();
+        // initialize all
+        for (ReferenceBeanInvocationHandler handler : referenceBeanInvocationHandlerCache.values()) {
+            handler.init();
+        }
+
+        // clear Proxies and Handlers
+        this.proxyCache.clear();
+        this.referenceBeanInvocationHandlerCache.clear();
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        super.destroy();
+        this.proxyCache.clear();
+        this.referenceBeanCache.clear();
+        this.referenceBeanInvocationHandlerCache.clear();
+        this.injectedFieldReferenceBeanCache.clear();
+        this.injectedMethodReferenceBeanCache.clear();
     }
 }
