@@ -33,6 +33,7 @@ import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.Exchangers;
+import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 import org.apache.dubbo.rpc.AsyncContextImpl;
 import org.apache.dubbo.rpc.AsyncRpcResult;
@@ -140,6 +141,7 @@ public class DubboProtocol extends AbstractProtocol {
 
         @Override
         public void disconnected(Channel channel) throws RemotingException {
+            DefaultFuture.disconnected(channel);
             if (logger.isInfoEnabled()) {
                 logger.info("disconnected from " + channel.getRemoteAddress() + ",url:" + channel.getUrl());
             }
