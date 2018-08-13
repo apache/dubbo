@@ -16,18 +16,21 @@
  */
 package org.apache.dubbo.remoting.zookeeper.zkclient;
 
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.Assert;
-
 import org.I0Itec.zkclient.IZkChildListener;
 import org.I0Itec.zkclient.IZkStateListener;
 import org.I0Itec.zkclient.ZkClient;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
 
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Zkclient wrapper class that can monitor the state of the connection automatically after the connection is out of time
@@ -36,24 +39,20 @@ import java.util.concurrent.*;
  * @date 2017/10/29
  */
 public class ZkClientWrapper {
+    private static final ExecutorService executor =
+            new ThreadPoolExecutor(0, 10, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
+                    new NamedThreadFactory("DubboMonitorCreator", true));
     Logger logger = LoggerFactory.getLogger(ZkClientWrapper.class);
-
     private long timeout;
     private ZkClient client;
     private volatile KeeperState state;
     private CompletableFuture<ZkClient> completableFuture;
     private volatile boolean started = false;
     private String serverAddr;
-    private static final ExecutorService executor =
-            new ThreadPoolExecutor(0, 10, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
-                    new NamedThreadFactory("DubboMonitorCreator", true));
 
     public ZkClientWrapper(final String serverAddr, long timeout) {
         this.timeout = timeout;
-        completableFuture = CompletableFuture.supplyAsync(() -> {
-            ZkClient client = new ZkClient(serverAddr, Integer.MAX_VALUE);
-            return client;
-        });
+        completableFuture = CompletableFuture.supplyAsync(() -> new ZkClient(serverAddr, Integer.MAX_VALUE));
     }
 
     public void start() {
@@ -70,18 +69,13 @@ public class ZkClientWrapper {
     }
 
     public void addListener(final IZkStateListener listener) {
-        completableFuture.whenComplete((value,exception)->{
-            if (exception != null){
-                    logger.error("Got an exception when completableFuture finished in ZkClientWrapper, please check!", exception);
-            }
-            try {
+        completableFuture.whenComplete((value, exception) -> {
+            if (exception != null) {
+                logger.error("Got an exception when trying to create zkclient instance, can not connect to zookeeper server, please check!", exception);
+            } else {
                 client = value;
                 client.subscribeStateChanges(listener);
-            } catch (Exception e){
-                logger.error("Got an exception when trying to create zkclient instance, can not connect to zookeeper server, please check!", e);
             }
-
-
         });
     }
 

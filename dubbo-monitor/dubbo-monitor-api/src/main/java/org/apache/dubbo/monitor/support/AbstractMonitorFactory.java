@@ -28,7 +28,14 @@ import org.apache.dubbo.monitor.MonitorService;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -70,12 +77,8 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
             }
 
             final URL monitorUrl = url;
-            final CompletableFuture<Monitor> completableFuture = CompletableFuture.supplyAsync(()->{
-                Monitor newMonitor = AbstractMonitorFactory.this.createMonitor(monitorUrl);
-                return newMonitor;
-
-            });
-            completableFuture.thenRunAsync(new MonitorListener(key),executor);
+            final CompletableFuture<Monitor> completableFuture = CompletableFuture.supplyAsync(() -> AbstractMonitorFactory.this.createMonitor(monitorUrl));
+            completableFuture.thenRunAsync(new MonitorListener(key), executor);
             FUTURES.put(key, completableFuture);
 
             return null;
