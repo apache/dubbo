@@ -49,7 +49,6 @@ class ServiceBeanNameBuilder {
 
     private String module;
 
-
     private String[] registry;
 
     private ServiceBeanNameBuilder(Class<?> interfaceClass, String version, String group) {
