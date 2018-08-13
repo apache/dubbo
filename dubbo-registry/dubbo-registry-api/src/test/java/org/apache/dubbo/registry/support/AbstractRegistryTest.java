@@ -25,6 +25,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * AbstractRegistryTest
@@ -52,6 +53,36 @@ public class AbstractRegistryTest {
         listener = urls -> notifySuccess = true;
         //notify flag
         notifySuccess = false;
+    }
+
+
+    @Test
+    public void lookupTest() {
+        Map<URL, Map<String, List<URL>>> notified = abstractRegistry.getNotified();
+        Assert.assertTrue(notified.size() == 0);
+
+        try {
+            // get throw nullptr
+            List<URL> lookup_rst = abstractRegistry.lookup(null);
+        } catch (Exception e) {
+            Assert.assertTrue(e instanceof NullPointerException);
+        }
+        // on the first lookup, there are no notifiedUrls
+        // a listener is subscribed to the testUrl
+        abstractRegistry.lookup(testUrl);
+
+        // now we notify the testUrl
+        List<URL> urls = new ArrayList<URL>();
+        URL fakeUrl = URL.valueOf("http://1.2.3.5:9091/registry?check=false&file=N/A&interface=com.test");
+        abstractRegistry.notify(urls);
+        urls.add(fakeUrl);
+        abstractRegistry.notify(urls);
+
+        urls = new ArrayList<URL>();
+        urls.add(testUrl);
+        abstractRegistry.notify(urls);
+        abstractRegistry.lookup(testUrl);
+
     }
 
 
