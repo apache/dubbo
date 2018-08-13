@@ -19,6 +19,7 @@ package org.apache.dubbo.common.logger;
 import org.apache.dubbo.common.logger.jcl.JclLoggerAdapter;
 import org.apache.dubbo.common.logger.jdk.JdkLoggerAdapter;
 import org.apache.dubbo.common.logger.log4j.Log4jLoggerAdapter;
+import org.apache.dubbo.common.logger.log4j2.Log4j2LoggerAdapter;
 import org.apache.dubbo.common.logger.slf4j.Slf4jLoggerAdapter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,6 +41,7 @@ public class LoggerTest {
                 {JclLoggerAdapter.class},
                 {JdkLoggerAdapter.class},
                 {Log4jLoggerAdapter.class},
+                {Log4j2LoggerAdapter.class},
                 {Slf4jLoggerAdapter.class}
         });
     }
