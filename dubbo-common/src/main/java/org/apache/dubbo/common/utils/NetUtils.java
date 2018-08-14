@@ -21,7 +21,13 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.Inet6Address;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.NetworkInterface;
+import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Random;
