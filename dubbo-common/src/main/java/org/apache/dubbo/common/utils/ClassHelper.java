@@ -112,7 +112,7 @@ public class ClassHelper {
      * reference as well).
      *
      * @return the default ClassLoader (never <code>null</code>)
-     * @see java.lang.Thread#getContextClassLoader()
+     * @see Thread#getContextClassLoader()
      */
     public static ClassLoader getClassLoader() {
         return getClassLoader(ClassHelper.class);
