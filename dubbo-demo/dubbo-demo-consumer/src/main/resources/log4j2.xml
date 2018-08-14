@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Configuration后面的status，这个用于设置log4j2自身内部的信息输出，可以不设置，当设置成trace时，
+ 你会看到log4j2内部各种详细输出。可以设置成OFF(关闭)或Error(只输出错误信息)
+-->
+<Configuration status="ERROR">
+    <!-- 日志文件目录和压缩文件目录配置 -->
+    <Properties>
+        <Property name="fileName">/Users/bubing/Downloads</Property>
+        <Property name="fileGz">/Users/bubing/Downloads</Property>
+    </Properties>
+    <Appenders>
+        <!-- 输出控制台日志的配置 -->
+        <Console name="console" target="SYSTEM_OUT" follow="true">
+            <!-- 输出日志的格式 -->
+            <PatternLayout>
+                <pattern>%d %p %C{1.} [%t] %m%n</pattern>
+            </PatternLayout>
+        </Console>
+        <!-- 存储所有error信息 -->
+        <RollingRandomAccessFile name="errorFile" fileName="${fileName}/mic-error.log"
+                                 filePattern="${fileGz}/$${date:yyyy-MM}/app-%d{MM-dd-yyyy}-%i.mic-error.gz">
+            <PatternLayout>
+                <pattern>%d %p %C{1.} [%t] %m%n</pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="6" modulate="true" />
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+            <!-- 指定每天的最大压缩包个数，默认7个，超过了会覆盖之前的 -->
+            <DefaultRolloverStrategy max="50"/>
+        </RollingRandomAccessFile>
+    </Appenders>
+    <!-- 全局配置，默认所有的Logger都继承此配置 -->
+    <Loggers>
+        <Logger name="org.apache.catalina.util.LifecycleBase" level="info" />
+        <Logger name="org.apache.coyote.http11.Http11NioProtocol" level="info" />
+        <Logger name="org.apache.tomcat.util.net.NioSelectorPool" level="info" />
+        <Logger name="org.hibernate.validator.internal.util.Version" level="info" />
+        <Logger name="org.springframework" level="ERROR" />
+        <Logger name="com.github" level="ERROR" />
+        <Root level="info">
+            <AppenderRef ref="errorFile" />
+        </Root>
+    </Loggers>
+</Configuration>
