@@ -34,7 +34,6 @@ import org.apache.dubbo.common.model.person.Phone;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
-
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -43,6 +42,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Time;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -856,6 +856,11 @@ public abstract class AbstractSerializationTest {
 
         Object read = deserialize.readObject(BizExceptionNoDefaultConstructor.class);
         assertEquals("Hello", ((BizExceptionNoDefaultConstructor) read).getMessage());
+    }
+
+    @Test
+    public void test_LocalDateTime() throws Exception {
+        assertObject(LocalDateTime.now());
     }
 
     @Test
