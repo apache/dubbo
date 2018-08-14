@@ -303,7 +303,8 @@ public class AbstractRegistryTest {
     }
 
     @Test
-    public void destoryTest(){
+    public void destroyTest(){
+
         // check if destory successfully
         abstractRegistry.register(testUrl);
         abstractRegistry.subscribe(testUrl, listener);
