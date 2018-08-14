@@ -21,12 +21,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.io.IOException;
-import java.net.Inet6Address;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.NetworkInterface;
-import java.net.ServerSocket;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Random;
@@ -75,21 +70,26 @@ public class NetUtils {
         }
     }
 
-    public static int getAvailablePort(int port) {
+    public static int getAvailablePort(String host, int port) {
         if (port <= 0) {
             return getAvailablePort();
         }
+        InetAddress inetAddress = null;
+        Socket socket = null;
+        try {
+            inetAddress = InetAddress.getByName(host);
+        } catch (UnknownHostException e) {
+            return port;
+        }
         for (int i = port; i < MAX_PORT; i++) {
-            ServerSocket ss = null;
             try {
-                ss = new ServerSocket(i);
-                return i;
+                socket = new Socket(inetAddress, i);
             } catch (IOException e) {
-                // continue
+                return i;
             } finally {
-                if (ss != null) {
+                if (socket != null) {
                     try {
-                        ss.close();
+                        socket.close();
                     } catch (IOException e) {
                     }
                 }

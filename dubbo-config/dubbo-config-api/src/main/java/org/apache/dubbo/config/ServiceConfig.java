@@ -482,7 +482,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
 
         String host = this.findConfigedHosts(protocolConfig, registryURLs, map);
-        Integer port = this.findConfigedPorts(protocolConfig, name, map);
+        Integer port = this.findConfigedPorts(protocolConfig, name, host, map);
         URL url = new URL(name, host, port, (contextPath == null || contextPath.length() == 0 ? "" : contextPath + "/") + path, map);
 
         if (ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
@@ -646,7 +646,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
      * @param name
      * @return
      */
-    private Integer findConfigedPorts(ProtocolConfig protocolConfig, String name, Map<String, String> map) {
+    private Integer findConfigedPorts(ProtocolConfig protocolConfig, String name, String host, Map<String, String> map) {
         Integer portToBind = null;
 
         // parse bind port from environment
@@ -666,7 +666,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             if (portToBind == null || portToBind <= 0) {
                 portToBind = getRandomPort(name);
                 if (portToBind == null || portToBind < 0) {
-                    portToBind = getAvailablePort(defaultPort);
+                    portToBind = getAvailablePort(host, defaultPort);
                     putRandomPort(name, portToBind);
                 }
                 logger.warn("Use random available port(" + portToBind + ") for protocol " + name);
