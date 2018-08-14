@@ -32,6 +32,7 @@ import java.util.List;
 public class AbstractRegistryTest {
 
     private URL testUrl;
+    private URL testUrl_v2;
     private NotifyListener listener;
     private AbstractRegistry abstractRegistry;
     private boolean notifySuccess;
@@ -39,7 +40,8 @@ public class AbstractRegistryTest {
     @Before
     public void init() {
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":2233");
-        testUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A&interface=com.test");
+        testUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A&interface=com.test&version=0.1");
+        testUrl_v2 = URL.valueOf("http://1.2.3.5:9090/registry?check=false&file=N/A&interface=com.test&version=0.2");
 
         //init the object
         abstractRegistry = new AbstractRegistry(url) {
@@ -194,5 +196,27 @@ public class AbstractRegistryTest {
         Assert.assertFalse(notifySuccess);
         abstractRegistry.notify(testUrl, listener, urls);
         Assert.assertTrue(notifySuccess);
+    }
+
+    @Test
+    public void notify3Test() {
+        // should not notify providers of different versions
+        abstractRegistry.subscribe(testUrl, listener);
+        List<URL> urls = new ArrayList<>();
+        urls.add(testUrl_v2);
+        abstractRegistry.notify(urls);
+        Assert.assertFalse(notifySuccess);
+    }
+
+    @Test
+    public void notify4Test() {
+        List<URL> urls = new ArrayList<>();
+        // should not notify empty providers
+        abstractRegistry.notify(testUrl, listener, urls);
+        Assert.assertFalse(notifySuccess);
+        // should not notify providers of different versions
+        urls.add(testUrl_v2);
+        abstractRegistry.notify(testUrl, listener, urls);
+        Assert.assertFalse(notifySuccess);
     }
 }
