@@ -45,6 +45,11 @@ public class AbstractRegistryTest {
     public void init() {
         url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":2233");
         testUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A&interface=com.test");
+        // Url format: "protocol://host:port@username:password/path?key=value&key=value"
+        //      protocol   = "http"
+        //      path       = "registry"
+        //      host:ip    = 1.2.3.4:9090
+        //      parameters = {("check", "false"), ("file", "N/A"), ("interface", "com.test")}
         testUrl2 = URL.valueOf("http://0.0.0.0:8080/registry?check=false&file=~/.dubbo/test2.cache&interface=com.test2");
         testUrl3 = URL.valueOf("empty://192.168.199.118:20880/com.example.HelloService?anyhost=true&application=dubbo-demo-server&category=configurators&check=false&dubbo=2.0.1&generic=false&interface=com.example.HelloService&methods=sayHello&pid=7185&revision=1.0.0&side=provider&timestamp=1534089043849&version=1.0.0");
         //init the object
@@ -63,8 +68,8 @@ public class AbstractRegistryTest {
 
     @Test
     public void lookupTest() {
-        Map<URL, Map<String, List<URL>>> notified = abstractRegistry.getNotified();
-        Assert.assertTrue(notified.size() == 0);
+        Assert.assertTrue(abstractRegistry.getNotified().size() == 0);
+        Assert.assertTrue(abstractRegistry.getSubscribed().size() == 0);
 
         try {
             // get throw nullptr
@@ -73,20 +78,30 @@ public class AbstractRegistryTest {
             Assert.assertTrue(e instanceof NullPointerException);
         }
         // on the first lookup, there are no notifiedUrls
-        // a listener is subscribed to the testUrl
-        abstractRegistry.lookup(testUrl);
+        // a listener is subscribed to the testUrl:
+        //      when notify it, the reference in lookup is set
+        // to notice: the lookup url comes from consumer url, the notify urls comes from provider
+        List<URL> lookup_rst = abstractRegistry.lookup(testUrl);
+        Assert.assertTrue(lookup_rst.size() == 0);
+        Assert.assertTrue(abstractRegistry.getNotified().size() == 0);
+        Assert.assertTrue(abstractRegistry.getSubscribed().size() == 1);
 
-        // now we notify the testUrl
+        // now we notify
         List<URL> urls = new ArrayList<URL>();
-        URL fakeUrl = URL.valueOf("http://1.2.3.5:9091/registry?check=false&file=N/A&interface=com.test");
+        // urls is empty, should do nothing
         abstractRegistry.notify(urls);
+        Assert.assertTrue(abstractRegistry.getNotified().size() == 0);
+        URL fakeUrl = URL.valueOf("http://1.2.3.5:9091/registry?check=false&file=N/A&interface=com.faketest");
         urls.add(fakeUrl);
         abstractRegistry.notify(urls);
+        Assert.assertTrue(abstractRegistry.getNotified().size() == 0);
 
         urls = new ArrayList<URL>();
         urls.add(testUrl);
         abstractRegistry.notify(urls);
-        abstractRegistry.lookup(testUrl);
+        Assert.assertTrue(abstractRegistry.getNotified().size() == 1);
+        lookup_rst = abstractRegistry.lookup(testUrl);
+        Assert.assertTrue(lookup_rst.size() == 1);
 
     }
 
@@ -282,6 +297,9 @@ public class AbstractRegistryTest {
         } catch (Exception e) {
             Assert.assertTrue(e instanceof IllegalArgumentException);
         }
+        //check parameters
+        abstractRegistry.notify(testUrl, listener, null);
+        Assert.assertTrue(abstractRegistry.getNotified().size() == 0);
 
         List<URL> urls = new ArrayList<>();
         urls.add(testUrl);
