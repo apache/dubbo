@@ -20,9 +20,6 @@ import org.apache.dubbo.common.logger.Logger;
 
 public class Log4j2Logger implements Logger {
 
-    //理解FQCN的作用
-    //private static final String FQCN = FailsafeLogger.class.getName();
-
     private final org.apache.logging.log4j.Logger logger;
 
     public Log4j2Logger(org.apache.logging.log4j.Logger logger) {
