@@ -31,16 +31,16 @@ public class Consumer {
     public static void main(String[] args) {
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"META-INF/spring/dubbo-demo-consumer.xml"});
         context.start();
+        //get logger
         Logger logger = LoggerFactory.getLogger(Consumer.class);
         DemoService demoService = (DemoService) context.getBean("demoService"); // get remote service proxy
         int i = 0;
         while (true) {
             try {
                 Thread.sleep(1000);
-                Thread.sleep(1000);
-                logger.error("hello:" + (i++));
-                logger.info("infoLevel:" + (i++));
-                logger.debug("debugLevel:" + (i++));
+                logger.error("hello:times:" + (i++));
+                logger.info("infoLevel:times:" + (i++));
+                logger.debug("debugLevel:times:" + (i++));
                 String hello = demoService.sayHello("world"); // call remote method
                 System.out.println(hello); // get result
             } catch (Throwable throwable) {
