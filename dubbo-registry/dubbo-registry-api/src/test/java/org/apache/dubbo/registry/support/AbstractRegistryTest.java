@@ -23,26 +23,30 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * AbstractRegistryTest
  */
 public class AbstractRegistryTest {
 
+    private URL url;
     private URL testUrl;
+    private URL testUrl2;
+    private URL testUrl3;
     private NotifyListener listener;
     private AbstractRegistry abstractRegistry;
     private boolean notifySuccess;
 
     @Before
     public void init() {
-        URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":2233");
+        url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":2233");
         testUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A&interface=com.test");
-
+        testUrl2 = URL.valueOf("http://0.0.0.0:8080/registry?check=false&file=~/.dubbo/test2.cache&interface=com.test2");
+        testUrl3 = URL.valueOf("empty://192.168.199.118:20880/com.example.HelloService?anyhost=true&application=dubbo-demo-server&category=configurators&check=false&dubbo=2.0.1&generic=false&interface=com.example.HelloService&methods=sayHello&pid=7185&revision=1.0.0&side=provider&timestamp=1534089043849&version=1.0.0");
         //init the object
         abstractRegistry = new AbstractRegistry(url) {
             @Override
@@ -89,32 +93,18 @@ public class AbstractRegistryTest {
 
     @Test
     public void getCacheUrlsTest(){
-        abstractRegistry.getCacheUrls(testUrl);
         try{
             abstractRegistry.getCacheUrls(null);
             Assert.fail();
         }catch (Exception e){
-
+            Assert.assertTrue(e instanceof NullPointerException);
         }
-    }
-
-    @Test
-    public void doSavePropertiesTest(){
-        try {
-            abstractRegistry.doSaveProperties(-1);
-        }catch (Exception e){
-            Assert.assertTrue(e instanceof IOException);
-        }
-        try {
-            abstractRegistry.doSaveProperties(10);
-        }catch (Exception e){
-            Assert.assertTrue(e instanceof IOException);
-        }
+        Assert.assertEquals(1, abstractRegistry.getCacheUrls(testUrl).size());
     }
 
     @Test
     public void toStringTest(){
-        abstractRegistry.toString();
+        Assert.assertEquals(url.toFullString(), abstractRegistry.toString());
     }
 
     @Test
@@ -135,8 +125,14 @@ public class AbstractRegistryTest {
     @Test
     public void destroyTest(){
         abstractRegistry.register(testUrl);
+        abstractRegistry.register(testUrl2);
         abstractRegistry.subscribe(testUrl, listener);
+        abstractRegistry.subscribe(testUrl3, listener);
         abstractRegistry.destroy();
+        Assert.assertEquals(0, abstractRegistry.getRegistered().size());
+        for (Map.Entry<URL, Set<NotifyListener>> map : abstractRegistry.getSubscribed().entrySet()) {
+            Assert.assertEquals(0, map.getValue().size());
+        }
     }
 
     @Test
