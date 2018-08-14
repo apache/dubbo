@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.After;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -41,6 +42,18 @@ public class AbstractRegistryTest {
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":2233");
         testUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A&interface=com.test");
 
+        // try null url
+        try {
+            abstractRegistry = new AbstractRegistry(null) {
+                @Override
+                public boolean isAvailable() {
+                    return false;
+                }
+            };
+        } catch (Exception e) {
+            Assert.assertTrue(e instanceof IllegalArgumentException);
+        }
+
         //init the object
         abstractRegistry = new AbstractRegistry(url) {
             @Override
@@ -52,6 +65,11 @@ public class AbstractRegistryTest {
         listener = urls -> notifySuccess = true;
         //notify flag
         notifySuccess = false;
+    }
+
+    @After
+    public void after() {
+        abstractRegistry.destroy();
     }
 
     @Test
@@ -70,6 +88,10 @@ public class AbstractRegistryTest {
         //check register when the url is the same
         abstractRegistry.register(testUrl);
         Assert.assertEquals(beginSize + 1, abstractRegistry.getRegistered().size());
+
+        URL secondUrl = URL.valueOf("http://1.2.3.4:9091/registry?check=false&file=N/A&interface=com.test1");
+        abstractRegistry.register(secondUrl);
+        Assert.assertEquals(beginSize + 2, abstractRegistry.getRegistered().size());
     }
 
     @Test
@@ -81,6 +103,11 @@ public class AbstractRegistryTest {
         } catch (Exception e) {
             Assert.assertTrue(e instanceof IllegalArgumentException);
         }
+
+        // check unregister empty
+        abstractRegistry.unregister(testUrl);
+        Assert.assertEquals(0, abstractRegistry.getRegistered().size());
+
         // check if unregister url successfully
         abstractRegistry.register(testUrl);
         int beginSize = abstractRegistry.getRegistered().size();
@@ -147,6 +174,7 @@ public class AbstractRegistryTest {
         abstractRegistry.subscribe(testUrl, listener);
         abstractRegistry.unsubscribe(testUrl, listener);
         Assert.assertFalse(abstractRegistry.getSubscribed().get(testUrl).contains(listener));
+        Assert.assertEquals(0, abstractRegistry.getSubscribed().get(testUrl).size());
     }
 
     @Test
@@ -162,9 +190,19 @@ public class AbstractRegistryTest {
 
     @Test
     public void notifyTest() {
-        abstractRegistry.subscribe(testUrl, listener);
         List<URL> urls = new ArrayList<>();
+
+        // check empty urls
+        abstractRegistry.notify(urls);
+
+        abstractRegistry.subscribe(testUrl, listener);
         urls.add(testUrl);
+
+        // add second test url
+        URL secondUrl = URL.valueOf("http://1.2.3.4:9091/registry?check=false&file=N/A&interface=com.test1");
+        abstractRegistry.subscribe(secondUrl, listener);
+        urls.add(secondUrl);
+
         // check if notify successfully
         Assert.assertFalse(notifySuccess);
         abstractRegistry.notify(urls);
@@ -189,6 +227,10 @@ public class AbstractRegistryTest {
         }
 
         List<URL> urls = new ArrayList<>();
+
+        // check empty urls
+        abstractRegistry.notify(testUrl, listener, urls);
+
         urls.add(testUrl);
         // check if notify successfully
         Assert.assertFalse(notifySuccess);
