@@ -56,11 +56,7 @@ public class TelnetHandlerAdapter extends ChannelHandlerAdapter implements Telne
                     }
                     buf.append(result);
                 } catch (Throwable t) {
-                    if (t instanceof NullPointerException) {
-                        buf.append("Parameters can't be null");
-                    }else {
-                        buf.append(t.getMessage());
-                    }
+                    buf.append(t.getMessage());
                 }
             } else {
                 buf.append("Unsupported command: ");
