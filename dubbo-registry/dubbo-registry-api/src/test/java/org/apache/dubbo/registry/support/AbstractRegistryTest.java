@@ -93,6 +93,10 @@ public class AbstractRegistryTest {
             Assert.assertTrue(e instanceof IllegalArgumentException);
         }
 
+        // check if no register url2 but unregister
+        abstractRegistry.unregister(url2);
+        Assert.assertEquals(0, abstractRegistry.getRegistered().size());
+
         // check if unregister url successfully
         abstractRegistry.register(url1);
         abstractRegistry.register(url2);
