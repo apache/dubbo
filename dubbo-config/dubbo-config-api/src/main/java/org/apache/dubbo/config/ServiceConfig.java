@@ -369,6 +369,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                             Thread.sleep(1000);
                         } catch (InterruptedException ignored) {
                         }
+                        // 如果不是自动分配端口，就跳过
                     } else if (this.provider.getPort() == -1) {
                         break;
                     } else {
