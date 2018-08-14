@@ -68,12 +68,19 @@ public class AbstractRegistryTest {
 
     @Test
     public void lookupTest() {
-        Assert.assertTrue(abstractRegistry.getNotified().size() == 0);
-        Assert.assertTrue(abstractRegistry.getSubscribed().size() == 0);
+
+        AbstractRegistry local_abstractRegistry = new AbstractRegistry(url) {
+            @Override
+            public boolean isAvailable() {
+                return false;
+            }
+        };
+        Assert.assertTrue(local_abstractRegistry.getNotified().size() == 0);
+        Assert.assertTrue(local_abstractRegistry.getSubscribed().size() == 0);
 
         try {
             // get throw nullptr
-            List<URL> lookup_rst = abstractRegistry.lookup(null);
+            List<URL> lookup_rst = local_abstractRegistry.lookup(null);
         } catch (Exception e) {
             Assert.assertTrue(e instanceof NullPointerException);
         }
@@ -81,26 +88,26 @@ public class AbstractRegistryTest {
         // a listener is subscribed to the testUrl:
         //      when notify it, the reference in lookup is set
         // to notice: the lookup url comes from consumer url, the notify urls comes from provider
-        List<URL> lookup_rst = abstractRegistry.lookup(testUrl);
+        List<URL> lookup_rst = local_abstractRegistry.lookup(testUrl);
         Assert.assertTrue(lookup_rst.size() == 0);
-        Assert.assertTrue(abstractRegistry.getNotified().size() == 0);
-        Assert.assertTrue(abstractRegistry.getSubscribed().size() == 1);
+        Assert.assertTrue(local_abstractRegistry.getNotified().size() == 0);
+        Assert.assertTrue(local_abstractRegistry.getSubscribed().size() == 1);
 
         // now we notify
         List<URL> urls = new ArrayList<URL>();
         // urls is empty, should do nothing
-        abstractRegistry.notify(urls);
-        Assert.assertTrue(abstractRegistry.getNotified().size() == 0);
+        local_abstractRegistry.notify(urls);
+        Assert.assertTrue(local_abstractRegistry.getNotified().size() == 0);
         URL fakeUrl = URL.valueOf("http://1.2.3.5:9091/registry?check=false&file=N/A&interface=com.faketest");
         urls.add(fakeUrl);
-        abstractRegistry.notify(urls);
-        Assert.assertTrue(abstractRegistry.getNotified().size() == 0);
+        local_abstractRegistry.notify(urls);
+        Assert.assertTrue(local_abstractRegistry.getNotified().size() == 0);
 
         urls = new ArrayList<URL>();
         urls.add(testUrl);
-        abstractRegistry.notify(urls);
-        Assert.assertTrue(abstractRegistry.getNotified().size() == 1);
-        lookup_rst = abstractRegistry.lookup(testUrl);
+        local_abstractRegistry.notify(urls);
+        Assert.assertTrue(local_abstractRegistry.getNotified().size() == 1);
+        lookup_rst = local_abstractRegistry.lookup(testUrl);
         Assert.assertTrue(lookup_rst.size() == 1);
 
     }
@@ -108,13 +115,23 @@ public class AbstractRegistryTest {
 
     @Test
     public void getCacheUrlsTest(){
+        AbstractRegistry local_abstractRegistry = new AbstractRegistry(url) {
+            @Override
+            public boolean isAvailable() {
+                return false;
+            }
+        };
+        Assert.assertEquals(null, local_abstractRegistry.getCacheUrls(testUrl));
+        List<URL> urls = new ArrayList<>();
+        urls.add(testUrl);
+        local_abstractRegistry.notify(testUrl, listener, urls);
         try{
-            abstractRegistry.getCacheUrls(null);
+            local_abstractRegistry.getCacheUrls(null);
             Assert.fail();
         }catch (Exception e){
             Assert.assertTrue(e instanceof NullPointerException);
         }
-        Assert.assertEquals(1, abstractRegistry.getCacheUrls(testUrl).size());
+        Assert.assertEquals(1, local_abstractRegistry.getCacheUrls(testUrl).size());
     }
 
     @Test
@@ -149,6 +166,15 @@ public class AbstractRegistryTest {
         abstractRegistry.filterEmpty(testUrl, urls);
         urls.add(testUrl);
         abstractRegistry.filterEmpty(testUrl, urls);
+    }
+
+    @Test
+    public void setUrlTest() {
+        try {
+            abstractRegistry.setUrl(null);
+        } catch (Exception e) {
+            Assert.assertTrue(e instanceof IllegalArgumentException);
+        }
     }
 
     @Test
