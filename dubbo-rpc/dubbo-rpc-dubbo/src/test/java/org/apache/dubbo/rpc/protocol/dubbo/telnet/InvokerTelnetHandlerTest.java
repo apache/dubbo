@@ -66,6 +66,8 @@ public class InvokerTelnetHandlerTest {
         DubboProtocol.getDubboProtocol().export(mockInvoker);
         String result = invoke.telnet(mockChannel, "DemoService.echo(\"ok\")");
         assertTrue(result.contains("Use default service org.apache.dubbo.rpc.protocol.dubbo.support.DemoService.\r\n\"ok\"\r\n"));
+        result = invoke.telnet(mockChannel, "DemoService.echo(null)");
+        assertTrue(result.contains("Use default service org.apache.dubbo.rpc.protocol.dubbo.support.DemoService.\r\n\"ok\"\r\n"));
     }
 
     @SuppressWarnings("unchecked")
@@ -103,4 +105,5 @@ public class InvokerTelnetHandlerTest {
         String result = invoke.telnet(mockChannel, "(");
         assertEquals("Invalid parameters, format: service.method(args)", result);
     }
+
 }
