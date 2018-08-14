@@ -209,6 +209,7 @@ public class AbstractRegistryTest {
         Assert.assertNotNull(abstractRegistry.getSubscribed().get(testUrl));
         Assert.assertTrue(abstractRegistry.getSubscribed().get(testUrl).contains(listener));
     }
+
     @Test
     public void notifyTest() {
         abstractRegistry.subscribe(testUrl, listener);
@@ -263,6 +264,17 @@ public class AbstractRegistryTest {
         }
         Assert.assertThat(abstractRegistry.getRegistered().size(), Matchers.equalTo(urlList.size()));
     }
+
+    @Test
+    public void testRegisterIfURLNULL() {
+        //test one url
+        try {
+            abstractRegistry.register(null);
+            Assert.fail("register url == null");
+        }catch (IllegalArgumentException illegalArgumentException){
+            Assert.assertEquals("register url == null",illegalArgumentException.getMessage());
+        }
+    }
     /**
      * test unregister
      */
@@ -284,6 +296,16 @@ public class AbstractRegistryTest {
         }
         Assert.assertThat(0, Matchers.equalTo(abstractRegistry.getRegistered().size()));
     }
+
+    @Test
+    public void testUnregisterIfURLNULL() {
+        try {
+            abstractRegistry.unregister(null);
+            Assert.fail("unregister url == null");
+        }catch (IllegalArgumentException illegalArgumentException){
+            Assert.assertEquals("unregister url == null",illegalArgumentException.getMessage());
+        }
+    }
     /**
      * test subscribe and unsubscribe
      */
@@ -300,6 +322,57 @@ public class AbstractRegistryTest {
         abstractRegistry.unsubscribe(url, listener);
         Set<NotifyListener> unsubscribeListeners = abstractRegistry.getSubscribed().get(url);
         Assert.assertThat(false, Matchers.equalTo(unsubscribeListeners.contains(listener)));
+    }
+    @Test
+    public void testSubscribeIfURLNull(){
+        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+        NotifyListener listener = urls -> notified.set(Boolean.TRUE);
+        URL url = new URL("dubbo", "127.0.0.0", 2200);
+        try {
+            abstractRegistry.subscribe(null,listener);
+            Assert.fail("subscribe url == null");
+        }catch (IllegalArgumentException illegalArgumentException){
+            Assert.assertEquals("subscribe url == null",illegalArgumentException.getMessage());
+        }
+    }
+    @Test
+    public void testSubscribeIfListenerNull(){
+        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+        NotifyListener listener = urls -> notified.set(Boolean.TRUE);
+        URL url = new URL("dubbo", "127.0.0.0", 2200);
+        try {
+            abstractRegistry.subscribe(url,null);
+            Assert.fail("listener url == null");
+        }catch (IllegalArgumentException illegalArgumentException){
+            Assert.assertEquals("subscribe listener == null",illegalArgumentException.getMessage());
+            return;
+        }
+    }
+
+    @Test
+    public void testUnsubscribeIfURLNull(){
+        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+        NotifyListener listener = urls -> notified.set(Boolean.TRUE);
+        URL url = new URL("dubbo", "127.0.0.0", 2200);
+        try {
+            abstractRegistry.unsubscribe(null,listener);
+            Assert.fail("unsubscribe url == null");
+        }catch (IllegalArgumentException illegalArgumentException){
+            Assert.assertEquals("unsubscribe url == null",illegalArgumentException.getMessage());
+        }
+    }
+
+    @Test
+    public void testUnsubscribeIfNotifyNull(){
+        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+        NotifyListener listener = urls -> notified.set(Boolean.TRUE);
+        URL url = new URL("dubbo", "127.0.0.0", 2200);
+        try {
+            abstractRegistry.unsubscribe(url,null);
+            Assert.fail("unsubscribe listener == null");
+        }catch (IllegalArgumentException illegalArgumentException){
+            Assert.assertEquals("unsubscribe listener == null",illegalArgumentException.getMessage());
+        }
     }
     /**
      * test recover
@@ -369,6 +442,54 @@ public class AbstractRegistryTest {
         Assert.assertThat(true, Matchers.equalTo(map.containsKey(url1)));
         Assert.assertThat(false, Matchers.equalTo(map.containsKey(url2)));
         Assert.assertThat(false, Matchers.equalTo(map.containsKey(url3)));
+    }
+
+    @Test
+    public void testNotifyIfURLNULL() {
+        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+        NotifyListener listner1 = urls -> notified.set(Boolean.TRUE);
+        URL url1 = new URL("dubbo", "127.0.0.0", 2200, parametersConsumer);
+        abstractRegistry.subscribe(url1, listner1);
+        NotifyListener listner2 = urls -> notified.set(Boolean.TRUE);
+        URL url2 = new URL("dubbo", "127.0.0.1", 2201, parametersConsumer);
+        abstractRegistry.subscribe(url2, listner2);
+        NotifyListener listner3 = urls -> notified.set(Boolean.TRUE);
+        URL url3 = new URL("dubbo", "127.0.0.2", 2202, parametersConsumer);
+        abstractRegistry.subscribe(url3, listner3);
+        List<URL> urls = new ArrayList<>();
+        urls.add(url1);
+        urls.add(url2);
+        urls.add(url3);
+        try {
+            abstractRegistry.notify(null, listner1, urls);
+            Assert.fail("notify url == null");
+        }catch (IllegalArgumentException illegalArgumentException){
+            Assert.assertEquals("notify url == null",illegalArgumentException.getMessage());
+        }
+    }
+
+    @Test
+    public void testNotifyIfNotifyNULL() {
+        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+        NotifyListener listner1 = urls -> notified.set(Boolean.TRUE);
+        URL url1 = new URL("dubbo", "127.0.0.0", 2200, parametersConsumer);
+        abstractRegistry.subscribe(url1, listner1);
+        NotifyListener listner2 = urls -> notified.set(Boolean.TRUE);
+        URL url2 = new URL("dubbo", "127.0.0.1", 2201, parametersConsumer);
+        abstractRegistry.subscribe(url2, listner2);
+        NotifyListener listner3 = urls -> notified.set(Boolean.TRUE);
+        URL url3 = new URL("dubbo", "127.0.0.2", 2202, parametersConsumer);
+        abstractRegistry.subscribe(url3, listner3);
+        List<URL> urls = new ArrayList<>();
+        urls.add(url1);
+        urls.add(url2);
+        urls.add(url3);
+        try {
+            abstractRegistry.notify(url1, null, urls);
+            Assert.fail("notify listener == null");
+        }catch (IllegalArgumentException illegalArgumentException){
+            Assert.assertEquals("notify listener == null",illegalArgumentException.getMessage());
+        }
     }
 
 
