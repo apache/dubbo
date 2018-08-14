@@ -690,6 +690,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 if (portToBind == null || portToBind < 0) {
                     portToBind = getAvailablePort(defaultPort);
                     putRandomPort(name, portToBind);
+                    map.put(Constants.RANDOM_PORT, String.valueOf(portToBind));
                 }
                 logger.warn("Use random available port(" + portToBind + ") for protocol " + name);
             }
