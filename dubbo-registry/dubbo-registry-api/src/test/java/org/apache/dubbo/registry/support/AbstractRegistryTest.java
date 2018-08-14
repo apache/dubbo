@@ -40,8 +40,8 @@ public class AbstractRegistryTest {
     @Before
     public void init() {
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":1111");
-        url1 = URL.valueOf("http://127.1.1:777/registry?check=false&file=N/A&interface=com.test");
-        url2 = URL.valueOf("http://127.1.1:666/registry?check=false&file=N/A&interface=com.test");
+        url1 = URL.valueOf("http://127.0.0.1:9090/registry?check=false&file=N/A&interface=com.test");
+        url2 = URL.valueOf("http://127.0.0.1:9091/registry?check=false&file=N/A&interface=com.test");
 
         //init the object
         abstractRegistry = new AbstractRegistry(url) {
@@ -270,7 +270,7 @@ public class AbstractRegistryTest {
         // check if notify successfully
         Assert.assertFalse(notifySuccess);
         abstractRegistry.notify(urls);
-        Assert.assertFalse(notifySuccess);// ？？
+        Assert.assertTrue(notifySuccess);// ？？
         urls.clear();
 
         // other case
