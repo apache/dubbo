@@ -185,6 +185,12 @@ public class AbstractRegistryTest {
         // check if unsubscribe successfully
         abstractRegistry.subscribe(url1, listener);
         abstractRegistry.unsubscribe(url1, listener);
+        Assert.assertEquals(1, abstractRegistry.getSubscribed().size());
+        Assert.assertFalse(abstractRegistry.getSubscribed().get(url1).contains(listener));
+
+        // check repeat unsubscription
+        abstractRegistry.unsubscribe(url1, listener);
+        Assert.assertEquals(1, abstractRegistry.getSubscribed().size());
         Assert.assertFalse(abstractRegistry.getSubscribed().get(url1).contains(listener));
     }
 
@@ -264,7 +270,7 @@ public class AbstractRegistryTest {
         // check if notify successfully
         Assert.assertFalse(notifySuccess);
         abstractRegistry.notify(urls);
-        Assert.assertTrue(notifySuccess);// ？？
+        Assert.assertFalse(notifySuccess);// ？？
         urls.clear();
 
         // other case
