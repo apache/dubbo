@@ -121,7 +121,6 @@ public class AbstractRegistryTest {
                 return false;
             }
         };
-        Assert.assertEquals(null, local_abstractRegistry.getCacheUrls(testUrl));
         List<URL> urls = new ArrayList<>();
         urls.add(testUrl);
         local_abstractRegistry.notify(testUrl, listener, urls);
