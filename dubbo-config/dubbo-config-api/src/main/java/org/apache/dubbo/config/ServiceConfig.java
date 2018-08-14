@@ -30,11 +30,7 @@ import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.model.ApplicationModel;
 import org.apache.dubbo.config.model.ProviderModel;
 import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Protocol;
-import org.apache.dubbo.rpc.ProxyFactory;
-import org.apache.dubbo.rpc.ServiceClassHolder;
+import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
@@ -351,20 +347,49 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         unexported = true;
     }
 
+    private static void clearRandomPort(String protocol) {
+        protocol = protocol.toLowerCase();
+        RANDOM_PORT_MAP.remove(protocol);
+    }
+
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void doExportUrls() {
         List<URL> registryURLs = loadRegistries(true);
         for (ProtocolConfig protocolConfig : protocols) {
-            doExportUrlsFor1Protocol(protocolConfig, registryURLs);
+            while (true) {
+                try {
+                    doExportUrlsFor1Protocol(protocolConfig, registryURLs);
+                    break;
+                } catch (RpcException e) {
+                    if (e.getMessage().contains("Failed to bind") && this.provider.getPort() == -1) {
+                        logger.error("doExportUrls port failure and try again: " + e.getMessage(), e);
+                        // If the current port is already bound to the service, clear the configuration and re-circulate
+                        clearRandomPort(getProtocolName(protocolConfig));
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ignored) {
+                        }
+                        // 如果不是自动分配端口，就跳过
+                    } else if (this.provider.getPort() == -1) {
+                        break;
+                    } else {
+                        throw e;
+                    }
+                }
+            }
         }
     }
 
-    private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
+    private String getProtocolName(ProtocolConfig protocolConfig) {
         String name = protocolConfig.getName();
         if (name == null || name.length() == 0) {
             name = "dubbo";
         }
+        return name;
+    }
 
+    private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
+        String name = getProtocolName(protocolConfig);
         Map<String, String> map = new HashMap<String, String>();
         map.put(Constants.SIDE_KEY, Constants.PROVIDER_SIDE);
         map.put(Constants.DUBBO_VERSION_KEY, Version.getProtocolVersion());
