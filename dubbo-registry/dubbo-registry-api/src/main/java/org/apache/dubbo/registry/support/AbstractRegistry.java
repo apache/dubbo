@@ -213,8 +213,7 @@ public abstract class AbstractRegistry implements Registry {
         }
     }
 
-    public List<URL>
-    getCacheUrls(URL url) {
+    public List<URL> getCacheUrls(URL url) {
         for (Map.Entry<Object, Object> entry : properties.entrySet()) {
             String key = (String) entry.getKey();
             String value = (String) entry.getValue();

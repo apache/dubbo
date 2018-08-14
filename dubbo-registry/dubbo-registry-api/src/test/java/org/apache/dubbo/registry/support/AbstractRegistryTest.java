@@ -123,6 +123,20 @@ public class AbstractRegistryTest {
     }
 
     @Test
+    public void filterEmptyTest(){
+        List<URL> urls = new ArrayList<URL>() {};
+        try{
+            abstractRegistry.filterEmpty(null, urls);
+            Assert.fail();
+        }catch (Exception e){
+            Assert.assertTrue(e instanceof NullPointerException);
+        }
+        abstractRegistry.filterEmpty(testUrl, urls);
+        urls.add(testUrl);
+        abstractRegistry.filterEmpty(testUrl, urls);
+    }
+
+    @Test
     public void destroyTest(){
         abstractRegistry.register(testUrl);
         abstractRegistry.register(testUrl2);
