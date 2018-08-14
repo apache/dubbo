@@ -206,6 +206,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
 
         if (delay != null && delay > 0) {
+            appendProperties(this);
             delayExportExecutor.schedule(new Runnable() {
                 @Override
                 public void run() {
