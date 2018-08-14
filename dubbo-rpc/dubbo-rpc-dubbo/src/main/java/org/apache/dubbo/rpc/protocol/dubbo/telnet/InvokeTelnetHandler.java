@@ -60,9 +60,6 @@ public class InvokeTelnetHandler implements TelnetHandler {
         for (int i = 0; i < types.length; i++) {
             Class<?> type = types[i];
             Object arg = args.get(i);
-            if (arg == null) {
-                continue;
-            }
             if (ReflectUtils.isPrimitive(arg.getClass())) {
                 if (!ReflectUtils.isPrimitive(type)) {
                     return false;

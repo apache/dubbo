@@ -30,37 +30,19 @@ import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.model.ApplicationModel;
 import org.apache.dubbo.config.model.ProviderModel;
 import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Protocol;
-import org.apache.dubbo.rpc.ProxyFactory;
-import org.apache.dubbo.rpc.ServiceClassHolder;
+import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.net.*;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.common.utils.NetUtils.LOCALHOST;
-import static org.apache.dubbo.common.utils.NetUtils.getAvailablePort;
-import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
-import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
-import static org.apache.dubbo.common.utils.NetUtils.isInvalidPort;
+import static org.apache.dubbo.common.utils.NetUtils.*;
 
 /**
  * ServiceConfig
@@ -76,6 +58,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private static final ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
     private static final Map<String, Integer> RANDOM_PORT_MAP = new HashMap<String, Integer>();
+
+    private static final int ENVIRONMENT_BIND_PORT_MAX_RETRY_TIMES = 3;
+
+    private static final int BIND_PORT_MAX_RETRY_TIMES = 100;
 
     private static final ScheduledExecutorService delayExportExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboServiceDelayExporter", true));
     private final List<URL> urls = new ArrayList<URL>();
@@ -351,15 +337,48 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         unexported = true;
     }
 
+    private static void clearRandomPort(ProtocolConfig protocolConfig) {
+        String protocol = protocolConfig.getName();
+        if (protocol == null || protocol.length() == 0) {
+            protocol = "dubbo";
+        }
+        protocol = protocol.toLowerCase();
+        RANDOM_PORT_MAP.remove(protocol);
+    }
+
+    private String getProtocolName(ProtocolConfig protocolConfig) {
+        String name = protocolConfig.getName();
+        if (name == null || name.length() == 0) {
+            name = "dubbo";
+        }
+        return name;
+    }
+
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void doExportUrls() {
         List<URL> registryURLs = loadRegistries(true);
         for (ProtocolConfig protocolConfig : protocols) {
-            doExportUrlsFor1Protocol(protocolConfig, registryURLs);
+            int retryTimes = 0;
+            while(retryTimes < BIND_PORT_MAX_RETRY_TIMES) {
+                try {
+                    doExportUrlsFor1Protocol(protocolConfig, retryTimes, registryURLs);
+                    break;
+                } catch (RpcException e) {
+                    if (e.getMessage().contains("Failed to bind to")) {
+                        logger.error("doExportUrls port failure and try again: " + e.getMessage(), e);
+                        clearRandomPort(protocolConfig);
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ignored) {}
+                    } else {
+                        throw e;
+                    }
+                }
+            }
         }
     }
 
-    private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
+    private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, int retryTimes, List<URL> registryURLs) {
         String name = protocolConfig.getName();
         if (name == null || name.length() == 0) {
             name = "dubbo";
@@ -468,7 +487,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
 
         String host = this.findConfigedHosts(protocolConfig, registryURLs, map);
-        Integer port = this.findConfigedPorts(protocolConfig, name, map);
+        Integer port = this.findConfigedPorts(protocolConfig, name, retryTimes, map);
         URL url = new URL(name, host, port, (contextPath == null || contextPath.length() == 0 ? "" : contextPath + "/") + path, map);
 
         if (ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
@@ -632,12 +651,14 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
      * @param name
      * @return
      */
-    private Integer findConfigedPorts(ProtocolConfig protocolConfig, String name, Map<String, String> map) {
+    private Integer findConfigedPorts(ProtocolConfig protocolConfig, String name, int retryTimes, Map<String, String> map) {
         Integer portToBind = null;
 
         // parse bind port from environment
         String port = getValueFromConfig(protocolConfig, Constants.DUBBO_PORT_TO_BIND);
-        portToBind = parsePort(port);
+        if (retryTimes <= ENVIRONMENT_BIND_PORT_MAX_RETRY_TIMES) {
+            portToBind = parsePort(port);
+        }
 
         // if there's no bind port found from environment, keep looking up.
         if (portToBind == null) {
