@@ -25,7 +25,6 @@ import org.apache.logging.log4j.core.appender.FileAppender;
 import org.apache.logging.log4j.core.config.Configurator;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.Map;
 
 public class Log4j2LoggerAdapter implements LoggerAdapter {
