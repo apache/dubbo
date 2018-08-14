@@ -20,6 +20,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.jcl.JclLoggerAdapter;
 import org.apache.dubbo.common.logger.jdk.JdkLoggerAdapter;
 import org.apache.dubbo.common.logger.log4j.Log4jLoggerAdapter;
+import org.apache.dubbo.common.logger.log4j2.Log4j2LoggerAdapter;
 import org.apache.dubbo.common.logger.slf4j.Slf4jLoggerAdapter;
 import org.apache.dubbo.common.logger.support.FailsafeLogger;
 
@@ -39,7 +40,9 @@ public class LoggerFactory {
     // search common-used logging frameworks
     static {
         String logger = System.getProperty("dubbo.application.logger");
-        if ("slf4j".equals(logger)) {
+        if("log4j2".equals(logger)){
+            setLoggerAdapter(new Log4j2LoggerAdapter());
+        }else if ("slf4j".equals(logger)) {
             setLoggerAdapter(new Slf4jLoggerAdapter());
         } else if ("jcl".equals(logger)) {
             setLoggerAdapter(new JclLoggerAdapter());
