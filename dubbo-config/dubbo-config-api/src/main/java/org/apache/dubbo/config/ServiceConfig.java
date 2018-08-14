@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.ServiceClassHolder;
 import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
 import org.apache.dubbo.rpc.service.GenericService;
@@ -51,6 +52,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -351,11 +353,41 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         unexported = true;
     }
 
+    private static void clearRandomPort(String protocol) {
+        protocol = protocol.toLowerCase();
+        RANDOM_PORT_MAP.remove(protocol);
+    }
+
+    private String getProtocolName(ProtocolConfig protocolConfig) {
+        String name = protocolConfig.getName();
+        if (name == null || name.length() == 0) {
+            name = "dubbo";
+        }
+        return name;
+    }
+
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void doExportUrls() {
         List<URL> registryURLs = loadRegistries(true);
         for (ProtocolConfig protocolConfig : protocols) {
-            doExportUrlsFor1Protocol(protocolConfig, registryURLs);
+            int retry = 0;
+            while (true) {
+                try {
+                    doExportUrlsFor1Protocol(protocolConfig, registryURLs);
+                    break;
+                } catch (RpcException e) {
+                    ++retry;
+                    logger.error("doExportUrls port failure and try again: " + e.getMessage(), e);
+                    if (retry >= 3 && protocolConfig.getPort() > 0) {
+                        protocolConfig.setPort(-1);
+                    }
+                    clearRandomPort(getProtocolName(protocolConfig));
+                    try {
+                        Thread.sleep(new Random().nextInt(50));
+                    } catch (InterruptedException ignored) {
+                    }
+                }
+            }
         }
     }
 
