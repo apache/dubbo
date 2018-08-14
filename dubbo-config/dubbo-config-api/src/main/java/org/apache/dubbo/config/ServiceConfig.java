@@ -198,12 +198,16 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 export = provider.getExport();
             }
             if (delay == null) {
+                //load xml's delay, with medium priority
                 delay = provider.getDelay();
             }
         }
         if (export != null && !export) {
             return;
         }
+
+        //load jvm's(with highest priority) or properties's(with lowest priority) delay
+        appendProperties(this);
 
         if (delay != null && delay > 0) {
             delayExportExecutor.schedule(new Runnable() {
@@ -309,7 +313,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         checkApplication();
         checkRegistry();
         checkProtocol();
-        appendProperties(this);
         checkStubAndMock(interfaceClass);
         if (path == null || path.length() == 0) {
             path = interfaceName;
