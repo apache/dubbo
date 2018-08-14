@@ -33,7 +33,7 @@ public class AbstractRegistryTest {
 
     private URL testUrl;
     private NotifyListener listener;
-    private NotifyListener listener2;
+
     private AbstractRegistry abstractRegistry;
     private boolean notifySuccess;
 
@@ -51,7 +51,7 @@ public class AbstractRegistryTest {
         };
         //init notify listener
         listener = urls -> notifySuccess = true;
-        listener2 = urls -> notifySuccess = true;
+
         //notify flag
         notifySuccess = false;
     }
@@ -127,9 +127,6 @@ public class AbstractRegistryTest {
         abstractRegistry.subscribe(testUrl, listener);
         Assert.assertEquals(beginSize + 1, abstractRegistry.getSubscribed().size());
 
-        //check subscribe when the url is the same, listener is different
-        abstractRegistry.subscribe(testUrl, listener2);
-        Assert.assertEquals(beginSize + 1, abstractRegistry.getSubscribed().size());
     }
 
     @Test
