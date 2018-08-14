@@ -230,7 +230,7 @@ public class AbstractRegistryTest {
 
     @Test
     public void toStringTest() {
-        Assert.assertEquals(abstractRegistry.toString(), "dubbo://wentaodeMacBook-Air.local:2233");
+        Assert.assertNotNull(abstractRegistry.toString());
     }
 
     @Test
