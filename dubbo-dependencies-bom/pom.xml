@@ -105,6 +105,7 @@
         <slf4j_version>1.7.25</slf4j_version>
         <jcl_version>1.2</jcl_version>
         <log4j_version>1.2.16</log4j_version>
+        <log4j2_version>2.11.0</log4j2_version>
         <logback_version>1.2.2</logback_version>
         <embedded_redis_version>0.6</embedded_redis_version>
 
@@ -325,6 +326,16 @@
                 <groupId>log4j</groupId>
                 <artifactId>log4j</artifactId>
                 <version>${log4j_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-api</artifactId>
+                <version>${log4j2_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-core</artifactId>
+                <version>${log4j2_version}</version>
             </dependency>
             <dependency>
                 <groupId>ch.qos.logback</groupId>
