@@ -23,12 +23,14 @@ import com.alibaba.dubbo.config.spring.context.annotation.consumer.test.TestCons
 import com.alibaba.dubbo.config.spring.context.annotation.provider.DemoServiceImpl;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.aop.support.AopUtils;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.*;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
@@ -43,16 +45,20 @@ import static org.springframework.core.annotation.AnnotationUtils.findAnnotation
  *
  * @since 2.5.8
  */
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = {EnableDubboTest.class})
+@TestPropertySource(locations = "classpath:/META-INF/dubbb-provider.properties",
+        properties = "demo.service.version = 2.5.7")
+@EnableDubbo(scanBasePackages = "com.alibaba.dubbo.config.spring.context.annotation.provider")
+@ComponentScan(basePackages = "com.alibaba.dubbo.config.spring.context.annotation.provider")
+@EnableTransactionManagement
 public class EnableDubboTest {
+
+    @Autowired
+    private ApplicationContext providerContext;
 
     @Test
     public void test() {
-
-        AnnotationConfigApplicationContext providerContext = new AnnotationConfigApplicationContext();
-
-        providerContext.register(TestProviderConfiguration.class);
-
-        providerContext.refresh();
 
         DemoService demoService = providerContext.getBean(DemoService.class);
 
@@ -68,11 +74,7 @@ public class EnableDubboTest {
         // Test @Transactional is present or not
         Assert.assertNotNull(findAnnotation(beanClass, Transactional.class));
 
-        AnnotationConfigApplicationContext consumerContext = new AnnotationConfigApplicationContext();
-
-        consumerContext.register(TestConsumerConfiguration.class);
-
-        consumerContext.refresh();
+        AnnotationConfigApplicationContext consumerContext = new AnnotationConfigApplicationContext(TestConsumerConfiguration.class);
 
         TestConsumerConfiguration consumerConfiguration = consumerContext.getBean(TestConsumerConfiguration.class);
 
@@ -126,10 +128,6 @@ public class EnableDubboTest {
 
         // Test multiple binding
         Assert.assertEquals("N/A", registryConfig.getAddress());
-
-        providerContext.close();
-        consumerContext.close();
-
 
     }
 

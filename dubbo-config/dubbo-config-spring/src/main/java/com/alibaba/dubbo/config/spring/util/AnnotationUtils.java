@@ -16,6 +16,8 @@
  */
 package com.alibaba.dubbo.config.spring.util;
 
+import com.alibaba.dubbo.config.annotation.Reference;
+import com.alibaba.dubbo.config.annotation.Service;
 import org.springframework.core.env.PropertyResolver;
 
 import java.lang.annotation.Annotation;
@@ -83,6 +85,46 @@ public class AnnotationUtils {
         }
 
         return actualAttributes;
+
+    }
+
+    public static String resolveInterfaceName(Service service, Class<?> defaultInterfaceClass)
+            throws IllegalStateException {
+
+        String interfaceName;
+        if (!"".equals(service.interfaceName())) {
+            interfaceName = service.interfaceName();
+        } else if (!void.class.equals(service.interfaceClass())) {
+            interfaceName = service.interfaceClass().getName();
+        } else if (defaultInterfaceClass.isInterface()) {
+            interfaceName = defaultInterfaceClass.getName();
+        } else {
+            throw new IllegalStateException(
+                    "The @Service undefined interfaceClass or interfaceName, and the type "
+                            + defaultInterfaceClass.getName() + " is not a interface.");
+        }
+
+        return interfaceName;
+
+    }
+
+    public static String resolveInterfaceName(Reference reference, Class<?> defaultInterfaceClass)
+            throws IllegalStateException {
+
+        String interfaceName;
+        if (!"".equals(reference.interfaceName())) {
+            interfaceName = reference.interfaceName();
+        } else if (!void.class.equals(reference.interfaceClass())) {
+            interfaceName = reference.interfaceClass().getName();
+        } else if (defaultInterfaceClass.isInterface()) {
+            interfaceName = defaultInterfaceClass.getName();
+        } else {
+            throw new IllegalStateException(
+                    "The @Reference undefined interfaceClass or interfaceName, and the type "
+                            + defaultInterfaceClass.getName() + " is not a interface.");
+        }
+
+        return interfaceName;
 
     }
 

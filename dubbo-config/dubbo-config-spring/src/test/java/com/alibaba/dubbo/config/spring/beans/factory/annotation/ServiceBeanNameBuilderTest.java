@@ -22,6 +22,7 @@ import com.alibaba.dubbo.config.spring.api.DemoService;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.mock.env.MockEnvironment;
 import org.springframework.util.ReflectionUtils;
 
 import static com.alibaba.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilderTest.GROUP;
@@ -46,47 +47,30 @@ public class ServiceBeanNameBuilderTest {
 
     static final String VERSION = "1.0.0";
 
+    static final String BEAN_NAME = "ServiceBean:com.alibaba.dubbo.config.spring.api.DemoService:1.0.0:DUBBO";
+
+    private MockEnvironment environment = new MockEnvironment();
+
     @Test
     public void testRequiredAttributes() {
-
-        ServiceBeanNameBuilder builder = ServiceBeanNameBuilder.create(INTERFACE_CLASS, VERSION, GROUP);
-
-        Assert.assertEquals("com.alibaba.dubbo.config.spring.api.DemoService:1.0.0:DUBBO", builder.build());
-
+        ServiceBeanNameBuilder builder = ServiceBeanNameBuilder.create(INTERFACE_CLASS, environment);
+        Assert.assertEquals("ServiceBean:com.alibaba.dubbo.config.spring.api.DemoService", builder.build());
     }
 
     @Test
     public void testServiceAnnotation() {
         Service service = AnnotationUtils.getAnnotation(ServiceBeanNameBuilderTest.class, Service.class);
-        ServiceBeanNameBuilder builder = ServiceBeanNameBuilder.create(service, INTERFACE_CLASS);
-        Assert.assertEquals("com.alibaba.dubbo.config.spring.api.DemoService:1.0.0:DUBBO:application:module:1,2,3",
+        ServiceBeanNameBuilder builder = ServiceBeanNameBuilder.create(service, INTERFACE_CLASS, environment);
+        Assert.assertEquals(BEAN_NAME,
                 builder.build());
     }
 
     @Test
     public void testReferenceAnnotation() {
         Reference reference = AnnotationUtils.getAnnotation(ReflectionUtils.findField(ServiceBeanNameBuilderTest.class, "INTERFACE_CLASS"), Reference.class);
-        ServiceBeanNameBuilder builder = ServiceBeanNameBuilder.create(reference, INTERFACE_CLASS);
-        Assert.assertEquals("com.alibaba.dubbo.config.spring.api.DemoService:1.0.0:DUBBO:application:module:1,2,3",
+        ServiceBeanNameBuilder builder = ServiceBeanNameBuilder.create(reference, INTERFACE_CLASS, environment);
+        Assert.assertEquals(BEAN_NAME,
                 builder.build());
     }
 
-    @Test
-    public void testBuildAll() {
-
-        ServiceBeanNameBuilder builder = ServiceBeanNameBuilder.create(INTERFACE_CLASS, VERSION, GROUP);
-
-        builder.application("application");
-        Assert.assertEquals("com.alibaba.dubbo.config.spring.api.DemoService:1.0.0:DUBBO:application",
-                builder.build());
-
-        builder.module("module");
-        Assert.assertEquals("com.alibaba.dubbo.config.spring.api.DemoService:1.0.0:DUBBO:application:module",
-                builder.build());
-
-        builder.registry("1", "2", "3");
-        Assert.assertEquals("com.alibaba.dubbo.config.spring.api.DemoService:1.0.0:DUBBO:application:module:1,2,3",
-                builder.build());
-
-    }
 }

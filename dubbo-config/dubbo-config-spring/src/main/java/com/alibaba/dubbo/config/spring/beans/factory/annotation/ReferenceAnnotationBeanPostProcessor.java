@@ -18,11 +18,14 @@ package com.alibaba.dubbo.config.spring.beans.factory.annotation;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.spring.ReferenceBean;
-import com.alibaba.spring.beans.factory.annotation.CustomizedAnnotationBeanPostProcessor;
+import com.alibaba.dubbo.config.spring.ServiceBean;
+import com.alibaba.dubbo.config.spring.context.event.ServiceBeanExportEvent;
+import com.alibaba.spring.beans.factory.annotation.AnnotationInjectedBeanPostProcessor;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 
@@ -42,8 +45,8 @@ import java.util.concurrent.ConcurrentMap;
  *
  * @since 2.5.7
  */
-public class ReferenceAnnotationBeanPostProcessor extends CustomizedAnnotationBeanPostProcessor<Reference>
-        implements ApplicationContextAware, ApplicationListener<ContextRefreshedEvent> {
+public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBeanPostProcessor<Reference>
+        implements ApplicationContextAware, ApplicationListener {
 
     /**
      * The bean name of {@link ReferenceAnnotationBeanPostProcessor}
@@ -58,9 +61,7 @@ public class ReferenceAnnotationBeanPostProcessor extends CustomizedAnnotationBe
     private final ConcurrentMap<String, ReferenceBean<?>> referenceBeanCache =
             new ConcurrentHashMap<String, ReferenceBean<?>>(CACHE_SIZE);
 
-    private final ConcurrentHashMap<String, Object> proxyCache = new ConcurrentHashMap<String, Object>(CACHE_SIZE);
-
-    private final ConcurrentHashMap<String, ReferenceBeanInvocationHandler> referenceBeanInvocationHandlerCache =
+    private final ConcurrentHashMap<String, ReferenceBeanInvocationHandler> localReferenceBeanInvocationHandlerCache =
             new ConcurrentHashMap<String, ReferenceBeanInvocationHandler>(CACHE_SIZE);
 
     private final ConcurrentMap<InjectionMetadata.InjectedElement, ReferenceBean<?>> injectedFieldReferenceBeanCache =
@@ -80,27 +81,6 @@ public class ReferenceAnnotationBeanPostProcessor extends CustomizedAnnotationBe
     public Collection<ReferenceBean<?>> getReferenceBeans() {
         return referenceBeanCache.values();
     }
-
-    private static String resolveInterfaceName(Reference reference, Class<?> beanClass)
-            throws IllegalStateException {
-
-        String interfaceName;
-        if (!"".equals(reference.interfaceName())) {
-            interfaceName = reference.interfaceName();
-        } else if (!void.class.equals(reference.interfaceClass())) {
-            interfaceName = reference.interfaceClass().getName();
-        } else if (beanClass.isInterface()) {
-            interfaceName = beanClass.getName();
-        } else {
-            throw new IllegalStateException(
-                    "The @Reference undefined interfaceClass or interfaceName, and the property type "
-                            + beanClass.getName() + " is not a interface.");
-        }
-
-        return interfaceName;
-
-    }
-
 
     /**
      * Get {@link ReferenceBean} {@link Map} in injected field.
@@ -126,37 +106,37 @@ public class ReferenceAnnotationBeanPostProcessor extends CustomizedAnnotationBe
     protected Object doGetInjectedBean(Reference reference, Object bean, String beanName, Class<?> injectedType,
                                        InjectionMetadata.InjectedElement injectedElement) throws Exception {
 
-        String referenceBeanCacheKey = buildReferenceBeanCacheKey(reference, injectedType);
+        String referencedBeanName = buildReferencedBeanName(reference, injectedType);
 
-        ReferenceBean referenceBean = buildReferenceBeanIfAbsent(referenceBeanCacheKey, reference, injectedType, getClassLoader());
+        ReferenceBean referenceBean = buildReferenceBeanIfAbsent(referencedBeanName, reference, injectedType, getClassLoader());
 
         cacheInjectedReferenceBean(referenceBean, injectedElement);
 
-        Object proxy = buildProxyIfAbsent(referenceBeanCacheKey, referenceBean, injectedType);
+        Object proxy = buildProxy(referencedBeanName, referenceBean, injectedType);
 
         return proxy;
     }
 
-    private Object buildProxyIfAbsent(String referenceBeanCacheKey, ReferenceBean referenceBean, Class<?> injectedType) {
-
-        Object proxy = proxyCache.get(referenceBeanCacheKey);
-
-        if (proxy == null) {
-            InvocationHandler handler = buildInvocationHandlerIfAbsent(referenceBeanCacheKey, referenceBean);
-            proxy = Proxy.newProxyInstance(getClassLoader(), new Class[]{injectedType}, handler);
-            proxyCache.put(referenceBeanCacheKey, proxy);
-        }
-
+    private Object buildProxy(String referencedBeanName, ReferenceBean referenceBean, Class<?> injectedType) {
+        InvocationHandler handler = buildInvocationHandler(referencedBeanName, referenceBean);
+        Object proxy = Proxy.newProxyInstance(getClassLoader(), new Class[]{injectedType}, handler);
         return proxy;
     }
 
-    private InvocationHandler buildInvocationHandlerIfAbsent(String referenceBeanCacheKey, ReferenceBean referenceBean) {
+    private InvocationHandler buildInvocationHandler(String referencedBeanName, ReferenceBean referenceBean) {
 
-        ReferenceBeanInvocationHandler handler = referenceBeanInvocationHandlerCache.get(referenceBeanCacheKey);
+        ReferenceBeanInvocationHandler handler = localReferenceBeanInvocationHandlerCache.get(referencedBeanName);
 
         if (handler == null) {
             handler = new ReferenceBeanInvocationHandler(referenceBean);
-            referenceBeanInvocationHandlerCache.put(referenceBeanCacheKey, handler);
+        }
+
+        if (applicationContext.containsBean(referencedBeanName)) { // Is local @Service Bean or not ?
+            // ReferenceBeanInvocationHandler's initialization has to wait for current local @Service Bean has been exported.
+            localReferenceBeanInvocationHandlerCache.put(referencedBeanName, handler);
+        } else {
+            // Remote Reference Bean should initialize immediately
+            handler.init();
         }
 
         return handler;
@@ -186,36 +166,31 @@ public class ReferenceAnnotationBeanPostProcessor extends CustomizedAnnotationBe
     protected String buildInjectedObjectCacheKey(Reference reference, Object bean, String beanName,
                                                  Class<?> injectedType, InjectionMetadata.InjectedElement injectedElement) {
 
-        String key = buildReferenceBeanCacheKey(reference, injectedType) +
-                "?source=" + (injectedElement.getMember());
+        String key = buildReferencedBeanName(reference, injectedType) +
+                "#source=" + (injectedElement.getMember());
 
         return key;
     }
 
-    private String buildReferenceBeanCacheKey(Reference reference, Class<?> injectedType) {
+    private String buildReferencedBeanName(Reference reference, Class<?> injectedType) {
 
-        String interfaceName = resolveInterfaceName(reference, injectedType);
+        ServiceBeanNameBuilder builder = ServiceBeanNameBuilder.create(reference, injectedType, getEnvironment());
 
-        String key = reference.url() +
-                "/" + interfaceName +
-                "/" + reference.version() +
-                "/" + reference.group();
-
-        return getEnvironment().resolvePlaceholders(key);
+        return getEnvironment().resolvePlaceholders(builder.build());
     }
 
-    private ReferenceBean buildReferenceBeanIfAbsent(String referenceBeanCacheKey, Reference reference,
+    private ReferenceBean buildReferenceBeanIfAbsent(String referencedBeanName, Reference reference,
                                                      Class<?> referencedType, ClassLoader classLoader)
             throws Exception {
 
-        ReferenceBean<?> referenceBean = referenceBeanCache.get(referenceBeanCacheKey);
+        ReferenceBean<?> referenceBean = referenceBeanCache.get(referencedBeanName);
 
         if (referenceBean == null) {
             ReferenceBeanBuilder beanBuilder = ReferenceBeanBuilder
                     .create(reference, classLoader, applicationContext)
                     .interfaceClass(referencedType);
             referenceBean = beanBuilder.build();
-            referenceBeanCache.put(referenceBeanCacheKey, referenceBean);
+            referenceBeanCache.put(referencedBeanName, referenceBean);
         }
 
         return referenceBean;
@@ -236,28 +211,39 @@ public class ReferenceAnnotationBeanPostProcessor extends CustomizedAnnotationBe
     }
 
     @Override
-    public void onApplicationEvent(ContextRefreshedEvent event) {
-
-        if (proxyCache.isEmpty() || referenceBeanCache.isEmpty() || referenceBeanInvocationHandlerCache.isEmpty()) {
-            return;
+    public void onApplicationEvent(ApplicationEvent event) {
+        if (event instanceof ServiceBeanExportEvent) {
+            onServiceBeanExportEvent((ServiceBeanExportEvent) event);
+        } else if (event instanceof ContextRefreshedEvent) {
+            onContextRefreshedEvent((ContextRefreshedEvent) event);
         }
+    }
 
-        // initialize all
-        for (ReferenceBeanInvocationHandler handler : referenceBeanInvocationHandlerCache.values()) {
+    private void onServiceBeanExportEvent(ServiceBeanExportEvent event) {
+        ServiceBean serviceBean = event.getServiceBean();
+        initReferenceBeanInvocationHandler(serviceBean);
+    }
+
+    private void initReferenceBeanInvocationHandler(ServiceBean serviceBean) {
+        String serviceBeanName = serviceBean.getBeanName();
+        // Remove ServiceBean when it's exported
+        ReferenceBeanInvocationHandler handler = localReferenceBeanInvocationHandlerCache.remove(serviceBeanName);
+        // Initialize
+        if (handler != null) {
             handler.init();
         }
-
-        // clear Proxies and Handlers
-        this.proxyCache.clear();
-        this.referenceBeanInvocationHandlerCache.clear();
     }
+
+    private void onContextRefreshedEvent(ContextRefreshedEvent event) {
+
+    }
+
 
     @Override
     public void destroy() throws Exception {
         super.destroy();
-        this.proxyCache.clear();
         this.referenceBeanCache.clear();
-        this.referenceBeanInvocationHandlerCache.clear();
+        this.localReferenceBeanInvocationHandlerCache.clear();
         this.injectedFieldReferenceBeanCache.clear();
         this.injectedMethodReferenceBeanCache.clear();
     }

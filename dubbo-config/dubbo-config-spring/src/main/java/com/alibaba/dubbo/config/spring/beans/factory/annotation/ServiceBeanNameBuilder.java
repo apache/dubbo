@@ -16,14 +16,14 @@
  */
 package com.alibaba.dubbo.config.spring.beans.factory.annotation;
 
-import com.alibaba.dubbo.config.ApplicationConfig;
-import com.alibaba.dubbo.config.ModuleConfig;
-import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.dubbo.config.spring.ReferenceBean;
 import com.alibaba.dubbo.config.spring.ServiceBean;
+import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
+
+import static com.alibaba.dubbo.config.spring.util.AnnotationUtils.resolveInterfaceName;
 
 /**
  * Dubbo {@link Service @Service} Bean Builder
@@ -39,48 +39,46 @@ class ServiceBeanNameBuilder {
 
     private static final String SEPARATOR = ":";
 
-    private final Class<?> interfaceClass;
+    private final String interfaceClassName;
 
-    private final String version;
+    private final Environment environment;
 
-    private final String group;
+    // Optional
+    private String version;
 
-    private String application;
+    private String group;
 
-    private String module;
-
-    private String[] registry;
-
-    private ServiceBeanNameBuilder(Class<?> interfaceClass, String version, String group) {
-        this.interfaceClass = interfaceClass;
-        this.version = version;
-        this.group = group;
+    private ServiceBeanNameBuilder(String interfaceClassName, Environment environment) {
+        this.interfaceClassName = interfaceClassName;
+        this.environment = environment;
     }
 
-    private ServiceBeanNameBuilder(Service service, Class<?> interfaceClass) {
-        this(service.interfaceClass() == null ? interfaceClass : service.interfaceClass(), service.version(), service.group());
-        application(service.application());
-        module(service.module());
-        registry(service.registry());
+    private ServiceBeanNameBuilder(Class<?> interfaceClass, Environment environment) {
+        this(interfaceClass.getName(), environment);
     }
 
-    private ServiceBeanNameBuilder(Reference reference, Class<?> interfaceClass) {
-        this(reference.interfaceClass() == null ? interfaceClass : reference.interfaceClass(), reference.version(), reference.group());
-        application(reference.application());
-        module(reference.module());
-        registry(reference.registry());
+    private ServiceBeanNameBuilder(Service service, Class<?> interfaceClass, Environment environment) {
+        this(resolveInterfaceName(service, interfaceClass), environment);
+        this.group(service.group());
+        this.version(service.version());
     }
 
-    public static ServiceBeanNameBuilder create(Class<?> interfaceClass, String version, String group) {
-        return new ServiceBeanNameBuilder(interfaceClass, version, group);
+    private ServiceBeanNameBuilder(Reference reference, Class<?> interfaceClass, Environment environment) {
+        this(resolveInterfaceName(reference, interfaceClass), environment);
+        this.group(reference.group());
+        this.version(reference.version());
     }
 
-    public static ServiceBeanNameBuilder create(Service service, Class<?> interfaceClass) {
-        return new ServiceBeanNameBuilder(service, interfaceClass);
+    public static ServiceBeanNameBuilder create(Class<?> interfaceClass, Environment environment) {
+        return new ServiceBeanNameBuilder(interfaceClass, environment);
     }
 
-    public static ServiceBeanNameBuilder create(Reference reference, Class<?> interfaceClass) {
-        return new ServiceBeanNameBuilder(reference, interfaceClass);
+    public static ServiceBeanNameBuilder create(Service service, Class<?> interfaceClass, Environment environment) {
+        return new ServiceBeanNameBuilder(service, interfaceClass, environment);
+    }
+
+    public static ServiceBeanNameBuilder create(Reference reference, Class<?> interfaceClass, Environment environment) {
+        return new ServiceBeanNameBuilder(reference, interfaceClass, environment);
     }
 
     private static void append(StringBuilder builder, String value) {
@@ -89,50 +87,26 @@ class ServiceBeanNameBuilder {
         }
     }
 
-    /**
-     * Set {@link ApplicationConfig application} bean name
-     *
-     * @param application {@link ApplicationConfig application} bean name
-     * @return {@link ServiceBeanNameBuilder}
-     */
-    public ServiceBeanNameBuilder application(String application) {
-        this.application = application;
+    public ServiceBeanNameBuilder group(String group) {
+        this.group = group;
         return this;
     }
 
-    /**
-     * Set {@link ModuleConfig module} bean name
-     *
-     * @param module {@link ModuleConfig module} bean name
-     * @return {@link ServiceBeanNameBuilder}
-     */
-    public ServiceBeanNameBuilder module(String module) {
-        this.module = module;
-        return this;
-    }
-
-    /**
-     * Set {@link RegistryConfig monitor} bean names
-     *
-     * @param registry {@link RegistryConfig monitor} bean name
-     * @return {@link ServiceBeanNameBuilder}
-     */
-    public ServiceBeanNameBuilder registry(String... registry) {
-        this.registry = registry;
+    public ServiceBeanNameBuilder version(String version) {
+        this.version = version;
         return this;
     }
 
     public String build() {
-        StringBuilder beanNameBuilder = new StringBuilder();
+        StringBuilder beanNameBuilder = new StringBuilder("ServiceBean").append(SEPARATOR);
         // Required
-        append(beanNameBuilder, interfaceClass.getName());
+        append(beanNameBuilder, interfaceClassName);
+        // Optional
         append(beanNameBuilder, version);
         append(beanNameBuilder, group);
-        // Optional
-        append(beanNameBuilder, application);
-        append(beanNameBuilder, module);
-        append(beanNameBuilder, StringUtils.arrayToCommaDelimitedString(registry));
         // Build and remove last ":"
-        return beanNameBuilder.substring(0, beanNameBuilder.length() - 1);
+        String rawBeanName = beanNameBuilder.substring(0, beanNameBuilder.length() - 1);
+        // Resolve placeholders
+        return environment.resolvePlaceholders(rawBeanName);
     }
 }

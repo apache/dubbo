@@ -28,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @since 2.5.8
  */
 @com.alibaba.dubbo.config.annotation.Service(
-        version = "2.5.7",
+        version = "${demo.service.version}",
         application = "${demo.service.application}",
         protocol = "${demo.service.protocol}",
         registry = "${demo.service.registry}"
