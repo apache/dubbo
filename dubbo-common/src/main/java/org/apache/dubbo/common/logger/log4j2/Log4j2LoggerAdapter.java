@@ -40,7 +40,7 @@ public class Log4j2LoggerAdapter implements LoggerAdapter {
                 Map<String, Appender> appenderMap = ((org.apache.logging.log4j.core.Logger) logger).getAppenders();
                 if (appenderMap != null && !appenderMap.isEmpty()) {
                     for (Appender appender : appenderMap.values()) {
-                        if (appender instanceof FileAppender) {
+                        if (appender != null && appender instanceof FileAppender) {
                             FileAppender fileAppender = (FileAppender) appender;
                             String filename = fileAppender.getFileName();
                             file = new File(filename);
