@@ -301,12 +301,8 @@ public class DubboProtocol extends AbstractProtocol {
             throw new RpcException("Unsupported server type: " + str + ", url: " + url);
 
         url = url.addParameter(Constants.CODEC_KEY, DubboCodec.NAME);
-        ExchangeServer server;
-        try {
-            server = Exchangers.bind(url, requestHandler);
-        } catch (RemotingException e) {
-            throw new RpcException("Fail to start server(url: " + url + ") " + e.getMessage(), e);
-        }
+        ExchangeServer server = (ExchangeServer)doBind(url);
+
         str = url.getParameter(Constants.CLIENT_KEY);
         if (str != null && str.length() > 0) {
             Set<String> supportedTypes = ExtensionLoader.getExtensionLoader(Transporter.class).getSupportedExtensions();
@@ -441,6 +437,11 @@ public class DubboProtocol extends AbstractProtocol {
             throw new RpcException("Fail to create remoting client for service(" + url + "): " + e.getMessage(), e);
         }
         return client;
+    }
+
+    @Override
+    protected Object tryConnect(URL url) throws RemotingException {
+        return Exchangers.bind(url, requestHandler);
     }
 
     @Override

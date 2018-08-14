@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.hessian;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.http.HttpBinder;
 import org.apache.dubbo.remoting.http.HttpHandler;
 import org.apache.dubbo.remoting.http.HttpServer;
@@ -73,7 +74,7 @@ public class HessianProtocol extends AbstractProxyProtocol {
         String addr = getAddr(url);
         HttpServer server = serverMap.get(addr);
         if (server == null) {
-            server = httpBinder.bind(url, new HessianHandler());
+            server = (HttpServer)doBind(url);
             serverMap.put(addr, server);
         }
         final String path = url.getAbsolutePath();
@@ -137,6 +138,11 @@ public class HessianProtocol extends AbstractProxyProtocol {
             return RpcException.SERIALIZATION_EXCEPTION;
         }
         return super.getErrorCode(e);
+    }
+
+    @Override
+    protected Object tryConnect(URL url) throws RemotingException {
+        return httpBinder.bind(url, new HessianHandler());
     }
 
     @Override

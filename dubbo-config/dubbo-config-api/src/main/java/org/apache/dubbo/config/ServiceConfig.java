@@ -468,6 +468,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
 
         String host = this.findConfigedHosts(protocolConfig, registryURLs, map);
+        boolean needRandomPort = this.needRandomPort(protocolConfig, name);
+        map.put("randomPort",needRandomPort+"");
         Integer port = this.findConfigedPorts(protocolConfig, name, map);
         URL url = new URL(name, host, port, (contextPath == null || contextPath.length() == 0 ? "" : contextPath + "/") + path, map);
 
@@ -542,6 +544,26 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     protected Class getServiceClass(T ref) {
         return ref.getClass();
+    }
+
+    private boolean needRandomPort(ProtocolConfig protocolConfig,String name){
+        Integer portToBind = null;
+        String port = getValueFromConfig(protocolConfig, Constants.DUBBO_PORT_TO_BIND);
+        portToBind = parsePort(port);
+        if (portToBind == null) {
+            portToBind = protocolConfig.getPort();
+            if (provider != null && (portToBind == null || portToBind == 0)) {
+                portToBind = provider.getPort();
+            }
+            final int defaultPort = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(name).getDefaultPort();
+            if (portToBind == null || portToBind == 0) {
+                portToBind = defaultPort;
+            }
+            if (portToBind == null || portToBind <= 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
