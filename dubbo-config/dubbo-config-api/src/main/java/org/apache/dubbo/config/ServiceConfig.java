@@ -30,11 +30,7 @@ import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.model.ApplicationModel;
 import org.apache.dubbo.config.model.ProviderModel;
 import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Protocol;
-import org.apache.dubbo.rpc.ProxyFactory;
-import org.apache.dubbo.rpc.ServiceClassHolder;
+import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
@@ -204,7 +200,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (export != null && !export) {
             return;
         }
-        appendProperties(this);
         if (delay != null && delay > 0) {
             delayExportExecutor.schedule(new Runnable() {
                 @Override
@@ -351,11 +346,40 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         unexported = true;
     }
 
+    private static void removeRandomPort(String protocol) {
+        protocol = protocol.toLowerCase();
+        RANDOM_PORT_MAP.remove(protocol);
+    }
+
+    private String getProtocolName(ProtocolConfig protocolConfig) {
+        String name = protocolConfig.getName();
+        if (name == null || name.length() == 0) {
+            name = "dubbo";
+        }
+        return name;
+    }
+
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void doExportUrls() {
         List<URL> registryURLs = loadRegistries(true);
         for (ProtocolConfig protocolConfig : protocols) {
-            doExportUrlsFor1Protocol(protocolConfig, registryURLs);
+            while (true) {
+                try {
+                    doExportUrlsFor1Protocol(protocolConfig, registryURLs);
+                    break;
+                } catch (RpcException e) {
+                    if (StringUtils.isEquals(e.getMessage(), "random port is occupied")) {
+                        logger.error("doExportUrls port failure and try again: " + e.getMessage(), e);
+                        removeRandomPort(getProtocolName(protocolConfig));
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ignored) {
+                        }
+                    } else {
+                        throw e;
+                    }
+                }
+            }
         }
     }
 
@@ -479,47 +503,59 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
         String scope = url.getParameter(Constants.SCOPE_KEY);
         // don't export when none is configured
-        if (!Constants.SCOPE_NONE.equalsIgnoreCase(scope)) {
+        try {
+            if (!Constants.SCOPE_NONE.equalsIgnoreCase(scope)) {
 
-            // export to local if the config is not remote (export to remote only when config is remote)
-            if (!Constants.SCOPE_REMOTE.equalsIgnoreCase(scope)) {
-                exportLocal(url);
-            }
-            // export to remote if the config is not local (export to local only when config is local)
-            if (!Constants.SCOPE_LOCAL.equalsIgnoreCase(scope)) {
-                if (logger.isInfoEnabled()) {
-                    logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
+                // export to local if the config is not remote (export to remote only when config is remote)
+                if (!Constants.SCOPE_REMOTE.equalsIgnoreCase(scope)) {
+                    exportLocal(url);
                 }
-                if (registryURLs != null && !registryURLs.isEmpty()) {
-                    for (URL registryURL : registryURLs) {
-                        url = url.addParameterIfAbsent(Constants.DYNAMIC_KEY, registryURL.getParameter(Constants.DYNAMIC_KEY));
-                        URL monitorUrl = loadMonitor(registryURL);
-                        if (monitorUrl != null) {
-                            url = url.addParameterAndEncoded(Constants.MONITOR_KEY, monitorUrl.toFullString());
-                        }
-                        if (logger.isInfoEnabled()) {
-                            logger.info("Register dubbo service " + interfaceClass.getName() + " url " + url + " to registry " + registryURL);
-                        }
+                // export to remote if the config is not local (export to local only when config is local)
+                if (!Constants.SCOPE_LOCAL.equalsIgnoreCase(scope)) {
+                    if (logger.isInfoEnabled()) {
+                        logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
+                    }
+                    if (registryURLs != null && !registryURLs.isEmpty()) {
+                        for (URL registryURL : registryURLs) {
+                            url = url.addParameterIfAbsent(Constants.DYNAMIC_KEY, registryURL.getParameter(Constants.DYNAMIC_KEY));
+                            URL monitorUrl = loadMonitor(registryURL);
+                            if (monitorUrl != null) {
+                                url = url.addParameterAndEncoded(Constants.MONITOR_KEY, monitorUrl.toFullString());
+                            }
+                            if (logger.isInfoEnabled()) {
+                                logger.info("Register dubbo service " + interfaceClass.getName() + " url " + url + " to registry " + registryURL);
+                            }
 
-                        // For providers, this is used to enable custom proxy to generate invoker
-                        String proxy = url.getParameter(Constants.PROXY_KEY);
-                        if (StringUtils.isNotEmpty(proxy)) {
-                            registryURL = registryURL.addParameter(Constants.PROXY_KEY, proxy);
-                        }
+                            // For providers, this is used to enable custom proxy to generate invoker
+                            String proxy = url.getParameter(Constants.PROXY_KEY);
+                            if (StringUtils.isNotEmpty(proxy)) {
+                                registryURL = registryURL.addParameter(Constants.PROXY_KEY, proxy);
+                            }
 
-                        Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
+                            Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
+                            DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
+
+                            Exporter<?> exporter = protocol.export(wrapperInvoker);
+                            exporters.add(exporter);
+                        }
+                    } else {
+                        Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, url);
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
 
                         Exporter<?> exporter = protocol.export(wrapperInvoker);
                         exporters.add(exporter);
                     }
-                } else {
-                    Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, url);
-                    DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
-
-                    Exporter<?> exporter = protocol.export(wrapperInvoker);
-                    exporters.add(exporter);
                 }
+            }
+        } catch (RpcException e) {
+            if (e.getMessage().contains("Failed to bind")) {
+                if (StringUtils.isBlank(map.get(Constants.RANDOM_PORT))) {
+                    throw new RpcException("port is occupied");
+                } else {
+                    throw new RpcException("random port is occupied");
+                }
+            } else {
+                throw e;
             }
         }
         this.urls.add(url);
