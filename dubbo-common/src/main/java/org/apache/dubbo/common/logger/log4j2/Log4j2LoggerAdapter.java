@@ -25,7 +25,7 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.FileAppender;
 
 import java.io.File;
-import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 
 public class Log4j2LoggerAdapter implements LoggerAdapter {
@@ -36,16 +36,18 @@ public class Log4j2LoggerAdapter implements LoggerAdapter {
         try {
             org.apache.logging.log4j.Logger logger = LogManager.getRootLogger();
             if (logger != null) {
-                //Appender
                 LoggerContext context = (LoggerContext)LogManager.getContext(false);
                 Map<String, Appender> appenders = context.getConfiguration().getAppenders();
-                Collection<Appender> appenderCollection = appenders.values();
-                for (Appender appender : appenderCollection) {
-                    if (appender instanceof FileAppender) {
-                        FileAppender fileAppender = (FileAppender)appender;
-                        String fileName = fileAppender.getFileName();
-                        file = new File(fileName);
-                        break;
+                Iterator<Appender> iterator = appenders.values().iterator();
+                if (iterator != null){
+                    while (iterator.hasNext()){
+                        Appender appender = iterator.next();
+                        if (appender instanceof FileAppender) {
+                            FileAppender fileAppender = (FileAppender)appender;
+                            String fileName = fileAppender.getFileName();
+                            file = new File(fileName);
+                            break;
+                        }
                     }
                 }
             }
