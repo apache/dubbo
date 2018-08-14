@@ -32,7 +32,9 @@ import java.util.List;
 public class AbstractRegistryTest {
 
     private URL testUrl;
+    private URL testUrl2;
     private NotifyListener listener;
+    private NotifyListener listener2;
     private AbstractRegistry abstractRegistry;
     private boolean notifySuccess;
 
@@ -40,6 +42,7 @@ public class AbstractRegistryTest {
     public void init() {
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":2233");
         testUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A&interface=com.test");
+        testUrl2 = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A&interface=com.test2");
 
         //init the object
         abstractRegistry = new AbstractRegistry(url) {
@@ -50,6 +53,7 @@ public class AbstractRegistryTest {
         };
         //init notify listener
         listener = urls -> notifySuccess = true;
+        listener2 = urls -> notifySuccess = true;
         //notify flag
         notifySuccess = false;
     }
@@ -66,10 +70,23 @@ public class AbstractRegistryTest {
         // check if register successfully
         int beginSize = abstractRegistry.getRegistered().size();
         abstractRegistry.register(testUrl);
+        Assert.assertTrue(abstractRegistry.getRegistered().contains(testUrl));
         Assert.assertEquals(beginSize + 1, abstractRegistry.getRegistered().size());
         //check register when the url is the same
         abstractRegistry.register(testUrl);
         Assert.assertEquals(beginSize + 1, abstractRegistry.getRegistered().size());
+        abstractRegistry.register(testUrl);
+        Assert.assertEquals(beginSize + 1, abstractRegistry.getRegistered().size());
+        //check register multiple url
+        abstractRegistry.getRegistered().clear();
+        beginSize = abstractRegistry.getRegistered().size();
+        List<URL> urlList = new ArrayList<>();
+        urlList.add(testUrl);
+        urlList.add(testUrl2);
+        for(URL url: urlList){
+            abstractRegistry.register(url);
+        }
+        Assert.assertEquals(beginSize+ urlList.size(), abstractRegistry.getRegistered().size());
     }
 
     @Test
@@ -84,11 +101,25 @@ public class AbstractRegistryTest {
         // check if unregister url successfully
         abstractRegistry.register(testUrl);
         int beginSize = abstractRegistry.getRegistered().size();
+        Assert.assertTrue(abstractRegistry.getRegistered().contains(testUrl));
         abstractRegistry.unregister(testUrl);
+        Assert.assertFalse(abstractRegistry.getRegistered().contains(testUrl));
         Assert.assertEquals(beginSize - 1, abstractRegistry.getRegistered().size());
         // check if unregister a not exist url successfully
         abstractRegistry.unregister(testUrl);
         Assert.assertEquals(beginSize - 1, abstractRegistry.getRegistered().size());
+
+        // check multiple url unregister.
+        abstractRegistry.getRegistered().clear();
+        abstractRegistry.register(testUrl);
+        abstractRegistry.register(testUrl2);
+        List<URL> list = new ArrayList<>();
+        list.add(testUrl);
+        list.add(testUrl2);
+        for(URL url : list){
+            abstractRegistry.unregister(url);
+        }
+        Assert.assertEquals(0,abstractRegistry.getRegistered().size());
     }
 
     @Test
@@ -115,9 +146,23 @@ public class AbstractRegistryTest {
             Assert.assertTrue(e instanceof IllegalArgumentException);
         }
         // check if subscribe successfully
+        int beginSize = abstractRegistry.getSubscribed().size();
         abstractRegistry.subscribe(testUrl, listener);
         Assert.assertNotNull(abstractRegistry.getSubscribed().get(testUrl));
         Assert.assertTrue(abstractRegistry.getSubscribed().get(testUrl).contains(listener));
+        Assert.assertEquals(beginSize + 1, abstractRegistry.getSubscribed().size());
+        //check subscribe when the url and listener are the same
+        abstractRegistry.subscribe(testUrl, listener);
+        Assert.assertEquals(beginSize + 1, abstractRegistry.getSubscribed().size());
+
+        // check same url multiple listener
+        abstractRegistry.subscribe(testUrl, listener2);
+        Assert.assertEquals(2,abstractRegistry.getSubscribed().get(testUrl).size());
+        Assert.assertTrue(abstractRegistry.getSubscribed().get(testUrl).contains(listener2));
+        // check same url:
+        abstractRegistry.subscribe(testUrl2,listener);
+        Assert.assertTrue(abstractRegistry.getSubscribed().get(testUrl2).contains(listener));
+        Assert.assertTrue(abstractRegistry.getSubscribed().size()==2);
     }
 
     @Test
@@ -151,6 +196,9 @@ public class AbstractRegistryTest {
 
     @Test
     public void recoverTest() throws Exception {
+        int beginSize = abstractRegistry.getRegistered().size();
+        abstractRegistry.recover();
+        Assert.assertEquals(beginSize, abstractRegistry.getRegistered().size());
         abstractRegistry.register(testUrl);
         abstractRegistry.subscribe(testUrl, listener);
         abstractRegistry.recover();
@@ -169,6 +217,9 @@ public class AbstractRegistryTest {
         Assert.assertFalse(notifySuccess);
         abstractRegistry.notify(urls);
         Assert.assertTrue(notifySuccess);
+        notifySuccess = false;
+        abstractRegistry.notify(null);
+        Assert.assertFalse(notifySuccess);
     }
 
     @Test
