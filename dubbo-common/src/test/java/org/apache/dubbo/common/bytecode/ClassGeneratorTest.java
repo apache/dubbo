@@ -75,7 +75,7 @@ public class ClassGeneratorTest extends TestCase {
         cg.setClassName(Bean.class.getName() + "$Builder2");
         cg.addInterface(Builder.class);
 
-        cg.addField("FNAME", Modifier.PUBLIC | Modifier.STATIC, java.lang.reflect.Field.class);
+        cg.addField("FNAME", Modifier.PUBLIC | Modifier.STATIC, Field.class);
 
         cg.addMethod("public Object getName(" + Bean.class.getName() + " o){ boolean[][][] bs = new boolean[0][][]; return (String)FNAME.get($1); }");
         cg.addMethod("public void setName(" + Bean.class.getName() + " o, Object name){ FNAME.set($1, $2); }");

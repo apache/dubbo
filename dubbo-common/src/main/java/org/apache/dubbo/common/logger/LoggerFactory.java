@@ -20,6 +20,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.jcl.JclLoggerAdapter;
 import org.apache.dubbo.common.logger.jdk.JdkLoggerAdapter;
 import org.apache.dubbo.common.logger.log4j.Log4jLoggerAdapter;
+import org.apache.dubbo.common.logger.log4j2.Log4j2LoggerAdapter;
 import org.apache.dubbo.common.logger.slf4j.Slf4jLoggerAdapter;
 import org.apache.dubbo.common.logger.support.FailsafeLogger;
 
@@ -30,6 +31,7 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * Logger factory
+ * add log4j2, to be compatible with old version, we keep log4j
  */
 public class LoggerFactory {
 
@@ -37,6 +39,7 @@ public class LoggerFactory {
     private static volatile LoggerAdapter LOGGER_ADAPTER;
 
     // search common-used logging frameworks
+
     static {
         String logger = System.getProperty("dubbo.application.logger");
         if ("slf4j".equals(logger)) {
@@ -47,6 +50,8 @@ public class LoggerFactory {
             setLoggerAdapter(new Log4jLoggerAdapter());
         } else if ("jdk".equals(logger)) {
             setLoggerAdapter(new JdkLoggerAdapter());
+        } else if("log4j2".equals(logger)){
+            setLoggerAdapter(new Log4j2LoggerAdapter());
         } else {
             try {
                 setLoggerAdapter(new Log4jLoggerAdapter());

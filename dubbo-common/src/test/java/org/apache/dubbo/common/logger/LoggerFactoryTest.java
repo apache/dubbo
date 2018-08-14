@@ -35,7 +35,7 @@ public class LoggerFactoryTest {
 
     @Test
     public void testGetLogFile() {
-        LoggerFactory.setLoggerAdapter("slf4j");
+        LoggerFactory.setLoggerAdapter("log4j2");
         File file = LoggerFactory.getFile();
 
         assertThat(file, is(nullValue()));
