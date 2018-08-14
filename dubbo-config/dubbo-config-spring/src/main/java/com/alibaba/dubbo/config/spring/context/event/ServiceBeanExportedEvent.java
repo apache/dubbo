@@ -29,14 +29,14 @@ import org.springframework.context.ApplicationListener;
  * @see ServiceBean
  * @since 2.6.4
  */
-public class ServiceBeanExportEvent extends ApplicationEvent {
+public class ServiceBeanExportedEvent extends ApplicationEvent {
 
     /**
      * Create a new ApplicationEvent.
      *
      * @param serviceBean {@link ServiceBean} bean
      */
-    public ServiceBeanExportEvent(ServiceBean serviceBean) {
+    public ServiceBeanExportedEvent(ServiceBean serviceBean) {
         super(serviceBean);
     }
 

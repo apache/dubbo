@@ -18,7 +18,7 @@ package com.alibaba.dubbo.config.spring;
 
 import com.alibaba.dubbo.config.*;
 import com.alibaba.dubbo.config.annotation.Service;
-import com.alibaba.dubbo.config.spring.context.event.ServiceBeanExportEvent;
+import com.alibaba.dubbo.config.spring.context.event.ServiceBeanExportedEvent;
 import com.alibaba.dubbo.config.spring.extension.SpringExtensionFactory;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.BeanFactoryUtils;
@@ -278,7 +278,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
     @Override
     public void export() {
         super.export();
-        // Publish ServiceBeanExportEvent
+        // Publish ServiceBeanExportedEvent
         publishExportEvent();
     }
 
@@ -286,7 +286,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
      * @since 2.6.4
      */
     private void publishExportEvent() {
-        ServiceBeanExportEvent exportEvent = new ServiceBeanExportEvent(this);
+        ServiceBeanExportedEvent exportEvent = new ServiceBeanExportedEvent(this);
         applicationEventPublisher.publishEvent(exportEvent);
     }
 

@@ -19,7 +19,7 @@ package com.alibaba.dubbo.config.spring.beans.factory.annotation;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.spring.ReferenceBean;
 import com.alibaba.dubbo.config.spring.ServiceBean;
-import com.alibaba.dubbo.config.spring.context.event.ServiceBeanExportEvent;
+import com.alibaba.dubbo.config.spring.context.event.ServiceBeanExportedEvent;
 import com.alibaba.spring.beans.factory.annotation.AnnotationInjectedBeanPostProcessor;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
@@ -212,14 +212,14 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
 
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
-        if (event instanceof ServiceBeanExportEvent) {
-            onServiceBeanExportEvent((ServiceBeanExportEvent) event);
+        if (event instanceof ServiceBeanExportedEvent) {
+            onServiceBeanExportEvent((ServiceBeanExportedEvent) event);
         } else if (event instanceof ContextRefreshedEvent) {
             onContextRefreshedEvent((ContextRefreshedEvent) event);
         }
     }
 
-    private void onServiceBeanExportEvent(ServiceBeanExportEvent event) {
+    private void onServiceBeanExportEvent(ServiceBeanExportedEvent event) {
         ServiceBean serviceBean = event.getServiceBean();
         initReferenceBeanInvocationHandler(serviceBean);
     }
