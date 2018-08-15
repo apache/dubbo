@@ -11,7 +11,7 @@ cache:
   - '$HOME/.m2/repository'
 
 install:
-  - ./mvnw clean install -DskipTests=true -Dcheckstyle.skip=false -Dmaven.javadoc.skip=false -Drat.skip=false
+  - ./mvnw clean install -DskipTests=true -Dcheckstyle.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true
 
 script:
     - travis_wait 30 ./mvnw test
