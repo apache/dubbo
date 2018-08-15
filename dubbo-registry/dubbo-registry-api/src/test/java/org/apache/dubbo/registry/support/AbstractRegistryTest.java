@@ -16,18 +16,22 @@
  */
 package org.apache.dubbo.registry.support;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
-import org.apache.dubbo.common.Constants;
+import org.hamcrest.Matchers;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.After;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * AbstractRegistryTest
@@ -35,16 +39,28 @@ import java.util.concurrent.CountDownLatch;
 public class AbstractRegistryTest {
 
     private URL testUrl;
+    private URL mockUrl;
     private NotifyListener listener;
     private AbstractRegistry abstractRegistry;
     private boolean notifySuccess;
-    private int threadNumber;
+    private Map<String, String> parametersConsumer = new LinkedHashMap<>();
 
     @Before
     public void init() {
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":2233");
         testUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A&interface=com.test");
-        threadNumber = 100;
+        mockUrl = new URL("dubbo", "127.0.0.0", 2200);
+
+        parametersConsumer.put("application", "demo-consumer");
+        parametersConsumer.put("category", "consumer");
+        parametersConsumer.put("check", "false");
+        parametersConsumer.put("dubbo", "2.0.2");
+        parametersConsumer.put("interface", "org.apache.dubbo.demo.DemoService");
+        parametersConsumer.put("methods", "sayHello");
+        parametersConsumer.put("pid", "1676");
+        parametersConsumer.put("qos.port", "333333");
+        parametersConsumer.put("side", "consumer");
+        parametersConsumer.put("timestamp", String.valueOf(System.currentTimeMillis()));
 
         // init the object
         abstractRegistry = new AbstractRegistry(url) {
@@ -71,56 +87,23 @@ public class AbstractRegistryTest {
      * @throws Exception
      */
     @Test
-    public void testRegister() {
-        // check parameters
-        try {
-            abstractRegistry.register(null);
-            Assert.fail();
-        } catch (Exception e) {
-            Assert.assertTrue(e instanceof IllegalArgumentException);
+    public void testRegister() throws Exception {
+        //test one url
+        abstractRegistry.register(mockUrl);
+        assert abstractRegistry.getRegistered().contains(mockUrl);
+        //test multiple urls
+        abstractRegistry.getRegistered().clear();
+        List<URL> urlList = getList();
+        for (URL url : urlList) {
+            abstractRegistry.register(url);
         }
-        // check if register successfully
-        int beginSize = abstractRegistry.getRegistered().size();
-        abstractRegistry.register(testUrl);
-        Assert.assertEquals(beginSize + 1, abstractRegistry.getRegistered().size());
-        // check register when the url is the same
-        abstractRegistry.register(testUrl);
-        Assert.assertEquals(beginSize + 1, abstractRegistry.getRegistered().size());
+        Assert.assertThat(abstractRegistry.getRegistered().size(), Matchers.equalTo(urlList.size()));
     }
 
-    /**
-     * Multi thread test method for
-     * {@link org.apache.dubbo.registry.support.AbstractRegistry#register(URL)}.
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testRegisterMultiThread() {
-        int threadBeginSize = abstractRegistry.getRegistered().size();
-        CountDownLatch countDownLatch = new CountDownLatch(threadNumber);
-        Thread[] threads = new Thread[threadNumber];
-        for (int i = 0; i < threadNumber; i++){
-            URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + i);
-            threads[i] = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    abstractRegistry.register(url);
-                    countDownLatch.countDown();
-                }
-            });
-        }
-        for (int i = 0; i < threadNumber; i++){
-            threads[i].run();
-        }
-
-        try {
-            // wait for all thread done
-            countDownLatch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        Assert.assertEquals(threadBeginSize + threadNumber, abstractRegistry.getRegistered().size());
+    @Test(expected = IllegalArgumentException.class)
+    public void testRegisterIfURLNULL() throws Exception {
+        abstractRegistry.register(null);
+        Assert.fail("register url == null");
     }
 
     /**
@@ -130,70 +113,80 @@ public class AbstractRegistryTest {
      * @throws Exception
      */
     @Test
-    public void testUnregister() {
-        // check parameters
-        try {
-            abstractRegistry.unregister(null);
-            Assert.fail();
-        } catch (Exception e) {
-            Assert.assertTrue(e instanceof IllegalArgumentException);
+    public void testUnregister() throws Exception {
+        //test one unregister
+        URL url = new URL("dubbo", "127.0.0.0", 2200);
+        abstractRegistry.getRegistered().add(url);
+        abstractRegistry.unregister(url);
+        Assert.assertThat(false, Matchers.equalTo(abstractRegistry.getRegistered().contains(url)));
+        //test multiple unregisters
+        abstractRegistry.getRegistered().clear();
+        List<URL> urlList = getList();
+        for (URL urlSub : urlList) {
+            abstractRegistry.getRegistered().add(urlSub);
         }
+        for (URL urlSub : urlList) {
+            abstractRegistry.unregister(urlSub);
+        }
+        Assert.assertThat(0, Matchers.equalTo(abstractRegistry.getRegistered().size()));
+    }
 
-        int beginSize = abstractRegistry.getRegistered().size();
-        // test unregister before register
-        abstractRegistry.unregister(testUrl);
-        Assert.assertEquals(beginSize, abstractRegistry.getRegistered().size());
-
-        // test register then unregister
-        abstractRegistry.register(testUrl);
-        Assert.assertEquals(beginSize + 1, abstractRegistry.getRegistered().size());
-        abstractRegistry.unregister(testUrl);
-        Assert.assertEquals(beginSize, abstractRegistry.getRegistered().size());
-        // test double unregister after register
-        abstractRegistry.unregister(testUrl);
-        Assert.assertEquals(beginSize, abstractRegistry.getRegistered().size());
+    @Test(expected = IllegalArgumentException.class)
+    public void testUnregisterIfUrlNull() throws Exception {
+        abstractRegistry.unregister(null);
+        Assert.fail("unregister url == null");
     }
 
     /**
-     * Multi thread test method for
-     * {@link org.apache.dubbo.registry.support.AbstractRegistry#unregister(URL)}.
-     *
-     * @throws Exception
+     * test subscribe and unsubscribe
      */
     @Test
-    public void testUnregisterMultiThread() {
-        int threadBeginSize = abstractRegistry.getRegistered().size();
-        CountDownLatch countDownLatch = new CountDownLatch(threadNumber);
-        Thread[] threads = new Thread[threadNumber];
+    public void testSubscribeAndUnsubscribe() throws Exception {
+        //test subscribe
+        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+        NotifyListener listener = urls -> notified.set(Boolean.TRUE);
+        URL url = new URL("dubbo", "127.0.0.0", 2200);
+        abstractRegistry.subscribe(url, listener);
+        Set<NotifyListener> subscribeListeners = abstractRegistry.getSubscribed().get(url);
+        Assert.assertThat(true, Matchers.equalTo(subscribeListeners.contains(listener)));
+        //test unsubscribe
+        abstractRegistry.unsubscribe(url, listener);
+        Set<NotifyListener> unsubscribeListeners = abstractRegistry.getSubscribed().get(url);
+        Assert.assertThat(false, Matchers.equalTo(unsubscribeListeners.contains(listener)));
+    }
 
-        for(int i = 0; i < threadNumber; i++){
-            URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + i);
-            abstractRegistry.register(url);
-        }
-        Assert.assertEquals(threadBeginSize + threadNumber, abstractRegistry.getRegistered().size());
+    @Test(expected = IllegalArgumentException.class)
+    public void testSubscribeIfUrlNull() throws Exception {
+        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+        NotifyListener listener = urls -> notified.set(Boolean.TRUE);
+        URL url = new URL("dubbo", "127.0.0.0", 2200);
+        abstractRegistry.subscribe(null, listener);
+        Assert.fail("subscribe url == null");
+    }
 
-        // unregister by multi thread
-        for (int i = 0; i < threadNumber; i++){
-            URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + i);
-            threads[i] = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    abstractRegistry.unregister(url);
-                    countDownLatch.countDown();
-                }
-            });
-        }
-        for(int i = 0; i < threadNumber; i++){
-            threads[i].run();
-        }
+    @Test(expected = IllegalArgumentException.class)
+    public void testSubscribeIfListenerNull() throws Exception {
+        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+        NotifyListener listener = urls -> notified.set(Boolean.TRUE);
+        URL url = new URL("dubbo", "127.0.0.0", 2200);
+        abstractRegistry.subscribe(url, null);
+        Assert.fail("listener url == null");
+    }
 
-        try {
-            // wait for all thread done
-            countDownLatch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        Assert.assertEquals(threadBeginSize, abstractRegistry.getRegistered().size());
+    @Test(expected = IllegalArgumentException.class)
+    public void testUnsubscribeIfUrlNull() throws Exception {
+        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+        NotifyListener listener = urls -> notified.set(Boolean.TRUE);
+        abstractRegistry.unsubscribe(null, listener);
+        Assert.fail("unsubscribe url == null");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testUnsubscribeIfNotifyNull() throws Exception {
+        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+        URL url = new URL("dubbo", "127.0.0.0", 2200);
+        abstractRegistry.unsubscribe(url, null);
+        Assert.fail("unsubscribe listener == null");
     }
 
     /**
@@ -203,14 +196,7 @@ public class AbstractRegistryTest {
      * @throws Exception
      */
     @Test
-    public void testSubscribe() {
-        // check parameters
-        try {
-            abstractRegistry.subscribe(null, listener);
-            Assert.fail();
-        } catch (Exception e) {
-            Assert.assertTrue(e instanceof IllegalArgumentException);
-        }
+    public void testSubscribe() throws Exception {
         // check parameters
         try {
             abstractRegistry.subscribe(testUrl, null);
@@ -233,58 +219,13 @@ public class AbstractRegistryTest {
     }
 
     /**
-     * Multi thread test method for
-     * {@link org.apache.dubbo.registry.support.AbstractRegistry#subscribe(URL, NotifyListener)}.
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testSubscribeMultiThread() {
-        CountDownLatch countDownLatch = new CountDownLatch(threadNumber);
-        Thread[] threads = new Thread[threadNumber];
-        NotifyListener[] listeners = new NotifyListener[threadNumber];
-        for (int i = 0; i<threadNumber; i++) {
-            listeners[i] = urls->notifySuccess = true;
-        }
-        for (int i = 0; i<threadNumber; i++) {
-            NotifyListener notifyListener = listeners[i];
-            threads[i] = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    abstractRegistry.subscribe(testUrl, notifyListener);
-                    countDownLatch.countDown();
-                }
-            });
-            threads[i].run();
-        }
-
-        try {
-            // wait for all thread done
-            countDownLatch.await();
-            for (int i = 0; i < threadNumber; i++) {
-                Assert.assertNotNull(abstractRegistry.getSubscribed().get(testUrl));
-                Assert.assertTrue(abstractRegistry.getSubscribed().get(testUrl).contains(listeners[i]));
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
      * Test method for
      * {@link org.apache.dubbo.registry.support.AbstractRegistry#unsubscribe(URL, NotifyListener)}.
      *
      * @throws Exception
      */
     @Test
-    public void testUnsubscribe() {
-        // check parameters
-        try {
-            abstractRegistry.unsubscribe(null, listener);
-            Assert.fail();
-        } catch (Exception e) {
-            Assert.assertTrue(e instanceof IllegalArgumentException);
-        }
+    public void testUnsubscribe() throws Exception {
         // check parameters
         try {
             abstractRegistry.unsubscribe(testUrl, null);
@@ -310,44 +251,6 @@ public class AbstractRegistryTest {
     }
 
     /**
-     * Multi thread test method for
-     * {@link org.apache.dubbo.registry.support.AbstractRegistry#unsubscribe(URL, NotifyListener)}.
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testUnsubscribeMultiThread() {
-        CountDownLatch countDownLatch = new CountDownLatch(threadNumber);
-        Thread[] threads = new Thread[threadNumber];
-        NotifyListener[] listeners = new NotifyListener[threadNumber];
-        for (int i = 0; i < threadNumber; i++) {
-            listeners[i] = urls->notifySuccess=true;
-            abstractRegistry.subscribe(testUrl, listeners[i]);
-        }
-        for (int i = 0; i < threadNumber; i++){
-            NotifyListener notifyListener = listeners[i];
-            threads[i] = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    abstractRegistry.unsubscribe(testUrl, notifyListener);
-                    countDownLatch.countDown();
-                }
-            });
-            threads[i].run();
-        }
-
-        try {
-            // wait for all thread done
-            countDownLatch.await();
-            for(int i = 0; i < threadNumber; i++) {
-                Assert.assertFalse(abstractRegistry.getSubscribed().get(testUrl).contains(listener));
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
      * Test method for
      * {@link org.apache.dubbo.registry.support.AbstractRegistry#recover()}.
      */
@@ -366,6 +269,20 @@ public class AbstractRegistryTest {
         Assert.assertTrue(abstractRegistry.getRegistered().contains(testUrl));
         Assert.assertNotNull(abstractRegistry.getSubscribed().get(testUrl));
         Assert.assertTrue(abstractRegistry.getSubscribed().get(testUrl).contains(listener));
+
+    }
+
+    @Test
+    public void testRecover2() throws Exception {
+        List<URL> list = getList();
+        abstractRegistry.recover();
+        Assert.assertEquals(0, abstractRegistry.getRegistered().size());
+        for (URL url : list) {
+            abstractRegistry.register(url);
+        }
+        Assert.assertEquals(3, abstractRegistry.getRegistered().size());
+        abstractRegistry.recover();
+        Assert.assertEquals(3, abstractRegistry.getRegistered().size());
     }
 
     /**
@@ -373,24 +290,94 @@ public class AbstractRegistryTest {
      * {@link org.apache.dubbo.registry.support.AbstractRegistry#notify(List)}.
      */
     @Test
-    public void testNotify() {
-        abstractRegistry.subscribe(testUrl, listener);
-        // check parameters
-        Assert.assertFalse(notifySuccess);
-        abstractRegistry.notify(null);
-        Assert.assertFalse(notifySuccess);
-
+    public void testNotify() throws Exception {
+        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+        NotifyListener listner1 = urls -> notified.set(Boolean.TRUE);
+        URL url1 = new URL("dubbo", "127.0.0.0", 2200, parametersConsumer);
+        abstractRegistry.subscribe(url1, listner1);
+        NotifyListener listner2 = urls -> notified.set(Boolean.TRUE);
+        URL url2 = new URL("dubbo", "127.0.0.1", 2201, parametersConsumer);
+        abstractRegistry.subscribe(url2, listner2);
+        NotifyListener listner3 = urls -> notified.set(Boolean.TRUE);
+        URL url3 = new URL("dubbo", "127.0.0.2", 2202, parametersConsumer);
+        abstractRegistry.subscribe(url3, listner3);
         List<URL> urls = new ArrayList<>();
-        Assert.assertFalse(notifySuccess);
-        abstractRegistry.notify(urls);
-        Assert.assertFalse(notifySuccess);
-
-        urls.add(testUrl);
-        // check if notify successfully
-        Assert.assertFalse(notifySuccess);
-        abstractRegistry.notify(urls);
-        Assert.assertTrue(notifySuccess);
+        urls.add(url1);
+        urls.add(url2);
+        urls.add(url3);
+        abstractRegistry.notify(url1, listner1, urls);
+        Map<URL, Map<String, List<URL>>> map = abstractRegistry.getNotified();
+        Assert.assertThat(true, Matchers.equalTo(map.containsKey(url1)));
+        Assert.assertThat(false, Matchers.equalTo(map.containsKey(url2)));
+        Assert.assertThat(false, Matchers.equalTo(map.containsKey(url3)));
     }
+
+    /**
+     * test notifyList
+     */
+    @Test
+    public void testNotifyList() throws Exception {
+        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+        NotifyListener listner1 = urls -> notified.set(Boolean.TRUE);
+        URL url1 = new URL("dubbo", "127.0.0.0", 2200, parametersConsumer);
+        abstractRegistry.subscribe(url1, listner1);
+        NotifyListener listner2 = urls -> notified.set(Boolean.TRUE);
+        URL url2 = new URL("dubbo", "127.0.0.1", 2201, parametersConsumer);
+        abstractRegistry.subscribe(url2, listner2);
+        NotifyListener listner3 = urls -> notified.set(Boolean.TRUE);
+        URL url3 = new URL("dubbo", "127.0.0.2", 2202, parametersConsumer);
+        abstractRegistry.subscribe(url3, listner3);
+        List<URL> urls = new ArrayList<>();
+        urls.add(url1);
+        urls.add(url2);
+        urls.add(url3);
+        abstractRegistry.notify(urls);
+        Map<URL, Map<String, List<URL>>> map = abstractRegistry.getNotified();
+        Assert.assertThat(true, Matchers.equalTo(map.containsKey(url1)));
+        Assert.assertThat(true, Matchers.equalTo(map.containsKey(url2)));
+        Assert.assertThat(true, Matchers.equalTo(map.containsKey(url3)));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testNotifyIfURLNull() throws Exception {
+        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+        NotifyListener listner1 = urls -> notified.set(Boolean.TRUE);
+        URL url1 = new URL("dubbo", "127.0.0.0", 2200, parametersConsumer);
+        abstractRegistry.subscribe(url1, listner1);
+        NotifyListener listner2 = urls -> notified.set(Boolean.TRUE);
+        URL url2 = new URL("dubbo", "127.0.0.1", 2201, parametersConsumer);
+        abstractRegistry.subscribe(url2, listner2);
+        NotifyListener listner3 = urls -> notified.set(Boolean.TRUE);
+        URL url3 = new URL("dubbo", "127.0.0.2", 2202, parametersConsumer);
+        abstractRegistry.subscribe(url3, listner3);
+        List<URL> urls = new ArrayList<>();
+        urls.add(url1);
+        urls.add(url2);
+        urls.add(url3);
+        abstractRegistry.notify(null, listner1, urls);
+        Assert.fail("notify url == null");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testNotifyIfNotifyNull() {
+        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+        NotifyListener listner1 = urls -> notified.set(Boolean.TRUE);
+        URL url1 = new URL("dubbo", "127.0.0.0", 2200, parametersConsumer);
+        abstractRegistry.subscribe(url1, listner1);
+        NotifyListener listner2 = urls -> notified.set(Boolean.TRUE);
+        URL url2 = new URL("dubbo", "127.0.0.1", 2201, parametersConsumer);
+        abstractRegistry.subscribe(url2, listner2);
+        NotifyListener listner3 = urls -> notified.set(Boolean.TRUE);
+        URL url3 = new URL("dubbo", "127.0.0.2", 2202, parametersConsumer);
+        abstractRegistry.subscribe(url3, listner3);
+        List<URL> urls = new ArrayList<>();
+        urls.add(url1);
+        urls.add(url2);
+        urls.add(url3);
+        abstractRegistry.notify(url1, null, urls);
+        Assert.fail("notify listener == null");
+    }
+
 
     /**
      * Test method for
@@ -399,7 +386,7 @@ public class AbstractRegistryTest {
      * @throws Exception
      */
     @Test
-    public void testNotifyThreeArgs() {
+    public void testNotifyArgs() throws Exception {
         // check parameters
         try {
             abstractRegistry.notify(null, null, null);
@@ -435,7 +422,7 @@ public class AbstractRegistryTest {
     }
 
     @Test
-    public void filterEmptyTest() {
+    public void filterEmptyTest() throws Exception {
         // check parameters
         try {
             AbstractRegistry.filterEmpty(null, null);
@@ -468,7 +455,7 @@ public class AbstractRegistryTest {
 
 
     @Test
-    public void lookupTest(){
+    public void lookupTest() throws Exception {
         // loop up before registry
         try {
             abstractRegistry.lookup(null);
@@ -488,33 +475,44 @@ public class AbstractRegistryTest {
     }
 
     @Test
-    public void destroyTest(){
+    public void destroyTest() throws Exception {
         abstractRegistry.register(testUrl);
         abstractRegistry.subscribe(testUrl, listener);
-        Assert.assertEquals(1,abstractRegistry.getRegistered().size());
-        Assert.assertEquals(1,abstractRegistry.getSubscribed().get(testUrl).size());
+        Assert.assertEquals(1, abstractRegistry.getRegistered().size());
+        Assert.assertEquals(1, abstractRegistry.getSubscribed().get(testUrl).size());
         // delete listener and register
         abstractRegistry.destroy();
-        Assert.assertEquals(0,abstractRegistry.getRegistered().size());
-        Assert.assertEquals(0,abstractRegistry.getSubscribed().get(testUrl).size());
+        Assert.assertEquals(0, abstractRegistry.getRegistered().size());
+        Assert.assertEquals(0, abstractRegistry.getSubscribed().get(testUrl).size());
     }
 
     @Test
-    public void allTest(){
+    public void allTest() throws Exception {
         // test all methods
         List<URL> urls = new ArrayList<>();
         urls.add(testUrl);
         // register, subscribe, notify, unsubscribe, unregister
         abstractRegistry.register(testUrl);
         Assert.assertTrue(abstractRegistry.getRegistered().contains(testUrl));
-        abstractRegistry.subscribe(testUrl,listener);
+        abstractRegistry.subscribe(testUrl, listener);
         Assert.assertTrue(abstractRegistry.getSubscribed().containsKey(testUrl));
         Assert.assertFalse(notifySuccess);
         abstractRegistry.notify(urls);
         Assert.assertTrue(notifySuccess);
-        abstractRegistry.unsubscribe(testUrl,listener);
+        abstractRegistry.unsubscribe(testUrl, listener);
         Assert.assertFalse(abstractRegistry.getSubscribed().containsKey(listener));
         abstractRegistry.unregister(testUrl);
         Assert.assertFalse(abstractRegistry.getRegistered().contains(testUrl));
+    }
+
+    private List<URL> getList() {
+        List<URL> list = new ArrayList<>();
+        URL url1 = new URL("dubbo", "127.0.0.0", 1000);
+        URL url2 = new URL("dubbo", "127.0.0.1", 1001);
+        URL url3 = new URL("dubbo", "127.0.0.2", 1002);
+        list.add(url1);
+        list.add(url2);
+        list.add(url3);
+        return list;
     }
 }
