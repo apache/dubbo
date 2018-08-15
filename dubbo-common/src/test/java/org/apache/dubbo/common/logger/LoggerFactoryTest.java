@@ -41,6 +41,7 @@ public class LoggerFactoryTest {
         assertThat(file, is(nullValue()));
     }
 
+
     @Test
     public void testAllLogLevel() {
         for (Level targetLevel : Level.values()) {
