@@ -205,6 +205,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             return;
         }
 
+        appendProperties(this);
         if (delay != null && delay > 0) {
             delayExportExecutor.schedule(new Runnable() {
                 @Override
@@ -309,7 +310,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         checkApplication();
         checkRegistry();
         checkProtocol();
-        appendProperties(this);
+//        appendProperties(this);
         checkStubAndMock(interfaceClass);
         if (path == null || path.length() == 0) {
             path = interfaceName;
