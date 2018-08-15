@@ -21,6 +21,7 @@ import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
 import org.apache.dubbo.config.spring.impl.HelloServiceImpl;
 
+import org.apache.dubbo.rpc.Protocol;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -47,6 +48,12 @@ public class SpringExtensionFactoryTest {
         context2.refresh();
         SpringExtensionFactory.addApplicationContext(context1);
         SpringExtensionFactory.addApplicationContext(context2);
+    }
+
+    @Test
+    public void testGetExtensionBySPI() {
+        Protocol protocol = springExtensionFactory.getExtension(Protocol.class, "protocol");
+        Assert.assertNull(protocol);
     }
 
     @Test

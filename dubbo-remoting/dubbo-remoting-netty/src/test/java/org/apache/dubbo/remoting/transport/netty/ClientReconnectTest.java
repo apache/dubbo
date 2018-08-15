@@ -80,7 +80,7 @@ public class ClientReconnectTest {
     public void testReconnectWarnLog() throws RemotingException, InterruptedException {
         int port = NetUtils.getAvailablePort();
         DubboAppender.doStart();
-        String url = "exchange://127.0.0.2:" + port + "/client.reconnect.test?check=false&"
+        String url = "exchange://127.0.0.2:" + port + "/client.reconnect.test?check=false&client=netty3&"
                 + Constants.RECONNECT_KEY + "=" + 1; //1ms reconnect, ensure that there is enough frequency to reconnect
         try {
             Exchangers.connect(url);
@@ -97,12 +97,12 @@ public class ClientReconnectTest {
     }
 
     public Client startClient(int port, int reconnectPeriod) throws RemotingException {
-        final String url = "exchange://127.0.0.1:" + port + "/client.reconnect.test?check=false&" + Constants.RECONNECT_KEY + "=" + reconnectPeriod;
+        final String url = "exchange://127.0.0.1:" + port + "/client.reconnect.test?check=false&client=netty3&" + Constants.RECONNECT_KEY + "=" + reconnectPeriod;
         return Exchangers.connect(url);
     }
 
     public Server startServer(int port) throws RemotingException {
-        final String url = "exchange://127.0.0.1:" + port + "/client.reconnect.test";
+        final String url = "exchange://127.0.0.1:" + port + "/client.reconnect.test?server=netty3";
         return Exchangers.bind(url, new HandlerAdapter());
     }
 

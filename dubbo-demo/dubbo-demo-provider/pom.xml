@@ -53,7 +53,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-remoting-netty</artifactId>
+            <artifactId>dubbo-remoting-netty4</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
