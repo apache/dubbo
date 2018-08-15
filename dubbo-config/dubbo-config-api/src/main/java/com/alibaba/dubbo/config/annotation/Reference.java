@@ -78,7 +78,7 @@ public @interface Reference {
 
     String layer() default "";
 
-    int retries() default 0;
+    int retries() default 2;
 
     String loadbalance() default "";
 
