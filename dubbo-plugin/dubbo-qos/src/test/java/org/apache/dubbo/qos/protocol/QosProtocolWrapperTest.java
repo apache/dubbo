@@ -42,9 +42,9 @@ public class QosProtocolWrapperTest {
 
     @Before
     public void setUp() throws Exception {
-        when(url.getParameter(Constants.QOS_ENABLE, "true")).thenReturn("true");
-        when(url.getParameter(Constants.QOS_PORT, "22222")).thenReturn("12345");
-        when(url.getParameter(Constants.ACCEPT_FOREIGN_IP, "true")).thenReturn("false");
+        when(url.getParameter(Constants.QOS_ENABLE, true)).thenReturn(true);
+        when(url.getParameter(Constants.QOS_PORT, 22222)).thenReturn(12345);
+        when(url.getParameter(Constants.ACCEPT_FOREIGN_IP, true)).thenReturn(false);
         when(invoker.getUrl()).thenReturn(url);
         when(url.getProtocol()).thenReturn(Constants.REGISTRY_PROTOCOL);
     }
