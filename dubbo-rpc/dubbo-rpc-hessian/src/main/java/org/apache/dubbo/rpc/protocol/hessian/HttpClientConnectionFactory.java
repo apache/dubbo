@@ -45,7 +45,7 @@ public class HttpClientConnectionFactory implements HessianConnectionFactory {
     }
 
     @Override
-    public HessianConnection open(URL url) throws IOException {
+    public HessianConnection open(URL url) {
         RequestConfig requestConfig = RequestConfig.custom()
             .setConnectionRequestTimeout((int)this.hessianProxyFactory.getConnectTimeout())
             .setSocketTimeout((int)this.hessianProxyFactory.getReadTimeout())
