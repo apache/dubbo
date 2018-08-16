@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.hessian;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.rpc.RpcContext;
+
 import com.caucho.hessian.client.HessianConnection;
 import com.caucho.hessian.client.HessianConnectionFactory;
 import com.caucho.hessian.client.HessianProxyFactory;
@@ -47,9 +48,9 @@ public class HttpClientConnectionFactory implements HessianConnectionFactory {
     @Override
     public HessianConnection open(URL url) {
         RequestConfig requestConfig = RequestConfig.custom()
-            .setConnectionRequestTimeout((int)this.hessianProxyFactory.getConnectTimeout())
-            .setSocketTimeout((int)this.hessianProxyFactory.getReadTimeout())
-            .build();
+                .setConnectionRequestTimeout((int) this.hessianProxyFactory.getConnectTimeout())
+                .setSocketTimeout((int) this.hessianProxyFactory.getReadTimeout())
+                .build();
         HttpClient httpClient = httpClientBuilder.setDefaultRequestConfig(requestConfig).build();
         HttpClientConnection httpClientConnection = new HttpClientConnection(httpClient, url);
         RpcContext context = RpcContext.getContext();
@@ -58,5 +59,4 @@ public class HttpClientConnectionFactory implements HessianConnectionFactory {
         }
         return httpClientConnection;
     }
-
 }
