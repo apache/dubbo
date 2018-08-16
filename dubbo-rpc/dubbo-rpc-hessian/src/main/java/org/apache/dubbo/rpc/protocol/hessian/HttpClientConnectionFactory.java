@@ -36,7 +36,6 @@ import java.net.URL;
  */
 public class HttpClientConnectionFactory implements HessianConnectionFactory {
 
-    private final HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
     private HttpClient httpClient;
 
     @Override
@@ -45,7 +44,7 @@ public class HttpClientConnectionFactory implements HessianConnectionFactory {
                 .setConnectionRequestTimeout((int) factory.getConnectTimeout())
                 .setSocketTimeout((int) factory.getReadTimeout())
                 .build();
-        httpClient = httpClientBuilder.setDefaultRequestConfig(requestConfig).build();
+        httpClient = HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).build();
     }
 
     @Override
