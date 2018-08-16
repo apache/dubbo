@@ -37,21 +37,19 @@ import java.net.URL;
 public class HttpClientConnectionFactory implements HessianConnectionFactory {
 
     private final HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
-
-    private HessianProxyFactory hessianProxyFactory;
+    private HttpClient httpClient;
 
     @Override
     public void setHessianProxyFactory(HessianProxyFactory factory) {
-        this.hessianProxyFactory = factory;
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectionRequestTimeout((int) factory.getConnectTimeout())
+                .setSocketTimeout((int) factory.getReadTimeout())
+                .build();
+        httpClient = httpClientBuilder.setDefaultRequestConfig(requestConfig).build();
     }
 
     @Override
     public HessianConnection open(URL url) {
-        RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectionRequestTimeout((int) this.hessianProxyFactory.getConnectTimeout())
-                .setSocketTimeout((int) this.hessianProxyFactory.getReadTimeout())
-                .build();
-        HttpClient httpClient = httpClientBuilder.setDefaultRequestConfig(requestConfig).build();
         HttpClientConnection httpClientConnection = new HttpClientConnection(httpClient, url);
         RpcContext context = RpcContext.getContext();
         for (String key : context.getAttachments().keySet()) {
