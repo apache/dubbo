@@ -86,7 +86,7 @@ public class InvokerTelnetHandlerTest {
         // pass null value to parameter of primitive type
         try {
             invoke.telnet(mockChannel, "DemoService.add(null, 2)");
-            fail("It should cause a NullPointerException here.");
+            fail("It should cause a NullPointerException by the above code.");
         } catch (NullPointerException ex) {
             String message = ex.getMessage();
             assertEquals("The type of No.1 parameter is primitive(int), but the value passed is null.", message);
@@ -94,7 +94,7 @@ public class InvokerTelnetHandlerTest {
 
         try {
             invoke.telnet(mockChannel, "DemoService.add(1, null)");
-            fail("It should cause a NullPointerException here.");
+            fail("It should cause a NullPointerException by the above code.");
         } catch (NullPointerException ex) {
             String message = ex.getMessage();
             assertEquals("The type of No.2 parameter is primitive(long), but the value passed is null.", message);
@@ -104,7 +104,7 @@ public class InvokerTelnetHandlerTest {
         try {
             invoke.telnet(mockChannel, "DemoService.sayHello(null)");
         } catch (NullPointerException ex) {
-            fail("It shouldn't cause a NullPointerException here.");
+            fail("It shouldn't cause a NullPointerException by the above code.");
         }
     }
 
