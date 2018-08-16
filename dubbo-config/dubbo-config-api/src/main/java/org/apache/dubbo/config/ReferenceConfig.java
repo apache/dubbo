@@ -422,6 +422,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             c = true; // default true
         }
         if (c && !invoker.isAvailable()) {
+            // make it possible for consumer to retry later if provider is temporarily unavailable
+            initialized = false;
             throw new IllegalStateException("Failed to check the status of the service " + interfaceName + ". No provider available for the service " + (group == null ? "" : group + "/") + interfaceName + (version == null ? "" : ":" + version) + " from the url " + invoker.getUrl() + " to the consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion());
         }
         if (logger.isInfoEnabled()) {

@@ -234,10 +234,17 @@ public /**final**/ class URL implements Serializable {
             }
             url = url.substring(i + 1);
         }
-        i = url.indexOf(":");
+        i = url.lastIndexOf(":");
         if (i >= 0 && i < url.length() - 1) {
-            port = Integer.parseInt(url.substring(i + 1));
-            url = url.substring(0, i);
+            if (url.lastIndexOf("%") > i) {
+                // ipv6 address with scope id
+                // e.g. fe80:0:0:0:894:aeec:f37d:23e1%en0
+                // see https://howdoesinternetwork.com/2013/ipv6-zone-id
+                // ignore
+            } else {
+                port = Integer.parseInt(url.substring(i+1));
+                url = url.substring(0, i);
+            }
         }
         if (url.length() > 0) host = url;
         return new URL(protocol, username, password, host, port, path, parameters);

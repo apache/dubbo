@@ -17,8 +17,6 @@
 
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.utils.DubboAppender;
-import org.apache.dubbo.common.utils.Log;
 import org.apache.log4j.Category;
 import org.apache.log4j.Level;
 import org.apache.log4j.spi.LoggingEvent;

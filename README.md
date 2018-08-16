@@ -40,7 +40,7 @@ We are now collecting dubbo user info in order to help us to improve dubbo bette
 ```java
 package org.apache.dubbo.demo;
 
-public interface DemoService {
+public interface GreetingService {
     String sayHello(String name);
 }
 ```
@@ -50,9 +50,9 @@ public interface DemoService {
 ```java
 package org.apache.dubbo.demo.provider;
  
-import org.apache.dubbo.demo.DemoService;
+import org.apache.dubbo.demo.GreetingService;
  
-public class DemoServiceImpl implements DemoService {
+public class GreetingServiceImpl implements GreetingService {
     public String sayHello(String name) {
         return "Hello " + name;
     }
@@ -148,12 +148,12 @@ Please follow the [template](https://github.com/apache/incubator-dubbo/issues/ne
 
 Please report security vulnerability to security@dubbo.incubator.apache.org (private mailing list).
 
-## Ecosystem
+## [Ecosystem](https://github.com/dubbo)
 
-* [Dubbo website](https://github.com/apache/incubator-dubbo-website) - Apache Dubbo (incubating) official website
-* [Dubbo samples](https://github.com/dubbo/dubbo-samples) - samples for Apache Dubbo (incubating)
+* [Dubbo Website](https://github.com/apache/incubator-dubbo-website) - Apache Dubbo (incubating) official website
+* [Dubbo Samples](https://github.com/dubbo/dubbo-samples) - samples for Apache Dubbo (incubating)
 * [Dubbo Spring Boot](https://github.com/apache/incubator-dubbo-spring-boot-project) - Spring Boot Project for Dubbo
-* [Dubbo ops](https://github.com/apache/incubator-dubbo-ops) - The reference implementation for dubbo ops (dubbo-admin, dubbo-monitor, dubbo-registry-simple, etc.)
+* [Dubbo OPS](https://github.com/apache/incubator-dubbo-ops) - The reference implementation for dubbo ops (dubbo-admin, dubbo-monitor, dubbo-registry-simple, etc.)
 
 #### Language
 
