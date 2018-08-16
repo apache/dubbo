@@ -47,6 +47,12 @@ public class AvailableCluster implements Cluster {
                 }
                 throw new RpcException("No provider available in " + invokers);
             }
+
+            @Override
+            protected boolean needInitLoadBalance() {
+                // no need to init LoadBalance
+                return false;
+            }
         };
 
     }

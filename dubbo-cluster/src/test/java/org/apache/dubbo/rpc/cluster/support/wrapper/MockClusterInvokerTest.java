@@ -662,6 +662,12 @@ public class MockClusterInvokerTest {
                     return ((Invoker<?>) invokers.get(0)).invoke(invocation);
                 }
             }
+
+            @Override
+            protected boolean needInitLoadBalance() {
+                // no need to init LoadBalance
+                return false;
+            }
         };
         return new MockClusterInvoker<IHelloService>(dic, cluster);
     }
