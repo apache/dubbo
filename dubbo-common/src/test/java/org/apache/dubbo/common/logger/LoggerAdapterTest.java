@@ -22,6 +22,8 @@ import org.apache.dubbo.common.logger.jdk.JdkLogger;
 import org.apache.dubbo.common.logger.jdk.JdkLoggerAdapter;
 import org.apache.dubbo.common.logger.log4j.Log4jLogger;
 import org.apache.dubbo.common.logger.log4j.Log4jLoggerAdapter;
+import org.apache.dubbo.common.logger.log4j2.Log4j2Logger;
+import org.apache.dubbo.common.logger.log4j2.Log4j2LoggerAdapter;
 import org.apache.dubbo.common.logger.slf4j.Slf4jLogger;
 import org.apache.dubbo.common.logger.slf4j.Slf4jLoggerAdapter;
 import org.junit.Test;
@@ -42,7 +44,8 @@ public class LoggerAdapterTest {
                 {JclLoggerAdapter.class, JclLogger.class},
                 {JdkLoggerAdapter.class, JdkLogger.class},
                 {Log4jLoggerAdapter.class, Log4jLogger.class},
-                {Slf4jLoggerAdapter.class, Slf4jLogger.class}
+                {Slf4jLoggerAdapter.class, Slf4jLogger.class},
+                {Log4j2LoggerAdapter.class, Log4j2Logger.class},
         });
     }
 
