@@ -128,6 +128,27 @@ public class RestProtocolTest {
         exporter.unexport();
     }
 
+    @Test
+    public void testRpcContextFilter() {
+        ServiceClassHolder.getInstance().pushServiceClass(DemoService.class);
+
+        // use RpcContextFilter
+        URL nettyUrl = exportUrl.addParameter(Constants.SERVER_KEY, "netty")
+                .addParameter(Constants.EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.RpcContextFilter");
+        Exporter<IDemoService> exporter = protocol.export(proxy.getInvoker(new DemoService(), IDemoService.class, nettyUrl));
+
+        IDemoService demoService = this.proxy.getProxy(protocol.refer(IDemoService.class, nettyUrl));
+
+        String value = null;
+        // put a null value into attachment.
+        RpcContext.getContext().setAttachment("key", value);
+        Integer result = demoService.hello(1, 2);
+
+        assertThat(result, is(3));
+
+        exporter.unexport();
+    }
+
     @Test(expected = RuntimeException.class)
     public void testRegFail() {
         ServiceClassHolder.getInstance().pushServiceClass(DemoService.class);
