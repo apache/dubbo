@@ -106,6 +106,8 @@
         <jcl_version>1.2</jcl_version>
         <log4j_version>1.2.16</log4j_version>
         <logback_version>1.2.2</logback_version>
+        <log4j2_version>2.11.1</log4j2_version>
+
         <embedded_redis_version>0.6</embedded_redis_version>
 
         <jaxb_version>2.2.7</jaxb_version>
@@ -331,6 +333,17 @@
                 <artifactId>logback-classic</artifactId>
                 <version>${logback_version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-api</artifactId>
+                <version>${log4j2_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-core</artifactId>
+                <version>${log4j2_version}</version>
+            </dependency>
+
 
             <!-- for dubbo-rpc-webservice -->
             <dependency>
