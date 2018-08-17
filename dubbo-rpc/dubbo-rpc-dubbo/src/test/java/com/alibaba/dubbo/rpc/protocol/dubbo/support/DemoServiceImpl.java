@@ -103,4 +103,9 @@ public class DemoServiceImpl implements DemoService {
     public NonSerialized returnNonSerialized() {
         return new NonSerialized();
     }
+
+    public long add(int a, long b) {
+        return a + b;
+    }
+
 }
