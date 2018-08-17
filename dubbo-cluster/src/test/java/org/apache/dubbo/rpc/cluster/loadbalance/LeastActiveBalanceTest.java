@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.cluster.loadbalance;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -86,11 +87,10 @@ public class LeastActiveBalanceTest extends LoadBalanceBaseTest {
             for (int i = 0; i < length; i++) {
                 Invoker<T> invoker = invokers.get(i);
 
-                // mock active is invoker's url.getHost
-                int active = Integer.valueOf(invoker.getUrl().getHost()); // Active number
+                // Active number
+                int active = invoker.getUrl().getParameter("active", Constants.DEFAULT_WEIGHT);
 
-                // mock weight is invoker's url.getPort
-                int afterWarmup = invoker.getUrl().getPort();
+                int afterWarmup = invoker.getUrl().getParameter(Constants.WEIGHT_KEY, Constants.DEFAULT_WEIGHT);
 
                 if (leastActive == -1 || active < leastActive) { // Restart, when find a invoker having smaller least active value.
                     leastActive = active; // Record the current least active value
@@ -121,8 +121,8 @@ public class LeastActiveBalanceTest extends LoadBalanceBaseTest {
                 for (int i = 0; i < leastCount; i++) {
                     int leastIndex = leastIndexs[i];
 
-                    // mock weight is invoker's url.getPort
-                    offsetWeight -= invokers.get(leastIndex).getUrl().getPort();
+                    offsetWeight -= invokers.get(leastIndex).getUrl().getParameter(Constants.WEIGHT_KEY, Constants.DEFAULT_WEIGHT);
+
                     if (offsetWeight <= 0)
                         return invokers.get(leastIndex);
                 }

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.cluster.loadbalance;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -103,11 +104,11 @@ public class RandomLoadBalanceTest extends LoadBalanceBaseTest {
             for (int i = 0; i < length; i++) {
 
                 // mock weight
-                int weight = invokers.get(i).getUrl().getPort();
+                int weight = invokers.get(i).getUrl().getParameter(Constants.WEIGHT_KEY, Constants.DEFAULT_WEIGHT);
 
                 totalWeight += weight; // Sum
                 if (sameWeight && i > 0
-                        && weight != invokers.get(i - 1).getUrl().getPort()) {
+                        && weight != invokers.get(i - 1).getUrl().getParameter(Constants.WEIGHT_KEY, Constants.DEFAULT_WEIGHT)) {
                     sameWeight = false;
                 }
             }
@@ -116,7 +117,7 @@ public class RandomLoadBalanceTest extends LoadBalanceBaseTest {
                 int offset = random.nextInt(totalWeight);
                 // Return a invoker based on the random value.
                 for (int i = 0; i < length; i++) {
-                    offset -= invokers.get(i).getUrl().getPort();
+                    offset -= invokers.get(i).getUrl().getParameter(Constants.WEIGHT_KEY, Constants.DEFAULT_WEIGHT);
                     if (offset < 0) {
                         return invokers.get(i);
                     }

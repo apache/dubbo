@@ -159,8 +159,14 @@ public class LoadBalanceBaseTest {
         weightInvoker3 = mock(Invoker.class);
 
         URL url1 = URL.valueOf("test1://0:1/DemoService");
+        url1 = url1.addParameter(Constants.WEIGHT_KEY, 1);
+        url1 = url1.addParameter("active", 0);
         URL url2 = URL.valueOf("test2://0:9/DemoService");
+        url2 = url2.addParameter(Constants.WEIGHT_KEY, 9);
+        url2 = url2.addParameter("active", 0);
         URL url3 = URL.valueOf("test3://1:6/DemoService");
+        url3 = url3.addParameter(Constants.WEIGHT_KEY, 6);
+        url3 = url3.addParameter("active", 1);
 
         given(weightInvoker1.isAvailable()).willReturn(true);
         given(weightInvoker1.getUrl()).willReturn(url1);

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.cluster.loadbalance;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.AtomicPositiveInteger;
 import org.apache.dubbo.rpc.Invocation;
@@ -89,7 +90,7 @@ public class RoundRobinLoadBalanceTest extends LoadBalanceBaseTest {
             int weightSum = 0;
             for (int i = 0; i < length; i++) {
 
-                int weight = invokers.get(i).getUrl().getPort();
+                int weight = invokers.get(i).getUrl().getParameter(Constants.WEIGHT_KEY, Constants.DEFAULT_WEIGHT);
 
                 maxWeight = Math.max(maxWeight, weight); // Choose the maximum weight
                 minWeight = Math.min(minWeight, weight); // Choose the minimum weight
