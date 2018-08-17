@@ -58,12 +58,12 @@ public class LoggerFactory {
                     setLoggerAdapter(new Slf4jLoggerAdapter());
                 } catch (Throwable e2) {
                     try {
-                        setLoggerAdapter(new JclLoggerAdapter());
+                        setLoggerAdapter(new Log4j2LoggerAdapter());
                     } catch (Throwable e3) {
                         try {
-                            setLoggerAdapter(new JdkLoggerAdapter());
+                            setLoggerAdapter(new JclLoggerAdapter());
                         } catch (Throwable e4) {
-                            setLoggerAdapter(new Log4j2LoggerAdapter());
+                            setLoggerAdapter(new JdkLoggerAdapter());
                         }
                     }
                 }
