@@ -20,19 +20,11 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.exchange.Request;
-import org.apache.dubbo.remoting.exchange.Response;
-import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * AbstractChannel
  */
 public abstract class AbstractChannel extends AbstractPeer implements Channel {
-
-    private final Map<Long, Request> UN_FINISH_REQUESTS_MAP = new ConcurrentHashMap<Long, Request>();
 
     public AbstractChannel(URL url, ChannelHandler handler) {
         super(url, handler);
@@ -44,29 +36,6 @@ public abstract class AbstractChannel extends AbstractPeer implements Channel {
             throw new RemotingException(this, "Failed to send message "
                     + (message == null ? "" : message.getClass().getName()) + ":" + message
                     + ", cause: Channel closed. channel: " + getLocalAddress() + " -> " + getRemoteAddress());
-        }
-        if (message instanceof Request) {
-            Request r = (Request) message;
-            UN_FINISH_REQUESTS_MAP.put(r.getId(), r);
-        }
-    }
-
-    @Override
-    public void finishRequest(Response response) {
-        UN_FINISH_REQUESTS_MAP.remove(response.getId());
-    }
-
-    @Override
-    public void clearUnFinishedRequests() {
-        // clear unfinish requests when close the channel.
-        if (UN_FINISH_REQUESTS_MAP.size() > 0) {
-            for (Request r : UN_FINISH_REQUESTS_MAP.values()) {
-                Response disconnectResponse = new Response(r.getId());
-                disconnectResponse.setStatus(Response.CHANNEL_INACTIVE);
-                disconnectResponse.setErrorMessage("Channel " + this + " is inactive. Directly return the unFinished request.");
-                DefaultFuture.received(this, disconnectResponse);
-            }
-            UN_FINISH_REQUESTS_MAP.clear();
         }
     }
 

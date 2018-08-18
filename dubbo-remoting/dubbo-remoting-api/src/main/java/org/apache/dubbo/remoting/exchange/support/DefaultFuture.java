@@ -48,9 +48,14 @@ public class DefaultFuture implements ResponseFuture {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultFuture.class);
 
-    private static final Map<Long, Channel> CHANNELS = new ConcurrentHashMap<Long, Channel>();
+    private static final Map<Long, Channel> CHANNELS = new ConcurrentHashMap<>();
 
-    private static final Map<Long, DefaultFuture> FUTURES = new ConcurrentHashMap<Long, DefaultFuture>();
+    private static final Map<Long, DefaultFuture> FUTURES = new ConcurrentHashMap<>();
+
+    /**
+     * keep the unfinished request for every channel.
+     */
+    private static final Map<Channel, Map<Long, Request>> UNFINISHED_REQUESTS = new ConcurrentHashMap<>();
 
     public static final Timer TIME_OUT_TIMER = new HashedWheelTimer(
             new NamedThreadFactory("dubbo-future-timeout", true),
@@ -77,6 +82,23 @@ public class DefaultFuture implements ResponseFuture {
         // put into waiting map.
         FUTURES.put(id, this);
         CHANNELS.put(id, channel);
+    }
+
+    /**
+     * init a DefaultFuture
+     * 1.init a DefaultFuture
+     * 2.keep it into UNFINISHED_REQUESTS
+     *
+     * @param channel channel
+     * @param request the request
+     * @param timeout timeout
+     * @return a new DefaultFuture
+     */
+    public static DefaultFuture initFuture(Channel channel, Request request, int timeout) {
+        DefaultFuture future = new DefaultFuture(channel, request, timeout);
+        Map<Long, Request> unfinishedRequests = UNFINISHED_REQUESTS.computeIfAbsent(channel, c -> new ConcurrentHashMap<>());
+        unfinishedRequests.put(future.getId(), future.getRequest());
+        return future;
     }
 
     /**
@@ -108,11 +130,34 @@ public class DefaultFuture implements ResponseFuture {
         }
     }
 
+    /**
+     * close a channel when a channel is inactive
+     * directly return the unfinished requests.
+     *
+     * @param channel
+     */
+    public static void closeChannel(Channel channel) {
+        Map<Long, Request> unfinishedRequests = UNFINISHED_REQUESTS.remove(channel);
+        if (unfinishedRequests != null && unfinishedRequests.size() > 0) {
+            for (Request r : unfinishedRequests.values()) {
+                Response disconnectResponse = new Response(r.getId());
+                disconnectResponse.setStatus(Response.CHANNEL_INACTIVE);
+                disconnectResponse.setErrorMessage("Channel " + channel + " is inactive. Directly return the unFinished request.");
+                DefaultFuture.received(channel, disconnectResponse);
+            }
+            unfinishedRequests.clear();
+        }
+    }
+
     public static void received(Channel channel, Response response) {
         try {
             DefaultFuture future = FUTURES.remove(response.getId());
             if (future != null) {
                 future.doReceived(response);
+                Map<Long, Request> m = UNFINISHED_REQUESTS.get(channel);
+                if (m != null) {
+                    m.remove(response.getId());
+                }
             } else {
                 logger.warn("The timeout response finally returned at "
                         + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()))
@@ -318,4 +363,33 @@ public class DefaultFuture implements ResponseFuture {
                 + timeout + " ms, request: " + request + ", channel: " + channel.getLocalAddress()
                 + " -> " + channel.getRemoteAddress();
     }
+
+    private static class RemotingInvocationTimeoutScan implements Runnable {
+
+        @Override
+        public void run() {
+            while (true) {
+                try {
+                    for (DefaultFuture future : FUTURES.values()) {
+                        if (future == null || future.isDone()) {
+                            continue;
+                        }
+                        if (System.currentTimeMillis() - future.getStartTimestamp() > future.getTimeout()) {
+                            // create exception response.
+                            Response timeoutResponse = new Response(future.getId());
+                            // set timeout status.
+                            timeoutResponse.setStatus(future.isSent() ? Response.SERVER_TIMEOUT : Response.CLIENT_TIMEOUT);
+                            timeoutResponse.setErrorMessage(future.getTimeoutMessage(true));
+                            // handle response.
+                            DefaultFuture.received(future.getChannel(), timeoutResponse);
+                        }
+                    }
+                    Thread.sleep(30);
+                } catch (Throwable e) {
+                    logger.error("Exception when scan the timeout invocation of remoting.", e);
+                }
+            }
+        }
+    }
+
 }

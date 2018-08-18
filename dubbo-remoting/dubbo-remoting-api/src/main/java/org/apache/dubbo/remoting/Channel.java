@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.remoting;
 
-import org.apache.dubbo.remoting.exchange.Response;
-
 import java.net.InetSocketAddress;
 
 /**
@@ -73,18 +71,4 @@ public interface Channel extends Endpoint {
      * @param key key.
      */
     void removeAttribute(String key);
-
-    /**
-     * finish a request
-     *
-     * @param response response
-     */
-    default void finishRequest(Response response) {
-    }
-
-    /**
-     * clear un finished requests
-     */
-    default void clearUnFinishedRequests() {
-    }
 }

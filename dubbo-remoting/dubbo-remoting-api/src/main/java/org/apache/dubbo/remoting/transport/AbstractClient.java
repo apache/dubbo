@@ -30,7 +30,6 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Client;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
 
 import java.net.InetSocketAddress;
@@ -318,16 +317,6 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         } finally {
             connectLock.unlock();
         }
-    }
-
-    @Override
-    public void clearUnFinishedRequests() {
-        getChannel().clearUnFinishedRequests();
-    }
-
-    @Override
-    public void finishRequest(Response response) {
-        getChannel().finishRequest(response);
     }
 
     @Override
