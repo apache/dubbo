@@ -205,6 +205,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             return;
         }
 
+        delay = getGlobalServiceDelay();
+
         if (delay != null && delay > 0) {
             delayExportExecutor.schedule(new Runnable() {
                 @Override
@@ -214,6 +216,33 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             }, delay, TimeUnit.MILLISECONDS);
         } else {
             doExport();
+        }
+    }
+
+    /**
+     * Tries to get the value(ms) of the global service delay from the VM options or the properties file.
+     *
+     * @return the value(ms) of the global service delay, <code>null</code> if it not be assigned.
+     */
+    private Integer getGlobalServiceDelay() {
+        // try to get DUBBO_SERVICE_DELAY from the VM options first
+        String delayProperty = System.getProperty(Constants.DUBBO_SERVICE_DELAY_KEY);
+
+        if (delayProperty == null) {
+            // than try to get DUBBO_SERVICE_DELAY from the properties file
+            delayProperty = ConfigUtils.getProperty(Constants.DUBBO_SERVICE_DELAY_KEY);
+        }
+
+        // not assign DUBBO_SERVICE_DELAY in the VM options or the properties file
+        if (delayProperty == null) {
+            return null;
+        }
+
+        try {
+            return Integer.parseInt(delayProperty);
+        } catch (NumberFormatException ex) {
+            throw new IllegalArgumentException(
+                    "Invalid " + Constants.DUBBO_PROPERTIES_KEY + "=\"" + delayProperty + "\"");
         }
     }
 
