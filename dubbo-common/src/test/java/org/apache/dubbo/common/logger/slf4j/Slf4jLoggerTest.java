@@ -35,7 +35,6 @@ public class Slf4jLoggerTest {
         Slf4jLogger logger = new Slf4jLogger(locationAwareLogger);
 
         logger.error("error");
-        ;
 
         logger.warn("warn");
         logger.info("info");
