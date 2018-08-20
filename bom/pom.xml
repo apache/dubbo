@@ -14,7 +14,7 @@
 
     <groupId>com.alibaba</groupId>
     <artifactId>dubbo-bom</artifactId>
-    <version>2.6.4-SNAPSHOT</version>
+    <version>2.6.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>dubbo-bom</name>
