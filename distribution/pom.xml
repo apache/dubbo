@@ -251,7 +251,7 @@
         <profile>
             <id>release</id>
             <build>
-                <finalName>dubbo-incubating-${project.version}</finalName>
+                <finalName>apache-dubbo-incubating-${project.version}</finalName>
                 <plugins>
                     <plugin>
                         <artifactId>maven-assembly-plugin</artifactId>
