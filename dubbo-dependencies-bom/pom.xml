@@ -79,6 +79,7 @@
         <mina_version>1.1.7</mina_version>
         <grizzly_version>2.1.4</grizzly_version>
         <httpclient_version>4.5.3</httpclient_version>
+        <httpcore_version>4.4.6</httpcore_version>
         <fastjson_version>1.2.46</fastjson_version>
         <zookeeper_version>3.4.9</zookeeper_version>
         <zkclient_version>0.2</zkclient_version>
@@ -155,6 +156,11 @@
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
                 <version>${httpclient_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore</artifactId>
+                <version>${httpcore_version}</version>            
             </dependency>
             <dependency>
                 <groupId>com.alibaba</groupId>
