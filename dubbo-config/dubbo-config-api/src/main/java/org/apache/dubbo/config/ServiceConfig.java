@@ -197,24 +197,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             if (export == null) {
                 export = provider.getExport();
             }
-            if (delay == null) {
-                delay = provider.getDelay();
-            }
         }
         if (export != null && !export) {
             return;
         }
-
-        if (delay != null && delay > 0) {
-            delayExportExecutor.schedule(new Runnable() {
-                @Override
-                public void run() {
-                    doExport();
-                }
-            }, delay, TimeUnit.MILLISECONDS);
-        } else {
-            doExport();
-        }
+        doExport();
     }
 
     protected synchronized void doExport() {
@@ -314,6 +301,19 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (path == null || path.length() == 0) {
             path = interfaceName;
         }
+        if (delay != null && delay > 0) {
+            delayExportExecutor.schedule(new Runnable() {
+                @Override
+                public void run() {
+                    publish();
+                }
+            }, delay, TimeUnit.MILLISECONDS);
+        } else {
+            publish();
+        }
+    }
+
+    private synchronized void publish() {
         doExportUrls();
         ProviderModel providerModel = new ProviderModel(getUniqueServiceName(), this, ref);
         ApplicationModel.initProviderModel(getUniqueServiceName(), providerModel);
