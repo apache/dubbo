@@ -47,6 +47,8 @@ public final class StringUtils {
     private static final Pattern INT_PATTERN = Pattern.compile("^\\d+$");
     private static final int PAD_LIMIT = 8192;
 
+    private static final char PACKAGE_SEPARATOR_CHAR = '.';
+
     private StringUtils() {
     }
 
@@ -717,5 +719,17 @@ public final class StringUtils {
             }
         }
         return buf.toString();
+    }
+
+    public static String simpleClassName(Class<?> clazz) {
+        if (clazz == null) {
+            throw new NullPointerException("clazz");
+        }
+        String className = clazz.getName();
+        final int lastDotIdx = className.lastIndexOf(PACKAGE_SEPARATOR_CHAR);
+        if (lastDotIdx > -1) {
+            return className.substring(lastDotIdx + 1);
+        }
+        return className;
     }
 }
