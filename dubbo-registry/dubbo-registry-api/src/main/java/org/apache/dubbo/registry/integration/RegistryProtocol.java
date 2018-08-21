@@ -223,7 +223,7 @@ public class RegistryProtocol implements Protocol {
      */
     private URL getRegisteredProviderUrl(final Invoker<?> originInvoker) {
         URL providerUrl = getProviderUrl(originInvoker);
-        // 此处移除async标记，仅保留标记在provider端
+        // Remove the async tag here, leaving only the tag at the provider, and not register to registry.
         Set<String> keySet = providerUrl.getParameters().keySet();
         List<String> asyncKey = new ArrayList<String>();
         for(String key : keySet) {
