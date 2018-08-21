@@ -81,7 +81,7 @@ public class TagRouter implements Router, Comparable<Router> {
                         }
                     }
                 }
-                // Normal request
+            // Normal request
             } else {
                 for (Invoker<T> invoker : invokers) {
                     // Can't access tag invoker,only normal invoker should be selected
