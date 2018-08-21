@@ -22,7 +22,9 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.status.RegistryStatusChecker;
+import org.apache.dubbo.remoting.zookeeper.ChildListener;
 import org.apache.dubbo.remoting.zookeeper.curator.CuratorZookeeperTransporter;
+
 import org.apache.curator.test.TestingServer;
 import org.junit.After;
 import org.junit.Assert;
@@ -30,9 +32,11 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -91,7 +95,7 @@ public class ZookeeperRegistryTest {
     }
 
     @Test
-    public void testSubscribe() {
+    public void testSubscribe() throws Exception {
         NotifyListener listener = mock(NotifyListener.class);
         zookeeperRegistry.subscribe(serviceUrl, listener);
 
@@ -103,6 +107,15 @@ public class ZookeeperRegistryTest {
         subscribed = zookeeperRegistry.getSubscribed();
         assertThat(subscribed.size(), is(1));
         assertThat(subscribed.get(serviceUrl).size(), is(0));
+
+        try {
+            Field zkListenersField = ZookeeperRegistry.class.getDeclaredField("zkListeners");
+            zkListenersField.setAccessible(true);
+            ConcurrentMap<URL, ConcurrentMap<NotifyListener, ChildListener>> zkListeners = (ConcurrentMap<URL, ConcurrentMap<NotifyListener, ChildListener>>) zkListenersField.get(zookeeperRegistry);
+            assertThat(zkListeners.size(), is(0));
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new Exception("testSubscribe test failed");
+        }
     }
 
     @Test

@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.RpcException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -198,7 +199,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     protected void doUnsubscribe(URL url, NotifyListener listener) {
         ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
         if (listeners != null) {
-            ChildListener zkListener = listeners.get(listener);
+            ChildListener zkListener = listeners.remove(listener);
             if (zkListener != null) {
                 if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
                     String root = toRootPath();
@@ -209,7 +210,11 @@ public class ZookeeperRegistry extends FailbackRegistry {
                     }
                 }
             }
+            if (listeners.isEmpty()) {
+                zkListeners.remove(url);
+            }
         }
+        unregisterConsumerUrl(url);
     }
 
     @Override
@@ -300,4 +305,13 @@ public class ZookeeperRegistry extends FailbackRegistry {
         return urls;
     }
 
+    private void unregisterConsumerUrl(URL consumerUrl) {
+        for (URL unregisterUrl : this.getRegistered()) {
+            if (consumerUrl.getServiceKey().equals(unregisterUrl.getServiceKey())
+                    && Objects.equals(consumerUrl.getParameter(Constants.GENERIC_KEY), unregisterUrl.getParameter(Constants.GENERIC_KEY))) {
+                this.unregister(unregisterUrl);
+                return;
+            }
+        }
+    }
 }
