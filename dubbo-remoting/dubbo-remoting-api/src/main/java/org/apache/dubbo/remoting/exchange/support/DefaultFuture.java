@@ -85,23 +85,6 @@ public class DefaultFuture implements ResponseFuture {
     }
 
     /**
-     * init a DefaultFuture
-     * 1.init a DefaultFuture
-     * 2.keep it into UNFINISHED_REQUESTS
-     *
-     * @param channel channel
-     * @param request the request
-     * @param timeout timeout
-     * @return a new DefaultFuture
-     */
-    public static DefaultFuture initFuture(Channel channel, Request request, int timeout) {
-        DefaultFuture future = new DefaultFuture(channel, request, timeout);
-        Map<Long, Request> unfinishedRequests = UNFINISHED_REQUESTS.computeIfAbsent(channel, c -> new ConcurrentHashMap<>());
-        unfinishedRequests.put(future.getId(), future.getRequest());
-        return future;
-    }
-
-    /**
      * check time out of the future
      */
     private static void timeoutCheck(DefaultFuture future) {
@@ -109,10 +92,26 @@ public class DefaultFuture implements ResponseFuture {
         TIME_OUT_TIMER.newTimeout(task, future.getTimeout(), TimeUnit.MILLISECONDS);
     }
 
+    /**
+     * init a DefaultFuture
+     * 1.init a DefaultFuture
+     * 2.timeout check
+     * 3.keep it into UNFINISHED_REQUESTS
+     *
+     * @param channel channel
+     * @param request the request
+     * @param timeout timeout
+     * @return a new DefaultFuture
+     */
     public static DefaultFuture newFuture(Channel channel, Request request, int timeout) {
-        final DefaultFuture defaultFuture = new DefaultFuture(channel, request, timeout);
-        timeoutCheck(defaultFuture);
-        return defaultFuture;
+        final DefaultFuture future = new DefaultFuture(channel, request, timeout);
+        // timeout check
+        timeoutCheck(future);
+
+        // keep the request into UNFINISHED_REQUESTS
+        Map<Long, Request> unfinishedRequests = UNFINISHED_REQUESTS.computeIfAbsent(channel, c -> new ConcurrentHashMap<>());
+        unfinishedRequests.put(future.getId(), future.getRequest());
+        return future;
     }
 
     public static DefaultFuture getFuture(long id) {
@@ -257,6 +256,7 @@ public class DefaultFuture implements ResponseFuture {
             timeoutResponse.setErrorMessage(future.getTimeoutMessage(true));
             // handle response.
             DefaultFuture.received(future.getChannel(), timeoutResponse);
+
         }
     }
 
@@ -363,33 +363,4 @@ public class DefaultFuture implements ResponseFuture {
                 + timeout + " ms, request: " + request + ", channel: " + channel.getLocalAddress()
                 + " -> " + channel.getRemoteAddress();
     }
-
-    private static class RemotingInvocationTimeoutScan implements Runnable {
-
-        @Override
-        public void run() {
-            while (true) {
-                try {
-                    for (DefaultFuture future : FUTURES.values()) {
-                        if (future == null || future.isDone()) {
-                            continue;
-                        }
-                        if (System.currentTimeMillis() - future.getStartTimestamp() > future.getTimeout()) {
-                            // create exception response.
-                            Response timeoutResponse = new Response(future.getId());
-                            // set timeout status.
-                            timeoutResponse.setStatus(future.isSent() ? Response.SERVER_TIMEOUT : Response.CLIENT_TIMEOUT);
-                            timeoutResponse.setErrorMessage(future.getTimeoutMessage(true));
-                            // handle response.
-                            DefaultFuture.received(future.getChannel(), timeoutResponse);
-                        }
-                    }
-                    Thread.sleep(30);
-                } catch (Throwable e) {
-                    logger.error("Exception when scan the timeout invocation of remoting.", e);
-                }
-            }
-        }
-    }
-
 }
