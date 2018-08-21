@@ -1,10 +1,10 @@
-# Service scope, without any app
+# Service scope, without  specific App
 ---
-scope: service
-key: serviceKey
+scope: application
+key: app1
 configs:
- - addresses: [127.0.0.1, 0.0.0.0]
-   side: provider
+ - addresses:
+    - 127.0.0.1
    rules:
     cluster:
      loadbalance: random

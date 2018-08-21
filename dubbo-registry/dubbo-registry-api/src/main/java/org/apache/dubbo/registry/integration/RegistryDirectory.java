@@ -24,6 +24,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.dynamic.ConfigChangeEvent;
 import org.apache.dubbo.config.dynamic.ConfigChangeType;
 import org.apache.dubbo.config.dynamic.ConfigType;
 import org.apache.dubbo.config.dynamic.ConfigurationListener;
@@ -54,6 +55,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -92,6 +94,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      */
     private volatile List<Configurator> configurators; // The initial value is null and the midway may be assigned to null, please use the local variable reference
     private volatile List<Configurator> dynamicConfigurators;
+    private volatile List<Configurator> appDynamicConfigurators;
 
     // Map<url, Invoker> cache service url to invoker mapping.
     private volatile Map<String, Invoker<T>> urlInvokerMap; // The initial value is null and the midway may be assigned to null, please use the local variable reference
@@ -155,7 +158,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     public static List<Configurator> configToConfiguratiors(String rawConfig) {
         if (StringUtils.isEmpty(rawConfig)) {
-            return new ArrayList<>();
+            return new LinkedList<>();
         }
         List<URL> urls = ConfigParser.parseConfigurators(rawConfig);
         return urls.stream().map(configuratorFactory::getConfigurator).collect(Collectors.toList());
@@ -172,8 +175,15 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     public void subscribe(URL url) {
         setConsumerUrl(url);
         String rawConfig = dynamicConfiguration.getConfig(url.getServiceKey() + Constants.CONFIGURATORS_SUFFIX, "dubbo", this);
-//        String rawConfigApp = (String) dynamicConfiguration.getProperty("");
-        this.dynamicConfigurators = configToConfiguratiors(rawConfig);
+        String rawConfigApp = dynamicConfiguration.getConfig(url.getParameter(Constants.APPLICATION_KEY) + Constants.CONFIGURATORS_SUFFIX, "dubbo", this);
+
+        if (StringUtils.isNotEmpty(rawConfig)) {
+            this.dynamicConfigurators = configToConfiguratiors(rawConfig);
+        }
+        if (StringUtils.isNotEmpty(rawConfigApp)) {
+            this.appDynamicConfigurators = configToConfiguratiors(rawConfigApp);
+        }
+
         registry.subscribe(url, this);
     }
 
@@ -200,10 +210,11 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     @Override
     public synchronized void notify(List<URL> urls) {
-        List<URL> invokerUrls = new ArrayList<URL>();
-        List<URL> routerUrls = new ArrayList<URL>();
-        List<URL> configuratorUrls = new ArrayList<URL>();
+        List<URL> invokerUrls = new ArrayList<>();
+        List<URL> routerUrls = new ArrayList<>();
+        List<URL> configuratorUrls = new ArrayList<>();
         List<URL> dynamicConfiguratorUrls = new ArrayList<>();
+        List<URL> appDynamicConfiguratorUrls = new ArrayList<>();
         List<URL> dynamicRouterUrls = new ArrayList<>();
         for (URL url : urls) {
             String protocol = url.getProtocol();
@@ -215,6 +226,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 routerUrls.add(url);
             } else if (Constants.DYNAMIC_CONFIGURATORS_CATEGORY.equals(category)) {
                 dynamicConfiguratorUrls.add(url);
+            } else if (Constants.APP_DYNAMIC_CONFIGURATORS_CATEGORY.equals(category)) {
+                appDynamicConfiguratorUrls.add(url);
             } else if (Constants.CONFIGURATORS_CATEGORY.equals(category)
                     || Constants.OVERRIDE_PROTOCOL.equals(protocol)) {
                 configuratorUrls.add(url);
@@ -231,6 +244,10 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         // dynamic configurators
         if (!dynamicConfiguratorUrls.isEmpty()) {
             this.dynamicConfigurators = toConfigurators(dynamicConfiguratorUrls);
+        }
+        // dynamic configurators, app scope
+        if (!appDynamicConfiguratorUrls.isEmpty()) {
+            this.appDynamicConfigurators = toConfigurators(appDynamicConfiguratorUrls);
         }
         // routers
         if (!routerUrls.isEmpty()) {
@@ -477,6 +494,13 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }
         }
 
+        List<Configurator> localAppDynamicConfigurators = this.appDynamicConfigurators; // local reference
+        if (localAppDynamicConfigurators != null && !localAppDynamicConfigurators.isEmpty()) {
+            for (Configurator configurator : localAppDynamicConfigurators) {
+                providerUrl = configurator.configure(providerUrl);
+            }
+        }
+
         List<Configurator> localDynamicConfigurators = this.dynamicConfigurators; // local reference
         if (localDynamicConfigurators != null && !localDynamicConfigurators.isEmpty()) {
             for (Configurator configurator : localDynamicConfigurators) {
@@ -654,6 +678,28 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
 
     @Override
+    public void process(ConfigChangeEvent event) {
+        ConfigType configType = event.getType();
+        ConfigChangeType changeType = event.getChangeType();
+
+        List<URL> urls = new ArrayList<>();
+        if (changeType.equals(ConfigChangeType.DELETED)) {
+            if (ConfigType.CONFIGURATORS.equals(configType)) {
+                urls.add(getConsumerUrl().clearParameters().addParameter(Constants.CATEGORY_KEY, Constants.DYNAMIC_CONFIGURATORS_CATEGORY).setProtocol(Constants.EMPTY_PROTOCOL));
+            } else if (ConfigType.ROUTERS.equals(configType)) {
+                urls.add(getConsumerUrl().clearParameters().addParameter(Constants.CATEGORY_KEY, Constants.DYNAMIC_ROUTERS_CATEGORY).setProtocol(Constants.EMPTY_PROTOCOL));
+            }
+        } else {
+            if (ConfigType.CONFIGURATORS.equals(configType)) {
+                urls = ConfigParser.parseConfigurators(event.getNewValue());
+            } else if (ConfigType.ROUTERS.equals(configType)) {
+                urls = ConfigParser.parseRouters(event.getNewValue());
+            }
+        }
+        notify(urls);
+    }
+
+    @Override
     public URL getUrl() {
         return this.overrideDirectoryUrl;
     }
@@ -690,25 +736,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      */
     public Map<String, List<Invoker<T>>> getMethodInvokerMap() {
         return methodInvokerMap;
-    }
-
-    @Override
-    public void process(String rawConfig, ConfigType configType, ConfigChangeType changeType) {
-        List<URL> urls = new ArrayList<>();
-        if (changeType.equals(ConfigChangeType.DELETED)) {
-            if (ConfigType.CONFIGURATORS.equals(configType)) {
-                urls.add(getConsumerUrl().clearParameters().addParameter(Constants.CATEGORY_KEY, Constants.DYNAMIC_CONFIGURATORS_CATEGORY).setProtocol(Constants.EMPTY_PROTOCOL));
-            } else if (ConfigType.ROUTERS.equals(configType)) {
-                urls.add(getConsumerUrl().clearParameters().addParameter(Constants.CATEGORY_KEY, Constants.DYNAMIC_ROUTERS_CATEGORY).setProtocol(Constants.EMPTY_PROTOCOL));
-            }
-        } else {
-            if (ConfigType.CONFIGURATORS.equals(configType)) {
-                urls = ConfigParser.parseConfigurators(rawConfig);
-            } else if (ConfigType.ROUTERS.equals(configType)) {
-                urls = ConfigParser.parseRouters(rawConfig);
-            }
-        }
-        notify(urls);
     }
 
     private static class InvokerComparator implements Comparator<Invoker<?>> {

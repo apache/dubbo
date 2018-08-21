@@ -25,6 +25,7 @@ import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.config.dynamic.ConfigChangeEvent;
 import org.apache.dubbo.config.dynamic.ConfigChangeType;
 import org.apache.dubbo.config.dynamic.ConfigType;
 import org.apache.dubbo.config.dynamic.ConfigurationListener;
@@ -47,16 +48,21 @@ import org.apache.dubbo.rpc.protocol.InvokerWrapper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.Constants.ACCEPT_FOREIGN_IP;
+import static org.apache.dubbo.common.Constants.CONFIG_PROTOCOL;
+import static org.apache.dubbo.common.Constants.EXPORT_KEY;
 import static org.apache.dubbo.common.Constants.INTERFACES;
 import static org.apache.dubbo.common.Constants.QOS_ENABLE;
 import static org.apache.dubbo.common.Constants.QOS_PORT;
+import static org.apache.dubbo.common.Constants.REFER_KEY;
 import static org.apache.dubbo.common.Constants.VALIDATION_KEY;
 
 /**
@@ -146,13 +152,7 @@ public class RegistryProtocol implements Protocol {
 
         // url to export locally
         URL providerUrl = getProviderUrl(originInvoker);
-        String rawConfig = dynamicConfiguration.getConfig(providerUrl.getServiceKey() + Constants.CONFIGURATORS_SUFFIX, "dubbo");
-        if (!StringUtils.isEmpty(rawConfig)) {
-            List<Configurator> dynamicConfigurators = RegistryDirectory.configToConfiguratiors(rawConfig);
-            providerUrl = getConfigedInvokerUrl(dynamicConfigurators, providerUrl);
-        }
-        String appRawConfig = dynamicConfiguration.getConfig(providerUrl.getParameter(Constants.APPLICATION_KEY) + Constants.CONFIGURATORS_SUFFIX, "dubbo");
-
+        providerUrl = overrideUrlWithConfig(providerUrl);
 
         //export invoker
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker, providerUrl);
@@ -182,17 +182,30 @@ public class RegistryProtocol implements Protocol {
         return new DestroyableExporter<T>(exporter, originInvoker, overrideSubscribeUrl, registedProviderUrl);
     }
 
+    private <T> URL overrideUrlWithConfig(URL providerUrl) {
+        List<Configurator> dynamicConfigurators = new LinkedList<>();
+        String appRawConfig = dynamicConfiguration.getConfig(providerUrl.getParameter(Constants.APPLICATION_KEY) + Constants.CONFIGURATORS_SUFFIX, "dubbo");
+        if (!StringUtils.isEmpty(appRawConfig)) {
+            dynamicConfigurators.addAll(RegistryDirectory.configToConfiguratiors(appRawConfig));
+        }
+        String rawConfig = dynamicConfiguration.getConfig(providerUrl.getServiceKey() + Constants.CONFIGURATORS_SUFFIX, "dubbo");
+        if (!StringUtils.isEmpty(rawConfig)) {
+            dynamicConfigurators.addAll(RegistryDirectory.configToConfiguratiors(rawConfig));
+        }
+        providerUrl = getConfigedInvokerUrl(dynamicConfigurators, providerUrl);
+        return providerUrl;
+    }
+
     private URL getConfigUrl(URL registryUrl) {
-        URL url = new URL("config", Constants.ANYHOST_VALUE, 0, registryUrl.removeParameters(Constants.EXPORT_KEY, Constants.REFER_KEY).getParameters());
+        URL url = registryUrl.removeParameters(EXPORT_KEY, REFER_KEY).setProtocol(CONFIG_PROTOCOL);
         String configType = registryUrl.getParameter(Constants.CONFIG_TYPE_KEY);
         if (StringUtils.isEmpty(configType)) {
             url = url.addParameter(Constants.CONFIG_TYPE_KEY, registryUrl.getProtocol());
         }
 
-        String configEnv = registryUrl.getParameter(Constants.CONFIG_ENV_KEY);
         String configAddress = registryUrl.getParameter(Constants.CONFIG_ADDRESS_KEY);
-        if (StringUtils.isEmpty(configEnv) && StringUtils.isEmpty(configAddress)) {
-            url = url.addParameter(Constants.CONFIG_ADDRESS_KEY, registryUrl.getAddress());
+        if (StringUtils.isNotEmpty(configAddress)) {
+            url = url.setAddress(configAddress);
         }
         return url;
     }
@@ -287,7 +300,7 @@ public class RegistryProtocol implements Protocol {
      * @return
      */
     private URL getProviderUrl(final Invoker<?> origininvoker) {
-        String export = origininvoker.getUrl().getParameterAndDecoded(Constants.EXPORT_KEY);
+        String export = origininvoker.getUrl().getParameterAndDecoded(EXPORT_KEY);
         if (export == null || export.length() == 0) {
             throw new IllegalArgumentException("The registry export url is null! registry: " + origininvoker.getUrl());
         }
@@ -317,7 +330,7 @@ public class RegistryProtocol implements Protocol {
         }
 
         // group="a,b" or group="*"
-        Map<String, String> qs = StringUtils.parseQueryString(url.getParameterAndDecoded(Constants.REFER_KEY));
+        Map<String, String> qs = StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY));
         String group = qs.get(Constants.GROUP_KEY);
         if (group != null && group.length() > 0) {
             if ((Constants.COMMA_SPLIT_PATTERN.split(group)).length > 1
@@ -366,8 +379,10 @@ public class RegistryProtocol implements Protocol {
 
     //Merge the urls of configurators
     private URL getConfigedInvokerUrl(List<Configurator> configurators, URL url) {
-        for (Configurator configurator : configurators) {
-            url = configurator.configure(url);
+        if (configurators != null && configurators.size() > 0) {
+            for (Configurator configurator : configurators) {
+                url = configurator.configure(url);
+            }
         }
         return url;
     }
@@ -457,6 +472,9 @@ public class RegistryProtocol implements Protocol {
 
         private final URL subscribeUrl;
         private final Invoker originInvoker;
+        private List<Configurator> configurators;
+        private List<Configurator> dynamicConfigurators;
+        private List<Configurator> appDynamicConfigurators;
 
         public OverrideListener(URL subscribeUrl, Invoker originalInvoker) {
             this.subscribeUrl = subscribeUrl;
@@ -469,14 +487,28 @@ public class RegistryProtocol implements Protocol {
         @Override
         public synchronized void notify(List<URL> urls) {
             logger.debug("original override urls: " + urls);
-            List<URL> matchedUrls = getMatchedUrls(urls, subscribeUrl);
+            List<URL> matchedUrls = getMatchedUrls(urls, subscribeUrl.addParameter(Constants.CATEGORY_KEY,
+                    Constants.CONFIGURATORS_CATEGORY
+                            + "," + Constants.DYNAMIC_CONFIGURATORS_CATEGORY
+                            + "," + Constants.APP_DYNAMIC_CONFIGURATORS_CATEGORY));
             logger.debug("subscribe url: " + subscribeUrl + ", override urls: " + matchedUrls);
             // No matching results
             if (matchedUrls.isEmpty()) {
                 return;
             }
 
-            List<Configurator> configurators = RegistryDirectory.toConfigurators(matchedUrls);
+            List<Configurator> localConfigurators = RegistryDirectory.toConfigurators(matchedUrls.stream().filter(u -> u.getParameter(Constants.CATEGORY_KEY).equals(Constants.CONFIGURATORS_CATEGORY)).collect(Collectors.toList()));
+            List<Configurator> localDynamicConfigurators = RegistryDirectory.toConfigurators(matchedUrls.stream().filter(u -> u.getParameter(Constants.CATEGORY_KEY).equals(Constants.DYNAMIC_CONFIGURATORS_CATEGORY)).collect(Collectors.toList()));
+            List<Configurator> localAppDynamicConfigurators = RegistryDirectory.toConfigurators(matchedUrls.stream().filter(u -> u.getParameter(Constants.CATEGORY_KEY).equals(Constants.APP_DYNAMIC_CONFIGURATORS_CATEGORY)).collect(Collectors.toList()));
+            if (localConfigurators != null && localConfigurators.size() > 0) {
+                configurators = localConfigurators;
+            }
+            if (localDynamicConfigurators != null && localDynamicConfigurators.size() > 0) {
+                dynamicConfigurators = localDynamicConfigurators;
+            }
+            if (localAppDynamicConfigurators != null && localAppDynamicConfigurators.size() > 0) {
+                appDynamicConfigurators = localAppDynamicConfigurators;
+            }
 
             final Invoker<?> invoker;
             if (originInvoker instanceof InvokerDelegete) {
@@ -496,6 +528,8 @@ public class RegistryProtocol implements Protocol {
             URL currentUrl = exporter.getInvoker().getUrl();
             //Merged with this configuration
             URL newUrl = getConfigedInvokerUrl(configurators, originUrl);
+            newUrl = getConfigedInvokerUrl(appDynamicConfigurators, newUrl);
+            newUrl = getConfigedInvokerUrl(dynamicConfigurators, newUrl);
             if (!currentUrl.equals(newUrl)) {
                 RegistryProtocol.this.doChangeLocalExport(originInvoker, newUrl);
                 logger.info("exported provider url changed, origin url: " + originUrl + ", old export url: " + currentUrl + ", new export url: " + newUrl);
@@ -526,17 +560,17 @@ public class RegistryProtocol implements Protocol {
         }
 
         @Override
-        public void process(String rawConfig, ConfigType configType, ConfigChangeType changeType) {
-            if (!configType.equals(ConfigType.CONFIGURATORS)) {
+        public void process(ConfigChangeEvent event) {
+            if (!event.getType().equals(ConfigType.CONFIGURATORS)) {
                 return;
             }
             List<URL> urls;
-            if (changeType.equals(ConfigChangeType.DELETED)) {
+            if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
                 URL originUrl = RegistryProtocol.this.getProviderUrl(originInvoker);
                 urls = new ArrayList<>();
                 urls.add(originUrl.clearParameters().addParameter(Constants.CATEGORY_KEY, Constants.DYNAMIC_CONFIGURATORS_CATEGORY).setProtocol(Constants.EMPTY_PROTOCOL));
             } else {
-                urls = ConfigParser.parseConfigurators(rawConfig);
+                urls = ConfigParser.parseConfigurators(event.getNewValue());
             }
             notify(urls);
         }

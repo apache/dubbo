@@ -50,10 +50,11 @@ public class Constants {
     public static final String CONFIGURATORS_CATEGORY = "configurators";
 
     public static final String DYNAMIC_CONFIGURATORS_CATEGORY = "dynamicconfigurators";
+    public static final String APP_DYNAMIC_CONFIGURATORS_CATEGORY = "appdynamicconfigurators";
 
-    public static final String CONFIGURATORS_SUFFIX = ".CONFIGURATORS";
+    public static final String CONFIGURATORS_SUFFIX = ".configurators";
 
-    public static final String ROUTERS_SUFFIX = ".ROUTERS";
+    public static final String ROUTERS_SUFFIX = ".routers";
 
     public static final String CONFIG_TYPE_KEY = "config.type";
     public static final String CONFIG_ADDRESS_KEY = "config.address";
@@ -563,6 +564,8 @@ public class Constants {
     public static final String ON_THROW_INSTANCE_KEY = "onthrow.instance";
 
     public static final String OVERRIDE_PROTOCOL = "override";
+
+    public static final String CONFIG_PROTOCOL = "config";
 
     public static final String PRIORITY_KEY = "priority";
 

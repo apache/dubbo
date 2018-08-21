@@ -23,7 +23,7 @@ import org.apache.dubbo.common.URL;
  */
 public interface ConfigurationListener {
 
-    void process(String rawConfig, ConfigType configType, ConfigChangeType changeType);
+    void process(ConfigChangeEvent event);
 
     URL getUrl();
 }

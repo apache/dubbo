@@ -26,7 +26,6 @@ public class ConfigItem {
     private List<String> services;
     private List<String> applications;
     private ConfiguratorRule rules;
-    private String app;
     private String side;
 
     public List<String> getAddresses() {
@@ -59,14 +58,6 @@ public class ConfigItem {
 
     public void setRules(ConfiguratorRule rules) {
         this.rules = rules;
-    }
-
-    public String getApp() {
-        return app;
-    }
-
-    public void setApp(String app) {
-        this.app = app;
     }
 
     public String getSide() {

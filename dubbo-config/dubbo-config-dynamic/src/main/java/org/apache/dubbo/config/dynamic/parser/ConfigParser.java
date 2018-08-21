@@ -16,17 +16,19 @@
  */
 package org.apache.dubbo.config.dynamic.parser;
 
-import com.alibaba.fastjson.JSON;
-
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.dynamic.parser.model.ConfigItem;
 import org.apache.dubbo.config.dynamic.parser.model.ConfiguratorConfig;
 import org.apache.dubbo.config.dynamic.parser.model.ConfiguratorRule;
+import org.yaml.snakeyaml.TypeDescription;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -35,17 +37,31 @@ public class ConfigParser {
 
     public static List<URL> parseConfigurators(String rawConfig) {
         List<URL> urls = new ArrayList<>();
-        ConfiguratorConfig configuratorConfig = JSON.parseObject(rawConfig, ConfiguratorConfig.class);
+        ConfiguratorConfig configuratorConfig = parseObject(rawConfig, ConfiguratorConfig.class);
         String scope = configuratorConfig.getScope();
         List<ConfigItem> items = configuratorConfig.getConfigs();
 
         if (ConfiguratorConfig.SCOPE_APPLICATION.equals(scope)) {
-            items.forEach(item -> urls.addAll(appItemToUrls(item, configuratorConfig.getKey())));
-            // 所有的services
+            items.forEach(item -> urls.addAll(
+                    appItemToUrls(item, configuratorConfig.getKey())
+                            .stream()
+                            .map(u -> u.addParameter(Constants.CATEGORY_KEY, Constants.APP_DYNAMIC_CONFIGURATORS_CATEGORY))
+                            .collect(Collectors.toList())
+            ));
         } else { // servcie scope by default.
             items.forEach(item -> urls.addAll(serviceItemToUrls(item, configuratorConfig.getKey())));
         }
         return urls;
+    }
+
+    public static <T> T parseObject(String rawConfig, Class<T> clazz) {
+        Constructor constructor = new Constructor(clazz);
+        TypeDescription carDescription = new TypeDescription(clazz);
+        carDescription.addPropertyParameters("items", ConfigItem.class);
+        constructor.addTypeDescription(carDescription);
+
+        Yaml yaml = new Yaml(constructor);
+        return yaml.load(rawConfig);
     }
 
     public static List<URL> parseRouters(String rawConfig) {
@@ -54,7 +70,7 @@ public class ConfigParser {
         return urls;
     }
 
-    private static final List<URL> serviceItemToUrls(ConfigItem item, String serviceKey) {
+    private static List<URL> serviceItemToUrls(ConfigItem item, String serviceKey) {
         List<URL> urls = new ArrayList<>();
         List<String> addresses = item.getAddresses();
         if (addresses == null) {
@@ -71,13 +87,15 @@ public class ConfigParser {
                 apps.forEach(app -> {
                     urls.add(URL.valueOf(urlStr + appendService(serviceKey) + toParameterString(item) + "&application=" + app));
                 });
+            } else {
+                urls.add(URL.valueOf(urlStr + appendService(serviceKey) + toParameterString(item)));
             }
         });
 
         return urls;
     }
 
-    private static final List<URL> appItemToUrls(ConfigItem item, String appKey) {
+    private static List<URL> appItemToUrls(ConfigItem item, String appKey) {
         List<URL> urls = new ArrayList<>();
         List<String> addresses = item.getAddresses();
         if (addresses == null) {
@@ -104,7 +122,7 @@ public class ConfigParser {
 
     private static String toParameterString(ConfigItem item) {
         StringBuilder sb = new StringBuilder();
-        sb.append("&category=");
+        sb.append("category=");
         sb.append(Constants.DYNAMIC_CONFIGURATORS_CATEGORY);
         if (item.getSide() != null) {
             sb.append("&side=");
@@ -150,22 +168,18 @@ public class ConfigParser {
         String interfaceName = serviceKey;
         int i = interfaceName.indexOf("/");
         if (i > 0) {
-            sb.append("?group=");
+            sb.append("group=");
             sb.append(interfaceName.substring(0, i));
+
             interfaceName = interfaceName.substring(i + 1);
         }
         int j = interfaceName.indexOf(":");
         if (j > 0) {
-            if (sb.charAt(0) != '?') {
-                sb.append("?");
-            } else {
-                sb.append("&");
-            }
             sb.append("version=");
             sb.append(interfaceName.substring(j + 1));
             interfaceName = interfaceName.substring(0, j);
         }
-        sb.insert(0, interfaceName);
+        sb.insert(0, interfaceName + "?");
 
         return sb.toString();
     }

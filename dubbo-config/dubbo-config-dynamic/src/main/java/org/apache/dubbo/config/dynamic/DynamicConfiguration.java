@@ -24,13 +24,6 @@ import org.apache.dubbo.common.extension.SPI;
  */
 @SPI("zookeeper")
 public interface DynamicConfiguration {
-    String TYPE_KEY = "dubbo.config.type";
-    String ENV_KEY = "dubbo.config.env";
-    String ADDRESS_KEY = "dubbo.config.address";
-    String GROUP_KEY = "dubbo.config.group";
-    String NAMESPACE_KEY = "dubbo.config.namespace";
-    String CLUSTER_KEY = "dubbo.config.cluster";
-    String APP_KEY = "dubbo.config.app";
 
     public void init();
 

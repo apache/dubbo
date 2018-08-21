@@ -24,18 +24,21 @@ import com.ctrip.framework.apollo.model.ConfigChange;
 import com.ctrip.framework.apollo.model.ConfigChangeEvent;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.dynamic.AbstractDynamicConfiguration;
 import org.apache.dubbo.config.dynamic.ConfigChangeType;
 import org.apache.dubbo.config.dynamic.ConfigType;
 import org.apache.dubbo.config.dynamic.ConfigurationListener;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  *
  */
 public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration {
     private static final String APOLLO_ENV_KEY = "env";
-    // FIXME the key?
-    private static final String APOLLO_ADDR_KEY = "";
+    private static final String APOLLO_ADDR_KEY = "apollo.meta";
     private static final String APOLLO_CLUSTER_KEY = "apollo.cluster";
     /**
      * support two namespaces: application -> dubbo
@@ -55,12 +58,12 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration {
 //        String configEnv = env.getCompositeConf().getString(ENV_KEY);
 //        String configCluster = env.getCompositeConf().getString(CLUSTER_KEY);
         String configEnv = url.getParameter(Constants.CONFIG_ENV_KEY);
-        String configAddr = url.getParameter(Constants.CONFIG_ADDRESS_KEY);
+        String configAddr = url.getAddress();
         String configCluster = url.getParameter(Constants.CONFIG_CLUSTER_KEY);
         if (configEnv != null) {
             System.setProperty(APOLLO_ENV_KEY, configEnv);
         }
-        if (configAddr != null) {
+        if (StringUtils.isEmpty(configEnv) && !Constants.ANYHOST_VALUE.equals(configAddr)) {
             System.setProperty(APOLLO_ADDR_KEY, configAddr);
         }
         if (configCluster != null) {
@@ -73,14 +76,18 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration {
 
     @Override
     public void addListener(String key, ConfigurationListener listener) {
-        this.appConfig.addChangeListener(new ApolloListener(listener));
-        this.dubboConfig.addChangeListener(new ApolloListener(listener));
+        Set<String> keys = new HashSet<>(1);
+        keys.add(key);
+        this.appConfig.addChangeListener(new ApolloListener(listener), keys);
+        this.dubboConfig.addChangeListener(new ApolloListener(listener), keys);
     }
 
     @Override
     public String getConfig(String key, String group, ConfigurationListener listener) {
-        this.appConfig.addChangeListener(new ApolloListener(listener));
-        this.dubboConfig.addChangeListener(new ApolloListener(listener));
+        Set<String> keys = new HashSet<>(1);
+        keys.add(key);
+        this.appConfig.addChangeListener(new ApolloListener(listener), keys);
+        this.dubboConfig.addChangeListener(new ApolloListener(listener), keys);
         return getInternalProperty(key, group, 0L);
     }
 
@@ -116,17 +123,13 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration {
 
         @Override
         public void onChange(ConfigChangeEvent changeEvent) {
-            System.out.println("Changes for namespace " + changeEvent.getNamespace());
             for (String key : changeEvent.changedKeys()) {
                 ConfigChange change = changeEvent.getChange(key);
-                if (change.getPropertyName().equals(url.getServiceKey() + Constants.CONFIGURATORS_SUFFIX)) {
-                    listener.process(change.getNewValue(), ConfigType.CONFIGURATORS, getChangeType(change.getChangeType()));
-                } else if (change.getPropertyName().equals(url.getParameter(Constants.APPLICATION_KEY) + Constants.CONFIGURATORS_SUFFIX)) {
-                    listener.process(change.getNewValue(), ConfigType.CONFIGURATORS, getChangeType(change.getChangeType()));
-                } else if (change.getPropertyName().equals(url.getServiceKey() + Constants.ROUTERS_SUFFIX)) {
-                    listener.process(change.getNewValue(), ConfigType.ROUTERS, getChangeType(change.getChangeType()));
+                if (change.getPropertyName().endsWith(Constants.CONFIGURATORS_SUFFIX)) {
+                    listener.process(new org.apache.dubbo.config.dynamic.ConfigChangeEvent(key, change.getNewValue(), ConfigType.CONFIGURATORS, getChangeType(change.getChangeType())));
+                } else if (change.getPropertyName().endsWith(Constants.ROUTERS_SUFFIX)) {
+                    listener.process(new org.apache.dubbo.config.dynamic.ConfigChangeEvent(key, change.getNewValue(), ConfigType.ROUTERS, getChangeType(change.getChangeType())));
                 }
-                System.out.println(String.format("Found change - key: %s, oldValue: %s, newValue: %s, changeType: %s", change.getPropertyName(), change.getOldValue(), change.getNewValue(), change.getChangeType()));
             }
         }
     }
