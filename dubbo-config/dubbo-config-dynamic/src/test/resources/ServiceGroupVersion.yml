@@ -1,10 +1,9 @@
-# Service scope, with multiple apps
+# Service scope, without any app
 ---
 scope: service
-key: serviceKey
+key: testgroup/servicekey:1.0.0
 configs:
- - addresses: [127.0.0.1, 0.0.0.0]
-   applications: [app1, app2]
+ - addresses: [127.0.0.1]
    side: provider
    rules:
     cluster:

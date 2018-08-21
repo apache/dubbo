@@ -23,11 +23,11 @@ import com.netflix.config.WatchedUpdateResult;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.cache.ChildData;
-import org.apache.curator.framework.recipes.cache.PathChildrenCache;
-import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
-import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
+import org.apache.curator.framework.recipes.cache.TreeCache;
+import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
+import org.apache.curator.framework.recipes.cache.TreeCacheListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.zookeeper.KeeperException;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,20 +38,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
  */
 public class ZooKeeperConfigurationSource implements WatchedConfigurationSource, Closeable {
-    public static final String ARCHAIUS_SOURCE_ADDRESS_KEY = "archaius.configurationSource.zk.address";
-    public static final String ARCHAIUS_CONFIG_ROOT_PATH_KEY = "archaius.configurationSource.zk.rootpath";
+    public static final String ARCHAIUS_SOURCE_ADDRESS_KEY = "archaius.zk.address";
+    public static final String ARCHAIUS_CONFIG_ROOT_PATH_KEY = "archaius.zk.rootpath";
     public static final String DEFAULT_CONFIG_ROOT_PATH = "/dubbo/config";
 
     private static final Logger logger = LoggerFactory.getLogger(com.netflix.config.source.ZooKeeperConfigurationSource.class);
-
+    private Executor executor = Executors.newFixedThreadPool(1);
     private final CuratorFramework client;
+
     private final String configRootPath;
-    private final PathChildrenCache pathChildrenCache;
+    private final TreeCache treeCache;
 
     private final Charset charset = Charset.forName("UTF-8");
 
@@ -73,9 +78,10 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
         CuratorFramework client = CuratorFrameworkFactory.newClient(connectString, sessionTimeout, connectTimeout,
                 new ExponentialBackoffRetry(1000, 3));
         client.start();
+
         this.client = client;
         this.configRootPath = configRootPath;
-        this.pathChildrenCache = new PathChildrenCache(client, configRootPath, true);
+        this.treeCache = new TreeCache(client, configRootPath);
     }
 
     /**
@@ -87,7 +93,7 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
     public ZooKeeperConfigurationSource(CuratorFramework client, String configRootPath) {
         this.client = client;
         this.configRootPath = configRootPath;
-        this.pathChildrenCache = new PathChildrenCache(client, configRootPath, true);
+        this.treeCache = new TreeCache(client, configRootPath);
     }
 
     /**
@@ -97,38 +103,43 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
      */
     public void start() throws Exception {
         // create the watcher for future configuration updatess
-        pathChildrenCache.getListenable().addListener(new PathChildrenCacheListener() {
-            public void childEvent(CuratorFramework aClient, PathChildrenCacheEvent event)
+        CountDownLatch latch = new CountDownLatch(1);
+        treeCache.getListenable().addListener(new TreeCacheListener() {
+            public void childEvent(CuratorFramework aClient, TreeCacheEvent event)
                     throws Exception {
-                PathChildrenCacheEvent.Type eventType = event.getType();
+
+                TreeCacheEvent.Type type = event.getType();
                 ChildData data = event.getData();
+                if (type == TreeCacheEvent.Type.INITIALIZED) {
+                    latch.countDown();
+                }
 
-                String path = null;
-                if (data != null) {
-                    path = data.getPath();
+                // TODO, ignore other event types
+                if (data == null) {
+                    return;
+                }
 
-                    // scrub configRootPath out of the key name
-                    String key = removeRootPath(path);
-
+                if (data.getPath().split("/").length == 5) {
                     byte[] value = data.getData();
                     String stringValue = new String(value, charset);
-
-                    logger.debug("received update to pathName [{}], eventType [{}]", path, eventType);
-                    logger.debug("key [{}], and value [{}]", key, stringValue);
 
                     // fire event to all listeners
                     Map<String, Object> added = null;
                     Map<String, Object> changed = null;
                     Map<String, Object> deleted = null;
-                    if (eventType == PathChildrenCacheEvent.Type.CHILD_ADDED) {
-                        added = new HashMap<String, Object>(1);
-                        added.put(key, stringValue);
-                    } else if (eventType == PathChildrenCacheEvent.Type.CHILD_UPDATED) {
-                        changed = new HashMap<String, Object>(1);
-                        changed.put(key, stringValue);
-                    } else if (eventType == PathChildrenCacheEvent.Type.CHILD_REMOVED) {
-                        deleted = new HashMap<String, Object>(1);
-                        deleted.put(key, stringValue);
+
+                    switch (type) {
+                        case NODE_ADDED:
+                            added = new HashMap<>(1);
+                            added.put(pathToKey(data.getPath()), stringValue);
+                            break;
+                        case NODE_REMOVED:
+                            deleted = new HashMap<>(1);
+                            deleted.put(pathToKey(data.getPath()), stringValue);
+                            break;
+                        case NODE_UPDATED:
+                            changed = new HashMap<>(1);
+                            changed.put(pathToKey(data.getPath()), stringValue);
                     }
 
                     WatchedUpdateResult result = WatchedUpdateResult.createIncremental(added,
@@ -137,27 +148,43 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
                     fireEvent(result);
                 }
             }
-        });
+        }, executor);
 
         // passing true to trigger an initial rebuild upon starting.  (blocking call)
-        pathChildrenCache.start(true);
+        treeCache.start();
+        latch.await(60 * 1000, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * This is used to convert a configuration nodePath into a key
+     *
+     * @param path
+     * @return key (nodePath less the config root path)
+     */
+    private String pathToKey(String path) {
+        if (StringUtils.isEmpty(path)) {
+            return path;
+        }
+        return path.replace(configRootPath, "").replaceAll("/", ".");
     }
 
     @Override
     public Map<String, Object> getCurrentData() throws Exception {
         logger.debug("getCurrentData() retrieving current data.");
 
-        List<ChildData> children = pathChildrenCache.getCurrentData();
-        Map<String, Object> all = new HashMap<String, Object>(children.size());
-        for (ChildData child : children) {
-            String path = child.getPath();
-            String key = removeRootPath(path);
-            byte[] value = child.getData();
+        Map<String, Object> all = new HashMap<>();
 
-            all.put(key, new String(value, charset));
+        Map<String, ChildData> dataMap = treeCache.getCurrentChildren(configRootPath);
+        if (dataMap != null && dataMap.size() > 0) {
+            dataMap.forEach((childPath, v) -> {
+                String fullChildPath = configRootPath + "/" + childPath;
+                treeCache.getCurrentChildren(fullChildPath).forEach((subChildPath, childData) -> {
+                    all.put(pathToKey(fullChildPath + "/" + subChildPath), new String(childData.getData(), charset));
+                });
+            });
         }
 
-        logger.debug("getCurrentData() retrieved [{}] config elements.", children.size());
+        logger.debug("getCurrentData() retrieved [{}] config elements.", all.size());
 
         return all;
     }
@@ -186,55 +213,9 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
         }
     }
 
-    /**
-     * This is used to convert a configuration nodePath into a key
-     *
-     * @param nodePath
-     * @return key (nodePath less the config root path)
-     */
-    private String removeRootPath(String nodePath) {
-        return nodePath.replace(configRootPath + "/", "");
-    }
-
-    //@VisibleForTesting
-    synchronized void setZkProperty(String key, String value) throws Exception {
-        final String path = configRootPath + "/" + key;
-
-        byte[] data = value.getBytes(charset);
-
-        try {
-            // attempt to create (intentionally doing this instead of checkExists())
-            client.create().creatingParentsIfNeeded().forPath(path, data);
-        } catch (KeeperException.NodeExistsException exc) {
-            // key already exists - update the data instead
-            client.setData().forPath(path, data);
-        }
-    }
-
-    //@VisibleForTesting
-    synchronized String getZkProperty(String key) throws Exception {
-        final String path = configRootPath + "/" + key;
-
-        byte[] bytes = client.getData().forPath(path);
-
-        return new String(bytes, charset);
-    }
-
-    //@VisibleForTesting
-    synchronized void deleteZkProperty(String key) throws Exception {
-        final String path = configRootPath + "/" + key;
-
-        try {
-            client.delete().forPath(path);
-        } catch (KeeperException.NoNodeException exc) {
-            // Node doesn't exist - NoOp
-            logger.warn("Node doesn't exist", exc);
-        }
-    }
-
     public void close() {
         try {
-            Closeables.close(pathChildrenCache, true);
+            Closeables.close(treeCache, true);
         } catch (IOException exc) {
             logger.error("IOException should not have been thrown.", exc);
         }

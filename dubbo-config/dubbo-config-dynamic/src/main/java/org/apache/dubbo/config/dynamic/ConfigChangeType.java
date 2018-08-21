@@ -22,5 +22,5 @@ package org.apache.dubbo.config.dynamic;
 public enum ConfigChangeType {
     ADDED,
     MODIFIED,
-    DELETED;
+    DELETED
 }

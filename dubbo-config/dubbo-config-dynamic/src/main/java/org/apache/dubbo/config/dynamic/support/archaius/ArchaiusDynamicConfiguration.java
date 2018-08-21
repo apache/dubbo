@@ -22,7 +22,9 @@ import com.netflix.config.DynamicStringProperty;
 import com.netflix.config.DynamicWatchedConfiguration;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.dynamic.AbstractDynamicConfiguration;
+import org.apache.dubbo.config.dynamic.ConfigChangeEvent;
 import org.apache.dubbo.config.dynamic.ConfigChangeType;
 import org.apache.dubbo.config.dynamic.ConfigType;
 import org.apache.dubbo.config.dynamic.ConfigurationListener;
@@ -34,7 +36,6 @@ import org.apache.dubbo.config.dynamic.support.archaius.sources.ZooKeeperConfigu
 public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration {
 
     public ArchaiusDynamicConfiguration() {
-
     }
 
     @Override
@@ -42,11 +43,11 @@ public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration {
         //  String address = env.getCompositeConf().getString(ADDRESS_KEY);
         //  String app = env.getCompositeConf().getString(APP_KEY);
 
-        String address = url.getParameter(Constants.CONFIG_ADDRESS_KEY);
-        if (address != null) {
+        String address = url.getAddress();
+        if (!address.equals(Constants.ANYHOST_VALUE)) {
             System.setProperty(ZooKeeperConfigurationSource.ARCHAIUS_SOURCE_ADDRESS_KEY, address);
         }
-        System.setProperty(ZooKeeperConfigurationSource.ARCHAIUS_CONFIG_ROOT_PATH_KEY, ZooKeeperConfigurationSource.DEFAULT_CONFIG_ROOT_PATH + "/" + url.getParameter(Constants.APPLICATION_KEY));
+        System.setProperty(ZooKeeperConfigurationSource.ARCHAIUS_CONFIG_ROOT_PATH_KEY, ZooKeeperConfigurationSource.DEFAULT_CONFIG_ROOT_PATH);
 
         try {
             ZooKeeperConfigurationSource zkConfigSource = new ZooKeeperConfigurationSource();
@@ -109,12 +110,14 @@ public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration {
             DynamicStringProperty prop = DynamicPropertyFactory.getInstance()
                     .getStringProperty(key, null);
             String newValue = prop.get();
-            if (newValue == null) {
-                listener.process(newValue, type, ConfigChangeType.DELETED);
+            ConfigChangeEvent event = new ConfigChangeEvent(key, newValue, type);
+            if (StringUtils.isEmpty(newValue)) {
+                event.setChangeType(ConfigChangeType.DELETED);
+                listener.process(event);
             } else {
-                listener.process(newValue, type, ConfigChangeType.MODIFIED);
+                event.setChangeType(ConfigChangeType.MODIFIED);
+                listener.process(event);
             }
-            System.out.println(prop.get());
         }
     }
 }
