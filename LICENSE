@@ -225,3 +225,13 @@ This product contains a modified portion of 'Netty', an event-driven asynchronou
  * io.netty.util.concurrent.FastThreadLocal
  * io.netty.util.internal.InternalThreadLocalMap
 
+For the package org.apache.dubbo.common.timer:
+
+This product contains a modified portion of 'Netty', HashedWheelTimer which is also under a "Apache License 2.0" license,
+see https://github.com/netty/netty/blob/4.1/LICENSE.txt:
+
+ * io.netty.util.Timer
+ * io.netty.util.TimerTask
+ * io.netty.util.Timeout
+ * io.netty.util.HashedWheelTimer
+
