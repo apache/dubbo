@@ -19,11 +19,11 @@
     <parent>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-parent</artifactId>
-        <version>2.7.0-SNAPSHOT</version>
+        <version>2.7.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>dubbo</artifactId>
-    <version>2.7.0-SNAPSHOT</version>
+    <version>2.7.2-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>dubbo-all</name>
     <description>The all in one project of dubbo</description>
@@ -167,13 +167,6 @@
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-rpc-webservice</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-rpc-thrift</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
             <optional>true</optional>
@@ -326,13 +319,6 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-compatible</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>hessian-lite</artifactId>
             <scope>compile</scope>
@@ -387,7 +373,6 @@
                             <artifactSet>
                                 <includes>
                                     <include>com.alibaba:hessian-lite</include>
-                                    <include>org.apache.dubbo:dubbo-compatible</include>
                                     <include>org.apache.dubbo:dubbo-common</include>
                                     <include>org.apache.dubbo:dubbo-remoting-api</include>
                                     <include>org.apache.dubbo:dubbo-remoting-netty</include>
@@ -404,7 +389,6 @@
                                     <include>org.apache.dubbo:dubbo-rpc-hessian</include>
                                     <include>org.apache.dubbo:dubbo-rpc-http</include>
                                     <include>org.apache.dubbo:dubbo-rpc-webservice</include>
-                                    <include>org.apache.dubbo:dubbo-rpc-thrift</include>
                                     <include>org.apache.dubbo:dubbo-rpc-memcached</include>
                                     <include>org.apache.dubbo:dubbo-rpc-redis</include>
                                     <include>org.apache.dubbo:dubbo-rpc-rest</include>
