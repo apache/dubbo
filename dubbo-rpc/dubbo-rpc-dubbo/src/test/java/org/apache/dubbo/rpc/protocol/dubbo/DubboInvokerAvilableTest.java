@@ -131,7 +131,6 @@ public class DubboInvokerAvilableTest {
 
         }
         //invoke method --> init client
-
         IDemoService service = (IDemoService) proxy.getProxy(invoker);
         Assert.assertEquals("ok", service.get());
 
