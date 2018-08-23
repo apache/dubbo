@@ -133,7 +133,7 @@ public class ProtocolConfig extends AbstractConfig {
     // if it's default
     private Boolean isDefault;
 
-    private boolean ssl;
+    private Boolean ssl;
 
     private String negotiate;
 
@@ -479,11 +479,11 @@ public class ProtocolConfig extends AbstractConfig {
         DubboShutdownHook.getDubboShutdownHook().destroyAll();
     }
 
-    public boolean isSsl() {
+    public Boolean isSsl() {
         return ssl;
     }
 
-    public void setSsl(boolean ssl) {
+    public void setSsl(Boolean ssl) {
         this.ssl = ssl;
     }
 
