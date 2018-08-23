@@ -102,6 +102,16 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     // the scope for referring/exporting a service, if it's local, it means searching in current JVM only.
     private String scope;
 
+    protected Boolean ssl;
+
+    protected String negotiate;
+
+    protected String certificate;
+
+    protected String privateKey;
+
+    protected String keyPassword;
+
     protected void checkRegistry() {
         // for backward compatibility
         if (registries == null || registries.isEmpty()) {
@@ -514,4 +524,46 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         this.scope = scope;
     }
 
+    public Boolean isSsl() {
+        return ssl;
+    }
+
+    public void setSsl(Boolean ssl) {
+        this.ssl = ssl;
+    }
+
+    public String getCertificate() {
+        return certificate;
+    }
+
+    @Parameter(excluded = true)
+    public void setCertificate(String certificate) {
+        this.certificate = certificate;
+    }
+
+    @Parameter(excluded = true)
+    public String getPrivateKey() {
+        return privateKey;
+    }
+
+    public void setPrivateKey(String privateKey) {
+        this.privateKey = privateKey;
+    }
+
+    @Parameter(excluded = true)
+    public String getKeyPassword() {
+        return keyPassword;
+    }
+
+    public void setKeyPassword(String keyPassword) {
+        this.keyPassword = keyPassword;
+    }
+
+    public String getNegotiate() {
+        return negotiate;
+    }
+
+    public void setNegotiate(String negotiate) {
+        this.negotiate = negotiate;
+    }
 }
