@@ -31,17 +31,17 @@ import org.apache.dubbo.rpc.cluster.Router;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * TagRouter
- */
+
 public class TagRouter implements Router, Comparable<Router> {
 
     private static final Logger logger = LoggerFactory.getLogger(TagRouter.class);
 
+    public static final String NAME = "tag";
+
     private final int priority;
     private final URL url;
 
-    public static final URL ROUTER_URL = new URL("tag", Constants.ANYHOST_VALUE, 0, Constants.ANY_VALUE).addParameters(Constants.RUNTIME_KEY, "true");
+    public static final URL ROUTER_URL = new URL(NAME, Constants.ANYHOST_VALUE, 0, Constants.ANY_VALUE).addParameters(Constants.RUNTIME_KEY, "true");
 
     public TagRouter(URL url) {
         this.url = url;
@@ -49,8 +49,7 @@ public class TagRouter implements Router, Comparable<Router> {
     }
 
     public TagRouter() {
-        this.url = ROUTER_URL;
-        this.priority = url.getParameter(Constants.PRIORITY_KEY, 0);
+        this(ROUTER_URL);
     }
 
     @Override
@@ -60,36 +59,32 @@ public class TagRouter implements Router, Comparable<Router> {
 
     @Override
     public <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
-        // filter
+
         List<Invoker<T>> result = new ArrayList<>();
         try {
-            // Dynamic param
             String tag = RpcContext.getContext().getAttachment(Constants.REQUEST_TAG_KEY);
-            // Tag request
-            if (!StringUtils.isEmpty(tag)) {
-                // Select tag invokers first
-                for (Invoker<T> invoker : invokers) {
-                    if (tag.equals(invoker.getUrl().getParameter(Constants.TAG_KEY))) {
-                        result.add(invoker);
-                    }
-                }
-                // If no invoker be selected, downgrade to normal invokers
-                if (result.isEmpty()) {
+            String forceTagStr = RpcContext.getContext().getAttachment(Constants.TAG_FORCE_KEY);
+            boolean forceTag = StringUtils.isEmpty(forceTagStr)?false:Boolean.parseBoolean(forceTagStr);
+
+            if (StringUtils.isEmpty(tag)) {
+                if(forceTag) {
                     for (Invoker<T> invoker : invokers) {
                         if (StringUtils.isEmpty(invoker.getUrl().getParameter(Constants.TAG_KEY))) {
                             result.add(invoker);
                         }
                     }
+                }else{
+                    result = invokers;
                 }
-            // Normal request
             } else {
                 for (Invoker<T> invoker : invokers) {
-                    // Can't access tag invoker,only normal invoker should be selected
-                    if (StringUtils.isEmpty(invoker.getUrl().getParameter(Constants.TAG_KEY))) {
+                    if (tag.equals(invoker.getUrl().getParameter(Constants.TAG_KEY))) {
                         result.add(invoker);
                     }
                 }
+                if(result.isEmpty()&&!forceTag) result = invokers;
             }
+
             return result;
         } catch (Exception e) {
             logger.error("Route by tag error,return all invokers.", e);
