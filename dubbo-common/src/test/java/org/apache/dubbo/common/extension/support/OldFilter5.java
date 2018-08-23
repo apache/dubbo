@@ -17,8 +17,8 @@
 package org.apache.dubbo.common.extension.support;
 
 
-import com.alibaba.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.extension.Activate;
 
-@Activate(after = "_4")
+@Activate(order = 1)
 public class OldFilter5 implements OldFilter0 {
 }

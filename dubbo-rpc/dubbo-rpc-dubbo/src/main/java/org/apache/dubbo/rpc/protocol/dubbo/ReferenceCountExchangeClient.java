@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.common.Parameters;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
@@ -103,10 +102,10 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
         return client.hasAttribute(key);
     }
 
-    @Override
-    public void reset(Parameters parameters) {
-        client.reset(parameters);
-    }
+//    @Override
+//    public void reset(Parameters parameters) {
+//        client.reset(parameters);
+//    }
 
     @Override
     public void send(Object message) throws RemotingException {

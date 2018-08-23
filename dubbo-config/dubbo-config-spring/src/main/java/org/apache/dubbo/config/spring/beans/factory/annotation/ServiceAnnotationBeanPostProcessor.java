@@ -21,6 +21,8 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.context.annotation.DubboClassPathBeanDefinitionScanner;
+import org.apache.dubbo.config.spring.convert.converter.StringArrayToMapConverter;
+import org.apache.dubbo.config.spring.convert.converter.StringArrayToStringConverter;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -41,6 +43,8 @@ import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.context.annotation.ConfigurationClassPostProcessor;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
@@ -50,11 +54,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.apache.dubbo.config.spring.util.ObjectUtils.of;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
@@ -386,7 +386,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
         MutablePropertyValues propertyValues = beanDefinition.getPropertyValues();
 
-        String[] ignoreAttributeNames = of("provider", "monitor", "application", "module", "registry", "protocol", "interface");
+        String[] ignoreAttributeNames = of("provider", "monitor", "application", "module", "registry", "protocol", "interface", "parameters");
 
         propertyValues.addPropertyValues(new AnnotationPropertyValuesAdapter(service, environment, ignoreAttributeNames));
 
@@ -450,8 +450,22 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
             builder.addPropertyValue("protocols", protocolRuntimeBeanReferences);
         }
 
+        String[] parametersStr = service.parameters();
+        if(parametersStr.length>0){
+            ConversionService conversionService = getConversionService();
+            Map parameters = conversionService.convert(parametersStr, Map.class);
+            builder.addPropertyValue("parameters", parameters);
+        }
+
         return builder.getBeanDefinition();
 
+    }
+
+    private ConversionService getConversionService() {
+        DefaultConversionService conversionService = new DefaultConversionService();
+        conversionService.addConverter(new StringArrayToStringConverter());
+        conversionService.addConverter(new StringArrayToMapConverter());
+        return conversionService;
     }
 
 

@@ -28,11 +28,11 @@ public class ActivateComparatorTest {
 
     @Test
     public void testActivateComparator(){
-        Filter1 f1 = new Filter1();
-        Filter2 f2 = new Filter2();
-        Filter3 f3 = new Filter3();
-        Filter4 f4 = new Filter4();
-        OldFilter5 f5 = new OldFilter5();
+        Filter1 f1 = new Filter1();//4
+        Filter2 f2 = new Filter2();//3
+        Filter3 f3 = new Filter3();//2
+        Filter4 f4 = new Filter4();//0
+        OldFilter5 f5 = new OldFilter5();//1
         List<Filter0> filters = new ArrayList<>();
         filters.add(f1);
         filters.add(f2);

@@ -25,7 +25,7 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
-import org.apache.dubbo.remoting.Codec;
+//import org.apache.dubbo.remoting.Codec;
 import org.apache.dubbo.remoting.Decodeable;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.transport.CodecSupport;
@@ -39,7 +39,7 @@ import java.util.Map;
 
 import static org.apache.dubbo.rpc.protocol.dubbo.CallbackServiceCodec.decodeInvocationArgument;
 
-public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Decodeable {
+public class DecodeableRpcInvocation extends RpcInvocation implements Decodeable {
 
     private static final Logger log = LoggerFactory.getLogger(DecodeableRpcInvocation.class);
 
@@ -80,13 +80,8 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         }
     }
 
-    @Override
-    public void encode(Channel channel, OutputStream output, Object message) throws IOException {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Object decode(Channel channel, InputStream input) throws IOException {
+//    @Override
+    private Object decode(Channel channel, InputStream input) throws IOException {
         ObjectInput in = CodecSupport.getSerialization(channel.getUrl(), serializationType)
                 .deserialize(channel.getUrl(), input);
 

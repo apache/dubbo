@@ -156,7 +156,7 @@ public class ExchangeCodec extends TelnetCodec {
                 try {
                     Object data;
                     if (res.isHeartbeat()) {
-                        data = decodeHeartbeatData(channel, in);
+                        data = decodeEventData(channel, in);
                     } else if (res.isEvent()) {
                         data = decodeEventData(channel, in);
                     } else {
@@ -182,7 +182,7 @@ public class ExchangeCodec extends TelnetCodec {
             try {
                 Object data;
                 if (req.isHeartbeat()) {
-                    data = decodeHeartbeatData(channel, in);
+                    data = decodeEventData(channel, in);
                 } else if (req.isEvent()) {
                     data = decodeEventData(channel, in);
                 } else {
@@ -400,14 +400,14 @@ public class ExchangeCodec extends TelnetCodec {
         }
     }
 
-    @Deprecated
-    protected Object decodeHeartbeatData(Channel channel, ObjectInput in) throws IOException {
-        try {
-            return in.readObject();
-        } catch (ClassNotFoundException e) {
-            throw new IOException(StringUtils.toString("Read object failed.", e));
-        }
-    }
+//    @Deprecated
+//    protected Object decodeHeartbeatData(Channel channel, ObjectInput in) throws IOException {
+//        try {
+//            return in.readObject();
+//        } catch (ClassNotFoundException e) {
+//            throw new IOException(StringUtils.toString("Read object failed.", e));
+//        }
+//    }
 
     protected Object decodeRequestData(Channel channel, ObjectInput in) throws IOException {
         return decodeRequestData(in);

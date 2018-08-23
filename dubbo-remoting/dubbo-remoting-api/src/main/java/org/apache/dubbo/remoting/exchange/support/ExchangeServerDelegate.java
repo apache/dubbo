@@ -58,11 +58,11 @@ public class ExchangeServerDelegate implements ExchangeServer {
         server.reset(url);
     }
 
-    @Override
-    @Deprecated
-    public void reset(org.apache.dubbo.common.Parameters parameters) {
-        reset(getUrl().addParameters(parameters.getParameters()));
-    }
+//    @Override
+//    @Deprecated
+//    public void reset(org.apache.dubbo.common.Parameters parameters) {
+//        reset(getUrl().addParameters(parameters.getParameters()));
+//    }
 
     @Override
     public Collection<Channel> getChannels() {

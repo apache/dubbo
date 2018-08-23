@@ -52,7 +52,7 @@ public interface Server extends Endpoint, Resetable {
      */
     Channel getChannel(InetSocketAddress remoteAddress);
 
-    @Deprecated
-    void reset(org.apache.dubbo.common.Parameters parameters);
+//    @Deprecated
+//    void reset(org.apache.dubbo.common.Parameters parameters);
 
 }

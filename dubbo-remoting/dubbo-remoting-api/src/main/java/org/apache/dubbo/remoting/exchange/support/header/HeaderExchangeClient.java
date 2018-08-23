@@ -149,11 +149,11 @@ public class HeaderExchangeClient implements ExchangeClient {
         client.reset(url);
     }
 
-    @Override
-    @Deprecated
-    public void reset(org.apache.dubbo.common.Parameters parameters) {
-        reset(getUrl().addParameters(parameters.getParameters()));
-    }
+//    @Override
+//    @Deprecated
+//    public void reset(org.apache.dubbo.common.Parameters parameters) {
+//        reset(getUrl().addParameters(parameters.getParameters()));
+//    }
 
     @Override
     public void reconnect() throws RemotingException {

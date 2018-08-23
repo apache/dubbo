@@ -196,10 +196,12 @@ public class ExtensionLoader<T> {
                 if (activate instanceof Activate) {
                     activateGroup = ((Activate) activate).group();
                     activateValue = ((Activate) activate).value();
-                } else if (activate instanceof com.alibaba.dubbo.common.extension.Activate) {
-                    activateGroup = ((com.alibaba.dubbo.common.extension.Activate) activate).group();
-                    activateValue = ((com.alibaba.dubbo.common.extension.Activate) activate).value();
-                } else {
+                }
+//                else if (activate instanceof com.alibaba.dubbo.common.extension.Activate) {
+//                    activateGroup = ((com.alibaba.dubbo.common.extension.Activate) activate).group();
+//                    activateValue = ((com.alibaba.dubbo.common.extension.Activate) activate).value();
+//                }
+                else {
                     continue;
                 }
                 if (isMatchGroup(group, activateGroup)) {
@@ -676,24 +678,18 @@ public class ExtensionLoader<T> {
             }
             wrappers.add(clazz);
         } else {
-            clazz.getConstructor();
-            if (name == null || name.length() == 0) {
-                name = findAnnotationName(clazz);
-                if (name.length() == 0) {
-                    throw new IllegalStateException("No such extension name for the class " + clazz.getName() + " in the config " + resourceURL);
-                }
-            }
+//            clazz.getConstructor();
+//            if (name == null || name.length() == 0) {
+//                name = findAnnotationName(clazz);
+//                if (name.length() == 0) {
+//                    throw new IllegalStateException("No such extension name for the class " + clazz.getName() + " in the config " + resourceURL);
+//                }
+//            }
             String[] names = NAME_SEPARATOR.split(name);
             if (names != null && names.length > 0) {
                 Activate activate = clazz.getAnnotation(Activate.class);
                 if (activate != null) {
                     cachedActivates.put(names[0], activate);
-                } else {
-                    // support com.alibaba.dubbo.common.extension.Activate
-                    com.alibaba.dubbo.common.extension.Activate oldActivate = clazz.getAnnotation(com.alibaba.dubbo.common.extension.Activate.class);
-                    if (oldActivate != null) {
-                        cachedActivates.put(names[0], oldActivate);
-                    }
                 }
                 for (String n : names) {
                     if (!cachedNames.containsKey(clazz)) {
@@ -719,18 +715,18 @@ public class ExtensionLoader<T> {
         }
     }
 
-    @SuppressWarnings("deprecation")
-    private String findAnnotationName(Class<?> clazz) {
-        org.apache.dubbo.common.Extension extension = clazz.getAnnotation(org.apache.dubbo.common.Extension.class);
-        if (extension == null) {
-            String name = clazz.getSimpleName();
-            if (name.endsWith(type.getSimpleName())) {
-                name = name.substring(0, name.length() - type.getSimpleName().length());
-            }
-            return name.toLowerCase();
-        }
-        return extension.value();
-    }
+//    @SuppressWarnings("deprecation")
+//    private String findAnnotationName(Class<?> clazz) {
+//        org.apache.dubbo.common.Extension extension = clazz.getAnnotation(org.apache.dubbo.common.Extension.class);
+//        if (extension == null) {
+//            String name = clazz.getSimpleName();
+//            if (name.endsWith(type.getSimpleName())) {
+//                name = name.substring(0, name.length() - type.getSimpleName().length());
+//            }
+//            return name.toLowerCase();
+//        }
+//        return extension.value();
+//    }
 
     @SuppressWarnings("unchecked")
     private T createAdaptiveExtension() {

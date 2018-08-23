@@ -32,7 +32,7 @@ public interface Client extends Endpoint, Channel, Resetable {
      */
     void reconnect() throws RemotingException;
 
-    @Deprecated
-    void reset(org.apache.dubbo.common.Parameters parameters);
+//    @Deprecated
+//    void reset(org.apache.dubbo.common.Parameters parameters);
 
 }

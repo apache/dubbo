@@ -66,24 +66,6 @@ public @interface Activate {
     String[] value() default {};
 
     /**
-     * Relative ordering info, optional
-     * Deprecated since 2.7.0
-     *
-     * @return extension list which should be put before the current one
-     */
-    @Deprecated
-    String[] before() default {};
-
-    /**
-     * Relative ordering info, optional
-     * Deprecated since 2.7.0
-     *
-     * @return extension list which should be put after the current one
-     */
-    @Deprecated
-    String[] after() default {};
-
-    /**
      * Absolute ordering info, optional
      *
      * @return absolute ordering info

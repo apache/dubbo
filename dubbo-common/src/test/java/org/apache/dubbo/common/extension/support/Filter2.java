@@ -18,6 +18,6 @@ package org.apache.dubbo.common.extension.support;
 
 import org.apache.dubbo.common.extension.Activate;
 
-@Activate(before = "_1")
+@Activate(order = 3)
 public class Filter2 implements Filter0{
 }

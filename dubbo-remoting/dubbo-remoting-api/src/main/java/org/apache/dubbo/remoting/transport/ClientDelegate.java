@@ -53,11 +53,11 @@ public class ClientDelegate implements Client {
         client.reset(url);
     }
 
-    @Override
-    @Deprecated
-    public void reset(org.apache.dubbo.common.Parameters parameters) {
-        reset(getUrl().addParameters(parameters.getParameters()));
-    }
+//    @Override
+//    @Deprecated
+//    public void reset(org.apache.dubbo.common.Parameters parameters) {
+//        reset(getUrl().addParameters(parameters.getParameters()));
+//    }
 
     @Override
     public URL getUrl() {

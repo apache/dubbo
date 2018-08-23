@@ -18,19 +18,18 @@
 package org.apache.dubbo.config.mock;
 
 import org.apache.dubbo.remoting.Channel;
-import org.apache.dubbo.remoting.Codec;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class MockCodec implements Codec {
-    @Override
+public class MockCodec  {
+//    @Override
     public void encode(Channel channel, OutputStream output, Object message) throws IOException {
 
     }
 
-    @Override
+//    @Override
     public Object decode(Channel channel, InputStream input) throws IOException {
         return null;
     }

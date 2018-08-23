@@ -19,7 +19,6 @@ package org.apache.dubbo.registry.dubbo;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.Codec;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
@@ -178,12 +177,6 @@ public class MockedClient implements ExchangeClient {
         return closed;
     }
 
-    public Codec getCodec() {
-        return null;
-    }
-
-    public void setCodec(Codec codec) {
-    }
 
     public String getHost() {
         return null;
@@ -218,9 +211,6 @@ public class MockedClient implements ExchangeClient {
     @Override
     public ChannelHandler getChannelHandler() {
         return null;
-    }
-
-    public void reset(Map<String, String> parameters) {
     }
 
     public Channel getChannel() {
@@ -282,8 +272,5 @@ public class MockedClient implements ExchangeClient {
     public void reset(URL url) {
     }
 
-    @Deprecated
-    public void reset(org.apache.dubbo.common.Parameters parameters) {
-    }
 
 }

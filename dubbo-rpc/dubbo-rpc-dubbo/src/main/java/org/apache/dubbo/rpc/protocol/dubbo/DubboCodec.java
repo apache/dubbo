@@ -80,7 +80,7 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
                 try {
                     Object data;
                     if (res.isHeartbeat()) {
-                        data = decodeHeartbeatData(channel, deserialize(s, channel.getUrl(), is));
+                        data = decodeEventData(channel, deserialize(s, channel.getUrl(), is));
                     } else if (res.isEvent()) {
                         data = decodeEventData(channel, deserialize(s, channel.getUrl(), is));
                     } else {
@@ -121,7 +121,7 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
             try {
                 Object data;
                 if (req.isHeartbeat()) {
-                    data = decodeHeartbeatData(channel, deserialize(s, channel.getUrl(), is));
+                    data = decodeEventData(channel, deserialize(s, channel.getUrl(), is));
                 } else if (req.isEvent()) {
                     data = decodeEventData(channel, deserialize(s, channel.getUrl(), is));
                 } else {

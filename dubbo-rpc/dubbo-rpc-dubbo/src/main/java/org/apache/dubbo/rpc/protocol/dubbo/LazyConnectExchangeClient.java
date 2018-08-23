@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.common.Parameters;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -193,11 +192,11 @@ final class LazyConnectExchangeClient implements ExchangeClient {
         client.reset(url);
     }
 
-    @Override
-    @Deprecated
-    public void reset(Parameters parameters) {
-        reset(getUrl().addParameters(parameters.getParameters()));
-    }
+//    @Override
+//    @Deprecated
+//    public void reset(Parameters parameters) {
+//        reset(getUrl().addParameters(parameters.getParameters()));
+//    }
 
     @Override
     public void reconnect() throws RemotingException {

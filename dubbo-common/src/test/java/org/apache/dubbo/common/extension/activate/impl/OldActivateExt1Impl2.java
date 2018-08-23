@@ -16,7 +16,8 @@
  */
 package org.apache.dubbo.common.extension.activate.impl;
 
-import com.alibaba.dubbo.common.extension.Activate;
+
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.activate.ActivateExt1;
 
 @Activate(group = "old_group")

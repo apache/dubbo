@@ -1,2 +1,2 @@
-org.apache.dubbo.common.extension.compatible.impl.CompatibleExtImpl1
+impl1=org.apache.dubbo.common.extension.compatible.impl.CompatibleExtImpl1
 impl2=org.apache.dubbo.common.extension.compatible.impl.CompatibleExtImpl2

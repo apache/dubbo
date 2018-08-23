@@ -21,7 +21,8 @@ import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.status.StatusChecker;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.remoting.Codec;
+//import org.apache.dubbo.remoting.Codec;
+import org.apache.dubbo.remoting.Codec2;
 import org.apache.dubbo.remoting.Dispatcher;
 import org.apache.dubbo.remoting.Transporter;
 import org.apache.dubbo.remoting.exchange.Exchanger;
@@ -256,7 +257,7 @@ public class ProtocolConfig extends AbstractConfig {
 
     public void setCodec(String codec) {
         if ("dubbo".equals(name)) {
-            checkMultiExtension(Codec.class, "codec", codec);
+            checkMultiExtension(Codec2.class, "codec", codec);
         }
         this.codec = codec;
     }

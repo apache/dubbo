@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.common.extension.compatible.impl;
 
-import org.apache.dubbo.common.Extension;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.extension.compatible.CompatibleExt;
 
-@Extension("impl1")
+@SPI("impl1")
 public class CompatibleExtImpl1 implements CompatibleExt {
     public String echo(URL url, String s) {
         return "Ext1Impl1-echo";

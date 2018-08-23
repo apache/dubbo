@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.spring.schema;
 
-import org.apache.dubbo.config.spring.AnnotationBean;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.util.BeanRegistrar;
@@ -33,7 +32,7 @@ import static org.springframework.util.StringUtils.commaDelimitedListToStringArr
 import static org.springframework.util.StringUtils.trimArrayElements;
 
 /**
- * {@link AnnotationBean} {@link BeanDefinitionParser}
+ * {@link BeanDefinitionParser}
  *
  * @see ServiceAnnotationBeanPostProcessor
  * @see ReferenceAnnotationBeanPostProcessor
