@@ -22,7 +22,7 @@ import org.apache.dubbo.rpc.cluster.RouterFactory;
 
 public class TagRouterFactory implements RouterFactory {
 
-    public static final String NAME = "tag";
+    public static final String NAME = TagRouter.NAME;
 
     @Override
     public Router getRouter(URL url) {
