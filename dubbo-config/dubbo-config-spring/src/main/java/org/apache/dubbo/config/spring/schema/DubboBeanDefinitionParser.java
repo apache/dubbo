@@ -112,6 +112,14 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                         definition.getPropertyValues().addPropertyValue("protocol", new RuntimeBeanReference(id));
                     }
                 }
+                // support protocolConfig for reference
+                property = definition.getPropertyValues().getPropertyValue("protocolConfig");
+                if (property != null) {
+                    Object value = property.getValue();
+                    if (value instanceof ProtocolConfig && id.equals(((ProtocolConfig) value).getName())) {
+                        definition.getPropertyValues().addPropertyValue("protocolConfig", new RuntimeBeanReference(id));
+                    }
+                }
             }
         } else if (ServiceBean.class.equals(beanClass)) {
             String className = element.getAttribute("class");
@@ -135,7 +143,8 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                     && Modifier.isPublic(setter.getModifiers())
                     && setter.getParameterTypes().length == 1) {
                 Class<?> type = setter.getParameterTypes()[0];
-                String property = StringUtils.camelToSplitName(name.substring(3, 4).toLowerCase() + name.substring(4), "-");
+                String fieldName = name.substring(3, 4).toLowerCase() + name.substring(4);
+                String property = StringUtils.camelToSplitName(fieldName, "-");
                 props.add(property);
                 Method getter = null;
                 try {
@@ -185,7 +194,11 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                                         value = null;
                                     }
                                     reference = value;
-                                } else if ("protocol".equals(property)
+                                    /**
+                                     *  we use protocolConfig for reference bean now,
+                                     *  because protocol is used for consumer protocol.
+                                     */
+                                } else if (("protocol".equals(property) || "protocolConfig".equals(property))
                                         && ExtensionLoader.getExtensionLoader(Protocol.class).hasExtension(value)
                                         && (!parserContext.getRegistry().containsBeanDefinition(value)
                                         || !ProtocolConfig.class.getName().equals(parserContext.getRegistry().getBeanDefinition(value).getBeanClassName()))) {
@@ -223,7 +236,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                                     }
                                     reference = new RuntimeBeanReference(value);
                                 }
-                                beanDefinition.getPropertyValues().addPropertyValue(property, reference);
+                                beanDefinition.getPropertyValues().addPropertyValue(fieldName, reference);
                             }
                         }
                     }
