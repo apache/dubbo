@@ -259,11 +259,11 @@
                                 <configuration>
                                     <configLocation>codestyle/checkstyle.xml</configLocation>
                                     <suppressionsLocation>codestyle/checkstyle-suppressions.xml</suppressionsLocation>
-                                    <headerLocation>codestyle/checkstyle-header.txt</headerLocation>
                                     <linkXRef>false</linkXRef>
                                     <encoding>UTF-8</encoding>
                                     <consoleOutput>true</consoleOutput>
                                     <failOnViolation>true</failOnViolation>
+                                    <excludes>**/JSONWriter.java</excludes>
                                 </configuration>
                                 <goals>
                                     <goal>check</goal>
@@ -323,20 +323,11 @@
         <!-- Used for packaging NOTICE & LICENSE to each sub-module jar-->
         <resources>
             <resource>
-                <directory>src/main/resources/</directory>
+                <directory>src/main/resources</directory>
                 <filtering>false</filtering>
             </resource>
             <resource>
-                <directory>../</directory>
-                <targetPath>META-INF/</targetPath>
-                <filtering>false</filtering>
-                <includes>
-                    <include>NOTICE</include>
-                    <include>LICENSE</include>
-                </includes>
-            </resource>
-            <resource>
-                <directory>../../</directory>
+                <directory>${maven.multiModuleProjectDirectory}</directory>
                 <targetPath>META-INF/</targetPath>
                 <filtering>false</filtering>
                 <includes>
