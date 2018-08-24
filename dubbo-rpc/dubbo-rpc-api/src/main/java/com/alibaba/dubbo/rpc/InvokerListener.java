@@ -16,7 +16,6 @@
  */
 package com.alibaba.dubbo.rpc;
 
-import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.SPI;
 
 /**
@@ -30,7 +29,7 @@ public interface InvokerListener {
      *
      * @param invoker
      * @throws RpcException
-     * @see com.alibaba.dubbo.rpc.Protocol#refer(Class, URL)
+     * @see com.alibaba.dubbo.rpc.Protocol#refer(Class, com.alibaba.dubbo.common.URL)
      */
     void referred(Invoker<?> invoker) throws RpcException;
 
