@@ -26,7 +26,7 @@ import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.serialize.nativejava.NativeJavaSerialization;
 import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.service.GenericService;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;

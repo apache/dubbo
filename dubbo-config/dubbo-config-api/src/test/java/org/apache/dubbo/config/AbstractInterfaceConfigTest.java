@@ -184,21 +184,21 @@ public class AbstractInterfaceConfigTest {
     @Test(expected = IllegalStateException.class)
     public void checkStubAndMock1() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
-        interfaceConfig.setLocal(GreetingLocal1.class.getName());
+        interfaceConfig.setStub(GreetingLocal1.class.getName());
         interfaceConfig.checkStubAndMock(Greeting.class);
     }
 
     @Test(expected = IllegalStateException.class)
     public void checkStubAndMock2() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
-        interfaceConfig.setLocal(GreetingLocal2.class.getName());
+        interfaceConfig.setStub(GreetingLocal2.class.getName());
         interfaceConfig.checkStubAndMock(Greeting.class);
     }
 
     @Test
     public void checkStubAndMock3() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
-        interfaceConfig.setLocal(GreetingLocal3.class.getName());
+        interfaceConfig.setStub(GreetingLocal3.class.getName());
         interfaceConfig.checkStubAndMock(Greeting.class);
     }
 
@@ -247,12 +247,12 @@ public class AbstractInterfaceConfigTest {
     @Test
     public void testLocal() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
-        interfaceConfig.setLocal((Boolean) null);
-        TestCase.assertNull(interfaceConfig.getLocal());
-        interfaceConfig.setLocal(true);
-        TestCase.assertEquals("true", interfaceConfig.getLocal());
-        interfaceConfig.setLocal("GreetingMock");
-        TestCase.assertEquals("GreetingMock", interfaceConfig.getLocal());
+        interfaceConfig.setStub((Boolean) null);
+        TestCase.assertNull(interfaceConfig.getStub());
+        interfaceConfig.setStub(true);
+        TestCase.assertEquals("true", interfaceConfig.getStub());
+        interfaceConfig.setStub("GreetingMock");
+        TestCase.assertEquals("GreetingMock", interfaceConfig.getStub());
     }
 
     @Test

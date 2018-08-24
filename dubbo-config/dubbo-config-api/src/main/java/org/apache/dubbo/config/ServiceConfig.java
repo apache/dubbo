@@ -278,20 +278,20 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             checkRef();
             generic = Boolean.FALSE.toString();
         }
-        if (local != null) {
-            if ("true".equals(local)) {
-                local = interfaceName + "Local";
-            }
-            Class<?> localClass;
-            try {
-                localClass = ClassHelper.forNameWithThreadContextClassLoader(local);
-            } catch (ClassNotFoundException e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
-            if (!interfaceClass.isAssignableFrom(localClass)) {
-                throw new IllegalStateException("The local implementation class " + localClass.getName() + " not implement interface " + interfaceName);
-            }
-        }
+//        if (local != null) {
+//            if ("true".equals(local)) {
+//                local = interfaceName + "Local";
+//            }
+//            Class<?> localClass;
+//            try {
+//                localClass = ClassHelper.forNameWithThreadContextClassLoader(local);
+//            } catch (ClassNotFoundException e) {
+//                throw new IllegalStateException(e.getMessage(), e);
+//            }
+//            if (!interfaceClass.isAssignableFrom(localClass)) {
+//                throw new IllegalStateException("The local implementation class " + localClass.getName() + " not implement interface " + interfaceName);
+//            }
+//        }
         if (stub != null) {
             if ("true".equals(stub)) {
                 stub = interfaceName + "Stub";

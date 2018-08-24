@@ -50,8 +50,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     private static final long serialVersionUID = -1559314110797223229L;
 
-    // local impl class name for the service interface
-    protected String local;
+//    // local impl class name for the service interface
+//    protected String local;
 
     // local stub class name for the service interface
     protected String stub;
@@ -287,17 +287,17 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     protected void checkStubAndMock(Class<?> interfaceClass) {
-        if (ConfigUtils.isNotEmpty(local)) {
-            Class<?> localClass = ConfigUtils.isDefault(local) ? ReflectUtils.forName(interfaceClass.getName() + "Local") : ReflectUtils.forName(local);
-            if (!interfaceClass.isAssignableFrom(localClass)) {
-                throw new IllegalStateException("The local implementation class " + localClass.getName() + " not implement interface " + interfaceClass.getName());
-            }
-            try {
-                ReflectUtils.findConstructor(localClass, interfaceClass);
-            } catch (NoSuchMethodException e) {
-                throw new IllegalStateException("No such constructor \"public " + localClass.getSimpleName() + "(" + interfaceClass.getName() + ")\" in local implementation class " + localClass.getName());
-            }
-        }
+//        if (ConfigUtils.isNotEmpty(local)) {
+//            Class<?> localClass = ConfigUtils.isDefault(local) ? ReflectUtils.forName(interfaceClass.getName() + "Local") : ReflectUtils.forName(local);
+//            if (!interfaceClass.isAssignableFrom(localClass)) {
+//                throw new IllegalStateException("The local implementation class " + localClass.getName() + " not implement interface " + interfaceClass.getName());
+//            }
+//            try {
+//                ReflectUtils.findConstructor(localClass, interfaceClass);
+//            } catch (NoSuchMethodException e) {
+//                throw new IllegalStateException("No such constructor \"public " + localClass.getSimpleName() + "(" + interfaceClass.getName() + ")\" in local implementation class " + localClass.getName());
+//            }
+//        }
         if (ConfigUtils.isNotEmpty(stub)) {
             Class<?> localClass = ConfigUtils.isDefault(stub) ? ReflectUtils.forName(interfaceClass.getName() + "Stub") : ReflectUtils.forName(stub);
             if (!interfaceClass.isAssignableFrom(localClass)) {
@@ -330,38 +330,38 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             }
         }
     }
-
-    /**
-     * @return local
-     * @deprecated Replace to <code>getStub()</code>
-     */
-    @Deprecated
-    public String getLocal() {
-        return local;
-    }
-
-    /**
-     * @param local
-     * @deprecated Replace to <code>setStub(Boolean)</code>
-     */
-    @Deprecated
-    public void setLocal(Boolean local) {
-        if (local == null) {
-            setLocal((String) null);
-        } else {
-            setLocal(String.valueOf(local));
-        }
-    }
-
-    /**
-     * @param local
-     * @deprecated Replace to <code>setStub(String)</code>
-     */
-    @Deprecated
-    public void setLocal(String local) {
-        checkName("local", local);
-        this.local = local;
-    }
+//
+//    /**
+//     * @return local
+//     * @deprecated Replace to <code>getStub()</code>
+//     */
+//    @Deprecated
+//    public String getLocal() {
+//        return local;
+//    }
+//
+//    /**
+//     * @param local
+//     * @deprecated Replace to <code>setStub(Boolean)</code>
+//     */
+//    @Deprecated
+//    public void setLocal(Boolean local) {
+//        if (local == null) {
+//            setLocal((String) null);
+//        } else {
+//            setLocal(String.valueOf(local));
+//        }
+//    }
+//
+//    /**
+//     * @param local
+//     * @deprecated Replace to <code>setStub(String)</code>
+//     */
+//    @Deprecated
+//    public void setLocal(String local) {
+//        checkName("local", local);
+//        this.local = local;
+//    }
 
     public String getStub() {
         return stub;

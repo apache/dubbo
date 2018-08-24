@@ -678,13 +678,13 @@ public class ExtensionLoader<T> {
             }
             wrappers.add(clazz);
         } else {
-//            clazz.getConstructor();
-//            if (name == null || name.length() == 0) {
-//                name = findAnnotationName(clazz);
-//                if (name.length() == 0) {
-//                    throw new IllegalStateException("No such extension name for the class " + clazz.getName() + " in the config " + resourceURL);
-//                }
-//            }
+            clazz.getConstructor();
+            if (name == null || name.length() == 0) {
+                name = findAnnotationName(clazz);
+                if (name.length() == 0) {
+                    throw new IllegalStateException("No such extension name for the class " + clazz.getName() + " in the config " + resourceURL);
+                }
+            }
             String[] names = NAME_SEPARATOR.split(name);
             if (names != null && names.length > 0) {
                 Activate activate = clazz.getAnnotation(Activate.class);
@@ -715,18 +715,18 @@ public class ExtensionLoader<T> {
         }
     }
 
-//    @SuppressWarnings("deprecation")
-//    private String findAnnotationName(Class<?> clazz) {
+    @SuppressWarnings("deprecation")
+    private String findAnnotationName(Class<?> clazz) {
 //        org.apache.dubbo.common.Extension extension = clazz.getAnnotation(org.apache.dubbo.common.Extension.class);
 //        if (extension == null) {
-//            String name = clazz.getSimpleName();
-//            if (name.endsWith(type.getSimpleName())) {
-//                name = name.substring(0, name.length() - type.getSimpleName().length());
-//            }
-//            return name.toLowerCase();
+        String name = clazz.getSimpleName();
+        if (name.endsWith(type.getSimpleName())) {
+            name = name.substring(0, name.length() - type.getSimpleName().length());
+        }
+        return name.toLowerCase();
 //        }
 //        return extension.value();
-//    }
+    }
 
     @SuppressWarnings("unchecked")
     private T createAdaptiveExtension() {

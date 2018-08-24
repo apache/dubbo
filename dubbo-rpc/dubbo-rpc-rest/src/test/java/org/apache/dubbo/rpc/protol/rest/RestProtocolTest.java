@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc.protol.rest;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.rpc.*;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

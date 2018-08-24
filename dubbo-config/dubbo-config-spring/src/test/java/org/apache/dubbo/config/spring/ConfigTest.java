@@ -61,7 +61,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.matchers.JUnitMatchers.containsString;
+import static org.hamcrest.CoreMatchers.containsString;
 
 
 /**
@@ -663,7 +663,7 @@ public class ConfigTest {
 
             ReferenceConfig<DemoService> reference = new ReferenceConfig<DemoService>();
             reference.setInterface(DemoService.class);
-            reference.setInjvm(true);
+            reference.setScope(Constants.SCOPE_LOCAL);
             reference.setRetries(2);
             reference.get();
             assertEquals(Integer.valueOf(5), reference.getRetries());
@@ -982,7 +982,7 @@ public class ConfigTest {
             URL url = (URL) serviceConfig.getExportedUrls().get(0);
             Assert.assertEquals(Constants.GENERIC_SERIALIZATION_BEAN, url.getParameter(Constants.GENERIC_KEY));
         } finally {
-            ctx.destroy();
+            ctx.close();
         }
     }
 }

@@ -67,14 +67,6 @@ public interface Result extends Serializable {
     Object recreate() throws Throwable;
 
     /**
-     * @see org.apache.dubbo.rpc.Result#getValue()
-     * @deprecated Replace to getValue()
-     */
-    @Deprecated
-    Object getResult();
-
-
-    /**
      * get attachments.
      *
      * @return attachments.

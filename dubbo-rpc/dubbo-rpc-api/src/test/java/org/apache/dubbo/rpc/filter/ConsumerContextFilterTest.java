@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.support.MyInvoker;
 
 import org.junit.Test;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -42,8 +43,11 @@ public class ConsumerContextFilterTest {
         Invoker<DemoService> invoker = new MyInvoker<DemoService>(url);
         Invocation invocation = new MockInvocation();
         consumerContextFilter.invoke(invoker, invocation);
-        assertEquals(invoker, RpcContext.getContext().getInvoker());
-        assertEquals(invocation, RpcContext.getContext().getInvocation());
+        assertEquals(invoker.getUrl(), RpcContext.getContext().getUrl());
+        assertEquals(invocation.getMethodName(), RpcContext.getContext().getMethodName());
+        assertArrayEquals(invocation.getParameterTypes(), RpcContext.getContext().getParameterTypes());
+        assertArrayEquals(invocation.getArguments(), RpcContext.getContext().getArguments());
+
         assertEquals(NetUtils.getLocalHost() + ":0", RpcContext.getContext().getLocalAddressString());
         assertEquals("test:11", RpcContext.getContext().getRemoteAddressString());
 

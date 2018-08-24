@@ -44,25 +44,6 @@ public class RpcResult extends AbstractResult {
         return result;
     }
 
-    /**
-     * @see org.apache.dubbo.rpc.RpcResult#getValue()
-     * @deprecated Replace to getValue()
-     */
-    @Override
-    @Deprecated
-    public Object getResult() {
-        return getValue();
-    }
-
-    /**
-     * @see org.apache.dubbo.rpc.RpcResult#setValue(Object)
-     * @deprecated Replace to setValue()
-     */
-    @Deprecated
-    public void setResult(Object result) {
-        setValue(result);
-    }
-
     @Override
     public Object getValue() {
         return result;

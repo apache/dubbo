@@ -96,24 +96,6 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         this.generic = generic;
     }
 
-    /**
-     * @return
-     * @deprecated instead, use scope to judge if it's in jvm, scope=local
-     */
-    @Deprecated
-    public Boolean isInjvm() {
-        return injvm;
-    }
-
-    /**
-     * @param injvm
-     * @deprecated instead, use scope to judge if it's in jvm, scope=local
-     */
-    @Deprecated
-    public void setInjvm(Boolean injvm) {
-        this.injvm = injvm;
-    }
-
     @Override
     @Parameter(key = Constants.REFERENCE_FILTER_KEY, append = true)
     public String getFilter() {

@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.ReferenceBean;
@@ -95,7 +96,7 @@ public class AnnotationPropertyValuesAdapterTest {
         Assert.assertEquals("dubbo://localhost:12345", referenceBean.getUrl());
         Assert.assertEquals("client", referenceBean.getClient());
         Assert.assertEquals(true, referenceBean.isGeneric());
-        Assert.assertEquals(true, referenceBean.isInjvm());
+        Assert.assertEquals(true, Constants.SCOPE_LOCAL.equals(referenceBean.getScope()));
         Assert.assertEquals(false, referenceBean.isCheck());
         Assert.assertEquals(true, referenceBean.isInit());
         Assert.assertEquals(true, referenceBean.getLazy());

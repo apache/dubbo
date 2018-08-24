@@ -21,7 +21,7 @@ import org.apache.dubbo.remoting.Transporter;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static org.junit.matchers.JUnitMatchers.containsString;
+import static org.hamcrest.CoreMatchers.containsString;
 
 public class ClientsTest {
     @Test

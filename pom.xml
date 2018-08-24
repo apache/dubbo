@@ -95,7 +95,7 @@
         <el_api_version>2.2.4</el_api_version>
         <jaxb_api_version>2.2.7</jaxb_api_version>
         <cglib_version>2.2</cglib_version>
-        <mockito_version>2.18.3</mockito_version>
+        <mockito_version>2.21.0</mockito_version>
         <!-- Build args -->
         <argline>-server -Xms256m -Xmx512m -XX:PermSize=64m -XX:MaxPermSize=128m -Dfile.encoding=UTF-8
             -Djava.net.preferIPv4Stack=true

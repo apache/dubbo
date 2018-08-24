@@ -72,7 +72,7 @@
 
     <properties>
         <!-- Common libs -->
-        <spring_version>4.3.16.RELEASE</spring_version>
+        <spring_version>5.0.8.RELEASE</spring_version>
         <javassist_version>3.20.0-GA</javassist_version>
         <netty_version>3.2.5.Final</netty_version>
         <netty4_version>4.1.25.Final</netty4_version>
