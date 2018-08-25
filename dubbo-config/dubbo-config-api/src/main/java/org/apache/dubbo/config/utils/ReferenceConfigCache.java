@@ -110,9 +110,13 @@ public class ReferenceConfigCache {
             return (T) config.get();
         }
 
-        cache.putIfAbsent(key, referenceConfig);
-        config = cache.get(key);
-        return (T) config.get();
+        T t = referenceConfig.get();
+        if (null == t){
+            return null;
+        }else{
+            cache.putIfAbsent(key, referenceConfig);
+            return t;
+        }
     }
 
     void destroyKey(String key) {
