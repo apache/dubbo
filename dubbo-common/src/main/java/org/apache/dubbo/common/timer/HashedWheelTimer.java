@@ -18,7 +18,7 @@ package org.apache.dubbo.common.timer;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.ClassHelper;
 
 import java.util.Queue;
 import java.util.Set;
@@ -408,7 +408,7 @@ public class HashedWheelTimer implements Timer {
     }
 
     private static void reportTooManyInstances() {
-        String resourceType = StringUtils.simpleClassName(HashedWheelTimer.class);
+        String resourceType = ClassHelper.simpleClassName(HashedWheelTimer.class);
         logger.error("You are creating too many " + resourceType + " instances. " +
                 resourceType + " is a shared resource that must be reused across the JVM," +
                 "so that only a few instances are created.");
@@ -650,7 +650,7 @@ public class HashedWheelTimer implements Timer {
         public String toString() {
             final long currentTime = System.nanoTime();
             long remaining = deadline - currentTime + timer.startTime;
-            String simpleClassName = StringUtils.simpleClassName(this.getClass());
+            String simpleClassName = ClassHelper.simpleClassName(this.getClass());
 
             StringBuilder buf = new StringBuilder(192)
                     .append(simpleClassName)
