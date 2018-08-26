@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
  */
 public class RouterChain<T> {
 
-    List<Invoker<T>> fullInvokers;
+    Map<String, List<Invoker<T>>> fullMethodInvokers;
 
     private InvokerTreeCache<T> treeCache;
 
@@ -47,8 +47,13 @@ public class RouterChain<T> {
         return new RouterChain<>(routers);
     }
 
-    public RouterChain(List<Router> routers) {
+    protected RouterChain(List<Router> routers) {
         this.routers = routers;
+        treeCache = new InvokerTreeCache<>();
+    }
+
+    protected RouterChain() {
+        treeCache = new InvokerTreeCache<>();
     }
 
 
@@ -75,7 +80,7 @@ public class RouterChain<T> {
             TreeNode<T> node = new TreeNode<>("method", method, invokers, true);
             root.addChild(node);
             Invocation invocation1 = new RpcInvocation(method, new Class<?>[0], new Object[0]);
-            routeeee(router, 1, root, router.preRoute(invokers, url, invocation1), url, invocation1);
+            routeeee(router, 1, node, router.preRoute(invokers, url, invocation1), url, invocation1);
         });
     }
 
@@ -83,8 +88,9 @@ public class RouterChain<T> {
         invokers.forEach((routerValue, list) -> {
             TreeNode<T> node = new TreeNode<>(router.getKey(), routerValue, list, router.isForce());
             parentNode.addChild(node);
-            Router nextRouter = routers.get(i);
-            if (CollectionUtils.isNotEmpty(list)) {
+            // Only when we have more routers and the sub-lis is not empty.
+            if (i < routers.size() && CollectionUtils.isNotEmpty(list)) {
+                Router nextRouter = routers.get(i);
                 routeeee(nextRouter, i + 1, node, nextRouter.preRoute(list, url, invocation), url, invocation);
             }
         });

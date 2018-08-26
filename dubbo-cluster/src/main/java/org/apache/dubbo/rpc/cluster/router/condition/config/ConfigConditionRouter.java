@@ -53,7 +53,7 @@ public class ConfigConditionRouter extends ConditionRouter implements Configurat
         try {
             String app = configuration.getUrl().getParameter(Constants.APPLICATION_KEY);
             String rawRule = configuration.getConfig(app + Constants.ROUTERS_SUFFIX, "dubbo", this);
-            ConditionRouterRule routerRule = ConditionRuleParser.parse(rawRule);
+            routerRule = ConditionRuleParser.parse(rawRule);
             init(routerRule.getRuleBody());
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -63,15 +63,20 @@ public class ConfigConditionRouter extends ConditionRouter implements Configurat
     @Override
     public void process(ConfigChangeEvent event) {
         String rawRule = event.getNewValue();
-        ConditionRouterRule routerRule = ConditionRuleParser.parse(rawRule);
-        init(routerRule.getRuleBody());
+        try {
+            routerRule = ConditionRuleParser.parse(rawRule);
+            init(routerRule.getRuleBody());
+        } catch (Exception e) {
+            logger.error(e);
+            // TODO
+        }
     }
 
     @Override
     public <T> Map<String, List<Invoker<T>>> preRoute(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
         Map<String, List<Invoker<T>>> map = new HashMap<>();
 
-        if (CollectionUtils.isEmpty(invokers)) {
+        if (CollectionUtils.isEmpty(invokers) || routerRule == null) {
             return map;
         }
 
@@ -87,7 +92,7 @@ public class ConfigConditionRouter extends ConditionRouter implements Configurat
 
     @Override
     public boolean isRuntime() {
-        return routerRule.isRuntime();
+        return routerRule != null && routerRule.isValid() && routerRule.isRuntime();
     }
 
     @Override
