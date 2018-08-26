@@ -22,6 +22,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Router. (SPI, Prototype, ThreadSafe)
@@ -32,7 +33,6 @@ import java.util.List;
  * @see org.apache.dubbo.rpc.cluster.Directory#list(Invocation)
  */
 public interface Router extends Comparable<Router> {
-
     /**
      * get the router url.
      *
@@ -50,5 +50,21 @@ public interface Router extends Comparable<Router> {
      * @throws RpcException
      */
     <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException;
+
+    default <T> Map<String, List<Invoker<T>>> preRoute(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
+        return null;
+    }
+
+    default boolean isRuntime() {
+        return true;
+    }
+
+    default String getKey() {
+        return "";
+    }
+
+    default boolean isForce() {
+        return false;
+    }
 
 }

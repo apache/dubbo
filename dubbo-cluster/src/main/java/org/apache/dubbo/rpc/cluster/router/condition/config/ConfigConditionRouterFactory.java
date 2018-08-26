@@ -14,42 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.dynamic.parser.model;
+package org.apache.dubbo.rpc.cluster.router.condition.config;
 
-import java.util.List;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.config.dynamic.DynamicConfiguration;
+import org.apache.dubbo.rpc.cluster.Router;
+import org.apache.dubbo.rpc.cluster.RouterFactory;
 
 /**
  *
  */
-public class ConfiguratorConfig {
-    public static final String SCOPE_SERVICE = "service";
-    public static final String SCOPE_APPLICATION = "application";
-
-    private String scope;
-    private String key;
-    private List<ConfigItem> configs;
-
-    public String getScope() {
-        return scope;
+@Activate
+public class ConfigConditionRouterFactory implements RouterFactory {
+    @Override
+    public Router getRouter(URL url) {
+        return null;
     }
 
-    public void setScope(String scope) {
-        this.scope = scope;
-    }
-
-    public String getKey() {
-        return key;
-    }
-
-    public void setKey(String key) {
-        this.key = key;
-    }
-
-    public List<ConfigItem> getConfigs() {
-        return configs;
-    }
-
-    public void setConfigs(List<ConfigItem> configs) {
-        this.configs = configs;
+    @Override
+    public Router getRouter(DynamicConfiguration dynamicConfiguration) {
+        return new ConfigConditionRouter(dynamicConfiguration);
     }
 }
