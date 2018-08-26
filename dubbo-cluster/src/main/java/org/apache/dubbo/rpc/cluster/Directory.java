@@ -33,6 +33,11 @@ import java.util.List;
 public interface Directory<T> extends Node {
 
     /**
+     *
+     * <pre>
+     *     com.alibaba.dubbo.rpc.cluster.Directory 接口 + com.alibaba.dubbo.rpc.cluster.directory 包。
+     * Directory 代表了多个 Invoker ，可以把它看成 List ，但与 List 不同的是，它的值可能是动态变化的，比如注册中心推送变更。
+     * </pre>
      * get service type.
      *
      * @return service type.

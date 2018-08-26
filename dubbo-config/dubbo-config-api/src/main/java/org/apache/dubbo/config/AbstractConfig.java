@@ -76,6 +76,11 @@ public abstract class AbstractConfig implements Serializable {
         Runtime.getRuntime().addShutdownHook(DubboShutdownHook.getDubboShutdownHook());
     }
 
+    /**
+     * 配置对象的编号，适用于除了 API 配置之外的三种配置方式，标记一个配置对象，
+     * 可用于对象之间的引用。例如 XML 的 <dubbo:service provider="${PROVIDER_ID}"> ，
+     * 其中 provider 为 <dubbo:provider> 的 ID 属性。
+     */
     protected String id;
 
     private static String convertLegacyValue(String key, String value) {
@@ -172,15 +177,22 @@ public abstract class AbstractConfig implements Serializable {
         appendParameters(parameters, config, null);
     }
 
+    /**
+     * @param parameters 参数集合 实际上 该集合会用于 URL.parameters
+     * @param config 配置对象
+     * @param prefix 属性前缀
+     */
     @SuppressWarnings("unchecked")
     protected static void appendParameters(Map<String, String> parameters, Object config, String prefix) {
         if (config == null) {
             return;
         }
+        //获得所有方法的数组 为下面通过反射获得配置项的值做准备
         Method[] methods = config.getClass().getMethods();
         for (Method method : methods) {
             try {
                 String name = method.getName();
+//                方法为获得基本类型 + public 的 getting 方法
                 if ((name.startsWith("get") || name.startsWith("is"))
                         && !"getClass".equals(name)
                         && Modifier.isPublic(method.getModifiers())

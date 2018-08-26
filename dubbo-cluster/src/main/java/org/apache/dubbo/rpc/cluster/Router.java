@@ -24,6 +24,11 @@ import org.apache.dubbo.rpc.RpcException;
 import java.util.List;
 
 /**
+ * <pre>
+ * com.alibaba.dubbo.rpc.cluster.Router 接口 + com.alibaba.dubbo.rpc.cluster.router  包。
+ * 负责从多个 Invoker 中按路由规则选出子集，比如读写分离，应用隔离等。
+ * </pre>
+ * <p>
  * Router. (SPI, Prototype, ThreadSafe)
  * <p>
  * <a href="http://en.wikipedia.org/wiki/Routing">Routing</a>

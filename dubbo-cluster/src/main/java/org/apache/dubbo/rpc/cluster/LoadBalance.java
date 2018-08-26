@@ -27,6 +27,10 @@ import org.apache.dubbo.rpc.cluster.loadbalance.RandomLoadBalance;
 import java.util.List;
 
 /**
+ * <pre>
+ *     com.alibaba.dubbo.rpc.cluster.LoadBalance 接口 + com.alibaba.dubbo.rpc.cluster.loadbalance 包。
+ * LoadBalance 负责从多个 Invoker 中选出具体的一个用于本次调用，选的过程包含了负载均衡算法，调用失败后，需要重选。
+ * </pre>
  * LoadBalance. (SPI, Singleton, ThreadSafe)
  * <p>
  * <a href="http://en.wikipedia.org/wiki/Load_balancing_(computing)">Load-Balancing</a>

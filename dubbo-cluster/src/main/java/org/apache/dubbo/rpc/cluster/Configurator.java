@@ -19,6 +19,8 @@ package org.apache.dubbo.rpc.cluster;
 import org.apache.dubbo.common.URL;
 
 /**
+ *
+ * 配置 com.alibaba.dubbo.rpc.cluster.configurator 包
  * Configurator. (SPI, Prototype, ThreadSafe)
  *
  */

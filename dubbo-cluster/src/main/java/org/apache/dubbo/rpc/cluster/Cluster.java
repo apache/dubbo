@@ -33,6 +33,11 @@ import org.apache.dubbo.rpc.cluster.support.FailoverCluster;
 public interface Cluster {
 
     /**
+     *
+     * <pre>
+     * com.alibaba.dubbo.rpc.cluster.Cluster 接口 + com.alibaba.dubbo.rpc.cluster.support 包。
+     * Cluster 将 Directory 中的多个 Invoker 伪装成一个 Invoker，对上层透明，伪装过程包含了容错逻辑，调用失败后，重试另一个。
+     * </pre>
      * Merge the directory invokers to a virtual invoker.
      *
      * @param <T>
