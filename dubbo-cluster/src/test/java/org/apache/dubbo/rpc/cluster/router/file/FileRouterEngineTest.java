@@ -38,7 +38,6 @@ import org.junit.Test;
 
 import javax.script.ScriptEngineManager;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.BDDMockito.given;
@@ -159,8 +158,9 @@ public class FileRouterEngineTest {
     }
 
     private void initDic(URL url) {
-        RouterChain routerChain = new RouterChain(Arrays.asList(routerFactory.getRouter(url)));
-        dic = new StaticDirectory<FileRouterEngineTest>(url, invokers, routerChain);
+        // FIXME dynamicConfiguration should not be null
+        RouterChain chain = RouterChain.buildChain(null);
+        dic = new StaticDirectory<FileRouterEngineTest>(url, invokers, chain);
     }
 
     static class MockClusterInvoker<T> extends AbstractClusterInvoker<T> {

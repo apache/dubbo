@@ -23,6 +23,7 @@ public class ConditionRouterRule {
     private String ruleBody;
     private boolean runtime;
     private boolean force;
+    private boolean valid;
 
     public String getRuleBody() {
         return ruleBody;
@@ -46,5 +47,13 @@ public class ConditionRouterRule {
 
     public void setForce(boolean force) {
         this.force = force;
+    }
+
+    public boolean isValid() {
+        return valid;
+    }
+
+    public void setValid(boolean valid) {
+        this.valid = valid;
     }
 }

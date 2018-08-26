@@ -40,18 +40,25 @@ public class InvokerTreeCache<T> {
             return node.getInvokers();
         }
 
-        if (tree.getChildren().size() == 1) {
-            return getInvokers(tree.getChildren().get(0), url, invocation);
+        if (node.getChildren().size() == 1) {
+            return getInvokers(node.getChildren().get(0), url, invocation);
         }
 
         TreeNode<T> failoverNode = null;
-        for (TreeNode<T> n : tree.getChildren()) {
+        for (TreeNode<T> n : node.getChildren()) {
             String key = n.getConditionKey();
             if (TreeNode.FAILOVER_KEY.equals(key)) {
                 failoverNode = n;
                 continue;
             }
-            if (n.getConditionValue().equals(invocation.getAttachment(key, url.getParameter(key)))) {
+
+            //TODO key=method, but it will appear neither in url nor in attachments.
+            String value = invocation.getAttachment(key, url.getParameter(key));
+            if (key.equals("method")) {
+                value = invocation.getMethodName();
+            }
+
+            if (n.getConditionValue().equals(value)) {
                 if (n.getInvokers() != null || (n.getInvokers() == null && n.isForce()))
                     return getInvokers(n, url, invocation);
             }

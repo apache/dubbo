@@ -132,6 +132,10 @@ public class GroupRouter implements Router, Comparable<Router>, ConfigurationLis
         return false;
     }
 
+    public String getKey() {
+        return ROUTE_GROUP;
+    }
+
     public boolean isRuntime(Invocation invocation) {
         return true;
     }
