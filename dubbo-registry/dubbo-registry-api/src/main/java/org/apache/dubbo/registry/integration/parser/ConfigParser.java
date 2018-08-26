@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.dynamic.parser;
+package org.apache.dubbo.registry.integration.parser;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.dynamic.parser.model.ConfigItem;
-import org.apache.dubbo.config.dynamic.parser.model.ConfiguratorConfig;
-import org.apache.dubbo.config.dynamic.parser.model.ConfiguratorRule;
+import org.apache.dubbo.registry.integration.parser.model.ConfigItem;
+import org.apache.dubbo.registry.integration.parser.model.ConfiguratorConfig;
+import org.apache.dubbo.registry.integration.parser.model.ConfiguratorRule;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;

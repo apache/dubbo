@@ -14,11 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.dynamic.parser.model;
+package org.apache.dubbo.rpc.cluster.router.group.model;
+
+import java.util.List;
 
 /**
  *
  */
-public class RouterRule {
-
+public class GroupRouterRule {
+    public List<String> filter(String routeGroup, String app) {
+        return null;
+    }
 }

@@ -27,10 +27,10 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
+import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.RouterFactory;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -159,7 +159,8 @@ public class FileRouterEngineTest {
     }
 
     private void initDic(URL url) {
-        dic = new StaticDirectory<FileRouterEngineTest>(url, invokers, Arrays.asList(routerFactory.getRouter(url)));
+        RouterChain routerChain = new RouterChain(Arrays.asList(routerFactory.getRouter(url)));
+        dic = new StaticDirectory<FileRouterEngineTest>(url, invokers, routerChain);
     }
 
     static class MockClusterInvoker<T> extends AbstractClusterInvoker<T> {

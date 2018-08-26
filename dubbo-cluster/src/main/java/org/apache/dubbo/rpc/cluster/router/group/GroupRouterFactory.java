@@ -14,41 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.dynamic.parser.model;
+package org.apache.dubbo.rpc.cluster.router.group;
 
-import java.util.Map;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.config.dynamic.DynamicConfiguration;
+import org.apache.dubbo.rpc.cluster.Router;
+import org.apache.dubbo.rpc.cluster.RouterFactory;
 
 /**
  *
  */
-public class ConfiguratorRule {
-    private Map<String, String> threadpool;
+@Activate
+public class GroupRouterFactory implements RouterFactory {
 
-    private Map<String, String> cluster;
+    public static final String NAME = "group";
 
-    private Map<String, String> config;
-
-    public Map<String, String> getThreadpool() {
-        return threadpool;
+    @Override
+    public Router getRouter(URL url) {
+        return new GroupRouter(url);
     }
 
-    public void setThreadpool(Map<String, String> threadpool) {
-        this.threadpool = threadpool;
-    }
-
-    public Map<String, String> getCluster() {
-        return cluster;
-    }
-
-    public void setCluster(Map<String, String> cluster) {
-        this.cluster = cluster;
-    }
-
-    public Map<String, String> getConfig() {
-        return config;
-    }
-
-    public void setConfig(Map<String, String> config) {
-        this.config = config;
+    public Router getRouter(DynamicConfiguration dynamicConfiguration) {
+        return new GroupRouter(dynamicConfiguration);
     }
 }

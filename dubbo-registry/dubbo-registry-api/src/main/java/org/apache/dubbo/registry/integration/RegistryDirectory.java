@@ -29,14 +29,13 @@ import org.apache.dubbo.config.dynamic.ConfigChangeType;
 import org.apache.dubbo.config.dynamic.ConfigType;
 import org.apache.dubbo.config.dynamic.ConfigurationListener;
 import org.apache.dubbo.config.dynamic.DynamicConfiguration;
-import org.apache.dubbo.config.dynamic.parser.ConfigParser;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.registry.integration.parser.ConfigParser;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
@@ -215,13 +214,10 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         List<URL> configuratorUrls = new ArrayList<>();
         List<URL> dynamicConfiguratorUrls = new ArrayList<>();
         List<URL> appDynamicConfiguratorUrls = new ArrayList<>();
-        List<URL> dynamicRouterUrls = new ArrayList<>();
         for (URL url : urls) {
             String protocol = url.getProtocol();
             String category = url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY);
-            if (Constants.DYNAMIC_ROUTERS_CATEGORY.equals(category)) {
-                dynamicRouterUrls.add(url);
-            } else if (Constants.ROUTERS_CATEGORY.equals(category)
+            if (Constants.ROUTERS_CATEGORY.equals(category)
                     || Constants.ROUTE_PROTOCOL.equals(protocol)) {
                 routerUrls.add(url);
             } else if (Constants.DYNAMIC_CONFIGURATORS_CATEGORY.equals(category)) {
@@ -252,9 +248,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         // routers
         if (!routerUrls.isEmpty()) {
             List<Router> routers = toRouters(routerUrls);
-            if (routers != null) { // null - do nothing
-                setRouters(routers);
-            }
+            addRouters(routers);
         }
         List<Configurator> localConfigurators = this.configurators; // local reference
         // merge override parameters
@@ -311,6 +305,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }
             this.methodInvokerMap = multiGroup ? toMergeMethodInvokerMap(newMethodInvokerMap) : newMethodInvokerMap;
             this.urlInvokerMap = newUrlInvokerMap;
+            // Route and build cache
+            routerChain.notifyFullInvokers(methodInvokerMap, getConsumerUrl());
             try {
                 destroyUnusedInvokers(oldUrlInvokerMap, newUrlInvokerMap); // Close the unused Invoker
             } catch (Exception e) {
@@ -511,19 +507,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         return providerUrl;
     }
 
-    private List<Invoker<T>> route(List<Invoker<T>> invokers, String method) {
-        Invocation invocation = new RpcInvocation(method, new Class<?>[0], new Object[0]);
-        List<Router> routers = getRouters();
-        if (routers != null) {
-            for (Router router : routers) {
-                if (router.getUrl() != null) {
-                    invokers = router.route(invokers, getConsumerUrl(), invocation);
-                }
-            }
-        }
-        return invokers;
-    }
-
     /**
      * Transform the invokers list into a mapping relationship with a method
      *
@@ -556,17 +539,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 invokersList.add(invoker);
             }
         }
-        List<Invoker<T>> newInvokersList = route(invokersList, null);
-        newMethodInvokerMap.put(Constants.ANY_VALUE, newInvokersList);
-        if (serviceMethods != null && serviceMethods.length > 0) {
-            for (String method : serviceMethods) {
-                List<Invoker<T>> methodInvokers = newMethodInvokerMap.get(method);
-                if (methodInvokers == null || methodInvokers.isEmpty()) {
-                    methodInvokers = newInvokersList;
-                }
-                newMethodInvokerMap.put(method, route(methodInvokers, method));
-            }
-        }
+        newMethodInvokerMap.put(Constants.ANY_VALUE, invokersList);
         // sort and unmodifiable
         for (String method : new HashSet<String>(newMethodInvokerMap.keySet())) {
             List<Invoker<T>> methodInvokers = newMethodInvokerMap.get(method);
