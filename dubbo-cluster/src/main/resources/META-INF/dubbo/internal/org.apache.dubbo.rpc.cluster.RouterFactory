@@ -1,5 +1,6 @@
 file=org.apache.dubbo.rpc.cluster.router.file.FileRouterFactory
 script=org.apache.dubbo.rpc.cluster.router.script.ScriptRouterFactory
 condition=org.apache.dubbo.rpc.cluster.router.condition.ConditionRouterFactory
+tag=org.apache.dubbo.rpc.cluster.router.tag.TagRouterFactory
 configcondition=org.apache.dubbo.rpc.cluster.router.condition.config.ConfigConditionRouterFactory
 group=org.apache.dubbo.rpc.cluster.router.group.GroupRouterFactory
