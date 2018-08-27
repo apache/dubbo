@@ -515,4 +515,9 @@ public class AbstractRegistryTest {
         list.add(url3);
         return list;
     }
+
+    @Test
+    public void toStringTest() {
+        Assert.assertEquals( abstractRegistry.toString(),abstractRegistry.toString());
+    }
 }
