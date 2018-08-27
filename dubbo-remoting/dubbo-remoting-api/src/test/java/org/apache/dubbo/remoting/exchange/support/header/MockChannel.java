@@ -84,11 +84,14 @@ public class MockChannel implements Channel {
 
     @Override
     public void send(Object message) throws RemotingException {
-        sentObjects.add(message);
+        send(message, false);
     }
 
     @Override
     public void send(Object message, boolean sent) throws RemotingException {
+        if (closed) {
+            throw new RemotingException(this.getLocalAddress(), null, "Failed to send message " + message + ", cause: The channel " + this + " is closed!");
+        }
         sentObjects.add(message);
     }
 
