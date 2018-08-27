@@ -95,17 +95,14 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     protected void addRouters(List<Router> routers) {
         // copy list
-        routers = routers == null ? new ArrayList<Router>() : new ArrayList<Router>(routers);
-        // append url router
-        String routerkey = url.getParameter(Constants.ROUTER_KEY);
-        if (routerkey != null && routerkey.length() > 0) {
-            RouterFactory routerFactory = ExtensionLoader.getExtensionLoader(RouterFactory.class).getExtension(routerkey);
-            routers.add(routerFactory.getRouter(url));
-        }
-        // append mock invoker selector
-        routers.add(new MockInvokersSelector());
-        Collections.sort(routers);
-        this.routers = routers;
+        routers = routers == null ? new ArrayList<>() : new ArrayList<>(routers);
+        routers.forEach(this::addRouter);
+    }
+
+    protected void addRouter(Router router) {
+        routerChain.addRouter(router);
+        // FIXME append mock invoker selector
+//        routerChain.add(new MockInvokersSelector());
     }
 
     public URL getConsumerUrl() {
