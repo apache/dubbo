@@ -83,6 +83,10 @@ public class ApplicationConfig extends AbstractConfig {
     // customized parameters
     private Map<String, String> parameters;
 
+    // graceful-shutdown timeout
+    private String shutdownWaitKey;
+    private String shutdownWaitSecondsKey;
+
     public ApplicationConfig() {
     }
 
@@ -253,5 +257,22 @@ public class ApplicationConfig extends AbstractConfig {
     public void setParameters(Map<String, String> parameters) {
         checkParameterName(parameters);
         this.parameters = parameters;
+    }
+
+    @Parameter(key = Constants.SHUTDOWN_WAIT_KEY)
+    public String getShutdownWaitKey() {
+        return shutdownWaitKey;
+    }
+
+    public void setShutdownWaitKey(String shutdownWaitKey) {
+        this.shutdownWaitKey = shutdownWaitKey;
+    }
+    @Parameter(key = Constants.SHUTDOWN_WAIT_SECONDS_KEY)
+    public String getShutdownWaitSecondsKey() {
+        return shutdownWaitSecondsKey;
+    }
+
+    public void setShutdownWaitSecondsKey(String shutdownWaitSecondsKey) {
+        this.shutdownWaitSecondsKey = shutdownWaitSecondsKey;
     }
 }

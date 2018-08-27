@@ -32,7 +32,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+import org.apache.dubbo.config.ApplicationConfig;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class ConfigUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigUtils.class);
@@ -307,7 +308,43 @@ public class ConfigUtils {
     @SuppressWarnings("deprecation")
     public static int getServerShutdownTimeout() {
         int timeout = Constants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
-        String value = ConfigUtils.getProperty(Constants.SHUTDOWN_WAIT_KEY);
+
+        String path = System.getProperty(Constants.DUBBO_PROPERTIES_KEY);
+        if (path == null || path.length() == 0) {
+            path = System.getenv(Constants.DUBBO_PROPERTIES_KEY);
+            if (path == null || path.length() == 0) {
+                path = Constants.DEFAULT_DUBBO_PROPERTIES;
+            }
+        }
+
+        ClassPathXmlApplicationContext context = 
+            new ClassPathXmlApplicationContext(path + "/application.xml");
+        
+        context.start();
+        ApplicationConfig application = (ApplicationConfig) context.getBean("application");
+        String value = application.getShutdownWaitKey();
+        if (value != null && value.length() > 0) {
+            try {
+                timeout = Integer.parseInt(value);
+            } catch (Exception e) {
+                // ignore
+            }
+        } else {
+            value = application.getShutdownWaitSecondsKey();
+            if (value != null && value.length() > 0) {
+                try {
+                    timeout = Integer.parseInt(value) * 1000;
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
+        }
+
+        if (value != null && value.length() > 0) {
+            return timeout;
+        }
+
+        value = ConfigUtils.getProperty(Constants.SHUTDOWN_WAIT_KEY);
         if (value != null && value.length() > 0) {
             try {
                 timeout = Integer.parseInt(value);
