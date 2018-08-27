@@ -283,6 +283,9 @@ class CallbackServiceCodec {
                     Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(channel.getUrl().getProtocol());
                     protocol = nestedProtocol(protocol);
                     Method method = protocol.getClass().getDeclaredMethod("getInvoker", new Class[]{Channel.class, Invocation.class});
+                    if (!method.isAccessible()) {
+                        method.setAccessible(true);
+                    }
                     Invoker<?> invoker = (Invoker<?>) method.invoke(protocol, channel, inv);
                     url = invoker.getUrl();
                 } catch (Exception ignored) {

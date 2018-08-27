@@ -679,6 +679,8 @@ public class Constants {
 
     public static final String HTTP2_CONTENT_TYPE_KEY = "content-type";
 
+    public static final String HTTP2_CONTENT_LENGTH_KEY = "content-length";
+
     public static final String HTTP2_DUBBO_CONTENT_TYPE = "application/dubbo-http2";
 
     public static final String EVENT_PATH = "/_event_";
