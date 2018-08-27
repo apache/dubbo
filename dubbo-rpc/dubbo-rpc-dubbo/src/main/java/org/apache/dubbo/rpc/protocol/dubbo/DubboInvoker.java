@@ -54,6 +54,8 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
 
     private final Set<Invoker<?>> invokers;
 
+    private final String appName;
+
     public DubboInvoker(Class<T> serviceType, URL url, ExchangeClient[] clients) {
         this(serviceType, url, clients, null);
     }
@@ -64,6 +66,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         // get version.
         this.version = url.getParameter(Constants.VERSION_KEY, "0.0.0");
         this.invokers = invokers;
+        this.appName = url.getParameter("application");
     }
 
     @Override
@@ -72,7 +75,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         final String methodName = RpcUtils.getMethodName(invocation);
         inv.setAttachment(Constants.PATH_KEY, getUrl().getPath());
         inv.setAttachment(Constants.VERSION_KEY, version);
-
+        inv.setAttachment(Constants.APP_NAME,this.appName);
         ExchangeClient currentClient;
         if (clients.length == 1) {
             currentClient = clients[0];

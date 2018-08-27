@@ -23,7 +23,7 @@
 
     <!-- consumer's application name, used for tracing dependency relationship (not a matching criterion),
     don't set it same as provider -->
-    <dubbo:application name="demo-consumer"/>
+    <dubbo:application name="group2-demo-consumer"/>
 
     <!-- use multicast registry center to discover service -->
     <dubbo:registry address="multicast://224.5.6.7:1234"/>

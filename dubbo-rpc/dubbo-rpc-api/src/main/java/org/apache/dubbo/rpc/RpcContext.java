@@ -730,4 +730,7 @@ public class RpcContext {
         return asyncContext;
     }
 
+    public String getConsumerAppName(){
+        return this.getAttachment("application");
+    }
 }
