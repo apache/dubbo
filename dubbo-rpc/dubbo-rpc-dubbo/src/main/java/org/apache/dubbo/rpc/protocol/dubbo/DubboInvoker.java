@@ -72,6 +72,8 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         final String methodName = RpcUtils.getMethodName(invocation);
         inv.setAttachment(Constants.PATH_KEY, getUrl().getPath());
         inv.setAttachment(Constants.VERSION_KEY, version);
+        String consumerAppName = ConfigUtils.getProperty("dubbo.application.name");
+        inv.setAttachment(Constants.CONSUMER_APPLICATION_NAME, consumerAppName);
 
         ExchangeClient currentClient;
         if (clients.length == 1) {

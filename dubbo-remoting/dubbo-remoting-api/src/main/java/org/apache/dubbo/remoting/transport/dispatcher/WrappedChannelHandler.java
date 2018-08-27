@@ -57,6 +57,11 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
         dataStore.put(componentKey, Integer.toString(url.getPort()), executor);
     }
 
+    public String getConsumerAppName(){
+        String consumerAppName = this.url.getParameter(Constants.CONSUMER_APPLICATION_NAME);
+        return consumerAppName;
+    }
+
     public void close() {
         try {
             if (executor != null) {

@@ -28,6 +28,8 @@ public class Constants {
 
     public static final String CONSUMER = "consumer";
 
+    public static final String CONSUMER_APPLICATION_NAME = "consumerAppName";
+
     public static final String REGISTER = "register";
 
     public static final String UNREGISTER = "unregister";
