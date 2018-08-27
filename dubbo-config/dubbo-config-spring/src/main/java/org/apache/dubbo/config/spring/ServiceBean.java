@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.config.spring;
 
+import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
@@ -80,6 +82,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         SpringExtensionFactory.addApplicationContext(applicationContext);
         if (applicationContext != null) {
             SPRING_CONTEXT = applicationContext;
+            setDubboShutdownWaitTime();
             try {
                 Method method = applicationContext.getClass().getMethod("addApplicationListener", ApplicationListener.class); // backward compatibility to spring 2.0.1
                 method.invoke(applicationContext, this);
@@ -279,5 +282,17 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             return AopUtils.getTargetClass(ref);
         }
         return super.getServiceClass(ref);
+    }
+
+    private void setDubboShutdownWaitTime() {
+        ApplicationConfig applicationConfig = this.applicationContext.getBean(ApplicationConfig.class);
+        if (applicationConfig.getParameters() == null) {
+            return;
+        }
+
+        String value = applicationConfig.getParameters().get(Constants.SHUTDOWN_WAIT_KEY);
+        if (value != null && value.trim().length() > 0) {
+            ConfigUtils.getProperties().put(Constants.SHUTDOWN_WAIT_KEY, value.trim());
+        }
     }
 }
