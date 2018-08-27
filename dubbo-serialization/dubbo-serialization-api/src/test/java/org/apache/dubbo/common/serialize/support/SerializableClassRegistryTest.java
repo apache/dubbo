@@ -18,9 +18,9 @@ package org.apache.dubbo.common.serialize.support;
 
 import org.junit.Test;
 
-import java.util.Set;
+import java.util.Map;
 
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 public class SerializableClassRegistryTest {
@@ -29,8 +29,8 @@ public class SerializableClassRegistryTest {
         SerializableClassRegistry.registerClass(A.class);
         SerializableClassRegistry.registerClass(B.class);
 
-        Set<Class> registeredClasses = SerializableClassRegistry.getRegisteredClasses();
-        assertThat(registeredClasses, hasSize(2));
+        Map<Class, Object> registeredClasses = SerializableClassRegistry.getRegisteredClasses();
+        assertThat(registeredClasses.size(), equalTo(2));
     }
 
     private class A {

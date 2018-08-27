@@ -197,5 +197,4 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         checkKey("group", group);
         this.group = group;
     }
-
 }

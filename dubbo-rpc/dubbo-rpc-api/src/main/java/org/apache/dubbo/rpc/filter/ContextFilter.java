@@ -55,7 +55,7 @@ public class ContextFilter extends AbstractPostProcessFilter {
                 .setLocalAddress(invoker.getUrl().getHost(),
                         invoker.getUrl().getPort());
 
-        // mreged from dubbox
+        // merged from dubbox
         // we may already added some attachments into RpcContext before this filter (e.g. in rest protocol)
         // TODO
         if (attachments != null) {

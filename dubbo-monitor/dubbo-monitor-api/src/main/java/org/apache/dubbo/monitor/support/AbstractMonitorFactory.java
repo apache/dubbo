@@ -18,8 +18,6 @@ package org.apache.dubbo.monitor.support;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.concurrent.ListenableFuture;
-import org.apache.dubbo.common.concurrent.ListenableFutureTask;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
@@ -30,7 +28,7 @@ import org.apache.dubbo.monitor.MonitorService;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -52,7 +50,7 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
     // monitor centers Map<RegistryAddress, Registry>
     private static final Map<String, Monitor> MONITORS = new ConcurrentHashMap<String, Monitor>();
 
-    private static final Map<String, ListenableFuture<Monitor>> FUTURES = new ConcurrentHashMap<String, ListenableFuture<Monitor>>();
+    private static final Map<String, CompletableFuture<Monitor>> FUTURES = new ConcurrentHashMap<String, CompletableFuture<Monitor>>();
 
     private static final ExecutorService executor = new ThreadPoolExecutor(0, 10, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new NamedThreadFactory("DubboMonitorCreator", true));
 
@@ -79,10 +77,9 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
             }
 
             final URL monitorUrl = url;
-            final ListenableFutureTask<Monitor> listenableFutureTask = ListenableFutureTask.create(new MonitorCreator(monitorUrl));
-            listenableFutureTask.addListener(new MonitorListener(key));
-            executor.execute(listenableFutureTask);
-            FUTURES.put(key, listenableFutureTask);
+            final CompletableFuture<Monitor> completableFuture = CompletableFuture.supplyAsync(() -> AbstractMonitorFactory.this.createMonitor(monitorUrl));
+            completableFuture.thenRunAsync(new MonitorListener(key), executor);
+            FUTURES.put(key, completableFuture);
 
             return null;
         } finally {
@@ -93,20 +90,6 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
 
     protected abstract Monitor createMonitor(URL url);
 
-    class MonitorCreator implements Callable<Monitor> {
-
-        private URL url;
-
-        public MonitorCreator(URL url) {
-            this.url = url;
-        }
-
-        @Override
-        public Monitor call() throws Exception {
-            Monitor monitor = AbstractMonitorFactory.this.createMonitor(url);
-            return monitor;
-        }
-    }
 
     class MonitorListener implements Runnable {
 
@@ -119,8 +102,8 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
         @Override
         public void run() {
             try {
-                ListenableFuture<Monitor> listenableFuture = AbstractMonitorFactory.FUTURES.get(key);
-                AbstractMonitorFactory.MONITORS.put(key, listenableFuture.get());
+                CompletableFuture<Monitor> completableFuture = AbstractMonitorFactory.FUTURES.get(key);
+                AbstractMonitorFactory.MONITORS.put(key, completableFuture.get());
                 AbstractMonitorFactory.FUTURES.remove(key);
             } catch (InterruptedException e) {
                 logger.warn("Thread was interrupted unexpectedly, monitor will never be got.");
