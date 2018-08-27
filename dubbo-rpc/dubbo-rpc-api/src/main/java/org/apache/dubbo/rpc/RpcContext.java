@@ -77,6 +77,8 @@ public class RpcContext {
 
     private Object[] arguments;
 
+    private String consumerApplication;
+
     private InetSocketAddress localAddress;
 
     private InetSocketAddress remoteAddress;
@@ -730,4 +732,11 @@ public class RpcContext {
         return asyncContext;
     }
 
+    public String getConsumerApplication() {
+        return consumerApplication;
+    }
+
+    public void setConsumerApplication(String consumerApplication) {
+        this.consumerApplication = consumerApplication;
+    }
 }
