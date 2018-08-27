@@ -62,6 +62,7 @@ import java.util.concurrent.ConcurrentMap;
 public class DubboProtocol extends AbstractProtocol {
 
     public static final String NAME = "dubbo";
+    public static int wait = -1;
 
     public static final int DEFAULT_PORT = 20880;
     private static final String IS_CALLBACK_SERVICE_INVOKE = "_isCallBackServiceInvoke";
@@ -264,6 +265,11 @@ public class DubboProtocol extends AbstractProtocol {
             }
         }
 
+        // set graceful shutdown wait time out
+        if (wait < 0){
+            wait = url.getParameter("shutdown.wait", 0);
+        }
+
         openServer(url);
         optimizeSerialization(url);
         return exporter;
@@ -452,7 +458,7 @@ public class DubboProtocol extends AbstractProtocol {
                     if (logger.isInfoEnabled()) {
                         logger.info("Close dubbo server: " + server.getLocalAddress());
                     }
-                    server.close(ConfigUtils.getServerShutdownTimeout());
+                    server.close(wait >= 0 ? wait : ConfigUtils.getServerShutdownTimeout());
                 } catch (Throwable t) {
                     logger.warn(t.getMessage(), t);
                 }
@@ -466,7 +472,7 @@ public class DubboProtocol extends AbstractProtocol {
                     if (logger.isInfoEnabled()) {
                         logger.info("Close dubbo connect: " + client.getLocalAddress() + "-->" + client.getRemoteAddress());
                     }
-                    client.close(ConfigUtils.getServerShutdownTimeout());
+                    client.close(wait >= 0 ? wait : ConfigUtils.getServerShutdownTimeout());
                 } catch (Throwable t) {
                     logger.warn(t.getMessage(), t);
                 }
@@ -480,7 +486,7 @@ public class DubboProtocol extends AbstractProtocol {
                     if (logger.isInfoEnabled()) {
                         logger.info("Close dubbo connect: " + client.getLocalAddress() + "-->" + client.getRemoteAddress());
                     }
-                    client.close(ConfigUtils.getServerShutdownTimeout());
+                    client.close(wait >= 0 ? wait : ConfigUtils.getServerShutdownTimeout());
                 } catch (Throwable t) {
                     logger.warn(t.getMessage(), t);
                 }
