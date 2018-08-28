@@ -16,13 +16,28 @@
  */
 package org.apache.dubbo.rpc.cluster.router.group.model;
 
+import org.apache.dubbo.rpc.cluster.router.AbstractRouterRule;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
  */
-public class GroupRouterRule {
+public class GroupRouterRule extends AbstractRouterRule {
+
+    // key: app+address, value: environment
+    private Map<String, String> ipAppToGroup;
+
     public List<String> filter(String routeGroup, String app) {
         return null;
+    }
+
+    public Map<String, String> getIpAppToGroup() {
+        //FIXME
+        ipAppToGroup = new HashMap<>();
+        ipAppToGroup.put("demo-provider127.0.0.1", "test1");
+        return ipAppToGroup;
     }
 }

@@ -23,7 +23,7 @@ public class ConditionRuleParser {
 
     public static ConditionRouterRule parse(String rawRule) {
         ConditionRouterRule conditionRouterRule = new ConditionRouterRule();
-        conditionRouterRule.setRuleBody("host!=10.20.153.10,10.20.153.11=>");
+        conditionRouterRule.setRuleBody("method!=sayHello => ");
         conditionRouterRule.setValid(true);
         return conditionRouterRule;
     }

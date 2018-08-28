@@ -16,44 +16,11 @@
  */
 package org.apache.dubbo.rpc.cluster.router.condition.config;
 
+import org.apache.dubbo.rpc.cluster.router.AbstractRouterRule;
+
 /**
  *
  */
-public class ConditionRouterRule {
-    private String ruleBody;
-    private boolean runtime;
-    private boolean force;
-    private boolean valid;
+public class ConditionRouterRule extends AbstractRouterRule {
 
-    public String getRuleBody() {
-        return ruleBody;
-    }
-
-    public void setRuleBody(String ruleBody) {
-        this.ruleBody = ruleBody;
-    }
-
-    public boolean isRuntime() {
-        return runtime;
-    }
-
-    public void setRuntime(boolean runtime) {
-        this.runtime = runtime;
-    }
-
-    public boolean isForce() {
-        return force;
-    }
-
-    public void setForce(boolean force) {
-        this.force = force;
-    }
-
-    public boolean isValid() {
-        return valid;
-    }
-
-    public void setValid(boolean valid) {
-        this.valid = valid;
-    }
 }

@@ -27,6 +27,7 @@ import org.apache.dubbo.config.dynamic.DynamicConfiguration;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.router.TreeNode;
 import org.apache.dubbo.rpc.cluster.router.condition.ConditionRouter;
 
@@ -35,16 +36,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
+ * TODO only support one router rule =>, it will be inconvenient if we want to add more than one rules.
  */
 public class ConfigConditionRouter extends ConditionRouter implements ConfigurationListener {
+    public static final String NAME = "CONFIG_CONDITION_OUTER";
     private static final Logger logger = LoggerFactory.getLogger(ConfigConditionRouter.class);
     private DynamicConfiguration configuration;
     private ConditionRouterRule routerRule;
-
-    public ConfigConditionRouter(URL url) {
-        super(url);
-    }
 
     public ConfigConditionRouter(DynamicConfiguration configuration) {
         this.configuration = configuration;
@@ -66,6 +64,7 @@ public class ConfigConditionRouter extends ConditionRouter implements Configurat
         try {
             routerRule = ConditionRuleParser.parse(rawRule);
             init(routerRule.getRuleBody());
+            routerChain.notifyRuleChanged();
         } catch (Exception e) {
             logger.error(e);
             // TODO
@@ -76,7 +75,7 @@ public class ConfigConditionRouter extends ConditionRouter implements Configurat
     public <T> Map<String, List<Invoker<T>>> preRoute(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
         Map<String, List<Invoker<T>>> map = new HashMap<>();
 
-        if (CollectionUtils.isEmpty(invokers) || routerRule == null) {
+        if (CollectionUtils.isEmpty(invokers) || routerRule == null || !routerRule.isValid()) {
             return map;
         }
 
@@ -85,9 +84,15 @@ public class ConfigConditionRouter extends ConditionRouter implements Configurat
             return map;
         }
 
+        // only one branch, always use the failover key
         map.put(TreeNode.FAILOVER_KEY, route(invokers, url, invocation));
 
         return map;
+    }
+
+    @Override
+    public void setRouterChain(RouterChain routerChain) {
+
     }
 
     @Override
@@ -103,5 +108,10 @@ public class ConfigConditionRouter extends ConditionRouter implements Configurat
     @Override
     public boolean isForce() {
         return routerRule.isForce();
+    }
+
+    @Override
+    public String getName() {
+        return NAME;
     }
 }

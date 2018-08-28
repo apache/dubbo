@@ -72,7 +72,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
         try {
             // Get invokers from cache, only runtime routers will be executed.
-            routerChain.route(invokers, getConsumerUrl(), invocation);
+            return routerChain.route(invokers, getConsumerUrl(), invocation);
         } catch (Throwable t) {
             logger.error("Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
         }

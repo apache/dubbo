@@ -55,6 +55,13 @@ public interface Router extends Comparable<Router> {
         return null;
     }
 
+    default void setRouterChain(RouterChain routerChain) {
+    }
+
+    default String getName() {
+        return "";
+    }
+
     default boolean isRuntime() {
         return true;
     }

@@ -366,6 +366,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 }
                 try {
                     Router router = routerFactory.getRouter(url);
+                    router.setRouterChain(routerChain);
                     if (!routers.contains(router))
                         routers.add(router);
                 } catch (Throwable t) {
