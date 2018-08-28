@@ -408,8 +408,8 @@ public class RedisRegistry extends FailbackRegistry {
         String consumerService = url.getServiceInterface();
         for (String key : keys) {
             if (!Constants.ANY_VALUE.equals(consumerService)) {
-                String prvoiderService = toServiceName(key);
-                if (!prvoiderService.equals(consumerService)) {
+                String providerService = toServiceName(key);
+                if (!providerService.equals(consumerService)) {
                     continue;
                 }
             }
@@ -532,7 +532,7 @@ public class RedisRegistry extends FailbackRegistry {
 
         private final String service;
         private final AtomicInteger connectSkip = new AtomicInteger();
-        private final AtomicInteger connectSkiped = new AtomicInteger();
+        private final AtomicInteger connectSkipped = new AtomicInteger();
         private final Random random = new Random();
         private volatile Jedis jedis;
         private volatile boolean first = true;
@@ -547,7 +547,7 @@ public class RedisRegistry extends FailbackRegistry {
 
         private void resetSkip() {
             connectSkip.set(0);
-            connectSkiped.set(0);
+            connectSkipped.set(0);
             connectRandom = 0;
         }
 
@@ -559,11 +559,11 @@ public class RedisRegistry extends FailbackRegistry {
                 }
                 skip = 10 + connectRandom;
             }
-            if (connectSkiped.getAndIncrement() < skip) { // Check the number of skipping times
+            if (connectSkipped.getAndIncrement() < skip) { // Check the number of skipping times
                 return true;
             }
             connectSkip.incrementAndGet();
-            connectSkiped.set(0);
+            connectSkipped.set(0);
             connectRandom = 0;
             return false;
         }
