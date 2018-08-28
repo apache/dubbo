@@ -61,12 +61,28 @@ public class ReferenceConfigCache {
             }
             return ret.toString();
         }
+
+        @Override
+        public String generateKey(String[] keys) {
+            return null;
+        }
+
+        @Override
+        public String[] mapReferenceConfigToCustomKeys(ReferenceConfig<?> referenceConfig) {
+            return null;
+        }
+
+        @Override
+        public ReferenceConfig mapCustomKeysToReferenceConfig(String[] keys) {
+            return null;
+        }
     };
     static final ConcurrentMap<String, ReferenceConfigCache> cacheHolder = new ConcurrentHashMap<String, ReferenceConfigCache>();
     private final String name;
     private final KeyGenerator generator;
     ConcurrentMap<String, ReferenceConfig<?>> cache = new ConcurrentHashMap<String, ReferenceConfig<?>>();
-
+    ConcurrentMap<String, ReferenceConfig<?>> customKeysToReferenceConfigMap = new
+            ConcurrentHashMap<String, ReferenceConfig<?>>();
     private ReferenceConfigCache(String name, KeyGenerator generator) {
         this.name = name;
         this.generator = generator;
@@ -104,15 +120,41 @@ public class ReferenceConfigCache {
     @SuppressWarnings("unchecked")
     public <T> T get(ReferenceConfig<T> referenceConfig) {
         String key = generator.generateKey(referenceConfig);
-
         ReferenceConfig<?> config = cache.get(key);
         if (config != null) {
             return (T) config.get();
         }
 
         cache.putIfAbsent(key, referenceConfig);
+
+        String customKey = generator.generateKey(generator.mapReferenceConfigToCustomKeys(referenceConfig));
+        if (customKey != null) {
+            customKeysToReferenceConfigMap.putIfAbsent(customKey, referenceConfig);
+        }
+
         config = cache.get(key);
         return (T) config.get();
+    }
+
+    public Object get(String[] keys) {
+        String customKey = generator.generateKey(keys);
+        if (customKey == null) {
+            return null;
+        }
+
+        ReferenceConfig<?> config = customKeysToReferenceConfigMap.get(customKey);
+        if (config != null) {
+            return config.get();
+        }
+
+        config = generator.mapCustomKeysToReferenceConfig(keys);
+        if (config == null) {
+            return null;
+        }
+        customKeysToReferenceConfigMap.putIfAbsent(customKey, config);
+        cache.putIfAbsent(generator.generateKey(config), config);
+
+        return config.get();
     }
 
     void destroyKey(String key) {
@@ -149,5 +191,12 @@ public class ReferenceConfigCache {
 
     public static interface KeyGenerator {
         String generateKey(ReferenceConfig<?> referenceConfig);
+
+        /**
+         * User can define the following three methods
+         */
+        String generateKey(String[] keys);
+        String[] mapReferenceConfigToCustomKeys(ReferenceConfig<?> referenceConfig);
+        ReferenceConfig mapCustomKeysToReferenceConfig(String[] keys);
     }
 }
