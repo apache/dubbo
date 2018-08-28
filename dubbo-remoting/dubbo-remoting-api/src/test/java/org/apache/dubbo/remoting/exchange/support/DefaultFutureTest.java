@@ -69,7 +69,7 @@ public class DefaultFutureTest {
         }
         System.out.println("after a future is timeout , time is : " + LocalDateTime.now().format(formatter));
 
-        // get operate will throw a timeout exception, because the future is timeout.
+        // get operation will throw a timeout exception, because the future is timeout.
         try {
             f.get();
         } catch (Exception e) {
@@ -103,7 +103,7 @@ public class DefaultFutureTest {
         }
         System.out.println("after a future is timeout , time is : " + LocalDateTime.now().format(formatter));
 
-        // get operate will throw a timeout exception, because the future is timeout.
+        // get operation will throw a timeout exception, because the future is timeout.
         try {
             f.get();
         } catch (Exception e) {
