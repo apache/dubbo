@@ -31,8 +31,10 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Router;
+import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
 import org.apache.dubbo.rpc.cluster.router.TreeNode;
 import org.apache.dubbo.rpc.cluster.router.group.model.GroupRouterRule;
+import org.apache.dubbo.rpc.cluster.router.group.model.GroupRuleParser;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,7 +46,8 @@ import java.util.stream.Collectors;
 /**
  *
  */
-public class GroupRouter implements Router, Comparable<Router>, ConfigurationListener {
+public class GroupRouter extends AbstractRouter implements Comparable<Router>, ConfigurationListener {
+    public static final String NAME = "GROUP_ROUTER";
     private static final Logger logger = LoggerFactory.getLogger(GroupRouter.class);
     private static final String GROUPRULE_DATAID = "global.routers";
     private static final String ROUTE_GROUP = "route.group";
@@ -75,6 +78,7 @@ public class GroupRouter implements Router, Comparable<Router>, ConfigurationLis
         String rawRule = event.getNewValue();
         // remove, set groupRouterRule to null
         // change, update groupRouterRule
+        routerChain.notifyRuleChanged();
     }
 
     @Override
@@ -91,9 +95,9 @@ public class GroupRouter implements Router, Comparable<Router>, ConfigurationLis
         String routeGroup = StringUtils.isEmpty(invocation.getAttachment(ROUTE_GROUP)) ? url.getParameter(ROUTE_GROUP) : invocation.getAttachment(ROUTE_GROUP);
         if (StringUtils.isNotEmpty(routeGroup)) {
             String providerApp = invokers.get(0).getUrl().getParameter(Constants.APPLICATION_KEY);
-            List<String> ips = groupRouterRule.filter(routeGroup, providerApp);
-            if (CollectionUtils.isNotEmpty(ips)) {
-                result = filterInvoker(invokers, invoker -> ipMatches(invoker.getUrl(), ips));
+            List<String> addresses = groupRouterRule.filter(routeGroup, providerApp);
+            if (CollectionUtils.isNotEmpty(addresses)) {
+                result = filterInvoker(invokers, invoker -> addressMatches(invoker.getUrl(), addresses));
             } else {
                 result = filterInvoker(invokers, invoker -> invoker.getUrl().getParameter(ROUTE_GROUP).equals(routeGroup));
             }
@@ -108,7 +112,7 @@ public class GroupRouter implements Router, Comparable<Router>, ConfigurationLis
     public <T> Map<String, List<Invoker<T>>> preRoute(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
         Map<String, List<Invoker<T>>> map = new HashMap<>();
 
-        if (CollectionUtils.isEmpty(invokers)) {
+        if (CollectionUtils.isEmpty(invokers) || groupRouterRule == null || !groupRouterRule.isValid()) {
             return map;
         }
 
@@ -117,14 +121,26 @@ public class GroupRouter implements Router, Comparable<Router>, ConfigurationLis
             return map;
         }
 
-        // FIXME Consider groupRouterRule
         invokers.forEach(invoker -> {
-            String routeGroup = invoker.getUrl().getParameter(ROUTE_GROUP);
+            String providerApp = invoker.getUrl().getParameter(Constants.APPLICATION_KEY);
+            String address = invoker.getUrl().getAddress();
+            String routeGroup = groupRouterRule.getIpAppToGroup().get(providerApp + address);
+            if (StringUtils.isEmpty(routeGroup)) {
+                routeGroup = invoker.getUrl().getParameter(ROUTE_GROUP);
+            }
+            if (StringUtils.isEmpty(routeGroup)) {
+                routeGroup = TreeNode.FAILOVER_KEY;
+            }
             List<Invoker<T>> subInvokers = map.computeIfAbsent(routeGroup, k -> new ArrayList<>());
             subInvokers.add(invoker);
         });
 
         return map;
+    }
+
+    @Override
+    public String getName() {
+        return NAME;
     }
 
     @Override
@@ -134,6 +150,11 @@ public class GroupRouter implements Router, Comparable<Router>, ConfigurationLis
 
     public String getKey() {
         return ROUTE_GROUP;
+    }
+
+    @Override
+    public boolean isForce() {
+        return false;
     }
 
     public boolean isRuntime(Invocation invocation) {
@@ -146,8 +167,8 @@ public class GroupRouter implements Router, Comparable<Router>, ConfigurationLis
                 .collect(Collectors.toList());
     }
 
-    private boolean ipMatches(URL url, List<String> ips) {
-        return ips.contains(url.getHost());
+    private boolean addressMatches(URL url, List<String> addresses) {
+        return addresses.contains(url.getAddress());
     }
 
     @Override

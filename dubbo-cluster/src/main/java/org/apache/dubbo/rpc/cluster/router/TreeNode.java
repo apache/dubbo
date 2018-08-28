@@ -28,6 +28,7 @@ import java.util.List;
 public class TreeNode<T> {
     public static final String FAILOVER_KEY = "failover";
 
+    private String routerName;
     private String conditionKey;
     private String conditionValue;
     private boolean force;
@@ -38,7 +39,8 @@ public class TreeNode<T> {
         this.children = new ArrayList<>();
     }
 
-    public TreeNode(String conditionKey, String conditionValue, List<Invoker<T>> invokers, boolean force) {
+    public TreeNode(String routerName, String conditionKey, String conditionValue, List<Invoker<T>> invokers, boolean force) {
+        this.routerName = routerName;
         this.conditionKey = conditionKey;
         this.conditionValue = conditionValue;
         this.invokers = invokers;
@@ -59,6 +61,14 @@ public class TreeNode<T> {
             return true;
         }
         return false;
+    }
+
+    public String getRouterName() {
+        return routerName;
+    }
+
+    public void setRouterName(String routerName) {
+        this.routerName = routerName;
     }
 
     public String getConditionKey() {

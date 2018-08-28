@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.group;
-
-import org.apache.dubbo.rpc.cluster.router.group.model.GroupRouterRule;
+package org.apache.dubbo.rpc.cluster.router.group.model;
 
 /**
  *
@@ -24,6 +22,8 @@ import org.apache.dubbo.rpc.cluster.router.group.model.GroupRouterRule;
 public class GroupRuleParser {
 
     public static GroupRouterRule parse(String rawRule) {
-        return null;
+        GroupRouterRule groupRouterRule = new GroupRouterRule();
+        groupRouterRule.setValid(true);
+        return groupRouterRule;
     }
 }
