@@ -94,6 +94,8 @@ public abstract class AbstractConfig implements Serializable {
             return;
         }
         String prefix = "dubbo." + getTagName(config.getClass()) + ".";
+        System.out.println("prefix:"+prefix);
+        System.out.println("config:"+config.toString());
         Method[] methods = config.getClass().getMethods();
         for (Method method : methods) {
             try {
@@ -131,10 +133,18 @@ public abstract class AbstractConfig implements Serializable {
                         if (getter != null) {
                             if (getter.invoke(config) == null) {
                                 if (config.getId() != null && config.getId().length() > 0) {
-                                    value = ConfigUtils.getProperty(prefix + config.getId() + "." + property);
+                                    if(isWait(getter)){
+                                        value = ConfigUtils.getProperty(Constants.SHUTDOWN_WAIT_KEY);
+                                    }else{
+                                        value = ConfigUtils.getProperty(prefix + config.getId() + "." + property);
+                                    }
                                 }
                                 if (value == null || value.length() == 0) {
-                                    value = ConfigUtils.getProperty(prefix + property);
+                                    if(isWait(getter)){
+                                        value = ConfigUtils.getProperty(Constants.SHUTDOWN_WAIT_KEY);
+                                    }else{
+                                        value = ConfigUtils.getProperty(prefix + property);
+                                    }
                                 }
                                 if (value == null || value.length() == 0) {
                                     String legacyKey = legacyProperties.get(prefix + property);
@@ -154,6 +164,13 @@ public abstract class AbstractConfig implements Serializable {
                 logger.error(e.getMessage(), e);
             }
         }
+    }
+
+    private static boolean isWait(Method getter){
+        if(getter.toString().contains("getWait")){
+            return true;
+        }
+        return false;
     }
 
     private static String getTagName(Class<?> cls) {

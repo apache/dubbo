@@ -162,8 +162,10 @@ public class RegistryConfig extends AbstractConfig {
     @Deprecated
     public void setWait(Integer wait) {
         this.wait = wait;
+        System.out.println("gracefully shutoff wait time:"+this.wait);
         if (wait != null && wait > 0)
             System.setProperty(Constants.SHUTDOWN_WAIT_KEY, String.valueOf(wait));
+            String value = System.getProperty(Constants.SHUTDOWN_WAIT_KEY);
     }
 
     public Boolean isCheck() {

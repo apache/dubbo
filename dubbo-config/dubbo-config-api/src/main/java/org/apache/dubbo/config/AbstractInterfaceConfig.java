@@ -116,6 +116,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 }
             }
         }
+
         if ((registries == null || registries.isEmpty())) {
             throw new IllegalStateException((getClass().getSimpleName().startsWith("Reference")
                     ? "No such any registry to refer service in consumer "
@@ -124,7 +125,21 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                     + " use dubbo version "
                     + Version.getVersion()
                     + ", Please add <dubbo:registry address=\"...\" /> to your spring config. If you want unregister, please set <dubbo:service registry=\"N/A\" />");
+    }
+
+        // get registry wait config
+        String waitTime = ConfigUtils.getProperty(Constants.SHUTDOWN_WAIT_KEY);
+        if(!StringUtils.isEmpty(waitTime)){
+            if (StringUtils.isInteger(waitTime)){
+                RegistryConfig registryConfig = new RegistryConfig();
+                registryConfig.setWait(Integer.valueOf(waitTime));
+                registries.add(registryConfig);
+            }else{
+                throw new IllegalStateException("dubbo.registry wait time must be Integer type"
+                    + ",your wait time is:" + waitTime);
+            }
         }
+
         for (RegistryConfig registryConfig : registries) {
             appendProperties(registryConfig);
         }
