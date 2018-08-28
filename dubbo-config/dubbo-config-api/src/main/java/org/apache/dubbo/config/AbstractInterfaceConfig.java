@@ -125,6 +125,25 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                     + Version.getVersion()
                     + ", Please add <dubbo:registry address=\"...\" /> to your spring config. If you want unregister, please set <dubbo:service registry=\"N/A\" />");
         }
+        // get system env
+        String ipToRegistry = System.getenv(DUBBO_IP_TO_REGISTRY_KEY);
+        String portToRegistry = System.getenv(DUBBO_PORT_TO_REGISTRY_KEY);
+        if (StringUtils.isNotEmpty(ipToRegistry)) {
+            String address = "http://" + ipToRegistry
+                    + (StringUtils.isNotEmpty(portToRegistry)? portToRegistry : DEFAULT_PORT);
+            RegistryConfig registryConfig = new RegistryConfig();
+            registryConfig.setAddress(address);
+            registries.add(registryConfig);
+        }
+        String ipToBind = System.getenv(DUBBO_IP_TO_BIND_KEY);
+        String portToBind = System.getenv(DUBBO_PORT_TO_BIND_KEY);
+        if (StringUtils.isNotEmpty(ipToBind)) {
+            String address = "http://" + ipToBind
+                    + (StringUtils.isNotEmpty(portToBind)? portToBind : DEFAULT_PORT);
+            RegistryConfig registryConfig = new RegistryConfig();
+            registryConfig.setAddress(address);
+            registries.add(registryConfig);
+        }
         for (RegistryConfig registryConfig : registries) {
             appendProperties(registryConfig);
         }
@@ -208,7 +227,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             if ((monitorAddress == null || monitorAddress.length() == 0) && (monitorProtocol == null || monitorProtocol.length() == 0)) {
                 return null;
             }
-
             monitor = new MonitorConfig();
             if (monitorAddress != null && monitorAddress.length() > 0) {
                 monitor.setAddress(monitorAddress);
