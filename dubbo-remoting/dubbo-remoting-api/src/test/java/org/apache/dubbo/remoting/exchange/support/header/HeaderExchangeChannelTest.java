@@ -5,6 +5,7 @@ import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.exchange.Request;
+import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,6 +13,7 @@ import org.mockito.Mockito;
 
 import java.net.InetSocketAddress;
 import java.util.List;
+
 /**
  * @author buyi.sl
  * @date 2018/8/27 下午7:19
@@ -51,7 +53,7 @@ public class HeaderExchangeChannelTest {
     @Test
     public void sendWithSent() throws RemotingException {
         Object message = Mockito.mock(Object.class);
-        headerExchangeChannel.send(message,true);
+        headerExchangeChannel.send(message, true);
         List<Object> objects = channel.getSentObjects();
         Assert.assertTrue(objects.size() > 0);
         Object obj = objects.get(0);
@@ -75,7 +77,7 @@ public class HeaderExchangeChannelTest {
     @Test
     public void requestWithTimeout() throws RemotingException {
         Object message = Mockito.mock(Object.class);
-        Number timeout  = Mockito.mock(Number.class);
+        Number timeout = Mockito.mock(Number.class);
         Mockito.when(timeout.intValue()).thenReturn(1000);
         headerExchangeChannel.request(message, timeout.intValue());
         List<Object> objects = channel.getSentObjects();
@@ -100,14 +102,14 @@ public class HeaderExchangeChannelTest {
     }
 
     @Test
-    public void closeWithTimeout() throws InterruptedException {
-        Number timeout  = Mockito.mock(Number.class);
-        Mockito.when(timeout.intValue()).thenReturn(1000);
+    public void closeWithTimeout() {
+        Number timeout = Mockito.mock(Number.class);
+        Request request = Mockito.mock(Request.class);
+        Mockito.when(timeout.intValue()).thenReturn(2000);
+        DefaultFuture.newFuture(channel, request, timeout.intValue());
         Assert.assertEquals(false, channel.isClosed());
-        new Thread( () -> headerExchangeChannel.close(timeout.intValue()) ).start();
-        Thread.sleep(10);
-        Assert.assertEquals(false, channel.isClosed());
-        Thread.sleep(990);
+        Mockito.when(timeout.intValue()).thenReturn(5000);
+        headerExchangeChannel.close(timeout.intValue());
         Assert.assertEquals(true, channel.isClosed());
     }
 
@@ -120,13 +122,13 @@ public class HeaderExchangeChannelTest {
     @Test
     public void getLocalAddress() {
         InetSocketAddress inetSocketAddress = headerExchangeChannel.getLocalAddress();
-        Assert.assertEquals(channel.getLocalAddress(),inetSocketAddress);
+        Assert.assertEquals(channel.getLocalAddress(), inetSocketAddress);
     }
 
     @Test
     public void getRemoteAddress() {
         InetSocketAddress inetSocketAddress = headerExchangeChannel.getRemoteAddress();
-        Assert.assertEquals(channel.getLocalAddress(),inetSocketAddress);
+        Assert.assertEquals(channel.getLocalAddress(), inetSocketAddress);
     }
 
     @Test
@@ -143,49 +145,49 @@ public class HeaderExchangeChannelTest {
 
     @Test
     public void getChannelHandler() {
-        ChannelHandler channelHandler=headerExchangeChannel.getChannelHandler();
-        Assert.assertEquals(null,channelHandler);
+        ChannelHandler channelHandler = headerExchangeChannel.getChannelHandler();
+        Assert.assertEquals(null, channelHandler);
     }
 
     @Test
     public void getExchangeHandler() {
-        ExchangeHandler exchangeHandler=headerExchangeChannel.getExchangeHandler();
-        Assert.assertEquals(null,exchangeHandler);
+        ExchangeHandler exchangeHandler = headerExchangeChannel.getExchangeHandler();
+        Assert.assertEquals(null, exchangeHandler);
     }
 
     @Test
     public void getAttribute() {
-        Object attrBeforeSet=headerExchangeChannel.getAttribute("testKey");
-        Assert.assertEquals(null,attrBeforeSet);
+        Object attrBeforeSet = headerExchangeChannel.getAttribute("testKey");
+        Assert.assertEquals(null, attrBeforeSet);
         headerExchangeChannel.setAttribute("testKey", "testValue");
-        Object attrAfterSet=headerExchangeChannel.getAttribute("testKey");
-        Assert.assertEquals("testValue",attrAfterSet);
+        Object attrAfterSet = headerExchangeChannel.getAttribute("testKey");
+        Assert.assertEquals("testValue", attrAfterSet);
 
     }
 
     @Test
     public void setAttribute() {
         headerExchangeChannel.setAttribute("testKey", "testValue");
-        Object attrAfterSet=headerExchangeChannel.getAttribute("testKey");
-        Assert.assertEquals("testValue",attrAfterSet);
+        Object attrAfterSet = headerExchangeChannel.getAttribute("testKey");
+        Assert.assertEquals("testValue", attrAfterSet);
     }
 
     @Test
     public void removeAttribute() {
         headerExchangeChannel.setAttribute("testKey", "testValue");
-        Object attrAfterSet=headerExchangeChannel.getAttribute("testKey");
-        Assert.assertEquals("testValue",attrAfterSet);
+        Object attrAfterSet = headerExchangeChannel.getAttribute("testKey");
+        Assert.assertEquals("testValue", attrAfterSet);
         headerExchangeChannel.removeAttribute("testKey");
-        Object attrAfterRemove=headerExchangeChannel.getAttribute("testKey");
-        Assert.assertEquals(null,attrAfterRemove);
+        Object attrAfterRemove = headerExchangeChannel.getAttribute("testKey");
+        Assert.assertEquals(null, attrAfterRemove);
     }
 
     @Test
     public void hasAttribute() {
         boolean attrBeforeSet = headerExchangeChannel.hasAttribute("testKey");
-        Assert.assertEquals(false,attrBeforeSet);
+        Assert.assertEquals(false, attrBeforeSet);
         headerExchangeChannel.setAttribute("testKey", "testValue");
-        Object attrAfterSet=headerExchangeChannel.getAttribute("testKey");
-        Assert.assertEquals("testValue",attrAfterSet);
+        Object attrAfterSet = headerExchangeChannel.getAttribute("testKey");
+        Assert.assertEquals("testValue", attrAfterSet);
     }
 }
