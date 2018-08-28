@@ -70,30 +70,83 @@ import static org.apache.dubbo.common.utils.NetUtils.isInvalidPort;
 public class ServiceConfig<T> extends AbstractServiceConfig {
 
     private static final long serialVersionUID = 3033787999037024738L;
-
+    /**
+     * 自适应 Protocol 实现对象
+     */
     private static final Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-
+    /**
+     * 自适应 ProxyFactory 实现对象
+     */
     private static final ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-
+    /**
+     * 协议名对应生成的随机端口
+     *
+     * key ：协议名 value ：端口
+     */
     private static final Map<String, Integer> RANDOM_PORT_MAP = new HashMap<String, Integer>();
-
+    /**
+     * 延迟暴露执行器
+     */
     private static final ScheduledExecutorService delayExportExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboServiceDelayExporter", true));
+    /**
+     * 服务配置对应的 Dubbo URL 数组
+     *
+     * 非配置。
+     */
     private final List<URL> urls = new ArrayList<URL>();
+    /**
+     * <pre>
+     * 服务配置暴露的 Exporter 。
+     * URL ：Exporter 不一定是 1：1 的关系。
+     * 例如 {@link #scope} 未设置时，会暴露 Local + Remote 两个，也就是 URL ：Exporter = 1：2
+     *      {@link #scope} 设置为空时，不会暴露，也就是 URL ：Exporter = 1：0
+     *      {@link #scope} 设置为 Local 或 Remote 任一时，会暴露 Local 或 Remote 一个，也就是 URL ：Exporter = 1：1
+     *
+     * 非配置。
+     * </pre>
+     */
     private final List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
-    // interface type
+    /**
+     * interface type
+     */
     private String interfaceName;
+    /**
+     * {@link #interfaceName} 对应的接口类
+     *
+     * 非配置
+     */
     private Class<?> interfaceClass;
-    // reference to interface impl
+    /**
+     * Service 对象 reference to interface impl
+     */
     private T ref;
-    // service name
+    /**
+     * service name
+     */
     private String path;
-    // method configuration
+    /**
+     * method configuration
+     */
     private List<MethodConfig> methods;
     private ProviderConfig provider;
+    /**
+     * 是否已经暴露服务，参见 {@link #doExport()} 方法。
+     *
+     * 非配置。
+     */
     private transient volatile boolean exported;
-
+    /**
+     * 是否已取消暴露服务，参见 {@link #unexport()} 方法。
+     *
+     * 非配置。
+     */
     private transient volatile boolean unexported;
-
+    /**
+     * 是否泛化实现，参见 <a href="https://dubbo.gitbooks.io/dubbo-user-book/demos/generic-service.html">实现泛化调用</a>
+     * true / false
+     *
+     * 状态字段，非配置。
+     */
     private volatile String generic;
 
     public ServiceConfig() {
@@ -545,14 +598,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     /**
-     * Register & bind IP address for service provider, can be configured separately.
-     * Configuration priority: environment variables -> java system properties -> host property in config file ->
+     * Register & bind IP address for service provider, can be configured separately. Configuration
+     * priority: environment variables -> java system properties -> host property in config file ->
      * /etc/hosts -> default network address -> first available network address
-     *
-     * @param protocolConfig
-     * @param registryURLs
-     * @param map
-     * @return
      */
     private String findConfigedHosts(ProtocolConfig protocolConfig, List<URL> registryURLs, Map<String, String> map) {
         boolean anyhost = false;
@@ -624,13 +672,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     /**
-     * Register port and bind port for the provider, can be configured separately
-     * Configuration priority: environment variable -> java system properties -> port property in protocol config file
-     * -> protocol default port
-     *
-     * @param protocolConfig
-     * @param name
-     * @return
+     * Register port and bind port for the provider, can be configured separately Configuration
+     * priority: environment variable -> java system properties -> port property in protocol config
+     * file -> protocol default port
      */
     private Integer findConfigedPorts(ProtocolConfig protocolConfig, String name, Map<String, String> map) {
         Integer portToBind = null;
@@ -740,7 +784,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     /**
-     * @param interfaceClass
      * @see #setInterface(Class)
      * @deprecated
      */
