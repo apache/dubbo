@@ -73,13 +73,14 @@ public class TagRouterTest {
         invokers.add(defaultInvoker);
 
         Router tagRouter = new TagRouterFactory().getRouter(tagUrl);
+
         List<Invoker<String>> filteredInvokers = tagRouter.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
         Assert.assertTrue(filteredInvokers.contains(redInvoker));
         Assert.assertFalse(filteredInvokers.contains(yellowInvoker));
         Assert.assertFalse(filteredInvokers.contains(blueInvoker));
         Assert.assertFalse(filteredInvokers.contains(defaultInvoker));
 
-        RpcContext.getContext().setAttachment(Constants.TAG_FORCE_KEY, "true");
+        RpcContext.getContext().setAttachment(Constants.TAG_FORCE_KEY, "false");
         filteredInvokers = tagRouter.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
         Assert.assertTrue(filteredInvokers.contains(redInvoker));
         Assert.assertFalse(filteredInvokers.contains(yellowInvoker));
@@ -112,19 +113,19 @@ public class TagRouterTest {
         invokers.add(defaultInvoker);
 
         Router tagRouter = new TagRouterFactory().getRouter(tagUrl);
-        List<Invoker<String>> filteredInvokers = tagRouter.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
-        Assert.assertTrue(filteredInvokers.contains(defaultInvoker));
-        Assert.assertTrue(filteredInvokers.contains(yellowInvoker));
-        Assert.assertTrue(filteredInvokers.contains(blueInvoker));
-        Assert.assertTrue(filteredInvokers.contains(redInvoker));
 
-        RpcContext.getContext().setAttachment(Constants.TAG_FORCE_KEY, "true");
-        filteredInvokers = tagRouter.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
+        List<Invoker<String>> filteredInvokers = tagRouter.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
         Assert.assertFalse(filteredInvokers.contains(redInvoker));
         Assert.assertFalse(filteredInvokers.contains(yellowInvoker));
         Assert.assertFalse(filteredInvokers.contains(blueInvoker));
         Assert.assertTrue(filteredInvokers.contains(defaultInvoker));
 
+        RpcContext.getContext().setAttachment(Constants.TAG_FORCE_KEY, "false");
+        filteredInvokers = tagRouter.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
+        Assert.assertTrue(filteredInvokers.contains(defaultInvoker));
+        Assert.assertTrue(filteredInvokers.contains(yellowInvoker));
+        Assert.assertTrue(filteredInvokers.contains(blueInvoker));
+        Assert.assertTrue(filteredInvokers.contains(redInvoker));
 
         RpcContext.getContext().removeAttachment(Constants.TAG_FORCE_KEY);
         RpcContext.getContext().removeAttachment(Constants.REQUEST_TAG_KEY);
@@ -151,16 +152,19 @@ public class TagRouterTest {
         invokers.add(defaultInvoker);
 
         Router tagRouter = new TagRouterFactory().getRouter(tagUrl);
-        List<Invoker<String>> filteredInvokers = tagRouter.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
+        List<Invoker<String>> filteredInvokers;
+
+        // default TAG_FORCE_KEY is true
+        filteredInvokers = tagRouter.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
+        Assert.assertTrue(filteredInvokers.isEmpty());
+
+
+        RpcContext.getContext().setAttachment(Constants.TAG_FORCE_KEY, "false");
+        filteredInvokers = tagRouter.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
         Assert.assertTrue(filteredInvokers.contains(defaultInvoker));
         Assert.assertTrue(filteredInvokers.contains(yellowInvoker));
         Assert.assertTrue(filteredInvokers.contains(blueInvoker));
         Assert.assertTrue(filteredInvokers.contains(redInvoker));
-
-        RpcContext.getContext().setAttachment(Constants.TAG_FORCE_KEY, "true");
-        filteredInvokers = tagRouter.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
-        Assert.assertTrue(filteredInvokers.isEmpty());
-
 
         RpcContext.getContext().removeAttachment(Constants.TAG_FORCE_KEY);
         RpcContext.getContext().removeAttachment(Constants.REQUEST_TAG_KEY);
@@ -184,12 +188,15 @@ public class TagRouterTest {
         invokers.add(blueInvoker);
 
         Router tagRouter = new TagRouterFactory().getRouter(tagUrl);
+
         List<Invoker<String>> filteredInvokers = tagRouter.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
+        Assert.assertTrue(filteredInvokers.isEmpty());
+
+
+        RpcContext.getContext().setAttachment(Constants.TAG_FORCE_KEY, "false");
+        filteredInvokers = tagRouter.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
         Assert.assertEquals(invokers.size(), filteredInvokers.size());
 
-        RpcContext.getContext().setAttachment(Constants.TAG_FORCE_KEY, "true");
-        filteredInvokers = tagRouter.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
-        Assert.assertTrue(filteredInvokers.isEmpty());
 
 
         RpcContext.getContext().removeAttachment(Constants.TAG_FORCE_KEY);
