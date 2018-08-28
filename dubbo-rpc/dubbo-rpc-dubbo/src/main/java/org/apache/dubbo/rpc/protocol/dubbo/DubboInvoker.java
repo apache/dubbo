@@ -73,6 +73,8 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         inv.setAttachment(Constants.PATH_KEY, getUrl().getPath());
         inv.setAttachment(Constants.VERSION_KEY, version);
 
+        RpcContext.getContext().getAttachments().put(Constants.APPLICATION_KEY,System.getProperties().getProperty("applicationName"));
+
         ExchangeClient currentClient;
         if (clients.length == 1) {
             currentClient = clients[0];
