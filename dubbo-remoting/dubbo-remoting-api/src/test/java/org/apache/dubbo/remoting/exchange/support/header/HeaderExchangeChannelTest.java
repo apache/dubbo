@@ -2,7 +2,9 @@ package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.ResponseFuture;
 import org.junit.Assert;
@@ -100,39 +102,34 @@ public class HeaderExchangeChannelTest {
     @Test
     public void close() {
         headerExchangeChannel.close();
-        Assert.assertEquals(true, channel.getClosed());
+        Assert.assertEquals(true, channel.isClosed());
     }
 
     @Test
-    public void close1() {
-        //todo 如何验证延迟关闭
-        headerExchangeChannel.close(3000);
-        boolean channelStatue = headerExchangeChannel.isClosed();
-        Assert.assertEquals(false, channelStatue);
+    public void closeWithTimeout() {
+        Number timeout  = Mockito.mock(Number.class);
+        Mockito.when(timeout.intValue()).thenReturn(2000);
+        Assert.assertEquals(false, channel.isClosed());
+        headerExchangeChannel.close(timeout.intValue());
+        Assert.assertEquals(true, channel.isClosed());
     }
 
     @Test
     public void startClose() {
-        //todo 关闭函数的运行
-        Channel a = Mockito.mock(MockChannel.class);
-        a.close();
-        //headerExchangeChannel=Mockito.mock(MockChannel.class);
-
         headerExchangeChannel.startClose();
+        Assert.assertEquals(true, channel.isClosing());
     }
 
     @Test
     public void getLocalAddress() {
-        //HeaderExchangeChannel headerExchangeChannel=new MockChannel();
-
-        InetSocketAddress channelAddress = headerExchangeChannel.getLocalAddress();
-        // System.out.print(channelAddress.getHostString()+" "+channelAddress.getPort());
-        //  Assert.assertArrayEquals(,inetSocketAddress.getHostName(),inetSocketAddress.getPort());
+        InetSocketAddress inetSocketAddress = headerExchangeChannel.getLocalAddress();
+        Assert.assertEquals(channel.getLocalAddress(),inetSocketAddress);
     }
 
     @Test
     public void getRemoteAddress() {
-        headerExchangeChannel.getRemoteAddress();
+        InetSocketAddress inetSocketAddress = headerExchangeChannel.getRemoteAddress();
+        Assert.assertEquals(channel.getLocalAddress(),inetSocketAddress);
     }
 
     @Test
@@ -143,37 +140,55 @@ public class HeaderExchangeChannelTest {
 
     @Test
     public void isConnected() {
-        boolean channelConnnected = headerExchangeChannel.isConnected();
+        boolean isConnected = headerExchangeChannel.isConnected();
+        Assert.assertEquals(isConnected, channel.isConnected());
     }
 
     @Test
     public void getChannelHandler() {
-        headerExchangeChannel.getChannelHandler();
+        ChannelHandler channelHandler=headerExchangeChannel.getChannelHandler();
+        Assert.assertEquals(null,channelHandler);
     }
 
     @Test
     public void getExchangeHandler() {
-        headerExchangeChannel.getExchangeHandler();
+        ExchangeHandler exchangeHandler=headerExchangeChannel.getExchangeHandler();
+        Assert.assertEquals(null,exchangeHandler);
     }
 
     @Test
     public void getAttribute() {
+        Object attrBeforeSet=headerExchangeChannel.getAttribute("testKey");
+        Assert.assertEquals(null,attrBeforeSet);
+        headerExchangeChannel.setAttribute("testKey", "testValue");
+        Object attrAfterSet=headerExchangeChannel.getAttribute("testKey");
+        Assert.assertEquals("testValue",attrAfterSet);
 
-        headerExchangeChannel.getAttribute("key");
     }
 
     @Test
     public void setAttribute() {
-        headerExchangeChannel.setAttribute("key", "value");
+        headerExchangeChannel.setAttribute("testKey", "testValue");
+        Object attrAfterSet=headerExchangeChannel.getAttribute("testKey");
+        Assert.assertEquals("testValue",attrAfterSet);
     }
 
     @Test
     public void removeAttribute() {
-        headerExchangeChannel.removeAttribute("key");
+        headerExchangeChannel.setAttribute("testKey", "testValue");
+        Object attrAfterSet=headerExchangeChannel.getAttribute("testKey");
+        Assert.assertEquals("testValue",attrAfterSet);
+        headerExchangeChannel.removeAttribute("testKey");
+        Object attrAfterRemove=headerExchangeChannel.getAttribute("testKey");
+        Assert.assertEquals(null,attrAfterRemove);
     }
 
     @Test
     public void hasAttribute() {
-        boolean hasAttribute = headerExchangeChannel.hasAttribute("key");
+        boolean attrBeforeSet = headerExchangeChannel.hasAttribute("testKey");
+        Assert.assertEquals(false,attrBeforeSet);
+        headerExchangeChannel.setAttribute("testKey", "testValue");
+        Object attrAfterSet=headerExchangeChannel.getAttribute("testKey");
+        Assert.assertEquals("testValue",attrAfterSet);
     }
 }
