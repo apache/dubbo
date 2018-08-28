@@ -69,6 +69,7 @@ public class RegistryProtocol implements Protocol {
     private Protocol protocol;
     private RegistryFactory registryFactory;
     private ProxyFactory proxyFactory;
+    private ConcurrentHashMap<URL, URL> proxyMap = new ConcurrentHashMap<>();
 
     public RegistryProtocol() {
         INSTANCE = this;
@@ -137,6 +138,7 @@ public class RegistryProtocol implements Protocol {
         //registry provider
         final Registry registry = getRegistry(originInvoker);
         final URL registeredProviderUrl = getRegisteredProviderUrl(originInvoker);
+        putProxyURL(registryUrl, registeredProviderUrl);
 
         //to judge to delay publish whether or not
         boolean register = registeredProviderUrl.getParameter("register", true);
@@ -253,7 +255,26 @@ public class RegistryProtocol implements Protocol {
         }
 
         URL providerUrl = URL.valueOf(export);
+        if (getProxyURL(providerUrl) != null) {
+            return getProxyURL(providerUrl);
+        }
         return providerUrl;
+    }
+
+    private URL getProxyURL(URL url) {
+        return proxyMap.get(url);
+    }
+
+    private void putProxyURL(URL origin, URL proxy) {
+        if (origin == null) {
+            throw new IllegalArgumentException("original url is null");
+        }
+
+        if (proxy == null) {
+            throw new IllegalArgumentException("proxy url is null");
+        }
+
+        proxyMap.putIfAbsent(origin, proxy);
     }
 
     /**
