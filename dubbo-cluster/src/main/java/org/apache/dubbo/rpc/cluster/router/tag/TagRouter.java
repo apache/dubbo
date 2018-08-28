@@ -36,6 +36,7 @@ public class TagRouter implements Router, Comparable<Router> {
     private static final Logger logger = LoggerFactory.getLogger(TagRouter.class);
 
     public static final String NAME = "tag";
+    public static boolean DEFAULT_FORCETAG = true;
 
     private final int priority;
     private final URL url;
@@ -63,7 +64,7 @@ public class TagRouter implements Router, Comparable<Router> {
         try {
             String tag = RpcContext.getContext().getAttachment(Constants.REQUEST_TAG_KEY);
             String forceTagStr = RpcContext.getContext().getAttachment(Constants.TAG_FORCE_KEY);
-            boolean forceTag = StringUtils.isEmpty(forceTagStr)?false:Boolean.parseBoolean(forceTagStr);
+            boolean forceTag = StringUtils.isEmpty(forceTagStr)?DEFAULT_FORCETAG:Boolean.parseBoolean(forceTagStr);
 
             if (StringUtils.isEmpty(tag)) {
                 if(forceTag) {
