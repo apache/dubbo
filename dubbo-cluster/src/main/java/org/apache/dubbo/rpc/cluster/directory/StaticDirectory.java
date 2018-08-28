@@ -20,12 +20,14 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.Router;
+import org.apache.dubbo.rpc.cluster.RouterChain;
 
 import java.util.List;
 
 /**
  * StaticDirectory
+ *
+ * FIXME We should add separate router rules for StaticDirectory, not use RouterChain in AbstractDirectory. For example, machineRoom rule only. Ask LVS team for help.
  *
  */
 public class StaticDirectory<T> extends AbstractDirectory<T> {
@@ -36,16 +38,16 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
         this(null, invokers, null);
     }
 
-    public StaticDirectory(List<Invoker<T>> invokers, List<Router> routers) {
-        this(null, invokers, routers);
+    public StaticDirectory(List<Invoker<T>> invokers, RouterChain<T> routerChain) {
+        this(null, invokers, routerChain);
     }
 
     public StaticDirectory(URL url, List<Invoker<T>> invokers) {
         this(url, invokers, null);
     }
 
-    public StaticDirectory(URL url, List<Invoker<T>> invokers, List<Router> routers) {
-        super(url == null && invokers != null && !invokers.isEmpty() ? invokers.get(0).getUrl() : url, routers);
+    public StaticDirectory(URL url, List<Invoker<T>> invokers, RouterChain<T> routerChain) {
+        super(url == null && invokers != null && !invokers.isEmpty() ? invokers.get(0).getUrl() : url, routerChain);
         if (invokers == null || invokers.isEmpty())
             throw new IllegalArgumentException("invokers == null");
         this.invokers = invokers;

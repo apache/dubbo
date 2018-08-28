@@ -27,10 +27,10 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
+import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.RouterFactory;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -38,7 +38,6 @@ import org.junit.Test;
 
 import javax.script.ScriptEngineManager;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.BDDMockito.given;
@@ -159,7 +158,9 @@ public class FileRouterEngineTest {
     }
 
     private void initDic(URL url) {
-        dic = new StaticDirectory<FileRouterEngineTest>(url, invokers, Arrays.asList(routerFactory.getRouter(url)));
+        // FIXME dynamicConfiguration should not be null
+        RouterChain chain = RouterChain.buildChain(null);
+        dic = new StaticDirectory<FileRouterEngineTest>(url, invokers, chain);
     }
 
     static class MockClusterInvoker<T> extends AbstractClusterInvoker<T> {

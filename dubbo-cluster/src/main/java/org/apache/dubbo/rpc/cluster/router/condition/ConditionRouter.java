@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
@@ -27,6 +28,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Router;
+import org.apache.dubbo.rpc.cluster.router.TreeNode;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -45,19 +47,26 @@ import java.util.regex.Pattern;
 public class ConditionRouter implements Router, Comparable<Router> {
 
     private static final Logger logger = LoggerFactory.getLogger(ConditionRouter.class);
-    private static Pattern ROUTE_PATTERN = Pattern.compile("([&!=,]*)\\s*([^&!=,\\s]+)");
-    private final URL url;
-    private final int priority;
-    private final boolean force;
-    private final Map<String, MatchPair> whenCondition;
-    private final Map<String, MatchPair> thenCondition;
+    protected static Pattern ROUTE_PATTERN = Pattern.compile("([&!=,]*)\\s*([^&!=,\\s]+)");
+    protected URL url;
+    protected int priority;
+    protected boolean force;
+    protected Map<String, MatchPair> whenCondition;
+    protected Map<String, MatchPair> thenCondition;
+
+    protected ConditionRouter() {
+
+    }
 
     public ConditionRouter(URL url) {
         this.url = url;
         this.priority = url.getParameter(Constants.PRIORITY_KEY, 0);
         this.force = url.getParameter(Constants.FORCE_KEY, false);
+        init(url.getParameterAndDecoded(Constants.RULE_KEY));
+    }
+
+    protected void init(String rule) {
         try {
-            String rule = url.getParameterAndDecoded(Constants.RULE_KEY);
             if (rule == null || rule.trim().length() == 0) {
                 throw new IllegalArgumentException("Illegal route rule!");
             }
@@ -175,6 +184,37 @@ public class ConditionRouter implements Router, Comparable<Router> {
     }
 
     @Override
+    public <T> Map<String, List<Invoker<T>>> preRoute(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
+        Map<String, List<Invoker<T>>> map = new HashMap<>();
+
+        if (CollectionUtils.isEmpty(invokers)) {
+            return map;
+        }
+
+        if (isRuntime()) {
+            map.put(TreeNode.FAILOVER_KEY, invokers);
+            return map;
+        }
+        return map;
+    }
+
+    @Override
+    public boolean isRuntime() {
+        // We always return true for previously defined Router, don't support cache.
+        return this.url.getParameter(Constants.RUNTIME_KEY, false);
+    }
+
+    @Override
+    public String getKey() {
+        return TreeNode.FAILOVER_KEY;
+    }
+
+    @Override
+    public boolean isForce() {
+        return force;
+    }
+
+    @Override
     public URL getUrl() {
         return url;
     }
@@ -229,7 +269,7 @@ public class ConditionRouter implements Router, Comparable<Router> {
         return result;
     }
 
-    private static final class MatchPair {
+    protected static final class MatchPair {
         final Set<String> matches = new HashSet<String>();
         final Set<String> mismatches = new HashSet<String>();
 
