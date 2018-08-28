@@ -115,6 +115,10 @@ public class ReferenceConfigCache {
         return (T) config.get();
     }
 
+    public <T> boolean isExist(ReferenceConfig<T> referenceConfig){
+        return cache.get(generator.generateKey(referenceConfig)) != null;
+    }
+
     void destroyKey(String key) {
         ReferenceConfig<?> config = cache.remove(key);
         if (config == null) return;
