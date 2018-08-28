@@ -102,7 +102,7 @@ public class ReferenceConfigCache {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T get(ReferenceConfig<T> referenceConfig) {
+    public <T> T getOrAdd(ReferenceConfig<T> referenceConfig) {
         String key = generator.generateKey(referenceConfig);
 
         ReferenceConfig<?> config = cache.get(key);
@@ -113,6 +113,36 @@ public class ReferenceConfigCache {
         cache.putIfAbsent(key, referenceConfig);
         config = cache.get(key);
         return (T) config.get();
+    }
+
+    /**
+     * Get the key from the cache.
+     * @param referenceConfig use for create key
+     * @return Returns null if the cache doesn't contain the key.
+     */
+    public <T> T get(ReferenceConfig<T> referenceConfig) {
+        String key = generator.generateKey(referenceConfig);
+
+        ReferenceConfig<?> config = cache.get(key);
+        if (config != null) {
+            return (T) config.get();
+        }
+
+        return null;
+    }
+
+
+    /**
+     * Check whether the cache contains key.
+     * @param referenceConfig use for create key
+     * @param <T>
+     * @return Whether contains.
+     */
+    public <T> boolean contains(ReferenceConfig<T> referenceConfig) {
+        String key = generator.generateKey(referenceConfig);
+        ReferenceConfig<?> config = cache.get(key);
+
+        return config != null;
     }
 
     void destroyKey(String key) {
