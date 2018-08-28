@@ -144,7 +144,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
                         registryConfigs.add(config);
                     }
                 }
-                if (registryConfigs != null && !registryConfigs.isEmpty()) {
+                if (!registryConfigs.isEmpty()) {
                     super.setRegistries(registryConfigs);
                 }
             }
