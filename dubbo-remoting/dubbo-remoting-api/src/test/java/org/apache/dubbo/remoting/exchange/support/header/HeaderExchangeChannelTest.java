@@ -68,8 +68,12 @@ public class HeaderExchangeChannelTest {
     public void request() throws RemotingException {
         Object message = Mockito.mock(Object.class);
         headerExchangeChannel.request(message);
-        Assert.assertEquals(message, ((Request) channel.getSentObjects().get(0)).getData());
-
+        List<Object> objects = channel.getSentObjects();
+        Assert.assertTrue(objects.size() > 0);
+        Object obj = objects.get(0);
+        Assert.assertTrue(obj instanceof Request);
+        Request request = (Request) obj;
+        Assert.assertEquals(message, request.getData());
     }
 
     @Test
@@ -78,8 +82,12 @@ public class HeaderExchangeChannelTest {
         Number timeout  = Mockito.mock(Number.class);
         Mockito.when(timeout.intValue()).thenReturn(1000);
         headerExchangeChannel.request(message, timeout.intValue());
-        Assert.assertEquals(message, ((Request) channel.getSentObjects().get(0)).getData());
-
+        List<Object> objects = channel.getSentObjects();
+        Assert.assertTrue(objects.size() > 0);
+        Object obj = objects.get(0);
+        Assert.assertTrue(obj instanceof Request);
+        Request request = (Request) obj;
+        Assert.assertEquals(message, request.getData());
     }
 
     @Test
