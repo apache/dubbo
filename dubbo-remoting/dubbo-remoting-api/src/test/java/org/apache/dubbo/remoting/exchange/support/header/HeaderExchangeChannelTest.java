@@ -5,6 +5,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.*;
+import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -73,10 +74,25 @@ public class HeaderExchangeChannelTest {
     }
 
     @Test
-    public void testCloseWithTimeOut() {
-        this.exchangeChannel.close(1000);
-    }
+    public void testCloseWithTimeOut() throws RemotingException {
+        MockChannel channel = new MockChannel();
+        HeaderExchangeChannel exchangeChannel = new HeaderExchangeChannel(channel);
 
+        exchangeChannel.request("test data", 1000);
+
+        List<Object> sentObjects = channel.getSentObjects();
+        Request request = (Request) sentObjects.get(0);
+        Response response = new Response();
+        response.setId(request.getId());
+        DefaultFuture.received(channel, response);
+
+        Assert.assertTrue(!DefaultFuture.hasFuture(channel));
+        exchangeChannel.close(500);
+
+
+        // Assert.assertTrue(exchangeChannel.isClosed());
+
+    }
 
 }
 
