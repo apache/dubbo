@@ -27,8 +27,9 @@
     <!-- use multicast registry center to export service -->
     <dubbo:registry address="multicast://224.5.6.7:1234"/>
 
+
     <!-- use dubbo protocol to export service on port 20880 -->
-    <dubbo:protocol name="dubbo" port="20880"/>
+    <dubbo:protocol name="dubbo" port="20880" host="localhost"/>
 
     <!-- service implementation, as same as regular local bean -->
     <bean id="demoService" class="org.apache.dubbo.demo.provider.DemoServiceImpl"/>

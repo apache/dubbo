@@ -35,10 +35,12 @@ public class ConsumerContextFilter extends AbstractPostProcessFilter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+        System.out.println(invoker.getUrl().getParameter("application"));
         RpcContext.getContext()
                 .setInvoker(invoker)
                 .setInvocation(invocation)
                 .setLocalAddress(NetUtils.getLocalHost(), 0)
+                .setAttachment(Constants.APPLICATION_KEY, invoker.getUrl().getParameter("application"))
                 .setRemoteAddress(invoker.getUrl().getHost(),
                         invoker.getUrl().getPort());
         if (invocation instanceof RpcInvocation) {
