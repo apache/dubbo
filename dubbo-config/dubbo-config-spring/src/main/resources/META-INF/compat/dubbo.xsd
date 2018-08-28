@@ -377,7 +377,7 @@
                 <xsd:documentation><![CDATA[ The application monitor. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="shutDownWait" type="xsd:string" >
+        <xsd:attribute name="shutwait" type="xsd:string" >
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The application shutDown-wait time. ]]></xsd:documentation>
             </xsd:annotation>
