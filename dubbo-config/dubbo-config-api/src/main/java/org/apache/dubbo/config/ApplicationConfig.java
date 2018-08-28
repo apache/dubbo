@@ -83,6 +83,10 @@ public class ApplicationConfig extends AbstractConfig {
     // customized parameters
     private Map<String, String> parameters;
 
+    //config the shutdown.wait
+    private String shutDownWait;
+
+
     public ApplicationConfig() {
     }
 
@@ -253,5 +257,15 @@ public class ApplicationConfig extends AbstractConfig {
     public void setParameters(Map<String, String> parameters) {
         checkParameterName(parameters);
         this.parameters = parameters;
+    }
+
+    public String getShutDownWait() {
+        return shutDownWait;
+    }
+
+    public void setShutDownWait(String shutDownWait) {
+        System.setProperty( Constants.SHUTDOWN_WAIT_KEY, shutDownWait);
+        this.shutDownWait = shutDownWait;
+
     }
 }
