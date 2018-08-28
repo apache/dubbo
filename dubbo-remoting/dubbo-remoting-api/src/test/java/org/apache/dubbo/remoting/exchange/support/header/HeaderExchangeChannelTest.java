@@ -178,7 +178,6 @@ public class HeaderExchangeChannelTest {
         };
         HeaderExchangeChannel exchangeChannel = new HeaderExchangeChannel(channel);
         exchangeChannel.close();
-
     }
 
     @Test
@@ -190,7 +189,6 @@ public class HeaderExchangeChannelTest {
     @Test
     public void testGetAttributeNotExist(){
         Assert.assertNull(this.exchangeChannel.getAttribute("ss"));
-
     }
 
     @Test
