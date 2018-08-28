@@ -100,11 +100,14 @@ public class HeaderExchangeChannelTest {
     }
 
     @Test
-    public void closeWithTimeout() {
+    public void closeWithTimeout() throws InterruptedException {
         Number timeout  = Mockito.mock(Number.class);
-        Mockito.when(timeout.intValue()).thenReturn(2000);
+        Mockito.when(timeout.intValue()).thenReturn(1000);
         Assert.assertEquals(false, channel.isClosed());
-        headerExchangeChannel.close(timeout.intValue());
+        new Thread( () -> headerExchangeChannel.close(timeout.intValue()) ).start();
+        Thread.sleep(10);
+        Assert.assertEquals(false, channel.isClosed());
+        Thread.sleep(990);
         Assert.assertEquals(true, channel.isClosed());
     }
 
