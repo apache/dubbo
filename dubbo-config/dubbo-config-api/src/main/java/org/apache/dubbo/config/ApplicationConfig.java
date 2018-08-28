@@ -38,6 +38,9 @@ public class ApplicationConfig extends AbstractConfig {
     // application name
     private String name;
 
+    // graceful-shutdown timeout
+    private String shutdownWaitKey;
+
     // module version
     private String version;
 
@@ -235,6 +238,14 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setQosPort(Integer qosPort) {
         this.qosPort = qosPort;
+    }
+
+    @Parameter(key = Constants.SHUTDOWN_WAIT_KEY)
+    public String getShutdownWaitKey() {
+        return shutdownWaitKey;
+    }
+    public void setShutdownWaitKey(String shutdownWaitKey) {
+        this.shutdownWaitKey = shutdownWaitKey;
     }
 
     @Parameter(key = Constants.ACCEPT_FOREIGN_IP)
