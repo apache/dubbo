@@ -27,6 +27,10 @@
     <!-- use multicast registry center to export service -->
     <dubbo:registry address="multicast://224.5.6.7:1234"/>
 
+    <!--优雅shut off-->
+    <dubbo:registry wait="60000"/>
+
+
     <!-- use dubbo protocol to export service on port 20880 -->
     <dubbo:protocol name="dubbo" port="20880"/>
 
@@ -35,5 +39,6 @@
 
     <!-- declare the service interface to be exported -->
     <dubbo:service interface="org.apache.dubbo.demo.DemoService" ref="demoService"/>
+
 
 </beans>

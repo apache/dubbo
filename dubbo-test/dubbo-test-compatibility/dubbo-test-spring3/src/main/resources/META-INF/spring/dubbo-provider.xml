@@ -24,9 +24,12 @@
     <dubbo:application name="dubbo-annotation-provider"/>
 
     <!-- registry center config -->
-    <dubbo:registry id="my-registry" address="N/A"/>
 
+    <dubbo:registry id="my-registry" address="N/A"/>
     <!-- protocol config -->
     <dubbo:protocol name="dubbo" port="12345"/>
 
+    <dubbo:provider timeout="6000"></dubbo:provider>
+
+    <!--<dubbo:service interface="com.xxxxService" timeout="3000"></dubbo:service>-->
 </beans>
