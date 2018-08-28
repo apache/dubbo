@@ -83,6 +83,9 @@ public class ApplicationConfig extends AbstractConfig {
     // customized parameters
     private Map<String, String> parameters;
 
+    // customized graceful shutdown time
+    private  Integer Wait;
+
     public ApplicationConfig() {
     }
 
@@ -200,6 +203,14 @@ public class ApplicationConfig extends AbstractConfig {
     public void setLogger(String logger) {
         this.logger = logger;
         LoggerFactory.setLoggerAdapter(logger);
+    }
+
+    public Integer getWait() {
+        return Wait;
+    }
+
+    public void setWait(Integer Wait) {
+        this.Wait = Wait;
     }
 
     public Boolean isDefault() {
