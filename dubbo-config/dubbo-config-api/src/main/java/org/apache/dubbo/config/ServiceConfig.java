@@ -562,7 +562,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             throw new IllegalArgumentException("Specified invalid bind ip from property:" + Constants.DUBBO_IP_TO_BIND + ", value:" + hostToBind);
         }
 
-        // if bind ip is not found in environment, keep looking up
+        // if bind ip is not fou nd in environment, keep looking up
         if (hostToBind == null || hostToBind.length() == 0) {
             hostToBind = protocolConfig.getHost();
             if (provider != null && (hostToBind == null || hostToBind.length() == 0)) {
