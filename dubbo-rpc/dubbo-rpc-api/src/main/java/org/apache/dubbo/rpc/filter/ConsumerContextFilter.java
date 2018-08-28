@@ -41,6 +41,10 @@ public class ConsumerContextFilter extends AbstractPostProcessFilter {
                 .setLocalAddress(NetUtils.getLocalHost(), 0)
                 .setRemoteAddress(invoker.getUrl().getHost(),
                         invoker.getUrl().getPort());
+        //add application of consumer
+        String application = invoker.getUrl().getParameter("application");
+        RpcContext.getContext().setConsumerApplication(application);
+
         if (invocation instanceof RpcInvocation) {
             ((RpcInvocation) invocation).setInvoker(invoker);
         }
