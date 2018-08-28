@@ -1,14 +1,35 @@
-## What is the purpose of the change
+# What is the purpose of the change
+add the unit test of the HeaderExchangeChannel.class which is located in incubator-dubbo-master\dubbo-remoting\dubbo-remoting-api\src\main\java\org\apache\dubbo\remoting\exchange\support\header\HeaderExchangeChannel.java
+# Brief changelog
+### 1.Add HeaderExchangeChannelTest.class
+add the unit tests for the methds as follows:
 
-XXXXX
-
-## Brief changelog
-
-XXXXX
-
-## Verifying this change
-
-XXXXX
+- HeaderExchangeChannel getOrAddChannel(Channel ch)
+- void removeChannelIfDisconnected(Channel ch)
+- void send(Object message
+- void send(Object message, boolean sent)
+- ResponseFuture request(Object request)
+- ResponseFuture request(Object request, int timeout)
+- boolean isClosed()
+- void close()
+- void close(int timeout)
+- void startClose()
+- InetSocketAddress getLocalAddress()
+- InetSocketAddress getRemoteAddress()
+- URL getUrl()
+- boolean isConnected()
+- ChannelHandler getChannelHandler()
+- ExchangeHandler getExchangeHandler()
+- Object getAttribute(String key)
+- void setAttribute(String key, Object value)
+- void removeAttribute(String key)
+- boolean hasAttribute(String key)
+- int hashCode()
+### 2.Modify MockChannel.class
+add the method:
+ ```
+public boolean isClosing(){return  closing;}
+ ```
 
 Follow this checklist to help us incorporate your contribution quickly and easily:
 
