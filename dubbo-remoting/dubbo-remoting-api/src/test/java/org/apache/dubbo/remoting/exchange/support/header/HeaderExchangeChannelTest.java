@@ -30,17 +30,9 @@ public class HeaderExchangeChannelTest {
         Assert.assertEquals("mockAttr", mHeaderExchangeChannel.getAttribute("mock"));
     }
 
-    @Test
-    public void removeChannelIfDisconnected_one() {
-        mockChannel = null;
-        Mockito.doThrow(new Exception("removeChannelIfDisconnected_one"))
-                .when(mockChannel)
-                .removeAttribute(CHANNEL_KEY);
-        HeaderExchangeChannel.removeChannelIfDisconnected(mockChannel);
-    }
 
     @Test
-    public void removeChannelIfDisconnected_two() {
+    public void removeChannelIfDisconnected_one() {
         Mockito.when(mockChannel.isConnected()).thenReturn(true);
         Mockito.doThrow(new RuntimeException("removeChannelIfDisconnected_one"))
                 .when(mockChannel)
