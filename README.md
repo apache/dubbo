@@ -109,9 +109,9 @@ public class Consumer {
 
 ### Next steps
 
-* [Dubbo user manual](http://dubbo.apache.org/#/docs/user/preface/background.md) - How to use Dubbo and all its features.
-* [Dubbo developer guide](http://dubbo.apache.org/#/docs/dev/build.md) - How to invovle in Dubbo development.
-* [Dubbo admin manual](http://dubbo.apache.org/#/docs/admin/install/provider-demo.md) - How to admin and manage Dubbo services.
+* [Dubbo user manual](http://dubbo.apache.org/en-us/docs/user/preface/background.html) - How to use Dubbo and all its features.
+* [Dubbo developer guide](http://dubbo.apache.org/en-us/docs/dev/build.html) - How to invovle in Dubbo development.
+* [Dubbo admin manual](http://dubbo.apache.org/en-us/docs/admin/install/provider-demo.html) - How to admin and manage Dubbo services.
 
 ## Contact
 
@@ -122,7 +122,7 @@ public class Consumer {
 
 ## Contributing
 
-See [CONTRIBUTING](https://github.com/apache/incubator-dubbo/blob/master/CONTRIBUTING.md) for details on submitting patches and the contribution workflow.
+See [CONTRIBUTING](https://github.com/apache/incubator-dubbo/blob/master/CONTRIBUTING.md) for details on submitting patches and the contribution workflow.
 
 ### How can I contribute?
 
@@ -142,7 +142,7 @@ See [CONTRIBUTING](https://github.com/apache/incubator-dubbo/blob/master/CONTRI
 
 ## Reporting bugs
 
-Please follow the [template](https://github.com/apache/incubator-dubbo/issues/new?template=dubbo-issue-report-template.md) for reporting any issues.
+Please follow the [template](https://github.com/apache/incubator-dubbo/issues/new?template=dubbo-issue-report-template.md) for reporting any issues.
 
 ## Reporting a security vulnerability
 
@@ -163,4 +163,4 @@ Please report security vulnerability to security@dubbo.incubator.apache.org (pri
 
 ## License
 
-Apache Dubbo is under the Apache 2.0 license. See the [LICENSE](https://github.com/apache/incubator-dubbo/blob/master/LICENSE) file for details.
+Apache Dubbo is under the Apache 2.0 license. See the [LICENSE](https://github.com/apache/incubator-dubbo/blob/master/LICENSE) file for details.
