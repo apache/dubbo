@@ -57,6 +57,11 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
         dataStore.put(componentKey, Integer.toString(url.getPort()), executor);
     }
 
+    /**
+     * 通过URL中的parameters映射，保存了调用方的AppName
+     *
+     * @return 返回的是方法调用方的AppName
+     */
     public String getConsumerAppName(){
         String consumerAppName = this.url.getParameter(Constants.CONSUMER_APPLICATION_NAME);
         return consumerAppName;

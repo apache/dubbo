@@ -28,6 +28,9 @@ public class Constants {
 
     public static final String CONSUMER = "consumer";
 
+    /**
+     * 用于保存调用方的应用名
+     */
     public static final String CONSUMER_APPLICATION_NAME = "consumerAppName";
 
     public static final String REGISTER = "register";
