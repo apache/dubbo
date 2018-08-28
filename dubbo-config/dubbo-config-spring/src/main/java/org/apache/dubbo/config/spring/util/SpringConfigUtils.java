@@ -1,6 +1,5 @@
 package org.apache.dubbo.config.spring.util;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.springframework.context.ApplicationContext;

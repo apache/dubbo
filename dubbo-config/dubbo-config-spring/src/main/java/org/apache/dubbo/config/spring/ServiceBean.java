@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.config.spring;
 
-import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
