@@ -280,5 +280,4 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         }
         return super.getServiceClass(ref);
     }
-
 }
