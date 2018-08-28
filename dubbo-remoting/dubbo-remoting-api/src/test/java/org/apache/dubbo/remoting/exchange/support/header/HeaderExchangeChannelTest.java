@@ -39,10 +39,15 @@ public class HeaderExchangeChannelTest {
 
             @Override
             public void caught(Throwable exception) {
-                // ignore
+                throw new BizException();
             }
         });
     }
+
+    private class BizException extends RuntimeException {
+        private static final long serialVersionUID = 1L;
+    }
+
 
     @Test
     public void testSendRequest() throws RemotingException {
@@ -89,10 +94,65 @@ public class HeaderExchangeChannelTest {
         Assert.assertTrue(!DefaultFuture.hasFuture(channel));
         exchangeChannel.close(500);
 
-
-        // Assert.assertTrue(exchangeChannel.isClosed());
+        Assert.assertTrue(exchangeChannel.isClosed());
 
     }
+
+    @Test
+    public void testRemoveChannelIfDisconnected_channelClosed(){
+        MockChannel channel = new MockChannel();
+        HeaderExchangeChannel exchangeChannel = new HeaderExchangeChannel(channel);
+        exchangeChannel.close();
+        HeaderExchangeChannel.removeChannelIfDisconnected(exchangeChannel);
+    }
+
+    @Test
+    public void testRemoveChannelIfDisconnected_channelIsNull(){
+        HeaderExchangeChannel exchangeChannel = null;
+        HeaderExchangeChannel.removeChannelIfDisconnected(exchangeChannel);
+    }
+
+    @Test
+    public void testIsConnected(){
+        MockChannel channel = new MockChannel(){
+            @Override
+            public boolean isConnected() {
+                return true;
+            }
+        };
+        HeaderExchangeChannel exchangeChannel = new HeaderExchangeChannel(channel);
+        Assert.assertTrue(exchangeChannel.isConnected());
+    }
+
+    @Test
+    public void testIsConnected_channelClosed(){
+        MockChannel channel = new MockChannel(){
+            @Override
+            public boolean isConnected() {
+                if (isClosed()){
+                    return false;
+                }else {
+                    return true;
+                }
+            }
+        };
+        HeaderExchangeChannel exchangeChannel = new HeaderExchangeChannel(channel);
+        exchangeChannel.close();
+
+    }
+
+    @Test
+    public void testGetAttribute(){
+        this.exchangeChannel.setAttribute("ss", "ss");
+        Assert.assertEquals(this.exchangeChannel.getAttribute("ss"),"ss");
+    }
+
+    @Test
+    public void testGetAttributeNotExist(){
+        Assert.assertNull(this.exchangeChannel.getAttribute("ss"));
+
+    }
+
 
 }
 
