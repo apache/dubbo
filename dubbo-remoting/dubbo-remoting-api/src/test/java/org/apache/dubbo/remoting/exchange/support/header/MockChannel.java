@@ -91,6 +91,8 @@ public class MockChannel implements Channel {
     public void send(Object message, boolean sent) throws RemotingException {
         sentObjects.add(message);
     }
+    
+    public boolean isClosing(){return  closing;}
 
     @Override
     public void close() {
