@@ -30,4 +30,14 @@ public class DemoServiceImpl implements DemoService {
         return "Hello " + name + ", response from provider: " + RpcContext.getContext().getLocalAddress();
     }
 
+    @Override
+    public String routeMethod1() {
+        return "routeMethod1";
+    }
+
+    @Override
+    public String routeMethod2() {
+        return "routeMethod2";
+    }
+
 }
