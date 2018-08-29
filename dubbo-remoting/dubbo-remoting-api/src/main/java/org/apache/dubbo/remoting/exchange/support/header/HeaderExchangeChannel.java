@@ -111,7 +111,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         req.setVersion(Version.getProtocolVersion());
         req.setTwoWay(true);
         req.setData(request);
-        DefaultFuture future = new DefaultFuture(channel, req, timeout);
+        DefaultFuture future = DefaultFuture.newFuture(channel, req, timeout);
         try {
             channel.send(req);
         } catch (RemotingException e) {
