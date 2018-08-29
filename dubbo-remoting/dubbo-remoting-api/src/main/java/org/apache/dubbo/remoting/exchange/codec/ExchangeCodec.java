@@ -297,6 +297,9 @@ public class ExchangeCodec extends TelnetCodec {
             buffer.writerIndex(savedWriteIndex);
             // send error message to Consumer, otherwise, Consumer will wait till timeout.
             if (!res.isEvent() && res.getStatus() != Response.BAD_RESPONSE) {
+                // need to be remove, else buffer will still send to consumer after error response be sent;
+                // https://github.com/apache/incubator-dubbo/issues/2006
+                buffer.clear();
                 Response r = new Response(res.getId(), res.getVersion());
                 r.setStatus(Response.BAD_RESPONSE);
 
