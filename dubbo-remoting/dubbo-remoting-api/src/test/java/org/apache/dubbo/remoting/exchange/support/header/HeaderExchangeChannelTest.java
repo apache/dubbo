@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.junit.Assert;
 import org.junit.Test;
 import org.apache.dubbo.remoting.Channel;
@@ -39,6 +40,8 @@ public class HeaderExchangeChannelTest {
     private static final String CHANNEL_KEY = HeaderExchangeChannel.class.getName() + ".CHANNEL";
 
     private MockChannel channelConnectedTrue;
+
+    private MockChannel channelSendThrowException;
 
     private HeaderExchangeChannel defaultChannel() {
         Channel channel = new MockedChannel();
@@ -71,6 +74,13 @@ public class HeaderExchangeChannelTest {
                 return true;
             }
 
+        };
+
+        channelSendThrowException = new MockChannel() {
+            @Override
+            public void send(Object req) throws RemotingException {
+                throw new RemotingException(channel.getLocalAddress(), channel.getRemoteAddress(), "throw error");
+            }
         };
     }
 
@@ -107,17 +117,6 @@ public class HeaderExchangeChannelTest {
         HeaderExchangeChannel ret = header.getOrAddChannel(channel1);
         Assert.assertNull(ret);
     }
-
-    @Test
-    public void getOrAddChannelTest() {
-        initChannel();
-        HeaderExchangeChannel testChWhetherNull = HeaderExchangeChannel.getOrAddChannel(null);
-        Assert.assertNull("params ch is null",testChWhetherNull);
-        testChWhetherNull = HeaderExchangeChannel.getOrAddChannel(channelConnectedTrue);
-        HeaderExchangeChannel testRetWhetherNull =  (HeaderExchangeChannel) channelConnectedTrue.getAttribute(CHANNEL_KEY);
-        Assert.assertSame("ret is null",testChWhetherNull,testRetWhetherNull);
-    }
-
 
 
     @Test
@@ -180,7 +179,16 @@ public class HeaderExchangeChannelTest {
     }
 
     @Test(expected = RemotingException.class)
-    public void requestTest() throws RemotingException {
+    public void requestTest01() throws RemotingException {
+        initChannel();
+        initHeader();
+        header.close(1000);
+        Object requestob = new Object();
+        header.request(requestob);
+    }
+
+    @Test
+    public void requestTest02() throws RemotingException {
         Channel channel = Mockito.mock(MockChannel.class);
         header = new HeaderExchangeChannel(channel);
         when(channel.getUrl()).thenReturn(url);
@@ -189,11 +197,14 @@ public class HeaderExchangeChannelTest {
         ArgumentCaptor<Request> argumentCaptor = ArgumentCaptor.forClass(Request.class);
         verify(channel, times(1)).send(argumentCaptor.capture());
         Assert.assertEquals(argumentCaptor.getValue().getData(), requestob);
+    }
 
+    @Test(expected = RemotingException.class)
+    public void requestTest03() throws RemotingException{
         initChannel();
-        initHeader();
-        header.close(1000);
-        header.request(requestob);
+        header = new HeaderExchangeChannel(channelSendThrowException);
+        Object requestob = new Object();
+        header.request(requestob, 1000);
     }
 
     @Test
@@ -213,13 +224,16 @@ public class HeaderExchangeChannelTest {
         Assert.assertTrue(channel.isClosed());
     }
 
+
     @Test
-    public void closeWithTimeoutTest() {
+    public void closeWithTimeoutTest02() {
         initChannel();
         initHeader();
         Assert.assertFalse(channel.isClosed());
 
         header.close(100);
+        //return directly
+        header.close(1000);
     }
 
 
@@ -278,7 +292,7 @@ public class HeaderExchangeChannelTest {
     public void getExchangeHandlerTest() {
         initChannel();
         initHeader();
-        Assert.assertNull(header.getChannelHandler());
+        Assert.assertNull(header.getExchangeHandler());
     }
 
 
