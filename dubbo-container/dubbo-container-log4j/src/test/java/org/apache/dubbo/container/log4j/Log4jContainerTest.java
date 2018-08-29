@@ -17,19 +17,29 @@
 package org.apache.dubbo.container.log4j;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.container.Container;
-
 import org.junit.Test;
 
 /**
  * StandaloneContainerTest
  */
 public class Log4jContainerTest {
+	
+	static final Logger logger = LoggerFactory.getLogger(Log4jContainerTest.class);
+
 
     @Test
     public void testContainer() {
+    	System.setProperty(Log4jContainer.LOG4J_SUBDIRECTORY, "info");
+    	System.setProperty(Log4jContainer.LOG4J_FILE,  System.getProperty("java.io.tmpdir")+"info.log");        
         Log4jContainer container = (Log4jContainer) ExtensionLoader.getExtensionLoader(Container.class).getExtension("log4j");
         container.start();
+        logger.debug("Test debug:" + this.getClass().getName());
+        logger.warn("Test warn:" + this.getClass().getName());
+        logger.info("Test info:" + this.getClass().getName());
+        logger.error("Test error:" + this.getClass().getName());
         container.stop();
     }
 
