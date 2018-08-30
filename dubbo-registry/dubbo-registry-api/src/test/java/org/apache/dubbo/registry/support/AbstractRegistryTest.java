@@ -26,7 +26,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -43,7 +48,7 @@ public class AbstractRegistryTest {
 
     @Before
     public void init() {
-        URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":2233?save.file=true");
+        URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":2233");
         //sync update cache file
         url = url.addParameter( "save.file",true );
         testUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A&interface=com.test");
