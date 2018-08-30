@@ -26,11 +26,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -47,7 +43,9 @@ public class AbstractRegistryTest {
 
     @Before
     public void init() {
-        URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":2233");
+        URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":2233?save.file=true");
+        //sync update cache file
+        url = url.addParameter( "save.file",true );
         testUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A&interface=com.test");
         mockUrl = new URL("dubbo", "127.0.0.0", 2200);
 
@@ -517,7 +515,17 @@ public class AbstractRegistryTest {
     }
 
     @Test
-    public void toStringTest() {
-        Assert.assertEquals( abstractRegistry.toString(),abstractRegistry.toString());
+    public void getCacheUrlsTest(){
+        List<URL> urls = new ArrayList<>();
+        urls.add(testUrl);
+        // check if notify successfully
+        Assert.assertFalse(notifySuccess);
+        abstractRegistry.notify(testUrl, listener, urls);
+        Assert.assertTrue(notifySuccess);
+        List<URL> cacheUrl = abstractRegistry.getCacheUrls( testUrl );
+        Assert.assertTrue( cacheUrl.size() == 1 );
+        URL nullUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A&interface=com.testa");
+        cacheUrl = abstractRegistry.getCacheUrls( nullUrl );
+        Assert.assertTrue( Objects.isNull( cacheUrl ) );
     }
 }
