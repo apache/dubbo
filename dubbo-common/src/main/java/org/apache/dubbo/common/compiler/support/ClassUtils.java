@@ -79,43 +79,42 @@ public class ClassUtils {
     }
 
     public static Class<?> _forName(String className) throws ClassNotFoundException {
+        switch(className){
+            case "boolean":
+                return boolean.class;
+            case "byte":
+                return byte.class;
+            case "char":
+                return char.class;
+            case "short":
+                return short.class;
+            case "int":
+                return int.class;
+            case "long":
+                return long.class;
+            case "float":
+                return float.class;
+            case "double":
+                return double.class;
+            case "boolean[]":
+                return boolean[].class;
+            case "byte[]":
+                return byte[].class;
+            case "char[]":
+                return char[].class;
+            case "short[]":
+                return short[].class;
+            case "int[]":
+                return int[].class;
+            case "long[]":
+                return long[].class;
+            case "float[]":
+                return float[].class;
+            case "double[]":
+                return double[].class;
+        }
         try {
-            switch(className){
-                case "boolean":
-                    return boolean.class;
-                case "byte":
-                    return byte.class;
-                case "char":
-                    return char.class;
-                case "short":
-                    return short.class;
-                case "int":
-                    return int.class;
-                case "long":
-                    return long.class;
-                case "float":
-                    return float.class;
-                case "double":
-                    return double.class;
-                case "boolean[]":
-                    return boolean[].class;
-                case "byte[]":
-                    return byte[].class;
-                case "char[]":
-                    return char[].class;
-                case "short[]":
-                    return short[].class;
-                case "int[]":
-                    return int[].class;
-                case "long[]":
-                    return long[].class;
-                case "float[]":
-                    return float[].class;
-                case "double[]":
-                    return double[].class;
-                default:
-                    return arrayForName(className);
-            }
+            return arrayForName(className);
         } catch (ClassNotFoundException e) {
             // try to load from java.lang package
             if (className.indexOf('.') == -1) {
