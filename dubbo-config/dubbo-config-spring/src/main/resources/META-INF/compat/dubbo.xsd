@@ -307,6 +307,12 @@
                         <xsd:documentation><![CDATA[ The serialization protocol of service. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="tag" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <![CDATA[ Defines the service tag]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>
             </xsd:extension>
         </xsd:complexContent>
@@ -371,11 +377,17 @@
                 <xsd:documentation><![CDATA[ The application monitor. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="shutwait" type="xsd:string" >
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The application shutDown-wait time. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="default" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+
     </xsd:complexType>
 
     <xsd:complexType name="moduleType">

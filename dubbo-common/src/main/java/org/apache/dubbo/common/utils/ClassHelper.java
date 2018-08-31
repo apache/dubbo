@@ -45,6 +45,8 @@ public class ClassHelper {
      */
     private static final Map<Class<?>, Class<?>> primitiveWrapperTypeMap = new HashMap<Class<?>, Class<?>>(8);
 
+    private static final char PACKAGE_SEPARATOR_CHAR = '.';
+
     static {
         primitiveWrapperTypeMap.put(Boolean.class, boolean.class);
         primitiveWrapperTypeMap.put(Byte.class, byte.class);
@@ -204,5 +206,17 @@ public class ClassHelper {
         }
         return obj.getClass().getSimpleName() + "@" + System.identityHashCode(obj);
 
+    }
+
+    public static String simpleClassName(Class<?> clazz) {
+        if (clazz == null) {
+            throw new NullPointerException("clazz");
+        }
+        String className = clazz.getName();
+        final int lastDotIdx = className.lastIndexOf(PACKAGE_SEPARATOR_CHAR);
+        if (lastDotIdx > -1) {
+            return className.substring(lastDotIdx + 1);
+        }
+        return className;
     }
 }
