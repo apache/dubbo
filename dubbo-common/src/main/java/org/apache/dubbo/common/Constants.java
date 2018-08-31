@@ -234,6 +234,8 @@ public class Constants {
 
     public static final String EXPORTER_LISTENER_KEY = "exporter.listener";
 
+    public static final String SEND_CONSUMER_APPLICATION_NAME_KEY = "sendConsumerApplicationName";
+
     public static final String ACCESS_LOG_KEY = "accesslog";
 
     public static final String ACTIVES_KEY = "actives";
