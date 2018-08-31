@@ -21,6 +21,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class ReferenceConfigCacheTest {
@@ -110,5 +111,38 @@ public class ReferenceConfigCacheTest {
         config.setGroup(group);
         config.setVersion(version);
         return config;
+    }
+
+    @Test
+    public void testGetCache_NullReference() throws Exception {
+        ReferenceConfigCache cache = ReferenceConfigCache.getCache();
+
+        {
+            MockReferenceConfig config = buildMockReferenceConfig("FooService", "group1", "1.0.0");
+            config.setShouldReturnNull(true);
+
+            // first time should get null
+            String value = cache.get(config);
+            assertFalse(config.isGetMethodRun());
+            assertNull(value);
+        }
+
+        {
+            MockReferenceConfig configCopy = buildMockReferenceConfig("FooService", "group1", "1.0.0");
+
+            // second time should get 0
+            String value = cache.get(configCopy);
+            assertTrue(configCopy.isGetMethodRun());
+            assertEquals("0", value);
+        }
+
+        {
+            MockReferenceConfig configCopy = buildMockReferenceConfig("FooService", "group1", "1.0.0");
+
+            // third time should get 0 and this is cache data
+            String value = cache.get(configCopy);
+            assertFalse(configCopy.isGetMethodRun());
+            assertEquals("0", value);
+        }
     }
 }

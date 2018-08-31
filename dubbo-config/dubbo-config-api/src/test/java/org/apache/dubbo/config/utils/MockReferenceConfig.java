@@ -25,6 +25,7 @@ public class MockReferenceConfig extends ReferenceConfig<String> {
 
     String value;
     boolean destroyMethodRun = false;
+    boolean shouldReturnNull = false;
 
     public static void setCounter(long c) {
         counter.set(c);
@@ -40,10 +41,15 @@ public class MockReferenceConfig extends ReferenceConfig<String> {
 
     @Override
     public synchronized String get() {
+        if (shouldReturnNull) return null;
         if (value != null) return value;
 
         value = "" + counter.getAndIncrement();
         return value;
+    }
+
+    public void setShouldReturnNull(boolean shouldReturnNull){
+        this.shouldReturnNull = shouldReturnNull;
     }
 
     @Override
