@@ -851,4 +851,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
         return buf.toString();
     }
+
+    public String getInterfaceName() {
+        return interfaceName;
+    }
+
+    public void setInterfaceName(String interfaceName) {
+        this.interfaceName = interfaceName;
+    }
 }

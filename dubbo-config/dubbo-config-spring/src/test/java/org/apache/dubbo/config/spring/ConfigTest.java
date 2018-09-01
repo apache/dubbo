@@ -106,6 +106,20 @@ public class ConfigTest {
     }
 
     @Test
+    public void testServiceAnnotation() {
+        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/service-annotation.xml");
+        ctx.start();
+        try {
+            DemoService demoService = refer("dubbo://127.0.0.1:20887");
+            String hello = demoService.sayName("hello");
+            assertEquals("say:hello", hello);
+        } finally {
+            ctx.stop();
+            ctx.close();
+        }
+    }
+
+    @Test
     @SuppressWarnings("unchecked")
     public void testProviderNestedService() {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/provider-nested-service.xml");
