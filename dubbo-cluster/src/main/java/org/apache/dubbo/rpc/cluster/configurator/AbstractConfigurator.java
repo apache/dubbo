@@ -115,7 +115,7 @@ public abstract class AbstractConfigurator implements Configurator {
         if (ipCompare == 0) {//host is the same, sort by priority
             int i = getUrl().getParameter(Constants.PRIORITY_KEY, 0),
                     j = o.getUrl().getParameter(Constants.PRIORITY_KEY, 0);
-            return i < j ? -1 : (i == j ? 0 : 1);
+            return Integer.compare(i, j);
         } else {
             return ipCompare;
         }
