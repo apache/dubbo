@@ -58,7 +58,7 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2,
             new NamedInternalThreadFactory("failback-cluster-timer", true));
 
-    private final ConcurrentMap<Invocation, AbstractClusterInvoker<?>> failed = new ConcurrentHashMap<Invocation, AbstractClusterInvoker<?>>();
+    private final ConcurrentMap<Invocation, AbstractClusterInvoker<?>> failed = new ConcurrentHashMap<>();
     private volatile ScheduledFuture<?> retryFuture;
 
     public FailbackClusterInvoker(Directory<T> directory) {
@@ -91,8 +91,7 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
         if (failed.size() == 0) {
             return;
         }
-        for (Map.Entry<Invocation, AbstractClusterInvoker<?>> entry : new HashMap<Invocation, AbstractClusterInvoker<?>>(
-                failed).entrySet()) {
+        for (Map.Entry<Invocation, AbstractClusterInvoker<?>> entry : new HashMap<>(failed).entrySet()) {
             Invocation invocation = entry.getKey();
             Invoker<?> invoker = entry.getValue();
             try {
