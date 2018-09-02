@@ -42,7 +42,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * AbstractDefaultConfig
+ * AbstractDefaultConfig 抽象服务配置类
  *
  * @export
  */

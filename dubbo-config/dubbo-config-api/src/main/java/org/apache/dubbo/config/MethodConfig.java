@@ -22,7 +22,7 @@ import org.apache.dubbo.config.support.Parameter;
 import java.util.List;
 
 /**
- * MethodConfig
+ * MethodConfig 方法级配置
  *
  * @export
  */

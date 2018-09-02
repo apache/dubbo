@@ -33,6 +33,8 @@ import java.util.Map;
 /**
  * ProtocolConfig
  *
+ * 服务提供者协议配置
+ *
  * @export
  */
 public class ProtocolConfig extends AbstractConfig {

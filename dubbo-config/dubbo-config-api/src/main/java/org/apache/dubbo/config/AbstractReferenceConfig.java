@@ -22,6 +22,7 @@ import org.apache.dubbo.rpc.InvokerListener;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 /**
+ * 方法配置抽象类
  * AbstractConsumerConfig
  *
  * @export
