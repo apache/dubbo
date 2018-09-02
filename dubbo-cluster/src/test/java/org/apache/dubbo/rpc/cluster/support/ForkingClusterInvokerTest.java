@@ -139,7 +139,7 @@ public class ForkingClusterInvokerTest {
             invoker.invoke(invocation);
             Assert.fail();
         } catch (RpcException expected) {
-            Assert.assertTrue("Successed to forking invoke provider !", expected.getMessage().contains("Failed to forking invoke provider"));
+            Assert.assertTrue("Succeeded to forking invoke provider !", expected.getMessage().contains("Failed to forking invoke provider"));
             assertFalse(expected.getCause() instanceof RpcException);
         }
         Map<String, String> afterInvoke = RpcContext.getContext().getAttachments();
