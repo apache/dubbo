@@ -36,7 +36,7 @@ public class InvokerTreeCache<T> {
     }
 
     public List<Invoker<T>> getInvokers(TreeNode<T> node, URL url, Invocation invocation) {
-        if (node.getChildren() == null) {
+        if (node.getChildren() == null || node.getChildren().size() == 0) {
             return node.getInvokers();
         }
 
