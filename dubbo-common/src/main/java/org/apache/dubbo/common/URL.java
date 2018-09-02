@@ -38,6 +38,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * URL - Uniform Resource Locator (Immutable, ThreadSafe)
+ *
+ * <pre>
+ * 格式为 protocol://username:password@host:port/path?key=value&key=value ，通过 URL#buildString(...) 方法生成。
+ * parameters 属性，参数集合。从上面的 Service URL 例子我们可以看到，里面的 key=value ，实际上就是 Service 对应的配置项。
+ * 该属性，通过 AbstractConfig#appendParameters(parameters, config, prefix) 方法生成。
+ * </pre>
  * <p>
  * url example:
  * <ul>
@@ -72,20 +78,40 @@ public /**final**/ class URL implements Serializable {
 
     private static final long serialVersionUID = -1985165475234910535L;
 
+    /**
+     * 协议名称
+     */
     private final String protocol;
 
+    /**
+     * 用户名
+     */
     private final String username;
 
+    /**
+     * 密码
+     */
     private final String password;
 
-    // by default, host to registry
+    /**
+     * by default, host to registry
+     * 地址
+     */
     private final String host;
-
-    // by default, port to registry
+    /**
+     * by default, port to registry
+     * 端口
+     */
     private final int port;
 
+    /**
+     * 路径 服务名
+     */
     private final String path;
 
+    /**
+     * 参数集合
+     */
     private final Map<String, String> parameters;
 
     // ==== cache ====

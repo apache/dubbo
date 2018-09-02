@@ -26,6 +26,10 @@ import java.util.List;
 /**
  * AbstractServiceConfig
  *
+ * @see AbstractInterfaceConfig
+ *
+ * 抽象引用配置类
+ *
  * @export
  */
 public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
