@@ -43,18 +43,14 @@ import static org.mockito.Mockito.mock;
 @SuppressWarnings("unchecked")
 public class ForkingClusterInvokerTest {
 
-    List<Invoker<ForkingClusterInvokerTest>> invokers = new ArrayList<Invoker<ForkingClusterInvokerTest>>();
-    URL url = URL.valueOf("test://test:11/test?forks=2");
-    Invoker<ForkingClusterInvokerTest> invoker1 = mock(Invoker.class);
-    Invoker<ForkingClusterInvokerTest> invoker2 = mock(Invoker.class);
-    Invoker<ForkingClusterInvokerTest> invoker3 = mock(Invoker.class);
-    RpcInvocation invocation = new RpcInvocation();
-    Directory<ForkingClusterInvokerTest> dic;
-    Result result = new RpcResult();
-
-    /**
-     * @throws java.lang.Exception
-     */
+    private List<Invoker<ForkingClusterInvokerTest>> invokers = new ArrayList<Invoker<ForkingClusterInvokerTest>>();
+    private URL url = URL.valueOf("test://test:11/test?forks=2");
+    private Invoker<ForkingClusterInvokerTest> invoker1 = mock(Invoker.class);
+    private Invoker<ForkingClusterInvokerTest> invoker2 = mock(Invoker.class);
+    private Invoker<ForkingClusterInvokerTest> invoker3 = mock(Invoker.class);
+    private RpcInvocation invocation = new RpcInvocation();
+    private Directory<ForkingClusterInvokerTest> dic;
+    private Result result = new RpcResult();
 
     @Before
     public void setUp() throws Exception {
