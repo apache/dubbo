@@ -46,21 +46,21 @@ import java.util.stream.Collectors;
 /**
  *
  */
-public class GroupRouter extends AbstractRouter implements Comparable<Router>, ConfigurationListener {
+public class TagRouter extends AbstractRouter implements Comparable<Router>, ConfigurationListener {
     public static final String NAME = "TAG_ROUTER";
-    private static final Logger logger = LoggerFactory.getLogger(GroupRouter.class);
+    private static final Logger logger = LoggerFactory.getLogger(TagRouter.class);
     private static final String TAGRULE_DATAID = "global.tag.rules";
     private static final String FAILOVER_TAG = "tag.failover";
     private URL url;
     private DynamicConfiguration configuration;
     private GroupRouterRule groupRouterRule;
 
-    public GroupRouter(URL url) {
+    public TagRouter(URL url) {
         this(ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getAdaptiveExtension().getDynamicConfiguration(url));
         this.url = url;
     }
 
-    public GroupRouter(DynamicConfiguration configuration) {
+    public TagRouter(DynamicConfiguration configuration) {
         this.priority = -1;
         this.configuration = configuration;
         init();
