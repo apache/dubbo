@@ -47,8 +47,7 @@ public abstract class AbstractConfigurator implements Configurator {
 
     @Override
     public URL configure(URL url) {
-        if (configuratorUrl == null || configuratorUrl.getHost() == null
-                || url == null || url.getHost() == null) {
+        if (configuratorUrl.getHost() == null || url == null || url.getHost() == null) {
             return url;
         }
         // If override url has port, means it is a provider address. We want to control a specific provider with this override url, it may take effect on the specific provider instance or on consumers holding this provider instance.
@@ -115,7 +114,7 @@ public abstract class AbstractConfigurator implements Configurator {
         if (ipCompare == 0) {//host is the same, sort by priority
             int i = getUrl().getParameter(Constants.PRIORITY_KEY, 0),
                     j = o.getUrl().getParameter(Constants.PRIORITY_KEY, 0);
-            return i < j ? -1 : (i == j ? 0 : 1);
+            return Integer.compare(i, j);
         } else {
             return ipCompare;
         }
