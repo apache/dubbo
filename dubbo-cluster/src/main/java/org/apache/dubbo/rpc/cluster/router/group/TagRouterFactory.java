@@ -26,16 +26,16 @@ import org.apache.dubbo.rpc.cluster.RouterFactory;
  *
  */
 @Activate
-public class GroupRouterFactory implements RouterFactory {
+public class TagRouterFactory implements RouterFactory {
 
     public static final String NAME = "tag";
 
     @Override
     public Router getRouter(URL url) {
-        return new GroupRouter(url);
+        return new TagRouter(url);
     }
 
     public Router getRouter(DynamicConfiguration dynamicConfiguration) {
-        return new GroupRouter(dynamicConfiguration);
+        return new TagRouter(dynamicConfiguration);
     }
 }
