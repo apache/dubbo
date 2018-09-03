@@ -50,7 +50,7 @@ public class AbstractRegistryTest {
     public void init() {
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":2233");
         //sync update cache file
-        url = url.addParameter( "save.file",true );
+        url = url.addParameter("save.file",true);
         testUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A&interface=com.test");
         mockUrl = new URL("dubbo", "127.0.0.0", 2200);
 
@@ -527,10 +527,10 @@ public class AbstractRegistryTest {
         Assert.assertFalse(notifySuccess);
         abstractRegistry.notify(testUrl, listener, urls);
         Assert.assertTrue(notifySuccess);
-        List<URL> cacheUrl = abstractRegistry.getCacheUrls( testUrl );
-        Assert.assertTrue( cacheUrl.size() == 1 );
+        List<URL> cacheUrl = abstractRegistry.getCacheUrls(testUrl);
+        Assert.assertTrue(cacheUrl.size() == 1);
         URL nullUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A&interface=com.testa");
-        cacheUrl = abstractRegistry.getCacheUrls( nullUrl );
-        Assert.assertTrue( Objects.isNull( cacheUrl ) );
+        cacheUrl = abstractRegistry.getCacheUrls(nullUrl);
+        Assert.assertTrue(Objects.isNull(cacheUrl));
     }
 }
