@@ -56,9 +56,9 @@ public class ConfigParser {
 
     public static <T> T parseObject(String rawConfig, Class<T> clazz) {
         Constructor constructor = new Constructor(clazz);
-        TypeDescription carDescription = new TypeDescription(clazz);
-        carDescription.addPropertyParameters("items", ConfigItem.class);
-        constructor.addTypeDescription(carDescription);
+        TypeDescription itemDescription = new TypeDescription(clazz);
+        itemDescription.addPropertyParameters("items", ConfigItem.class);
+        constructor.addTypeDescription(itemDescription);
 
         Yaml yaml = new Yaml(constructor);
         return yaml.load(rawConfig);
