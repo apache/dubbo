@@ -14,19 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.tag;
+package org.apache.dubbo.rpc.cluster.router.condition.config.model;
 
+import org.apache.dubbo.rpc.cluster.router.AbstractRouterRule;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.cluster.Router;
-import org.apache.dubbo.rpc.cluster.RouterFactory;
+import java.util.List;
 
-public class TagRouterFactory implements RouterFactory {
+/**
+ *
+ */
+public class ConditionRouterRule extends AbstractRouterRule {
+    private String scope;
+    private List<String> conditions;
 
-    public static final String NAME = "tag";
+    public List<String> getConditions() {
+        return conditions;
+    }
 
-    @Override
-    public Router getRouter(URL url) {
-        return new TagRouter(url);
+    public void setConditions(List<String> conditions) {
+        this.conditions = conditions;
     }
 }

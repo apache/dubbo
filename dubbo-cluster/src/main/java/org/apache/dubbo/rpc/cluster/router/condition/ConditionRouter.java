@@ -50,13 +50,12 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
     private static final Logger logger = LoggerFactory.getLogger(ConditionRouter.class);
     protected static Pattern ROUTE_PATTERN = Pattern.compile("([&!=,]*)\\s*([^&!=,\\s]+)");
     protected URL url;
-    protected int priority;
-    protected boolean force;
     protected Map<String, MatchPair> whenCondition;
     protected Map<String, MatchPair> thenCondition;
 
-    protected ConditionRouter() {
-
+    public ConditionRouter(String rule, boolean force) {
+        this.force = force;
+        this.init(rule);
     }
 
     public ConditionRouter(URL url) {
@@ -66,7 +65,7 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
         init(url.getParameterAndDecoded(Constants.RULE_KEY));
     }
 
-    protected void init(String rule) {
+    public void init(String rule) {
         try {
             if (rule == null || rule.trim().length() == 0) {
                 throw new IllegalArgumentException("Illegal route rule!");
@@ -211,11 +210,6 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
     }
 
     @Override
-    public boolean isForce() {
-        return force;
-    }
-
-    @Override
     public URL getUrl() {
         return url;
     }
@@ -226,7 +220,7 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
             return 1;
         }
         ConditionRouter c = (ConditionRouter) o;
-        return this.priority == c.priority ? url.toFullString().compareTo(c.url.toFullString()) : (this.priority > c.priority ? 1 : -1);
+        return this.priority > c.priority ? 1 : -1;
     }
 
     boolean matchWhen(URL url, Invocation invocation) {

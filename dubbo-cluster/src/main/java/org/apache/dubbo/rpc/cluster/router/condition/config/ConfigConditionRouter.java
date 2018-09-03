@@ -27,10 +27,14 @@ import org.apache.dubbo.config.dynamic.DynamicConfiguration;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.RouterChain;
+import org.apache.dubbo.rpc.cluster.Router;
+import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
 import org.apache.dubbo.rpc.cluster.router.TreeNode;
 import org.apache.dubbo.rpc.cluster.router.condition.ConditionRouter;
+import org.apache.dubbo.rpc.cluster.router.condition.config.model.ConditionRouterRule;
+import org.apache.dubbo.rpc.cluster.router.condition.config.model.ConditionRuleParser;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,11 +42,12 @@ import java.util.Map;
 /**
  * TODO only support one router rule =>, it will be inconvenient if we want to add more than one rules.
  */
-public class ConfigConditionRouter extends ConditionRouter implements ConfigurationListener {
+public class ConfigConditionRouter extends AbstractRouter implements ConfigurationListener {
     public static final String NAME = "CONFIG_CONDITION_OUTER";
     private static final Logger logger = LoggerFactory.getLogger(ConfigConditionRouter.class);
     private DynamicConfiguration configuration;
     private ConditionRouterRule routerRule;
+    private List<ConditionRouter> conditionRouters;
 
     public ConfigConditionRouter(DynamicConfiguration configuration) {
         this.configuration = configuration;
@@ -52,7 +57,7 @@ public class ConfigConditionRouter extends ConditionRouter implements Configurat
             String app = configuration.getUrl().getParameter(Constants.APPLICATION_KEY);
             String rawRule = configuration.getConfig(app + Constants.ROUTERS_SUFFIX, "dubbo", this);
             routerRule = ConditionRuleParser.parse(rawRule);
-            init(routerRule.getRuleBody());
+            init();
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -63,12 +68,25 @@ public class ConfigConditionRouter extends ConditionRouter implements Configurat
         String rawRule = event.getNewValue();
         try {
             routerRule = ConditionRuleParser.parse(rawRule);
-            init(routerRule.getRuleBody());
+            init();
             routerChain.notifyRuleChanged();
         } catch (Exception e) {
             logger.error(e);
             // TODO
         }
+    }
+
+    private void init() {
+        if (routerRule == null || !routerRule.isValid()) {
+            return;
+        }
+
+        conditionRouters = new ArrayList<>();
+        routerRule.getConditions().forEach(condition -> {
+            // All sub rules have the same force, runtime value.
+            ConditionRouter subRouter = new ConditionRouter(condition, routerRule.isForce());
+            conditionRouters.add(subRouter);
+        });
     }
 
     @Override
@@ -85,14 +103,12 @@ public class ConfigConditionRouter extends ConditionRouter implements Configurat
         }
 
         // only one branch, always use the failover key
-        map.put(TreeNode.FAILOVER_KEY, route(invokers, url, invocation));
+        for (Router router : conditionRouters) {
+            invokers = router.route(invokers, url, invocation);
+        }
+        map.put(TreeNode.FAILOVER_KEY, invokers);
 
         return map;
-    }
-
-    @Override
-    public void setRouterChain(RouterChain routerChain) {
-
     }
 
     @Override
@@ -113,5 +129,10 @@ public class ConfigConditionRouter extends ConditionRouter implements Configurat
     @Override
     public String getName() {
         return NAME;
+    }
+
+    @Override
+    public int compareTo(Router o) {
+        return 0;
     }
 }

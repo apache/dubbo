@@ -30,6 +30,8 @@ import java.util.Map;
  * TODO Extract more code here if necessary
  */
 public abstract class AbstractRouter implements Router {
+    protected int priority;
+    protected boolean force;
     protected RouterChain routerChain;
 
     @Override
@@ -50,5 +52,22 @@ public abstract class AbstractRouter implements Router {
     @Override
     public void setRouterChain(RouterChain routerChain) {
         this.routerChain = routerChain;
+    }
+
+    @Override
+    public boolean isForce() {
+        return force;
+    }
+
+    public void setForce(boolean force) {
+        this.force = force;
+    }
+
+    public int getPriority() {
+        return priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
     }
 }

@@ -28,7 +28,7 @@ import org.apache.dubbo.rpc.cluster.RouterFactory;
 @Activate
 public class GroupRouterFactory implements RouterFactory {
 
-    public static final String NAME = "group";
+    public static final String NAME = "tag";
 
     @Override
     public Router getRouter(URL url) {

@@ -14,13 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.condition.config;
+package org.apache.dubbo.rpc.cluster.router.condition.config.model;
 
-import org.apache.dubbo.rpc.cluster.router.AbstractRouterRule;
+import org.apache.dubbo.common.utils.CollectionUtils;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
 
 /**
+ * %YAML1.2
  *
+ * scope: application
+ * runtime: true
+ * force: false
+ * conditions:
+ *   - >
+ *     method!=sayHello =>
+ *   - >
+ *     ip=127.0.0.1
+ *     =>
+ *     1.1.1.1
  */
-public class ConditionRouterRule extends AbstractRouterRule {
+public class ConditionRuleParser {
+
+    public static ConditionRouterRule parse(String rawRule) {
+        Constructor constructor = new Constructor(ConditionRouterRule.class);
+
+        Yaml yaml = new Yaml(constructor);
+        ConditionRouterRule rule = yaml.load(rawRule);
+        rule.setRawRule(rawRule);
+        if (CollectionUtils.isEmpty(rule.getConditions())) {
+            rule.setValid(false);
+        }
+        return rule;
+    }
 
 }

@@ -47,12 +47,10 @@ import java.util.stream.Collectors;
  *
  */
 public class GroupRouter extends AbstractRouter implements Comparable<Router>, ConfigurationListener {
-    public static final String NAME = "GROUP_ROUTER";
+    public static final String NAME = "TAG_ROUTER";
     private static final Logger logger = LoggerFactory.getLogger(GroupRouter.class);
-    private static final String GROUPRULE_DATAID = "global.routers";
-    private static final String ROUTE_GROUP = "route.group";
-    private static final String ROUTE_FAILOVER = "route.failover";
-    private int priority;
+    private static final String TAGRULE_DATAID = "global.tag.rules";
+    private static final String FAILOVER_TAG = "tag.failover";
     private URL url;
     private DynamicConfiguration configuration;
     private GroupRouterRule groupRouterRule;
@@ -69,7 +67,7 @@ public class GroupRouter extends AbstractRouter implements Comparable<Router>, C
     }
 
     public void init() {
-        String rawRule = configuration.getConfig(GROUPRULE_DATAID, "dubbo", this);
+        String rawRule = configuration.getConfig(TAGRULE_DATAID, "dubbo", this);
         this.groupRouterRule = GroupRuleParser.parse(rawRule);
     }
 
@@ -92,18 +90,18 @@ public class GroupRouter extends AbstractRouter implements Comparable<Router>, C
             return invokers;
         }
         List<Invoker<T>> result = invokers;
-        String routeGroup = StringUtils.isEmpty(invocation.getAttachment(ROUTE_GROUP)) ? url.getParameter(ROUTE_GROUP) : invocation.getAttachment(ROUTE_GROUP);
+        String routeGroup = StringUtils.isEmpty(invocation.getAttachment(Constants.REQUEST_TAG_KEY)) ? url.getParameter(Constants.TAG_KEY) : invocation.getAttachment(Constants.REQUEST_TAG_KEY);
         if (StringUtils.isNotEmpty(routeGroup)) {
             String providerApp = invokers.get(0).getUrl().getParameter(Constants.APPLICATION_KEY);
             List<String> addresses = groupRouterRule.filter(routeGroup, providerApp);
             if (CollectionUtils.isNotEmpty(addresses)) {
                 result = filterInvoker(invokers, invoker -> addressMatches(invoker.getUrl(), addresses));
             } else {
-                result = filterInvoker(invokers, invoker -> invoker.getUrl().getParameter(ROUTE_GROUP).equals(routeGroup));
+                result = filterInvoker(invokers, invoker -> invoker.getUrl().getParameter(Constants.TAG_KEY).equals(routeGroup));
             }
         }
-        if (StringUtils.isEmpty(routeGroup) || (CollectionUtils.isEmpty(result) && url.getParameter(ROUTE_FAILOVER, true))) {
-            result = filterInvoker(invokers, invoker -> StringUtils.isEmpty(invoker.getUrl().getParameter(ROUTE_GROUP)));
+        if (StringUtils.isEmpty(routeGroup) || (CollectionUtils.isEmpty(result) && url.getParameter(FAILOVER_TAG, true))) {
+            result = filterInvoker(invokers, invoker -> StringUtils.isEmpty(invoker.getUrl().getParameter(Constants.TAG_KEY)));
         }
         return result;
     }
@@ -126,7 +124,7 @@ public class GroupRouter extends AbstractRouter implements Comparable<Router>, C
             String address = invoker.getUrl().getAddress();
             String routeGroup = groupRouterRule.getIpAppToGroup().get(providerApp + address);
             if (StringUtils.isEmpty(routeGroup)) {
-                routeGroup = invoker.getUrl().getParameter(ROUTE_GROUP);
+                routeGroup = invoker.getUrl().getParameter(Constants.TAG_KEY);
             }
             if (StringUtils.isEmpty(routeGroup)) {
                 routeGroup = TreeNode.FAILOVER_KEY;
@@ -149,7 +147,7 @@ public class GroupRouter extends AbstractRouter implements Comparable<Router>, C
     }
 
     public String getKey() {
-        return ROUTE_GROUP;
+        return Constants.TAG_KEY;
     }
 
     @Override

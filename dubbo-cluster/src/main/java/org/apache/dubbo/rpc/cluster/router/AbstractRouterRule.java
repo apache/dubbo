@@ -20,17 +20,18 @@ package org.apache.dubbo.rpc.cluster.router;
  * TODO Extract more code here if necessary
  */
 public abstract class AbstractRouterRule {
-    private String ruleBody;
+    private String rawRule;
     private boolean runtime = false;
     private boolean force = false;
     private boolean valid = true;
 
-    public String getRuleBody() {
-        return ruleBody;
+
+    public String getRawRule() {
+        return rawRule;
     }
 
-    public void setRuleBody(String ruleBody) {
-        this.ruleBody = ruleBody;
+    public void setRawRule(String rawRule) {
+        this.rawRule = rawRule;
     }
 
     public boolean isRuntime() {
