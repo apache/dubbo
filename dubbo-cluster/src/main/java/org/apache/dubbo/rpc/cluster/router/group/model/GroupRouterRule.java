@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * %YAML1.2
  *
  */
 public class GroupRouterRule extends AbstractRouterRule {
