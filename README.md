@@ -40,7 +40,7 @@ We are now collecting dubbo user info in order to help us to improve dubbo bette
 ```java
 package org.apache.dubbo.demo;
 
-public interface DemoService {
+public interface GreetingService {
     String sayHello(String name);
 }
 ```
@@ -50,9 +50,9 @@ public interface DemoService {
 ```java
 package org.apache.dubbo.demo.provider;
  
-import org.apache.dubbo.demo.DemoService;
+import org.apache.dubbo.demo.GreetingService;
  
-public class DemoServiceImpl implements DemoService {
+public class GreetingServiceImpl implements GreetingService {
     public String sayHello(String name) {
         return "Hello " + name;
     }
@@ -109,9 +109,9 @@ public class Consumer {
 
 ### Next steps
 
-* [Dubbo user manual](http://dubbo.apache.org/#/docs/user/preface/background.md) - How to use Dubbo and all its features.
-* [Dubbo developer guide](http://dubbo.apache.org/#/docs/dev/build.md) - How to invovle in Dubbo development.
-* [Dubbo admin manual](http://dubbo.apache.org/#/docs/admin/install/provider-demo.md) - How to admin and manage Dubbo services.
+* [Dubbo user manual](http://dubbo.apache.org/en-us/docs/user/preface/background.html) - How to use Dubbo and all its features.
+* [Dubbo developer guide](http://dubbo.apache.org/en-us/docs/dev/build.html) - How to invovle in Dubbo development.
+* [Dubbo admin manual](http://dubbo.apache.org/en-us/docs/admin/install/provider-demo.html) - How to admin and manage Dubbo services.
 
 ## Contact
 
@@ -124,6 +124,22 @@ public class Consumer {
 
 See [CONTRIBUTING](https://github.com/apache/incubator-dubbo/blob/master/CONTRIBUTING.md) for details on submitting patches and the contribution workflow.
 
+### How can I contribute?
+
+* Take a look at issues with tag called [`Good first issue`](https://github.com/apache/incubator-dubbo/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22) or [`Help wanted`](https://github.com/apache/incubator-dubbo/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22).
+* Join the discussion on mailing list, subscription [guide](https://github.com/apache/incubator-dubbo/wiki/Mailing-list-subscription-guide).
+* Answer questions on [issues](https://github.com/apache/incubator-dubbo/issues).
+* Fix bugs reported on [issues](https://github.com/apache/incubator-dubbo/issues), and send us pull request.
+* Review the existing [pull request](https://github.com/apache/incubator-dubbo/pulls).
+* Improve the [website](https://github.com/apache/incubator-dubbo-website), typically we need
+  * blog post
+  * translation on documentation
+  * use cases about how Dubbo is being used in enterprise system.
+* Improve the [dubbo-ops/dubbo-monitor](https://github.com/apache/incubator-dubbo-ops).
+* Contribute to the projects listed in [ecosystem](https://github.com/dubbo).
+* Any form of contribution that is not mentioned above.
+* If you would like to contribute, please send an email to dev@dubbo.incubator.apache.org to let us know!
+
 ## Reporting bugs
 
 Please follow the [template](https://github.com/apache/incubator-dubbo/issues/new?template=dubbo-issue-report-template.md) for reporting any issues.
@@ -132,12 +148,12 @@ Please follow the [template](https://github.com/apache/incubator-dubbo/issues/ne
 
 Please report security vulnerability to security@dubbo.incubator.apache.org (private mailing list).
 
-## Ecosystem
+## [Ecosystem](https://github.com/dubbo)
 
-* [Dubbo website](https://github.com/apache/incubator-dubbo-website) - Apache Dubbo (incubating) official website
-* [Dubbo samples](https://github.com/dubbo/dubbo-samples) - samples for Apache Dubbo (incubating)
+* [Dubbo Website](https://github.com/apache/incubator-dubbo-website) - Apache Dubbo (incubating) official website
+* [Dubbo Samples](https://github.com/dubbo/dubbo-samples) - samples for Apache Dubbo (incubating)
 * [Dubbo Spring Boot](https://github.com/apache/incubator-dubbo-spring-boot-project) - Spring Boot Project for Dubbo
-* [Dubbo ops](https://github.com/apache/incubator-dubbo-ops) - The reference implementation for dubbo ops (dubbo-admin, dubbo-monitor, dubbo-registry-simple, etc.)
+* [Dubbo OPS](https://github.com/apache/incubator-dubbo-ops) - The reference implementation for dubbo ops (dubbo-admin, dubbo-monitor, dubbo-registry-simple, etc.)
 
 #### Language
 

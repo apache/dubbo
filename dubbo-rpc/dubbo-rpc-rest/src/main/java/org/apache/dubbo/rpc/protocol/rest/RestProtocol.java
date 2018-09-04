@@ -57,6 +57,13 @@ import java.util.concurrent.TimeUnit;
 public class RestProtocol extends AbstractProxyProtocol {
 
     private static final int DEFAULT_PORT = 80;
+    private static final String DEFAULT_SERVER = "jetty";
+
+    private static final int HTTPCLIENTCONNECTIONMANAGER_MAXPERROUTE = 20;
+    private static final int HTTPCLIENTCONNECTIONMANAGER_MAXTOTAL = 20;
+    private static final int HTTPCLIENT_KEEPALIVEDURATION = 30*1000;
+    private static final int HTTPCLIENTCONNECTIONMANAGER_CLOSEWAITTIME_MS = 1000;
+    private static final int HTTPCLIENTCONNECTIONMANAGER_CLOSEIDLETIME_S = 30;
 
     private final Map<String, RestServer> servers = new ConcurrentHashMap<String, RestServer>();
 
@@ -86,13 +93,13 @@ public class RestProtocol extends AbstractProxyProtocol {
         Class implClass = ServiceClassHolder.getInstance().popServiceClass();
         RestServer server = servers.get(addr);
         if (server == null) {
-            server = serverFactory.createServer(url.getParameter(Constants.SERVER_KEY, "jetty"));
+            server = serverFactory.createServer(url.getParameter(Constants.SERVER_KEY, DEFAULT_SERVER));
             server.start(url);
             servers.put(addr, server);
         }
 
         String contextPath = getContextPath(url);
-        if ("servlet".equalsIgnoreCase(url.getParameter(Constants.SERVER_KEY, "jetty"))) {
+        if ("servlet".equalsIgnoreCase(url.getParameter(Constants.SERVER_KEY, DEFAULT_SERVER))) {
             ServletContext servletContext = ServletManager.getInstance().getServletContext(ServletManager.EXTERNAL_SERVER_PORT);
             if (servletContext == null) {
                 throw new RpcException("No servlet context found. Since you are using server='servlet', " +
@@ -136,8 +143,8 @@ public class RestProtocol extends AbstractProxyProtocol {
         // TODO more configs to add
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
         // 20 is the default maxTotal of current PoolingClientConnectionManager
-        connectionManager.setMaxTotal(url.getParameter(Constants.CONNECTIONS_KEY, 20));
-        connectionManager.setDefaultMaxPerRoute(url.getParameter(Constants.CONNECTIONS_KEY, 20));
+        connectionManager.setMaxTotal(url.getParameter(Constants.CONNECTIONS_KEY, HTTPCLIENTCONNECTIONMANAGER_MAXTOTAL));
+        connectionManager.setDefaultMaxPerRoute(url.getParameter(Constants.CONNECTIONS_KEY, HTTPCLIENTCONNECTIONMANAGER_MAXPERROUTE));
 
         connectionMonitor.addConnectionManager(connectionManager);
         RequestConfig requestConfig = RequestConfig.custom()
@@ -159,12 +166,11 @@ public class RestProtocol extends AbstractProxyProtocol {
                             HeaderElement he = it.nextElement();
                             String param = he.getName();
                             String value = he.getValue();
-                            if (value != null && param.equalsIgnoreCase("timeout")) {
+                            if (value != null && param.equalsIgnoreCase(Constants.TIMEOUT_KEY)) {
                                 return Long.parseLong(value) * 1000;
                             }
                         }
-                        // TODO constant
-                        return 30 * 1000;
+                        return HTTPCLIENT_KEEPALIVEDURATION;
                     }
                 })
                 .setDefaultRequestConfig(requestConfig)
@@ -232,8 +238,8 @@ public class RestProtocol extends AbstractProxyProtocol {
     }
 
     protected String getContextPath(URL url) {
-        int pos = url.getPath().lastIndexOf("/");
-        return pos > 0 ? url.getPath().substring(0, pos) : "";
+        String contextPath = url.getPath();
+        return contextPath.endsWith("/") ? contextPath.substring(0,contextPath.length()-1) : contextPath;
     }
 
     protected class ConnectionMonitor extends Thread {
@@ -249,11 +255,10 @@ public class RestProtocol extends AbstractProxyProtocol {
             try {
                 while (!shutdown) {
                     synchronized (this) {
-                        wait(1000);
+                        wait(HTTPCLIENTCONNECTIONMANAGER_CLOSEWAITTIME_MS);
                         for (PoolingHttpClientConnectionManager connectionManager : connectionManagers) {
                             connectionManager.closeExpiredConnections();
-                            // TODO constant
-                            connectionManager.closeIdleConnections(30, TimeUnit.SECONDS);
+                            connectionManager.closeIdleConnections(HTTPCLIENTCONNECTIONMANAGER_CLOSEIDLETIME_S, TimeUnit.SECONDS);
                         }
                     }
                 }

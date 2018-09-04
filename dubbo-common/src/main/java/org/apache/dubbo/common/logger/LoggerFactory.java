@@ -20,6 +20,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.jcl.JclLoggerAdapter;
 import org.apache.dubbo.common.logger.jdk.JdkLoggerAdapter;
 import org.apache.dubbo.common.logger.log4j.Log4jLoggerAdapter;
+import org.apache.dubbo.common.logger.log4j2.Log4j2LoggerAdapter;
 import org.apache.dubbo.common.logger.slf4j.Slf4jLoggerAdapter;
 import org.apache.dubbo.common.logger.support.FailsafeLogger;
 
@@ -47,6 +48,8 @@ public class LoggerFactory {
             setLoggerAdapter(new Log4jLoggerAdapter());
         } else if ("jdk".equals(logger)) {
             setLoggerAdapter(new JdkLoggerAdapter());
+        } else if ("log4j2".equals(logger)) {
+            setLoggerAdapter(new Log4j2LoggerAdapter());
         } else {
             try {
                 setLoggerAdapter(new Log4jLoggerAdapter());
@@ -55,9 +58,13 @@ public class LoggerFactory {
                     setLoggerAdapter(new Slf4jLoggerAdapter());
                 } catch (Throwable e2) {
                     try {
-                        setLoggerAdapter(new JclLoggerAdapter());
+                        setLoggerAdapter(new Log4j2LoggerAdapter());
                     } catch (Throwable e3) {
-                        setLoggerAdapter(new JdkLoggerAdapter());
+                        try {
+                            setLoggerAdapter(new JclLoggerAdapter());
+                        } catch (Throwable e4) {
+                            setLoggerAdapter(new JdkLoggerAdapter());
+                        }
                     }
                 }
             }

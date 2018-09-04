@@ -22,6 +22,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcResult;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.cluster.Directory;
 
 import org.junit.Assert;
@@ -30,6 +31,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertFalse;
 import static org.mockito.BDDMockito.given;
@@ -37,23 +39,18 @@ import static org.mockito.Mockito.mock;
 
 /**
  * ForkingClusterInvokerTest
- *
  */
 @SuppressWarnings("unchecked")
 public class ForkingClusterInvokerTest {
 
-    List<Invoker<ForkingClusterInvokerTest>> invokers = new ArrayList<Invoker<ForkingClusterInvokerTest>>();
-    URL url = URL.valueOf("test://test:11/test?forks=2");
-    Invoker<ForkingClusterInvokerTest> invoker1 = mock(Invoker.class);
-    Invoker<ForkingClusterInvokerTest> invoker2 = mock(Invoker.class);
-    Invoker<ForkingClusterInvokerTest> invoker3 = mock(Invoker.class);
-    RpcInvocation invocation = new RpcInvocation();
-    Directory<ForkingClusterInvokerTest> dic;
-    Result result = new RpcResult();
-
-    /**
-     * @throws java.lang.Exception
-     */
+    private List<Invoker<ForkingClusterInvokerTest>> invokers = new ArrayList<Invoker<ForkingClusterInvokerTest>>();
+    private URL url = URL.valueOf("test://test:11/test?forks=2");
+    private Invoker<ForkingClusterInvokerTest> invoker1 = mock(Invoker.class);
+    private Invoker<ForkingClusterInvokerTest> invoker2 = mock(Invoker.class);
+    private Invoker<ForkingClusterInvokerTest> invoker3 = mock(Invoker.class);
+    private RpcInvocation invocation = new RpcInvocation();
+    private Directory<ForkingClusterInvokerTest> dic;
+    private Result result = new RpcResult();
 
     @Before
     public void setUp() throws Exception {
@@ -71,6 +68,7 @@ public class ForkingClusterInvokerTest {
         invokers.add(invoker3);
 
     }
+
     private void resetInvokerToException() {
         given(invoker1.invoke(invocation)).willThrow(new RuntimeException());
         given(invoker1.getUrl()).willReturn(url);
@@ -106,7 +104,7 @@ public class ForkingClusterInvokerTest {
     }
 
     @Test
-    public void testInvokeExceptoin() {
+    public void testInvokeException() {
         resetInvokerToException();
         ForkingClusterInvoker<ForkingClusterInvokerTest> invoker = new ForkingClusterInvoker<ForkingClusterInvokerTest>(
                 dic);
@@ -120,8 +118,32 @@ public class ForkingClusterInvokerTest {
         }
     }
 
+    @Test
+    public void testClearRpcContext() {
+        resetInvokerToException();
+        ForkingClusterInvoker<ForkingClusterInvokerTest> invoker = new ForkingClusterInvoker<ForkingClusterInvokerTest>(
+                dic);
+
+        String attachKey = "attach";
+        String attachValue = "value";
+
+        RpcContext.getContext().setAttachment(attachKey, attachValue);
+
+        Map<String, String> attachments = RpcContext.getContext().getAttachments();
+        Assert.assertTrue("set attachment failed!", attachments != null && attachments.size() == 1);
+        try {
+            invoker.invoke(invocation);
+            Assert.fail();
+        } catch (RpcException expected) {
+            Assert.assertTrue("Succeeded to forking invoke provider !", expected.getMessage().contains("Failed to forking invoke provider"));
+            assertFalse(expected.getCause() instanceof RpcException);
+        }
+        Map<String, String> afterInvoke = RpcContext.getContext().getAttachments();
+        Assert.assertTrue("clear attachment failed!", afterInvoke != null && afterInvoke.size() == 0);
+    }
+
     @Test()
-    public void testInvokeNoExceptoin() {
+    public void testInvokeNoException() {
 
         resetInvokerToNoException();
 

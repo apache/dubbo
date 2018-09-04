@@ -52,7 +52,7 @@ public class MulticastRegistryTest {
     /**
      * Test method for {@link org.apache.dubbo.registry.multicast.MulticastRegistry#MulticastRegistry(URL)}.
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = IllegalStateException.class)
     public void testUrlError() {
         URL errorUrl = URL.valueOf("multicast://mullticast/");
         new MulticastRegistry(errorUrl);
@@ -177,12 +177,12 @@ public class MulticastRegistryTest {
      */
     @Test
     public void testDestroy() {
-        MulticastSocket socket = registry.getMutilcastSocket();
+        MulticastSocket socket = registry.getMulticastSocket();
         assertFalse(socket.isClosed());
 
         // then destroy, the multicast socket will be closed
         registry.destroy();
-        socket = registry.getMutilcastSocket();
+        socket = registry.getMulticastSocket();
         assertTrue(socket.isClosed());
     }
 
@@ -193,7 +193,7 @@ public class MulticastRegistryTest {
     public void testDefaultPort() {
         MulticastRegistry multicastRegistry = new MulticastRegistry(URL.valueOf("multicast://224.5.6.7"));
         try {
-            MulticastSocket multicastSocket = multicastRegistry.getMutilcastSocket();
+            MulticastSocket multicastSocket = multicastRegistry.getMulticastSocket();
             Assert.assertEquals(1234, multicastSocket.getLocalPort());
         } finally {
             multicastRegistry.destroy();
@@ -208,7 +208,7 @@ public class MulticastRegistryTest {
         int port = NetUtils.getAvailablePort();
         MulticastRegistry multicastRegistry = new MulticastRegistry(URL.valueOf("multicast://224.5.6.7:" + port));
         try {
-            MulticastSocket multicastSocket = multicastRegistry.getMutilcastSocket();
+            MulticastSocket multicastSocket = multicastRegistry.getMulticastSocket();
             assertEquals(port, multicastSocket.getLocalPort());
         } finally {
             multicastRegistry.destroy();

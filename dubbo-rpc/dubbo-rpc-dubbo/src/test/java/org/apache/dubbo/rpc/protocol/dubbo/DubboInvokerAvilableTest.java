@@ -29,6 +29,7 @@ import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
@@ -77,7 +78,7 @@ public class DubboInvokerAvilableTest {
         getClients(invoker)[0].removeAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY);
     }
 
-    @Test
+    @Ignore
     public void test_normal_channel_close_wait_gracefully() throws Exception {
         int testPort = NetUtils.getAvailablePort();
         URL url = URL.valueOf("dubbo://127.0.0.1:" + testPort + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?scope=true&lazy=false");
@@ -130,7 +131,6 @@ public class DubboInvokerAvilableTest {
 
         }
         //invoke method --> init client
-
         IDemoService service = (IDemoService) proxy.getProxy(invoker);
         Assert.assertEquals("ok", service.get());
 

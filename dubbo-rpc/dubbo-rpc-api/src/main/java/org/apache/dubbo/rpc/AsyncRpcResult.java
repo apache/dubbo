@@ -52,9 +52,9 @@ public class AsyncRpcResult extends AbstractResult {
      * @param rFuture
      * @param registerCallback
      */
-    public AsyncRpcResult(CompletableFuture<Object> future, CompletableFuture<Result> rFuture, boolean registerCallback) {
+    public AsyncRpcResult(CompletableFuture<Object> future, final CompletableFuture<Result> rFuture, boolean registerCallback) {
         if (rFuture == null) {
-            throw new IllegalArgumentException("");
+            throw new IllegalArgumentException();
         }
         resultFuture = rFuture;
         if (registerCallback) {
@@ -166,7 +166,7 @@ public class AsyncRpcResult extends AbstractResult {
     }
 
     /**
-     *
+     * tmp context to use when the thread switch to Dubbo thread.
      */
     private RpcContext tmpContext;
     private RpcContext tmpServerContext;
