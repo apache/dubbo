@@ -98,9 +98,15 @@ public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration {
             this.key = key;
             this.listener = listener;
             this.url = listener.getUrl();
+            // Maybe we no longer need to identify the type of change. Because there's no scenario that a callback will subscribe for both configurators and routers
             if (key.endsWith(Constants.CONFIGURATORS_SUFFIX)) {
                 type = ConfigType.CONFIGURATORS;
-            } else if (key.endsWith(Constants.ROUTERS_SUFFIX)) {
+            } else {
+                /**
+                 * Works for any router rules:
+                 * {@link Constants.ROUTERS_SUFFIX}
+                 * {@link org.apache.dubbo.rpc.cluster.router.group.TagRouter.TAGRULE_DATAID}
+                 */
                 type = ConfigType.ROUTERS;
             }
         }

@@ -43,9 +43,9 @@ public class ZKTools {
                 new ExponentialBackoffRetry(1000, 3));
         client.start();
 
-//        testConsumerConfig();
+        testConsumerConfig();
 //        testPathCache();
-        testTreeCache();
+//        testTreeCache();
 //        testCuratorListener();
         System.in.read();
     }
@@ -75,24 +75,67 @@ public class ZKTools {
     }
 
     public static void testConsumerConfig() {
-        String str = "{\n" +
-                "\t\"service\": \"org.apache.dubbo.demo.DemoService\",\n" +
-                "\t\"items\": [{\n" +
-                "\t\t\"addresses\": [\"30.5.120.48\"],\n" +
-                "\t\t\"rules\": [{\n" +
-                "\t\t\t\"key\": \"loadbalance\",\n" +
-                "\t\t\t\"value\": \"roundrobin\"\n" +
-                "\t\t}],\n" +
-                "\t\t\"app\": \"demo-consumer\",\n" +
-                "\t\t\"side\": \"consumer\"\n" +
-                "\t}]\n" +
-                "}";
+        String serviceStr = "---\n" +
+                "scope: service\n" +
+                "key: org.apache.dubbo.demo.DemoService\n" +
+                "configs:\n" +
+                " - addresses: [30.5.121.156]\n" +
+                "   side: consumer\n" +
+                "   rules:\n" +
+                "    cluster:\n" +
+                "     loadbalance: random\n" +
+                "     cluster: failfast\n" +
+                "    config:\n" +
+                "     timeout: 9999\n" +
+                "     weight: 222\n" +
+                "...";
+        String appStr = "---\n" +
+                "scope: application\n" +
+                "key: demo-consumer\n" +
+                "configs:\n" +
+                " - addresses: [30.5.121.156]\n" +
+                "   services: [org.apache.dubbo.demo.DemoService]\n" +
+                "   side: consumer\n" +
+                "   rules:\n" +
+                "    cluster:\n" +
+                "     loadbalance: random\n" +
+                "     cluster: failfast\n" +
+                "    config:\n" +
+                "     timeout: 4444\n" +
+                "     weight: 222\n" +
+                "...";
         try {
-            String path = "/dubbo/config/demo-consumer/org.apache.dubbo.demo.DemoService.CONFIGURATORS";
-            if (client.checkExists().forPath(path) == null) {
-                client.create().creatingParentsIfNeeded().forPath(path);
+            String servicePath = "/dubbo/config/org.apache.dubbo.demo.DemoService/configurators";
+            if (client.checkExists().forPath(servicePath) == null) {
+                client.create().creatingParentsIfNeeded().forPath(servicePath);
             }
-            setData(path, str);
+            setData(servicePath, serviceStr);
+
+            String appPath = "/dubbo/config/demo-consumer/configurators";
+            if (client.checkExists().forPath(appPath) == null) {
+                client.create().creatingParentsIfNeeded().forPath(appPath);
+            }
+            setData(appPath, appStr);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void tesConditionRule() {
+        String serviceStr = "---\n" +
+                "scope: application\n" +
+                "force: true\n" +
+                "runtime: false\n" +
+                "conditions:\n" +
+                "  - method!=sayHello =>\n" +
+                "  - method=routeMethod1 => 30.5.121.156:20880\n" +
+                "...";
+        try {
+            String servicePath = "/dubbo/config/globalrule/";
+            if (client.checkExists().forPath(servicePath) == null) {
+                client.create().creatingParentsIfNeeded().forPath(servicePath);
+            }
+            setData(servicePath, serviceStr);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -21,13 +21,13 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.dynamic.ConfigChangeEvent;
 import org.apache.dubbo.config.dynamic.ConfigChangeType;
-import org.apache.dubbo.config.dynamic.ConfigType;
 import org.apache.dubbo.config.dynamic.ConfigurationListener;
 import org.apache.dubbo.config.dynamic.DynamicConfiguration;
 import org.apache.dubbo.config.dynamic.DynamicConfigurationFactory;
@@ -58,9 +58,12 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.Constants.ACCEPT_FOREIGN_IP;
+import static org.apache.dubbo.common.Constants.APPLICATION_KEY;
+import static org.apache.dubbo.common.Constants.CONFIGURATORS_SUFFIX;
 import static org.apache.dubbo.common.Constants.CONFIG_PROTOCOL;
 import static org.apache.dubbo.common.Constants.EXPORT_KEY;
 import static org.apache.dubbo.common.Constants.INTERFACES;
+import static org.apache.dubbo.common.Constants.INTERFACE_KEY;
 import static org.apache.dubbo.common.Constants.QOS_ENABLE;
 import static org.apache.dubbo.common.Constants.QOS_PORT;
 import static org.apache.dubbo.common.Constants.REFER_KEY;
@@ -198,7 +201,11 @@ public class RegistryProtocol implements Protocol {
     }
 
     private URL getConfigUrl(URL registryUrl) {
-        URL url = registryUrl.removeParameters(EXPORT_KEY, REFER_KEY).setProtocol(CONFIG_PROTOCOL);
+        Map<String, String> qs = StringUtils.parseQueryString(registryUrl.getParameterAndDecoded(REFER_KEY));
+        URL url = registryUrl
+                .removeParameters(EXPORT_KEY, REFER_KEY)
+                .setProtocol(CONFIG_PROTOCOL)
+                .setPath(qs.get(INTERFACE_KEY));
         String configType = registryUrl.getParameter(Constants.CONFIG_TYPE_KEY);
         if (StringUtils.isEmpty(configType)) {
             url = url.addParameter(Constants.CONFIG_TYPE_KEY, registryUrl.getProtocol());
@@ -351,7 +358,7 @@ public class RegistryProtocol implements Protocol {
         directory.setRegistry(registry);
         directory.setProtocol(protocol);
         directory.setDynamicConfiguration(dynamicConfiguration);
-        directory.setRouterChain(RouterChain.buildChain(dynamicConfiguration));
+        directory.setRouterChain(RouterChain.buildChain(dynamicConfiguration, url));
         // all attributes of REFER_KEY
         Map<String, String> parameters = new HashMap<String, String>(directory.getUrl().getParameters());
         URL subscribeUrl = new URL(Constants.CONSUMER_PROTOCOL, parameters.remove(Constants.REGISTER_IP_KEY), 0, type.getName(), parameters);
@@ -498,18 +505,18 @@ public class RegistryProtocol implements Protocol {
             if (matchedUrls.isEmpty()) {
                 return;
             }
+            List<URL> configuratorUrls = matchedUrls.stream().filter(u -> u.getParameter(Constants.CATEGORY_KEY).equals(Constants.CONFIGURATORS_CATEGORY)).collect(Collectors.toList());
+            List<URL> dynamicConfiguratorUrls = matchedUrls.stream().filter(u -> u.getParameter(Constants.CATEGORY_KEY).equals(Constants.DYNAMIC_CONFIGURATORS_CATEGORY)).collect(Collectors.toList());
+            List<URL> appDynamicConfiguratorUrls = matchedUrls.stream().filter(u -> u.getParameter(Constants.CATEGORY_KEY).equals(Constants.APP_DYNAMIC_CONFIGURATORS_CATEGORY)).collect(Collectors.toList());
 
-            List<Configurator> localConfigurators = RegistryDirectory.toConfigurators(matchedUrls.stream().filter(u -> u.getParameter(Constants.CATEGORY_KEY).equals(Constants.CONFIGURATORS_CATEGORY)).collect(Collectors.toList()));
-            List<Configurator> localDynamicConfigurators = RegistryDirectory.toConfigurators(matchedUrls.stream().filter(u -> u.getParameter(Constants.CATEGORY_KEY).equals(Constants.DYNAMIC_CONFIGURATORS_CATEGORY)).collect(Collectors.toList()));
-            List<Configurator> localAppDynamicConfigurators = RegistryDirectory.toConfigurators(matchedUrls.stream().filter(u -> u.getParameter(Constants.CATEGORY_KEY).equals(Constants.APP_DYNAMIC_CONFIGURATORS_CATEGORY)).collect(Collectors.toList()));
-            if (localConfigurators != null && localConfigurators.size() > 0) {
-                configurators = localConfigurators;
+            if (CollectionUtils.isNotEmpty(configuratorUrls)) {
+                configurators = RegistryDirectory.toConfigurators(configuratorUrls);
             }
-            if (localDynamicConfigurators != null && localDynamicConfigurators.size() > 0) {
-                dynamicConfigurators = localDynamicConfigurators;
+            if (CollectionUtils.isNotEmpty(dynamicConfiguratorUrls)) {
+                dynamicConfigurators = RegistryDirectory.toConfigurators(dynamicConfiguratorUrls);
             }
-            if (localAppDynamicConfigurators != null && localAppDynamicConfigurators.size() > 0) {
-                appDynamicConfigurators = localAppDynamicConfigurators;
+            if (CollectionUtils.isNotEmpty(appDynamicConfiguratorUrls)) {
+                appDynamicConfigurators = RegistryDirectory.toConfigurators(appDynamicConfiguratorUrls);
             }
 
             final Invoker<?> invoker;
@@ -548,11 +555,6 @@ public class RegistryProtocol implements Protocol {
                     overrideUrl = url.addParameter(Constants.CATEGORY_KEY, Constants.CONFIGURATORS_CATEGORY);
                 }
 
-                // For provider side, we will simply change DYNAMIC_CONFIGURATORS_CATEGORY to CONFIGURATORS_CATEGORY.
-                if (Constants.DYNAMIC_CONFIGURATORS_CATEGORY.equals(url.getParameter(Constants.CATEGORY_KEY))) {
-                    overrideUrl = url.addParameter(Constants.CATEGORY_KEY, Constants.CONFIGURATORS_CATEGORY);
-                }
-
                 // Check whether url is to be applied to the current service
                 if (UrlUtils.isMatch(currentSubscribe, overrideUrl)) {
                     result.add(url);
@@ -563,15 +565,20 @@ public class RegistryProtocol implements Protocol {
 
         @Override
         public void process(ConfigChangeEvent event) {
-            if (!event.getType().equals(ConfigType.CONFIGURATORS)) {
-                return;
-            }
             List<URL> urls;
             if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
                 URL originUrl = RegistryProtocol.this.getProviderUrl(originInvoker);
+                originUrl = originUrl.clearParameters().setProtocol(Constants.EMPTY_PROTOCOL);
+                // determine it's a app level or service level change.
+                if (event.getKey().endsWith(originUrl.getParameter(APPLICATION_KEY) + CONFIGURATORS_SUFFIX)) {
+                    originUrl = originUrl.addParameter(Constants.CATEGORY_KEY, Constants.APP_DYNAMIC_CONFIGURATORS_CATEGORY);
+                } else {
+                    originUrl = originUrl.addParameter(Constants.CATEGORY_KEY, Constants.DYNAMIC_CONFIGURATORS_CATEGORY);
+                }
                 urls = new ArrayList<>();
-                urls.add(originUrl.clearParameters().addParameter(Constants.CATEGORY_KEY, Constants.DYNAMIC_CONFIGURATORS_CATEGORY).setProtocol(Constants.EMPTY_PROTOCOL));
+                urls.add(originUrl);
             } else {
+                // parseConfigurators will recognize app/service config automatically.
                 urls = ConfigParser.parseConfigurators(event.getNewValue());
             }
             notify(urls);

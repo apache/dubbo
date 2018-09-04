@@ -165,7 +165,7 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
         if (StringUtils.isEmpty(path)) {
             return path;
         }
-        return path.replace(configRootPath, "").replaceAll("/", ".");
+        return path.replace(configRootPath + "/", "").replaceAll("/", ".");
     }
 
     @Override
