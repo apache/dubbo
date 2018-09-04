@@ -1,0 +1,15 @@
+# Service scope, without  specific App
+---
+scope: application
+key: app1
+configs:
+ - addresses:
+    - 127.0.0.1
+   rules:
+    cluster:
+     loadbalance: random
+     cluster: failfast
+    config:
+     timeout: 6666
+     weight: 222
+...

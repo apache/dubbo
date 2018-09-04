@@ -59,5 +59,9 @@
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-serialization-hessian2</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-config-dynamic</artifactId>
+        </dependency>
     </dependencies>
 </project>

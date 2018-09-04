@@ -913,12 +913,13 @@ public class ExtensionLoader<T> {
                         type.getName(), Arrays.toString(value));
                 code.append(s);
 
-                code.append(String.format("\n%s extension = null;\n try {\nextension = (%<s)%s.getExtensionLoader(%s.class).getExtension(extName);\n}catch(Exception e){\n",
-                        type.getName(), ExtensionLoader.class.getSimpleName(), type.getName()));
-                code.append(String.format("if (count.incrementAndGet() == 1) {\nlogger.warn(\"Failed to find extension named \" + extName + \" for type %s, will use default extension %s instead.\", e);\n}\n",
-                        type.getName(), defaultExtName));
-                code.append(String.format("extension = (%s)%s.getExtensionLoader(%s.class).getExtension(\"%s\");\n}",
-                        type.getName(), ExtensionLoader.class.getSimpleName(), type.getName(), defaultExtName));
+                s = String.format("\n%s extension = null;\n try {\nextension = (%<s)%s.getExtensionLoader(%s.class).getExtension(extName);\n}catch(Exception e){\n",
+                        type.getName(), ExtensionLoader.class.getSimpleName(), type.getName());
+                s += String.format("if (count.incrementAndGet() == 1) {\nlogger.warn(\"Failed to find extension named \" + extName + \" for type %s, will use default extension %s instead.\", e);\n}\n",
+                        type.getName(), defaultExtName);
+                s += String.format("extension = (%s)%s.getExtensionLoader(%s.class).getExtension(\"%s\");\n}",
+                        type.getName(), ExtensionLoader.class.getSimpleName(), type.getName(), defaultExtName);
+                code.append(s);
 
                 // return statement
                 if (!rt.equals(void.class)) {
