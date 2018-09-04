@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.cluster.router.group;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.dynamic.DynamicConfiguration;
 import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.RouterFactory;
@@ -35,7 +36,11 @@ public class TagRouterFactory implements RouterFactory {
         return new TagRouter(url);
     }
 
-    public Router getRouter(DynamicConfiguration dynamicConfiguration) {
-        return new TagRouter(dynamicConfiguration);
+    @Override
+    public Router getRouter(DynamicConfiguration dynamicConfiguration, URL url) {
+//        return new TagRouter(dynamicConfiguration);
+        TagRouter router = (TagRouter) ExtensionLoader.getExtensionLoader(Router.class).getExtension(NAME);
+        router.setConfiguration(dynamicConfiguration);
+        return router;
     }
 }

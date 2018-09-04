@@ -64,12 +64,6 @@ public class ConfigParser {
         return yaml.load(rawConfig);
     }
 
-    public static List<URL> parseRouters(String rawConfig) {
-        List<URL> urls = new ArrayList<>();
-        urls.add(URL.valueOf(""));
-        return urls;
-    }
-
     private static List<URL> serviceItemToUrls(ConfigItem item, String serviceKey) {
         List<URL> urls = new ArrayList<>();
         List<String> addresses = item.getAddresses();

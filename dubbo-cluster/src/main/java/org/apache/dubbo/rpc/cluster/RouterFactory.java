@@ -42,7 +42,12 @@ public interface RouterFactory {
     @Adaptive("protocol")
     Router getRouter(URL url);
 
-    default Router getRouter(DynamicConfiguration dynamicConfiguration) {
+    /**
+     * @param dynamicConfiguration
+     * @param url                  reserved for future usage.
+     * @return
+     */
+    default Router getRouter(DynamicConfiguration dynamicConfiguration, URL url) {
         return null;
     }
 }
