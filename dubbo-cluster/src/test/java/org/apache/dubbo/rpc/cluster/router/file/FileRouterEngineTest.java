@@ -159,7 +159,7 @@ public class FileRouterEngineTest {
 
     private void initDic(URL url) {
         // FIXME dynamicConfiguration should not be null
-        RouterChain chain = RouterChain.buildChain(null);
+        RouterChain chain = RouterChain.buildChain(null, null);
         dic = new StaticDirectory<FileRouterEngineTest>(url, invokers, chain);
     }
 

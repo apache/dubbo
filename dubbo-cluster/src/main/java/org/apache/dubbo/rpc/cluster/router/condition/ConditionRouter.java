@@ -20,7 +20,6 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
@@ -181,21 +180,6 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
             logger.error("Failed to execute condition router rule: " + getUrl() + ", invokers: " + invokers + ", cause: " + t.getMessage(), t);
         }
         return invokers;
-    }
-
-    @Override
-    public <T> Map<String, List<Invoker<T>>> preRoute(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
-        Map<String, List<Invoker<T>>> map = new HashMap<>();
-
-        if (CollectionUtils.isEmpty(invokers)) {
-            return map;
-        }
-
-        if (isRuntime()) {
-            map.put(TreeNode.FAILOVER_KEY, invokers);
-            return map;
-        }
-        return map;
     }
 
     @Override
