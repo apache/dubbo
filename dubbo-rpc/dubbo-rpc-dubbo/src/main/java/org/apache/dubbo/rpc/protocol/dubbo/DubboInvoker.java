@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcResult;
+import org.apache.dubbo.rpc.SimpleAsyncRpcResult;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
@@ -80,6 +81,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         }
         try {
             boolean isAsync = RpcUtils.isAsync(getUrl(), invocation);
+            boolean isAsyncFuture = RpcUtils.isGeneratedFuture(inv) || RpcUtils.isFutureReturnType(inv);
             boolean isOneway = RpcUtils.isOneway(getUrl(), invocation);
             int timeout = getUrl().getMethodParameter(methodName, Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
             if (isOneway) {
@@ -89,13 +91,16 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 return new RpcResult();
             } else if (isAsync) {
                 ResponseFuture future = currentClient.request(inv, timeout);
-                FutureAdapter<T> futureAdapter = new FutureAdapter<>(future);
+                // For compatibility
+                FutureAdapter<Object> futureAdapter = new FutureAdapter<>(future);
                 RpcContext.getContext().setFuture(futureAdapter);
+
                 Result result;
-                if (RpcUtils.isAsyncFuture(getUrl(), inv)) {
-                    result = new AsyncRpcResult<>(futureAdapter);
+                if (isAsyncFuture) {
+                    // register resultCallback, sometimes we need the asyn result being processed by the filter chain.
+                    result = new AsyncRpcResult(futureAdapter, futureAdapter.getResultFuture(), false);
                 } else {
-                    result = new RpcResult();
+                    result = new SimpleAsyncRpcResult(futureAdapter, futureAdapter.getResultFuture(), false);
                 }
                 return result;
             } else {

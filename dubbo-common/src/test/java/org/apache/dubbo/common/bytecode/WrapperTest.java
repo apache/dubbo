@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.bytecode;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -57,6 +58,53 @@ public class WrapperTest {
     @Test
     public void test_makeEmptyClass() throws Exception {
         Wrapper.getWrapper(EmptyServiceImpl.class);
+    }
+
+    @Test
+    public void testHasMethod() throws Exception {
+        Wrapper w = Wrapper.getWrapper(I1.class);
+        Assert.assertTrue(w.hasMethod("setName"));
+        Assert.assertTrue(w.hasMethod("hello"));
+        Assert.assertTrue(w.hasMethod("showInt"));
+        Assert.assertTrue(w.hasMethod("getFloat"));
+        Assert.assertTrue(w.hasMethod("setFloat"));
+        Assert.assertFalse(w.hasMethod("setFloatXXX"));
+    }
+
+    @Test
+    public void testWrapperObject() throws Exception {
+        Wrapper w = Wrapper.getWrapper(Object.class);
+        Assert.assertTrue(w.getMethodNames().length == 4);
+        Assert.assertTrue(w.getPropertyNames().length == 0);
+        Assert.assertEquals(null, w.getPropertyType(null));
+    }
+
+    @Test(expected = NoSuchPropertyException.class)
+    public void testGetPropertyValue() throws Exception {
+        Wrapper w = Wrapper.getWrapper(Object.class);
+        w.getPropertyValue(null, null);
+    }
+
+    @Test(expected = NoSuchPropertyException.class)
+    public void testSetPropertyValue() throws Exception {
+        Wrapper w = Wrapper.getWrapper(Object.class);
+        w.setPropertyValue(null, null, null);
+    }
+
+    @Test
+    public void testInvokeWrapperObject() throws Exception {
+        Wrapper w = Wrapper.getWrapper(Object.class);
+        Object instance = new Object();
+        Assert.assertEquals(instance.getClass(), (Class<?>) w.invokeMethod(instance, "getClass", null, null));
+        Assert.assertEquals(instance.hashCode(), (int) w.invokeMethod(instance, "hashCode", null, null));
+        Assert.assertEquals(instance.toString(), (String) w.invokeMethod(instance, "toString", null, null));
+        Assert.assertEquals(true, (boolean) w.invokeMethod(instance, "equals", null, new Object[]{instance}));
+    }
+
+    @Test(expected = NoSuchMethodException.class)
+    public void testNoSuchMethod() throws Exception {
+        Wrapper w = Wrapper.getWrapper(Object.class);
+        w.invokeMethod(new Object(), "__XX__", null, null);
     }
 
     /**

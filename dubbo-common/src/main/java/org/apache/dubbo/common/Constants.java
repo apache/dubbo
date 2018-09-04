@@ -19,7 +19,6 @@ package org.apache.dubbo.common;
 
 import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
-
 /**
  * Constants
  */
@@ -285,7 +284,8 @@ public class Constants {
 
     public static final String ASYNC_KEY = "async";
 
-    public static final String FUTURE_KEY = "async_future";
+    public static final String FUTURE_GENERATED_KEY = "future_generated";
+    public static final String FUTURE_RETURNTYPE_KEY = "future_returntype";
 
     public static final String ASYNC_SUFFIX = "Async";
 
@@ -690,6 +690,10 @@ public class Constants {
     public static final String HTTP2_DUBBO_RPC_MESSAGE = "rpc-message";
 
     public static final String HTTP2_TRANCE_ID = "trace-id";
+
+    public static final String TAG_KEY = "tag";
+
+    public static final String REQUEST_TAG_KEY = "request.tag";
 
     /*
      * private Constants(){ }

@@ -136,26 +136,26 @@ public class RegistryProtocol implements Protocol {
 
         //registry provider
         final Registry registry = getRegistry(originInvoker);
-        final URL registedProviderUrl = getRegistedProviderUrl(originInvoker);
+        final URL registeredProviderUrl = getRegisteredProviderUrl(originInvoker);
 
         //to judge to delay publish whether or not
-        boolean register = registedProviderUrl.getParameter("register", true);
+        boolean register = registeredProviderUrl.getParameter("register", true);
 
-        ProviderConsumerRegTable.registerProvider(originInvoker, registryUrl, registedProviderUrl);
+        ProviderConsumerRegTable.registerProvider(originInvoker, registryUrl, registeredProviderUrl);
 
         if (register) {
-            register(registryUrl, registedProviderUrl);
+            register(registryUrl, registeredProviderUrl);
             ProviderConsumerRegTable.getProviderWrapper(originInvoker).setReg(true);
         }
 
         // Subscribe the override data
         // FIXME When the provider subscribes, it will affect the scene : a certain JVM exposes the service and call the same service. Because the subscribed is cached key with the name of the service, it causes the subscription information to cover.
-        final URL overrideSubscribeUrl = getSubscribedOverrideUrl(registedProviderUrl);
+        final URL overrideSubscribeUrl = getSubscribedOverrideUrl(registeredProviderUrl);
         final OverrideListener overrideSubscribeListener = new OverrideListener(overrideSubscribeUrl, originInvoker);
         overrideListeners.put(overrideSubscribeUrl, overrideSubscribeListener);
         registry.subscribe(overrideSubscribeUrl, overrideSubscribeListener);
         //Ensure that a new exporter instance is returned every time export
-        return new DestroyableExporter<T>(exporter, originInvoker, overrideSubscribeUrl, registedProviderUrl);
+        return new DestroyableExporter<T>(exporter, originInvoker, overrideSubscribeUrl, registeredProviderUrl);
     }
 
     @SuppressWarnings("unchecked")
@@ -220,10 +220,10 @@ public class RegistryProtocol implements Protocol {
      * @param originInvoker
      * @return
      */
-    private URL getRegistedProviderUrl(final Invoker<?> originInvoker) {
+    private URL getRegisteredProviderUrl(final Invoker<?> originInvoker) {
         URL providerUrl = getProviderUrl(originInvoker);
         //The address you see at the registry
-        final URL registedProviderUrl = providerUrl.removeParameters(getFilteredKeys(providerUrl))
+        return providerUrl.removeParameters(getFilteredKeys(providerUrl))
                 .removeParameter(Constants.MONITOR_KEY)
                 .removeParameter(Constants.BIND_IP_KEY)
                 .removeParameter(Constants.BIND_PORT_KEY)
@@ -232,7 +232,6 @@ public class RegistryProtocol implements Protocol {
                 .removeParameter(ACCEPT_FOREIGN_IP)
                 .removeParameter(VALIDATION_KEY)
                 .removeParameter(INTERFACES);
-        return registedProviderUrl;
     }
 
     private URL getSubscribedOverrideUrl(URL registedProviderUrl) {

@@ -16,16 +16,15 @@
  */
 package org.apache.dubbo.config.spring.extension;
 
+import java.util.Set;
 import org.apache.dubbo.common.extension.ExtensionFactory;
+import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
-
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
-
-import java.util.Set;
 
 /**
  * SpringExtensionFactory
@@ -51,6 +50,12 @@ public class SpringExtensionFactory implements ExtensionFactory {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T getExtension(Class<T> type, String name) {
+
+        //SPI should be get from SpiExtensionFactory
+        if (type.isInterface() && type.isAnnotationPresent(SPI.class)) {
+            return null;
+        }
+
         for (ApplicationContext context : contexts) {
             if (context.containsBean(name)) {
                 Object bean = context.getBean(name);

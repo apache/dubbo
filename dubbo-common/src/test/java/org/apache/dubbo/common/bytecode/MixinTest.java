@@ -17,8 +17,11 @@
 package org.apache.dubbo.common.bytecode;
 
 import junit.framework.TestCase;
+import org.junit.Test;
 
 public class MixinTest extends TestCase {
+
+    @Test
     public void testMain() throws Exception {
         Mixin mixin = Mixin.mixin(new Class[]{I1.class, I2.class, I3.class}, new Class[]{C1.class, C2.class});
         Object o = mixin.newInstance(new Object[]{new C1(), new C2()});

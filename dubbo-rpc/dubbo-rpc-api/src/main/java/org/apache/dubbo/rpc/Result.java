@@ -16,7 +16,9 @@
  */
 package org.apache.dubbo.rpc;
 
+import java.io.Serializable;
 import java.util.Map;
+
 
 /**
  * RPC invoke result. (API, Prototype, NonThreadSafe)
@@ -25,7 +27,7 @@ import java.util.Map;
  * @see org.apache.dubbo.rpc.Invoker#invoke(Invocation)
  * @see org.apache.dubbo.rpc.RpcResult
  */
-public interface Result {
+public interface Result extends Serializable {
 
     /**
      * Get invoke result.
@@ -80,6 +82,20 @@ public interface Result {
     Map<String, String> getAttachments();
 
     /**
+     * Add the specified map to existing attachments in this instance.
+     *
+     * @param map
+     */
+    void addAttachments(Map<String, String> map);
+
+    /**
+     * Replace the existing attachments with the specified param.
+     *
+     * @param map
+     */
+    void setAttachments(Map<String, String> map);
+
+    /**
      * get attachment by key.
      *
      * @return attachment value.
@@ -92,5 +108,7 @@ public interface Result {
      * @return attachment value.
      */
     String getAttachment(String key, String defaultValue);
+
+    void setAttachment(String key, String value);
 
 }

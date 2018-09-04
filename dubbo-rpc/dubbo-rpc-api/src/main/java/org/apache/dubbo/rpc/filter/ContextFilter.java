@@ -18,14 +18,13 @@ package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.Filter;
+import org.apache.dubbo.rpc.AbstractPostProcessFilter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.RpcResult;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,7 +33,7 @@ import java.util.Map;
  * ContextInvokerFilter
  */
 @Activate(group = Constants.PROVIDER, order = -10000)
-public class ContextFilter implements Filter {
+public class ContextFilter extends AbstractPostProcessFilter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -56,8 +55,9 @@ public class ContextFilter implements Filter {
                 .setLocalAddress(invoker.getUrl().getHost(),
                         invoker.getUrl().getPort());
 
-        // mreged from dubbox
+        // merged from dubbox
         // we may already added some attachments into RpcContext before this filter (e.g. in rest protocol)
+        // TODO
         if (attachments != null) {
             if (RpcContext.getContext().getAttachments() != null) {
                 RpcContext.getContext().getAttachments().putAll(attachments);
@@ -70,14 +70,18 @@ public class ContextFilter implements Filter {
             ((RpcInvocation) invocation).setInvoker(invoker);
         }
         try {
-            RpcResult result = (RpcResult) invoker.invoke(invocation);
-            // pass attachments to result
-            result.addAttachments(RpcContext.getServerContext().getAttachments());
-            return result;
+            return postProcessResult(invoker.invoke(invocation), invoker, invocation);
         } finally {
-            // TODO must we remove the whole context completely?
+            // IMPORTANT! For async scenario, we must remove context from current thread, so we always create a new RpcContext for the next invoke for the same thread.
             RpcContext.removeContext();
-            RpcContext.getServerContext().clearAttachments();
+            RpcContext.removeServerContext();
         }
+    }
+
+    @Override
+    protected Result doPostProcess(Result result, Invoker<?> invoker, Invocation invocation) {
+        // pass attachments to result
+        result.addAttachments(RpcContext.getServerContext().getAttachments());
+        return result;
     }
 }

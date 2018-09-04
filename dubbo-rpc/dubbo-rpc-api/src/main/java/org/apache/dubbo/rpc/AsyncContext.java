@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * AsyncContext works like {@see javax.servlet.AsyncContext} in the Servlet 3.0.
  * An AsyncContext is stated by a call to {@link RpcContext#startAsync()}.
@@ -25,7 +27,12 @@ package org.apache.dubbo.rpc;
  */
 public interface AsyncContext {
 
-    void addListener(Runnable run);
+    /**
+     * get the internal future which is binding to this async context
+     *
+     * @return the internal future
+     */
+    CompletableFuture getInternalFuture();
 
     /**
      * write value and complete the async context.
@@ -45,7 +52,35 @@ public interface AsyncContext {
     boolean stop();
 
     /**
-     * change the context state to stop
+     * change the context state to start
      */
     void start();
+
+    /**
+     * Signal RpcContext switch.
+     * Use this method to switch RpcContext from a Dubbo thread to a new thread created by the user.
+     *
+     * Note that you should use it in a new thread like this:
+     * <code>
+     * public class AsyncServiceImpl implements AsyncService {
+     *     public String sayHello(String name) {
+     *         final AsyncContext asyncContext = RpcContext.startAsync();
+     *         new Thread(() -> {
+     *
+     *             // right place to use this method
+     *             asyncContext.signalContextSwitch();
+     *
+     *             try {
+     *                 Thread.sleep(500);
+     *             } catch (InterruptedException e) {
+     *                 e.printStackTrace();
+     *             }
+     *             asyncContext.write("Hello " + name + ", response from provider.");
+     *         }).start();
+     *         return null;
+     *     }
+     * }
+     * </code>
+     */
+    void signalContextSwitch();
 }

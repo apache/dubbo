@@ -36,6 +36,7 @@ import org.apache.dubbo.remoting.transport.ChannelHandlerDelegate;
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
 
+
 /**
  * ExchangeReceiver
  */
@@ -76,7 +77,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         }
     }
 
-    void handleRequest(ExchangeChannel channel, Request req) throws RemotingException {
+    void handleRequest(final ExchangeChannel channel, Request req) throws RemotingException {
         Response res = new Response(req.getId(), req.getVersion());
         if (req.isBroken()) {
             Object data = req.getData();
@@ -102,7 +103,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
                 channel.send(res);
                 return;
             }
-            future.whenCompleteAsync((result, t) -> {
+            future.whenComplete((result, t) -> {
                 try {
                     if (t == null) {
                         res.setStatus(Response.OK);
@@ -145,6 +146,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         try {
             handler.disconnected(exchangeChannel);
         } finally {
+            DefaultFuture.closeChannel(channel);
             HeaderExchangeChannel.removeChannelIfDisconnected(channel);
         }
     }
@@ -182,7 +184,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
     @Override
     public void received(Channel channel, Object message) throws RemotingException {
         channel.setAttribute(KEY_READ_TIMESTAMP, System.currentTimeMillis());
-        ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
+        final ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
         try {
             if (message instanceof Request) {
                 // handle request.

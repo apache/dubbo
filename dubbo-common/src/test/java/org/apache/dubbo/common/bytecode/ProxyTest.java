@@ -27,6 +27,8 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
 public class ProxyTest extends TestCase {
+
+    @Test
     public void testMain() throws Exception {
         Proxy proxy = Proxy.getProxy(ITest.class, ITest.class);
         ITest instance = (ITest) proxy.newInstance(new InvocationHandler() {

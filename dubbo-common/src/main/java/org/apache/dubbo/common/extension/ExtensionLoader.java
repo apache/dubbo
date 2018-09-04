@@ -82,7 +82,7 @@ public class ExtensionLoader<T> {
 
     private final Holder<Map<String, Class<?>>> cachedClasses = new Holder<Map<String, Class<?>>>();
 
-    private final Map<String, Activate> cachedActivates = new ConcurrentHashMap<String, Activate>();
+    private final Map<String, Object> cachedActivates = new ConcurrentHashMap<String, Object>();
     private final ConcurrentMap<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<String, Holder<Object>>();
     private final Holder<Object> cachedAdaptiveInstance = new Holder<Object>();
     private volatile Class<?> cachedAdaptiveClass = null;
@@ -131,6 +131,7 @@ public class ExtensionLoader<T> {
     }
 
     public String getExtensionName(Class<?> extensionClass) {
+        getExtensionClasses();// load class
         return cachedNames.get(extensionClass);
     }
 
@@ -186,14 +187,26 @@ public class ExtensionLoader<T> {
         List<String> names = values == null ? new ArrayList<String>(0) : Arrays.asList(values);
         if (!names.contains(Constants.REMOVE_VALUE_PREFIX + Constants.DEFAULT_KEY)) {
             getExtensionClasses();
-            for (Map.Entry<String, Activate> entry : cachedActivates.entrySet()) {
+            for (Map.Entry<String, Object> entry : cachedActivates.entrySet()) {
                 String name = entry.getKey();
-                Activate activate = entry.getValue();
-                if (isMatchGroup(group, activate.group())) {
+                Object activate = entry.getValue();
+
+                String[] activateGroup, activateValue;
+
+                if (activate instanceof Activate) {
+                    activateGroup = ((Activate) activate).group();
+                    activateValue = ((Activate) activate).value();
+                } else if (activate instanceof com.alibaba.dubbo.common.extension.Activate) {
+                    activateGroup = ((com.alibaba.dubbo.common.extension.Activate) activate).group();
+                    activateValue = ((com.alibaba.dubbo.common.extension.Activate) activate).value();
+                } else {
+                    continue;
+                }
+                if (isMatchGroup(group, activateGroup)) {
                     T ext = getExtension(name);
                     if (!names.contains(name)
                             && !names.contains(Constants.REMOVE_VALUE_PREFIX + name)
-                            && isActive(activate, url)) {
+                            && isActive(activateValue, url)) {
                         exts.add(ext);
                     }
                 }
@@ -236,8 +249,7 @@ public class ExtensionLoader<T> {
         return false;
     }
 
-    private boolean isActive(Activate activate, URL url) {
-        String[] keys = activate.value();
+    private boolean isActive(String[] keys, URL url) {
         if (keys.length == 0) {
             return true;
         }
@@ -676,6 +688,12 @@ public class ExtensionLoader<T> {
                 Activate activate = clazz.getAnnotation(Activate.class);
                 if (activate != null) {
                     cachedActivates.put(names[0], activate);
+                } else {
+                    // support com.alibaba.dubbo.common.extension.Activate
+                    com.alibaba.dubbo.common.extension.Activate oldActivate = clazz.getAnnotation(com.alibaba.dubbo.common.extension.Activate.class);
+                    if (oldActivate != null) {
+                        cachedActivates.put(names[0], oldActivate);
+                    }
                 }
                 for (String n : names) {
                     if (!cachedNames.containsKey(clazz)) {
@@ -755,6 +773,9 @@ public class ExtensionLoader<T> {
         codeBuilder.append("package ").append(type.getPackage().getName()).append(";");
         codeBuilder.append("\nimport ").append(ExtensionLoader.class.getName()).append(";");
         codeBuilder.append("\npublic class ").append(type.getSimpleName()).append("$Adaptive").append(" implements ").append(type.getCanonicalName()).append(" {");
+
+        codeBuilder.append("\nprivate static final org.apache.dubbo.common.logger.Logger logger = org.apache.dubbo.common.logger.LoggerFactory.getLogger(ExtensionLoader.class);");
+        codeBuilder.append("\nprivate java.util.concurrent.atomic.AtomicInteger count = new java.util.concurrent.atomic.AtomicInteger(0);\n");
 
         for (Method method : methods) {
             Class<?> rt = method.getReturnType();
@@ -892,9 +913,12 @@ public class ExtensionLoader<T> {
                         type.getName(), Arrays.toString(value));
                 code.append(s);
 
-                s = String.format("\n%s extension = (%<s)%s.getExtensionLoader(%s.class).getExtension(extName);",
-                        type.getName(), ExtensionLoader.class.getSimpleName(), type.getName());
-                code.append(s);
+                code.append(String.format("\n%s extension = null;\n try {\nextension = (%<s)%s.getExtensionLoader(%s.class).getExtension(extName);\n}catch(Exception e){\n",
+                        type.getName(), ExtensionLoader.class.getSimpleName(), type.getName()));
+                code.append(String.format("if (count.incrementAndGet() == 1) {\nlogger.warn(\"Failed to find extension named \" + extName + \" for type %s, will use default extension %s instead.\", e);\n}\n",
+                        type.getName(), defaultExtName));
+                code.append(String.format("extension = (%s)%s.getExtensionLoader(%s.class).getExtension(\"%s\");\n}",
+                        type.getName(), ExtensionLoader.class.getSimpleName(), type.getName(), defaultExtName));
 
                 // return statement
                 if (!rt.equals(void.class)) {

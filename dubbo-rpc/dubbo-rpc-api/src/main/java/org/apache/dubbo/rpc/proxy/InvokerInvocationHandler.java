@@ -53,15 +53,19 @@ public class InvokerInvocationHandler implements InvocationHandler {
         }
 
         RpcInvocation invocation;
-        if (RpcUtils.isAsyncFuture(method)) {
+        if (RpcUtils.hasGeneratedFuture(method)) {
             Class<?> clazz = method.getDeclaringClass();
             String syncMethodName = methodName.substring(0, methodName.length() - Constants.ASYNC_SUFFIX.length());
             Method syncMethod = clazz.getMethod(syncMethodName, method.getParameterTypes());
             invocation = new RpcInvocation(syncMethod, args);
-            invocation.setAttachment(Constants.FUTURE_KEY, "true");
+            invocation.setAttachment(Constants.FUTURE_GENERATED_KEY, "true");
             invocation.setAttachment(Constants.ASYNC_KEY, "true");
         } else {
             invocation = new RpcInvocation(method, args);
+            if (RpcUtils.hasFutureReturnType(method)) {
+                invocation.setAttachment(Constants.FUTURE_RETURNTYPE_KEY, "true");
+                invocation.setAttachment(Constants.ASYNC_KEY, "true");
+            }
         }
         return invoker.invoke(invocation).recreate();
     }
