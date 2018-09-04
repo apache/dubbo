@@ -41,11 +41,11 @@ public class RouterChain<T> {
     private InvokerTreeCache<T> treeCache;
     private List<Router> routers;
 
-    public static <T> RouterChain<T> buildChain(DynamicConfiguration dynamicConfiguration) {
-        RouterChain<T> routerChain = new RouterChain<>();
+    public static <T> RouterChain<T> buildChain(DynamicConfiguration dynamicConfiguration, URL url) {
+        RouterChain<T> routerChain = new RouterChain<>(url);
         List<RouterFactory> extensionFactories = ExtensionLoader.getExtensionLoader(RouterFactory.class).getActivateExtension(dynamicConfiguration.getUrl(), (String[]) null);
         extensionFactories.stream()
-                .map(factory -> factory.getRouter(dynamicConfiguration))
+                .map(factory -> factory.getRouter(dynamicConfiguration, url))
                 .forEach(router -> {
                     routerChain.addRouter(router);
                     router.setRouterChain(routerChain);
@@ -58,9 +58,10 @@ public class RouterChain<T> {
         treeCache = new InvokerTreeCache<>();
     }
 
-    protected RouterChain() {
+    protected RouterChain(URL url) {
         this.routers = new ArrayList<>();
         treeCache = new InvokerTreeCache<>();
+        this.url = url;
     }
 
 
@@ -124,6 +125,5 @@ public class RouterChain<T> {
 
     public void setFullMethodInvokers(Map<String, List<Invoker<T>>> fullMethodInvokers) {
         this.fullMethodInvokers = fullMethodInvokers;
-        this.url = url;
     }
 }

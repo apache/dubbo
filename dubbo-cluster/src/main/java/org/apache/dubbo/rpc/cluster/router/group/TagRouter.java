@@ -49,11 +49,12 @@ import java.util.stream.Collectors;
 public class TagRouter extends AbstractRouter implements Comparable<Router>, ConfigurationListener {
     public static final String NAME = "TAG_ROUTER";
     private static final Logger logger = LoggerFactory.getLogger(TagRouter.class);
-    private static final String TAGRULE_DATAID = "global.tag.rules";
+    private static final String TAGRULE_DATAID = ".tagrouters"; // acts
     private static final String FAILOVER_TAG = "tag.failover";
-    private URL url;
     private DynamicConfiguration configuration;
     private GroupRouterRule groupRouterRule;
+
+    protected int priority = -1; // FIXME A fixed value considering other routers in the chain.
 
     public TagRouter(URL url) {
         this(ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getAdaptiveExtension().getDynamicConfiguration(url));
@@ -61,13 +62,20 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
     }
 
     public TagRouter(DynamicConfiguration configuration) {
-        this.priority = -1;
+        setConfiguration(configuration);
+    }
+
+    protected TagRouter() {
+    }
+
+    public void setConfiguration(DynamicConfiguration configuration) {
         this.configuration = configuration;
+        this.url = configuration.getUrl();
         init();
     }
 
     public void init() {
-        String rawRule = configuration.getConfig(TAGRULE_DATAID, "dubbo", this);
+        String rawRule = configuration.getConfig(url.getParameter(Constants.APPLICATION_KEY) + TAGRULE_DATAID, "dubbo", this);
         this.groupRouterRule = GroupRuleParser.parse(rawRule);
     }
 
