@@ -502,12 +502,12 @@ public class ProtocolConfig extends AbstractConfig {
         return certificate;
     }
 
-    @Parameter(excluded = true)
+    // @Parameter(excluded = true)
     public void setCertificate(String certificate) {
         this.certificate = certificate;
     }
 
-    @Parameter(excluded = true)
+    // @Parameter(excluded = true)
     public String getPrivateKey() {
         return privateKey;
     }
@@ -516,7 +516,7 @@ public class ProtocolConfig extends AbstractConfig {
         this.privateKey = privateKey;
     }
 
-    @Parameter(excluded = true)
+    // @Parameter(excluded = true)
     public String getKeyPassword() {
         return keyPassword;
     }

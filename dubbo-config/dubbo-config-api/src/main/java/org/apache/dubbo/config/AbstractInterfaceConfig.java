@@ -545,12 +545,12 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         return certificate;
     }
 
-    @Parameter(excluded = true)
+    // @Parameter(excluded = true)
     public void setCertificate(String certificate) {
         this.certificate = certificate;
     }
 
-    @Parameter(excluded = true)
+    // @Parameter(excluded = true)
     public String getPrivateKey() {
         return privateKey;
     }
@@ -559,7 +559,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         this.privateKey = privateKey;
     }
 
-    @Parameter(excluded = true)
+    // @Parameter(excluded = true)
     public String getKeyPassword() {
         return keyPassword;
     }

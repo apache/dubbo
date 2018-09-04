@@ -663,9 +663,9 @@ public class Constants {
 
     public static final String SSL_CERTIFICATE_KEY = "certificate";
 
-    public static final String SSL_PRIVATE_KEY = "privateKey";
+    public static final String SSL_PRIVATE_KEY = "private.key";
 
-    public static final String SSL_PRIVATE_KEY_PASSWORD = "keyPassword";
+    public static final String SSL_PRIVATE_KEY_PASSWORD = "key.password";
 
     public static final String HTTP2_SERVICE_KEY = "service.name";
 
