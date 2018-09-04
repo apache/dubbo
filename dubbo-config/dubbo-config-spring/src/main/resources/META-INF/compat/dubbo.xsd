@@ -177,12 +177,12 @@
                         <xsd:documentation><![CDATA[ certificate file path. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
-                <xsd:attribute name="privateKey" type="xsd:string" use="optional">
+                <xsd:attribute name="private-key" type="xsd:string" use="optional">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[ certificate private key file path. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
-                <xsd:attribute name="keyPassword" type="xsd:string" use="optional">
+                <xsd:attribute name="key-password" type="xsd:string" use="optional">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[ privite key file passworld. ]]></xsd:documentation>
                     </xsd:annotation>
@@ -1001,12 +1001,12 @@
                 <xsd:documentation><![CDATA[ certificate file path. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="privateKey" type="xsd:string" use="optional">
+        <xsd:attribute name="private-key" type="xsd:string" use="optional">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ certificate private key file path. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="keyPassword" type="xsd:string" use="optional">
+        <xsd:attribute name="key-password" type="xsd:string" use="optional">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ privite key file passworld. ]]></xsd:documentation>
             </xsd:annotation>
