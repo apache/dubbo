@@ -26,7 +26,6 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.dynamic.ConfigChangeEvent;
 import org.apache.dubbo.config.dynamic.ConfigChangeType;
-import org.apache.dubbo.config.dynamic.ConfigType;
 import org.apache.dubbo.config.dynamic.ConfigurationListener;
 import org.apache.dubbo.config.dynamic.DynamicConfiguration;
 import org.apache.dubbo.registry.NotifyListener;
@@ -59,6 +58,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static org.apache.dubbo.common.Constants.APPLICATION_KEY;
+import static org.apache.dubbo.common.Constants.CONFIGURATORS_SUFFIX;
 
 /**
  * RegistryDirectory
@@ -653,22 +655,18 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     @Override
     public void process(ConfigChangeEvent event) {
-        ConfigType configType = event.getType();
-        ConfigChangeType changeType = event.getChangeType();
-
-        List<URL> urls = new ArrayList<>();
-        if (changeType.equals(ConfigChangeType.DELETED)) {
-            if (ConfigType.CONFIGURATORS.equals(configType)) {
-                urls.add(getConsumerUrl().clearParameters().addParameter(Constants.CATEGORY_KEY, Constants.DYNAMIC_CONFIGURATORS_CATEGORY).setProtocol(Constants.EMPTY_PROTOCOL));
-            } else if (ConfigType.ROUTERS.equals(configType)) {
-                urls.add(getConsumerUrl().clearParameters().addParameter(Constants.CATEGORY_KEY, Constants.DYNAMIC_ROUTERS_CATEGORY).setProtocol(Constants.EMPTY_PROTOCOL));
+        List<URL> urls;
+        if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
+            URL url = getConsumerUrl().clearParameters().setProtocol(Constants.EMPTY_PROTOCOL);
+            if (event.getKey().endsWith(this.queryMap.get(APPLICATION_KEY) + CONFIGURATORS_SUFFIX)) {
+                url = url.addParameter(Constants.CATEGORY_KEY, Constants.APP_DYNAMIC_CONFIGURATORS_CATEGORY);
+            } else {
+                url = url.addParameter(Constants.CATEGORY_KEY, Constants.DYNAMIC_CONFIGURATORS_CATEGORY);
             }
+            urls = new ArrayList<>();
+            urls.add(url);
         } else {
-            if (ConfigType.CONFIGURATORS.equals(configType)) {
-                urls = ConfigParser.parseConfigurators(event.getNewValue());
-            } else if (ConfigType.ROUTERS.equals(configType)) {
-                urls = ConfigParser.parseRouters(event.getNewValue());
-            }
+            urls = ConfigParser.parseConfigurators(event.getNewValue());
         }
         notify(urls);
     }

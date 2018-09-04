@@ -121,13 +121,15 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration {
             this.listener = listener;
         }
 
+        // FIXME will Apollo consider an empty value ("") as deleted?
         @Override
         public void onChange(ConfigChangeEvent changeEvent) {
             for (String key : changeEvent.changedKeys()) {
                 ConfigChange change = changeEvent.getChange(key);
+                // Maybe we no longer need to identify the type of change. Because there's no scenario that a callback will subscribe for both configurators and routers
                 if (change.getPropertyName().endsWith(Constants.CONFIGURATORS_SUFFIX)) {
                     listener.process(new org.apache.dubbo.config.dynamic.ConfigChangeEvent(key, change.getNewValue(), ConfigType.CONFIGURATORS, getChangeType(change.getChangeType())));
-                } else if (change.getPropertyName().endsWith(Constants.ROUTERS_SUFFIX)) {
+                } else {
                     listener.process(new org.apache.dubbo.config.dynamic.ConfigChangeEvent(key, change.getNewValue(), ConfigType.ROUTERS, getChangeType(change.getChangeType())));
                 }
             }
