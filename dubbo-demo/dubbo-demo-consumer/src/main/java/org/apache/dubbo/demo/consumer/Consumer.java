@@ -35,6 +35,8 @@ public class Consumer {
                 Thread.sleep(1000);
                 String hello = demoService.sayHello("world"); // call remote method
                 System.out.println(hello); // get result
+                String routeMethod1 = demoService.routeMethod1(); // call remote method
+                System.out.println(routeMethod1); // get result
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
             }

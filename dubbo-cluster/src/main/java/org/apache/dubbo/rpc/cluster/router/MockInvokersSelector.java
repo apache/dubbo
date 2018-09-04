@@ -18,13 +18,16 @@ package org.apache.dubbo.rpc.cluster.router;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Router;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A specific Router designed to realize mock feature.
@@ -47,6 +50,36 @@ public class MockInvokersSelector implements Router {
             }
         }
         return invokers;
+    }
+
+    @Override
+    public <T> Map<String, List<Invoker<T>>> preRoute(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
+        Map<String, List<Invoker<T>>> map = new HashMap<>();
+
+        if (CollectionUtils.isEmpty(invokers)) {
+            return map;
+        }
+
+        if (isRuntime()) {
+            map.put(TreeNode.FAILOVER_KEY, invokers);
+            return map;
+        }
+        return map;
+    }
+
+    @Override
+    public boolean isRuntime() {
+        return true;
+    }
+
+    @Override
+    public String getKey() {
+        return TreeNode.FAILOVER_KEY;
+    }
+
+    @Override
+    public boolean isForce() {
+        return false;
     }
 
     private <T> List<Invoker<T>> getMockedInvokers(final List<Invoker<T>> invokers) {

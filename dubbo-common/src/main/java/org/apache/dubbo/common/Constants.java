@@ -19,6 +19,7 @@ package org.apache.dubbo.common;
 
 import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
+
 /**
  * Constants
  */
@@ -44,7 +45,22 @@ public class Constants {
 
     public static final String ROUTERS_CATEGORY = "routers";
 
+    public static final String DYNAMIC_ROUTERS_CATEGORY = "dynamicrouters";
+
     public static final String CONFIGURATORS_CATEGORY = "configurators";
+
+    public static final String DYNAMIC_CONFIGURATORS_CATEGORY = "dynamicconfigurators";
+    public static final String APP_DYNAMIC_CONFIGURATORS_CATEGORY = "appdynamicconfigurators";
+
+    public static final String CONFIGURATORS_SUFFIX = ".configurators";
+
+    public static final String ROUTERS_SUFFIX = ".routers";
+
+    public static final String CONFIG_TYPE_KEY = "config.type";
+    public static final String CONFIG_ADDRESS_KEY = "config.address";
+    public static final String CONFIG_ENV_KEY = "config.env";
+    public static final String CONFIG_CLUSTER_KEY = "config.cluster";
+    public static final String CONFIG_NAMESPACE_KEY = "config.namespace";
 
     public static final String DEFAULT_CATEGORY = PROVIDERS_CATEGORY;
 
@@ -548,6 +564,8 @@ public class Constants {
     public static final String ON_THROW_INSTANCE_KEY = "onthrow.instance";
 
     public static final String OVERRIDE_PROTOCOL = "override";
+
+    public static final String CONFIG_PROTOCOL = "config";
 
     public static final String PRIORITY_KEY = "priority";
 
