@@ -84,6 +84,8 @@ public class Constants {
 
     public static final String REGISTRY_PROTOCOL = "registry";
 
+    public static final String SERVICE_STORE_PROTOCOL = "servicestore";
+
     public static final String $INVOKE = "$invoke";
 
     public static final String $ECHO = "$echo";
@@ -177,6 +179,8 @@ public class Constants {
     public static final String CLUSTER_KEY = "cluster";
 
     public static final String REGISTRY_KEY = "registry";
+
+    public static final String SERVICE_STORE_KEY = "servicestore";
 
     public static final String MONITOR_KEY = "monitor";
 

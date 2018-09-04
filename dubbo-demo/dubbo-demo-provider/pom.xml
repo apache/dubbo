@@ -63,5 +63,9 @@
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-config-dynamic</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-servicedata-zookeeper</artifactId>
+        </dependency>
     </dependencies>
 </project>
