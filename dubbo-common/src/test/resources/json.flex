@@ -1,4 +1,4 @@
-package com.alibaba.dubbo.common.json;
+package org.apache.dubbo.common.json;
 %%
 
 %{
