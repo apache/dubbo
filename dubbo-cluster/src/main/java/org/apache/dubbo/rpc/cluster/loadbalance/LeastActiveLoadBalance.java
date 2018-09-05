@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.cluster.loadbalance;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.threadlocal.ThreadLocalRandom;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcStatus;
@@ -32,8 +33,6 @@ import java.util.Random;
 public class LeastActiveLoadBalance extends AbstractLoadBalance {
 
     public static final String NAME = "leastactive";
-
-    private final Random random = new Random();
 
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
@@ -72,7 +71,7 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
         }
         if (!sameWeight && totalWeight > 0) {
             // If (not every invoker has the same weight & at least one invoker's weight>0), select randomly based on totalWeight.
-            int offsetWeight = random.nextInt(totalWeight);
+            int offsetWeight = ThreadLocalRandom.current().nextInt(totalWeight);
             // Return a invoker based on the random value.
             for (int i = 0; i < leastCount; i++) {
                 int leastIndex = leastIndexs[i];
@@ -82,6 +81,6 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
             }
         }
         // If all invokers have the same weight value or totalWeight=0, return evenly.
-        return invokers.get(leastIndexs[random.nextInt(leastCount)]);
+        return invokers.get(leastIndexs[ThreadLocalRandom.current().nextInt(leastCount)]);
     }
 }
