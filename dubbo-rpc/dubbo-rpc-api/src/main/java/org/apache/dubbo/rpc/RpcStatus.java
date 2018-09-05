@@ -53,6 +53,12 @@ public class RpcStatus {
     private volatile Semaphore executesLimit;
     private volatile int executesPermits;
 
+    /**
+     * Semaphore used to control concurrency limit set by `actives`
+     */
+    private volatile Semaphore activesLimit;
+    private volatile int activesPermits;
+
     private RpcStatus() {
     }
 
@@ -333,5 +339,29 @@ public class RpcStatus {
         }
 
         return executesLimit;
+    }
+
+
+    /**
+     * Get the semaphore for thread number. Semaphore's permits is decided by {@link Constants#ACTIVES_KEY}
+     *
+     * @param maxThreadNum value of {@link Constants#ACTIVES_KEY}
+     * @return thread number semaphore
+     */
+    public Semaphore getActivesSemaphore(int maxThreadNum) {
+        if(maxThreadNum <= 0) {
+            return null;
+        }
+
+        if (activesLimit == null || activesPermits != maxThreadNum) {
+            synchronized (this) {
+                if (activesLimit == null || activesPermits != maxThreadNum) {
+                    activesLimit = new Semaphore(maxThreadNum);
+                    activesPermits = maxThreadNum;
+                }
+            }
+        }
+
+        return activesLimit;
     }
 }
