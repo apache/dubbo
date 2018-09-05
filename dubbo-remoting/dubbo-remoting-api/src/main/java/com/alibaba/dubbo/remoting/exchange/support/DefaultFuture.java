@@ -43,9 +43,9 @@ public class DefaultFuture implements ResponseFuture {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultFuture.class);
 
-    private static final Map<Long, Channel> CHANNELS = new ConcurrentHashMap<Long, Channel>();
+    private static final Map<Long, Channel> CHANNELS = new ConcurrentHashMap<>();
 
-    private static final Map<Long, DefaultFuture> FUTURES = new ConcurrentHashMap<Long, DefaultFuture>();
+    private static final Map<Long, DefaultFuture> FUTURES = new ConcurrentHashMap<>();
 
     static {
         Thread th = new Thread(new RemotingInvocationTimeoutScan(), "DubboResponseTimeoutScanTimer");
@@ -87,6 +87,29 @@ public class DefaultFuture implements ResponseFuture {
         DefaultFuture future = FUTURES.get(request.getId());
         if (future != null) {
             future.doSent();
+        }
+    }
+
+    /**
+     * close a channel when a channel is inactive
+     * directly return the unfinished requests.
+     *
+     * @param channel channel to close
+     */
+    public static void closeChannel(Channel channel) {
+        for (long id : CHANNELS.keySet()) {
+            if (channel.equals(CHANNELS.get(id))) {
+                DefaultFuture future = getFuture(id);
+                if (future != null && !future.isDone()) {
+                    Response disconnectResponse = new Response(future.getId());
+                    disconnectResponse.setStatus(Response.CHANNEL_INACTIVE);
+                    disconnectResponse.setErrorMessage("Channel " +
+                            channel +
+                            " is inactive. Directly return the unFinished request : " +
+                            future.getRequest());
+                    DefaultFuture.received(channel, disconnectResponse);
+                }
+            }
         }
     }
 
