@@ -116,13 +116,15 @@ public class Constants {
 
     public static final int DEFAULT_THREADS = 200;
 
-    public static final boolean DEFAULT_KEEP_ALIVE = true;
+    public static final boolean DEFAULT_KEEP_ALIVE = true;`````
 
     public static final int DEFAULT_QUEUES = 0;
 
     public static final int DEFAULT_ALIVE = 60 * 1000;
 
-    public static final int DEFAULT_CONNECTIONS = 0;
+    public static final String DEFAULT_CONNECTIONS = "1";
+
+    public static final String DEFAULT_CONNECTIONS_KEY = "default.connections.key";
 
     public static final int DEFAULT_ACCEPTS = 0;
 
