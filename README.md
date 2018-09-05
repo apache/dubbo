@@ -25,6 +25,15 @@ We are now collecting dubbo user info in order to help us to improve dubbo bette
 
 ## Getting started
 
+The following code snippet comes from [Dubbo Samples](https://github.com/dubbo/dubbo-samples/tree/master/dubbo-samples-api). You may clone the sample project and step into `dubbo-samples-api` sub directory before read on.
+
+```bash
+# git clone https://github.com/dubbo/dubbo-samples.git
+# cd dubbo-samples/dubbo-samples-api
+```
+
+There's one [README](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samples-api/README.md) file under `dubbo-samples-api` directory. Read it and try this sample out by following the instructions.
+
 ### Maven dependency
 
 ```xml
@@ -35,17 +44,19 @@ We are now collecting dubbo user info in order to help us to improve dubbo bette
 </dependency>
 ```
 
-### Defining service interfaces
+### Define service interfaces
 
 ```java
-package org.apache.dubbo.demo;
+package org.apache.dubbo.demo.api;
 
 public interface GreetingService {
     String sayHello(String name);
 }
 ```
 
-### Implement interface in service provider
+*See [api/GreetingService.java](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/com/alibaba/dubbo/samples/api/GreetingsService.java) on GitHub.*
+
+### Implement service interface for the provider
 
 ```java
 package org.apache.dubbo.demo.provider;
@@ -59,7 +70,9 @@ public class GreetingServiceImpl implements GreetingService {
 }
 ```
 
-### Starting service provider
+*See [provider/GreetingServiceImpl.java](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/com/alibaba/dubbo/samples/server/GreetingsServiceImpl.java) on GitHub.*
+
+### Start service provider
 
 ```java
 package org.apache.dubbo.demo.provider;
@@ -71,7 +84,7 @@ import org.apache.dubbo.demo.GreetingService;
 
 import java.io.IOException;
  
-public class Provider {
+public class Application {
 
     public static void main(String[] args) throws IOException {
         ServiceConfig<GreetingService> serviceConfig = new ServiceConfig<GreetingService>();
@@ -85,6 +98,15 @@ public class Provider {
 }
 ```
 
+*See [provider/Application.java](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/com/alibaba/dubbo/samples/provider/Application.java) on GitHub.*
+
+### Build and run the provider
+
+```bash
+# mvn clean package
+# mvn -Djava.net.preferIPv4Stack=true -Dexec.mainClass=org.apache.dubbo.demo.provider.Application exec:java
+```
+
 ### Call remote service in consumer
 
 ```java
@@ -95,7 +117,7 @@ import com.alibaba.dubbo.config.ReferenceConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 import org.apache.dubbo.demo.GreetingService;
 
-public class Consumer {
+public class Application {
     public static void main(String[] args) {
         ReferenceConfig<GreetingService> referenceConfig = new ReferenceConfig<GreetingService>();
         referenceConfig.setApplication(new ApplicationConfig("first-dubbo-consumer"));
@@ -107,8 +129,20 @@ public class Consumer {
 }
 ```
 
+### Build and run the consumer
+
+```bash
+# mvn clean package
+# mvn -Djava.net.preferIPv4Stack=true -Dexec.mainClass=org.apache.dubbo.demo.consumer.Application exec:java
+```
+
+The consumer will print out `Hello world` on the screen.
+
+*See [consumer/Application.java](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/com/alibaba/dubbo/samples/consumer/Application.java) on GitHub.*
+
 ### Next steps
 
+* [Your first Dubbo application](http://dubbo.apache.org/en-us/blog/dubbo-101.html) - A 101 tutorial to reveal more details, with the same code above.
 * [Dubbo user manual](http://dubbo.apache.org/en-us/docs/user/preface/background.html) - How to use Dubbo and all its features.
 * [Dubbo developer guide](http://dubbo.apache.org/en-us/docs/dev/build.html) - How to invovle in Dubbo development.
 * [Dubbo admin manual](http://dubbo.apache.org/en-us/docs/admin/install/provider-demo.html) - How to admin and manage Dubbo services.
