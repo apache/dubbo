@@ -49,8 +49,9 @@ public class RpcUtils {
                     && !invocation.getMethodName().startsWith("$")) {
                 String service = invocation.getInvoker().getUrl().getServiceInterface();
                 if (service != null && service.length() > 0) {
-                    ClassLoader classLoader = invocation.getInvoker().getInterface().getClassLoader();
-                    Class<?> cls = ReflectUtils.forName(classLoader, service);
+                    Class<?> invokerInterface = invocation.getInvoker().getInterface();
+                    Class<?> cls = invokerInterface != null ? ReflectUtils.forName(invokerInterface.getClassLoader(), service)
+                            : ReflectUtils.forName(service);
                     Method method = cls.getMethod(invocation.getMethodName(), invocation.getParameterTypes());
                     if (method.getReturnType() == void.class) {
                         return null;
@@ -72,8 +73,9 @@ public class RpcUtils {
                     && !invocation.getMethodName().startsWith("$")) {
                 String service = invocation.getInvoker().getUrl().getServiceInterface();
                 if (service != null && service.length() > 0) {
-                    ClassLoader classLoader = invocation.getInvoker().getInterface().getClassLoader();
-                    Class<?> cls = ReflectUtils.forName(classLoader, service);
+                    Class<?> invokerInterface = invocation.getInvoker().getInterface();
+                    Class<?> cls = invokerInterface != null ? ReflectUtils.forName(invokerInterface.getClassLoader(), service)
+                            : ReflectUtils.forName(service);
                     Method method = cls.getMethod(invocation.getMethodName(), invocation.getParameterTypes());
                     if (method.getReturnType() == void.class) {
                         return null;
