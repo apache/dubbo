@@ -41,6 +41,11 @@ public class Response {
     public static final byte SERVER_TIMEOUT = 31;
 
     /**
+     * channel inactive, directly return the unfinished requests.
+     */
+    public static final byte CHANNEL_INACTIVE = 35;
+
+    /**
      * request format error.
      */
     public static final byte BAD_REQUEST = 40;
