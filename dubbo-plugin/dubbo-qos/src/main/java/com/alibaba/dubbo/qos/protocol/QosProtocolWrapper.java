@@ -20,7 +20,6 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
-import com.alibaba.dubbo.qos.common.QosConstants;
 import com.alibaba.dubbo.qos.server.Server;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invoker;
