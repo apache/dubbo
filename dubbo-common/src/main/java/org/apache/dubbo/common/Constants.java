@@ -116,7 +116,7 @@ public class Constants {
 
     public static final int DEFAULT_THREADS = 200;
 
-    public static final boolean DEFAULT_KEEP_ALIVE = true;`````
+    public static final boolean DEFAULT_KEEP_ALIVE = true;
 
     public static final int DEFAULT_QUEUES = 0;
 
