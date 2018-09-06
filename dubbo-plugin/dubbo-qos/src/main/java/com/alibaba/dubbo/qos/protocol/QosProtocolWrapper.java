@@ -18,6 +18,8 @@ package com.alibaba.dubbo.qos.protocol;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.qos.server.Server;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invoker;
@@ -29,8 +31,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static com.alibaba.dubbo.common.Constants.ACCEPT_FOREIGN_IP;
 import static com.alibaba.dubbo.common.Constants.QOS_ENABLE;
 import static com.alibaba.dubbo.common.Constants.QOS_PORT;
+import static com.alibaba.dubbo.qos.common.QosConstants.DEFAULT_PORT;
 
 public class QosProtocolWrapper implements Protocol {
+
+    private final Logger logger = LoggerFactory.getLogger(QosProtocolWrapper.class);
+
     private static AtomicBoolean hasStarted = new AtomicBoolean(false);
 
     private Protocol protocol;
@@ -76,20 +82,23 @@ public class QosProtocolWrapper implements Protocol {
         }
 
         try {
-            boolean qosEnable = Boolean.parseBoolean(url.getParameter(QOS_ENABLE,"true"));
+            boolean qosEnable = url.getParameter(QOS_ENABLE,true);
             if (!qosEnable) {
+                logger.info("qos won't be started because it is disabled. " +
+                        "Please check dubbo.application.qos.enable is configured either in system property, " +
+                        "dubbo.properties or XML/spring boot configuration.");
                 return;
             }
 
-            int port = Integer.parseInt(url.getParameter(QOS_PORT,"22222"));
-            boolean acceptForeignIp = Boolean.parseBoolean(url.getParameter(ACCEPT_FOREIGN_IP,"true"));
+            int port = url.getParameter(QOS_PORT, DEFAULT_PORT);
+            boolean acceptForeignIp = Boolean.parseBoolean(url.getParameter(ACCEPT_FOREIGN_IP,"false"));
             Server server = com.alibaba.dubbo.qos.server.Server.getInstance();
             server.setPort(port);
             server.setAcceptForeignIp(acceptForeignIp);
             server.start();
 
         } catch (Throwable throwable) {
-            //throw new RpcException("fail to start qos server", throwable);
+            logger.warn("Fail to start qos server: ", throwable);
         }
     }
 }
