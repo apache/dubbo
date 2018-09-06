@@ -364,11 +364,10 @@ public class DubboProtocol extends AbstractProtocol {
                     Constants.DEFAULT_CONNECTIONS));
             shareClients = getSharedClient(url, connections);
         }
-
         ExchangeClient[] clients = new ExchangeClient[connections];
         for (int i = 0; i < clients.length; i++) {
-            if (service_share_connect) {
-                clients[i] = getSharedClient(url);
+            if (service_share_connect){
+                clients[i] = shareClients.get(i);
             } else {
                 clients[i] = initClient(url);
             }
@@ -379,7 +378,7 @@ public class DubboProtocol extends AbstractProtocol {
     /**
      * Get shared connection
      */
-    private List<ReferenceCountExchangeClient> getSharedClient(URL url) {
+    private List<ReferenceCountExchangeClient> getSharedClient(URL url, int connectNum) {
         String key = url.getAddress();
         List<ReferenceCountExchangeClient> clients = referenceClientMap.get(key);
         if(clients == null) {
@@ -397,6 +396,17 @@ public class DubboProtocol extends AbstractProtocol {
             }
 
             client.incrementAndGetCount();
+        }
+
+        return clients;
+    }
+
+    private List<ReferenceCountExchangeClient> buildReferenceCountExchangeClientList (URL url, String key, int connectNum) {
+
+        List<ReferenceCountExchangeClient> clients = new ArrayList<ReferenceCountExchangeClient>(connectNum);
+
+        for (int i = 0; i < connectNum; i++) {
+            clients.add(buildReferenceCountExchangeClient(url, key));
         }
 
         return clients;
