@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -29,8 +30,8 @@
         <url>https://github.com/apache/incubator-dubbo</url>
         <connection>scm:git:https://github.com/apache/incubator-dubbo.git</connection>
         <developerConnection>scm:git:https://github.com/apache/incubator-dubbo.git</developerConnection>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
     <mailingLists>
         <mailingList>
             <name>Development List</name>
@@ -101,6 +102,9 @@
         <rs_api_version>2.0</rs_api_version>
         <resteasy_version>3.0.19.Final</resteasy_version>
         <tomcat_embed_version>8.5.31</tomcat_embed_version>
+
+        <!-- Alibaba Spring context support -->
+        <alibaba_spring_context_support_version>1.0.1</alibaba_spring_context_support_version>
         <!-- Log libs -->
         <slf4j_version>1.7.25</slf4j_version>
         <jcl_version>1.2</jcl_version>
@@ -300,6 +304,14 @@
                 <artifactId>tomcat-embed-logging-juli</artifactId>
                 <version>${tomcat_embed_version}</version>
             </dependency>
+
+            <!-- Spring Context Support -->
+            <dependency>
+                <groupId>com.alibaba.spring</groupId>
+                <artifactId>spring-context-support</artifactId>
+                <version>${alibaba_spring_context_support_version}</version>
+            </dependency>
+
             <!-- Log libs -->
             <dependency>
                 <groupId>org.slf4j</groupId>

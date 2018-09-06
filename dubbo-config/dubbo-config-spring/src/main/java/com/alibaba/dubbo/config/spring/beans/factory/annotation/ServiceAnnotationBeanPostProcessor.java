@@ -24,17 +24,8 @@ import com.alibaba.dubbo.config.spring.context.annotation.DubboClassPathBeanDefi
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.BeanDefinitionHolder;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.config.RuntimeBeanReference;
-import org.springframework.beans.factory.config.SingletonBeanRegistry;
-import org.springframework.beans.factory.support.AbstractBeanDefinition;
-import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
-import org.springframework.beans.factory.support.BeanNameGenerator;
-import org.springframework.beans.factory.support.ManagedList;
+import org.springframework.beans.factory.config.*;
+import org.springframework.beans.factory.support.*;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.AnnotationBeanNameGenerator;
@@ -44,17 +35,9 @@ import org.springframework.context.annotation.ConfigurationClassPostProcessor;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
+import org.springframework.util.*;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static com.alibaba.dubbo.config.spring.util.ObjectUtils.of;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
@@ -70,8 +53,6 @@ import static org.springframework.util.ClassUtils.resolveClassName;
  */
 public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistryPostProcessor, EnvironmentAware,
         ResourceLoaderAware, BeanClassLoaderAware {
-
-    private static final String SEPARATOR = ":";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -262,7 +243,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
             registry.registerBeanDefinition(beanName, serviceBeanDefinition);
 
             if (logger.isInfoEnabled()) {
-                logger.warn("The BeanDefinition[" + serviceBeanDefinition +
+                logger.info("The BeanDefinition[" + serviceBeanDefinition +
                         "] of ServiceBean has been registered with name : " + beanName);
             }
 
@@ -271,7 +252,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
             if (logger.isWarnEnabled()) {
                 logger.warn("The Duplicated BeanDefinition[" + serviceBeanDefinition +
                         "] of ServiceBean[ bean name : " + beanName +
-                        "] was be found , Did @DubboComponentScan scan to same package in many times?");
+                        "] was be found!");
             }
 
         }
@@ -289,27 +270,9 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
      */
     private String generateServiceBeanName(Service service, Class<?> interfaceClass, String annotatedServiceBeanName) {
 
-        StringBuilder beanNameBuilder = new StringBuilder(ServiceBean.class.getSimpleName());
+        ServiceBeanNameBuilder builder = ServiceBeanNameBuilder.create(service, interfaceClass, environment);
 
-        beanNameBuilder.append(SEPARATOR).append(annotatedServiceBeanName);
-
-        String interfaceClassName = interfaceClass.getName();
-
-        beanNameBuilder.append(SEPARATOR).append(interfaceClassName);
-
-        String version = service.version();
-
-        if (StringUtils.hasText(version)) {
-            beanNameBuilder.append(SEPARATOR).append(version);
-        }
-
-        String group = service.group();
-
-        if (StringUtils.hasText(group)) {
-            beanNameBuilder.append(SEPARATOR).append(group);
-        }
-
-        return beanNameBuilder.toString();
+        return builder.build();
 
     }
 
