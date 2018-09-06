@@ -57,4 +57,6 @@ public interface DemoService {
 
     NonSerialized returnNonSerialized();
 
+    long add(int a, long b);
+
 }
