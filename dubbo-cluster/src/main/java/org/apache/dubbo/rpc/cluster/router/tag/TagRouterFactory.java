@@ -14,11 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.group;
+package org.apache.dubbo.rpc.cluster.router.tag;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.dynamic.DynamicConfiguration;
 import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.RouterFactory;
@@ -38,9 +37,10 @@ public class TagRouterFactory implements RouterFactory {
 
     @Override
     public Router getRouter(DynamicConfiguration dynamicConfiguration, URL url) {
-//        return new TagRouter(dynamicConfiguration);
-        TagRouter router = (TagRouter) ExtensionLoader.getExtensionLoader(Router.class).getExtension(NAME);
+        TagRouter router = new TagRouter(dynamicConfiguration, url);
+/*        TagRouter router = (TagRouter) ExtensionLoader.getExtensionLoader(Router.class).getExtension(NAME);
         router.setConfiguration(dynamicConfiguration);
+        router.setUrl(url);*/
         return router;
     }
 }

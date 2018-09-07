@@ -20,12 +20,12 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Router;
+import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
 import org.apache.dubbo.rpc.cluster.router.TreeNode;
 
 import javax.script.Bindings;
@@ -36,7 +36,6 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,7 +44,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * ScriptRouter
  *
  */
-public class ScriptRouter implements Router {
+public class ScriptRouter extends AbstractRouter {
 
     private static final Logger logger = LoggerFactory.getLogger(ScriptRouter.class);
 
@@ -118,24 +117,8 @@ public class ScriptRouter implements Router {
     }
 
     @Override
-    public <T> Map<String, List<Invoker<T>>> preRoute(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
-        Map<String, List<Invoker<T>>> map = new HashMap<>();
-
-        if (CollectionUtils.isEmpty(invokers)) {
-            return map;
-        }
-
-        if (isRuntime()) {
-            map.put(TreeNode.FAILOVER_KEY, invokers);
-            return map;
-        }
-        return map;
-    }
-
-    @Override
     public boolean isRuntime() {
-        // ignore config in url
-        return true;
+        return this.url.getParameter(Constants.RUNTIME_KEY, false);
     }
 
     @Override

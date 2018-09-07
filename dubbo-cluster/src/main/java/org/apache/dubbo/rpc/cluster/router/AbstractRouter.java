@@ -44,6 +44,10 @@ public abstract class AbstractRouter implements Router {
         return url;
     }
 
+    public void setUrl(URL url) {
+        this.url = url;
+    }
+
     @Override
     public <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
         return invokers;
@@ -59,7 +63,8 @@ public abstract class AbstractRouter implements Router {
 
         if (isRuntime()) {
             map.put(TreeNode.FAILOVER_KEY, invokers);
-            return map;
+        } else {
+            map.put(TreeNode.FAILOVER_KEY, route(invokers, url, invocation));
         }
         return map;
     }

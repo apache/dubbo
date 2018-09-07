@@ -24,7 +24,9 @@ import java.util.List;
  *
  */
 public class ConditionRouterRule extends AbstractRouterRule {
-    private String scope;
+    public ConditionRouterRule() {
+    }
+
     private List<String> conditions;
 
     public List<String> getConditions() {
