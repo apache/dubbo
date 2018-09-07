@@ -48,11 +48,7 @@ import java.util.Map;
  *
  * @export
  */
-public abstract class
-
-
-
-AbstractInterfaceConfig extends AbstractMethodConfig {
+public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     private static final long serialVersionUID = -1559314110797223229L;
 

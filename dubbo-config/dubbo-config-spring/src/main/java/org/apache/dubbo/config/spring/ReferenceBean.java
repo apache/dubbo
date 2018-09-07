@@ -153,7 +153,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
         if (getServiceStoreConfig() == null) {
             Map<String, ServiceStoreConfig> serviceStoreConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ServiceStoreConfig.class, false, false);
             if (serviceStoreConfigMap != null && serviceStoreConfigMap.size() == 1) {
-                // 第一个元素
+                // first elements
                 super.setServiceStoreConfig(serviceStoreConfigMap.values().iterator().next());
             } else if(serviceStoreConfigMap != null && serviceStoreConfigMap.size() > 1){
                 throw new IllegalStateException("Multiple ServiceStore configs: " + serviceStoreConfigMap);
