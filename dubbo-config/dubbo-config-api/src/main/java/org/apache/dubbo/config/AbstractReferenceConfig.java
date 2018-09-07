@@ -61,6 +61,9 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     // group
     protected String group;
 
+    // enable dynamic tag
+    protected String enabledynamictag;
+
     public Boolean isCheck() {
         return check;
     }
