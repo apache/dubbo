@@ -105,7 +105,7 @@ public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration {
                 /**
                  * Works for any router rules:
                  * {@link Constants.ROUTERS_SUFFIX}
-                 * {@link org.apache.dubbo.rpc.cluster.router.group.TagRouter.TAGRULE_DATAID}
+                 * {@link org.apache.dubbo.rpc.cluster.router.tag.TagRouter.TAGRULE_DATAID}
                  */
                 type = ConfigType.ROUTERS;
             }

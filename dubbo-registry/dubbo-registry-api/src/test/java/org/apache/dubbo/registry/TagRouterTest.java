@@ -14,31 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.group.model;
+package org.apache.dubbo.registry;
 
-import org.apache.dubbo.rpc.cluster.router.AbstractRouterRule;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- * %YAML1.2
- *
+ * FIXME This is not a formal UT
  */
-public class GroupRouterRule extends AbstractRouterRule {
+public class TagRouterTest {
+    private static CuratorFramework client;
 
-    // key: app+address, value: environment
-    private Map<String, String> ipAppToGroup;
-
-    public List<String> filter(String routeGroup, String app) {
-        return null;
+    @Before
+    public void init() {
+        client = CuratorFrameworkFactory.newClient("127.0.0.1:2181", 60 * 1000, 60 * 1000,
+                new ExponentialBackoffRetry(1000, 3));
+        client.start();
     }
 
-    public Map<String, String> getIpAppToGroup() {
-        //FIXME
-        ipAppToGroup = new HashMap<>();
-        ipAppToGroup.put("demo-provider127.0.0.1", "test1");
-        return ipAppToGroup;
+    @Test
+    public void normalTagRuleTest() {
+
+    }
+
+    private void setData(String path, String data) throws Exception {
+        client.setData().forPath(path, data.getBytes());
     }
 }

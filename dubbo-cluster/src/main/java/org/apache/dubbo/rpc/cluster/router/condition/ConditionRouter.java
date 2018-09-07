@@ -184,7 +184,8 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
 
     @Override
     public boolean isRuntime() {
-        // We always return true for previously defined Router, don't support cache.
+        // We always return true for previously defined Router, that is, old Router doesn't support cache anymore.
+//        return true;
         return this.url.getParameter(Constants.RUNTIME_KEY, false);
     }
 
@@ -224,6 +225,10 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
             //get real invoked method name from invocation
             if (invocation != null && (Constants.METHOD_KEY.equals(key) || Constants.METHODS_KEY.equals(key))) {
                 sampleValue = invocation.getMethodName();
+            } else if (Constants.ADDRESS_KEY.equals(key)) {
+                sampleValue = url.getAddress();
+            } else if (Constants.HOST_KEY.equals(key)) {
+                sampleValue = url.getHost();
             } else {
                 sampleValue = sample.get(key);
                 if (sampleValue == null) {

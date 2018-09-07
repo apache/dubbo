@@ -53,11 +53,11 @@ public class ConfigConditionRouter extends AbstractRouter implements Configurati
     private List<ConditionRouter> conditionRouters = new ArrayList<>();
     private List<ConditionRouter> appConditionRouters = new ArrayList<>();
 
-    public ConfigConditionRouter(DynamicConfiguration configuration) {
+    public ConfigConditionRouter(DynamicConfiguration configuration, URL url) {
         this.configuration = configuration;
         this.priority = -2;
         this.force = false;
-        this.url = configuration.getUrl();
+        this.url = url;
         try {
             String app = this.url.getParameter(Constants.APPLICATION_KEY);
             String serviceKey = this.url.getServiceKey();
@@ -110,11 +110,7 @@ public class ConfigConditionRouter extends AbstractRouter implements Configurati
 
         if (CollectionUtils.isEmpty(invokers)
                 || (conditionRouters.size() == 0 && appConditionRouters.size() == 0)
-                ) {
-            return map;
-        }
-
-        if (isRuntime()) {
+                || isRuntime()) {
             map.put(TreeNode.FAILOVER_KEY, invokers);
             return map;
         }
@@ -133,6 +129,18 @@ public class ConfigConditionRouter extends AbstractRouter implements Configurati
 
     @Override
     public <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
+        if (CollectionUtils.isEmpty(invokers)
+                || (conditionRouters.size() == 0 && appConditionRouters.size() == 0)
+                ) {
+            return invokers;
+        }
+
+        for (Router router : appConditionRouters) {
+            invokers = router.route(invokers, url, invocation);
+        }
+        for (Router router : conditionRouters) {
+            invokers = router.route(invokers, url, invocation);
+        }
         return invokers;
     }
 
@@ -144,6 +152,7 @@ public class ConfigConditionRouter extends AbstractRouter implements Configurati
 
     private void generateConditions() {
         if (routerRule != null && routerRule.isValid()) {
+            conditionRouters.clear();
             routerRule.getConditions().forEach(condition -> {
                 // All sub rules have the same force, runtime value.
                 ConditionRouter subRouter = new ConditionRouter(condition, routerRule.isForce());
@@ -154,6 +163,7 @@ public class ConfigConditionRouter extends AbstractRouter implements Configurati
 
     private void generateAppConditions() {
         if (appRouterRule != null && appRouterRule.isValid()) {
+            appConditionRouters.clear();
             appRouterRule.getConditions().forEach(condition -> {
                 // All sub rules have the same force, runtime value.
                 ConditionRouter subRouter = new ConditionRouter(condition, appRouterRule.isForce());
@@ -164,12 +174,13 @@ public class ConfigConditionRouter extends AbstractRouter implements Configurati
 
     @Override
     public String getKey() {
-        return "";
+        return TreeNode.FAILOVER_KEY;
     }
 
     @Override
     public boolean isForce() {
-        return routerRule.isForce();
+        return (routerRule != null && routerRule.isForce())
+                || (appRouterRule != null && appRouterRule.isForce());
     }
 
     @Override
