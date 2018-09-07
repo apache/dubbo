@@ -14,18 +14,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.servicedata;
-
+package org.apache.dubbo.servicedata.support;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.NetUtils;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
+ *
  */
-public interface ServiceStore {
+public class AbstractServiceStoreTest {
 
-    void put(URL url);
+    private AbstractServiceStore abstractServiceStore;
+    private URL url;
 
-    void remove(URL url);
+    @Before
+    public void before(){
+        url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444");
 
-    URL peek(URL url);
+        abstractServiceStore = new AbstractServiceStore(url) {
+            @Override
+            protected void doPutService(URL url) {
+
+            }
+
+            @Override
+            protected void doRemoveService(URL url) {
+
+            }
+
+            @Override
+            protected URL doPeekService(URL url) {
+                return null;
+            }
+        };
+
+    }
+
+
 }
