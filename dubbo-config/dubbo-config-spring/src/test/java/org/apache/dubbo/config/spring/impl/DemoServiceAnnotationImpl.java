@@ -19,9 +19,10 @@ package org.apache.dubbo.config.spring.impl;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.api.Box;
 import org.apache.dubbo.config.spring.api.DemoService;
+import org.apache.dubbo.config.spring.api.HelloService;
 
 @Service(interfaceName = "org.apache.dubbo.config.spring.api.DemoService")
-public class DemoServiceAnnotationImpl implements DemoService {
+public class DemoServiceAnnotationImpl implements HelloService, DemoService {
     @Override
     public String sayName(String name) {
         return "say:" + name;
@@ -30,5 +31,10 @@ public class DemoServiceAnnotationImpl implements DemoService {
     @Override
     public Box getBox() {
         return null;
+    }
+
+    @Override
+    public String sayHello(String name) {
+        return "say hello:" + name;
     }
 }
