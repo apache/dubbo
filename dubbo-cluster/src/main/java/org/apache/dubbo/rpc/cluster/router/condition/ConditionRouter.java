@@ -28,7 +28,6 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
-import org.apache.dubbo.rpc.cluster.router.TreeNode;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -187,11 +186,6 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
         // We always return true for previously defined Router, that is, old Router doesn't support cache anymore.
 //        return true;
         return this.url.getParameter(Constants.RUNTIME_KEY, false);
-    }
-
-    @Override
-    public String getKey() {
-        return TreeNode.FAILOVER_KEY;
     }
 
     @Override

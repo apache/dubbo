@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.router.TreeNode;
 
 import java.util.List;
 import java.util.Map;
@@ -67,7 +68,7 @@ public interface Router extends Comparable<Router> {
     }
 
     default String getKey() {
-        return "";
+        return TreeNode.FAILOVER_KEY;
     }
 
     default boolean isForce() {

@@ -101,6 +101,10 @@ public class InvokerTreeCache<T> {
             // FIXME check force logic here
             String forceKey = "force." + failoverNode.getConditionKey();
             if (Boolean.valueOf(invocation.getAttachment(forceKey, url.getParameter(forceKey, "false")))) {
+                /**
+                 * This may mistakely return empty list for runtime routers
+                 * see {@link org.apache.dubbo.rpc.cluster.router.tag.TagRouter.getKey()} for the workaround.
+                 */
                 return Collections.emptyList();
             }
             return getInvokers(failoverNode, url, invocation);
