@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
 
 /**
@@ -30,7 +29,7 @@ public interface InvokerListener {
      *
      * @param invoker
      * @throws RpcException
-     * @see org.apache.dubbo.rpc.Protocol#refer(Class, URL)
+     * @see org.apache.dubbo.rpc.Protocol#refer(Class, org.apache.dubbo.common.URL)
      */
     void referred(Invoker<?> invoker) throws RpcException;
 
