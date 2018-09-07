@@ -1,9 +1,0 @@
----
-scope: application
-force: true
-runtime: false
-key: group/service:version
-conditions:
-  - method!=sayHello =>
-  - method=routeMethod1 => 30.5.121.156:20880
-...
