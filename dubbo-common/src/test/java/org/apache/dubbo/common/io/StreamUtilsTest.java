@@ -79,6 +79,8 @@ public class StreamUtilsTest {
         is.reset();
         assertEquals(-1, is.read());
         assertEquals(-1, is.read());
+
+        is.close();
     }
 
     @Test
@@ -118,35 +120,54 @@ public class StreamUtilsTest {
     @Test(expected = IOException.class)
     public void testMarkInputSupport() throws IOException {
         InputStream is = StreamUtilsTest.class.getResourceAsStream("/StreamUtilsTest.txt");
-        is = StreamUtils.markSupportedInputStream(new PushbackInputStream(is), 1);
+        try {
+            is = StreamUtils.markSupportedInputStream(new PushbackInputStream(is), 1);
 
-        is.mark(1);
-        int read = is.read();
-        assertThat(read, is((int) '0'));
+            is.mark(1);
+            int read = is.read();
+            assertThat(read, is((int) '0'));
 
-        is.skip(1);
-        is.read();
+            is.skip(1);
+            is.read();
+        } finally {
+            if (is != null) {
+                is.close();
+            }
+        }
     }
 
     @Test
-    public void testSkipForOriginMarkSupportInput() {
+    public void testSkipForOriginMarkSupportInput() throws IOException {
         InputStream is = StreamUtilsTest.class.getResourceAsStream("/StreamUtilsTest.txt");
         InputStream newIs = StreamUtils.markSupportedInputStream(is, 1);
 
         assertThat(newIs, is(is));
+        is.close();
     }
 
     @Test(expected = NullPointerException.class)
     public void testReadEmptyByteArray() throws IOException {
         InputStream is = StreamUtilsTest.class.getResourceAsStream("/StreamUtilsTest.txt");
-        is = StreamUtils.limitedInputStream(is, 2);
-        is.read(null, 0, 1);
+        try {
+            is = StreamUtils.limitedInputStream(is, 2);
+            is.read(null, 0, 1);
+        } finally {
+            if (is != null) {
+                is.close();
+            }
+        }
     }
 
     @Test(expected = IndexOutOfBoundsException.class)
     public void testReadWithWrongOffset() throws IOException {
         InputStream is = StreamUtilsTest.class.getResourceAsStream("/StreamUtilsTest.txt");
-        is = StreamUtils.limitedInputStream(is, 2);
-        is.read(new byte[1], -1, 1);
+        try {
+            is = StreamUtils.limitedInputStream(is, 2);
+            is.read(new byte[1], -1, 1);
+        } finally {
+            if (is != null) {
+                is.close();
+            }
+        }
     }
 }
