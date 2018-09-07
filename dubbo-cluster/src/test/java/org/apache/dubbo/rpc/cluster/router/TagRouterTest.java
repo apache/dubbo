@@ -39,7 +39,7 @@ public class TagRouterTest {
     public void normalTagRuleTest() {
         String serviceStr = "---\n" +
                 "force: true\n" +
-                "runtime: false\n" +
+                "runtime: true\n" +
                 "enabled: true\n" +
                 "priority: 1\n" +
                 "key: demo-provider\n" +
