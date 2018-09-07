@@ -20,10 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.config.dynamic.DynamicConfiguration;
-<<<<<<< HEAD
-import org.apache.dubbo.rpc.Invocation;
-=======
->>>>>>> 75853a88698e2f83a1dae2ba028e4a2316eab326
 
 /**
  * RouterFactory. (SPI, Singleton, ThreadSafe)
