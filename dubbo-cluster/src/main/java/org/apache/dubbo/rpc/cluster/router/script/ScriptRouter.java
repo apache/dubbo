@@ -26,7 +26,6 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
-import org.apache.dubbo.rpc.cluster.router.TreeNode;
 
 import javax.script.Bindings;
 import javax.script.Compilable;
@@ -119,11 +118,6 @@ public class ScriptRouter extends AbstractRouter {
     @Override
     public boolean isRuntime() {
         return this.url.getParameter(Constants.RUNTIME_KEY, false);
-    }
-
-    @Override
-    public String getKey() {
-        return TreeNode.FAILOVER_KEY;
     }
 
     @Override

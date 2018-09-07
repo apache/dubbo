@@ -174,6 +174,9 @@ public class ConfigConditionRouter extends AbstractRouter implements Configurati
 
     @Override
     public String getKey() {
+        if (isRuntime()) {
+            return super.getKey();
+        }
         return TreeNode.FAILOVER_KEY;
     }
 
