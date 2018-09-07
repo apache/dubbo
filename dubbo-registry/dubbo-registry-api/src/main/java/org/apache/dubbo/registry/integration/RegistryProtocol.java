@@ -59,15 +59,32 @@ import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.Constants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.Constants.APPLICATION_KEY;
+import static org.apache.dubbo.common.Constants.CLUSTER_KEY;
+import static org.apache.dubbo.common.Constants.CODEC_KEY;
 import static org.apache.dubbo.common.Constants.CONFIGURATORS_SUFFIX;
 import static org.apache.dubbo.common.Constants.CONFIG_PROTOCOL;
+import static org.apache.dubbo.common.Constants.CONNECTIONS_KEY;
+import static org.apache.dubbo.common.Constants.DEPRECATED_KEY;
+import static org.apache.dubbo.common.Constants.EXCHANGER_KEY;
 import static org.apache.dubbo.common.Constants.EXPORT_KEY;
+import static org.apache.dubbo.common.Constants.GROUP_KEY;
 import static org.apache.dubbo.common.Constants.INTERFACES;
 import static org.apache.dubbo.common.Constants.INTERFACE_KEY;
+import static org.apache.dubbo.common.Constants.LOADBALANCE_KEY;
+import static org.apache.dubbo.common.Constants.METHODS_KEY;
+import static org.apache.dubbo.common.Constants.MOCK_KEY;
+import static org.apache.dubbo.common.Constants.PATH_KEY;
 import static org.apache.dubbo.common.Constants.QOS_ENABLE;
 import static org.apache.dubbo.common.Constants.QOS_PORT;
 import static org.apache.dubbo.common.Constants.REFER_KEY;
+import static org.apache.dubbo.common.Constants.SERIALIZATION_KEY;
+import static org.apache.dubbo.common.Constants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.Constants.TIMESTAMP_KEY;
+import static org.apache.dubbo.common.Constants.TOKEN_KEY;
 import static org.apache.dubbo.common.Constants.VALIDATION_KEY;
+import static org.apache.dubbo.common.Constants.VERSION_KEY;
+import static org.apache.dubbo.common.Constants.WARMUP_KEY;
+import static org.apache.dubbo.common.Constants.WEIGHT_KEY;
 
 /**
  * RegistryProtocol
@@ -283,16 +300,10 @@ public class RegistryProtocol implements Protocol {
      */
     private URL getRegistedProviderUrl(final URL providerUrl) {
         //The address you see at the registry
-        final URL registedProviderUrl = providerUrl.removeParameters(getFilteredKeys(providerUrl))
-                .removeParameter(Constants.MONITOR_KEY)
-                .removeParameter(Constants.BIND_IP_KEY)
-                .removeParameter(Constants.BIND_PORT_KEY)
-                .removeParameter(QOS_ENABLE)
-                .removeParameter(QOS_PORT)
-                .removeParameter(ACCEPT_FOREIGN_IP)
-                .removeParameter(VALIDATION_KEY)
-                .removeParameter(INTERFACES);
-        return registedProviderUrl;
+        String[] registryParams = {APPLICATION_KEY, CODEC_KEY, EXCHANGER_KEY, SERIALIZATION_KEY, CLUSTER_KEY, CONNECTIONS_KEY, DEPRECATED_KEY,
+                GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY, WEIGHT_KEY, TIMESTAMP_KEY};
+        String[] methods = providerUrl.getParameter(METHODS_KEY, (String[]) null);
+        return URL.valueOf(providerUrl, registryParams, methods);
     }
 
     private URL getSubscribedOverrideUrl(URL registedProviderUrl) {

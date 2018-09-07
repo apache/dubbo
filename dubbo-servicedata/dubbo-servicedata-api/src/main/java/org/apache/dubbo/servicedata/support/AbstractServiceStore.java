@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.dubbo.servicedata.support;
 
 import org.apache.dubbo.common.Constants;
@@ -19,17 +35,14 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * @author cvictory ON 2018/8/24
  */
 public abstract class AbstractServiceStore implements ServiceStore {
 
@@ -43,14 +56,14 @@ public abstract class AbstractServiceStore implements ServiceStore {
     // Local disk cache, where the special key value.registies records the list of registry centers, and the others are the list of notified service providers
     private final Properties properties = new Properties();
     // File cache timing writing
-    private final ExecutorService registryCacheExecutor = Executors.newFixedThreadPool(1, new NamedThreadFactory("DubboSaveRegistryCache", true));
-    private final ConcurrentMap<URL, Map<String, List<URL>>> notified = new ConcurrentHashMap<URL, Map<String, List<URL>>>();
+    private final ExecutorService servicestoreCacheExecutor = Executors.newFixedThreadPool(1, new NamedThreadFactory("DubboSaveServicestoreCache", true));
 
     private final AtomicLong lastCacheChanged = new AtomicLong();
     private final Set<URL> registered = new ConcurrentHashSet<URL>();
     private URL serviceStoreURL;
     // Local disk cache file
     private File file;
+    private static AtomicBoolean INIT = new AtomicBoolean(false);
 
     public AbstractServiceStore(URL servicestoreURL) {
         setUrl(servicestoreURL);
@@ -61,8 +74,12 @@ public abstract class AbstractServiceStore implements ServiceStore {
             file = new File(filename);
             if (!file.exists() && file.getParentFile() != null && !file.getParentFile().exists()) {
                 if (!file.getParentFile().mkdirs()) {
-                    throw new IllegalArgumentException("Invalid registry store file " + file + ", cause: Failed to create directory " + file.getParentFile() + "!");
+                    throw new IllegalArgumentException("Invalid service store file " + file + ", cause: Failed to create directory " + file.getParentFile() + "!");
                 }
+            }
+            // if this file exist, firstly delete it.
+            if (!INIT.getAndSet(true) && file.exists()) {
+                file.delete();
             }
         }
         this.file = file;
@@ -84,7 +101,7 @@ public abstract class AbstractServiceStore implements ServiceStore {
 
     protected void setUrl(URL url) {
         if (url == null) {
-            throw new IllegalArgumentException("registry url == null");
+            throw new IllegalArgumentException("servicestore url == null");
         }
         this.serviceStoreURL = url;
     }
@@ -93,23 +110,7 @@ public abstract class AbstractServiceStore implements ServiceStore {
         return registered;
     }
 
-    public Map<URL, Map<String, List<URL>>> getNotified() {
-        return notified;
-    }
-
-    public File getCacheFile() {
-        return file;
-    }
-
-    public Properties getCacheProperties() {
-        return properties;
-    }
-
-    public AtomicLong getLastCacheChanged() {
-        return lastCacheChanged;
-    }
-
-    public void doSaveProperties(long version) {
+    private void doSaveProperties(long version) {
         if (version < lastCacheChanged.get()) {
             return;
         }
@@ -128,7 +129,7 @@ public abstract class AbstractServiceStore implements ServiceStore {
                 try {
                     FileLock lock = channel.tryLock();
                     if (lock == null) {
-                        throw new IOException("Can not lock the registry cache file " + file.getAbsolutePath() + ", ignore and retry later, maybe multi java process use the file, please config: dubbo.registry.file=xxx.properties");
+                        throw new IOException("Can not lock the servicestore cache file " + file.getAbsolutePath() + ", ignore and retry later, maybe multi java process use the file, please config: dubbo.servicestore.file=xxx.properties");
                     }
                     // Save
                     try {
@@ -137,7 +138,7 @@ public abstract class AbstractServiceStore implements ServiceStore {
                         }
                         FileOutputStream outputFile = new FileOutputStream(file);
                         try {
-                            properties.store(outputFile, "Dubbo Registry Cache");
+                            properties.store(outputFile, "Dubbo Servicestore Cache");
                         } finally {
                             outputFile.close();
                         }
@@ -154,9 +155,9 @@ public abstract class AbstractServiceStore implements ServiceStore {
             if (version < lastCacheChanged.get()) {
                 return;
             } else {
-                registryCacheExecutor.execute(new SaveProperties(lastCacheChanged.incrementAndGet()));
+                servicestoreCacheExecutor.execute(new SaveProperties(lastCacheChanged.incrementAndGet()));
             }
-            logger.warn("Failed to save registry store file, cause: " + e.getMessage(), e);
+            logger.warn("Failed to save service store file, cause: " + e.getMessage(), e);
         }
     }
 
@@ -167,10 +168,10 @@ public abstract class AbstractServiceStore implements ServiceStore {
                 in = new FileInputStream(file);
                 properties.load(in);
                 if (logger.isInfoEnabled()) {
-                    logger.info("Load registry store file " + file + ", data: " + properties);
+                    logger.info("Load service store file " + file + ", data: " + properties);
                 }
             } catch (Throwable e) {
-                logger.warn("Failed to load registry store file " + file, e);
+                logger.warn("Failed to load service store file " + file, e);
             } finally {
                 if (in != null) {
                     try {
@@ -183,46 +184,19 @@ public abstract class AbstractServiceStore implements ServiceStore {
         }
     }
 
-    public List<URL> getCacheUrls(URL url) {
-        for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-            String key = (String) entry.getKey();
-            String value = (String) entry.getValue();
-            if (key != null && key.length() > 0 && key.equals(url.getServiceKey())
-                    && (Character.isLetter(key.charAt(0)) || key.charAt(0) == '_')
-                    && value != null && value.length() > 0) {
-                String[] arr = value.trim().split(URL_SPLIT);
-                List<URL> urls = new ArrayList<URL>();
-                for (String u : arr) {
-                    urls.add(URL.valueOf(u));
-                }
-                return urls;
-            }
-        }
-        return null;
-    }
-
-
-    private void saveProperties(URL url) {
+    private void saveProperties(URL url, boolean add) {
         if (file == null) {
             return;
         }
 
         try {
-            StringBuilder buf = new StringBuilder();
-            Map<String, List<URL>> categoryNotified = notified.get(url);
-            if (categoryNotified != null) {
-                for (List<URL> us : categoryNotified.values()) {
-                    for (URL u : us) {
-                        if (buf.length() > 0) {
-                            buf.append(URL_SEPARATOR);
-                        }
-                        buf.append(u.toFullString());
-                    }
-                }
+            if (add) {
+                properties.setProperty(url.getServiceKey(), url.toFullString());
+            } else {
+                properties.remove(url.getServiceKey());
             }
-            properties.setProperty(url.getServiceKey(), buf.toString());
             long version = lastCacheChanged.incrementAndGet();
-            registryCacheExecutor.execute(new SaveProperties(version));
+            servicestoreCacheExecutor.execute(new SaveProperties(version));
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
         }
@@ -252,6 +226,7 @@ public abstract class AbstractServiceStore implements ServiceStore {
                 logger.info("Servicestore Put: " + url);
             }
             doPutService(url);
+            saveProperties(url, true);
         } catch (Exception e) {
             // retry again. If failed again, throw exception.
             try {
@@ -268,6 +243,7 @@ public abstract class AbstractServiceStore implements ServiceStore {
                 logger.info("Servicestore Remove: " + url);
             }
             doRemoveService(url);
+            saveProperties(url, false);
         } catch (Exception e) {
             // retry again. If failed again, throw exception.
             try {
