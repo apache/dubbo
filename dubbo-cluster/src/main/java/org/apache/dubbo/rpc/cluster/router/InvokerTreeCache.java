@@ -16,7 +16,10 @@
  */
 package org.apache.dubbo.rpc.cluster.router;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 
@@ -32,39 +35,74 @@ public class InvokerTreeCache<T> {
 
     public TreeNode buildTree() {
         tree = new TreeNode<>();
+        tree.setRouterName("ROOT_ROUTER");
+        tree.setConditionValue("root");
+        tree.setConditionKey("root");
         return tree;
     }
 
     public List<Invoker<T>> getInvokers(TreeNode<T> node, URL url, Invocation invocation) {
+        // We have reached the leaf node.
         if (node.getChildren() == null || node.getChildren().size() == 0) {
             return node.getInvokers();
         }
 
-        if (node.getChildren().size() == 1) {
+        //
+       /* if (node.getChildren().size() == 1) {
             return getInvokers(node.getChildren().get(0), url, invocation);
-        }
+        }*/
 
         TreeNode<T> failoverNode = null;
         for (TreeNode<T> n : node.getChildren()) {
             String key = n.getConditionKey();
+            // if the key is FAILOVER, it indicates we have only one child in this level, just proceed on.
             if (TreeNode.FAILOVER_KEY.equals(key)) {
+                return getInvokers(n, url, invocation);
+            }
+            if (TreeNode.FAILOVER_KEY.equals(n.getConditionValue())) {
                 failoverNode = n;
                 continue;
             }
 
             //TODO key=method, but it will appear neither in url nor in attachments.
             String value = invocation.getAttachment(key, url.getParameter(key));
-            if (key.equals("method")) {
+            if (Constants.METHOD_KEY.equals(key)) {
                 value = invocation.getMethodName();
             }
 
+            // If we don't have a match condition in the request, then our goal would be find the failoverNode in this loop and continue match with failoverNode's children.
+            if (StringUtils.isEmpty(value)) {
+                if (failoverNode == null) {
+                    for (TreeNode<T> innerLoopNode : node.getChildren()) {
+                        if (innerLoopNode.getConditionValue().equals(TreeNode.FAILOVER_KEY)) {
+                            failoverNode = innerLoopNode;
+                        }
+                    }
+                }
+                // Router will guarantee that there's always a FAILOVER node.
+                // To make it more robust, we may need to add null check for failoverNode here.
+                return getInvokers(failoverNode, url, invocation);
+            }
+
+            // If the request condition matches with the node branch, go ahead.
             if (n.getConditionValue().equals(value)) {
-                if (n.getInvokers() != null || (n.getInvokers() == null && n.isForce()))
+                // If the invoker list in this node is empty, we need to check force to decide to return empty list or to seek for FAILOVER.
+                if (CollectionUtils.isNotEmpty(n.getInvokers()) || (CollectionUtils.isEmpty(n.getInvokers()) && n.isForce()))
                     return getInvokers(n, url, invocation);
             }
         }
 
+        // If we get here,
+        // 1. we must have several brothers in current node level.
+        // 2. there is a router match condition in the request.
+        // 3. the request value failed to match any of the values specified by the router rule.
         if (failoverNode != null) {
+            // What if force parameter comes from runtime? Use a convention format of 'force.xxx', for example, for TagRouter it would be 'force.tag'.
+            // FIXME check force logic here
+            String forceKey = "force." + failoverNode.getConditionKey();
+            if (Boolean.valueOf(invocation.getAttachment(forceKey, url.getParameter(forceKey, "false")))) {
+                return Collections.emptyList();
+            }
             return getInvokers(failoverNode, url, invocation);
         }
         return Collections.emptyList();

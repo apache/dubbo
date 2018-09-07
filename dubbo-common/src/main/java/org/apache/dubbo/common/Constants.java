@@ -208,6 +208,8 @@ public class Constants {
 
     public static final String APPLICATION_KEY = "application";
 
+    public static final String REMOTE_APPLICATION_KEY = "remote.application";
+
     public static final String LOCAL_KEY = "local";
 
     public static final String STUB_KEY = "stub";
@@ -665,7 +667,11 @@ public class Constants {
 
     public static final String TAG_KEY = "tag";
 
-    public static final String REQUEST_TAG_KEY = "request.tag";
+    public static final String FORCE_USE_TAG = "force.tag";
+
+    public static final String HOST_KEY = "host";
+
+    public static final String ADDRESS_KEY = "address";
 
     /*
      * private Constants(){ }

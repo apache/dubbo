@@ -34,6 +34,6 @@ public class ConfigConditionRouterFactory implements RouterFactory {
 
     @Override
     public Router getRouter(DynamicConfiguration dynamicConfiguration, URL url) {
-        return new ConfigConditionRouter(dynamicConfiguration);
+        return new ConfigConditionRouter(dynamicConfiguration, url);
     }
 }
