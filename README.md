@@ -194,7 +194,7 @@ Please report security vulnerability to security@dubbo.incubator.apache.org (pri
 
 * [Node.js](https://github.com/dubbo/dubbo2.js)
 * [Python](https://github.com/dubbo/dubbo-client-py)
-* [Php](https://github.com/dubbo/dubbo-php-framework)
+* [PHP](https://github.com/dubbo/dubbo-php-framework)
 
 ## License
 
