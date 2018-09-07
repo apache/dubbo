@@ -107,12 +107,16 @@ public class ConfigTest {
 
     @Test
     public void testServiceAnnotation() {
-        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/service-annotation.xml");
+        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/service-class.xml");
         ctx.start();
         try {
-            DemoService demoService = refer("dubbo://127.0.0.1:20887");
-            String hello = demoService.sayName("hello");
-            assertEquals("say:hello", hello);
+            ReferenceConfig<HelloService> reference = new ReferenceConfig<HelloService>();
+            reference.setApplication(new ApplicationConfig("consumer"));
+            reference.setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
+            reference.setInterface(HelloService.class);
+            reference.setUrl("dubbo://127.0.0.1:20887");
+            String hello = reference.get().sayHello("hello");
+            assertEquals("Hello, hello", hello);
         } finally {
             ctx.stop();
             ctx.close();
