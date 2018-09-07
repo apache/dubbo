@@ -39,6 +39,7 @@ import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
 import org.apache.dubbo.rpc.cluster.Router;
+import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.RouterFactory;
 import org.apache.dubbo.rpc.cluster.directory.AbstractDirectory;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
@@ -694,6 +695,10 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     public void setDynamicConfiguration(DynamicConfiguration dynamicConfiguration) {
         this.dynamicConfiguration = dynamicConfiguration;
+    }
+
+    public void buildRouterChain(DynamicConfiguration dynamicConfiguration) {
+        this.setRouterChain(RouterChain.buildChain(dynamicConfiguration, overrideDirectoryUrl));
     }
 
     /**

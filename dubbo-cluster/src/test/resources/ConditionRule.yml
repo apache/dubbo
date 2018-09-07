@@ -1,0 +1,37 @@
+# application level, applies to all services
+---
+scope: application
+force: true
+runtime: false
+enabled: true
+priority: 1
+key: demo-consumer
+conditions:
+  - method!=sayHello => address=30.5.120.16:20880
+  - method=routeMethod1 =>
+...
+
+# application level, only applies to a specific service
+---
+scope: application
+force: true
+runtime: false
+enabled: true
+priority: 1
+key: demo-consumer
+conditions:
+  - interface=org.apache.dubbo.demo.DemoService&method!=sayHello => host=30.5.120.16
+  - interface=org.apache.dubbo.demo.DemoService&method=routeMethod1 => address=30.5.120.16:20880
+...
+
+---
+scope: service
+force: true
+runtime: false
+enabled: true
+priority: 1
+key: org.apache.dubbo.demo.DemoService
+conditions:
+  - method!=sayHello =>
+  - method=routeMethod1 => address=30.5.120.16:20880
+...

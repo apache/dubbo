@@ -32,11 +32,13 @@ public class DemoServiceImpl implements DemoService {
 
     @Override
     public String routeMethod1() {
+        System.out.println("routeMethod1 was called: " + RpcContext.getContext().getLocalAddress());
         return "routeMethod1";
     }
 
     @Override
     public String routeMethod2() {
+        System.out.println("routeMethod2 was called: " + RpcContext.getContext().getLocalAddress());
         return "routeMethod2";
     }
 
