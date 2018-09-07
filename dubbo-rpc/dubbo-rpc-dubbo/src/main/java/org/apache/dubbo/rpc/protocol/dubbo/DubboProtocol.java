@@ -18,42 +18,20 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.ConcurrentHashSet;
-import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.common.utils.ConfigUtils;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.serialize.support.SerializableClassRegistry;
 import org.apache.dubbo.common.serialize.support.SerializationOptimizer;
+import org.apache.dubbo.common.utils.*;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.Transporter;
-import org.apache.dubbo.remoting.exchange.ExchangeChannel;
-import org.apache.dubbo.remoting.exchange.ExchangeClient;
-import org.apache.dubbo.remoting.exchange.ExchangeHandler;
-import org.apache.dubbo.remoting.exchange.ExchangeServer;
-import org.apache.dubbo.remoting.exchange.Exchangers;
+import org.apache.dubbo.remoting.exchange.*;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
-import org.apache.dubbo.rpc.AsyncContextImpl;
-import org.apache.dubbo.rpc.AsyncRpcResult;
-import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Protocol;
-import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 
 import java.net.InetSocketAddress;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -377,7 +355,7 @@ public class DubboProtocol extends AbstractProtocol {
         }
         ExchangeClient[] clients = new ExchangeClient[connections];
         for (int i = 0; i < clients.length; i++) {
-            if (service_share_connect){
+            if (service_share_connect) {
                 clients[i] = shareClients.get(i);
             } else {
                 clients[i] = initClient(url);
@@ -388,31 +366,39 @@ public class DubboProtocol extends AbstractProtocol {
 
     /**
      * Get shared connection
+     *
+     * @param url
+     * @param connectNum
      */
     private List<ReferenceCountExchangeClient> getSharedClient(URL url, int connectNum) {
         String key = url.getAddress();
         List<ReferenceCountExchangeClient> clients = referenceClientMap.get(key);
-        if(clients == null) {
+        boolean firstBuild = false;
+
+        if (clients == null) {
             List<ReferenceCountExchangeClient> referenceCountExchangeClients = buildReferenceCountExchangeClientList(url, key, connectNum);
             referenceClientMap.put(key, referenceCountExchangeClients);
 
             clients = referenceCountExchangeClients;
+
+            firstBuild = true;
         }
 
         for (int i = 0; i < clients.size(); i++) {
             ReferenceCountExchangeClient client = clients.get(i);
-            if (client.isClosed()){
+            if (client.isClosed()) {
                 client = buildReferenceCountExchangeClient(url, key);
                 clients.set(i, client);
-            }
 
-            client.incrementAndGetCount();
+            } else if (!firstBuild) {
+                client.incrementAndGetCount();
+            }
         }
 
         return clients;
     }
 
-    private List<ReferenceCountExchangeClient> buildReferenceCountExchangeClientList (URL url, String key, int connectNum) {
+    private List<ReferenceCountExchangeClient> buildReferenceCountExchangeClientList(URL url, String key, int connectNum) {
 
         List<ReferenceCountExchangeClient> clients = new ArrayList<ReferenceCountExchangeClient>(connectNum);
 
@@ -423,7 +409,7 @@ public class DubboProtocol extends AbstractProtocol {
         return clients;
     }
 
-    private ReferenceCountExchangeClient buildReferenceCountExchangeClient (URL url, String key) {
+    private ReferenceCountExchangeClient buildReferenceCountExchangeClient(URL url, String key) {
 
         ExchangeClient exchangeClient = initClient(url);
 
@@ -484,7 +470,7 @@ public class DubboProtocol extends AbstractProtocol {
         for (String key : new ArrayList<String>(referenceClientMap.keySet())) {
             List<ReferenceCountExchangeClient> clients = referenceClientMap.remove(key);
 
-            if(CollectionUtils.isNotEmpty(clients)) {
+            if (CollectionUtils.isNotEmpty(clients)) {
                 for (ReferenceCountExchangeClient client : clients) {
                     if (client != null) {
                         try {
