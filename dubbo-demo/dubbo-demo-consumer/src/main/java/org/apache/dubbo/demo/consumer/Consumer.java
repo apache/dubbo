@@ -17,6 +17,7 @@
 package org.apache.dubbo.demo.consumer;
 
 import org.apache.dubbo.demo.DemoService;
+import org.apache.dubbo.rpc.RpcContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class Consumer {
@@ -33,8 +34,11 @@ public class Consumer {
         while (true) {
             try {
                 Thread.sleep(1000);
+                RpcContext.getContext().setAttachment("tag", "tag1");
                 String hello = demoService.sayHello("world"); // call remote method
                 System.out.println(hello); // get result
+                RpcContext.getContext().setAttachment("tag", "tag3");
+                RpcContext.getContext().setAttachment("force.tag", "true");
                 String routeMethod1 = demoService.routeMethod1(); // call remote method
                 System.out.println(routeMethod1); // get result
             } catch (Throwable throwable) {

@@ -14,16 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.group.model;
+package org.apache.dubbo.rpc.cluster.router.tag.model;
+
+import java.util.List;
 
 /**
  *
  */
-public class GroupRuleParser {
+public class Tag {
+    private String name;
+    private List<String> addresses;
 
-    public static GroupRouterRule parse(String rawRule) {
-        GroupRouterRule groupRouterRule = new GroupRouterRule();
-        groupRouterRule.setValid(true);
-        return groupRouterRule;
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public List<String> getAddresses() {
+        return addresses;
+    }
+
+    public void setAddresses(List<String> addresses) {
+        this.addresses = addresses;
     }
 }
