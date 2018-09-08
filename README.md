@@ -150,7 +150,9 @@ The consumer will print out `Hello world` on the screen.
 
 ## Contact
 
-* Mailing list: [dev@dubbo.incubator.apache.org](mailto:[dev-subscribe@dubbo.incubator.apache.org]) (subscription [guide](https://github.com/apache/incubator-dubbo/wiki/Mailing-list-subscription-guide))
+* Mailing list: 
+  * dev list: for dev/user discussion. [subscribe](mailto:[dev-subscribe@dubbo.incubator.apache.org]), [unsubscribe](mailto:[dev-unsubscribe@dubbo.incubator.apache.org]), [archive](https://lists.apache.org/list.html?dev@dubbo.apache.org),  [guide](https://github.com/apache/incubator-dubbo/wiki/Mailing-list-subscription-guide)
+  
 * Bugs: [Issues](https://github.com/apache/incubator-dubbo/issues/new?template=dubbo-issue-report-template.md)
 * Gitter: [Gitter channel](https://gitter.im/alibaba/dubbo) 
 * Twitter: [@ApacheDubbo](https://twitter.com/ApacheDubbo)
