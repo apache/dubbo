@@ -25,7 +25,7 @@ import org.apache.dubbo.common.extension.SPI;
 @SPI("zookeeper")
 public interface DynamicConfiguration {
 
-    public void init();
+    void init();
 
     URL getUrl();
 
@@ -35,7 +35,7 @@ public interface DynamicConfiguration {
 
     String getConfig(String key, String group);
 
-    String getConfig(String key, String group, long timeout);
+    String getConfig(String key, String group, long timeout, ConfigurationListener listener);
 
     String getConfig(String key, String group, ConfigurationListener listener);
 

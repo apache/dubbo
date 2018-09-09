@@ -33,7 +33,7 @@ import org.apache.dubbo.config.dynamic.support.archaius.sources.ZooKeeperConfigu
 /**
  * Archaius supports various sources and it's extensiable: JDBC, ZK, Properties, ..., so should we make it extensiable?
  */
-public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration {
+public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration<Runnable> {
 
     public ArchaiusDynamicConfiguration() {
     }
@@ -43,50 +43,44 @@ public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration {
         //  String address = env.getCompositeConf().getString(ADDRESS_KEY);
         //  String app = env.getCompositeConf().getString(APP_KEY);
 
-        String address = url.getAddress();
+        String address = url.getParameter(Constants.CONFIG_ADDRESS_KEY, url.getAddress());
         if (!address.equals(Constants.ANYHOST_VALUE)) {
             System.setProperty(ZooKeeperConfigurationSource.ARCHAIUS_SOURCE_ADDRESS_KEY, address);
         }
-        System.setProperty(ZooKeeperConfigurationSource.ARCHAIUS_CONFIG_ROOT_PATH_KEY, ZooKeeperConfigurationSource.DEFAULT_CONFIG_ROOT_PATH);
+        System.setProperty(ZooKeeperConfigurationSource.ARCHAIUS_CONFIG_ROOT_PATH_KEY, url.getParameter(Constants.CONFIG_NAMESPACE_KEY, ZooKeeperConfigurationSource.DEFAULT_CONFIG_ROOT_PATH));
 
         try {
             ZooKeeperConfigurationSource zkConfigSource = new ZooKeeperConfigurationSource();
             zkConfigSource.start();
+            /*if (!zkConfigSource.isConnected()) {
+                // we can check the status of config center here, and decide to fail or continue if we cannot reach the config server.
+            }*/
             DynamicWatchedConfiguration zkDynamicConfig = new DynamicWatchedConfiguration(zkConfigSource);
             ConfigurationManager.install(zkDynamicConfig);
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
     @Override
-    public void addListener(String key, ConfigurationListener listener) {
-        DynamicStringProperty prop = DynamicPropertyFactory.getInstance()
-                .getStringProperty(key, null);
-        prop.addCallback(new ArchaiusListener(key, listener));
-    }
-
-    @Override
-    public String getConfig(String key, String group) {
-        return getConfig(key, group, null);
-    }
-
-    @Override
-    public String getConfig(String key, String group, ConfigurationListener listener) {
-        DynamicStringProperty prop = DynamicPropertyFactory.getInstance()
-                .getStringProperty(key, null);
-        if (listener != null) {
-            prop.addCallback(new ArchaiusListener(key, listener));
-        }
-        return prop.get();
-    }
-
-    @Override
-    protected String getInternalProperty(String key, String group, long timeout) {
+    protected String getInternalProperty(String key, String group, long timeout, ConfigurationListener listener) {
         return DynamicPropertyFactory.getInstance()
                 .getStringProperty(key, null)
                 .get();
     }
+
+    @Override
+    protected void addTargetListener(String key, Runnable runnable) {
+        DynamicStringProperty prop = DynamicPropertyFactory.getInstance()
+                .getStringProperty(key, null);
+        prop.addCallback(runnable);
+    }
+
+    @Override
+    protected Runnable createTargetConfigListener(String key, ConfigurationListener listener) {
+        return new ArchaiusListener(key, listener);
+    }
+
 
     private class ArchaiusListener implements Runnable {
         private ConfigurationListener listener;
@@ -103,7 +97,7 @@ public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration {
                 type = ConfigType.CONFIGURATORS;
             } else {
                 /**
-                 * Works for any router rules:
+                 * used for all router rules:
                  * {@link Constants.ROUTERS_SUFFIX}
                  * {@link org.apache.dubbo.rpc.cluster.router.tag.TagRouter.TAGRULE_DATAID}
                  */
