@@ -5,6 +5,7 @@
 [![Gitter](https://badges.gitter.im/alibaba/dubbo.svg)](https://gitter.im/alibaba/dubbo?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 ![license](https://img.shields.io/github/license/alibaba/dubbo.svg)
 ![maven](https://img.shields.io/maven-central/v/com.alibaba/dubbo.svg)
+[![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=Apache%20Dubbo%20(incubating)%20is%20a%20high-performance%2C%20java%20based%2C%20open%20source%20RPC%20framework.&url=http://dubbo.incubator.apache.org/&via=ApacheDubbo&hashtags=rpc,java,dubbo,micro-service)
 
 Apache Dubbo (incubating) is a high-performance, java based open source RPC framework. Please visit [official site ](http://dubbo.incubator.apache.org) for quick start and documentations, as well as [Wiki](https://github.com/apache/incubator-dubbo/wiki) for news, FAQ, and release notes.
 
@@ -149,7 +150,9 @@ The consumer will print out `Hello world` on the screen.
 
 ## Contact
 
-* Mailing list: [dev@dubbo.incubator.apache.org](mailto:[dev-subscribe@dubbo.incubator.apache.org]) (subscription [guide](https://github.com/apache/incubator-dubbo/wiki/Mailing-list-subscription-guide))
+* Mailing list: 
+  * dev list: for dev/user discussion. [subscribe](mailto:[dev-subscribe@dubbo.incubator.apache.org]), [unsubscribe](mailto:[dev-unsubscribe@dubbo.incubator.apache.org]), [archive](https://lists.apache.org/list.html?dev@dubbo.apache.org),  [guide](https://github.com/apache/incubator-dubbo/wiki/Mailing-list-subscription-guide)
+  
 * Bugs: [Issues](https://github.com/apache/incubator-dubbo/issues/new?template=dubbo-issue-report-template.md)
 * Gitter: [Gitter channel](https://gitter.im/alibaba/dubbo) 
 * Twitter: [@ApacheDubbo](https://twitter.com/ApacheDubbo)
