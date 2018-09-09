@@ -36,10 +36,11 @@ import java.util.Set;
 /**
  *
  */
-public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration {
+public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<ConfigChangeListener> {
     private static final String APOLLO_ENV_KEY = "env";
     private static final String APOLLO_ADDR_KEY = "apollo.meta";
     private static final String APOLLO_CLUSTER_KEY = "apollo.cluster";
+    private static final String APPLO_DEFAULT_NAMESPACE = "dubbo";
     /**
      * support two namespaces: application -> dubbo
      */
@@ -70,7 +71,7 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration {
             System.setProperty(APOLLO_CLUSTER_KEY, configCluster);
         }
 
-        dubboConfig = ConfigService.getConfig("dubbo");
+        dubboConfig = ConfigService.getConfig(url.getParameter(Constants.CONFIG_NAMESPACE_KEY, APPLO_DEFAULT_NAMESPACE));
         appConfig = ConfigService.getAppConfig();
     }
 
@@ -83,22 +84,27 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration {
     }
 
     @Override
-    public String getConfig(String key, String group, ConfigurationListener listener) {
-        Set<String> keys = new HashSet<>(1);
-        keys.add(key);
-        this.appConfig.addChangeListener(new ApolloListener(listener), keys);
-        this.dubboConfig.addChangeListener(new ApolloListener(listener), keys);
-        return getInternalProperty(key, group, 0L);
-    }
-
-    @Override
-    protected String getInternalProperty(String key, String group, long timeout) {
+    protected String getInternalProperty(String key, String group, long timeout, ConfigurationListener listener) {
+        // FIXME According to Apollo, if it fails to get a value from one namespace, it will keep logging warning msg. They are working to improve it.
         String value = appConfig.getProperty(key, null);
         if (value == null) {
             value = dubboConfig.getProperty(key, null);
         }
 
         return value;
+    }
+
+    @Override
+    protected void addTargetListener(String key, ConfigChangeListener listener) {
+        Set<String> keys = new HashSet<>(1);
+        keys.add(key);
+        this.appConfig.addChangeListener(listener, keys);
+        this.dubboConfig.addChangeListener(listener, keys);
+    }
+
+    @Override
+    protected ConfigChangeListener createTargetConfigListener(String key, ConfigurationListener listener) {
+        return new ApolloListener(listener);
     }
 
     public ConfigChangeType getChangeType(PropertyChangeType changeType) {
@@ -121,12 +127,12 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration {
             this.listener = listener;
         }
 
-        // FIXME will Apollo consider an empty value ("") as deleted?
+        // FIXME will Apollo consider an empty value "" as deleted?
         @Override
         public void onChange(ConfigChangeEvent changeEvent) {
             for (String key : changeEvent.changedKeys()) {
                 ConfigChange change = changeEvent.getChange(key);
-                // Maybe we no longer need to identify the type of change. Because there's no scenario that a callback will subscribe for both configurators and routers
+                // TODO Maybe we no longer need to identify the type of change. Because there's no scenario that a callback will subscribe for both configurators and routers
                 if (change.getPropertyName().endsWith(Constants.CONFIGURATORS_SUFFIX)) {
                     listener.process(new org.apache.dubbo.config.dynamic.ConfigChangeEvent(key, change.getNewValue(), ConfigType.CONFIGURATORS, getChangeType(change.getChangeType())));
                 } else {

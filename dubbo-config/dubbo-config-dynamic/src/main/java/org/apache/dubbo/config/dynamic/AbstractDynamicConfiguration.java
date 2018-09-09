@@ -18,35 +18,50 @@ package org.apache.dubbo.config.dynamic;
 
 import org.apache.dubbo.common.URL;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 /**
  *
  */
-public abstract class AbstractDynamicConfiguration implements DynamicConfiguration {
+public abstract class AbstractDynamicConfiguration<TargetConfigListener> implements DynamicConfiguration {
     protected URL url;
+    /**
+     * One key can register multiple target listeners, but one target listener only maps to one configuration listener
+     */
+    private ConcurrentMap<String, ConcurrentMap<ConfigurationListener, TargetConfigListener>> listenerToTargetListenerMap;
 
     public AbstractDynamicConfiguration() {
     }
 
     @Override
     public void addListener(String key, ConfigurationListener listener) {
-
+        ConcurrentMap<ConfigurationListener, TargetConfigListener> listeners = listenerToTargetListenerMap.computeIfAbsent(key, k -> new ConcurrentHashMap<>());
+        TargetConfigListener targetListener = listeners.computeIfAbsent(listener, k -> createTargetConfigListener(key, listener));
+        addTargetListener(key, targetListener);
     }
 
     @Override
     public String getConfig(String key, String group) {
-        return null;
+        return getConfig(key, group, null);
     }
 
     @Override
     public String getConfig(String key, String group, ConfigurationListener listener) {
-        return null;
+        return getConfig(key, group, 0l, listener);
     }
 
     @Override
-    public String getConfig(String key, String group, long timeout) {
-        return null;
+    public String getConfig(String key, String group, long timeout, ConfigurationListener listener) {
+        try {
+            if (listener != null) {
+                this.addListener(key, listener);
+            }
+            return getInternalProperty(key, group, timeout, listener);
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
-
 
     public URL getUrl() {
         return url;
@@ -56,6 +71,10 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
         this.url = url;
     }
 
-    protected abstract String getInternalProperty(String key, String group, long timeout);
+    protected abstract String getInternalProperty(String key, String group, long timeout, ConfigurationListener listener);
+
+    protected abstract void addTargetListener(String key, TargetConfigListener listener);
+
+    protected abstract TargetConfigListener createTargetConfigListener(String key, ConfigurationListener listener);
 
 }
