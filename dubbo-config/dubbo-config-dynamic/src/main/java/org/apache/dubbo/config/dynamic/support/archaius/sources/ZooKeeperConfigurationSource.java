@@ -117,6 +117,9 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
 
                 TreeCacheEvent.Type type = event.getType();
                 ChildData data = event.getData();
+                if (type == TreeCacheEvent.Type.INITIALIZED || type == TreeCacheEvent.Type.CONNECTION_RECONNECTED) {
+                    connected = true;
+                }
 
                 // TODO, ignore other event types
                 if (data == null) {
