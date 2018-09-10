@@ -131,8 +131,9 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
             }
             // dynamic tag group doesn't have any item about the requested app OR it's null after filtered by dynamic tag group but force=false.
             // check static tag
-            result = filterInvoker(invokers, invoker -> invoker.getUrl().getParameter(Constants.TAG_KEY).equals(tag));
-            if (CollectionUtils.isNotEmpty(result) || url.getParameter(Constants.FORCE_USE_TAG, true)) {
+            result = filterInvoker(invokers, invoker -> tag.equals(invoker.getUrl().getParameter(Constants.TAG_KEY)));
+            // If there's no tagged providers that can match the value in this tag. force.tag is set by default to true, which means it will not invoker any providers without a tag unless it's explicitly allowed.
+            if (CollectionUtils.isNotEmpty(result) || Boolean.valueOf(invocation.getAttachment(Constants.FORCE_USE_TAG, url.getParameter(Constants.FORCE_USE_TAG, "false")))) {
                 return result;
             }
             // FAILOVER: return all Providers without any tags.
@@ -219,7 +220,11 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
         return tagRouterRule != null && tagRouterRule.isRuntime();
     }
 
+    @Override
     public String getKey() {
+        if (isRuntime()) {
+            return super.getKey();
+        }
         return Constants.TAG_KEY;
     }
 

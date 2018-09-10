@@ -38,7 +38,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -57,6 +56,7 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
 
     private final String configRootPath;
     private final TreeCache treeCache;
+    private boolean connected = false;
 
     private final Charset charset = Charset.forName("UTF-8");
 
@@ -75,10 +75,18 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
         if (connectString == null) {
             throw new IllegalArgumentException("connectString==null, must specify the address to connect for zookeeper archaius source.");
         }
+
         CuratorFramework client = CuratorFrameworkFactory.newClient(connectString, sessionTimeout, connectTimeout,
                 new ExponentialBackoffRetry(1000, 3));
         client.start();
-
+        try {
+            connected = client.blockUntilConnected(connectTimeout * 4, TimeUnit.MILLISECONDS);
+            if (!connected) {
+                logger.warn("Cannot connect to ConfigCenter at zookeeper " + connectString + " in " + connectTimeout * 4 + "ms");
+            }
+        } catch (InterruptedException e) {
+            logger.error("The thread was interrupted unexpectedly when try connecting to zookeeper " + connectString + " as ConfigCenter, ", e);
+        }
         this.client = client;
         this.configRootPath = configRootPath;
         this.treeCache = new TreeCache(client, configRootPath);
@@ -103,15 +111,14 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
      */
     public void start() throws Exception {
         // create the watcher for future configuration updatess
-        CountDownLatch latch = new CountDownLatch(1);
         treeCache.getListenable().addListener(new TreeCacheListener() {
             public void childEvent(CuratorFramework aClient, TreeCacheEvent event)
                     throws Exception {
 
                 TreeCacheEvent.Type type = event.getType();
                 ChildData data = event.getData();
-                if (type == TreeCacheEvent.Type.INITIALIZED) {
-                    latch.countDown();
+                if (type == TreeCacheEvent.Type.INITIALIZED || type == TreeCacheEvent.Type.CONNECTION_RECONNECTED) {
+                    connected = true;
                 }
 
                 // TODO, ignore other event types
@@ -152,7 +159,6 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
 
         // passing true to trigger an initial rebuild upon starting.  (blocking call)
         treeCache.start();
-        latch.await(60 * 1000, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -173,6 +179,11 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
         logger.debug("getCurrentData() retrieving current data.");
 
         Map<String, Object> all = new HashMap<>();
+
+        if (!connected) {
+            logger.warn("ConfigServer is not connected yet, zookeeper don't support local snapshot yet, so there's no old data to use!");
+            return all;
+        }
 
         Map<String, ChildData> dataMap = treeCache.getCurrentChildren(configRootPath);
         if (dataMap != null && dataMap.size() > 0) {
@@ -219,5 +230,9 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
         } catch (IOException exc) {
             logger.error("IOException should not have been thrown.", exc);
         }
+    }
+
+    public boolean isConnected() {
+        return connected;
     }
 }
