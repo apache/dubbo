@@ -16,11 +16,8 @@
  */
 package org.apache.dubbo.config.spring.impl;
 
-import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.api.HelloService;
 
-
-@Service(interfaceName = "org.apache.dubbo.config.spring.api.HelloService")
 public class HelloServiceImpl implements HelloService {
 
     public String sayHello(String name) {

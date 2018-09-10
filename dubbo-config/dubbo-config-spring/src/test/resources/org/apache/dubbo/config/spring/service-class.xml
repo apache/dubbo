@@ -32,6 +32,5 @@
                    class="org.apache.dubbo.config.spring.impl.DemoServiceImpl">
         <property name="prefix" value="welcome:"/>
     </dubbo:service>
-    <dubbo:annotation package="org.apache.dubbo.config.spring.impl"/>
 
 </beans>
