@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.dynamic.support.nop;
 
 import org.apache.dubbo.config.dynamic.AbstractDynamicConfiguration;
+import org.apache.dubbo.config.dynamic.ConfigurationListener;
 
 /**
  *
@@ -24,12 +25,22 @@ import org.apache.dubbo.config.dynamic.AbstractDynamicConfiguration;
 public class NopDynamicConfiguration extends AbstractDynamicConfiguration {
 
     @Override
-    protected String getInternalProperty(String key, String group, long timeout) {
+    public void init() {
+
+    }
+
+    @Override
+    protected String getInternalProperty(String key, String group, long timeout, ConfigurationListener listener) {
         return null;
     }
 
     @Override
-    public void init() {
+    protected void addTargetListener(String key, Object o) {
 
+    }
+
+    @Override
+    protected Object createTargetConfigListener(String key, ConfigurationListener listener) {
+        return null;
     }
 }
