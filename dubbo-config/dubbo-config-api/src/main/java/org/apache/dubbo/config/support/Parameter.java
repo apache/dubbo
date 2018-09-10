@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.config.support;
 
 import java.lang.annotation.Documented;
@@ -27,19 +28,42 @@ import java.lang.annotation.Target;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD})
+@Target({ ElementType.METHOD })
 public @interface Parameter {
 
+    /**
+     * 别名
+     *
+     * @return
+     */
     String key() default "";
 
     boolean required() default false;
 
+    /**
+     * 是否忽略
+     *
+     * @return
+     */
     boolean excluded() default false;
 
+    /**
+     * 是否转义
+     *
+     * @return
+     */
     boolean escaped() default false;
 
+    /**
+     * @return
+     */
     boolean attribute() default false;
 
+    /**
+     * 是否拼接，拼接父类的属性
+     *
+     * @return
+     */
     boolean append() default false;
 
 }
