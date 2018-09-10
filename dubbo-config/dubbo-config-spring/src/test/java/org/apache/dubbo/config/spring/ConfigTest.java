@@ -835,7 +835,6 @@ public class ConfigTest {
     public void testAnnotation() {
         SimpleRegistryService registryService = new SimpleRegistryService();
         Exporter<RegistryService> exporter = SimpleRegistryExporter.export(4548, registryService);
-        System.setProperty("provider.version", "1.0");
         try {
             ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/annotation-provider.xml");
             providerContext.start();
