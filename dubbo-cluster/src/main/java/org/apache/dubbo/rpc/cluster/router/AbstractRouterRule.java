@@ -21,7 +21,7 @@ package org.apache.dubbo.rpc.cluster.router;
  */
 public abstract class AbstractRouterRule {
     private String rawRule;
-    private boolean runtime = false;
+    private boolean runtime = true;
     private boolean force = false;
     private boolean valid = true;
     private boolean enabled = true;
