@@ -70,11 +70,11 @@ public class CacheFilter implements Filter {
 	private final Object value;
         
     	public ValueWrapper(Object value){
-    		this.value = value;
+    	    this.value = value;
     	}
         
     	public Object get() {
-    		return this.value;
+    	    return this.value;
     	}
     }
 
