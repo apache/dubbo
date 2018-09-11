@@ -104,6 +104,17 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
         return url;
     }
 
+    /**
+     * TODO It seems that this router does not need to run at runtime at all, because preRoute already classified each invoker into the right tag.
+     * preRoute will always be executed ignoring the runtime status in rule.
+     *
+     * @param invokers
+     * @param url
+     * @param invocation
+     * @param <T>
+     * @return
+     * @throws RpcException
+     */
     @Override
     public <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
         if (CollectionUtils.isEmpty(invokers)) {
@@ -113,7 +124,7 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
         checkAndInit(invokers.get(0).getUrl());
 
         if (tagRouterRule == null || !tagRouterRule.isValid() || !tagRouterRule.isEnabled()) {
-
+            // the invokers must have been preRouted by static tag configuration, so this invoker list is just what we want.
             return invokers;
         }
 
@@ -173,11 +184,26 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
 
         checkAndInit(invokers.get(0).getUrl());
 
-        if (tagRouterRule == null || !tagRouterRule.isValid() || !tagRouterRule.isEnabled() || isRuntime()) {
-            map.put(TreeNode.FAILOVER_KEY, invokers);
+        // Notice! we don't check runtime status here, because we will always need preRoute to run for the dynamic tag configuration.
+        // So, only default to the static tag configuration when the dynamic configuration is empty.
+        if (tagRouterRule == null || !tagRouterRule.isValid() || !tagRouterRule.isEnabled()) {
+            // We still need to group invokers by static tag configuration
+            invokers.forEach(invoker -> {
+                String tag = invoker.getUrl().getParameter(Constants.TAG_KEY);
+                if (StringUtils.isEmpty(tag)) {
+                    tag = TreeNode.FAILOVER_KEY;
+                }
+                List<Invoker<T>> subInvokers = map.computeIfAbsent(tag, t -> new ArrayList<>());
+                subInvokers.add(invoker);
+            });
             return map;
         }
 
+        /**
+         * If tag rule can work, then group invokers by,
+         * 1. dynamic tag group
+         * 2. static tag group
+         */
         invokers.forEach(invoker -> {
             String address = invoker.getUrl().getAddress();
             List<String> tags = tagRouterRule.getAddressToTagnames().get(address);
@@ -219,6 +245,7 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
     @Override
     public boolean isRuntime() {
         return tagRouterRule != null && tagRouterRule.isRuntime();
+//        return false;
     }
 
     @Override
@@ -233,10 +260,6 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
     public boolean isForce() {
         // FIXME
         return tagRouterRule != null && tagRouterRule.isForce();
-    }
-
-    public boolean isRuntime(Invocation invocation) {
-        return true;
     }
 
     private <T> List<Invoker<T>> filterInvoker(List<Invoker<T>> invokers, Predicate<Invoker<T>> predicate) {
