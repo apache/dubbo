@@ -29,7 +29,7 @@ public abstract class AbstractDynamicConfiguration<TargetConfigListener> impleme
     /**
      * One key can register multiple target listeners, but one target listener only maps to one configuration listener
      */
-    private ConcurrentMap<String, ConcurrentMap<ConfigurationListener, TargetConfigListener>> listenerToTargetListenerMap;
+    private ConcurrentMap<String, ConcurrentMap<ConfigurationListener, TargetConfigListener>> listenerToTargetListenerMap = new ConcurrentHashMap<>();
 
     public AbstractDynamicConfiguration() {
     }
