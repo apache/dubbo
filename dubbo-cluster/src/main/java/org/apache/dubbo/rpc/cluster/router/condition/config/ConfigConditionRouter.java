@@ -116,11 +116,15 @@ public class ConfigConditionRouter extends AbstractRouter implements Configurati
         }
 
         // only one branch, always use the failover key
-        for (Router router : appConditionRouters) {
-            invokers = router.route(invokers, url, invocation);
+        if (isAppRuleEnabled()) {
+            for (Router router : appConditionRouters) {
+                invokers = router.route(invokers, url, invocation);
+            }
         }
-        for (Router router : conditionRouters) {
-            invokers = router.route(invokers, url, invocation);
+        if (isRuleEnabled()) {
+            for (Router router : conditionRouters) {
+                invokers = router.route(invokers, url, invocation);
+            }
         }
         map.put(TreeNode.FAILOVER_KEY, invokers);
 
@@ -131,45 +135,32 @@ public class ConfigConditionRouter extends AbstractRouter implements Configurati
     public <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
         if (CollectionUtils.isEmpty(invokers)
                 || (conditionRouters.size() == 0 && appConditionRouters.size() == 0)
-                ) {
+                || !isEnabled()) {
             return invokers;
         }
 
-        for (Router router : appConditionRouters) {
-            invokers = router.route(invokers, url, invocation);
+
+        if (isAppRuleEnabled()) {
+            for (Router router : appConditionRouters) {
+                invokers = router.route(invokers, url, invocation);
+            }
         }
-        for (Router router : conditionRouters) {
-            invokers = router.route(invokers, url, invocation);
+        if (isRuleEnabled()) {
+            for (Router router : conditionRouters) {
+                invokers = router.route(invokers, url, invocation);
+            }
         }
         return invokers;
     }
 
     @Override
     public boolean isRuntime() {
-        return (routerRule != null && routerRule.isValid() && routerRule.isRuntime())
-                || (appRouterRule != null && appRouterRule.isValid() && appRouterRule.isRuntime());
+        return isRuleRuntime() || isAppRuleRuntime();
     }
 
-    private void generateConditions() {
-        if (routerRule != null && routerRule.isValid()) {
-            conditionRouters.clear();
-            routerRule.getConditions().forEach(condition -> {
-                // All sub rules have the same force, runtime value.
-                ConditionRouter subRouter = new ConditionRouter(condition, routerRule.isForce());
-                conditionRouters.add(subRouter);
-            });
-        }
-    }
-
-    private void generateAppConditions() {
-        if (appRouterRule != null && appRouterRule.isValid()) {
-            appConditionRouters.clear();
-            appRouterRule.getConditions().forEach(condition -> {
-                // All sub rules have the same force, runtime value.
-                ConditionRouter subRouter = new ConditionRouter(condition, appRouterRule.isForce());
-                appConditionRouters.add(subRouter);
-            });
-        }
+    @Override
+    public boolean isEnabled() {
+        return isAppRuleEnabled() || isRuleEnabled();
     }
 
     @Override
@@ -194,5 +185,43 @@ public class ConfigConditionRouter extends AbstractRouter implements Configurati
     @Override
     public int compareTo(Router o) {
         return 0;
+    }
+
+    private boolean isAppRuleEnabled() {
+        return appRouterRule != null && appRouterRule.isValid() && appRouterRule.isEnabled();
+    }
+
+    private boolean isRuleEnabled() {
+        return routerRule != null && routerRule.isValid() && routerRule.isEnabled();
+    }
+
+    private boolean isAppRuleRuntime() {
+        return appRouterRule != null && appRouterRule.isValid() && appRouterRule.isRuntime();
+    }
+
+    private boolean isRuleRuntime() {
+        return routerRule != null && routerRule.isValid() && routerRule.isRuntime();
+    }
+
+    private void generateConditions() {
+        if (routerRule != null && routerRule.isValid()) {
+            conditionRouters.clear();
+            routerRule.getConditions().forEach(condition -> {
+                // All sub rules have the same force, runtime value.
+                ConditionRouter subRouter = new ConditionRouter(condition, routerRule.isForce());
+                conditionRouters.add(subRouter);
+            });
+        }
+    }
+
+    private void generateAppConditions() {
+        if (appRouterRule != null && appRouterRule.isValid()) {
+            appConditionRouters.clear();
+            appRouterRule.getConditions().forEach(condition -> {
+                // All sub rules have the same force, runtime value.
+                ConditionRouter subRouter = new ConditionRouter(condition, appRouterRule.isForce());
+                appConditionRouters.add(subRouter);
+            });
+        }
     }
 }

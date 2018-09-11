@@ -75,4 +75,8 @@ public interface Router extends Comparable<Router> {
         return false;
     }
 
+    default int getPriority() {
+        return 0;
+    }
+
 }
