@@ -37,18 +37,19 @@ public class TagRouterTest {
 
     @Test
     public void normalTagRuleTest() {
-        String serviceStr = "---\n" +
-                "force: true\n" +
-                "runtime: true\n" +
-                "enabled: true\n" +
-                "priority: 1\n" +
-                "key: demo-provider\n" +
-                "tags:\n" +
-                "  - name: tag1\n" +
-                "    addresses: [\"30.5.120.21:20880\"]\n" +
-                "  - name: tag2\n" +
-                "    addresses: [\"30.5.120.21:20881\"]\n" +
-                "...";
+//        String serviceStr = "---\n" +
+//                "force: false\n" +
+//                "runtime: true\n" +
+//                "enabled: true\n" +
+//                "priority: 1\n" +
+//                "key: demo-provider\n" +
+//                "tags:\n" +
+//                "  - name: tag1\n" +
+//                "    addresses: [\"30.5.120.37:20880\"]\n" +
+//                "  - name: tag2\n" +
+//                "    addresses: [\"30.5.120.37:20880\"]\n" +
+//                "...";
+        String serviceStr = "";
         try {
             String servicePath = "/dubbo/config/demo-provider/tagrouters";
             if (client.checkExists().forPath(servicePath) == null) {
