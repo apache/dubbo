@@ -38,7 +38,6 @@ import org.apache.dubbo.rpc.cluster.router.tag.model.TagRouterRule;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRuleParser;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -225,7 +224,7 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
         });
 
         // Now, FAILOVER key is required here.
-        map.putIfAbsent(TreeNode.FAILOVER_KEY, Collections.emptyList());
+//        map.putIfAbsent(TreeNode.FAILOVER_KEY, Collections.emptyList());
 
         return map;
     }
@@ -250,9 +249,9 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
 
     @Override
     public String getKey() {
-        if (isRuntime()) {
+        /*if (isRuntime()) {
             return super.getKey();
-        }
+        }*/
         return Constants.TAG_KEY;
     }
 
