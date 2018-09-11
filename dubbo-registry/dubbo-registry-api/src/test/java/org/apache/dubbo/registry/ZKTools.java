@@ -43,7 +43,7 @@ public class ZKTools {
                 new ExponentialBackoffRetry(1000, 3));
         client.start();
 
-        testConsumerConfig();
+        testProviderConfig();
 //        testPathCache();
 //        testTreeCache();
 //        testCuratorListener();
