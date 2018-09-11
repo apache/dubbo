@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.cache.filter;
 
+import java.io.Serializable;
+
 import org.apache.dubbo.cache.Cache;
 import org.apache.dubbo.cache.CacheFactory;
 import org.apache.dubbo.common.Constants;
@@ -65,7 +67,9 @@ public class CacheFilter implements Filter {
         return invoker.invoke(invocation);
     }
     
-    static class ValueWrapper {
+    static class ValueWrapper implements Serializable{
+	
+	private static final long serialVersionUID = -1777337318019193256L;
 	    
 	private final Object value;
         
