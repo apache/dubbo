@@ -49,16 +49,33 @@ public class CacheFilter implements Filter {
                 String key = StringUtils.toArgumentString(invocation.getArguments());
                 Object value = cache.get(key);
                 if (value != null) {
-                    return new RpcResult(value);
+                	if(value instanceof ValueWrapper ){
+                		return new RpcResult(((ValueWrapper)value).get());
+                	}else{
+                		return new RpcResult(value);
+                	}
                 }
                 Result result = invoker.invoke(invocation);
-                if (!result.hasException() && result.getValue() != null) {
-                    cache.put(key, result.getValue());
+                if (!result.hasException() ) {
+                    cache.put(key, new ValueWrapper(result.getValue()));
                 }
                 return result;
             }
         }
         return invoker.invoke(invocation);
+    }
+    
+    static class ValueWrapper {
+        
+		private final Object value;
+        
+    	public ValueWrapper(Object value){
+    		this.value = value;
+    	}
+        
+    	public Object get() {
+    		return this.value;
+    	}
     }
 
 }
