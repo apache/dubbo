@@ -6,10 +6,6 @@ jdk:
   - oraclejdk9
   - oraclejdk8
 
-cache:
-  directories:
-    - '$HOME/.m2/repository'
-
 install: true
 
 script:
