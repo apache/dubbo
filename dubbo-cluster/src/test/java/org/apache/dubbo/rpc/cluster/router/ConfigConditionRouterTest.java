@@ -40,13 +40,12 @@ public class ConfigConditionRouterTest {
         String serviceStr = "---\n" +
                 "scope: application\n" +
                 "force: true\n" +
-                "runtime: false\n" +
+                "runtime: true\n" +
                 "enabled: true\n" +
                 "priority: 2\n" +
                 "key: demo-consumer\n" +
                 "conditions:\n" +
-                "  - method=sayHello => host=30.5.120.21\n" +
-                "  - method=routeMethod1 => host=30.5.120.21\n" +
+                "  - method=notExitMethod => \n" +
                 "...";
         try {
             String servicePath = "/dubbo/config/demo-consumer/routers";
@@ -69,8 +68,8 @@ public class ConfigConditionRouterTest {
                 "priority: 2\n" +
                 "key: demo-consumer\n" +
                 "conditions:\n" +
-                "  - interface=org.apache.dubbo.demo.DemoService&method=sayHello => host=30.5.120.21\n" +
-                "  - method=routeMethod1 => host=30.5.120.21\n" +
+                "  - interface=org.apache.dubbo.demo.DemoService&method=sayHello => host=30.5.120.37\n" +
+                "  - method=routeMethod1 => host=30.5.120.37\n" +
                 "...";
         try {
             String servicePath = "/dubbo/config/demo-consumer/routers";
@@ -88,13 +87,13 @@ public class ConfigConditionRouterTest {
         String serviceStr = "---\n" +
                 "scope: service\n" +
                 "force: true\n" +
-                "runtime: false\n" +
-                "enabled: true\n" +
+                "runtime: true\n" +
+                "enabled: false\n" +
                 "priority: 1\n" +
                 "key: org.apache.dubbo.demo.DemoService\n" +
                 "conditions:\n" +
                 "  - method!=sayHello =>\n" +
-                "  - method=routeMethod1 => address=30.5.120.21:20880\n" +
+                "  - method=routeMethod1 => address=30.5.120.37:20880\n" +
                 "...";
         try {
             String servicePath = "/dubbo/config/org.apache.dubbo.demo.DemoService/routers";

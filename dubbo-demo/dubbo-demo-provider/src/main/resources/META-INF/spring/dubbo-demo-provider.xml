@@ -23,7 +23,7 @@
 
     <!-- provider's application name, used for tracing dependency relationship -->
     <dubbo:application name="demo-provider"/>
-    <dubbo:provider tag="tag3"/>
+    <!--<dubbo:provider tag="tag3"/>-->
 
     <!-- use multicast registry center to export service -->
     <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
