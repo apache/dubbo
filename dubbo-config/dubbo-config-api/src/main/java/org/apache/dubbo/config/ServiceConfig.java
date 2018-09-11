@@ -65,6 +65,15 @@ import static org.apache.dubbo.common.utils.NetUtils.isInvalidPort;
 /**
  * ServiceConfig
  *
+ * <pre>
+ *     我们以 ServiceConfig 和 ProviderConfig 来举例子，两者都继承 AbstractServiceConfig。
+ * 从属性上，两者有相同的属性，例如 group / version 。
+ * 同时，也存在着一些差异，例如 ServiceConfig.interfaceName / ProviderConfig.host 。
+ * 另外，我们在看看 ServiceConfig 和 MethodConfig ，两者都继承 AbstractMethodConfig。
+ * 在 ServiceConfig 中，可以配置下属所有方法的 retries 次数，也可以在 MethodConfig 中自定义 retries 次数。
+ * 通过继承，获得相同的属性。
+ * </pre>
+ *
  * 服务提供者 暴露服务配置类
  *
  * @export
@@ -439,33 +448,41 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
+        //获取协议名
         String name = protocolConfig.getName();
         if (name == null || name.length() == 0) {
             name = "dubbo";
         }
 
         Map<String, String> map = new HashMap<String, String>();
+        //将side,dubbo,timestamp,pid 参数添加到map集合中
         map.put(Constants.SIDE_KEY, Constants.PROVIDER_SIDE);
         map.put(Constants.DUBBO_VERSION_KEY, Version.getProtocolVersion());
         map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
         if (ConfigUtils.getPid() > 0) {
             map.put(Constants.PID_KEY, String.valueOf(ConfigUtils.getPid()));
         }
+        //将各种配置对象 添加到map集合中
         appendParameters(map, application);
         appendParameters(map, module);
         appendParameters(map, provider, Constants.DEFAULT_KEY);
         appendParameters(map, protocolConfig);
         appendParameters(map, this);
         if (methods != null && !methods.isEmpty()) {
+            //将methodConfig对象数组添加到map集合中
             for (MethodConfig method : methods) {
+                //将methodConfig对象 添加到map集合中
                 appendParameters(map, method, method.getName());
+
                 String retryKey = method.getName() + ".retry";
                 if (map.containsKey(retryKey)) {
                     String retryValue = map.remove(retryKey);
+                    //当配置了MethodConfig.retry = false 时 强制禁用重试
                     if ("false".equals(retryValue)) {
                         map.put(method.getName() + ".retries", "0");
                     }
                 }
+                //将 ArgumentConfig 对象数组 添加到map集合中
                 List<ArgumentConfig> arguments = method.getArguments();
                 if (arguments != null && !arguments.isEmpty()) {
                     for (ArgumentConfig argument : arguments) {
@@ -501,8 +518,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                                     }
                                 }
                             }
-                        } else if (argument.getIndex() != -1) {
-                            appendParameters(map, argument, method.getName() + "." + argument.getIndex());
+                        } else if (argument.getIndex() != -1) { //指定单个参数的位置
+                            //将ArgumentConfig 对象 添加到map集合中
+                            appendParameters(map, argument, method.getName() + "." + argument.getIndex()); //${methodName}.${index}
                         } else {
                             throw new IllegalArgumentException("argument config must set index or type attribute.eg: <dubbo:argument index='0' .../> or <dubbo:argument type=xxx .../>");
                         }
@@ -518,7 +536,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         } else {
             String revision = Version.getVersion(interfaceClass, version);
             if (revision != null && revision.length() > 0) {
-                map.put("revision", revision);
+                map.put("revision", revision); //修订号
             }
 
             String[] methods = Wrapper.getWrapper(interfaceClass).getMethodNames();
@@ -529,6 +547,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 map.put(Constants.METHODS_KEY, StringUtils.join(new HashSet<String>(Arrays.asList(methods)), ","));
             }
         }
+        // token ，参见《令牌校验》https://dubbo.gitbooks.io/dubbo-user-book/demos/token-authorization.html
         if (!ConfigUtils.isEmpty(token)) {
             if (ConfigUtils.isDefault(token)) {
                 map.put(Constants.TOKEN_KEY, UUID.randomUUID().toString());
@@ -536,6 +555,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 map.put(Constants.TOKEN_KEY, token);
             }
         }
+        //协议为 injvm 时 不注册 不通知
         if (Constants.LOCAL_PROTOCOL.equals(protocolConfig.getName())) {
             protocolConfig.setRegister(false);
             map.put("notify", "false");
@@ -545,11 +565,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if ((contextPath == null || contextPath.length() == 0) && provider != null) {
             contextPath = provider.getContextpath();
         }
-
+        //host port
         String host = this.findConfigedHosts(protocolConfig, registryURLs, map);
         Integer port = this.findConfigedPorts(protocolConfig, name, map);
+        //创建dubbo URL对象
         URL url = new URL(name, host, port, (contextPath == null || contextPath.length() == 0 ? "" : contextPath + "/") + path, map);
-
+        // 配置规则，参见《配置规则》https://dubbo.gitbooks.io/dubbo-user-book/demos/config-rule.html
         if (ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
                 .hasExtension(url.getProtocol())) {
             url = ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
