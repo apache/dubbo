@@ -35,7 +35,6 @@ public abstract class AbstractRouter implements Router {
     protected int priority;
     protected boolean force;
     protected boolean enabled;
-    protected boolean dynamic;
     protected RouterChain routerChain;
     protected URL url;
 
@@ -57,7 +56,7 @@ public abstract class AbstractRouter implements Router {
     public <T> Map<String, List<Invoker<T>>> preRoute(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
         Map<String, List<Invoker<T>>> map = new HashMap<>();
 
-        if (CollectionUtils.isEmpty(invokers)) {
+        if (CollectionUtils.isEmpty(invokers) || !isEnabled()) {
             return map;
         }
 
@@ -89,14 +88,6 @@ public abstract class AbstractRouter implements Router {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
-    }
-
-    public boolean isDynamic() {
-        return dynamic;
-    }
-
-    public void setDynamic(boolean dynamic) {
-        this.dynamic = dynamic;
     }
 
     public int getPriority() {

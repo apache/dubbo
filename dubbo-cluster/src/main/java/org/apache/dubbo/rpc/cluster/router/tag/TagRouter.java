@@ -112,7 +112,8 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
 
         checkAndInit(invokers.get(0).getUrl());
 
-        if (tagRouterRule == null || !tagRouterRule.isValid()) {
+        if (tagRouterRule == null || !tagRouterRule.isValid() || !tagRouterRule.isEnabled()) {
+
             return invokers;
         }
 
@@ -172,7 +173,7 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
 
         checkAndInit(invokers.get(0).getUrl());
 
-        if (tagRouterRule == null || !tagRouterRule.isValid() || isRuntime()) {
+        if (tagRouterRule == null || !tagRouterRule.isValid() || !tagRouterRule.isEnabled() || isRuntime()) {
             map.put(TreeNode.FAILOVER_KEY, invokers);
             return map;
         }
