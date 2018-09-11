@@ -313,12 +313,6 @@
                             <![CDATA[ Defines the service tag]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
-                <xsd:attribute name="enabledynamictag" type="xsd:boolean" default="false">
-                    <xsd:annotation>
-                        <xsd:documentation>
-                            <![CDATA[ Defines the service tag]]></xsd:documentation>
-                    </xsd:annotation>
-                </xsd:attribute>
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>
             </xsd:extension>
         </xsd:complexContent>
