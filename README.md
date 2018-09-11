@@ -41,7 +41,7 @@ There's one [README](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-sa
 <dependency>
     <groupId>com.alibaba</groupId>
     <artifactId>dubbo</artifactId>
-    <version>2.6.2</version>
+    <version>2.6.3</version>
 </dependency>
 ```
 
