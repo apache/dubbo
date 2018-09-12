@@ -10,7 +10,7 @@
 
     <groupId>com.alibaba</groupId>
     <artifactId>dubbo-dependencies-bom</artifactId>
-    <version>2.6.3-SNAPSHOT</version>
+    <version>2.6.3</version>
     <packaging>pom</packaging>
 
     <name>dubbo-dependencies-bom</name>
@@ -111,7 +111,7 @@
 
         <jaxb_version>2.2.7</jaxb_version>
         <activation_version>1.2.0</activation_version>
-        <hessian_lite_version>3.2.3</hessian_lite_version>
+        <hessian_lite_version>3.2.4</hessian_lite_version>
     </properties>
 
     <dependencyManagement>

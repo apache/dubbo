@@ -46,6 +46,9 @@
                 <exclude>**/*.log</exclude>
                 <exclude>release.properties</exclude>
                 <exclude>**/*.xml.*</exclude>
+                <exclude>**/.mvn/**</exclude>
+                <exclude>**/*.jar</exclude>
+                <exclude>**/mvnw*</exclude>
             </excludes>
         </fileSet>
     </fileSets>
