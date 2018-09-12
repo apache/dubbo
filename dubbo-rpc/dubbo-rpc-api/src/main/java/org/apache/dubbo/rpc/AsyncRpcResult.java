@@ -39,6 +39,11 @@ public class AsyncRpcResult extends AbstractResult {
 
     protected CompletableFuture<Result> resultFuture;
 
+    /**
+     * relate valueFuture and resultFuture
+     */
+    protected CompletableFuture<Object> tempFuture;
+
     public AsyncRpcResult(CompletableFuture<Object> future) {
         this(future, true);
     }
@@ -58,12 +63,11 @@ public class AsyncRpcResult extends AbstractResult {
         }
         resultFuture = rFuture;
         if (registerCallback) {
-            /**
-             * We do not know whether future already completed or not, it's a future exposed or even created by end user.
-             * 1. future complete before whenComplete. whenComplete fn (resultFuture.complete) will be executed in thread subscribing, in our case, it's Dubbo thread.
-             * 2. future complete after whenComplete. whenComplete fn (resultFuture.complete) will be executed in thread calling complete, normally its User thread.
-             */
-            future.whenComplete((v, t) -> {
+            // tempFuture only init if register call back
+            tempFuture = new CompletableFuture<>();
+
+            // tempFuture trigger resultFuture
+            tempFuture.whenComplete((v, t) -> {
                 RpcResult rpcResult;
                 if (t != null) {
                     if (t instanceof CompletionException) {
@@ -74,9 +78,11 @@ public class AsyncRpcResult extends AbstractResult {
                 } else {
                     rpcResult = new RpcResult(v);
                 }
-                // instead of resultFuture we must use rFuture here, resultFuture may being changed before complete when building filter chain, but rFuture was guaranteed never changed by closure.
-                rFuture.complete(rpcResult);
+                resultFuture.complete(rpcResult);
             });
+
+            // valueFuture trigger tempFuture
+            future.whenComplete((v, t) -> tempFuture.complete(v));
         }
         this.valueFuture = future;
         this.storedContext = RpcContext.getContext();
