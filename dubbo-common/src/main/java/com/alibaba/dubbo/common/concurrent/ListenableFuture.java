@@ -17,7 +17,6 @@
 package com.alibaba.dubbo.common.concurrent;
 
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.RejectedExecutionException;
@@ -66,7 +65,7 @@ import java.util.concurrent.RejectedExecutionException;
  * <ul>
  * <li>If they are returned from an {@code ExecutorService}, convert that
  * service to a {@link ListeningExecutorService}, usually by calling {@link
- * MoreExecutors#listeningDecorator(ExecutorService)
+ * MoreExecutors#listeningDecorator(java.util.concurrent.ExecutorService)
  * MoreExecutors.listeningDecorator}. (Custom executors may find it more
  * convenient to use {@link ListenableFutureTask} directly.)
  * <li>If they are manually filled in by a call to {@link FutureTask#set} or a
