@@ -63,6 +63,7 @@ public class AsyncRpcResult extends AbstractResult {
         }
         resultFuture = rFuture;
         if (registerCallback) {
+            // tempFuture only init if register call back
             tempFuture = new CompletableFuture<>();
 
             // tempFuture trigger resultFuture
