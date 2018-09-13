@@ -90,9 +90,9 @@ public class UrlUtilsTest {
 
     @Test
     public void testParseUrl2() {
-        String address = "127.0.0.1";
-        String backupAddress1 = "127.0.0.2";
-        String backupAddress2 = "127.0.0.3";
+        String address = "192.168.0.1";
+        String backupAddress1 = "192.168.0.2";
+        String backupAddress2 = "192.168.0.3";
 
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("username", "root");
@@ -100,25 +100,25 @@ public class UrlUtilsTest {
         parameters.put("port", "10000");
         parameters.put("protocol", "dubbo");
         URL url = UrlUtils.parseURL(address + "," + backupAddress1 + "," + backupAddress2, parameters);
-        assertEquals(localAddress + ":10000", url.getAddress());
+        assertEquals("192.168.0.1:10000", url.getAddress());
         assertEquals("root", url.getUsername());
         assertEquals("alibaba", url.getPassword());
         assertEquals(10000, url.getPort());
         assertEquals("dubbo", url.getProtocol());
-        assertEquals("127.0.0.2" + "," + "127.0.0.3", url.getParameter("backup"));
+        assertEquals("192.168.0.2" + "," + "192.168.0.3", url.getParameter("backup"));
     }
 
     @Test
     public void testParseUrls() {
-        String addresses = "127.0.0.1|127.0.0.2|127.0.0.3";
+        String addresses = "192.168.0.1|192.168.0.2|192.168.0.3";
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("username", "root");
         parameters.put("password", "alibaba");
         parameters.put("port", "10000");
         parameters.put("protocol", "dubbo");
         List<URL> urls = UrlUtils.parseURLs(addresses, parameters);
-        assertEquals(localAddress + ":10000", urls.get(0).getAddress());
-        assertEquals("127.0.0.2" + ":10000", urls.get(1).getAddress());
+        assertEquals("192.168.0.1" + ":10000", urls.get(0).getAddress());
+        assertEquals("192.168.0.2" + ":10000", urls.get(1).getAddress());
     }
 
     @Test
@@ -322,7 +322,7 @@ public class UrlUtilsTest {
 
     @Test
     public void testIsServiceKeyMatch() throws Exception {
-        URL url = URL.valueOf("test://127.0.0.0");
+        URL url = URL.valueOf("test://127.0.0.1");
         URL pattern = url.addParameter(Constants.GROUP_KEY, "test")
                 .addParameter(Constants.INTERFACE_KEY, "test")
                 .addParameter(Constants.VERSION_KEY, "test");
