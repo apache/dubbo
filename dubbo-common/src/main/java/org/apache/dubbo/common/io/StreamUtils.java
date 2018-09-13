@@ -98,6 +98,7 @@ public class StreamUtils {
 
             @Override
             public void close() throws IOException {
+                is.close();
             }
         };
     }
@@ -198,6 +199,11 @@ public class StreamUtils {
                 if (mInMarked && mInReset) available += mCount - mPosition;
 
                 return available;
+            }
+
+            @Override
+            public void close() throws IOException {
+                is.close();
             }
         };
     }
