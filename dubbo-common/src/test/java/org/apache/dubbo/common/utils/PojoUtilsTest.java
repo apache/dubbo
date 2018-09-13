@@ -28,8 +28,10 @@ import org.junit.Test;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -644,6 +646,34 @@ public class PojoUtilsTest {
         Parent realizeParent = (Parent) realizeParentList.getList().get(0);
         Assert.assertEquals(parent.getName(), realizeParent.getName());
         Assert.assertEquals(parent.getAge(), realizeParent.getAge());
+    }
+
+    @Test
+    public void testDateTimeTimestamp() throws Exception {
+        String dateStr = "2018-09-12";
+        String timeStr = "10:00:00";
+        String dateTimeStr = "2018-09-12 10:00:00";
+        String[] dateFormat = new String[]{"yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd", "HH:mm:ss"};
+
+        //java.util.Date
+        Object date = PojoUtils.realize(dateTimeStr, Date.class, (Type) Date.class);
+        assertEquals(Date.class, date.getClass());
+        assertEquals(dateTimeStr, new SimpleDateFormat(dateFormat[0]).format(date));
+
+        //java.sql.Time
+        Object time = PojoUtils.realize(dateTimeStr, java.sql.Time.class, (Type) java.sql.Time.class);
+        assertEquals(java.sql.Time.class, time.getClass());
+        assertEquals(timeStr, new SimpleDateFormat(dateFormat[2]).format(time));
+
+        //java.sql.Date
+        Object sqlDate = PojoUtils.realize(dateTimeStr, java.sql.Date.class, (Type) java.sql.Date.class);
+        assertEquals(java.sql.Date.class, sqlDate.getClass());
+        assertEquals(dateStr, new SimpleDateFormat(dateFormat[1]).format(sqlDate));
+
+        //java.sql.Timestamp
+        Object timestamp = PojoUtils.realize(dateTimeStr, java.sql.Timestamp.class, (Type) java.sql.Timestamp.class);
+        assertEquals(java.sql.Timestamp.class, timestamp.getClass());
+        assertEquals(dateTimeStr, new SimpleDateFormat(dateFormat[0]).format(timestamp));
     }
 
     public enum Day {
