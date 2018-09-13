@@ -651,8 +651,8 @@ public class PojoUtilsTest {
     @Test
     public void testDateTimeTimestamp() throws Exception {
         String dateStr = "2018-09-12";
-        String timeStr = "10:00:00";
-        String dateTimeStr = "2018-09-12 10:00:00";
+        String timeStr = "10:12:33";
+        String dateTimeStr = "2018-09-12 10:12:33";
         String[] dateFormat = new String[]{"yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd", "HH:mm:ss"};
 
         //java.util.Date
