@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.integration;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -57,6 +58,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.Constants.ACCEPT_FOREIGN_IP;
+import static org.apache.dubbo.common.Constants.ADD_PARAM_KEYS_KEY;
 import static org.apache.dubbo.common.Constants.APPLICATION_KEY;
 import static org.apache.dubbo.common.Constants.CLUSTER_KEY;
 import static org.apache.dubbo.common.Constants.CODEC_KEY;
@@ -179,7 +181,7 @@ public class RegistryProtocol implements Protocol {
 
         // url to registry
         final Registry registry = getRegistry(originInvoker);
-        final URL registeredProviderUrl = getRegistedProviderUrl(providerUrl);
+        final URL registeredProviderUrl = getRegistedProviderUrl(providerUrl, registryUrl);
 
         ProviderConsumerRegTable.registerProvider(originInvoker, registryUrl, registeredProviderUrl);
 
@@ -297,12 +299,28 @@ public class RegistryProtocol implements Protocol {
      * @param providerUrl
      * @return url to registry.
      */
-    private URL getRegistedProviderUrl(final URL providerUrl) {
+    private URL getRegistedProviderUrl(final URL providerUrl, final URL registryUrl) {
         //The address you see at the registry
-        String[] registryParams = {APPLICATION_KEY, CODEC_KEY, EXCHANGER_KEY, SERIALIZATION_KEY, CLUSTER_KEY, CONNECTIONS_KEY, DEPRECATED_KEY,
-                GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY, WEIGHT_KEY, TIMESTAMP_KEY};
-        String[] methods = providerUrl.getParameter(METHODS_KEY, (String[]) null);
-        return URL.valueOf(providerUrl, registryParams, methods);
+        if(!registryUrl.getParameter(Constants.SIMPLE_KEY,false)){
+            final URL registedProviderUrl = providerUrl.removeParameters(getFilteredKeys(providerUrl))
+                    .removeParameter(Constants.MONITOR_KEY)
+                    .removeParameter(Constants.BIND_IP_KEY)
+                    .removeParameter(Constants.BIND_PORT_KEY)
+                    .removeParameter(QOS_ENABLE)
+                    .removeParameter(QOS_PORT)
+                    .removeParameter(ACCEPT_FOREIGN_IP)
+                    .removeParameter(VALIDATION_KEY)
+                    .removeParameter(INTERFACES);
+            return registedProviderUrl;
+        }else{
+            String[] addionalParameterKeys = registryUrl.getParameter(ADD_PARAM_KEYS_KEY, new String[0]);
+            String[] registryParams = {APPLICATION_KEY, CODEC_KEY, EXCHANGER_KEY, SERIALIZATION_KEY, CLUSTER_KEY, CONNECTIONS_KEY, DEPRECATED_KEY,
+                    GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY, WEIGHT_KEY, TIMESTAMP_KEY};
+            ArrayUtils.addAll(registryParams, addionalParameterKeys);
+            String[] methods = providerUrl.getParameter(METHODS_KEY, (String[]) null);
+            return URL.valueOf(providerUrl, registryParams, methods);
+        }
+
     }
 
     private URL getSubscribedOverrideUrl(URL registedProviderUrl) {
@@ -374,8 +392,7 @@ public class RegistryProtocol implements Protocol {
         URL subscribeUrl = new URL(Constants.CONSUMER_PROTOCOL, parameters.remove(Constants.REGISTER_IP_KEY), 0, type.getName(), parameters);
         if (!Constants.ANY_VALUE.equals(url.getServiceInterface())
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
-            registry.register(subscribeUrl.addParameters(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY,
-                    Constants.CHECK_KEY, String.valueOf(false)));
+            registry.register(getRegistedConsumerUrl(subscribeUrl, directory.getUrl()));
         }
         directory.subscribe(subscribeUrl.addParameter(Constants.CATEGORY_KEY,
                 Constants.PROVIDERS_CATEGORY
@@ -385,6 +402,21 @@ public class RegistryProtocol implements Protocol {
         Invoker invoker = cluster.join(directory);
         ProviderConsumerRegTable.registerConsumer(invoker, url, subscribeUrl, directory);
         return invoker;
+    }
+
+    private URL getRegistedConsumerUrl(final URL consumerUrl, URL registryUrl) {
+        if(!registryUrl.getParameter(Constants.SIMPLE_KEY,false)){
+            return consumerUrl.addParameters(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY,
+                    Constants.CHECK_KEY, String.valueOf(false));
+        }else{
+            String[] addionalParameterKeys = registryUrl.getParameter(ADD_PARAM_KEYS_KEY, new String[0]);
+            String[] registryParams = {APPLICATION_KEY, CODEC_KEY, EXCHANGER_KEY, SERIALIZATION_KEY, CLUSTER_KEY, CONNECTIONS_KEY, DEPRECATED_KEY,
+                    GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY, WEIGHT_KEY, TIMESTAMP_KEY};
+            ArrayUtils.addAll(registryParams, addionalParameterKeys);
+            String[] methods = consumerUrl.getParameter(METHODS_KEY, (String[]) null);
+            return URL.valueOf(consumerUrl, registryParams, methods).addParameters(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY,
+                    Constants.CHECK_KEY, String.valueOf(false));
+        }
     }
 
     @Override

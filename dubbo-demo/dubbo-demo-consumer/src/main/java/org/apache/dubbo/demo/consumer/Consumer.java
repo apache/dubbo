@@ -34,14 +34,15 @@ public class Consumer {
         while (true) {
             try {
                 Thread.sleep(1000);
-                RpcContext.getContext().setAttachment("tag", "tag1");
+                RpcContext.getContext().setAttachment("tag", "tag3");
                 String hello = demoService.sayHello("world"); // call remote method
                 System.out.println(hello); // get result
-                RpcContext.getContext().setAttachment("tag", "tag3");
-                RpcContext.getContext().setAttachment("force.tag", "true");
+                RpcContext.getContext().setAttachment("tag", "tag1");
+//                RpcContext.getContext().setAttachment("force.tag", "true");
                 String routeMethod1 = demoService.routeMethod1(); // call remote method
                 System.out.println(routeMethod1); // get result
             } catch (Throwable throwable) {
+                RpcContext.getContext().clearAttachments();
                 throwable.printStackTrace();
             }
         }

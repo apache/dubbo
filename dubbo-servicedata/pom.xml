@@ -14,6 +14,7 @@
     <modules>
         <module>dubbo-servicedata-api</module>
         <module>dubbo-servicedata-zookeeper</module>
+        <module>dubbo-servicedata-redis</module>
     </modules>
 
 

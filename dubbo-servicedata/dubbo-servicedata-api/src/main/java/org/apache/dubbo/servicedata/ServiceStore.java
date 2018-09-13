@@ -23,9 +23,18 @@ import org.apache.dubbo.common.URL;
  */
 public interface ServiceStore {
 
+    /**
+     *
+     * @param url  e.g: dubbo://10.20.153.10/org.apache.dubbo.foo.BarService?version=1.0.0&application=kylin or
+     *             consumer://10.20.153.10/org.apache.dubbo.foo.BarService?version=1.0.0&application=kylin
+     */
     void put(URL url);
 
-    void remove(URL url);
-
+    /**
+     *
+     * @param url eg: dubbo://10.20.153.10/org.apache.dubbo.foo.BarService?version=1.0.0&application=cvictory&category=provider  or
+     *            eg: consumer://10.20.153.10/org.apache.dubbo.foo.BarService?version=1.0.0&application=cvictory&category=consumer
+     * @return
+     */
     URL peek(URL url);
 }

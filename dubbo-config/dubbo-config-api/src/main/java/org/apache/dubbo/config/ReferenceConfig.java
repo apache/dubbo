@@ -433,7 +433,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
          * ServiceData Store
          */
         ServiceStoreService serviceStoreService = null;
-        if ((serviceStoreService = initAndGetServiceStoreService()) != null){
+        if ((serviceStoreService = getServiceStoreService()) != null){
             URL consumerURL = new URL(Constants.CONSUMER_PROTOCOL, map.remove(Constants.REGISTER_IP_KEY), 0, map.get(Constants.INTERFACE_KEY), map);
             serviceStoreService.publishConsumer(consumerURL);
         }

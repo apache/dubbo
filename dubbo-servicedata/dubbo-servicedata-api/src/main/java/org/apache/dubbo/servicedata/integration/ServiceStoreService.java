@@ -22,13 +22,13 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.servicedata.ServiceStore;
 import org.apache.dubbo.servicedata.ServiceStoreFactory;
-import org.apache.dubbo.servicedata.support.AbstractServiceStoreFactory;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  */
@@ -41,7 +41,7 @@ public class ServiceStoreService {
 
     private URL serviceStoreUrl;
 
-    public ServiceStoreService(URL serviceStoreURL) {
+    private ServiceStoreService(URL serviceStoreURL) {
         if (Constants.SERVICE_STORE_KEY.equals(serviceStoreURL.getProtocol())) {
             String protocol = serviceStoreURL.getParameter(Constants.SERVICE_STORE_KEY, Constants.DEFAULT_DIRECTORY);
             serviceStoreURL = serviceStoreURL.setProtocol(protocol).removeParameter(Constants.SERVICE_STORE_KEY);
@@ -50,8 +50,22 @@ public class ServiceStoreService {
         serviceStore = serviceStoreFactory.getServiceStore(this.serviceStoreUrl);
     }
 
-    public int getDefaultPort() {
-        return 9099;
+    private static ServiceStoreService serviceStoreService;
+    private static Object lock = new Object();
+
+    public static ServiceStoreService instance(Supplier<URL> loadServiceStoreUrl) {
+        if (serviceStoreService == null) {
+            synchronized (lock) {
+                if (serviceStoreService == null) {
+                    URL serviceStoreURL = loadServiceStoreUrl.get();
+                    if (serviceStoreURL == null) {
+                        return null;
+                    }
+                    serviceStoreService = new ServiceStoreService(serviceStoreURL);
+                }
+            }
+        }
+        return serviceStoreService;
     }
 
     public void publishProvider(URL providerUrl) throws RpcException {
@@ -65,14 +79,14 @@ public class ServiceStoreService {
     }
 
     public static void destroyAll() {
-        for (ServiceStore serviceStore : AbstractServiceStoreFactory.getServiceStores()) {
-            for (URL provideUrl : providerURLs) {
-                serviceStore.remove(provideUrl);
-            }
-            for (URL consumerUrl : consumerURLs) {
-                serviceStore.remove(consumerUrl);
-            }
-        }
+//        for (ServiceStore serviceStore : AbstractServiceStoreFactory.getServiceStores()) {
+//            for (URL provideUrl : providerURLs) {
+//                serviceStore.remove(provideUrl);
+//            }
+//            for (URL consumerUrl : consumerURLs) {
+//                serviceStore.remove(consumerUrl);
+//            }
+//        }
     }
 
     private URL getSubscribedOverrideUrl(URL registedProviderUrl) {

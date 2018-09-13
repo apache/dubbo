@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * AbstractDefaultConfig
@@ -105,8 +106,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     private String scope;
 
     protected ServiceStoreConfig serviceStoreConfig;
-
-    private static volatile ServiceStoreService serviceStoreService;
 
 
     protected void checkRegistry() {
@@ -302,22 +301,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         return null;
     }
 
-    protected ServiceStoreService initAndGetServiceStoreService(){
-        if (serviceStoreConfig == null){
+    protected ServiceStoreService getServiceStoreService() {
+        if (serviceStoreConfig == null) {
             return null;
         }
-        if(serviceStoreService == null){
-            synchronized (serviceStoreConfig){
-                if(serviceStoreService == null){
-                    URL serviceStoreURL = loadServiceStore(true);
-                    if(serviceStoreURL == null){
-                        return null;
-                    }
-                    serviceStoreService = new ServiceStoreService(serviceStoreURL);
-                }
-            }
-        }
-        return serviceStoreService;
+        return ServiceStoreService.instance(() -> {
+            return loadServiceStore(true);
+        });
     }
 
     protected void checkInterfaceAndMethods(Class<?> interfaceClass, List<MethodConfig> methods) {
@@ -595,4 +585,5 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     public void setServiceStoreConfig(ServiceStoreConfig serviceStoreConfig) {
         this.serviceStoreConfig = serviceStoreConfig;
     }
+
 }
