@@ -8,8 +8,7 @@ jdk:
 
 cache:
   directories:
-  - .autoconf
-  - $HOME/.m2
+    - $HOME/.m2
 
 install: true
 
