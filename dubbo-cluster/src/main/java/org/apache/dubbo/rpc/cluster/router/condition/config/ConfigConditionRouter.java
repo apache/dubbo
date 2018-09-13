@@ -42,7 +42,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * TODO only support one router rule =>, it will be inconvenient if we want to add more than one rules.
+ *
  */
 public class ConfigConditionRouter extends AbstractRouter implements ConfigurationListener {
     public static final String NAME = "CONFIG_CONDITION_OUTER";

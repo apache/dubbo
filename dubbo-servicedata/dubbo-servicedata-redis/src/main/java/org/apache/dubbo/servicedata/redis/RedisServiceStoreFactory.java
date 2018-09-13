@@ -14,41 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.servicedata.support;
+package org.apache.dubbo.servicedata.redis;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.NetUtils;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.List;
+import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
+import org.apache.dubbo.servicedata.ServiceStore;
+import org.apache.dubbo.servicedata.support.AbstractServiceStoreFactory;
 
 /**
+ * ZookeeperRegistryFactory.
  *
  */
-public class AbstractServiceStoreTest {
+public class RedisServiceStoreFactory extends AbstractServiceStoreFactory {
 
-    private AbstractServiceStore abstractServiceStore;
-    private URL url;
 
-    @Before
-    public void before(){
-        url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444");
-
-        abstractServiceStore = new AbstractServiceStore(url) {
-
-            @Override
-            protected void doPutService(URL url) {
-
-            }
-
-            @Override
-            protected URL doPeekService(URL url) {
-                return null;
-            }
-        };
-
+    @Override
+    public ServiceStore createServiceStore(URL url) {
+        return new RedisServiceStore(url);
     }
-
 
 }

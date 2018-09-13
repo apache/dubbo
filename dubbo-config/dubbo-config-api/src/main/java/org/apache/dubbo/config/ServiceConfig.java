@@ -526,9 +526,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                  * ServiceData Store
                  */
                 ServiceStoreService serviceStoreService = null;
-                if ((serviceStoreService = initAndGetServiceStoreService()) != null){
-                    String protocol = url.getProtocol();
-                    url = url.setProtocol(Constants.PROVIDER_PROTOCOL).addParameter(Constants.SIDE_KEY, Constants.PROVIDER_SIDE).addParameter(Constants.PROTOCOL_KEY, protocol);
+                if ((serviceStoreService = getServiceStoreService()) != null){
+//                    String protocol = url.getProtocol();
+//                    url = url.setProtocol(Constants.PROVIDER_PROTOCOL).addParameter(Constants.SIDE_KEY, Constants.PROVIDER_SIDE).addParameter(Constants.PROTOCOL_KEY, protocol);
                     serviceStoreService.publishProvider(url);
                 }
             }

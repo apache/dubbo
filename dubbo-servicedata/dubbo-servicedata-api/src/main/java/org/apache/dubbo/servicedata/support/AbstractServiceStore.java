@@ -34,12 +34,16 @@ import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -60,10 +64,13 @@ public abstract class AbstractServiceStore implements ServiceStore {
 
     private final AtomicLong lastCacheChanged = new AtomicLong();
     private final Set<URL> registered = new ConcurrentHashSet<URL>();
+    private final Set<URL> failedServiceStore = new ConcurrentHashSet<URL>();
     private URL serviceStoreURL;
     // Local disk cache file
     private File file;
     private static AtomicBoolean INIT = new AtomicBoolean(false);
+    private final ScheduledExecutorService retryExecutor = Executors.newScheduledThreadPool(0, new NamedThreadFactory("DubboRegistryFailedRetryTimer", true));
+    private AtomicInteger retryTimes = new AtomicInteger(0);
 
     public AbstractServiceStore(URL servicestoreURL) {
         setUrl(servicestoreURL);
@@ -84,6 +91,17 @@ public abstract class AbstractServiceStore implements ServiceStore {
         }
         this.file = file;
         loadProperties();
+        retryExecutor.scheduleWithFixedDelay(new Runnable() {
+            @Override
+            public void run() {
+                // Check and connect to the registry
+                try {
+                    retry();
+                } catch (Throwable t) { // Defensive fault tolerance
+                    logger.error("Unexpected error occur at failed retry, cause: " + t.getMessage(), t);
+                }
+            }
+        }, 100, 100, TimeUnit.MILLISECONDS);
     }
 
     protected static List<URL> filterEmpty(URL url, List<URL> urls) {
@@ -225,34 +243,16 @@ public abstract class AbstractServiceStore implements ServiceStore {
             if (logger.isInfoEnabled()) {
                 logger.info("Servicestore Put: " + url);
             }
+            failedServiceStore.remove(url);
             doPutService(url);
             saveProperties(url, true);
         } catch (Exception e) {
             // retry again. If failed again, throw exception.
-            try {
-                doPutService(url);
-            } catch (Exception ne) {
-                throw new IllegalStateException("Failed to servicestore put " + url + " in  " + getUrl().toFullString() + ", cause: " + ne.getMessage(), ne);
-            }
+            failedServiceStore.add(url);
+            logger.error("Failed to put servicestore " + url + " in  " + getUrl().toFullString() + ", cause: " + e.getMessage(), e);
         }
     }
 
-    public void remove(URL url) {
-        try {
-            if (logger.isInfoEnabled()) {
-                logger.info("Servicestore Remove: " + url);
-            }
-            doRemoveService(url);
-            saveProperties(url, false);
-        } catch (Exception e) {
-            // retry again. If failed again, throw exception.
-            try {
-                doRemoveService(url);
-            } catch (Exception ne) {
-                throw new IllegalStateException("Failed to servicestore remove " + url + " in  " + getUrl().toFullString() + ", cause: " + ne.getMessage(), ne);
-            }
-        }
-    }
 
     public URL peek(URL url) {
         try {
@@ -261,19 +261,25 @@ public abstract class AbstractServiceStore implements ServiceStore {
             }
             return doPeekService(url);
         } catch (Exception e) {
-            // retry again. If failed again, throw exception.
-            try {
-                return doPeekService(url);
-            } catch (Exception ne) {
-                throw new IllegalStateException("Failed to servicestore peek " + url + " in  " + getUrl().toFullString() + ", cause: " + ne.getMessage(), ne);
-            }
+            logger.error("Failed to peek servicestore " + url + " in  " + getUrl().toFullString() + ", cause: " + e.getMessage(), e);
+        }
+        return null;
+    }
+
+    public void retry() {
+        if (retryTimes.incrementAndGet() > 120000 && failedServiceStore.isEmpty()) {
+            retryExecutor.shutdown();
+        }
+        if (failedServiceStore.isEmpty()) {
+            return;
+        }
+        for (URL url : new HashSet<URL>(failedServiceStore)) {
+            this.put(url);
         }
     }
 
 
     protected abstract void doPutService(URL url);
-
-    protected abstract void doRemoveService(URL url);
 
     protected abstract URL doPeekService(URL url);
 

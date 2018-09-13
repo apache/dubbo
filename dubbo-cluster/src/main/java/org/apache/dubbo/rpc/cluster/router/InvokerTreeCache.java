@@ -43,6 +43,9 @@ public class InvokerTreeCache<T> {
 
     public List<Invoker<T>> getInvokers(TreeNode<T> node, URL url, Invocation invocation) {
         // We have reached the leaf node.
+        if (node == null) {
+            return Collections.emptyList();
+        }
         if (node.isLeaf()) {
             return node.getInvokers();
         }

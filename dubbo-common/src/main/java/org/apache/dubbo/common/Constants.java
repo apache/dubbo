@@ -439,6 +439,17 @@ public class Constants {
     public static final String MERGER_KEY = "merger";
 
     /**
+     * simple the registry.
+     * @since 2.7.0
+     */
+    public static final String SIMPLE_KEY = "simple";
+    /**
+     * After simplify the registry, should add some paramter individually.
+     * @since 2.7.0
+     */
+    public static final String ADD_PARAM_KEYS_KEY = "addParamKeys";
+
+    /**
      * To decide whether to exclude unavailable invoker from the cluster
      */
     public static final String CLUSTER_AVAILABLE_CHECK_KEY = "cluster.availablecheck";

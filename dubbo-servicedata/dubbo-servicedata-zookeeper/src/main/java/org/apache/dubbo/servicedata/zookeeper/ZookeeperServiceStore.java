@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
@@ -35,8 +36,6 @@ import java.util.List;
 public class ZookeeperServiceStore extends AbstractServiceStore {
 
     private final static Logger logger = LoggerFactory.getLogger(ZookeeperServiceStore.class);
-
-    private final static int DEFAULT_ZOOKEEPER_PORT = 2181;
 
     private final static String DEFAULT_ROOT = "dubbo";
 
@@ -59,45 +58,47 @@ public class ZookeeperServiceStore extends AbstractServiceStore {
         zkClient = zookeeperTransporter.connect(url);
     }
 
-    static String appendDefaultPort(String address) {
-        if (address != null && address.length() > 0) {
-            int i = address.indexOf(':');
-            if (i < 0) {
-                return address + ":" + DEFAULT_ZOOKEEPER_PORT;
-            } else if (Integer.parseInt(address.substring(i + 1)) == 0) {
-                return address.substring(0, i + 1) + DEFAULT_ZOOKEEPER_PORT;
-            }
-        }
-        return address;
-    }
-
-
     @Override
     protected void doPutService(URL url) {
         try {
-            zkClient.create(toUrlPath(url), url.getParameter(Constants.DYNAMIC_KEY, true));
+            deletePath(url);
+            url = url.removeParameters(Constants.BIND_IP_KEY, Constants.BIND_PORT_KEY, Constants.TIMESTAMP_KEY);
+            zkClient.create(toUrlPathWithParameter(url), false);
         } catch (Throwable e) {
+            logger.error("Failed to put " + url + " to zookeeper " + url + ", cause: " + e.getMessage(), e);
             throw new RpcException("Failed to put " + url + " to zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
         }
     }
 
-    @Override
-    protected void doRemoveService(URL url) {
-        try {
-            zkClient.delete(toUrlPath(url));
-        } catch (Throwable e) {
-            throw new RpcException("Failed to remove " + url + " to zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
+    private void deletePath(URL url) {
+        String path = toCategoryPath(url);
+        List<String> urlStrs = zkClient.getChildren(path);
+        if (CollectionUtils.isEmpty(urlStrs)) {
+            return;
+        }
+        for (String urlStr : urlStrs) {
+            zkClient.delete(path + Constants.PATH_SEPARATOR + urlStr);
         }
     }
 
     @Override
     protected URL doPeekService(final URL url) {
         try {
-
+            List<String> urlStrs = zkClient.getChildren((toCategoryPath(url)));
+            List<URL> urls = new ArrayList<URL>();
+            if (urlStrs != null && !urlStrs.isEmpty()) {
+                for (String urlStr : urlStrs) {
+                    urlStr = URL.decode(urlStr);
+                    if (urlStr.contains("://")) {
+                        urls.add(URL.valueOf(urlStr));
+                    }
+                }
+            }
+            return urls.isEmpty() ? null : urls.get(0);
         } catch (Throwable e) {
+            logger.error("Failed to peek " + url + " to zookeeper " + url + ", cause: " + e.getMessage(), e);
             throw new RpcException("Failed to peek " + url + " to zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
         }
-        return null;
     }
 
     private String toRootDir() {
@@ -119,55 +120,13 @@ public class ZookeeperServiceStore extends AbstractServiceStore {
         return toRootDir() + URL.encode(name);
     }
 
-    private String[] toCategoriesPath(URL url) {
-        String[] categories;
-        if (Constants.ANY_VALUE.equals(url.getParameter(Constants.CATEGORY_KEY))) {
-            categories = new String[]{Constants.PROVIDERS_CATEGORY, Constants.CONSUMERS_CATEGORY,
-                    Constants.ROUTERS_CATEGORY, Constants.CONFIGURATORS_CATEGORY};
-        } else {
-            categories = url.getParameter(Constants.CATEGORY_KEY, new String[]{Constants.DEFAULT_CATEGORY});
-        }
-        String[] paths = new String[categories.length];
-        for (int i = 0; i < categories.length; i++) {
-            paths[i] = toServicePath(url) + Constants.PATH_SEPARATOR + categories[i];
-        }
-        return paths;
-    }
-
     private String toCategoryPath(URL url) {
         String protocol = url.getParameter(Constants.SIDE_KEY);
         return toServicePath(url) + Constants.PATH_SEPARATOR + TAG + Constants.PATH_SEPARATOR + (protocol != null ? protocol : url.getProtocol());
     }
 
-    private String toUrlPath(URL url) {
-        return toCategoryPath(url) + Constants.PATH_SEPARATOR + URL.encode(url.toFullString());
-    }
-
-    private List<URL> toUrlsWithoutEmpty(URL consumer, List<String> providers) {
-        List<URL> urls = new ArrayList<URL>();
-        if (providers != null && !providers.isEmpty()) {
-            for (String provider : providers) {
-                provider = URL.decode(provider);
-                if (provider.contains("://")) {
-                    URL url = URL.valueOf(provider);
-                    if (UrlUtils.isMatch(consumer, url)) {
-                        urls.add(url);
-                    }
-                }
-            }
-        }
-        return urls;
-    }
-
-    private List<URL> toUrlsWithEmpty(URL consumer, String path, List<String> providers) {
-        List<URL> urls = toUrlsWithoutEmpty(consumer, providers);
-        if (urls == null || urls.isEmpty()) {
-            int i = path.lastIndexOf('/');
-            String category = i < 0 ? path : path.substring(i + 1);
-            URL empty = consumer.setProtocol(Constants.EMPTY_PROTOCOL).addParameter(Constants.CATEGORY_KEY, category);
-            urls.add(empty);
-        }
-        return urls;
+    private String toUrlPathWithParameter(URL url) {
+        return toCategoryPath(url) + Constants.PATH_SEPARATOR + URL.encode(url.toParameterString());
     }
 
 }
