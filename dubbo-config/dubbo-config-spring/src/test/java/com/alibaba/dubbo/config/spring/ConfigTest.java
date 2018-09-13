@@ -96,7 +96,7 @@ public class ConfigTest {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/service-class.xml");
         ctx.start();
         try {
-            DemoService demoService = refer("dubbo://127.0.0.1:20887");
+            DemoService demoService = refer("dubbo://127.0.0.1:30887");
             String hello = demoService.sayName("hello");
             assertEquals("welcome:hello", hello);
         } finally {
