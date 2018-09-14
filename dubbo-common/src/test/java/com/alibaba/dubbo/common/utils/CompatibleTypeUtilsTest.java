@@ -68,6 +68,15 @@ public class CompatibleTypeUtilsTest {
             result = CompatibleTypeUtils.compatibleTypeConvert("2011-12-11 12:24:12", Date.class);
             assertEquals(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("2011-12-11 12:24:12"), (Date) result);
 
+            result = CompatibleTypeUtils.compatibleTypeConvert("2011-12-11 12:24:12", java.sql.Date.class);
+            assertEquals(new SimpleDateFormat("yyyy-MM-dd").format((java.sql.Date) result), "2011-12-11");
+
+            result = CompatibleTypeUtils.compatibleTypeConvert("2011-12-11 12:24:12", java.sql.Time.class);
+            assertEquals(new SimpleDateFormat("HH:mm:ss").format((java.sql.Time) result), "12:24:12");
+
+            result = CompatibleTypeUtils.compatibleTypeConvert("2011-12-11 12:24:12", java.sql.Timestamp.class);
+            assertEquals(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format((java.sql.Timestamp) result), "2011-12-11 12:24:12");
+
             result = CompatibleTypeUtils.compatibleTypeConvert("ab", char[].class);
             assertEquals(2, ((char[]) result).length);
             assertEquals('a', ((char[]) result)[0]);
