@@ -58,7 +58,7 @@ public abstract class AbstractServiceStore implements ServiceStore {
     // Log output
     protected final Logger logger = LoggerFactory.getLogger(getClass());
     // Local disk cache, where the special key value.registies records the list of registry centers, and the others are the list of notified service providers
-    private final Properties properties = new Properties();
+    final Properties properties = new Properties();
     // File cache timing writing
     private final ExecutorService servicestoreCacheExecutor = Executors.newFixedThreadPool(1, new NamedThreadFactory("DubboSaveServicestoreCache", true));
 
@@ -67,8 +67,8 @@ public abstract class AbstractServiceStore implements ServiceStore {
     final Set<URL> failedServiceStore = new ConcurrentHashSet<URL>();
     private URL serviceStoreURL;
     // Local disk cache file
-    private File file;
-    private static AtomicBoolean INIT = new AtomicBoolean(false);
+    File file;
+    private AtomicBoolean INIT = new AtomicBoolean(false);
     private final ScheduledExecutorService retryExecutor = Executors.newScheduledThreadPool(0, new NamedThreadFactory("DubboRegistryFailedRetryTimer", true));
     private AtomicInteger retryTimes = new AtomicInteger(0);
 
@@ -170,7 +170,7 @@ public abstract class AbstractServiceStore implements ServiceStore {
         }
     }
 
-    private void loadProperties() {
+    void loadProperties() {
         if (file != null && file.exists()) {
             InputStream in = null;
             try {
