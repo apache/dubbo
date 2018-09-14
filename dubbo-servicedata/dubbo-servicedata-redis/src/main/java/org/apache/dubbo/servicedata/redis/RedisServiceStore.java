@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.servicedata.redis;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -44,7 +45,7 @@ public class RedisServiceStore extends AbstractServiceStore {
     @Override
     protected void doPutService(URL url) {
         try (Jedis jedis = pool.getResource()) {
-            jedis.set(TAG + url.getServiceKey(), url.toParameterString());
+            jedis.set(TAG + getProtocol(url) + "." + url.getServiceKey(), url.toParameterString());
         } catch (Throwable e) {
             logger.error("Failed to put " + url + " to redis " + url + ", cause: " + e.getMessage(), e);
             throw new RpcException("Failed to put " + url + " to redis " + getUrl() + ", cause: " + e.getMessage(), e);
@@ -54,12 +55,18 @@ public class RedisServiceStore extends AbstractServiceStore {
     @Override
     protected URL doPeekService(URL url) {
         try (Jedis jedis = pool.getResource()) {
-            String value = jedis.get(TAG + url.getServiceKey());
+            String value = jedis.get(TAG + getProtocol(url) + "." + url.getServiceKey());
             return url.addParameterString(value);
         } catch (Throwable e) {
             logger.error("Failed to peek " + url + " to redis " + url + ", cause: " + e.getMessage(), e);
             throw new RpcException("Failed to put " + url + " to redis " + getUrl() + ", cause: " + e.getMessage(), e);
         }
+    }
+
+    private String getProtocol(URL url) {
+        String protocol = url.getParameter(Constants.SIDE_KEY);
+        protocol = protocol == null ? url.getProtocol() : protocol;
+        return protocol;
     }
 
 

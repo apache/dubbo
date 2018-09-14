@@ -22,6 +22,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
@@ -30,6 +32,7 @@ public class AbstractServiceStoreTest {
 
     private AbstractServiceStore abstractServiceStore;
     private URL url;
+    private Map<String, String> store = new ConcurrentHashMap<>();
 
     @Before
     public void before(){
@@ -39,7 +42,7 @@ public class AbstractServiceStoreTest {
 
             @Override
             protected void doPutService(URL url) {
-
+                store.put(url.getServiceKey(), url.toParameterString());
             }
 
             @Override
@@ -49,6 +52,9 @@ public class AbstractServiceStoreTest {
         };
 
     }
+
+    @Test
+    public
 
 
 }
