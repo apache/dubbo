@@ -187,7 +187,7 @@ public /**final**/ class URL implements Serializable {
         int port = 0;
         String path = null;
         Map<String, String> parameters = null;
-        int i = url.indexOf("?"); // seperator between body and parameters 
+        int i = url.indexOf("?"); // seperator between body and parameters
         if (i >= 0) {
             String[] parts = url.substring(i + 1).split("\\&");
             parameters = new HashMap<String, String>();
@@ -248,6 +248,47 @@ public /**final**/ class URL implements Serializable {
         }
         if (url.length() > 0) host = url;
         return new URL(protocol, username, password, host, port, path, parameters);
+    }
+
+    public static URL valueOf(String url, String... reserveParams){
+        URL result = valueOf(url);
+        if (reserveParams == null || reserveParams.length == 0){
+            return result;
+        }
+        Map<String, String> newMap = new HashMap<String,String>(reserveParams.length);
+        Map<String, String> oldMap = result.getParameters();
+        for(String reserveParam : reserveParams){
+            String tmp = oldMap.get(reserveParam);
+            if(StringUtils.isNotEmpty(tmp)){
+                newMap.put(reserveParam, tmp);
+            }
+        }
+        return result.clearParameters().addParameters(newMap);
+    }
+
+    public static URL valueOf(URL url, String[] reserveParams, String[] reserveParamPrefixs) {
+        Map<String, String> newMap = new HashMap<String, String>();
+        Map<String, String> oldMap = url.getParameters();
+        if (reserveParamPrefixs != null && reserveParamPrefixs.length != 0) {
+            for (Map.Entry<String, String> entry : oldMap.entrySet()) {
+                for (String reserveParamPrefix : reserveParamPrefixs){
+                    if (entry.getKey().startsWith(reserveParamPrefix) && StringUtils.isNotEmpty(entry.getValue())){
+                        newMap.put(entry.getKey(), entry.getValue());
+                    }
+                }
+            }
+        }
+
+        if (reserveParams != null) {
+            for (String reserveParam : reserveParams) {
+                String tmp = oldMap.get(reserveParam);
+                if (StringUtils.isNotEmpty(tmp)) {
+                    newMap.put(reserveParam, tmp);
+                }
+            }
+        }
+
+        return newMap.isEmpty() ? url : url.clearParameters().addParameters(newMap);
     }
 
     public static String encode(String value) {
