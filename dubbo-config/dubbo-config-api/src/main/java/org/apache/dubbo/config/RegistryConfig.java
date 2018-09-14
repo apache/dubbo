@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.config.support.Parameter;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -87,6 +88,18 @@ public class RegistryConfig extends AbstractConfig {
 
     // if it's default
     private Boolean isDefault;
+
+    /**
+     * simple the registry.
+     * @since 2.7.0
+     */
+    private Boolean simple;
+    /**
+     * After simplify the registry, should add some paramter individually.
+     * addionalParameterKeys = addParamKeys
+     * @since 2.7.0
+     */
+    private String addParamKeys;
 
     public RegistryConfig() {
     }
@@ -321,4 +334,19 @@ public class RegistryConfig extends AbstractConfig {
         this.isDefault = isDefault;
     }
 
+    public Boolean getSimple() {
+        return simple;
+    }
+
+    public void setSimple(Boolean simple) {
+        this.simple = simple;
+    }
+
+    public String getAddParamKeys() {
+        return addParamKeys;
+    }
+
+    public void setAddParamKeys(String addParamKeys) {
+        this.addParamKeys = addParamKeys;
+    }
 }

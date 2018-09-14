@@ -35,11 +35,14 @@ import org.apache.dubbo.rpc.InvokerListener;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.support.MockInvoker;
+import org.apache.dubbo.servicedata.ServiceStoreFactory;
+import org.apache.dubbo.servicedata.integration.ServiceStoreService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * AbstractDefaultConfig
@@ -101,6 +104,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     // the scope for referring/exporting a service, if it's local, it means searching in current JVM only.
     private String scope;
+
+    protected ServiceStoreConfig serviceStoreConfig;
+
 
     protected void checkRegistry() {
         // for backward compatibility
@@ -253,6 +259,55 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             return registryURL.setProtocol("dubbo").addParameter(Constants.PROTOCOL_KEY, "registry").addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map));
         }
         return null;
+    }
+
+    protected URL loadServiceStore(boolean provider) {
+        // FIXME
+        // checkRegistry();
+        if(serviceStoreConfig == null){
+            return null;
+        }
+        URL loadServiceUrl ;
+
+        String address = serviceStoreConfig.getAddress();
+        if (address == null || address.length() == 0) {
+            address = Constants.ANYHOST_VALUE;
+        }
+
+        if (address.length() > 0 && !RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
+            Map<String, String> map = new HashMap<String, String>();
+            appendParameters(map, application);
+            appendParameters(map, serviceStoreConfig);
+            map.put("path", ServiceStoreConfig.class.getName());
+            map.put("dubbo", Version.getProtocolVersion());
+            map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
+            if (ConfigUtils.getPid() > 0) {
+                map.put(Constants.PID_KEY, String.valueOf(ConfigUtils.getPid()));
+            }
+            if (!map.containsKey("protocol")) {
+                if (ExtensionLoader.getExtensionLoader(ServiceStoreFactory.class).hasExtension("remote")) {
+                    map.put("protocol", "remote");
+                } else {
+                    map.put("protocol", "dubbo");
+                }
+            }
+            URL url = UrlUtils.parseURL(address, map);
+            url = url.addParameter(Constants.SERVICE_STORE_KEY, url.getProtocol()).setProtocol(Constants.SERVICE_STORE_PROTOCOL);
+            if ((provider && url.getParameter(Constants.REGISTER_KEY, true))
+                    || (!provider && url.getParameter(Constants.SUBSCRIBE_KEY, true))) {
+                return url;
+            }
+        }
+        return null;
+    }
+
+    protected ServiceStoreService getServiceStoreService() {
+        if (serviceStoreConfig == null) {
+            return null;
+        }
+        return ServiceStoreService.instance(() -> {
+            return loadServiceStore(true);
+        });
     }
 
     protected void checkInterfaceAndMethods(Class<?> interfaceClass, List<MethodConfig> methods) {
@@ -522,4 +577,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     public void setScope(String scope) {
         this.scope = scope;
     }
+
+    public ServiceStoreConfig getServiceStoreConfig() {
+        return serviceStoreConfig;
+    }
+
+    public void setServiceStoreConfig(ServiceStoreConfig serviceStoreConfig) {
+        this.serviceStoreConfig = serviceStoreConfig;
+    }
+
 }
