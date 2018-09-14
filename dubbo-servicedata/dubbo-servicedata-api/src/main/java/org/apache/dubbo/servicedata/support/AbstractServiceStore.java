@@ -104,15 +104,6 @@ public abstract class AbstractServiceStore implements ServiceStore {
         }, 100, 100, TimeUnit.MILLISECONDS);
     }
 
-    protected static List<URL> filterEmpty(URL url, List<URL> urls) {
-        if (urls == null || urls.isEmpty()) {
-            List<URL> result = new ArrayList<URL>(1);
-            result.add(url.setProtocol(Constants.EMPTY_PROTOCOL));
-            return result;
-        }
-        return urls;
-    }
-
     public URL getUrl() {
         return serviceStoreURL;
     }
@@ -240,6 +231,8 @@ public abstract class AbstractServiceStore implements ServiceStore {
 
     public void put(URL url) {
         try {
+            // remove the individul param
+            url = url.removeParameters(Constants.PID_KEY, Constants.TIMESTAMP_KEY);
             if (logger.isInfoEnabled()) {
                 logger.info("Servicestore Put: " + url);
             }
