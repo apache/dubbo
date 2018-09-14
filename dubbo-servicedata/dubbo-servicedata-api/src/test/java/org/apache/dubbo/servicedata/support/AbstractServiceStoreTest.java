@@ -18,6 +18,7 @@ package org.apache.dubbo.servicedata.support;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -36,7 +37,7 @@ public class AbstractServiceStoreTest {
 
     @Before
     public void before(){
-        url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444");
+        url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
 
         abstractServiceStore = new AbstractServiceStore(url) {
 
@@ -54,7 +55,27 @@ public class AbstractServiceStoreTest {
     }
 
     @Test
-    public
+    public void testPutUsual(){
+        abstractServiceStore.put(url);
+        Assert.assertNotNull(store.get(url.getServiceKey()));
+    }
+
+    @Test
+    public void testPutNoServiceKeyUrl(){
+        URL urlTmp = URL.valueOf("rmi://wrongHost:90?application=vic");
+        abstractServiceStore.put(urlTmp);
+        Assert.assertNull(urlTmp.getServiceKey());
+        // key is null, will add failed list.
+        Assert.assertFalse(abstractServiceStore.failedServiceStore.isEmpty());
+    }
+
+    @Test
+    public void testPutNotFullServiceKeyUrl(){
+        URL urlTmp = URL.valueOf("rmi://wrongHost:90/org.dubbo.TestService");
+        abstractServiceStore.put(urlTmp);
+        Assert.assertNotNull(store.get(urlTmp.getServiceKey()));
+    }
+
 
 
 }

@@ -64,7 +64,7 @@ public abstract class AbstractServiceStore implements ServiceStore {
 
     private final AtomicLong lastCacheChanged = new AtomicLong();
     private final Set<URL> registered = new ConcurrentHashSet<URL>();
-    private final Set<URL> failedServiceStore = new ConcurrentHashSet<URL>();
+    final Set<URL> failedServiceStore = new ConcurrentHashSet<URL>();
     private URL serviceStoreURL;
     // Local disk cache file
     private File file;
