@@ -14,17 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.servicedata;
+package org.apache.dubbo.servicedata.store.zookeeper;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Adaptive;
-import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
+import org.apache.dubbo.servicedata.store.ServiceStore;
+import org.apache.dubbo.servicedata.support.AbstractServiceStoreFactory;
 
 /**
+ * ZookeeperRegistryFactory.
+ *
  */
-@SPI("dubbo")
-public interface ServiceStoreFactory {
+public class ZookeeperServiceStoreFactory extends AbstractServiceStoreFactory {
 
-    @Adaptive({"protocol"})
-    ServiceStore getServiceStore(URL url);
+    private ZookeeperTransporter zookeeperTransporter;
+
+    public void setZookeeperTransporter(ZookeeperTransporter zookeeperTransporter) {
+        this.zookeeperTransporter = zookeeperTransporter;
+    }
+
+    @Override
+    public ServiceStore createServiceStore(URL url) {
+        return new ZookeeperServiceStore(url, zookeeperTransporter);
+    }
+
 }

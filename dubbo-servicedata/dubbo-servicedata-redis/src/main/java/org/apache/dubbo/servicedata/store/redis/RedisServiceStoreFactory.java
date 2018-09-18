@@ -14,11 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.servicedata.redis;
+package org.apache.dubbo.servicedata.store.redis;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
-import org.apache.dubbo.servicedata.ServiceStore;
+import org.apache.dubbo.servicedata.store.ServiceStore;
 import org.apache.dubbo.servicedata.support.AbstractServiceStoreFactory;
 
 /**

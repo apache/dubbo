@@ -2,7 +2,7 @@ package org.apache.dubbo.servicedata.support;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.servicedata.ServiceStore;
+import org.apache.dubbo.servicedata.store.ServiceStore;
 import org.junit.Assert;
 import org.junit.Test;
 
