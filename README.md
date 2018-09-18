@@ -2,13 +2,16 @@
 
 [![Build Status](https://travis-ci.org/apache/incubator-dubbo.svg?branch=master)](https://travis-ci.org/apache/incubator-dubbo)
 [![codecov](https://codecov.io/gh/apache/incubator-dubbo/branch/master/graph/badge.svg)](https://codecov.io/gh/apache/incubator-dubbo)
-[![Gitter](https://badges.gitter.im/alibaba/dubbo.svg)](https://gitter.im/alibaba/dubbo?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-![license](https://img.shields.io/github/license/alibaba/dubbo.svg)
 ![maven](https://img.shields.io/maven-central/v/com.alibaba/dubbo.svg)
+![license](https://img.shields.io/github/license/alibaba/dubbo.svg)
+[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/apache/incubator-dubbo.svg)](http://isitmaintained.com/project/apache/incubator-dubbo "Average time to resolve an issue")
+[![Percentage of issues still open](http://isitmaintained.com/badge/open/apache/incubator-dubbo.svg)](http://isitmaintained.com/project/apache/incubator-dubbo "Percentage of issues still open")
+[![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=Apache%20Dubbo%20(incubating)%20is%20a%20high-performance%2C%20java%20based%2C%20open%20source%20RPC%20framework.&url=http://dubbo.incubator.apache.org/&via=ApacheDubbo&hashtags=rpc,java,dubbo,micro-service)
+[![Gitter](https://badges.gitter.im/alibaba/dubbo.svg)](https://gitter.im/alibaba/dubbo?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-Apache Dubbo (incubating) is a high-performance, java based open source RPC framework. Please visit [official site ](http://dubbo.incubator.apache.org) for quick start and documentations, as well as [Wiki](https://github.com/apache/incubator-dubbo/wiki) for news, FAQ, and release notes.
+Apache Dubbo (incubating) is a high-performance, Java based open source RPC framework. Please visit [official site](http://dubbo.incubator.apache.org) for quick start and documentations, as well as [Wiki](https://github.com/apache/incubator-dubbo/wiki) for news, FAQ, and release notes.
 
-We are now collecting dubbo user info in order to help us to improve dubbo better, pls. kindly help us by providing yours on [issue#1012: Wanted: who's using dubbo](https://github.com/apache/incubator-dubbo/issues/1012), thanks :)
+We are now collecting dubbo user info in order to help us to improve Dubbo better, pls. kindly help us by providing yours on [issue#1012: Wanted: who's using dubbo](https://github.com/apache/incubator-dubbo/issues/1012), thanks :)
 
 ## Architecture
 
@@ -32,7 +35,7 @@ The following code snippet comes from [Dubbo Samples](https://github.com/dubbo/d
 # cd dubbo-samples/dubbo-samples-api
 ```
 
-There's one [README](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samples-api/README.md) file under `dubbo-samples-api` directory. Read it and try this sample out by following the instructions.
+There's a [README](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samples-api/README.md) file under `dubbo-samples-api` directory. Read it and try this sample out by following the instructions.
 
 ### Maven dependency
 
@@ -40,7 +43,7 @@ There's one [README](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-sa
 <dependency>
     <groupId>com.alibaba</groupId>
     <artifactId>dubbo</artifactId>
-    <version>2.6.2</version>
+    <version>2.6.3</version>
 </dependency>
 ```
 
@@ -149,7 +152,9 @@ The consumer will print out `Hello world` on the screen.
 
 ## Contact
 
-* Mailing list: [dev@dubbo.incubator.apache.org](mailto:[dev-subscribe@dubbo.incubator.apache.org]) (subscription [guide](https://github.com/apache/incubator-dubbo/wiki/Mailing-list-subscription-guide))
+* Mailing list: 
+  * dev list: for dev/user discussion. [subscribe](mailto:dev-subscribe@dubbo.incubator.apache.org), [unsubscribe](mailto:dev-unsubscribe@dubbo.incubator.apache.org), [archive](https://lists.apache.org/list.html?dev@dubbo.apache.org),  [guide](https://github.com/apache/incubator-dubbo/wiki/Mailing-list-subscription-guide)
+  
 * Bugs: [Issues](https://github.com/apache/incubator-dubbo/issues/new?template=dubbo-issue-report-template.md)
 * Gitter: [Gitter channel](https://gitter.im/alibaba/dubbo) 
 * Twitter: [@ApacheDubbo](https://twitter.com/ApacheDubbo)
@@ -180,7 +185,7 @@ Please follow the [template](https://github.com/apache/incubator-dubbo/issues/ne
 
 ## Reporting a security vulnerability
 
-Please report security vulnerability to security@dubbo.incubator.apache.org (private mailing list).
+Please report security vulnerability to [us](security@dubbo.incubator.apache.org) privately.
 
 ## Dubbo eco system
 

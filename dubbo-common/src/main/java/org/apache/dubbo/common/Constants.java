@@ -362,6 +362,8 @@ public class Constants {
 
     public final static String PATH_SEPARATOR = "/";
 
+    public final static String PROTOCOL_SEPARATOR = "://";
+
     public static final String REGISTRY_SEPARATOR = "|";
 
     public static final Pattern REGISTRY_SPLIT_PATTERN = Pattern
