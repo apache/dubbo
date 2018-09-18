@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.extension;
 
+import java.util.Iterator;
 import java.util.Set;
 import org.apache.dubbo.common.extension.ExtensionFactory;
 import org.apache.dubbo.common.extension.SPI;
@@ -40,6 +41,10 @@ public class SpringExtensionFactory implements ExtensionFactory {
 
     public static void removeApplicationContext(ApplicationContext context) {
         contexts.remove(context);
+    }
+
+    public static Set<ApplicationContext> getContexts() {
+        return contexts;
     }
 
     // currently for test purpose
