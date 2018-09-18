@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.spring.extension;
 
-import java.util.Iterator;
 import java.util.Set;
 import org.apache.dubbo.common.extension.ExtensionFactory;
 import org.apache.dubbo.common.extension.SPI;
