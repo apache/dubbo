@@ -16,24 +16,29 @@
  */
 package org.apache.dubbo.servicedata.integration;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.servicedata.ServiceStore;
-import org.apache.dubbo.servicedata.ServiceStoreFactory;
+import org.apache.dubbo.servicedata.metadata.ServiceDescriptor;
+import org.apache.dubbo.servicedata.metadata.builder.ServiceDescriptorBuilder;
+import org.apache.dubbo.servicedata.store.ServiceStore;
+import org.apache.dubbo.servicedata.store.ServiceStoreFactory;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
+
+import static org.apache.dubbo.common.Constants.SERVICE_DESCIPTOR_KEY;
 
 /**
  */
 public class ServiceStoreService {
 
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
     private ServiceStoreFactory serviceStoreFactory = ExtensionLoader.getExtensionLoader(ServiceStoreFactory.class).getAdaptiveExtension();
     private static final Set<URL> providerURLs = new HashSet<URL>();
     private static final Set<URL> consumerURLs = new HashSet<URL>();
@@ -69,6 +74,14 @@ public class ServiceStoreService {
     }
 
     public void publishProvider(URL providerUrl) throws RpcException {
+        try {
+            Class interfaceClass = Class.forName(providerUrl.getParameter(Constants.INTERFACE_KEY));
+            ServiceDescriptor serviceDescriptor = ServiceDescriptorBuilder.build(interfaceClass);
+            providerUrl = providerUrl.addParameter(SERVICE_DESCIPTOR_KEY, JSON.toJSONString(serviceDescriptor));
+        } catch (ClassNotFoundException e) {
+            //ignore error
+            logger.error("Servicestore getServiceDescriptor error. providerUrl: " + providerUrl.toFullString(), e);
+        }
         providerURLs.add(providerUrl);
         serviceStore.put(providerUrl);
     }

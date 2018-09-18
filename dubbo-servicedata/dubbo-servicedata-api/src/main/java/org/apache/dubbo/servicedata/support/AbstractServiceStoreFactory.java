@@ -20,8 +20,8 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.servicedata.ServiceStore;
-import org.apache.dubbo.servicedata.ServiceStoreFactory;
+import org.apache.dubbo.servicedata.store.ServiceStore;
+import org.apache.dubbo.servicedata.store.ServiceStoreFactory;
 
 import java.util.Collection;
 import java.util.Collections;

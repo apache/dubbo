@@ -39,4 +39,10 @@
     <!-- declare the service interface to be exported -->
     <dubbo:service interface="org.apache.dubbo.demo.DemoService" ref="demoService" version="1.0.2"/>
 
+    <!-- service implementation, as same as regular local bean -->
+    <bean id="userService" class="org.apache.dubbo.demo.provider.UserServiceImpl"/>
+
+    <!-- declare the service interface to be exported -->
+    <dubbo:service interface="org.apache.dubbo.demo.UserService" ref="userService" version="1.0.2"/>
+
 </beans>
