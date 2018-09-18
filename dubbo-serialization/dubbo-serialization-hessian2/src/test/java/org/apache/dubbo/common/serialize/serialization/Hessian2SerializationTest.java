@@ -30,7 +30,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class Hessian2SerializationTest extends AbstractSerializationPersionFailTest {
+public class Hessian2SerializationTest extends AbstractSerializationPersonFailTest {
     {
         serialization = new Hessian2Serialization();
     }
