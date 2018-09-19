@@ -58,6 +58,7 @@ public class ConfigUtils {
 
     public static boolean isDefault(String value) {
         return "true".equalsIgnoreCase(value)
+                || "force".equalsIgnoreCase(value)
                 || "default".equalsIgnoreCase(value);
     }
 
