@@ -105,33 +105,36 @@ public class ConditionRouter implements Router, Comparable<Router> {
             }
             // The Value in the KV part.
             else if ("=".equals(separator)) {
-                if (pair == null)
+                if (pair == null) {
                     throw new ParseException("Illegal route rule \""
                             + rule + "\", The error char '" + separator
                             + "' at index " + matcher.start() + " before \""
                             + content + "\".", matcher.start());
+                }
 
                 values = pair.matches;
                 values.add(content);
             }
             // The Value in the KV part.
             else if ("!=".equals(separator)) {
-                if (pair == null)
+                if (pair == null) {
                     throw new ParseException("Illegal route rule \""
                             + rule + "\", The error char '" + separator
                             + "' at index " + matcher.start() + " before \""
                             + content + "\".", matcher.start());
+                }
 
                 values = pair.mismatches;
                 values.add(content);
             }
             // The Value in the KV part, if Value have more than one items.
             else if (",".equals(separator)) { // Should be seperateed by ','
-                if (values == null || values.isEmpty())
+                if (values == null || values.isEmpty()) {
                     throw new ParseException("Illegal route rule \""
                             + rule + "\", The error char '" + separator
                             + "' at index " + matcher.start() + " before \""
                             + content + "\".", matcher.start());
+                }
                 values.add(content);
             } else {
                 throw new ParseException("Illegal route rule \"" + rule
