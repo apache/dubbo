@@ -38,7 +38,7 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
         int length = invokers.size(); // Number of invokers
         int leastActive = -1; // The least active value of all invokers
         int leastCount = 0; // The number of invokers having the same least active value (leastActive)
-        int[] leastIndexs = new int[length]; // The index of invokers having the same least active value (leastActive)
+        int[] leastIndexes = new int[length]; // The index of invokers having the same least active value (leastActive)
         int totalWeight = 0; // The sum of weights
         int firstWeight = 0; // Initial value, used for comparision
         boolean sameWeight = true; // Every invoker has the same weight value?
@@ -49,12 +49,12 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
             if (leastActive == -1 || active < leastActive) { // Restart, when find a invoker having smaller least active value.
                 leastActive = active; // Record the current least active value
                 leastCount = 1; // Reset leastCount, count again based on current leastCount
-                leastIndexs[0] = i; // Reset
+                leastIndexes[0] = i; // Reset
                 totalWeight = weight; // Reset
                 firstWeight = weight; // Record the weight the first invoker
                 sameWeight = true; // Reset, every invoker has the same weight value?
             } else if (active == leastActive) { // If current invoker's active value equals with leaseActive, then accumulating.
-                leastIndexs[leastCount++] = i; // Record index number of this invoker
+                leastIndexes[leastCount++] = i; // Record index number of this invoker
                 totalWeight += weight; // Add this invoker's weight to totalWeight.
                 // If every invoker has the same weight?
                 if (sameWeight && i > 0
@@ -66,20 +66,20 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
         // assert(leastCount > 0)
         if (leastCount == 1) {
             // If we got exactly one invoker having the least active value, return this invoker directly.
-            return invokers.get(leastIndexs[0]);
+            return invokers.get(leastIndexes[0]);
         }
         if (!sameWeight && totalWeight > 0) {
             // If (not every invoker has the same weight & at least one invoker's weight>0), select randomly based on totalWeight.
             int offsetWeight = ThreadLocalRandom.current().nextInt(totalWeight);
             // Return a invoker based on the random value.
             for (int i = 0; i < leastCount; i++) {
-                int leastIndex = leastIndexs[i];
+                int leastIndex = leastIndexes[i];
                 offsetWeight -= getWeight(invokers.get(leastIndex), invocation);
                 if (offsetWeight <= 0)
                     return invokers.get(leastIndex);
             }
         }
         // If all invokers have the same weight value or totalWeight=0, return evenly.
-        return invokers.get(leastIndexs[ThreadLocalRandom.current().nextInt(leastCount)]);
+        return invokers.get(leastIndexes[ThreadLocalRandom.current().nextInt(leastCount)]);
     }
 }
