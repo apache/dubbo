@@ -75,7 +75,7 @@ public class AsyncRpcResult extends AbstractResult {
                     rpcResult = new RpcResult(v);
                 }
                 // instead of resultFuture we must use rFuture here, resultFuture may being changed before complete when building filter chain, but rFuture was guaranteed never changed by closure.
-                rFuture.complete(rpcResult);
+                resultFuture.complete(rpcResult);
             });
         }
         this.valueFuture = future;
@@ -134,7 +134,7 @@ public class AsyncRpcResult extends AbstractResult {
     }
 
     public void thenApplyWithContext(Function<Result, Result> fn) {
-        this.resultFuture = resultFuture.thenApply(fn.compose(beforeContext).andThen(afterContext));
+        resultFuture.thenApply(fn.compose(beforeContext).andThen(afterContext));
     }
 
     @Override
@@ -162,6 +162,7 @@ public class AsyncRpcResult extends AbstractResult {
         return getRpcResult().getAttachment(key, defaultValue);
     }
 
+    @Override
     public void setAttachment(String key, String value) {
         getRpcResult().setAttachment(key, value);
     }
