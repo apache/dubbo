@@ -278,7 +278,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
         if (providers != null && !providers.isEmpty()) {
             for (String provider : providers) {
                 provider = URL.decode(provider);
-                if (provider.contains("://")) {
+                if (provider.contains(Constants.PROTOCOL_SEPARATOR)) {
                     URL url = URL.valueOf(provider);
                     if (UrlUtils.isMatch(consumer, url)) {
                         urls.add(url);
@@ -292,7 +292,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     private List<URL> toUrlsWithEmpty(URL consumer, String path, List<String> providers) {
         List<URL> urls = toUrlsWithoutEmpty(consumer, providers);
         if (urls == null || urls.isEmpty()) {
-            int i = path.lastIndexOf('/');
+            int i = path.lastIndexOf(Constants.PATH_SEPARATOR);
             String category = i < 0 ? path : path.substring(i + 1);
             URL empty = consumer.setProtocol(Constants.EMPTY_PROTOCOL).addParameter(Constants.CATEGORY_KEY, category);
             urls.add(empty);
