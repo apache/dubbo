@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -222,6 +223,14 @@ public class RegistryProtocol implements Protocol {
      */
     private URL getRegisteredProviderUrl(final Invoker<?> originInvoker) {
         URL providerUrl = getProviderUrl(originInvoker);
+        // Remove the async tag here, leaving only the tag at the provider, and not register to registry.
+        Set<String> keySet = providerUrl.getParameters().keySet();
+        List<String> asyncKey = new ArrayList<String>();
+        for(String key : keySet) {
+            if(key.endsWith("." + Constants.ASYNC_KEY) || key.equals(Constants.ASYNC_KEY)) {
+                asyncKey.add(key);
+            }
+        }
         //The address you see at the registry
         return providerUrl.removeParameters(getFilteredKeys(providerUrl))
                 .removeParameter(Constants.MONITOR_KEY)
@@ -231,7 +240,8 @@ public class RegistryProtocol implements Protocol {
                 .removeParameter(QOS_PORT)
                 .removeParameter(ACCEPT_FOREIGN_IP)
                 .removeParameter(VALIDATION_KEY)
-                .removeParameter(INTERFACES);
+                .removeParameter(INTERFACES)
+                .removeParameters(asyncKey);
     }
 
     private URL getSubscribedOverrideUrl(URL registedProviderUrl) {
