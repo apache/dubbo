@@ -288,7 +288,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     protected void checkStubAndMock(Class<?> interfaceClass) {
         if (ConfigUtils.isNotEmpty(local)) {
-            Class<?> localClass = ConfigUtils.isDefault(local) ? ReflectUtils.forName(interfaceClass.getName() + "Local") : ReflectUtils.forName(local);
+            local = ConfigUtils.isDefault(local) ? interfaceClass.getName() + "Local" : local;
+            Class<?> localClass = ReflectUtils.forName(local);
             if (!interfaceClass.isAssignableFrom(localClass)) {
                 throw new IllegalStateException("The local implementation class " + localClass.getName() + " not implement interface " + interfaceClass.getName());
             }
@@ -299,7 +300,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             }
         }
         if (ConfigUtils.isNotEmpty(stub)) {
-            Class<?> localClass = ConfigUtils.isDefault(stub) ? ReflectUtils.forName(interfaceClass.getName() + "Stub") : ReflectUtils.forName(stub);
+            stub = ConfigUtils.isDefault(stub) ? interfaceClass.getName() + "Stub" : stub;
+            Class<?> localClass = ReflectUtils.forName(stub);
             if (!interfaceClass.isAssignableFrom(localClass)) {
                 throw new IllegalStateException("The local implementation class " + localClass.getName() + " not implement interface " + interfaceClass.getName());
             }
