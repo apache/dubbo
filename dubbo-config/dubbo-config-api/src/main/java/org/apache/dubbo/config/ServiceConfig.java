@@ -279,7 +279,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             generic = Boolean.FALSE.toString();
         }
         if (local != null) {
-            if ("true".equals(local)) {
+            if (ConfigUtils.isDefault(local)) {
                 local = interfaceName + "Local";
             }
             Class<?> localClass;
@@ -293,7 +293,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             }
         }
         if (stub != null) {
-            if ("true".equals(stub)) {
+            if (ConfigUtils.isDefault(stub)) {
                 stub = interfaceName + "Stub";
             }
             Class<?> stubClass;
