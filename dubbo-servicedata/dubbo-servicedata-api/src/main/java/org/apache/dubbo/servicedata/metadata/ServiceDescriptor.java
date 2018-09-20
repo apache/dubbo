@@ -14,8 +14,12 @@ public class ServiceDescriptor {
     private List<MethodDescriptor> methodDescriptors = new ArrayList<>();
     /**
      * Primitive type and String will not be stored.
+     *
+     * The typeDescriptor will not store
      */
     private Map<String, TypeDescriptor> types = new HashMap<>();
+
+
 
     public String getName() {
         return name;
