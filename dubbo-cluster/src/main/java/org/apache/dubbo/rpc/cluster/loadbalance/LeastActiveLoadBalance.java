@@ -75,8 +75,9 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
             for (int i = 0; i < leastCount; i++) {
                 int leastIndex = leastIndexes[i];
                 offsetWeight -= getWeight(invokers.get(leastIndex), invocation);
-                if (offsetWeight <= 0)
+                if (offsetWeight <= 0) {
                     return invokers.get(leastIndex);
+                }
             }
         }
         // If all invokers have the same weight value or totalWeight=0, return evenly.
