@@ -16,6 +16,20 @@
  */
 package org.apache.dubbo.common.bytecode;
 
+import org.apache.dubbo.common.utils.ClassHelper;
+import org.apache.dubbo.common.utils.ReflectUtils;
+
+import javassist.CannotCompileException;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.CtConstructor;
+import javassist.CtField;
+import javassist.CtMethod;
+import javassist.CtNewConstructor;
+import javassist.CtNewMethod;
+import javassist.LoaderClassPath;
+import javassist.NotFoundException;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -28,18 +42,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-import javassist.CannotCompileException;
-import javassist.ClassPool;
-import javassist.CtClass;
-import javassist.CtConstructor;
-import javassist.CtField;
-import javassist.CtMethod;
-import javassist.CtNewConstructor;
-import javassist.CtNewMethod;
-import javassist.LoaderClassPath;
-import javassist.NotFoundException;
-import org.apache.dubbo.common.utils.ClassHelper;
-import org.apache.dubbo.common.utils.ReflectUtils;
 
 /**
  * ClassGenerator
@@ -184,7 +186,7 @@ public final class ClassGenerator {
   }
 
   public ClassGenerator addMethod(String name, int mod, Class<?> rt, Class<?>[] pts, Class<?>[] ets,
-      String body) {
+                                  String body) {
     StringBuilder sb = new StringBuilder();
     sb.append(modifier(mod)).append(' ').append(ReflectUtils.getName(rt)).append(' ').append(name);
     sb.append('(');
