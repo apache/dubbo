@@ -591,6 +591,14 @@ public final class ReflectUtils {
         }
     }
 
+    public static Class<?> forName(ClassLoader cl, String name) {
+        try {
+            return name2class(cl, name);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException("Not found class " + name + ", cause: " + e.getMessage(), e);
+        }
+    }
+
     /**
      * name to class.
      * "boolean" => boolean.class
