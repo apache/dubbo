@@ -16,17 +16,17 @@
 -->
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
-	<!-- ===================================================================== -->
-	<!-- 以下是appender的定义 -->
-	<!-- ===================================================================== -->
-	<appender name="dubbo" class="com.alibaba.dubbo.common.utils.DubboAppender">
-		<param name="encoding" value="GBK" />
-		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d %p [%c:%M] - %m%n" />
-		</layout>
-	</appender>
-	<root>
-		<level value="INFO" />
-		<appender-ref ref="dubbo" />
-	</root>
+    <!-- ===================================================================== -->
+    <!-- 以下是appender的定义 -->
+    <!-- ===================================================================== -->
+    <appender name="dubbo" class="org.apache.dubbo.common.utils.DubboAppender">
+        <param name="encoding" value="GBK"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d %p [%c:%M] - %m%n"/>
+        </layout>
+    </appender>
+    <root>
+        <level value="INFO"/>
+        <appender-ref ref="dubbo"/>
+    </root>
 </log4j:configuration>
