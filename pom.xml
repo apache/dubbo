@@ -118,7 +118,7 @@
         <maven_javadoc_version>3.0.1</maven_javadoc_version>
         <maven_jetty_version>9.4.11.v20180605</maven_jetty_version>
         <maven_checkstyle_version>3.0.0</maven_checkstyle_version>
-        <maven_jacoco_version>0.8.1</maven_jacoco_version>
+        <maven_jacoco_version>0.8.2</maven_jacoco_version>
         <apache-rat-plugin.version>0.12</apache-rat-plugin.version>
         <arguments />
         <checkstyle.skip>true</checkstyle.skip>
@@ -261,10 +261,10 @@
                                 <configuration>
                                     <configLocation>codestyle/checkstyle.xml</configLocation>
                                     <suppressionsLocation>codestyle/checkstyle-suppressions.xml</suppressionsLocation>
-                                    <headerLocation>codestyle/checkstyle-header.txt</headerLocation>
                                     <encoding>UTF-8</encoding>
                                     <consoleOutput>true</consoleOutput>
                                     <failOnViolation>true</failOnViolation>
+                                    <excludes>**/JSONWriter.java</excludes>
                                 </configuration>
                                 <goals>
                                     <goal>check</goal>
@@ -324,20 +324,11 @@
         <!-- Used for packaging NOTICE & LICENSE to each sub-module jar-->
         <resources>
             <resource>
-                <directory>src/main/resources/</directory>
+                <directory>src/main/resources</directory>
                 <filtering>false</filtering>
             </resource>
             <resource>
-                <directory>../</directory>
-                <targetPath>META-INF/</targetPath>
-                <filtering>false</filtering>
-                <includes>
-                    <include>NOTICE</include>
-                    <include>LICENSE</include>
-                </includes>
-            </resource>
-            <resource>
-                <directory>../../</directory>
+                <directory>${maven.multiModuleProjectDirectory}</directory>
                 <targetPath>META-INF/</targetPath>
                 <filtering>false</filtering>
                 <includes>

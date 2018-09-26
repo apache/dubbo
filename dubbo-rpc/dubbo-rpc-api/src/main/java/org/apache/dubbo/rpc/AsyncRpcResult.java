@@ -79,8 +79,9 @@ public class AsyncRpcResult extends AbstractResult {
             });
         }
         this.valueFuture = future;
-        this.storedContext = RpcContext.getContext();
-        this.storedServerContext = RpcContext.getServerContext();
+        // employ copy of context avoid the other call may modify the context content
+        this.storedContext = RpcContext.getContext().copyOf();
+        this.storedServerContext = RpcContext.getServerContext().copyOf();
     }
 
     @Override

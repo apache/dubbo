@@ -14,13 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.serialize.serialization;
+package org.apache.dubbo.rpc.cluster.router.tag;
 
 
-import org.apache.dubbo.common.serialize.java.JavaSerialization;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.cluster.Router;
+import org.apache.dubbo.rpc.cluster.RouterFactory;
 
-public class JavaSerializationTest extends AbstractSerializationPersonFailTest {
-    {
-        serialization = new JavaSerialization();
+public class TagRouterFactory implements RouterFactory {
+
+    public static final String NAME = "tag";
+
+    @Override
+    public Router getRouter(URL url) {
+        return new TagRouter(url);
     }
 }

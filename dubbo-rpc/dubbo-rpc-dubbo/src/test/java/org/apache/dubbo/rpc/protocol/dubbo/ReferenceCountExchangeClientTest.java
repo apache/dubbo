@@ -123,6 +123,14 @@ public class ReferenceCountExchangeClientTest {
         Assert.assertEquals("should not warning message", 0, LogUtil.findMessage(errorMsg));
         // counter is incorrect, invocation still succeeds
         client.close();
+
+        // wait close done.
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            Assert.fail();
+        }
+
         Assert.assertEquals("hello", helloService.hello());
         Assert.assertEquals("should warning message", 1, LogUtil.findMessage(errorMsg));
 

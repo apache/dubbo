@@ -43,5 +43,4 @@ public abstract class AbstractChannel extends AbstractPeer implements Channel {
     public String toString() {
         return getLocalAddress() + " -> " + getRemoteAddress();
     }
-
 }

@@ -48,9 +48,9 @@ public class DefaultFuture implements ResponseFuture {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultFuture.class);
 
-    private static final Map<Long, Channel> CHANNELS = new ConcurrentHashMap<Long, Channel>();
+    private static final Map<Long, Channel> CHANNELS = new ConcurrentHashMap<>();
 
-    private static final Map<Long, DefaultFuture> FUTURES = new ConcurrentHashMap<Long, DefaultFuture>();
+    private static final Map<Long, DefaultFuture> FUTURES = new ConcurrentHashMap<>();
 
     public static final Timer TIME_OUT_TIMER = new HashedWheelTimer(
             new NamedThreadFactory("dubbo-future-timeout", true),
@@ -87,10 +87,21 @@ public class DefaultFuture implements ResponseFuture {
         TIME_OUT_TIMER.newTimeout(task, future.getTimeout(), TimeUnit.MILLISECONDS);
     }
 
+    /**
+     * init a DefaultFuture
+     * 1.init a DefaultFuture
+     * 2.timeout check
+     *
+     * @param channel channel
+     * @param request the request
+     * @param timeout timeout
+     * @return a new DefaultFuture
+     */
     public static DefaultFuture newFuture(Channel channel, Request request, int timeout) {
-        final DefaultFuture defaultFuture = new DefaultFuture(channel, request, timeout);
-        timeoutCheck(defaultFuture);
-        return defaultFuture;
+        final DefaultFuture future = new DefaultFuture(channel, request, timeout);
+        // timeout check
+        timeoutCheck(future);
+        return future;
     }
 
     public static DefaultFuture getFuture(long id) {
@@ -105,6 +116,29 @@ public class DefaultFuture implements ResponseFuture {
         DefaultFuture future = FUTURES.get(request.getId());
         if (future != null) {
             future.doSent();
+        }
+    }
+
+    /**
+     * close a channel when a channel is inactive
+     * directly return the unfinished requests.
+     *
+     * @param channel channel to close
+     */
+    public static void closeChannel(Channel channel) {
+        for (long id : CHANNELS.keySet()) {
+            if (channel.equals(CHANNELS.get(id))) {
+                DefaultFuture future = getFuture(id);
+                if (future != null && !future.isDone()) {
+                    Response disconnectResponse = new Response(future.getId());
+                    disconnectResponse.setStatus(Response.CHANNEL_INACTIVE);
+                    disconnectResponse.setErrorMessage("Channel " +
+                            channel +
+                            " is inactive. Directly return the unFinished request : " +
+                            future.getRequest());
+                    DefaultFuture.received(channel, disconnectResponse);
+                }
+            }
         }
     }
 
@@ -212,6 +246,7 @@ public class DefaultFuture implements ResponseFuture {
             timeoutResponse.setErrorMessage(future.getTimeoutMessage(true));
             // handle response.
             DefaultFuture.received(future.getChannel(), timeoutResponse);
+
         }
     }
 
