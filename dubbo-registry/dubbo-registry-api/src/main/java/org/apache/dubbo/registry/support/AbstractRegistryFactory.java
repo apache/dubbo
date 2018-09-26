@@ -85,24 +85,31 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
         url = url.setPath(RegistryService.class.getName())
                 .addParameter(Constants.INTERFACE_KEY, RegistryService.class.getName())
                 .removeParameters(Constants.EXPORT_KEY, Constants.REFER_KEY);
+        
         String key = url.toServiceString();
-        // Lock the registry access process to ensure a single instance of the registry
-        LOCK.lock();
-        try {
-            Registry registry = REGISTRIES.get(key);
-            if (registry != null) {
-                return registry;
+        
+        Registry registry = REGISTRIES.get(key);
+
+        if (registry == null){
+
+            //阻塞创建相同的注册服务
+            synchronized (key){
+
+                if (registry == null){
+
+                    registry = createRegistry(url) ;
+
+                    if (registry == null) {
+                        throw new IllegalStateException("Can not create registry " + url);
+                    }
+
+                    REGISTRIES.put(key, registry) ;
+                }
             }
-            registry = createRegistry(url);
-            if (registry == null) {
-                throw new IllegalStateException("Can not create registry " + url);
-            }
-            REGISTRIES.put(key, registry);
-            return registry;
-        } finally {
-            // Release the lock
-            LOCK.unlock();
         }
+
+
+        return registry ;
     }
 
     protected abstract Registry createRegistry(URL url);
