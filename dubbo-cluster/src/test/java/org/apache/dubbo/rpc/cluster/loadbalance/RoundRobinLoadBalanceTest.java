@@ -39,7 +39,7 @@ public class RoundRobinLoadBalanceTest extends LoadBalanceBaseTest {
         int sumInvoker1 = 0;
         int sumInvoker2 = 0;
         int sumInvoker3 = 0;
-        int loop = 100000;
+        int loop = 10000;
 
         RoundRobinLoadBalance lb = new RoundRobinLoadBalance();
         for (int i = 0; i < loop; i++) {

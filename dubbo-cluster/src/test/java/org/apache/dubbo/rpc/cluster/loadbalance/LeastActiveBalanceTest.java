@@ -42,10 +42,10 @@ public class LeastActiveBalanceTest extends LoadBalanceBaseTest {
     public void testSelectByWeight() {
         int sumInvoker1 = 0;
         int sumInvoker2 = 0;
-        int loop = 100000;
+        int loop = 10000;
 
         LeastActiveLoadBalance lb = new LeastActiveLoadBalance();
-        for (int i = 0; i < 100000; i++) {
+        for (int i = 0; i < loop; i++) {
             Invoker selected = lb.select(weightInvokers, null, weightTestInvocation);
 
             if (selected.getUrl().getProtocol().equals("test1")) {

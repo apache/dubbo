@@ -58,7 +58,7 @@ public class RandomLoadBalanceTest extends LoadBalanceBaseTest {
         int sumInvoker1 = 0;
         int sumInvoker2 = 0;
         int sumInvoker3 = 0;
-        int loop = 100000;
+        int loop = 10000;
 
         RandomLoadBalance lb = new RandomLoadBalance();
         for (int i = 0; i < loop; i++) {
