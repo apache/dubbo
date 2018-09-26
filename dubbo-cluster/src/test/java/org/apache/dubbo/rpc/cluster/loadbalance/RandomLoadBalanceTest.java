@@ -16,18 +16,12 @@
  */
 package org.apache.dubbo.rpc.cluster.loadbalance;
 
-import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcStatus;
-
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -66,9 +60,9 @@ public class RandomLoadBalanceTest extends LoadBalanceBaseTest {
         int sumInvoker3 = 0;
         int loop = 100000;
 
-        MyRandomLoadBalance lb = new MyRandomLoadBalance();
+        RandomLoadBalance lb = new RandomLoadBalance();
         for (int i = 0; i < loop; i++) {
-            Invoker selected = lb.select(weightInvokers, null, null);
+            Invoker selected = lb.select(weightInvokers, null, weightTestInvocation);
 
             if (selected.getUrl().getProtocol().equals("test1")) {
                 sumInvoker1++;
@@ -88,44 +82,6 @@ public class RandomLoadBalanceTest extends LoadBalanceBaseTest {
         System.out.println(sumInvoker2);
         System.out.println(sumInvoker3);
         Assert.assertEquals("select failed!", sumInvoker1 + sumInvoker2 + sumInvoker3, loop);
-    }
-
-    class MyRandomLoadBalance extends AbstractLoadBalance {
-
-        public static final String NAME = "random";
-
-        private final Random random = new Random();
-
-        @Override
-        protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
-            int length = invokers.size(); // Number of invokers
-            int totalWeight = 0; // The sum of weights
-            boolean sameWeight = true; // Every invoker has the same weight?
-            for (int i = 0; i < length; i++) {
-
-                // mock weight
-                int weight = invokers.get(i).getUrl().getParameter(Constants.WEIGHT_KEY, Constants.DEFAULT_WEIGHT);
-
-                totalWeight += weight; // Sum
-                if (sameWeight && i > 0
-                        && weight != invokers.get(i - 1).getUrl().getParameter(Constants.WEIGHT_KEY, Constants.DEFAULT_WEIGHT)) {
-                    sameWeight = false;
-                }
-            }
-            if (totalWeight > 0 && !sameWeight) {
-                // If (not every invoker has the same weight & at least one invoker's weight>0), select randomly based on totalWeight.
-                int offset = random.nextInt(totalWeight);
-                // Return a invoker based on the random value.
-                for (int i = 0; i < length; i++) {
-                    offset -= invokers.get(i).getUrl().getParameter(Constants.WEIGHT_KEY, Constants.DEFAULT_WEIGHT);
-                    if (offset < 0) {
-                        return invokers.get(i);
-                    }
-                }
-            }
-            // If all invokers have the same weight value or totalWeight=0, return evenly.
-            return invokers.get(random.nextInt(length));
-        }
     }
 
 }
