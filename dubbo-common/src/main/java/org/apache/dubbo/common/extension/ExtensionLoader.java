@@ -865,7 +865,7 @@ public class ExtensionLoader<T> {
 
                 boolean hasInvocation = false;
                 for (int i = 0; i < pts.length; ++i) {
-                    if (pts[i].getName().equals("org.apache.dubbo.rpc.Invocation")) {
+                    if (("org.apache.dubbo.rpc.Invocation").equals(pts[i].getName())) {
                         // Null Point check
                         String s = String.format("\nif (arg%d == null) throw new IllegalArgumentException(\"invocation == null\");", i);
                         code.append(s);
