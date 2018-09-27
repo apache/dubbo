@@ -148,6 +148,18 @@ public class ConfigTest {
     }
 
     @Test
+    public void testForks() {
+        ReferenceConfig<DemoService> reference = new ReferenceConfig<DemoService>();
+        reference.setApplication(new ApplicationConfig("consumer"));
+        reference.setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
+        reference.setInterface(DemoService.class);
+        reference.setUrl("dubbo://127.0.0.1:20881");
+        reference.setForks(10);
+        String str = reference.toString();
+        assertTrue(str.contains("forks=\"10\""));
+    }
+
+    @Test
     public void testMultiProtocol() {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/multi-protocol.xml");
         ctx.start();
