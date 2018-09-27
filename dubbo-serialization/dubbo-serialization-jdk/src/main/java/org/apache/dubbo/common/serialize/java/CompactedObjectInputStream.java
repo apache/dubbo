@@ -43,8 +43,9 @@ public class CompactedObjectInputStream extends ObjectInputStream {
     @Override
     protected ObjectStreamClass readClassDescriptor() throws IOException, ClassNotFoundException {
         int type = read();
-        if (type < 0)
+        if (type < 0) {
             throw new EOFException();
+        }
         switch (type) {
             case 0:
                 return super.readClassDescriptor();

@@ -50,8 +50,6 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
 
     private static final long serialVersionUID = 213195494150089726L;
 
-    private static transient ApplicationContext SPRING_CONTEXT;
-
     private final transient Service service;
 
     private transient ApplicationContext applicationContext;
@@ -70,15 +68,10 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         this.service = service;
     }
 
-    public static ApplicationContext getSpringContext() {
-        return SPRING_CONTEXT;
-    }
-
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
         SpringExtensionFactory.addApplicationContext(applicationContext);
-        SPRING_CONTEXT = applicationContext;
         try {
             Method method = applicationContext.getClass().getMethod("addApplicationListener", ApplicationListener.class); // backward compatibility to spring 2.0.1
             method.invoke(applicationContext, this);
