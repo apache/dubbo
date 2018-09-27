@@ -154,9 +154,11 @@ public class ConfigTest {
         reference.setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
         reference.setInterface(DemoService.class);
         reference.setUrl("dubbo://127.0.0.1:20881");
-        reference.setForks(10);
+
+        int forks = 10;
+        reference.setForks(forks);
         String str = reference.toString();
-        assertTrue(str.contains("forks=\"10\""));
+        assertTrue(str.contains("forks=\"" + forks + "\""));
     }
 
     @Test
