@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.cluster.loadbalance;
 
 import org.apache.dubbo.rpc.Invoker;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -34,4 +33,36 @@ public class RoundRobinLoadBalanceTest extends LoadBalanceBaseTest {
             Assert.assertTrue("abs diff should < 1", Math.abs(count - runs / (0f + invokers.size())) < 1f);
         }
     }
+
+    @Test
+    public void testSelectByWeight() {
+        int sumInvoker1 = 0;
+        int sumInvoker2 = 0;
+        int sumInvoker3 = 0;
+        int loop = 10000;
+
+        RoundRobinLoadBalance lb = new RoundRobinLoadBalance();
+        for (int i = 0; i < loop; i++) {
+            Invoker selected = lb.select(weightInvokers, null, weightTestInvocation);
+
+            if (selected.getUrl().getProtocol().equals("test1")) {
+                sumInvoker1++;
+            }
+
+            if (selected.getUrl().getProtocol().equals("test2")) {
+                sumInvoker2++;
+            }
+
+            if (selected.getUrl().getProtocol().equals("test3")) {
+                sumInvoker3++;
+            }
+        }
+
+        // 1 : 9 : 6
+        System.out.println(sumInvoker1);
+        System.out.println(sumInvoker2);
+        System.out.println(sumInvoker3);
+        Assert.assertEquals("select failed!", sumInvoker1 + sumInvoker2 + sumInvoker3, loop);
+    }
+
 }
