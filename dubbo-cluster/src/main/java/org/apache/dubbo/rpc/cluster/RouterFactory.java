@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.cluster;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.rpc.Invocation;
 
 /**
  * RouterFactory. (SPI, Singleton, ThreadSafe)
@@ -27,7 +26,7 @@ import org.apache.dubbo.rpc.Invocation;
  * <a href="http://en.wikipedia.org/wiki/Routing">Routing</a>
  *
  * @see org.apache.dubbo.rpc.cluster.Cluster#join(Directory)
- * @see org.apache.dubbo.rpc.cluster.Directory#list(Invocation)
+ * @see org.apache.dubbo.rpc.cluster.Directory#list(org.apache.dubbo.rpc.Invocation)
  */
 @SPI
 public interface RouterFactory {

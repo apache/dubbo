@@ -21,8 +21,9 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.RpcStatus;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -49,6 +50,12 @@ public class LoadBalanceBaseTest {
     Invoker<LoadBalanceBaseTest> invoker3;
     Invoker<LoadBalanceBaseTest> invoker4;
     Invoker<LoadBalanceBaseTest> invoker5;
+
+    RpcStatus weightTestRpcStatus1;
+    RpcStatus weightTestRpcStatus2;
+    RpcStatus weightTestRpcStatus3;
+
+    RpcInvocation weightTestInvocation;
 
     /**
      * @throws java.lang.Exception
@@ -145,4 +152,55 @@ public class LoadBalanceBaseTest {
         return AbstractLoadBalance.calculateWarmupWeight(uptime, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT);
     }
 
+    /*------------------------------------test invokers for weight---------------------------------------*/
+
+    protected List<Invoker<LoadBalanceBaseTest>> weightInvokers = new ArrayList<Invoker<LoadBalanceBaseTest>>();
+    protected Invoker<LoadBalanceBaseTest> weightInvoker1;
+    protected Invoker<LoadBalanceBaseTest> weightInvoker2;
+    protected Invoker<LoadBalanceBaseTest> weightInvoker3;
+
+    @Before
+    public void before() throws Exception {
+        weightInvoker1 = mock(Invoker.class);
+        weightInvoker2 = mock(Invoker.class);
+        weightInvoker3 = mock(Invoker.class);
+
+        weightTestInvocation = new RpcInvocation();
+        weightTestInvocation.setMethodName("test");
+
+        URL url1 = URL.valueOf("test1://0:1/DemoService");
+        url1 = url1.addParameter(Constants.WEIGHT_KEY, 1);
+        url1 = url1.addParameter(weightTestInvocation.getMethodName() + "." + Constants.WEIGHT_KEY, 1);
+        url1 = url1.addParameter("active", 0);
+
+        URL url2 = URL.valueOf("test2://0:9/DemoService");
+        url2 = url2.addParameter(Constants.WEIGHT_KEY, 9);
+        url2 = url2.addParameter(weightTestInvocation.getMethodName() + "." + Constants.WEIGHT_KEY, 9);
+        url2 = url2.addParameter("active", 0);
+
+        URL url3 = URL.valueOf("test3://1:6/DemoService");
+        url3 = url3.addParameter(Constants.WEIGHT_KEY, 6);
+        url3 = url3.addParameter(weightTestInvocation.getMethodName() + "." + Constants.WEIGHT_KEY, 6);
+        url3 = url3.addParameter("active", 1);
+
+        given(weightInvoker1.isAvailable()).willReturn(true);
+        given(weightInvoker1.getUrl()).willReturn(url1);
+
+        given(weightInvoker2.isAvailable()).willReturn(true);
+        given(weightInvoker2.getUrl()).willReturn(url2);
+
+        given(weightInvoker3.isAvailable()).willReturn(true);
+        given(weightInvoker3.getUrl()).willReturn(url3);
+
+        weightInvokers.add(weightInvoker1);
+        weightInvokers.add(weightInvoker2);
+        weightInvokers.add(weightInvoker3);
+
+        weightTestRpcStatus1 = RpcStatus.getStatus(weightInvoker1.getUrl(), weightTestInvocation.getMethodName());
+        weightTestRpcStatus2 = RpcStatus.getStatus(weightInvoker2.getUrl(), weightTestInvocation.getMethodName());
+        weightTestRpcStatus3 = RpcStatus.getStatus(weightInvoker3.getUrl(), weightTestInvocation.getMethodName());
+
+        // weightTestRpcStatus3 active is 1
+        RpcStatus.beginCount(weightInvoker3.getUrl(), weightTestInvocation.getMethodName());
+    }
 }

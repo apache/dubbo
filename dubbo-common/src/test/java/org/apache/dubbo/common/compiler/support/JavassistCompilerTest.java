@@ -39,7 +39,7 @@ public class JavassistCompilerTest extends JavaCodeTest {
     @Test
     public void testCompileJavaClass0() throws Exception {
         JavassistCompiler compiler = new JavassistCompiler();
-        Class<?> clazz = compiler.compile(getSimleCodeWithoutPackage(), JavassistCompiler.class.getClassLoader());
+        Class<?> clazz = compiler.compile(getSimpleCodeWithoutPackage(), JavassistCompiler.class.getClassLoader());
         Object instance = clazz.newInstance();
         Method sayHello = instance.getClass().getMethod("sayHello");
         Assert.assertEquals("Hello world!", sayHello.invoke(instance));
@@ -48,7 +48,7 @@ public class JavassistCompilerTest extends JavaCodeTest {
     @Test(expected = IllegalStateException.class)
     public void testCompileJavaClass1() throws Exception {
         JavassistCompiler compiler = new JavassistCompiler();
-        Class<?> clazz = compiler.compile(getSimleCodeWithSyntax0(), JavassistCompiler.class.getClassLoader());
+        Class<?> clazz = compiler.compile(getSimpleCodeWithSyntax0(), JavassistCompiler.class.getClassLoader());
         Object instance = clazz.newInstance();
         Method sayHello = instance.getClass().getMethod("sayHello");
         Assert.assertEquals("Hello world!", sayHello.invoke(instance));

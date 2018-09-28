@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-            xmlns:beans="http://www.springframework.org/schema/beans"
+            xmlns:beans="http://www.springframework.org/schema/beans" 
             xmlns:tool="http://www.springframework.org/schema/tool"
             xmlns="http://code.alibabatech.com/schema/dubbo"
             targetNamespace="http://code.alibabatech.com/schema/dubbo">
 
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
-    <xsd:import namespace="http://www.springframework.org/schema/beans"/>
+    <xsd:import namespace="http://www.springframework.org/schema/beans" schemaLocation="http://www.springframework.org/schema/beans/spring-beans.xsd"/>
     <xsd:import namespace="http://www.springframework.org/schema/tool"/>
 
     <xsd:annotation>
@@ -377,11 +377,17 @@
                 <xsd:documentation><![CDATA[ The application monitor. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="shutwait" type="xsd:string" >
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The application shutDown-wait time. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="default" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+
     </xsd:complexType>
 
     <xsd:complexType name="moduleType">
