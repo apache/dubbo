@@ -50,18 +50,20 @@ import static org.apache.dubbo.common.Constants.SERVICE_DESCIPTOR_KEY;
 public class ServiceStoreService {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
-
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(0, new NamedThreadFactory("DubboRegistryFailedRetryTimer", true));
     private static final int ONE_DAY_IN_MIll = 60 * 24 * 60 * 1000;
     private static final int FOUR_HOURS_IN_MIll = 60 * 4 * 60 * 1000;
 
+    private static ServiceStoreService serviceStoreService;
+    private static Object lock = new Object();
+
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(0, new NamedThreadFactory("DubboRegistryFailedRetryTimer", true));
     private ServiceStoreFactory serviceStoreFactory = ExtensionLoader.getExtensionLoader(ServiceStoreFactory.class).getAdaptiveExtension();
     final Set<URL> providerURLs = new ConcurrentHashSet<>();
     final Set<URL> consumerURLs = new ConcurrentHashSet<URL>();
     ServiceStore serviceStore;
-
-
     URL serviceStoreUrl;
+
+
 
     ServiceStoreService(URL serviceStoreURL) {
         if (Constants.SERVICE_STORE_KEY.equals(serviceStoreURL.getProtocol())) {
@@ -78,8 +80,6 @@ public class ServiceStoreService {
         }, calculateStartTime(), ONE_DAY_IN_MIll, TimeUnit.MILLISECONDS);
     }
 
-    private static ServiceStoreService serviceStoreService;
-    private static Object lock = new Object();
 
     public static ServiceStoreService instance(Supplier<URL> loadServiceStoreUrl) {
         if (serviceStoreService == null) {

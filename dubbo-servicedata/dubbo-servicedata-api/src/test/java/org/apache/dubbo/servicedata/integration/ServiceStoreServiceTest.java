@@ -1,6 +1,5 @@
 package org.apache.dubbo.servicedata.integration;
 
-import com.sun.source.tree.AssertTree;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
