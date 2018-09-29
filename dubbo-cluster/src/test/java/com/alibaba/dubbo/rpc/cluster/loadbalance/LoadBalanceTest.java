@@ -21,9 +21,9 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
+import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcStatus;
 import com.alibaba.dubbo.rpc.cluster.LoadBalance;
-
 import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -40,7 +40,6 @@ import static org.mockito.Mockito.mock;
 
 /**
  * RoundRobinLoadBalanceTest
- *
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class LoadBalanceTest {
@@ -51,6 +50,11 @@ public class LoadBalanceTest {
     Invoker<LoadBalanceTest> invoker3;
     Invoker<LoadBalanceTest> invoker4;
     Invoker<LoadBalanceTest> invoker5;
+
+    RpcStatus weightTestRpcStatus1;
+    RpcStatus weightTestRpcStatus2;
+    RpcStatus weightTestRpcStatus3;
+    RpcInvocation weightTestInvocation;
 
     /**
      * @throws java.lang.Exception
@@ -118,6 +122,81 @@ public class LoadBalanceTest {
     }
 
     @Test
+    public void testSelectByWeightLeastActive() {
+        int sumInvoker1 = 0;
+        int sumInvoker2 = 0;
+        int loop = 10000;
+        LeastActiveLoadBalance lb = new LeastActiveLoadBalance();
+        for (int i = 0; i < loop; i++) {
+            Invoker selected = lb.select(weightInvokers, null, weightTestInvocation);
+            if (selected.getUrl().getProtocol().equals("test1")) {
+                sumInvoker1++;
+            }
+            if (selected.getUrl().getProtocol().equals("test2")) {
+                sumInvoker2++;
+            }
+            // never select invoker3 because it's active is more than invoker1 and invoker2
+            Assert.assertTrue("select is not the least active one", !selected.getUrl().getProtocol().equals("test3"));
+        }
+        // the sumInvoker1 : sumInvoker2 approximately equal to 1: 9
+        System.out.println(sumInvoker1);
+        System.out.println(sumInvoker2);
+        Assert.assertEquals("select failed!", sumInvoker1 + sumInvoker2, loop);
+    }
+
+    @Test
+    public void testSelectByWeightRandom() {
+        int sumInvoker1 = 0;
+        int sumInvoker2 = 0;
+        int sumInvoker3 = 0;
+        int loop = 10000;
+        RandomLoadBalance lb = new RandomLoadBalance();
+        for (int i = 0; i < loop; i++) {
+            Invoker selected = lb.select(weightInvokers, null, weightTestInvocation);
+            if (selected.getUrl().getProtocol().equals("test1")) {
+                sumInvoker1++;
+            }
+            if (selected.getUrl().getProtocol().equals("test2")) {
+                sumInvoker2++;
+            }
+            if (selected.getUrl().getProtocol().equals("test3")) {
+                sumInvoker3++;
+            }
+        }
+        // 1 : 9 : 6
+        System.out.println(sumInvoker1);
+        System.out.println(sumInvoker2);
+        System.out.println(sumInvoker3);
+        Assert.assertEquals("select failed!", sumInvoker1 + sumInvoker2 + sumInvoker3, loop);
+    }
+
+    @Test
+    public void testSelectByWeight() {
+        int sumInvoker1 = 0;
+        int sumInvoker2 = 0;
+        int sumInvoker3 = 0;
+        int loop = 10000;
+        RoundRobinLoadBalance lb = new RoundRobinLoadBalance();
+        for (int i = 0; i < loop; i++) {
+            Invoker selected = lb.select(weightInvokers, null, weightTestInvocation);
+            if (selected.getUrl().getProtocol().equals("test1")) {
+                sumInvoker1++;
+            }
+            if (selected.getUrl().getProtocol().equals("test2")) {
+                sumInvoker2++;
+            }
+            if (selected.getUrl().getProtocol().equals("test3")) {
+                sumInvoker3++;
+            }
+        }
+        // 1 : 9 : 6
+        System.out.println(sumInvoker1);
+        System.out.println(sumInvoker2);
+        System.out.println(sumInvoker3);
+        Assert.assertEquals("select failed!", sumInvoker1 + sumInvoker2 + sumInvoker3, loop);
+    }
+
+    @Test
     public void testRandomLoadBalance_select() {
         int runs = 1000;
         Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, RandomLoadBalance.NAME);
@@ -125,7 +204,7 @@ public class LoadBalanceTest {
             Long count = counter.get(minvoker).get();
             // System.out.println(count);
             Assert.assertTrue("abs diff shoud < avg",
-                Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()));
+                    Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()));
         }
 
         for (int i = 0; i < 5; i++) {
@@ -152,7 +231,7 @@ public class LoadBalanceTest {
             Long count = counter.get(minvoker).get();
             //            System.out.println(count);
             Assert.assertTrue("abs diff shoud < avg",
-                Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()));
+                    Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()));
         }
     }
 
@@ -172,33 +251,74 @@ public class LoadBalanceTest {
     @Test
     public void testLoadBalanceWarmup() {
         Assert.assertEquals(1,
-            AbstractLoadBalance.calculateWarmupWeight(0, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
+                AbstractLoadBalance.calculateWarmupWeight(0, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
         Assert.assertEquals(1,
-            AbstractLoadBalance.calculateWarmupWeight(13, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
+                AbstractLoadBalance.calculateWarmupWeight(13, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
         Assert.assertEquals(1,
-            AbstractLoadBalance.calculateWarmupWeight(6 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
+                AbstractLoadBalance.calculateWarmupWeight(6 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
         Assert.assertEquals(2,
-            AbstractLoadBalance.calculateWarmupWeight(12 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
+                AbstractLoadBalance.calculateWarmupWeight(12 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
         Assert.assertEquals(10,
-            AbstractLoadBalance.calculateWarmupWeight(60 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
+                AbstractLoadBalance.calculateWarmupWeight(60 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
         Assert.assertEquals(50, AbstractLoadBalance
-            .calculateWarmupWeight(5 * 60 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
+                .calculateWarmupWeight(5 * 60 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
         Assert.assertEquals(50, AbstractLoadBalance
-            .calculateWarmupWeight(5 * 60 * 1000 + 23, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
+                .calculateWarmupWeight(5 * 60 * 1000 + 23, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
         Assert.assertEquals(50, AbstractLoadBalance
-            .calculateWarmupWeight(5 * 60 * 1000 + 5999, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
+                .calculateWarmupWeight(5 * 60 * 1000 + 5999, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
         Assert.assertEquals(51, AbstractLoadBalance
-            .calculateWarmupWeight(5 * 60 * 1000 + 6000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
+                .calculateWarmupWeight(5 * 60 * 1000 + 6000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
         Assert.assertEquals(90, AbstractLoadBalance
-            .calculateWarmupWeight(9 * 60 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
+                .calculateWarmupWeight(9 * 60 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
         Assert.assertEquals(98, AbstractLoadBalance
-            .calculateWarmupWeight(10 * 60 * 1000 - 12 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
+                .calculateWarmupWeight(10 * 60 * 1000 - 12 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
         Assert.assertEquals(99, AbstractLoadBalance
-            .calculateWarmupWeight(10 * 60 * 1000 - 6 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
+                .calculateWarmupWeight(10 * 60 * 1000 - 6 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
         Assert.assertEquals(100, AbstractLoadBalance
-            .calculateWarmupWeight(10 * 60 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
+                .calculateWarmupWeight(10 * 60 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
         Assert.assertEquals(100, AbstractLoadBalance
-            .calculateWarmupWeight(20 * 60 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
+                .calculateWarmupWeight(20 * 60 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
     }
 
+    /*------------------------------------test invokers for weight---------------------------------------*/
+
+    protected List<Invoker<LoadBalanceTest>> weightInvokers = new ArrayList<Invoker<LoadBalanceTest>>();
+    protected Invoker<LoadBalanceTest> weightInvoker1;
+    protected Invoker<LoadBalanceTest> weightInvoker2;
+    protected Invoker<LoadBalanceTest> weightInvoker3;
+
+    @Before
+    public void before() throws Exception {
+        weightInvoker1 = mock(Invoker.class);
+        weightInvoker2 = mock(Invoker.class);
+        weightInvoker3 = mock(Invoker.class);
+        weightTestInvocation = new RpcInvocation();
+        weightTestInvocation.setMethodName("test");
+        URL url1 = URL.valueOf("test1://0:1/DemoService");
+        url1 = url1.addParameter(Constants.WEIGHT_KEY, 1);
+        url1 = url1.addParameter(weightTestInvocation.getMethodName() + "." + Constants.WEIGHT_KEY, 1);
+        url1 = url1.addParameter("active", 0);
+        URL url2 = URL.valueOf("test2://0:9/DemoService");
+        url2 = url2.addParameter(Constants.WEIGHT_KEY, 9);
+        url2 = url2.addParameter(weightTestInvocation.getMethodName() + "." + Constants.WEIGHT_KEY, 9);
+        url2 = url2.addParameter("active", 0);
+        URL url3 = URL.valueOf("test3://1:6/DemoService");
+        url3 = url3.addParameter(Constants.WEIGHT_KEY, 6);
+        url3 = url3.addParameter(weightTestInvocation.getMethodName() + "." + Constants.WEIGHT_KEY, 6);
+        url3 = url3.addParameter("active", 1);
+        given(weightInvoker1.isAvailable()).willReturn(true);
+        given(weightInvoker1.getUrl()).willReturn(url1);
+        given(weightInvoker2.isAvailable()).willReturn(true);
+        given(weightInvoker2.getUrl()).willReturn(url2);
+        given(weightInvoker3.isAvailable()).willReturn(true);
+        given(weightInvoker3.getUrl()).willReturn(url3);
+        weightInvokers.add(weightInvoker1);
+        weightInvokers.add(weightInvoker2);
+        weightInvokers.add(weightInvoker3);
+        weightTestRpcStatus1 = RpcStatus.getStatus(weightInvoker1.getUrl(), weightTestInvocation.getMethodName());
+        weightTestRpcStatus2 = RpcStatus.getStatus(weightInvoker2.getUrl(), weightTestInvocation.getMethodName());
+        weightTestRpcStatus3 = RpcStatus.getStatus(weightInvoker3.getUrl(), weightTestInvocation.getMethodName());
+        // weightTestRpcStatus3 active is 1
+        RpcStatus.beginCount(weightInvoker3.getUrl(), weightTestInvocation.getMethodName());
+    }
 }
