@@ -37,7 +37,7 @@ public class TypeDescriptorBuilder {
         return td;
     }
 
-    private static TypeBuilder getGenericTypeBuilder(Type type, Class<?> clazz) {
+    static TypeBuilder getGenericTypeBuilder(Type type, Class<?> clazz) {
         for (TypeBuilder builder : builders) {
             if (builder.accept(type, clazz)) {
                 return builder;
@@ -48,10 +48,6 @@ public class TypeDescriptorBuilder {
 
     public TypeDescriptor build(Type type, Class<?> clazz) {
         return build(type, clazz, typeCache);
-    }
-
-    public List<TypeDescriptor> getTypeDescriptor() {
-        return new ArrayList<TypeDescriptor>(typeCache.values());
     }
 
     public Map<String, TypeDescriptor> getTypeDescriptorMap() {

@@ -40,4 +40,6 @@ public interface TestService {
     void testWriteComplexMap(Map<String, String> arg, Map<String, ComplexObject> complexObjects);
 
     Map<String, ComplexObject> testReadComplexMap(int i);
+
+    void testWriteComplexObject(ComplexObject complexObject);
 }
