@@ -25,6 +25,7 @@ import org.apache.dubbo.registry.RegistryFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -102,4 +103,15 @@ public class AbstractRegistryFactoryTest {
         Assert.assertNotSame(registry1, registry2);
     }
 
+    @Test
+    public void testDestroyAllRegistries() {
+        Registry registry1 = registryFactory.getRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":8888?group=xxx"));
+        Registry registry2 = registryFactory.getRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":9999?group=yyy"));
+        Collection<Registry> registries = AbstractRegistryFactory.getRegistries();
+        Assert.assertTrue(registries.contains(registry1));
+        Assert.assertTrue(registries.contains(registry2));
+        AbstractRegistryFactory.destroyAll();
+        Assert.assertFalse(registries.contains(registry1));
+        Assert.assertFalse(registries.contains(registry2));
+    }
 }
