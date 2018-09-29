@@ -349,10 +349,6 @@ public class RpcStatus {
      * @return thread number semaphore
      */
     public Semaphore getActivesSemaphore(int maxThreadNum) {
-        if(maxThreadNum <= 0) {
-            return null;
-        }
-
         if (activesLimit == null || activesPermits != maxThreadNum) {
             synchronized (this) {
                 if (activesLimit == null || activesPermits != maxThreadNum) {

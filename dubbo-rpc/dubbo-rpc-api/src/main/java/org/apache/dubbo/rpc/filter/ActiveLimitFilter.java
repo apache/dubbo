@@ -47,7 +47,7 @@ public class ActiveLimitFilter implements Filter {
             long start = System.currentTimeMillis();
             activesLimit = count.getActivesSemaphore(max);
             try {
-                if(activesLimit != null && !(acquireResult = activesLimit.tryAcquire(timeout,TimeUnit.MILLISECONDS))) {
+                if(!(acquireResult = activesLimit.tryAcquire(timeout,TimeUnit.MILLISECONDS))) {
                     long elapsed = System.currentTimeMillis() - start;
                     int active=count.getActive();
                     throw new RpcException("Waiting concurrent invoke timeout in client-side for service:  "
@@ -75,10 +75,8 @@ public class ActiveLimitFilter implements Filter {
                 throw t;
             }
         } finally {
-            if (max > 0) {
-                if(acquireResult){
-                    activesLimit.release();
-                }
+            if(acquireResult){
+                activesLimit.release();
             }
         }
     }
