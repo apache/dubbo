@@ -315,8 +315,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             path = interfaceName;
         }
         doExportUrls();
-        ProviderModel providerModel = new ProviderModel(getUniqueServiceName(), this, ref);
-        ApplicationModel.initProviderModel(getUniqueServiceName(), providerModel);
+        ProviderModel providerModel = new ProviderModel(getUniqueServiceName(ref), this, ref);
+        ApplicationModel.initProviderModel(getUniqueServiceName(ref), providerModel);
     }
 
     private void checkRef() {
@@ -840,7 +840,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     @Parameter(excluded = true)
-    public String getUniqueServiceName() {
+    public String getUniqueServiceName(T ref) {
         StringBuilder buf = new StringBuilder();
         if (group != null && group.length() > 0) {
             buf.append(group).append("/");
@@ -849,6 +849,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (version != null && version.length() > 0) {
             buf.append(":").append(version);
         }
+        buf.append("/").append(ref.hashCode());
         return buf.toString();
     }
 }

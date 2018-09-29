@@ -18,10 +18,14 @@ package com.alibaba.dubbo.config;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.config.api.DemoService;
+import com.alibaba.dubbo.config.api.Greeting;
 import com.alibaba.dubbo.config.provider.impl.DemoServiceImpl;
 
 import junit.framework.Assert;
 import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 public class ReferenceConfigTest {
 
@@ -58,6 +62,22 @@ public class ReferenceConfigTest {
         } finally {
             demoService.unexport();
         }
+    }
+
+    @Test
+    public void testUniqueServiceName() throws Exception {
+        Greeting  greeting=new Greeting() {
+            @Override
+            public String hello() {
+                return null;
+            }
+        };
+
+        ReferenceConfig referenceConfig=new ReferenceConfig();
+        referenceConfig.setGroup("dubbo");
+        referenceConfig.setInterface(Greeting.class);
+        referenceConfig.setVersion("1.0.0");
+        assertThat(referenceConfig.getUniqueServiceName(greeting),equalTo("dubbo/" + Greeting.class.getName() + ":1.0.0/"+greeting.hashCode()));
     }
 
 }

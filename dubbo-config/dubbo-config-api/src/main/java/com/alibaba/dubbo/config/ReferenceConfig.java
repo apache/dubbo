@@ -331,8 +331,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         //attributes are stored by system context.
         StaticContext.getSystemContext().putAll(attributes);
         ref = createProxy(map);
-        ConsumerModel consumerModel = new ConsumerModel(getUniqueServiceName(), this, ref, interfaceClass.getMethods());
-        ApplicationModel.initConsumerModel(getUniqueServiceName(), consumerModel);
+        ConsumerModel consumerModel = new ConsumerModel(getUniqueServiceName(ref), this, ref, interfaceClass.getMethods());
+        ApplicationModel.initConsumerModel(getUniqueServiceName(ref), consumerModel);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
@@ -532,7 +532,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     }
 
     @Parameter(excluded = true)
-    public String getUniqueServiceName() {
+    public String getUniqueServiceName(T proxy) {
         StringBuilder buf = new StringBuilder();
         if (group != null && group.length() > 0) {
             buf.append(group).append("/");
@@ -541,6 +541,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         if (version != null && version.length() > 0) {
             buf.append(":").append(version);
         }
+        buf.append("/").append(proxy.hashCode());
         return buf.toString();
     }
 
