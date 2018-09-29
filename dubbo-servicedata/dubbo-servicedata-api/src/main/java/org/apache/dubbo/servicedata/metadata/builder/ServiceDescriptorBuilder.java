@@ -49,7 +49,7 @@ public class ServiceDescriptorBuilder {
         return sd;
     }
 
-    private static String getCodeSource(Class<?> clazz) {
+    static String getCodeSource(Class<?> clazz) {
         ProtectionDomain protectionDomain = clazz.getProtectionDomain();
         if (protectionDomain == null || protectionDomain.getCodeSource() == null) {
             return null;
