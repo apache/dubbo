@@ -74,6 +74,7 @@ public class AnnotationUtils {
             }
             /**
              * @since 2.6.5
+             * ignore annotation member
              */
             if (attributeValue.getClass().isAnnotation()){
                 continue;

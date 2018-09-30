@@ -112,7 +112,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     public ReferenceConfig(Reference reference) {
         appendAnnotation(Reference.class, reference);
-        MethodConfig.constructMethodConfig(reference.methods());
+        setMethods(MethodConfig.constructMethodConfig(reference.methods()));
     }
 
     private static void checkAndConvertImplicitConfig(MethodConfig method, Map<String, String> map, Map<Object, Object> attributes) {
