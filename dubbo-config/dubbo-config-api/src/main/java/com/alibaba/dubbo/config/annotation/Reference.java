@@ -112,4 +112,6 @@ public @interface Reference {
 
     String[] registry() default {};
 
+    Method[] methods() default {};
+
 }

@@ -120,4 +120,6 @@ public @interface Service {
 
     String[] registry() default {};
 
+    Method[] methods() default {};
+
 }

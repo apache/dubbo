@@ -72,6 +72,15 @@ public class AnnotationUtils {
             if (ignoreAttributeNamesSet.contains(attributeName)) {
                 continue;
             }
+            /**
+             * @since 2.6.5
+             */
+            if (attributeValue.getClass().isAnnotation()){
+                continue;
+            }
+            if (attributeValue.getClass().isArray() && attributeValue.getClass().getComponentType().isAnnotation()){
+                continue;
+            }
 
             if (requiredResolve && attributeValue instanceof String) { // Resolve Placeholder
                 String resolvedValue = propertyResolver.resolvePlaceholders(valueOf(attributeValue));

@@ -423,7 +423,7 @@ public abstract class AbstractConfig implements Serializable {
                     }
                     String setter = "set" + property.substring(0, 1).toUpperCase() + property.substring(1);
                     Object value = method.invoke(annotation);
-                    if (value != null && !value.equals(method.getDefaultValue())) {
+                    if (!isAnnotationArray(method.getReturnType()) &&  value != null && !value.equals(method.getDefaultValue())) {
                         Class<?> parameterType = ReflectUtils.getBoxedClass(method.getReturnType());
                         if ("filter".equals(property) || "listener".equals(property)) {
                             parameterType = String.class;
@@ -444,6 +444,12 @@ public abstract class AbstractConfig implements Serializable {
                 }
             }
         }
+    }
+    boolean isAnnotationArray(Class target){
+        if(target.isArray() && target.getComponentType().isAnnotation()){
+            return true;
+        }
+        return false;
     }
 
     @Override

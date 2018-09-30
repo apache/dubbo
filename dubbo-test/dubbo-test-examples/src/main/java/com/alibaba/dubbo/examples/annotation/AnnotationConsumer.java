@@ -30,6 +30,7 @@ import org.springframework.context.annotation.PropertySource;
 public class AnnotationConsumer {
 
     public static void main(String[] args) throws Exception {
+        System.setProperty("java.net.preferIPv4Stack", "true");
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration.class);
         context.start();
         final AnnotationAction annotationAction = (AnnotationAction) context.getBean("annotationAction");

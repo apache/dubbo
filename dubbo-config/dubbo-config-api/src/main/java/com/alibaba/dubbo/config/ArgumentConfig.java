@@ -16,6 +16,7 @@
  */
 package com.alibaba.dubbo.config;
 
+import com.alibaba.dubbo.config.annotation.Argument;
 import com.alibaba.dubbo.config.support.Parameter;
 
 import java.io.Serializable;
@@ -35,6 +36,14 @@ public class ArgumentConfig implements Serializable {
 
     //callback interface
     private Boolean callback;
+
+    public ArgumentConfig(){
+    }
+    public ArgumentConfig(Argument argument){
+        this.index = argument.index();
+        this.type = argument.type();
+        this.callback = argument.callback();
+    }
 
     @Parameter(excluded = true)
     public Integer getIndex() {

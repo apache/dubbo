@@ -17,6 +17,8 @@
 package com.alibaba.dubbo.config.spring.beans.factory.annotation;
 
 import com.alibaba.dubbo.config.ConsumerConfig;
+import com.alibaba.dubbo.config.MethodConfig;
+import com.alibaba.dubbo.config.annotation.Method;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.spring.ReferenceBean;
 import com.alibaba.dubbo.config.spring.convert.converter.StringArrayToMapConverter;
@@ -28,6 +30,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.DataBinder;
+
+import java.util.List;
 
 import static com.alibaba.dubbo.config.spring.util.BeanFactoryUtils.getOptionalBean;
 import static com.alibaba.dubbo.config.spring.util.ObjectUtils.of;
@@ -84,6 +88,14 @@ class ReferenceBeanBuilder extends AbstractAnnotationConfigBeanBuilder<Reference
 
     }
 
+    private void configureMethodConfig(Reference reference, ReferenceBean<?> referenceBean){
+        Method[] methods = reference.methods();
+        List<MethodConfig> methodConfigs = MethodConfig.constructMethodConfig(methods);
+        if(!methodConfigs.isEmpty()){
+            referenceBean.setMethods(methodConfigs);
+        }
+    }
+
     @Override
     protected ReferenceBean doBuild() {
         return new ReferenceBean<Object>();
@@ -138,6 +150,8 @@ class ReferenceBeanBuilder extends AbstractAnnotationConfigBeanBuilder<Reference
         configureInterface(annotation, bean);
 
         configureConsumerConfig(annotation, bean);
+
+        configureMethodConfig(annotation, bean);
 
         bean.afterPropertiesSet();
 

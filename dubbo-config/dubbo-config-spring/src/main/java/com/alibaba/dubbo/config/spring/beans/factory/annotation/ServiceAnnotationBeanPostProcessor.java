@@ -18,6 +18,8 @@ package com.alibaba.dubbo.config.spring.beans.factory.annotation;
 
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.config.MethodConfig;
+import com.alibaba.dubbo.config.annotation.Method;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.dubbo.config.spring.ServiceBean;
 import com.alibaba.dubbo.config.spring.context.annotation.DubboClassPathBeanDefinitionScanner;
@@ -448,6 +450,12 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
         if (!protocolRuntimeBeanReferences.isEmpty()) {
             builder.addPropertyValue("protocols", protocolRuntimeBeanReferences);
+        }
+
+        Method[] methods = service.methods();
+        List<MethodConfig> methodConfigs = MethodConfig.constructMethodConfig(methods);
+        if(!methodConfigs.isEmpty()){
+            builder.addPropertyValue("methods", methodConfigs);
         }
 
         return builder.getBeanDefinition();
