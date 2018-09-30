@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.registry.NotifyListener;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -180,6 +181,27 @@ public class FailbackRegistryTest {
         assertEquals(2, count.get());
     }
 
+    @Test
+    public void testRecover() throws Exception {
+        CountDownLatch countDownLatch = new CountDownLatch(2);
+        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+
+        NotifyListener listner = new NotifyListener() {
+            @Override
+            public void notify(List<URL> urls) {
+                notified.set(Boolean.TRUE);
+            }
+        };
+
+        MockRegistry mockRegistry = new MockRegistry(registryUrl, countDownLatch);
+        mockRegistry.register(serviceUrl);
+        mockRegistry.subscribe(serviceUrl, listner);
+        Assert.assertEquals(mockRegistry.getRegistered().size(), 1);
+        Assert.assertEquals(mockRegistry.getSubscribed().size(), 1);
+        mockRegistry.recover();
+        Assert.assertEquals(mockRegistry.getFailedSubscribed().size(), 1);
+        Assert.assertEquals(countDownLatch.getCount(), 0);
+    }
 
     private static class MockRegistry extends FailbackRegistry {
         CountDownLatch latch;
