@@ -21,7 +21,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.support.ActivateComparator;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ClassHelper;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.Holder;
@@ -124,7 +123,7 @@ public class ExtensionLoader<T> {
     }
 
     private static ClassLoader findClassLoader() {
-        return ClassHelper.getClassLoader(ExtensionLoader.class);
+        return ExtensionLoader.class.getClassLoader();
     }
 
     public String getExtensionName(T extensionInstance) {

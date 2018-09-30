@@ -38,6 +38,8 @@ import java.util.Map;
 
 /**
  * ReferenceFactoryBean
+ *
+ * @export
  */
 public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean, ApplicationContextAware, InitializingBean, DisposableBean {
 
@@ -60,7 +62,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
     }
 
     @Override
-    public Object getObject() {
+    public Object getObject() throws Exception {
         return get();
     }
 
@@ -83,7 +85,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
             if (consumerConfigMap != null && consumerConfigMap.size() > 0) {
                 ConsumerConfig consumerConfig = null;
                 for (ConsumerConfig config : consumerConfigMap.values()) {
-                    if (config.isDefault() == null || config.isDefault()) {
+                    if (config.isDefault() == null || config.isDefault().booleanValue()) {
                         if (consumerConfig != null) {
                             throw new IllegalStateException("Duplicate consumer configs: " + consumerConfig + " and " + config);
                         }
@@ -101,7 +103,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
             if (applicationConfigMap != null && applicationConfigMap.size() > 0) {
                 ApplicationConfig applicationConfig = null;
                 for (ApplicationConfig config : applicationConfigMap.values()) {
-                    if (config.isDefault() == null || config.isDefault()) {
+                    if (config.isDefault() == null || config.isDefault().booleanValue()) {
                         if (applicationConfig != null) {
                             throw new IllegalStateException("Duplicate application configs: " + applicationConfig + " and " + config);
                         }
@@ -119,7 +121,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
             if (moduleConfigMap != null && moduleConfigMap.size() > 0) {
                 ModuleConfig moduleConfig = null;
                 for (ModuleConfig config : moduleConfigMap.values()) {
-                    if (config.isDefault() == null || config.isDefault()) {
+                    if (config.isDefault() == null || config.isDefault().booleanValue()) {
                         if (moduleConfig != null) {
                             throw new IllegalStateException("Duplicate module configs: " + moduleConfig + " and " + config);
                         }
@@ -136,13 +138,13 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
                 && (getApplication() == null || getApplication().getRegistries() == null || getApplication().getRegistries().isEmpty())) {
             Map<String, RegistryConfig> registryConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, RegistryConfig.class, false, false);
             if (registryConfigMap != null && registryConfigMap.size() > 0) {
-                List<RegistryConfig> registryConfigs = new ArrayList<>();
+                List<RegistryConfig> registryConfigs = new ArrayList<RegistryConfig>();
                 for (RegistryConfig config : registryConfigMap.values()) {
-                    if (config.isDefault() == null || config.isDefault()) {
+                    if (config.isDefault() == null || config.isDefault().booleanValue()) {
                         registryConfigs.add(config);
                     }
                 }
-                if (!registryConfigs.isEmpty()) {
+                if (registryConfigs != null && !registryConfigs.isEmpty()) {
                     super.setRegistries(registryConfigs);
                 }
             }
@@ -154,7 +156,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
             if (monitorConfigMap != null && monitorConfigMap.size() > 0) {
                 MonitorConfig monitorConfig = null;
                 for (MonitorConfig config : monitorConfigMap.values()) {
-                    if (config.isDefault() == null || config.isDefault()) {
+                    if (config.isDefault() == null || config.isDefault().booleanValue()) {
                         if (monitorConfig != null) {
                             throw new IllegalStateException("Duplicate monitor configs: " + monitorConfig + " and " + config);
                         }
@@ -170,7 +172,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
         if (b == null && getConsumer() != null) {
             b = getConsumer().isInit();
         }
-        if (b != null && b) {
+        if (b != null && b.booleanValue()) {
             getObject();
         }
     }

@@ -165,9 +165,8 @@ public class MinaClient extends AbstractClient {
     @Override
     protected Channel getChannel() {
         IoSession s = session;
-        if (s == null || !s.isConnected()) {
+        if (s == null || !s.isConnected())
             return null;
-        }
         return MinaChannel.getOrAddChannel(s, getUrl(), this);
     }
 

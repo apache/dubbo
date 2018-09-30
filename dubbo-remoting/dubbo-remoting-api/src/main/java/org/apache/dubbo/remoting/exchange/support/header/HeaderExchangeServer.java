@@ -139,9 +139,8 @@ public class HeaderExchangeServer implements ExchangeServer {
         Collection<Channel> channels = getChannels();
         for (Channel channel : channels) {
             try {
-                if (channel.isConnected()) {
+                if (channel.isConnected())
                     channel.send(request, getUrl().getParameter(Constants.CHANNEL_READONLYEVENT_SENT_KEY, true));
-                }
             } catch (RemotingException e) {
                 logger.warn("send cannot write message error.", e);
             }

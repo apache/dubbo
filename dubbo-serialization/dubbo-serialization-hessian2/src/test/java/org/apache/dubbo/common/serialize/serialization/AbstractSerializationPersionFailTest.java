@@ -33,7 +33,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.matchers.JUnitMatchers.containsString;
 
-public abstract class AbstractSerializationPersonFailTest extends AbstractSerializationTest {
+public abstract class AbstractSerializationPersionFailTest extends AbstractSerializationTest {
     @Test
     public void test_Person() throws Exception {
         try {

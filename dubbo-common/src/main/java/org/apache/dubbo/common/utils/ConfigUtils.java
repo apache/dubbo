@@ -217,8 +217,7 @@ public class ConfigUtils {
      */
     public static Properties loadProperties(String fileName, boolean allowMultiFile, boolean optional) {
         Properties properties = new Properties();
-        // add scene judgement in windows environment Fix 2557
-        if (fileName.startsWith("/") || fileName.matches("^[A-z]:\\\\\\S+$")) {
+        if (fileName.startsWith("/")) {
             try {
                 FileInputStream input = new FileInputStream(fileName);
                 try {

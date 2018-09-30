@@ -116,9 +116,8 @@ public class DubboRegistry extends FailbackRegistry {
 
     @Override
     public boolean isAvailable() {
-        if (registryInvoker == null) {
+        if (registryInvoker == null)
             return false;
-        }
         return registryInvoker.isAvailable();
     }
 

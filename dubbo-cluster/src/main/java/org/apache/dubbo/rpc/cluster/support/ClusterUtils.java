@@ -20,12 +20,11 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * ClusterUtils
+ *
  */
 public class ClusterUtils {
 
@@ -64,17 +63,6 @@ public class ClusterUtils {
 
             map.remove(Constants.ASYNC_KEY);
             map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.ASYNC_KEY);
-
-            // remove method async entry.
-            Set<String> methodAsyncKey = new HashSet<>();
-            for (String key : map.keySet()) {
-                if (key != null && key.endsWith("." + Constants.ASYNC_KEY)) {
-                    methodAsyncKey.add(key);
-                }
-            }
-            for (String needRemove : methodAsyncKey) {
-                map.remove(needRemove);
-            }
         }
 
         if (localMap != null && localMap.size() > 0) {

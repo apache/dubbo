@@ -131,31 +131,6 @@ public class RpcContext {
         LOCAL.set(oldContext);
     }
 
-
-    public RpcContext copyOf() {
-        RpcContext copy = new RpcContext();
-        copy.attachments.putAll(this.attachments);
-        copy.values.putAll(this.values);
-        copy.future = this.future;
-        copy.urls = this.urls;
-        copy.url = this.url;
-        copy.methodName = this.methodName;
-        copy.parameterTypes = this.parameterTypes;
-        copy.arguments = this.arguments;
-        copy.localAddress = this.localAddress;
-        copy.remoteAddress = this.remoteAddress;
-        copy.invokers = this.invokers;
-        copy.invoker = this.invoker;
-        copy.invocation = this.invocation;
-
-        copy.request = this.request;
-        copy.response = this.response;
-        copy.asyncContext = this.asyncContext;
-
-        return copy;
-    }
-
-
     /**
      * remove context.
      *

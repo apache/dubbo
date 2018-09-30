@@ -19,7 +19,7 @@ package org.apache.dubbo.common.serialize.serialization;
 
 import org.apache.dubbo.common.serialize.java.JavaSerialization;
 
-public class JavaSerializationTest extends AbstractSerializationPersonFailTest {
+public class JavaSerializationTest extends AbstractSerializationPersionFailTest {
     {
         serialization = new JavaSerialization();
     }

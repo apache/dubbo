@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class AbstractSerializationPersonOkTest extends AbstractSerializationTest {
+public abstract class AbstractSerializationPersionOkTest extends AbstractSerializationTest {
     @Test
     public void test_Person() throws Exception {
         assertObject(new Person());

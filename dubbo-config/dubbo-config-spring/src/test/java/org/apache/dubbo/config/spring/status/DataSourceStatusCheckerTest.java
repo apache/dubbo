@@ -18,13 +18,10 @@ package org.apache.dubbo.config.spring.status;
 
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.config.spring.ServiceBean;
-import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Answers;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;
 
 import javax.sql.DataSource;
@@ -52,12 +49,6 @@ public class DataSourceStatusCheckerTest {
         initMocks(this);
         this.dataSourceStatusChecker = new DataSourceStatusChecker();
         new ServiceBean<Object>().setApplicationContext(applicationContext);
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        SpringExtensionFactory.clearContexts();
-        Mockito.reset(applicationContext);
     }
 
     @Test
