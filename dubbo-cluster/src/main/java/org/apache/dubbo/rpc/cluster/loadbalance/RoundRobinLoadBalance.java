@@ -77,6 +77,6 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
             }
         }
         // Round robin
-        return invokers.get(sequence.incrementAndGet() % length);
+        return invokers.get(sequence.getAndIncrement() % length);
     }
 }
