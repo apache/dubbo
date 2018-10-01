@@ -1,8 +1,8 @@
 package com.alibaba.dubbo.common.extensionloader;
 
-import com.alibaba.dubbo.common.extension.ExtensionLoader;
-import com.alibaba.dubbo.common.extensionloader.ext1.SimpleExt;
-import com.alibaba.dubbo.common.extensionloader.ext2.Ext2;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.extension.ext1.SimpleExt;
+import org.apache.dubbo.common.extension.ext2.Ext2;
 import org.junit.Test;
 
 /**
