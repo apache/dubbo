@@ -6,11 +6,6 @@
 <module name="Checker">
     <property name="charset" value="UTF-8"/>
     <property name="fileExtensions" value="java"/>
-    <!-- Root Checks -->
-    <module name="com.puppycrawl.tools.checkstyle.checks.header.RegexpHeaderCheck">
-        <property name="headerFile" value="${checkstyle.header.file}" />
-        <property name="fileExtensions" value="java" />
-    </module>
 
     <!-- TreeWalker Checks -->
     <module name="TreeWalker">

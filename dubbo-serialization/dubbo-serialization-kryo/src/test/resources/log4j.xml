@@ -19,7 +19,7 @@
     <!-- ===================================================================== -->
     <!-- 以下是appender的定义 -->
     <!-- ===================================================================== -->
-    <appender name="dubbo" class="com.alibaba.dubbo.common.utils.DubboAppender">
+    <appender name="dubbo" class="org.apache.dubbo.common.utils.DubboAppender">
         <param name="encoding" value="GBK"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d %p [%c:%M] - %m%n"/>
