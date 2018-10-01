@@ -20,7 +20,7 @@ public class SPITest {
 
         SimpleExt ext2 = ExtensionLoader.getExtensionLoader(SimpleExt.class).getDefaultExtension();
         Ext2 Ext2 = ExtensionLoader.getExtensionLoader(Ext2.class).getDefaultExtension();
-        //Ext2.echo(null,  null);
+        //Ext2.echo(null, s null);
 
         SimpleExt ext3 = ExtensionLoader.getExtensionLoader(SimpleExt.class).getAdaptiveExtension();
 
