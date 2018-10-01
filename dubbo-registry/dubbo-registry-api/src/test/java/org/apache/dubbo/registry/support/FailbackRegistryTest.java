@@ -183,10 +183,10 @@ public class FailbackRegistryTest {
 
     @Test
     public void testRecover() throws Exception {
-        CountDownLatch countDownLatch = new CountDownLatch(2);
+        CountDownLatch countDownLatch = new CountDownLatch(4);
         final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
 
-        NotifyListener listner = new NotifyListener() {
+        NotifyListener listener = new NotifyListener() {
             @Override
             public void notify(List<URL> urls) {
                 notified.set(Boolean.TRUE);
@@ -195,11 +195,13 @@ public class FailbackRegistryTest {
 
         MockRegistry mockRegistry = new MockRegistry(registryUrl, countDownLatch);
         mockRegistry.register(serviceUrl);
-        mockRegistry.subscribe(serviceUrl, listner);
-        Assert.assertEquals(mockRegistry.getRegistered().size(), 1);
-        Assert.assertEquals(mockRegistry.getSubscribed().size(), 1);
+        mockRegistry.subscribe(serviceUrl, listener);
+        Assert.assertEquals(1, mockRegistry.getRegistered().size());
+        Assert.assertEquals(1, mockRegistry.getSubscribed().size());
         mockRegistry.recover();
-        Assert.assertEquals(mockRegistry.getFailedSubscribed().size(), 1);
+        countDownLatch.await();
+        Assert.assertEquals(0, mockRegistry.getFailedRegistered().size());
+        Assert.assertEquals(null, mockRegistry.getFailedSubscribed().get(registryUrl));
         Assert.assertEquals(countDownLatch.getCount(), 0);
     }
 
