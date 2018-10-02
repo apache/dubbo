@@ -28,9 +28,9 @@ public class ExpiringCache implements Cache {
     private final Map<Object, Object> store;
 
     public ExpiringCache(URL url) {
-        // cache time (second)
+        // cache time(second)
         final int secondsToLive = url.getParameter("cache.seconds", 180);
-        // Cache check interval (second)
+        // Cache check interval(second)
         final int intervalSeconds = url.getParameter("cache.interval", 4);
         ExpiringMap<Object, Object> expiringMap = new ExpiringMap<Object, Object>(secondsToLive, intervalSeconds);
         expiringMap.getExpireThread().startExpiryIfNotStarted();
@@ -45,6 +45,24 @@ public class ExpiringCache implements Cache {
     @Override
     public Object get(Object key) {
         return store.get(key);
+    }
+
+    @Override
+    public boolean remove(Object key) {
+        return store.remove(key)!=null;
+    }
+
+    /**
+     * must invoke this method before abandon this cache
+     */
+    @Override
+    public void clear() {
+        store.clear();
+    }
+
+    @Override
+    public long size() {
+        return store.size();
     }
 
 }
