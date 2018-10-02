@@ -60,8 +60,11 @@ public class ThreadLocalCache implements Cache {
 
     @Override
     public void clear() {
-        store.get().clear();
-        store.remove();
+        try{
+            store.get().clear();
+        }finally {
+            store.remove();
+        }
     }
 
 }
