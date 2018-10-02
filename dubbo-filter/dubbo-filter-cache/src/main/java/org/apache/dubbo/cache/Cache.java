@@ -25,4 +25,10 @@ public interface Cache {
 
     Object get(Object key);
 
+    boolean remove(Object key);
+
+    long size();
+
+    void clear();
+
 }
