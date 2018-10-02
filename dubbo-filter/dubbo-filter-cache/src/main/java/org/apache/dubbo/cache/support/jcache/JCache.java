@@ -75,4 +75,19 @@ public class JCache implements org.apache.dubbo.cache.Cache {
         return store.get(key);
     }
 
+    @Override
+    public boolean remove(Object key) {
+        return store.remove(key);
+    }
+
+    @Override
+    public long size() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void clear() {
+        store.clear();
+    }
+
 }
