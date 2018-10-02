@@ -20,7 +20,6 @@ import org.apache.dubbo.cache.Cache;
 import org.apache.dubbo.common.URL;
 
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * ExpiringCache - With the characteristic of expiration time.
@@ -29,9 +28,9 @@ public class ExpiringCache implements Cache {
     private final Map<Object, Object> store;
 
     public ExpiringCache(URL url) {
-        // cache time
+        // cache time(second)
         final int secondsToLive = url.getParameter("cache.seconds", 180);
-        // Cache check interval
+        // Cache check interval(second)
         final int intervalSeconds = url.getParameter("cache.interval", 4);
         ExpiringMap<Object, Object> expiringMap = new ExpiringMap<Object, Object>(secondsToLive, intervalSeconds);
         expiringMap.getExpireThread().startExpiryIfNotStarted();
