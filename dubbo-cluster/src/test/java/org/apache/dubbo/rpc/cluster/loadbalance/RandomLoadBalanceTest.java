@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.cluster.loadbalance;
 
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcStatus;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -52,6 +51,37 @@ public class RandomLoadBalanceTest extends LoadBalanceBaseTest {
         Assert.assertEquals(0, counter.get(invoker3).intValue());
         Assert.assertEquals(0, counter.get(invoker4).intValue());
         Assert.assertEquals(0, counter.get(invoker5).intValue());
+    }
+
+    @Test
+    public void testSelectByWeight() {
+        int sumInvoker1 = 0;
+        int sumInvoker2 = 0;
+        int sumInvoker3 = 0;
+        int loop = 10000;
+
+        RandomLoadBalance lb = new RandomLoadBalance();
+        for (int i = 0; i < loop; i++) {
+            Invoker selected = lb.select(weightInvokers, null, weightTestInvocation);
+
+            if (selected.getUrl().getProtocol().equals("test1")) {
+                sumInvoker1++;
+            }
+
+            if (selected.getUrl().getProtocol().equals("test2")) {
+                sumInvoker2++;
+            }
+
+            if (selected.getUrl().getProtocol().equals("test3")) {
+                sumInvoker3++;
+            }
+        }
+
+        // 1 : 9 : 6
+        System.out.println(sumInvoker1);
+        System.out.println(sumInvoker2);
+        System.out.println(sumInvoker3);
+        Assert.assertEquals("select failed!", sumInvoker1 + sumInvoker2 + sumInvoker3, loop);
     }
 
 }
