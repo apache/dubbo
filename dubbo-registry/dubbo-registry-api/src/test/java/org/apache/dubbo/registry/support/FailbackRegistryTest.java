@@ -185,14 +185,12 @@ public class FailbackRegistryTest {
     public void testRecover() throws Exception {
         CountDownLatch countDownLatch = new CountDownLatch(4);
         final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
-
         NotifyListener listener = new NotifyListener() {
             @Override
             public void notify(List<URL> urls) {
                 notified.set(Boolean.TRUE);
             }
         };
-
         MockRegistry mockRegistry = new MockRegistry(registryUrl, countDownLatch);
         mockRegistry.register(serviceUrl);
         mockRegistry.subscribe(serviceUrl, listener);
