@@ -43,13 +43,13 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
         int length = invokers.size(); // Number of invokers
         int maxWeight = 0; // The maximum weight
         int minWeight = Integer.MAX_VALUE; // The minimum weight
-        final List<Invoker<T>> invokerToWeightList = new ArrayList<>();
+        final List<Invoker<T>> nonZeroWeightedInvokers = new ArrayList<>();
         for (int i = 0; i < length; i++) {
             int weight = getWeight(invokers.get(i), invocation);
             maxWeight = Math.max(maxWeight, weight); // Choose the maximum weight
             minWeight = Math.min(minWeight, weight); // Choose the minimum weight
             if (weight > 0) {
-                invokerToWeightList.add(invokers.get(i));
+                nonZeroWeightedInvokers.add(invokers.get(i));
             }
         }
         AtomicPositiveInteger sequence = sequences.get(key);
@@ -64,7 +64,7 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
                 indexSeqs.putIfAbsent(key, new AtomicPositiveInteger(-1));
                 indexSeq = indexSeqs.get(key);
             }
-            length = invokerToWeightList.size();
+            length = nonZeroWeightedInvokers.size();
             while (true) {
                 int index = indexSeq.incrementAndGet() % length;
                 int currentWeight;
@@ -73,8 +73,8 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
                 }else {
                     currentWeight = sequence.get() % maxWeight;
                 }
-                if (getWeight(invokerToWeightList.get(index), invocation) > currentWeight) {
-                    return invokerToWeightList.get(index);
+                if (getWeight(nonZeroWeightedInvokers.get(index), invocation) > currentWeight) {
+                    return nonZeroWeightedInvokers.get(index);
                 }
             }
         }
