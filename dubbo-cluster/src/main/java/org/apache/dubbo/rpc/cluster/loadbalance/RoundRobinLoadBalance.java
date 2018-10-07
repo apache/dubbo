@@ -70,7 +70,7 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
                 int currentWeight;
                 if (index == 0) {
                     currentWeight = sequence.incrementAndGet() % maxWeight;
-                }else {
+                } else {
                     currentWeight = sequence.get() % maxWeight;
                 }
                 if (getWeight(nonZeroWeightedInvokers.get(index), invocation) > currentWeight) {
