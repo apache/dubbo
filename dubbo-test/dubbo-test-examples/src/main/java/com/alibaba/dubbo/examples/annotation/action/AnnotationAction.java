@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
 @Component("annotationAction")
 public class AnnotationAction {
 
-    @Reference(methods = {@Method(name = "sayHello", timeout = 1000)})
+    @Reference(methods = {@Method(name = "sayHello", timeout = 5000)})
     private AnnotationService annotationService;
 
     public String doSayHello(String name) {
