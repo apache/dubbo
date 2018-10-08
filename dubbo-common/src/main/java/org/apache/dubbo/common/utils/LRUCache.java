@@ -31,7 +31,6 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
 
     private final Semaphore lock = new Semaphore(Integer.MAX_VALUE, true);
 
-
     public LRUCache() {
         this(DEFAULT_MAX_CAPACITY);
     }
