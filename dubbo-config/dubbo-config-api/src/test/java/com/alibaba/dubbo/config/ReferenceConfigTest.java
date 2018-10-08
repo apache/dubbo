@@ -83,7 +83,7 @@ public class ReferenceConfigTest {
 
 
     @Reference(methods = {@Method(name = "sayHello", timeout = 1300, retries = 4, loadbalance = "random", async = true,
-            actives = 3, executes = 5, deprecated = true, sticky = true, oninvoke = "i", onthrow = "t", onreturn = "r", cache = "c", validation = true,
+            actives = 3, executes = 5, deprecated = true, sticky = true, oninvoke = "i", onthrow = "t", onreturn = "r", cache = "c", validation = "v",
             arguments = {@Argument(index = 24, callback = true, type = "sss")})})
     private InnerTest innerTest;
 

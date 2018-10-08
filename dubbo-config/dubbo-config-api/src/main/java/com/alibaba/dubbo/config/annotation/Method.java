@@ -46,7 +46,7 @@ public @interface Method {
 
     String cache() default "";
 
-    boolean validation() default false;
+    String validation() default "";
 
     Argument[] arguments() default {};
 }
