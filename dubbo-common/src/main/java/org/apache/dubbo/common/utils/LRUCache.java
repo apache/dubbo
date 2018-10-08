@@ -18,8 +18,6 @@ package org.apache.dubbo.common.utils;
 
 import java.util.LinkedHashMap;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class LRUCache<K, V> extends LinkedHashMap<K, V> {
 
