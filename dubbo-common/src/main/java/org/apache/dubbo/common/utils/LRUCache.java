@@ -45,7 +45,7 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
 
     @Override
     protected boolean removeEldestEntry(java.util.Map.Entry<K, V> eldest) {
-        return size() > maxCapacity;
+        return super.size() > maxCapacity;
     }
 
     @Override
@@ -90,7 +90,12 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
 
     @Override
     public int size() {
-        return super.size();
+        lock.acquireUninterruptibly();
+        try {
+            return super.size();
+        } finally {
+            lock.release();
+        }
     }
 
     @Override
