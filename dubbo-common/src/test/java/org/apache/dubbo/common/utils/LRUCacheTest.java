@@ -21,6 +21,7 @@ import org.junit.Test;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
@@ -64,23 +65,20 @@ public class LRUCacheTest {
 
     @Test
     public void testCacheInConcurrencyEnv() throws Exception{
-        LRUCache<String, String> cache = new LRUCache<String, String>();
-        cache.put("a", "a");
-        cache.remove("a", "a");
-
         ExecutorService es = Executors.newCachedThreadPool();
+        LRUCache<String, String> cache = new LRUCache<String, String>();
 
-        Runnable task = () -> cache.put("a", "a");
-        Runnable task1 = () -> cache.put("a", "b");
-        Runnable task2 = () -> cache.remove("a");
-        Runnable task3 = () -> cache.clear();
+        cache.put("a", "a");
+        Runnable task1 = () -> cache.get("a");
+        Runnable task2 = () -> cache.put("b","b");
 
-        assertThat(es.submit(task).get(),equalTo(null));
         assertThat(es.submit(task1).get(),equalTo("a"));
-        assertThat(es.submit(task2).get(),equalTo("b"));
-        assertThat(es.submit(task2).get(),equalTo("b"));
+        assertThat(es.submit(task1).get(),equalTo("a"));
+        TimeUnit.MILLISECONDS.sleep(10);
+        assertThat(es.submit(task2).get(),equalTo(null));
+        TimeUnit.MILLISECONDS.sleep(10);
+        assertThat(es.submit(task1).get(),equalTo("a"));
 
-        es.submit(task3);
         es.shutdown();
     }
 
