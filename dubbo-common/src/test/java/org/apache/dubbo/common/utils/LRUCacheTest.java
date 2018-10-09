@@ -19,6 +19,10 @@ package org.apache.dubbo.common.utils;
 
 import org.junit.Test;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -58,4 +62,24 @@ public class LRUCacheTest {
         cache.setMaxCapacity(10);
         assertThat(cache.getMaxCapacity(), equalTo(10));
     }
+
+    @Test
+    public void testCacheInConcurrencyEnv() throws Exception{
+        ExecutorService es = Executors.newCachedThreadPool();
+        LRUCache<String, String> cache = new LRUCache<String, String>();
+
+        cache.put("a", "a");
+        Runnable task1 = () -> cache.get("a");
+        Runnable task2 = () -> cache.put("b","b");
+
+        assertThat(es.submit(task1).get(),equalTo("a"));
+        assertThat(es.submit(task1).get(),equalTo("a"));
+        TimeUnit.MILLISECONDS.sleep(10);
+        assertThat(es.submit(task2).get(),equalTo(null));
+        TimeUnit.MILLISECONDS.sleep(10);
+        assertThat(es.submit(task1).get(),equalTo("a"));
+
+        es.shutdown();
+    }
+
 }
