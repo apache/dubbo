@@ -21,6 +21,7 @@ import io.protostuff.ProtobufIOUtil;
 import io.protostuff.Schema;
 import io.protostuff.runtime.RuntimeSchema;
 import org.apache.dubbo.common.serialize.ObjectInput;
+import org.apache.dubbo.common.serialize.protobuf.utils.WrapperUtils;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -55,7 +56,7 @@ public class ProtobufObjectInput implements ObjectInput {
         Class clazz = Class.forName(className);
 
         Object result;
-        if (Utils.WRAPPER_SET.contains(clazz) || clazz.isArray() || clazz.isEnum()) {
+        if (WrapperUtils.needWrapper(clazz)) {
             Schema<Wrapper> schema = RuntimeSchema.getSchema(Wrapper.class);
             Wrapper wrapper = schema.newMessage();
             ProtobufIOUtil.mergeFrom(bytes, wrapper, schema);
@@ -85,7 +86,7 @@ public class ProtobufObjectInput implements ObjectInput {
         dis.read(bytes, 0, bytesLength);
 
         T result;
-        if (Utils.WRAPPER_SET.contains(clazz) || clazz.isArray() || clazz.isEnum()) {
+        if (WrapperUtils.needWrapper(clazz)) {
             Schema<Wrapper> schema = RuntimeSchema.getSchema(Wrapper.class);
             Wrapper wrapper = schema.newMessage();
             ProtobufIOUtil.mergeFrom(bytes, wrapper, schema);

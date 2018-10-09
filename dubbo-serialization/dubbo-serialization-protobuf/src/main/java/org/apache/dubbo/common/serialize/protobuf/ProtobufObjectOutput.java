@@ -20,11 +20,11 @@ package org.apache.dubbo.common.serialize.protobuf;
 import io.protostuff.*;
 import io.protostuff.runtime.RuntimeSchema;
 import org.apache.dubbo.common.serialize.ObjectOutput;
+import org.apache.dubbo.common.serialize.protobuf.utils.WrapperUtils;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Map;
 
 public class ProtobufObjectOutput implements ObjectOutput {
 
@@ -41,7 +41,7 @@ public class ProtobufObjectOutput implements ObjectOutput {
         byte[] bytes;
         byte[] classNameBytes;
 
-        if (Utils.WRAPPER_SET.contains(obj.getClass()) || obj.getClass().isArray() || obj instanceof Enum) {
+        if (WrapperUtils.needWrapper(obj)) {
             Schema<Wrapper> schema = RuntimeSchema.getSchema(Wrapper.class);
             Wrapper wrapper = new Wrapper(obj);
             bytes = ProtobufIOUtil.toByteArray(wrapper, schema, buffer);

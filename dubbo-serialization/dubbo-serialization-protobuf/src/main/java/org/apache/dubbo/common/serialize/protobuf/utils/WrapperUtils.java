@@ -1,11 +1,13 @@
-package org.apache.dubbo.common.serialize.protobuf;
+package org.apache.dubbo.common.serialize.protobuf.utils;
+
+import org.apache.dubbo.common.serialize.protobuf.Wrapper;
 
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class Utils {
-    public static final Set<Class<?>> WRAPPER_SET = new HashSet<>();
+public class WrapperUtils {
+    private static final Set<Class<?>> WRAPPER_SET = new HashSet<>();
 
     static {
         WRAPPER_SET.add(Map.class);
@@ -37,5 +39,12 @@ public class Utils {
         WRAPPER_SET.add(Wrapper.class);
     }
 
+    public static boolean needWrapper(Class<?> clazz) {
+        return WrapperUtils.WRAPPER_SET.contains(clazz) || clazz.isArray() || clazz.isEnum();
+    }
+
+    public static boolean needWrapper(Object obj) {
+        return needWrapper(obj.getClass());
+    }
 
 }
