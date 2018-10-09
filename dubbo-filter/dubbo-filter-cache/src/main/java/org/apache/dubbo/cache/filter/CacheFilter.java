@@ -16,7 +16,8 @@
  */
 package org.apache.dubbo.cache.filter;
 
-import java.io.Serializable;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
 
 import org.apache.dubbo.cache.Cache;
 import org.apache.dubbo.cache.CacheFactory;
@@ -29,7 +30,6 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcResult;
 
 /**
  * CacheFilter
@@ -49,36 +49,37 @@ public class CacheFilter implements Filter {
             Cache cache = cacheFactory.getCache(invoker.getUrl(), invocation);
             if (cache != null) {
                 String key = StringUtils.toArgumentString(invocation.getArguments());
-                Object value = cache.get(key);
-                if (value != null) {
-                    if (value instanceof ValueWrapper) {
-                        return new RpcResult(((ValueWrapper)value).get());
-                    } else {
-                        return new RpcResult(value);
+                FutureTask f = (FutureTask) cache.get(key);
+                if (f != null) {
+                    return getCacheValue(f, cache, key);
+                }
+                Callable<Result> inv = new Callable() {
+                    @Override
+                    public Result call() throws Exception {
+                        return invoker.invoke(invocation);
                     }
+                };
+                FutureTask task = new FutureTask(inv);
+                f = (FutureTask) cache.putIfAbsent(key, task);
+                if (f == null) {
+                    f = task;
+                    f.run();
                 }
-                Result result = invoker.invoke(invocation);
-                if (!result.hasException()) {
-                    cache.put(key, new ValueWrapper(result.getValue()));
-                }
-                return result;
+                return getCacheValue(f, cache, key);
             }
         }
         return invoker.invoke(invocation);
     }
-    
-    static class ValueWrapper implements Serializable{
 
-        private static final long serialVersionUID = -1777337318019193256L;
-
-        private final Object value;
-
-        public ValueWrapper(Object value){
-            this.value = value;
+    private Result getCacheValue(final FutureTask<Result> task, final Cache cache, final Object key) {
+        try {
+            Result value = task.get();
+            if (value.hasException()) {
+                cache.remove(key);
+            }
+            return value;
+        } catch (Exception e) {
         }
-
-        public Object get() {
-            return this.value;
-        }
+        return null;
     }
 }

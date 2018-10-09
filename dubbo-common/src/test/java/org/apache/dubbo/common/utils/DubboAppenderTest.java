@@ -38,7 +38,7 @@ public class DubboAppenderTest {
         Level level = Mockito.mock(Level.class);
         Category category = Mockito.mock(Category.class);
         event = Mockito.mock(LoggingEvent.class);
-        Mockito.when(event.getLogger()).thenReturn(category);
+//        Mockito.when(event.getLogger()).thenReturn(category);
         Mockito.when(event.getLevel()).thenReturn(level);
         Mockito.when(event.getThreadName()).thenReturn("thread-name");
         Mockito.when(event.getMessage()).thenReturn("message");

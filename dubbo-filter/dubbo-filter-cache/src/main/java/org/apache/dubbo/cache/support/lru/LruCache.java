@@ -44,4 +44,19 @@ public class LruCache implements Cache {
         return store.get(key);
     }
 
+    @Override
+    public Object remove(Object key) {
+        return store.remove(key);
+    }
+
+    @Override
+    public Object putIfAbsent(Object key, Object value) {
+        synchronized (key){
+            Object obj = store.get(key);
+            if(obj == null){
+                store.put(key,value);
+            }
+            return obj;
+        }
+    }
 }

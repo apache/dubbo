@@ -48,4 +48,18 @@ public class ThreadLocalCache implements Cache {
         return store.get().get(key);
     }
 
+    @Override
+    public Object remove(Object key) {
+        return store.get().remove(key);
+    }
+
+    @Override
+    public Object putIfAbsent(Object key, Object value) {
+        Object obj = store.get().get(key);
+        if(obj == null){
+            store.get().put(key,value);
+        }
+        return obj;
+    }
+
 }
