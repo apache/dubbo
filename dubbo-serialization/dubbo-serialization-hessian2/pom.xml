@@ -25,7 +25,7 @@ limitations under the License.
     <artifactId>dubbo-serialization-hessian2</artifactId>
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
-    <description>The common module of dubbo project</description>
+    <description>The hessian2 serialization module of dubbo project</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
