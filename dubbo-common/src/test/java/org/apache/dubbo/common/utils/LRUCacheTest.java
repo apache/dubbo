@@ -19,6 +19,11 @@ package org.apache.dubbo.common.utils;
 
 import org.junit.Test;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -49,6 +54,19 @@ public class LRUCacheTest {
         assertTrue(cache.containsKey("two"));
         assertTrue(cache.containsKey("three"));
         assertThat(cache.size(), equalTo(3));
+        cache.clear();
+
+        cache.put("one",1);
+        Callable readTask = ()->cache.get("one");
+        Callable writeTask = ()->cache.put("two",2);
+        ExecutorService es = Executors.newCachedThreadPool();
+        assertThat(es.submit(readTask).get(), equalTo(1));
+        assertThat(es.submit(readTask).get(), equalTo(1));
+        TimeUnit.MILLISECONDS.sleep(10);
+        assertThat(es.submit(writeTask).get(), equalTo(null));
+        TimeUnit.MILLISECONDS.sleep(10);
+        assertThat(es.submit(readTask).get(), equalTo(1));
+        es.shutdown();
     }
 
     @Test
