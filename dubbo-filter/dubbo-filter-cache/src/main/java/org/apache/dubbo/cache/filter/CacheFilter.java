@@ -79,6 +79,7 @@ public class CacheFilter implements Filter {
             }
             return value;
         } catch (Exception e) {
+            //invoker异常不会放进缓存，如果异步获取结果抛异常则跟结果本身无关，可能是线程中断，因此不需要移除缓存
         }
         return null;
     }
