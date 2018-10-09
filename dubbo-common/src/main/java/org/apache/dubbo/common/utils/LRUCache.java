@@ -17,8 +17,7 @@
 package org.apache.dubbo.common.utils;
 
 import java.util.LinkedHashMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.Semaphore;
 
 public class LRUCache<K, V> extends LinkedHashMap<K, V> {
 
@@ -27,8 +26,10 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
     private static final float DEFAULT_LOAD_FACTOR = 0.75f;
 
     private static final int DEFAULT_MAX_CAPACITY = 1000;
-    private final Lock lock = new ReentrantLock();
+
     private volatile int maxCapacity;
+
+    private final Semaphore lock = new Semaphore(Integer.MAX_VALUE, true);
 
     public LRUCache() {
         this(DEFAULT_MAX_CAPACITY);
@@ -41,66 +42,66 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
 
     @Override
     protected boolean removeEldestEntry(java.util.Map.Entry<K, V> eldest) {
-        return size() > maxCapacity;
+        return super.size() > maxCapacity;
     }
 
     @Override
     public boolean containsKey(Object key) {
-        lock.lock();
+        lock.acquireUninterruptibly();
         try {
             return super.containsKey(key);
         } finally {
-            lock.unlock();
+            lock.release();
         }
     }
 
     @Override
     public V get(Object key) {
-        lock.lock();
+        lock.acquireUninterruptibly();
         try {
             return super.get(key);
         } finally {
-            lock.unlock();
+            lock.release();
         }
     }
 
     @Override
     public V put(K key, V value) {
-        lock.lock();
+        lock.acquireUninterruptibly(Integer.MAX_VALUE);
         try {
             return super.put(key, value);
         } finally {
-            lock.unlock();
+            lock.release(Integer.MAX_VALUE);
         }
     }
 
     @Override
     public V remove(Object key) {
-        lock.lock();
+        lock.acquireUninterruptibly(Integer.MAX_VALUE);
         try {
             return super.remove(key);
         } finally {
-            lock.unlock();
+            lock.release(Integer.MAX_VALUE);
         }
     }
 
     @Override
     public int size() {
-        lock.lock();
+        lock.acquireUninterruptibly();
         try {
             return super.size();
         } finally {
-            lock.unlock();
+            lock.release();
         }
     }
 
     @Override
     public void clear() {
-        lock.lock();
+        lock.acquireUninterruptibly(Integer.MAX_VALUE);
         try {
             super.clear();
         } finally {
-            lock.unlock();
+            lock.release(Integer.MAX_VALUE);
         }
     }
 
