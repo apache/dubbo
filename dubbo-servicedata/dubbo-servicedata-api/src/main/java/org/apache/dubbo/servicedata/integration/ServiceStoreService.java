@@ -34,10 +34,8 @@ import org.apache.dubbo.servicedata.store.ServiceStoreFactory;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -45,8 +43,7 @@ import java.util.function.Supplier;
 
 import static org.apache.dubbo.common.Constants.SERVICE_DESCIPTOR_KEY;
 
-/**
- */
+
 public class ServiceStoreService {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());

@@ -9,7 +9,6 @@ import java.lang.reflect.Type;
 import java.net.URL;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
-import java.util.List;
 
 /**
  * @author cvictory ON 2018/9/18
