@@ -43,7 +43,7 @@ There's a [README](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samp
 <dependency>
     <groupId>com.alibaba</groupId>
     <artifactId>dubbo</artifactId>
-    <version>2.6.3</version>
+    <version>2.6.4</version>
 </dependency>
 ```
 

@@ -29,7 +29,7 @@ import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.support.ProviderConsumerRegTable;
 import org.apache.dubbo.registry.support.ProviderInvokerWrapper;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Set;
 
 @Cmd(name = "offline", summary = "offline dubbo", example = {
@@ -49,7 +49,7 @@ public class Offline implements BaseCommand {
         }
         boolean hasService = false;
 
-        List<ProviderModel> providerModelList = ApplicationModel.allProviderModels();
+        Collection<ProviderModel> providerModelList = ApplicationModel.allProviderModels();
         for (ProviderModel providerModel : providerModelList) {
             if (providerModel.getServiceName().matches(servicePattern)) {
                 hasService = true;

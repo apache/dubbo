@@ -221,13 +221,23 @@ final class HeaderExchangeChannel implements ExchangeChannel {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
         HeaderExchangeChannel other = (HeaderExchangeChannel) obj;
         if (channel == null) {
-            if (other.channel != null) return false;
-        } else if (!channel.equals(other.channel)) return false;
+            if (other.channel != null) {
+                return false;
+            }
+        } else if (!channel.equals(other.channel)) {
+            return false;
+        }
         return true;
     }
 
