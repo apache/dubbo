@@ -29,7 +29,7 @@ public class DubboApplicationContextInitializerTest {
     @Test
     public void testSpringContextLoaderListenerInWebXml() throws Exception {
         Tomcat tomcat = new Tomcat();
-        tomcat.setBaseDir("src/test/resources");
+        tomcat.setBaseDir("target/test-classes");
         tomcat.setPort(12345);
         StandardContext context = new StandardContext();
         context.setName("test");
@@ -49,7 +49,7 @@ public class DubboApplicationContextInitializerTest {
     @Test
     public void testNoListenerInWebXml() throws Exception {
         Tomcat tomcat = new Tomcat();
-        tomcat.setBaseDir("src/test/resources");
+        tomcat.setBaseDir("target/test-classes");
         tomcat.setPort(12345);
         StandardContext context = new StandardContext();
         context.setName("test2");
@@ -69,7 +69,7 @@ public class DubboApplicationContextInitializerTest {
     @Test
     public void testMetadataComplete() throws Exception {
         Tomcat tomcat = new Tomcat();
-        tomcat.setBaseDir("src/test/resources");
+        tomcat.setBaseDir("target/test-classes");
         tomcat.setPort(12345);
         StandardContext context = new StandardContext();
         context.setName("test3");
