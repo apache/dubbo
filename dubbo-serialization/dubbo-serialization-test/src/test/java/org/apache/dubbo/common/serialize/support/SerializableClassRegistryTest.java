@@ -18,6 +18,7 @@ package org.apache.dubbo.common.serialize.support;
 
 import org.junit.Test;
 
+import java.io.Serializable;
 import java.util.Map;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -33,9 +34,9 @@ public class SerializableClassRegistryTest {
         assertThat(registeredClasses.size(), equalTo(2));
     }
 
-    private class A {
+    private class A implements Serializable {
     }
 
-    private class B {
+    private class B implements Serializable {
     }
 }
