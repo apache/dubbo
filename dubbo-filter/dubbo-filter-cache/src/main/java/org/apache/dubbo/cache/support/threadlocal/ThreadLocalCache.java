@@ -55,11 +55,7 @@ public class ThreadLocalCache implements Cache {
 
     @Override
     public Object putIfAbsent(Object key, Object value) {
-        Object obj = store.get().get(key);
-        if(obj == null){
-            store.get().put(key,value);
-        }
-        return obj;
+        return store.get().put(key, value);
     }
 
 }

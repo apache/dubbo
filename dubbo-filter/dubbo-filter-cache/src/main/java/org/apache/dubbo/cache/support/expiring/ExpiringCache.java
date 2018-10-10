@@ -54,13 +54,8 @@ public class ExpiringCache implements Cache {
 
     @Override
     public Object putIfAbsent(Object key, Object value) {
-        synchronized (key){
-            Object obj = store.get(key);
-            if(obj == null){
-                store.put(key,value);
-            }
-            return obj;
+        synchronized (key) {
+            return store.put(key, value);
         }
     }
-
 }

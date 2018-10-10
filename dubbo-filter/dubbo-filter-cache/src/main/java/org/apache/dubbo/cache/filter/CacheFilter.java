@@ -53,12 +53,7 @@ public class CacheFilter implements Filter {
                 if (f != null) {
                     return getCacheValue(f, cache, key);
                 }
-                Callable<Result> inv = new Callable() {
-                    @Override
-                    public Result call() throws Exception {
-                        return invoker.invoke(invocation);
-                    }
-                };
+                Callable<Result> inv = () -> invoker.invoke(invocation);
                 FutureTask task = new FutureTask(inv);
                 f = (FutureTask) cache.putIfAbsent(key, task);
                 if (f == null) {
@@ -79,7 +74,9 @@ public class CacheFilter implements Filter {
             }
             return value;
         } catch (Exception e) {
-            //invoker异常不会放进缓存，如果异步获取结果抛异常则跟结果本身无关，可能是线程中断，因此不需要移除缓存
+            //Throwing an exception on invoke won't put Result into the cache.
+            // If an Exception is thrown wher futureTask fetch results, it has nothing
+            // to do with the result itself. It may be a thread interrupt, so there is no need to remove the cache.
         }
         return null;
     }

@@ -42,11 +42,11 @@ public class MyCache implements Cache {
 
     @Override
     public Object remove(Object key) {
-        return null;
+        return map.remove(key);
     }
 
     @Override
     public Object putIfAbsent(Object key, Object value) {
-        return null;
+        return map.putIfAbsent(key,value);
     }
 }
