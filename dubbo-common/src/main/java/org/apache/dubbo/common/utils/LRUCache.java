@@ -28,9 +28,9 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
 
     private static final int DEFAULT_MAX_CAPACITY = 1000;
 
-    private final ReentrantReadWriteLock rwlock = new ReentrantReadWriteLock(true);
-    private final Lock readLock = rwlock.readLock();
-    private final Lock writeLock = rwlock.writeLock();
+    private final ReentrantReadWriteLock RW_LOCK = new ReentrantReadWriteLock(true);
+    private final Lock READ_LOCK = RW_LOCK.readLock();
+    private final Lock WRITE_LOCK = RW_LOCK.writeLock();
 
     private volatile int maxCapacity;
 
@@ -45,90 +45,80 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
 
     @Override
     protected boolean removeEldestEntry(java.util.Map.Entry<K, V> eldest) {
-        readLock.lock();
-        try {
-            return super.size() > maxCapacity;
-        } finally {
-            readLock.unlock();
-        }
+        return size() > maxCapacity;
     }
 
     @Override
     public boolean containsKey(Object key) {
-        readLock.lock();
+        READ_LOCK.lock();
         try {
             return super.containsKey(key);
         } finally {
-            readLock.unlock();
+            READ_LOCK.unlock();
         }
     }
 
     @Override
     public V get(Object key) {
-        readLock.lock();
+        READ_LOCK.lock();
         try {
             return super.get(key);
         } finally {
-            readLock.unlock();
+            READ_LOCK.unlock();
         }
     }
 
     @Override
     public V put(K key, V value) {
-        writeLock.lock();
+        WRITE_LOCK.lock();
         try {
             return super.put(key, value);
         } finally {
-            writeLock.unlock();
+            WRITE_LOCK.unlock();
         }
     }
 
     @Override
     public V remove(Object key) {
-        writeLock.lock();
+        WRITE_LOCK.lock();
         try {
             return super.remove(key);
         } finally {
-            writeLock.unlock();
+            WRITE_LOCK.unlock();
         }
     }
 
     @Override
     public int size() {
-        readLock.lock();
+        READ_LOCK.lock();
         try {
             return super.size();
         } finally {
-            readLock.unlock();
+            READ_LOCK.unlock();
         }
     }
 
     @Override
     public void clear() {
-        writeLock.lock();
+        WRITE_LOCK.lock();
         try {
             super.clear();
         } finally {
-            writeLock.unlock();
+            WRITE_LOCK.unlock();
         }
     }
 
     public int getMaxCapacity() {
-        readLock.lock();
+        READ_LOCK.lock();
         try {
             return maxCapacity;
         } finally {
-            readLock.unlock();
+            READ_LOCK.unlock();
         }
     }
 
     public void setMaxCapacity(int maxCapacity) {
-        writeLock.lock();
-        try {
-            this.maxCapacity = maxCapacity;
-        } finally {
-            writeLock.unlock();
-        }
+        this.maxCapacity = maxCapacity;
     }
 
 }
