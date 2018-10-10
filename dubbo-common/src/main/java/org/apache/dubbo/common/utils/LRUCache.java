@@ -109,12 +109,7 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
     }
 
     public int getMaxCapacity() {
-        READ_LOCK.lock();
-        try {
-            return maxCapacity;
-        } finally {
-            READ_LOCK.unlock();
-        }
+        return maxCapacity;
     }
 
     public void setMaxCapacity(int maxCapacity) {
