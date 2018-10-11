@@ -18,7 +18,7 @@ package org.apache.dubbo.common.utils;
 
 import java.util.LinkedHashMap;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class LRUCache<K, V> extends LinkedHashMap<K, V> {
 
@@ -27,7 +27,11 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
     private static final float DEFAULT_LOAD_FACTOR = 0.75f;
 
     private static final int DEFAULT_MAX_CAPACITY = 1000;
-    private final Lock lock = new ReentrantLock();
+
+    private final ReentrantReadWriteLock RW_LOCK = new ReentrantReadWriteLock(true);
+    private final Lock READ_LOCK = RW_LOCK.readLock();
+    private final Lock WRITE_LOCK = RW_LOCK.writeLock();
+
     private volatile int maxCapacity;
 
     public LRUCache() {
@@ -46,61 +50,61 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
 
     @Override
     public boolean containsKey(Object key) {
-        lock.lock();
+        READ_LOCK.lock();
         try {
             return super.containsKey(key);
         } finally {
-            lock.unlock();
+            READ_LOCK.unlock();
         }
     }
 
     @Override
     public V get(Object key) {
-        lock.lock();
+        READ_LOCK.lock();
         try {
             return super.get(key);
         } finally {
-            lock.unlock();
+            READ_LOCK.unlock();
         }
     }
 
     @Override
     public V put(K key, V value) {
-        lock.lock();
+        WRITE_LOCK.lock();
         try {
             return super.put(key, value);
         } finally {
-            lock.unlock();
+            WRITE_LOCK.unlock();
         }
     }
 
     @Override
     public V remove(Object key) {
-        lock.lock();
+        WRITE_LOCK.lock();
         try {
             return super.remove(key);
         } finally {
-            lock.unlock();
+            WRITE_LOCK.unlock();
         }
     }
 
     @Override
     public int size() {
-        lock.lock();
+        READ_LOCK.lock();
         try {
             return super.size();
         } finally {
-            lock.unlock();
+            READ_LOCK.unlock();
         }
     }
 
     @Override
     public void clear() {
-        lock.lock();
+        WRITE_LOCK.lock();
         try {
             super.clear();
         } finally {
-            lock.unlock();
+            WRITE_LOCK.unlock();
         }
     }
 
