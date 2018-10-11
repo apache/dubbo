@@ -28,6 +28,7 @@ import org.apache.dubbo.common.extension.SPI;
 public interface ProxyFactory {
 
     /**
+     * 创建 Proxy ，在引用服务调用。
      * create proxy.
      *
      * @param invoker
@@ -47,6 +48,7 @@ public interface ProxyFactory {
 
     /**
      * create invoker.
+     * 创建 Invoker ，在暴露服务时调用。
      *
      * @param <T>
      * @param proxy

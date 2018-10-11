@@ -21,6 +21,7 @@ import java.util.Map;
 
 
 /**
+ * Result 是会话域，它持有调用过程中返回值，异常等。
  * RPC invoke result. (API, Prototype, NonThreadSafe)
  *
  * @serial Don't change the class name and package name.

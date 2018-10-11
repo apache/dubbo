@@ -26,6 +26,8 @@ public interface InvokerListener {
 
     /**
      * The invoker referred
+     * <p>
+     * 当服务引用完成
      *
      * @param invoker
      * @throws RpcException
@@ -35,6 +37,7 @@ public interface InvokerListener {
 
     /**
      * The invoker destroyed.
+     * 当服务销毁引用完成
      *
      * @param invoker
      * @see org.apache.dubbo.rpc.Invoker#destroy()

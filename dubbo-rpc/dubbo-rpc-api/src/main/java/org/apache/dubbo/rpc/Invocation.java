@@ -19,6 +19,8 @@ package org.apache.dubbo.rpc;
 import java.util.Map;
 
 /**
+ * Invocation 是会话域，它持有调用过程中的变量，比如方法名，参数等。
+ * <p>
  * Invocation. (API, Prototype, NonThreadSafe)
  *
  * @serial Don't change the class name and package name.
@@ -28,6 +30,7 @@ import java.util.Map;
 public interface Invocation {
 
     /**
+     * 获取方法名称
      * get method name.
      *
      * @return method name.
@@ -36,6 +39,7 @@ public interface Invocation {
     String getMethodName();
 
     /**
+     * 获得方法参数类型数组
      * get parameter types.
      *
      * @return parameter types.
@@ -44,6 +48,7 @@ public interface Invocation {
     Class<?>[] getParameterTypes();
 
     /**
+     * 获取方法参数数组
      * get arguments.
      *
      * @return arguments.
@@ -52,6 +57,10 @@ public interface Invocation {
     Object[] getArguments();
 
     /**
+     * 获得隐式参数相关
+     *
+     * 不了解的胖友，可以看看 {@see <a href="https://dubbo.gitbooks.io/dubbo-user-book/demos/attachment.html">《Dubbo 用户指南 —— 隐式参数》</a>} 文档。
+     * 和 HTTP Request Header 有些相似。
      * get attachments.
      *
      * @return attachments.
@@ -76,6 +85,7 @@ public interface Invocation {
     String getAttachment(String key, String defaultValue);
 
     /**
+     * 获得对应的 Invoker 对象
      * get the invoker in current context.
      *
      * @return invoker.
