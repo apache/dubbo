@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
- * @author cvictory ON 2018/9/18
+ *  2018/9/18
  */
 public class CollectionTypeBuilder implements TypeBuilder{
     @Override

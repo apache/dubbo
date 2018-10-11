@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author cvictory ON 2018/9/29
+ *  2018/9/29
  */
 public class TypeDescriptorBuilderTest {
 

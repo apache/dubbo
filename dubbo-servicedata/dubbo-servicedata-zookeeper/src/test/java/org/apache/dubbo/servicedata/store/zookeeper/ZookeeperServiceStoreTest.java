@@ -14,7 +14,7 @@ import org.junit.Test;
 import java.util.List;
 
 /**
- * @author cvictory ON 2018/10/9
+ *  2018/10/9
  */
 public class ZookeeperServiceStoreTest {
     private TestingServer zkServer;
