@@ -11,7 +11,7 @@ import java.security.CodeSource;
 import java.security.ProtectionDomain;
 
 /**
- * @author cvictory ON 2018/9/18
+ *  2018/9/18
  */
 public class ServiceDescriptorBuilder {
 

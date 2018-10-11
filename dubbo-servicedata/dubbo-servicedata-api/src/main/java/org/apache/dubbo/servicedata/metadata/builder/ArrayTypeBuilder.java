@@ -6,7 +6,7 @@ import java.lang.reflect.Type;
 import java.util.Map;
 
 /**
- * @author cvictory ON 2018/9/18
+ *  2018/9/18
  */
 public class ArrayTypeBuilder implements TypeBuilder {
 

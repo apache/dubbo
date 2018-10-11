@@ -5,7 +5,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * @author cvictory ON 2018/9/29
+ *  2018/9/29
  */
 public class ServiceDescriptorBuilderTest {
 

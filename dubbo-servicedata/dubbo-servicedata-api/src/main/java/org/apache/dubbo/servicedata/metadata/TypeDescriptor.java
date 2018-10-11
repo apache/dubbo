@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * @author cvictory ON 2018/9/18
+ *  2018/9/18
  */
 public class TypeDescriptor {
 

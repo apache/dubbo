@@ -13,7 +13,7 @@ import redis.embedded.RedisServer;
 import java.io.IOException;
 
 /**
- * @author cvictory ON 2018/10/9
+ *  2018/10/9
  */
 public class RedisServiceStoreTest {
     RedisServiceStore redisServiceStore;

@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 /**
- * @author cvictory ON 2018/9/14
+ * 2018/9/14
  */
 public class ServiceStoreServiceTest {
     URL url = URL.valueOf("JTest://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");

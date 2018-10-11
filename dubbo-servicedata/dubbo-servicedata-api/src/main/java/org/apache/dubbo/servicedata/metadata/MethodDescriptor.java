@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * @author cvictory ON 2018/9/18
+ *  2018/9/18
  */
 public class MethodDescriptor {
     private String name;

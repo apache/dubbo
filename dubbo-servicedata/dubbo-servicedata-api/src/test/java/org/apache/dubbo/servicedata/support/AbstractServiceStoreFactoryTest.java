@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * @author cvictory ON 2018/9/14
+ *  2018/9/14
  */
 public class AbstractServiceStoreFactoryTest {
 
