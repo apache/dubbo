@@ -1,53 +1,101 @@
 <!--
-Licensed to the Apache Software Foundation (ASF) under one or more
-contributor license agreements.  See the NOTICE file distributed with
-this work for additional information regarding copyright ownership.
-The ASF licenses this file to You under the Apache License, Version 2.0
-(the "License"); you may not use this file except in compliance with
-the License.  You may obtain a copy of the License at
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
 
-     http://www.apache.org/licenses/LICENSE-2.0
+      http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
--->
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.sonatype.oss</groupId>
-        <artifactId>oss-parent</artifactId>
-        <version>7</version>
+        <groupId>org.apache</groupId>
+        <artifactId>apache</artifactId>
+        <version>19</version>
     </parent>
 
-    <groupId>com.alibaba</groupId>
+    <groupId>org.apache.dubbo</groupId>
     <artifactId>dubbo-parent</artifactId>
-    <version>2.6.1</version>
+    <version>2.7.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>${project.artifactId}</name>
-    <description>Dubbo is a high-performance, java based RPC framework open-sourced by Alibaba</description>
-    <url>http://dubbo.io</url>
-
+    <description>The parent project of dubbo</description>
+    <url>https://github.com/apache/incubator-dubbo</url>
     <inceptionYear>2011</inceptionYear>
     <licenses>
         <license>
-            <name>Apache 2</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+            <distribution>repo</distribution>
         </license>
     </licenses>
+
+    <scm>
+        <url>https://github.com/apache/incubator-dubbo</url>
+        <connection>scm:git:https://github.com/apache/incubator-dubbo.git</connection>
+        <developerConnection>scm:git:https://github.com/apache/incubator-dubbo.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+    <mailingLists>
+        <mailingList>
+            <name>Development List</name>
+            <subscribe>dev-subscribe@dubbo.apache.org</subscribe>
+            <unsubscribe>dev-unsubscribe@dubbo.apache.org</unsubscribe>
+            <post>dev@dubbo.apache.org</post>
+        </mailingList>
+        <mailingList>
+            <name>Commits List</name>
+            <subscribe>commits-subscribe@dubbo.apache.org</subscribe>
+            <unsubscribe>commits-unsubscribe@dubbo.apache.org</unsubscribe>
+            <post>commits@dubbo.apache.org</post>
+        </mailingList>
+        <mailingList>
+            <name>Issues List</name>
+            <subscribe>issues-subscribe@dubbo.apache.org</subscribe>
+            <unsubscribe>issues-unsubscribe@dubbo.apache.org</unsubscribe>
+            <post>issues@dubbo.apache.org</post>
+        </mailingList>
+    </mailingLists>
+    <developers>
+        <developer>
+            <id>dubbo.io</id>
+            <name>The Dubbo Project Contributors</name>
+            <email>dev-subscribe@dubbo.apache.org</email>
+            <url>http://dubbo.apache.org/</url>
+        </developer>
+    </developers>
+
+    <organization>
+        <name>The Apache Software Foundation</name>
+        <url>http://www.apache.org/</url>
+    </organization>
+
+    <issueManagement>
+        <system>Github Issues</system>
+        <url>https://github.com/apache/incubator-dubbo/issues</url>
+    </issueManagement>
 
     <properties>
         <!-- Test libs -->
         <junit_version>4.12</junit_version>
-        <easymock_version>3.4</easymock_version>
-        <jmockit_version>1.33</jmockit_version>
+        <hazelcast_version>3.9-EA</hazelcast_version>
+        <hamcrest_version>1.3</hamcrest_version>
+        <hibernate_validator_version>5.2.4.Final</hibernate_validator_version>
+        <el_api_version>2.2.4</el_api_version>
+        <jaxb_api_version>2.2.7</jaxb_api_version>
         <cglib_version>2.2</cglib_version>
+        <mockito_version>2.18.3</mockito_version>
         <!-- Build args -->
         <argline>-server -Xms256m -Xmx512m -XX:PermSize=64m -XX:MaxPermSize=128m -Dfile.encoding=UTF-8
             -Djava.net.preferIPv4Stack=true
@@ -58,8 +106,8 @@ limitations under the License.
 
         <profile.name>oss</profile.name>
         <!-- for maven compiler plugin -->
-        <java_source_version>1.6</java_source_version>
-        <java_target_version>1.6</java_target_version>
+        <java_source_version>1.8</java_source_version>
+        <java_target_version>1.8</java_target_version>
         <file_encoding>UTF-8</file_encoding>
         <!-- Maven plugins -->
         <maven_jar_version>3.0.2</maven_jar_version>
@@ -67,14 +115,19 @@ limitations under the License.
         <maven_deploy_version>2.8.2</maven_deploy_version>
         <maven_compiler_version>3.6.0</maven_compiler_version>
         <maven_source_version>3.0.1</maven_source_version>
-        <maven_cobertura_version>2.7</maven_cobertura_version>
-        <maven_javadoc_version>3.0.0</maven_javadoc_version>
-        <maven_jetty_version>6.1.26</maven_jetty_version>
+        <maven_javadoc_version>3.0.1</maven_javadoc_version>
+        <maven_jetty_version>9.4.11.v20180605</maven_jetty_version>
+        <maven_checkstyle_version>3.0.0</maven_checkstyle_version>
+        <maven_jacoco_version>0.8.2</maven_jacoco_version>
+        <apache-rat-plugin.version>0.12</apache-rat-plugin.version>
+        <arguments />
+        <checkstyle.skip>true</checkstyle.skip>
+        <rat.skip>true</rat.skip>
     </properties>
 
     <modules>
-        <module>hessian-lite</module>
         <module>dubbo-common</module>
+        <module>dubbo-metrics</module>
         <module>dubbo-container</module>
         <module>dubbo-remoting</module>
         <module>dubbo-rpc</module>
@@ -85,17 +138,21 @@ limitations under the License.
         <module>dubbo-config</module>
         <module>dubbo-demo</module>
         <module>dubbo-plugin</module>
-        <module>dependencies-bom</module>
-        <module>bom</module>
-        <module>all</module>
+        <module>dubbo-serialization</module>
+        <module>dubbo-bootstrap</module>
+        <module>dubbo-compatible</module>
+        <module>dubbo-dependencies-bom</module>
+        <module>dubbo-bom</module>
+        <module>dubbo-all</module>
+        <module>dubbo-distribution</module>
     </modules>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>com.alibaba</groupId>
+                <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-dependencies-bom</artifactId>
-                <version>2.6.1</version>
+                <version>2.7.0-SNAPSHOT</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -110,15 +167,15 @@ limitations under the License.
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.easymock</groupId>
-            <artifactId>easymock</artifactId>
-            <version>${easymock_version}</version>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-all</artifactId>
+            <version>${hamcrest_version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jmockit</groupId>
-            <artifactId>jmockit</artifactId>
-            <version>${jmockit_version}</version>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito_version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -138,7 +195,6 @@ limitations under the License.
                 <maven_deploy_version>2.7</maven_deploy_version>
                 <maven_compiler_version>3.1</maven_compiler_version>
                 <maven_source_version>3.0.1</maven_source_version>
-                <maven_cobertura_version>2.7</maven_cobertura_version>
                 <maven_javadoc_version>2.10.1</maven_javadoc_version>
             </properties>
         </profile>
@@ -180,9 +236,107 @@ limitations under the License.
                 </argline>
             </properties>
         </profile>
+        <profile>
+            <id>checkstyle</id>
+            <activation>
+                <jdk>[1.8,)</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-checkstyle-plugin</artifactId>
+                        <version>${maven_checkstyle_version}</version>
+                        <dependencies>
+                            <dependency>
+                                <groupId>com.puppycrawl.tools</groupId>
+                                <artifactId>checkstyle</artifactId>
+                                <version>8.9</version>
+                            </dependency>
+                        </dependencies>
+                        <executions>
+                            <execution>
+                                <id>checkstyle-validation</id>
+                                <phase>validate</phase>
+                                <configuration>
+                                    <configLocation>codestyle/checkstyle.xml</configLocation>
+                                    <suppressionsLocation>codestyle/checkstyle-suppressions.xml</suppressionsLocation>
+                                    <encoding>UTF-8</encoding>
+                                    <consoleOutput>true</consoleOutput>
+                                    <failOnViolation>true</failOnViolation>
+                                    <excludes>**/JSONWriter.java</excludes>
+                                </configuration>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>${maven_javadoc_version}</version>
+                        <executions>
+                            <execution>
+                                <id>attach-javadoc</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <configuration>
+                                    <doclint>none</doclint>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <show>public</show>
+                            <charset>UTF-8</charset>
+                            <encoding>UTF-8</encoding>
+                            <docencoding>UTF-8</docencoding>
+                            <links>
+                                <link>http://docs.oracle.com/javase/7/docs/api</link>
+                            </links>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
     <build>
+        <!-- Used for packaging NOTICE & LICENSE to each sub-module jar-->
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+            </resource>
+            <resource>
+                <directory>${maven.multiModuleProjectDirectory}</directory>
+                <targetPath>META-INF/</targetPath>
+                <filtering>false</filtering>
+                <includes>
+                    <include>NOTICE</include>
+                    <include>LICENSE</include>
+                </includes>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <artifactId>maven-source-plugin</artifactId>
@@ -207,32 +361,11 @@ limitations under the License.
                             <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                         </manifest>
+                        <manifestEntries>
+                            <Specification-Version>${project.version}</Specification-Version>
+                            <Implementation-Version>${project.version}</Implementation-Version>
+                        </manifestEntries>
                     </archive>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>${maven_javadoc_version}</version>
-                <executions>
-                    <execution>
-                        <id>attach-javadoc</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <doclint>none</doclint>
-                        </configuration>
-                    </execution>
-                </executions>
-                <configuration>
-                    <show>public</show>
-                    <charset>UTF-8</charset>
-                    <encoding>UTF-8</encoding>
-                    <docencoding>UTF-8</docencoding>
-                    <excludePackageNames>com.alibaba.com.*</excludePackageNames>
-                    <links>
-                        <link>http://docs.oracle.com/javase/6/docs/api</link>
-                    </links>
                 </configuration>
             </plugin>
             <plugin>
@@ -242,7 +375,7 @@ limitations under the License.
                 <configuration>
                     <useSystemClassLoader>true</useSystemClassLoader>
                     <forkMode>once</forkMode>
-                    <argLine>${argline}</argLine>
+                    <argLine>${argline} ${jacocoArgLine}</argLine>
                     <systemProperties>
                         <!-- common shared -->
                         <property>
@@ -319,6 +452,7 @@ limitations under the License.
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven_compiler_version}</version>
                 <configuration>
+                    <compilerArgument>-proc:none</compilerArgument>
                     <fork>true</fork>
                     <source>${java_source_version}</source>
                     <target>${java_target_version}</target>
@@ -326,15 +460,89 @@ limitations under the License.
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>cobertura-maven-plugin</artifactId>
-                <version>${maven_cobertura_version}</version>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${maven_jacoco_version}</version>
+                <executions>
+                    <execution>
+                        <id>jacoco-initialize</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <propertyName>jacocoArgLine</propertyName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jacoco-site</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <version>${apache-rat-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>verify.rat</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/*.versionsBackup</exclude>
+                                <exclude>**/.idea/</exclude>
+                                <exclude>**/*.iml</exclude>
+                                <exclude>**/*.txt</exclude>
+                                <exclude>**/*.load</exclude>
+                                <exclude>**/*.flex</exclude>
+                                <exclude>**/*.fc</exclude>
+                                <exclude>**/*.javascript</exclude>
+                                <exclude>**/*.properties</exclude>
+                                <exclude>**/*.thrift</exclude>
+                                <exclude>**/*.sh</exclude>
+                                <exclude>**/*.bat</exclude>
+                                <exclude>**/*.md</exclude>
+                                <exclude>.git/</exclude>
+                                <exclude>.gitignore</exclude>
+                                <!-- ASF jenkins box puts the Maven repo in our root directory. -->
+                                <exclude>.repository/</exclude>
+                                <exclude>**/.settings/*</exclude>
+                                <exclude>**/.classpath</exclude>
+                                <exclude>**/.project</exclude>
+                                <exclude>**/target/**</exclude>
+                                <exclude>**/*.log</exclude>
+                                <exclude>CODE_OF_CONDUCT.md</exclude>
+                                <exclude>.codecov.yml</exclude>
+                                <exclude>.travis.yml</exclude>
+                                <exclude>PULL_REQUEST_TEMPLATE.md</exclude>
+                                <exclude>CONTRIBUTING.md</exclude>
+                                <exclude>README.md</exclude>
+                                <exclude>**/codestyle/*</exclude>
+                                <exclude>**/resources/META-INF/**</exclude>
+                                <!-- exclude the internal threadlocal files -->
+                                <exclude>**/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java</exclude>
+                                <exclude>**/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.3</version>
                 <configuration>
-                    <formats>
-                        <format>html</format>
-                        <format>xml</format>
-                    </formats>
-                    <check/>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <useReleaseProfile>false</useReleaseProfile>
+                    <releaseProfiles>release</releaseProfiles>
+                    <goals>deploy</goals>
+                    <arguments>${arguments}</arguments>
                 </configuration>
             </plugin>
         </plugins>
@@ -356,39 +564,13 @@ limitations under the License.
                     <version>3.0.0</version>
                 </plugin>
                 <plugin>
-                    <artifactId>maven-resources-plugin</artifactId>
-                    <version>3.0.1</version>
-                </plugin>
-                <plugin>
                     <groupId>org.ops4j.pax.exam</groupId>
                     <artifactId>maven-paxexam-plugin</artifactId>
                     <version>1.2.4</version>
                 </plugin>
-                <!--<plugin>-->
-                <!--<artifactId>maven-jar-plugin</artifactId>-->
-                <!--<version>3.0.2</version>-->
-                <!--<executions>-->
-                <!--<execution>-->
-                <!--<id>default-jar</id>-->
-                <!--<configuration>-->
-                <!--<archive>-->
-                <!--<manifest>-->
-                <!--<addDefaultImplementationEntries>true</addDefaultImplementationEntries>-->
-                <!--</manifest>-->
-                <!--<index>true</index>-->
-                <!--<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>-->
-                <!--</archive>-->
-                <!--</configuration>-->
-                <!--</execution>-->
-                <!--</executions>-->
-                <!--</plugin>-->
                 <plugin>
                     <artifactId>maven-dependency-plugin</artifactId>
                     <version>2.10</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-assembly-plugin</artifactId>
-                    <version>2.6</version>
                 </plugin>
                 <plugin>
                     <!-- Do NOT upgrade -->
@@ -414,54 +596,16 @@ limitations under the License.
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
                     <version>2.4.3</version>
+                    <configuration>
+                        <createDependencyReducedPom>false</createDependencyReducedPom>
+                    </configuration>
                 </plugin>
                 <plugin>
-                    <groupId>org.mortbay.jetty</groupId>
-                    <artifactId>maven-jetty-plugin</artifactId>
+                    <groupId>org.eclipse.jetty</groupId>
+                    <artifactId>jetty-maven-plugin</artifactId>
                     <version>${maven_jetty_version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
     </build>
-
-    <organization>
-        <name>The Dubbo Project</name>
-        <url>http://dubbo.io</url>
-    </organization>
-
-    <issueManagement>
-        <system>Github Issues</system>
-        <url>https://github.com/alibaba/dubbo/issues</url>
-    </issueManagement>
-    <scm>
-        <url>https://github.com/alibaba/dubbo/tree/master</url>
-        <connection>scm:git:git://github.com/alibaba/dubbo.git</connection>
-        <developerConnection>scm:git:git@github.com:alibaba/dubbo.git</developerConnection>
-    </scm>
-    <mailingLists>
-        <mailingList>
-            <name>Dubbo User Mailling List</name>
-            <subscribe>dubbo+subscribe@googlegroups.com</subscribe>
-            <unsubscribe>dubbo+unsubscribe@googlegroups.com</unsubscribe>
-            <post>dubbo@googlegroups.com</post>
-            <archive>http://groups.google.com/group/dubbo</archive>
-        </mailingList>
-        <mailingList>
-            <name>Dubbo Developer Mailling List</name>
-            <subscribe>dubbo-developers+subscribe@googlegroups.com</subscribe>
-            <unsubscribe>dubbo-developers+unsubscribe@googlegroups.com</unsubscribe>
-            <post>dubbo-developers@googlegroups.com</post>
-            <archive>http://groups.google.com/group/dubbo-developers</archive>
-        </mailingList>
-    </mailingLists>
-    <developers>
-        <developer>
-            <id>dubbo.io</id>
-            <name>The Dubbo Project Contributors</name>
-            <email>dubbo@googlegroups.com</email>
-            <url>http://dubbo.io</url>
-            <organization>The Dubbo Project</organization>
-            <organizationUrl>http://dubbo.io</organizationUrl>
-        </developer>
-    </developers>
 </project>

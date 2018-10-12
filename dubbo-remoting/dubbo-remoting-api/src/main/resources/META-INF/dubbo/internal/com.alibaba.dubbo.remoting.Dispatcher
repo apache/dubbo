@@ -1,5 +1,0 @@
-all=com.alibaba.dubbo.remoting.transport.dispatcher.all.AllDispatcher
-direct=com.alibaba.dubbo.remoting.transport.dispatcher.direct.DirectDispatcher
-message=com.alibaba.dubbo.remoting.transport.dispatcher.message.MessageOnlyDispatcher
-execution=com.alibaba.dubbo.remoting.transport.dispatcher.execution.ExecutionDispatcher
-connection=com.alibaba.dubbo.remoting.transport.dispatcher.connection.ConnectionOrderedDispatcher
