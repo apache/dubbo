@@ -80,6 +80,15 @@ public class ExpiringMap<K, V> implements Map<K, V> {
     }
 
     @Override
+    public V putIfAbsent(K key, V value) {
+        ExpiryObject answer = delegateMap.putIfAbsent(key, new ExpiryObject(key, value, System.currentTimeMillis()));
+        if (answer == null) {
+            return null;
+        }
+        return answer.getValue();
+    }
+
+    @Override
     public V get(Object key) {
         ExpiryObject object = delegateMap.get(key);
         if (object != null) {

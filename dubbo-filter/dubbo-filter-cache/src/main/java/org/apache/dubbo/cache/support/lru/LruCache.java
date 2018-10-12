@@ -51,8 +51,6 @@ public class LruCache implements Cache {
 
     @Override
     public Object putIfAbsent(Object key, Object value) {
-        synchronized (key) {
-            return store.putIfAbsent(key, value);
-        }
+        return store.putIfAbsent(key, value);
     }
 }
