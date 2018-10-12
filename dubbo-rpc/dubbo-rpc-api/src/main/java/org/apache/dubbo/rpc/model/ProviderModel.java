@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.model;
-
-import org.apache.dubbo.config.ServiceConfig;
+package org.apache.dubbo.rpc.model;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -28,17 +26,17 @@ import java.util.Map;
 public class ProviderModel {
     private final String serviceName;
     private final Object serviceInstance;
-    private final ServiceConfig metadata;
+    private final Class<?> serviceInterfaceClass;
     private final Map<String, List<ProviderMethodModel>> methods = new HashMap<String, List<ProviderMethodModel>>();
 
-    public ProviderModel(String serviceName, ServiceConfig metadata, Object serviceInstance) {
+    public ProviderModel(String serviceName, Object serviceInstance, Class<?> serviceInterfaceClass) {
         if (null == serviceInstance) {
             throw new IllegalArgumentException("Service[" + serviceName + "]Target is NULL.");
         }
 
         this.serviceName = serviceName;
-        this.metadata = metadata;
         this.serviceInstance = serviceInstance;
+        this.serviceInterfaceClass = serviceInterfaceClass;
 
         initMethod();
     }
@@ -46,10 +44,6 @@ public class ProviderModel {
 
     public String getServiceName() {
         return serviceName;
-    }
-
-    public ServiceConfig getMetadata() {
-        return metadata;
     }
 
     public Object getServiceInstance() {
@@ -78,7 +72,7 @@ public class ProviderModel {
 
     private void initMethod() {
         Method[] methodsToExport = null;
-        methodsToExport = metadata.getInterfaceClass().getMethods();
+        methodsToExport = this.serviceInterfaceClass.getMethods();
 
         for (Method method : methodsToExport) {
             method.setAccessible(true);

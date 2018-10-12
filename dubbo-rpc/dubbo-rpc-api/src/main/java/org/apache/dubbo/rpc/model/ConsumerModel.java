@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.model;
-
-import org.apache.dubbo.config.ReferenceConfig;
+package org.apache.dubbo.rpc.model;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -25,31 +23,20 @@ import java.util.List;
 import java.util.Map;
 
 public class ConsumerModel {
-    private ReferenceConfig metadata;
-    private Object proxyObject;
-    private String serviceName;
+    private final Object proxyObject;
+    private final String serviceName;
 
     private final Map<Method, ConsumerMethodModel> methodModels = new IdentityHashMap<Method, ConsumerMethodModel>();
 
-    public ConsumerModel(String serviceName,ReferenceConfig metadata, Object proxyObject, Method[] methods) {
+    public ConsumerModel(String serviceName, Object proxyObject, Method[] methods) {
         this.serviceName = serviceName;
-        this.metadata = metadata;
         this.proxyObject = proxyObject;
 
         if (proxyObject != null) {
             for (Method method : methods) {
-                methodModels.put(method, new ConsumerMethodModel(method, metadata));
+                methodModels.put(method, new ConsumerMethodModel(method));
             }
         }
-    }
-
-    /**
-     * Return service metadata for consumer
-     *
-     * @return service metadata
-     */
-    public ReferenceConfig getMetadata() {
-        return metadata;
     }
 
     public Object getProxyObject() {
