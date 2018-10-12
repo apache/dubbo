@@ -14,17 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.model;
+package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.config.ReferenceConfig;
 
 import java.lang.reflect.Method;
 
 public class ConsumerMethodModel {
     private final Method method;
-    private final ReferenceConfig metadata;
-//    private final boolean isCallBack;
+    //    private final boolean isCallBack;
 //    private final boolean isFuture;
     private final String[] parameterTypes;
     private final Class<?>[] parameterClasses;
@@ -32,13 +30,12 @@ public class ConsumerMethodModel {
     private final String methodName;
     private final boolean generic;
 
-    public ConsumerMethodModel(Method method, ReferenceConfig metadata) {
+    public ConsumerMethodModel(Method method) {
         this.method = method;
         this.parameterClasses = method.getParameterTypes();
         this.returnClass = method.getReturnType();
         this.parameterTypes = this.createParamSignature(parameterClasses);
         this.methodName = method.getName();
-        this.metadata = metadata;
         this.generic = methodName.equals(Constants.$INVOKE) && parameterTypes != null && parameterTypes.length == 3;
     }
 
@@ -51,7 +48,6 @@ public class ConsumerMethodModel {
     }
 
 
-
     public String getMethodName() {
         return methodName;
     }
@@ -60,13 +56,9 @@ public class ConsumerMethodModel {
         return parameterTypes;
     }
 
-    public ReferenceConfig getMetadata() {
-        return metadata;
-    }
-
     private String[] createParamSignature(Class<?>[] args) {
         if (args == null || args.length == 0) {
-            return new String[] {};
+            return new String[]{};
         }
         String[] paramSig = new String[args.length];
         for (int x = 0; x < args.length; x++) {
