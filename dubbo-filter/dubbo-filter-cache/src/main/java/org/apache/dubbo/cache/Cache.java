@@ -25,4 +25,7 @@ public interface Cache {
 
     Object get(Object key);
 
+    Object remove(Object key);
+
+    Object putIfAbsent(Object key, Object value);
 }

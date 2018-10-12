@@ -47,4 +47,13 @@ public class ExpiringCache implements Cache {
         return store.get(key);
     }
 
+    @Override
+    public Object remove(Object key) {
+        return store.remove(key);
+    }
+
+    @Override
+    public Object putIfAbsent(Object key, Object value) {
+        return store.putIfAbsent(key, value);
+    }
 }

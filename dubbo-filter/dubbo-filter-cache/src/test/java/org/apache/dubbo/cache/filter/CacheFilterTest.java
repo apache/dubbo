@@ -18,7 +18,6 @@ package org.apache.dubbo.cache.filter;
 
 import org.apache.dubbo.cache.CacheFactory;
 import org.apache.dubbo.cache.support.expiring.ExpiringCacheFactory;
-import org.apache.dubbo.cache.support.jcache.JCacheFactory;
 import org.apache.dubbo.cache.support.lru.LruCacheFactory;
 import org.apache.dubbo.cache.support.threadlocal.ThreadLocalCacheFactory;
 import org.apache.dubbo.common.URL;
@@ -59,7 +58,6 @@ public class CacheFilterTest {
     public static List<Object[]> cacheFactories() {
         return Arrays.asList(new Object[][]{
                 {"lru", new LruCacheFactory()},
-                {"jcache", new JCacheFactory()},
                 {"threadlocal", new ThreadLocalCacheFactory()},
                 {"expiring", new ExpiringCacheFactory()}
         });

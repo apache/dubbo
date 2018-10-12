@@ -39,4 +39,14 @@ public class MyCache implements Cache {
     public Object get(Object key) {
         return map.get(key);
     }
+
+    @Override
+    public Object remove(Object key) {
+        return map.remove(key);
+    }
+
+    @Override
+    public Object putIfAbsent(Object key, Object value) {
+        return map.putIfAbsent(key,value);
+    }
 }
