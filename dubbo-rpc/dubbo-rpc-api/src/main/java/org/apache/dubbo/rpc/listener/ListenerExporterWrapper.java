@@ -30,9 +30,13 @@ import java.util.List;
 public class ListenerExporterWrapper<T> implements Exporter<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(ListenerExporterWrapper.class);
-
+    /**
+     * 真实的 Exporter 对象
+     */
     private final Exporter<T> exporter;
-
+    /**
+     * Exporter 监听器数组
+     */
     private final List<ExporterListener> listeners;
 
     public ListenerExporterWrapper(Exporter<T> exporter, List<ExporterListener> listeners) {
@@ -41,6 +45,8 @@ public class ListenerExporterWrapper<T> implements Exporter<T> {
         }
         this.exporter = exporter;
         this.listeners = listeners;
+        // 执行监听器
+        //若执行过程中发生异常 RuntimeException ，打印错误日志，继续执行，最终才抛出。
         if (listeners != null && !listeners.isEmpty()) {
             RuntimeException exception = null;
             for (ExporterListener listener : listeners) {
@@ -69,6 +75,8 @@ public class ListenerExporterWrapper<T> implements Exporter<T> {
         try {
             exporter.unexport();
         } finally {
+            // 执行监听器
+            //若执行过程中发生异常 RuntimeException ，打印错误日志，继续执行，最终才抛出。
             if (listeners != null && !listeners.isEmpty()) {
                 RuntimeException exception = null;
                 for (ExporterListener listener : listeners) {

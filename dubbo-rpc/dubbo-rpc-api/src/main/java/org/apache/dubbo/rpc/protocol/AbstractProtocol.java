@@ -37,7 +37,20 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class AbstractProtocol implements Protocol {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
-
+    /**
+     * Exporter 集合
+     * <p>
+     * key: 服务键 {@link #serviceKey(URL)} 或 {@link URL#getServiceKey()} 。
+     * 不同协议会不同
+     *
+     * <pre>
+     * exporterMap 属性，Exporter 集合。该集合拥有该协议中，所有暴露中的 Exporter 对象。
+     * 其中 key 为服务键。不同协议的实现，生成的方式略有差距。例如：
+     *      InjvmProtocol 使用 URL#getServiceKey() 方法
+     *      DubboProtocol 使用 #serviceKey(URL) 方法。
+     * 差别主要在于是否包含 port 。实际上，也是一致的。因为 InjvmProtocol 统一 port=0 。
+     * </pre>
+     */
     protected final Map<String, Exporter<?>> exporterMap = new ConcurrentHashMap<String, Exporter<?>>();
 
     //TODO SOFEREFENCE

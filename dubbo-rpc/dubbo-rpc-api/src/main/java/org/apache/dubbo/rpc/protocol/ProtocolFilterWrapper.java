@@ -43,9 +43,22 @@ public class ProtocolFilterWrapper implements Protocol {
         this.protocol = protocol;
     }
 
+    /**
+     * 创建带 Filter 链的 Invoker 对象
+     *
+     * @param invoker Invoker 对象
+     * @param key     获取URL参数名
+     * @param group   分组
+     * @param <T>     泛型
+     * @return Invoker 对象
+     */
     private static <T> Invoker<T> buildInvokerChain(final Invoker<T> invoker, String key, String group) {
         Invoker<T> last = invoker;
+        // 获得过滤器数组
         List<Filter> filters = ExtensionLoader.getExtensionLoader(Filter.class).getActivateExtension(invoker.getUrl(), key, group);
+        // 倒序循环 Filter ，创建带 Filter 链的 Invoker 对象
+        //倒序循环 Filter ，创建带 Filter 链的 Invoker 对象。因为是通过嵌套声明匿名类循环调用的方式，
+        // 所以要倒序。胖友可以手工模拟下这个过程。通过这样的方式，实际过滤的顺序，还是我们上面看到的正序。
         if (!filters.isEmpty()) {
             for (int i = filters.size() - 1; i >= 0; i--) {
                 final Filter filter = filters.get(i);
@@ -94,9 +107,11 @@ public class ProtocolFilterWrapper implements Protocol {
 
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
+        //注册中心
         if (Constants.REGISTRY_PROTOCOL.equals(invoker.getUrl().getProtocol())) {
             return protocol.export(invoker);
         }
+        // 建立带有 Filter 过滤链的 Invoker ，再暴露服务。
         return protocol.export(buildInvokerChain(invoker, Constants.SERVICE_FILTER_KEY, Constants.PROVIDER));
     }
 

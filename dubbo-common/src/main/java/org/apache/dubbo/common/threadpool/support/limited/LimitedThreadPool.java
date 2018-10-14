@@ -30,17 +30,25 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Creates a thread pool that creates new threads as needed until limits reaches. This thread pool will not shrink
+ * Creates a thread pool that creates new threads as needed until limits reaches. This thread pool
+ * will not shrink
  * automatically.
+ * <p>
+ * 可伸缩线程池，但池中的线程数只会增长不会收缩。只增长不收缩的目的是为了避免收缩时突然来了大流量引起的性能问题
  */
 public class LimitedThreadPool implements ThreadPool {
 
     @Override
     public Executor getExecutor(URL url) {
+        // 线程名
         String name = url.getParameter(Constants.THREAD_NAME_KEY, Constants.DEFAULT_THREAD_NAME);
+        // 核心线程数
         int cores = url.getParameter(Constants.CORE_THREADS_KEY, Constants.DEFAULT_CORE_THREADS);
+        // 最大线程数
         int threads = url.getParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS);
+        // 队列数
         int queues = url.getParameter(Constants.QUEUES_KEY, Constants.DEFAULT_QUEUES);
+        // 创建执行器
         return new ThreadPoolExecutor(cores, threads, Long.MAX_VALUE, TimeUnit.MILLISECONDS,
                 queues == 0 ? new SynchronousQueue<Runnable>() :
                         (queues < 0 ? new LinkedBlockingQueue<Runnable>()
