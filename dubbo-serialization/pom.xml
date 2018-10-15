@@ -24,7 +24,7 @@
     <artifactId>dubbo-serialization</artifactId>
     <packaging>pom</packaging>
     <name>${project.artifactId}</name>
-    <description>The rpc module of dubbo project</description>
+    <description>The serialization module of dubbo project</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
@@ -36,5 +36,6 @@
         <module>dubbo-serialization-fst</module>
         <module>dubbo-serialization-jdk</module>
         <module>dubbo-serialization-protobuf</module>
+        <module>dubbo-serialization-test</module>
     </modules>
 </project>
