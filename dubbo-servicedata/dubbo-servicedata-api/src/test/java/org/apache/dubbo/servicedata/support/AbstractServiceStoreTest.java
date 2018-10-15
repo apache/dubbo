@@ -33,14 +33,12 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AbstractServiceStoreTest {
 
     private NewServiceStore abstractServiceStore;
-    private NewServiceStore singleServiceStore;
+
 
     @Before
     public void before() {
         URL url = URL.valueOf("zookeeper://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
         abstractServiceStore = new NewServiceStore(url);
-        URL singleUrl = URL.valueOf("redis://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=singleTest");
-        singleServiceStore = new NewServiceStore(singleUrl);
     }
 
     @Test
@@ -68,6 +66,10 @@ public class AbstractServiceStoreTest {
 
     @Test
     public void testFileExistAfterPut() throws InterruptedException {
+        //just for one method
+        URL singleUrl = URL.valueOf("redis://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=singleTest");
+        NewServiceStore singleServiceStore = new NewServiceStore(singleUrl);
+
         Assert.assertFalse(singleServiceStore.file.exists());
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
         singleServiceStore.put(url);
