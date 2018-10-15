@@ -13,7 +13,7 @@ about: If you would like to report a issue to Dubbo, please use this template.
 * Operating System version: xxx
 * Java version: xxx
 
-### Step to reproduce this issue
+### Steps to reproduce this issue
 
 1. xxx
 2. xxx
@@ -27,7 +27,7 @@ What do you expected from the above steps？
 
 ### Actual Result
 
-What is actually happen?
+What actually happens?
 
 If there is an exception, please attach the exception trace:
 

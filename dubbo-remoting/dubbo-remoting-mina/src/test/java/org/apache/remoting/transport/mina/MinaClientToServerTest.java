@@ -35,7 +35,7 @@ public class MinaClientToServerTest extends ClientToServerTest {
 
     @Override
     protected ExchangeChannel newClient(int port) throws RemotingException {
-        return Exchangers.connect(URL.valueOf("exchange://localhost:" + port + "?client=mina"));
+        return Exchangers.connect(URL.valueOf("exchange://localhost:" + port + "?client=mina&timeout=3000"));
     }
 
 }

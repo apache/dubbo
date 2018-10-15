@@ -79,6 +79,7 @@
         <mina_version>1.1.7</mina_version>
         <grizzly_version>2.1.4</grizzly_version>
         <httpclient_version>4.5.3</httpclient_version>
+        <httpcore_version>4.4.6</httpcore_version>
         <fastjson_version>1.2.46</fastjson_version>
         <zookeeper_version>3.4.9</zookeeper_version>
         <zkclient_version>0.2</zkclient_version>
@@ -106,6 +107,8 @@
         <jcl_version>1.2</jcl_version>
         <log4j_version>1.2.16</log4j_version>
         <logback_version>1.2.2</logback_version>
+        <log4j2_version>2.11.1</log4j2_version>
+
         <embedded_redis_version>0.6</embedded_redis_version>
 
         <jaxb_version>2.2.7</jaxb_version>
@@ -153,6 +156,11 @@
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
                 <version>${httpclient_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore</artifactId>
+                <version>${httpcore_version}</version>            
             </dependency>
             <dependency>
                 <groupId>com.alibaba</groupId>
@@ -331,6 +339,17 @@
                 <artifactId>logback-classic</artifactId>
                 <version>${logback_version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-api</artifactId>
+                <version>${log4j2_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-core</artifactId>
+                <version>${log4j2_version}</version>
+            </dependency>
+
 
             <!-- for dubbo-rpc-webservice -->
             <dependency>

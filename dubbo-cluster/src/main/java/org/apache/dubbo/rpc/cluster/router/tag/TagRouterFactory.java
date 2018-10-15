@@ -14,34 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.support;
+package org.apache.dubbo.rpc.cluster.router.tag;
 
-import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.Invoker;
 
-/**
- * DelegateExporter
- */
-public class DelegateExporter<T> implements Exporter<T> {
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.cluster.Router;
+import org.apache.dubbo.rpc.cluster.RouterFactory;
 
-    private final Exporter<T> exporter;
+public class TagRouterFactory implements RouterFactory {
 
-    public DelegateExporter(Exporter<T> exporter) {
-        if (exporter == null) {
-            throw new IllegalArgumentException("exporter can not be null");
-        } else {
-            this.exporter = exporter;
-        }
-
-    }
+    public static final String NAME = "tag";
 
     @Override
-    public Invoker<T> getInvoker() {
-        return exporter.getInvoker();
-    }
-
-    @Override
-    public void unexport() {
-        exporter.unexport();
+    public Router getRouter(URL url) {
+        return new TagRouter(url);
     }
 }

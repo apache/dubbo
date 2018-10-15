@@ -362,6 +362,8 @@ public class Constants {
 
     public final static String PATH_SEPARATOR = "/";
 
+    public final static String PROTOCOL_SEPARATOR = "://";
+
     public static final String REGISTRY_SEPARATOR = "|";
 
     public static final Pattern REGISTRY_SPLIT_PATTERN = Pattern
@@ -640,6 +642,10 @@ public class Constants {
     public static final boolean DEFAULT_HESSIAN_OVERLOAD_METHOD = false;
 
     public static final String MULTICAST = "multicast";
+
+    public static final String TAG_KEY = "tag";
+
+    public static final String REQUEST_TAG_KEY = "request.tag";
 
     /*
      * private Constants(){ }
