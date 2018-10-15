@@ -14,14 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.servicedata.zookeeper;
+package org.apache.dubbo.servicedata.store.zookeeper;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 import org.apache.dubbo.rpc.RpcException;
@@ -39,11 +38,11 @@ public class ZookeeperServiceStore extends AbstractServiceStore {
 
     private final static String DEFAULT_ROOT = "dubbo";
 
-    private final static String TAG = "servicestore";
+    final static String TAG = "servicestore";
 
     private final String root;
 
-    private final ZookeeperClient zkClient;
+    final ZookeeperClient zkClient;
 
     public ZookeeperServiceStore(URL url, ZookeeperTransporter zookeeperTransporter) {
         super(url);
@@ -89,9 +88,7 @@ public class ZookeeperServiceStore extends AbstractServiceStore {
             if (urlStrs != null && !urlStrs.isEmpty()) {
                 for (String urlStr : urlStrs) {
                     urlStr = URL.decode(urlStr);
-                    if (urlStr.contains("://")) {
-                        urls.add(URL.valueOf(urlStr));
-                    }
+                    return url.addParameterString(urlStr);
                 }
             }
             return urls.isEmpty() ? null : urls.get(0);
@@ -120,9 +117,15 @@ public class ZookeeperServiceStore extends AbstractServiceStore {
         return toRootDir() + URL.encode(name);
     }
 
-    private String toCategoryPath(URL url) {
+    String toCategoryPath(URL url) {
         String protocol = url.getParameter(Constants.SIDE_KEY);
-        return toServicePath(url) + Constants.PATH_SEPARATOR + TAG + Constants.PATH_SEPARATOR + (protocol != null ? protocol : url.getProtocol());
+        String version = url.getParameter(Constants.VERSION_KEY);
+
+        String app = url.getParameter(Constants.APPLICATION_KEY);
+        String appStr = Constants.PROVIDER_PROTOCOL.equals(protocol) ? "" : (app == null ? "" : (Constants.PATH_SEPARATOR + app));
+
+        return toServicePath(url) + Constants.PATH_SEPARATOR + TAG + Constants.PATH_SEPARATOR + (version == null ? "" : (version + Constants.PATH_SEPARATOR))
+                + (protocol != null ? protocol : url.getProtocol()) + appStr;
     }
 
     private String toUrlPathWithParameter(URL url) {

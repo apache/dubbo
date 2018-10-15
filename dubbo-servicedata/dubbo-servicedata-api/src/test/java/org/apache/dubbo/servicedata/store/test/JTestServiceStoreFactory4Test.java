@@ -14,23 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.servicedata.redis;
+package org.apache.dubbo.servicedata.store.test;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
-import org.apache.dubbo.servicedata.ServiceStore;
+import org.apache.dubbo.servicedata.store.ServiceStore;
 import org.apache.dubbo.servicedata.support.AbstractServiceStoreFactory;
 
 /**
  * ZookeeperRegistryFactory.
  *
  */
-public class RedisServiceStoreFactory extends AbstractServiceStoreFactory {
+public class JTestServiceStoreFactory4Test extends AbstractServiceStoreFactory {
 
+    private ZookeeperTransporter zookeeperTransporter;
+
+    public void setZookeeperTransporter(ZookeeperTransporter zookeeperTransporter) {
+        this.zookeeperTransporter = zookeeperTransporter;
+    }
 
     @Override
     public ServiceStore createServiceStore(URL url) {
-        return new RedisServiceStore(url);
+        return new JTestServiceStore4Test(url, zookeeperTransporter);
     }
 
 }
