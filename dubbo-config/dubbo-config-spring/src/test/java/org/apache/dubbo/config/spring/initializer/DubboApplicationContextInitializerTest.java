@@ -38,7 +38,8 @@ public class DubboApplicationContextInitializerTest {
         context.addLifecycleListener(new ContextConfig());
         tomcat.getHost().addChild(context);
         tomcat.start();
-        // there should be 1 application listener
+        // there should be 2 application listeners, one is spring context listener,
+        // the other is its wrapper dubbo introduces.
         Assert.assertEquals(2, context.getApplicationLifecycleListeners().length);
         // the first one should be Spring's built in ContextLoaderListener.
         Assert.assertTrue(context.getApplicationLifecycleListeners()[0] instanceof ContextLoaderListener);
@@ -58,7 +59,7 @@ public class DubboApplicationContextInitializerTest {
         context.addLifecycleListener(new ContextConfig());
         tomcat.getHost().addChild(context);
         tomcat.start();
-        // there should be 1 application listener
+        // there should be 1 application listener, which is spring context listener's wrapper introduced by dubbo
         Assert.assertEquals(1, context.getApplicationLifecycleListeners().length);
         // the first one should be Spring's built in ContextLoaderListener.
         Assert.assertTrue(context.getApplicationLifecycleListeners()[0] instanceof DubboContextListener);
