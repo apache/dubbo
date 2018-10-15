@@ -21,9 +21,6 @@ import org.apache.dubbo.common.serialize.java.JavaSerialization;
 
 /**
  * JdkPersonOkTest
- *
- * @author xiuyuhang [xiuyuhang]
- * @since 2018-10-10
  */
 public class JdkPersonOkTest extends AbstractSerializationPersonOkTest {
 
