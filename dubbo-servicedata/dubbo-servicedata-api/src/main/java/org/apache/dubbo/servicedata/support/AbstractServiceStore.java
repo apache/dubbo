@@ -53,6 +53,8 @@ public abstract class AbstractServiceStore implements ServiceStore {
     private static final char URL_SEPARATOR = ' ';
     // URL address separated regular expression for parsing the service provider URL list in the file cache
     private static final String URL_SPLIT = "\\s+";
+
+    private final static String TAG = "sd.";
     // Log output
     protected final Logger logger = LoggerFactory.getLogger(getClass());
     // Local disk cache, where the special key value.registies records the list of registry centers, and the others are the list of notified service providers
@@ -255,6 +257,19 @@ public abstract class AbstractServiceStore implements ServiceStore {
             logger.error("Failed to peek servicestore " + url + " in  " + getUrl().toFullString() + ", cause: " + e.getMessage(), e);
         }
         return null;
+    }
+
+    public String getUrlKey(URL url) {
+        String protocol = getProtocol(url);
+        String app = url.getParameter(Constants.APPLICATION_KEY);
+        String appStr = Constants.PROVIDER_PROTOCOL.equals(protocol) ? "" : (app == null ? "" : (app + "."));
+        return TAG + protocol + "." + appStr + url.getServiceKey();
+    }
+
+    String getProtocol(URL url) {
+        String protocol = url.getParameter(Constants.SIDE_KEY);
+        protocol = protocol == null ? url.getProtocol() : protocol;
+        return protocol;
     }
 
     public void retry() {

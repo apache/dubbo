@@ -33,16 +33,7 @@ public class RedisServiceStoreTest {
         this.redisServer.stop();
     }
 
-    @Test
-    public void testGetProtocol(){
-        URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic&side=provider");
-        String protocol = redisServiceStore.getProtocol(url);
-        Assert.assertEquals(protocol, "provider");
 
-        URL url2 = URL.valueOf("consumer://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
-        String protocol2 = redisServiceStore.getProtocol(url2);
-        Assert.assertEquals(protocol2, "consumer");
-    }
 
     @Test
     public void testDoPut(){
@@ -51,7 +42,7 @@ public class RedisServiceStoreTest {
 
         try {
             Jedis jedis = redisServiceStore.pool.getResource();
-            String value = jedis.get(redisServiceStore.getKey(url));
+            String value = jedis.get(redisServiceStore.getUrlKey(url));
             URL result = new URL("dubbo","127.0.0.1", 8090);
             Assert.assertTrue(result.getParameters().isEmpty());
             result = result.addParameterString(value);

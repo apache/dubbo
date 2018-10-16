@@ -31,7 +31,7 @@
     <!-- use multicast registry center to discover service -->
     <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
 
-    <dubbo:servicestore address="zookeeper://127.0.0.1:2181"/>
+    <dubbo:servicestore address="redis://127.0.0.1:6379"/>
 
     <!-- generate proxy for the remote service, then demoService can be used in the same way as the
     local regular interface -->
