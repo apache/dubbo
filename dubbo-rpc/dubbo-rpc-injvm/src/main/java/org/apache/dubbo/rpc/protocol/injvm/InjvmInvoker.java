@@ -29,11 +29,20 @@ import java.util.Map;
 
 /**
  * InjvmInvoker
+ * 实现 AbstractInvoker 抽象类，Injvm Invoker 实现类
  */
 class InjvmInvoker<T> extends AbstractInvoker<T> {
-
+    /**
+     * 服务键
+     */
     private final String key;
-
+    /**
+     * Exporter 集合
+     * <p>
+     * key: 服务键
+     * <p>
+     * 该值实际就是 {@link org.apache.dubbo.rpc.protocol.AbstractProtocol#exporterMap}
+     */
     private final Map<String, Exporter<?>> exporterMap;
 
     InjvmInvoker(Class<T> type, URL url, String key, Map<String, Exporter<?>> exporterMap) {
@@ -42,9 +51,15 @@ class InjvmInvoker<T> extends AbstractInvoker<T> {
         this.exporterMap = exporterMap;
     }
 
+    /**
+     * 是否可用
+     * <p>
+     * 开启 启动时检查 时，调用该方法，判断该 Invoker 对象，是否有对应的 Exporter 。若不存在，说明依赖服务不存在，检查不通过
+     */
     @Override
     public boolean isAvailable() {
         InjvmExporter<?> exporter = (InjvmExporter<?>) exporterMap.get(key);
+        // 判断是否有 Exporter 对象
         if (exporter == null) {
             return false;
         } else {
