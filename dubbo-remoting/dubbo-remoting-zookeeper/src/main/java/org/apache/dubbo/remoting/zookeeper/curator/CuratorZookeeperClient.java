@@ -36,24 +36,32 @@ import org.apache.zookeeper.WatchedEvent;
 
 import java.util.Collections;
 import java.util.List;
-
+/**
+ * 实现 ZookeeperTransporter 抽象类，基于 Curator 的 Zookeeper 客户端实现类
+ */
 public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatcher> {
-
+    /**
+     * client 对象
+     */
     private final CuratorFramework client;
 
     public CuratorZookeeperClient(URL url) {
         super(url);
         try {
+            //超时时间 默认5s
             int timeout = url.getParameter(Constants.TIMEOUT_KEY, 5000);
+            // 创建 client 对象
             CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
-                    .connectString(url.getBackupAddress())
-                    .retryPolicy(new RetryNTimes(1, 1000))
-                    .connectionTimeoutMs(timeout);
+                    .connectString(url.getBackupAddress()) // 连接地址
+                    .retryPolicy(new RetryNTimes(1, 1000)) // 重试策略，1 次，间隔 1000 ms
+                    .connectionTimeoutMs(timeout); // 连接超时时间
+            //认证信息
             String authority = url.getAuthority();
             if (authority != null && authority.length() > 0) {
                 builder = builder.authorization("digest", authority.getBytes());
             }
             client = builder.build();
+            // 添加连接监听器
             client.getConnectionStateListenable().addListener(new ConnectionStateListener() {
                 @Override
                 public void stateChanged(CuratorFramework client, ConnectionState state) {
@@ -123,6 +131,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
         }
         return false;
     }
+
     @Override
     public boolean isConnected() {
         return client.getZookeeperClient().isConnected();

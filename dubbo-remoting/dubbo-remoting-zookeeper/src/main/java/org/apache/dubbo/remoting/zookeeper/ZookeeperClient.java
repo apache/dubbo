@@ -21,25 +21,67 @@ import org.apache.dubbo.common.URL;
 import java.util.List;
 
 public interface ZookeeperClient {
-
+    /**
+     * 创建节点
+     *
+     * @param path      节点路径
+     * @param ephemeral 是否临时节点
+     */
     void create(String path, boolean ephemeral);
 
+    /**
+     * 删除节点
+     *
+     * @param path 节点路径
+     */
     void delete(String path);
 
     List<String> getChildren(String path);
 
+    /**
+     * 添加 ChildListener
+     *
+     * @param path     节点路径
+     * @param listener 监听器
+     * @return 子节点列表
+     */
     List<String> addChildListener(String path, ChildListener listener);
 
+    /**
+     * 移除 ChildListener
+     *
+     * @param path     节点路径
+     * @param listener 监听器
+     */
     void removeChildListener(String path, ChildListener listener);
 
+    /**
+     * 添加 StateListener
+     *
+     * @param listener 监听器
+     */
     void addStateListener(StateListener listener);
 
+    /**
+     * 移除 StateListener
+     *
+     * @param listener 监听器
+     */
     void removeStateListener(StateListener listener);
 
+    /**
+     * @return 是否连接
+     */
     boolean isConnected();
 
+    /**
+     * 关闭
+     */
     void close();
 
+    /**
+     * @return 获得注册中心 URL
+     */
     URL getUrl();
 
 }

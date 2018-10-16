@@ -21,9 +21,19 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
 
+/**
+ * Zookeeper 工厂接口
+ * 使用 Dubbo SPI 机制，默认使用 Curator 实现
+ */
 @SPI("curator")
 public interface ZookeeperTransporter {
-
+    /**
+     * 连接创建 ZookeeperClient 对象
+     * 使用 Dubbo SPI Adaptive 机制，根据 url 参数，加载对应的 ZookeeperTransporter 拓展实现类。
+     *
+     * @param url 注册中心地址
+     * @return ZookeeperClient 对象
+     */
     @Adaptive({Constants.CLIENT_KEY, Constants.TRANSPORTER_KEY})
     ZookeeperClient connect(URL url);
 
