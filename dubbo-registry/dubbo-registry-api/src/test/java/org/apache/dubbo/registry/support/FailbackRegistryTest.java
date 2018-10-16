@@ -191,6 +191,7 @@ public class FailbackRegistryTest {
                 notified.set(Boolean.TRUE);
             }
         };
+        
         MockRegistry mockRegistry = new MockRegistry(registryUrl, countDownLatch);
         mockRegistry.register(serviceUrl);
         mockRegistry.subscribe(serviceUrl, listener);
