@@ -33,8 +33,6 @@ public class RedisServiceStore extends AbstractServiceStore {
 
     private final static Logger logger = LoggerFactory.getLogger(RedisServiceStore.class);
 
-    private final static String TAG = "sd.";
-
     final JedisPool pool;
 
     public RedisServiceStore(URL url) {
@@ -45,7 +43,7 @@ public class RedisServiceStore extends AbstractServiceStore {
     @Override
     protected void doPutService(URL url) {
         try (Jedis jedis = pool.getResource()) {
-            jedis.set(getKey(url), url.toParameterString());
+            jedis.set(getUrlKey(url), url.toParameterString());
         } catch (Throwable e) {
             logger.error("Failed to put " + url + " to redis " + url + ", cause: " + e.getMessage(), e);
             throw new RpcException("Failed to put " + url + " to redis " + getUrl() + ", cause: " + e.getMessage(), e);
@@ -55,7 +53,7 @@ public class RedisServiceStore extends AbstractServiceStore {
     @Override
     protected URL doPeekService(URL url) {
         try (Jedis jedis = pool.getResource()) {
-            String value = jedis.get(getKey(url));
+            String value = jedis.get(getUrlKey(url));
             if (value == null) {
                 return null;
             }
@@ -65,19 +63,5 @@ public class RedisServiceStore extends AbstractServiceStore {
             throw new RpcException("Failed to put " + url + " to redis " + getUrl() + ", cause: " + e.getMessage(), e);
         }
     }
-
-    String getKey(URL url) {
-        String protocol = getProtocol(url);
-        String app = url.getParameter(Constants.APPLICATION_KEY);
-        String appStr = Constants.PROVIDER_PROTOCOL.equals(protocol) ? "" : (app == null ? "" : (app + "."));
-        return TAG + protocol + "." + appStr + url.getServiceKey();
-    }
-
-    String getProtocol(URL url) {
-        String protocol = url.getParameter(Constants.SIDE_KEY);
-        protocol = protocol == null ? url.getProtocol() : protocol;
-        return protocol;
-    }
-
 
 }

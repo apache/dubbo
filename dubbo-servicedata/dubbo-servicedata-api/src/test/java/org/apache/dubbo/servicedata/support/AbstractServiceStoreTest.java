@@ -42,6 +42,17 @@ public class AbstractServiceStoreTest {
     }
 
     @Test
+    public void testGetProtocol(){
+        URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic&side=provider");
+        String protocol = abstractServiceStore.getProtocol(url);
+        Assert.assertEquals(protocol, "provider");
+
+        URL url2 = URL.valueOf("consumer://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
+        String protocol2 = abstractServiceStore.getProtocol(url2);
+        Assert.assertEquals(protocol2, "consumer");
+    }
+
+    @Test
     public void testPutUsual() {
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
         abstractServiceStore.put(url);
