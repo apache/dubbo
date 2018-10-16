@@ -197,6 +197,49 @@ public class ReferenceAnnotationBeanPostProcessorTest {
         }
     }
 
+    @Test
+    public void testReferenceCache() throws Exception {
+
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestBean.class);
+
+        TestBean testBean = context.getBean(TestBean.class);
+
+        Assert.assertNotNull(testBean.getDemoServiceFromAncestor());
+        Assert.assertNotNull(testBean.getDemoServiceFromParent());
+        Assert.assertNotNull(testBean.getDemoService());
+
+        Assert.assertEquals(testBean.getDemoServiceFromAncestor(), testBean.getDemoServiceFromParent());
+        Assert.assertEquals(testBean.getDemoService(), testBean.getDemoServiceFromParent());
+
+        DemoService demoService = testBean.getDemoService();
+
+        Assert.assertEquals(demoService, testBean.getDemoServiceShouldBeSame());
+        Assert.assertNotEquals(demoService, testBean.getDemoServiceShouldNotBeSame());
+
+        context.close();
+
+    }
+
+    @Test
+    public void testReferenceCacheWithArray() throws Exception {
+
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestBean.class);
+
+        TestBean testBean = context.getBean(TestBean.class);
+
+        Assert.assertNotNull(testBean.getDemoServiceFromAncestor());
+        Assert.assertNotNull(testBean.getDemoServiceFromParent());
+        Assert.assertNotNull(testBean.getDemoService());
+
+        Assert.assertEquals(testBean.getDemoServiceFromAncestor(), testBean.getDemoServiceFromParent());
+        Assert.assertEquals(testBean.getDemoService(), testBean.getDemoServiceFromParent());
+
+        Assert.assertEquals(testBean.getDemoServiceWithArray(), testBean.getDemoServiceWithArrayShouldBeSame());
+
+        context.close();
+
+    }
+
     private static class AncestorBean {
 
 
@@ -239,6 +282,19 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
         private DemoService demoService;
 
+        @Reference(version = "1.2", url = "dubbo://127.0.0.1:12345")
+        private DemoService demoServiceShouldBeSame;
+
+        @Reference(version = "1.2", url = "dubbo://127.0.0.1:12345", async = true)
+        private DemoService demoServiceShouldNotBeSame;
+
+
+        @Reference(version = "1.2", url = "dubbo://127.0.0.1:12345", parameters = { "key1", "value1"})
+        private DemoService demoServiceWithArray;
+
+        @Reference(version = "1.2", url = "dubbo://127.0.0.1:12345", parameters = { "key1", "value1"})
+        private DemoService demoServiceWithArrayShouldBeSame;
+
         @Autowired
         private ApplicationContext applicationContext;
 
@@ -249,6 +305,22 @@ public class ReferenceAnnotationBeanPostProcessorTest {
         @Reference(version = "1.2", url = "dubbo://127.0.0.1:12345")
         public void setDemoService(DemoService demoService) {
             this.demoService = demoService;
+        }
+
+        public DemoService getDemoServiceShouldNotBeSame() {
+            return demoServiceShouldNotBeSame;
+        }
+
+        public DemoService getDemoServiceShouldBeSame() {
+            return demoServiceShouldBeSame;
+        }
+
+        public DemoService getDemoServiceWithArray() {
+            return demoServiceWithArray;
+        }
+
+        public DemoService getDemoServiceWithArrayShouldBeSame() {
+            return demoServiceWithArrayShouldBeSame;
         }
     }
 
