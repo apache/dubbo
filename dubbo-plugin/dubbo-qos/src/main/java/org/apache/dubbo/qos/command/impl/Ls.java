@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
-import org.apache.dubbo.config.model.ApplicationModel;
-import org.apache.dubbo.config.model.ConsumerModel;
-import org.apache.dubbo.config.model.ProviderModel;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
@@ -26,6 +23,9 @@ import org.apache.dubbo.qos.textui.TTable;
 import org.apache.dubbo.registry.support.ConsumerInvokerWrapper;
 import org.apache.dubbo.registry.support.ProviderConsumerRegTable;
 import org.apache.dubbo.registry.support.ProviderInvokerWrapper;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ConsumerModel;
+import org.apache.dubbo.rpc.model.ProviderModel;
 
 import java.util.Collection;
 import java.util.Set;
