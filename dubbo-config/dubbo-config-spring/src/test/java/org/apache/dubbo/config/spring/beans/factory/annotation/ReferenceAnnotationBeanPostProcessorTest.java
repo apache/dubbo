@@ -106,7 +106,12 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
         Collection<ReferenceBean<?>> referenceBeans = beanPostProcessor.getReferenceBeans();
 
-        Assert.assertEquals(1, referenceBeans.size());
+        /**
+         * 1 -> demoService、demoServiceShouldBeSame
+         * 1 -> demoServiceShouldNotBeSame
+         * 1 -> demoServiceWithArray、demoServiceWithArrayShouldBeSame
+         */
+        Assert.assertEquals(3, referenceBeans.size());
 
         ReferenceBean<?> referenceBean = referenceBeans.iterator().next();
 
@@ -130,7 +135,10 @@ public class ReferenceAnnotationBeanPostProcessorTest {
         Map<InjectionMetadata.InjectedElement, ReferenceBean<?>> referenceBeanMap =
                 beanPostProcessor.getInjectedFieldReferenceBeanMap();
 
-        Assert.assertEquals(1, referenceBeanMap.size());
+        /**
+         * contains 5 fields.
+         */
+        Assert.assertEquals(5, referenceBeanMap.size());
 
         for (Map.Entry<InjectionMetadata.InjectedElement, ReferenceBean<?>> entry : referenceBeanMap.entrySet()) {
 
