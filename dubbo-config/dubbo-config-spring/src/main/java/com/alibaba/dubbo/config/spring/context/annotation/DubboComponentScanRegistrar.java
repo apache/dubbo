@@ -19,6 +19,7 @@ package com.alibaba.dubbo.config.spring.context.annotation;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import com.alibaba.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationBeanPostProcessor;
+import com.alibaba.dubbo.config.spring.listener.ContextRefreshedApplicationListener;
 import com.alibaba.dubbo.config.spring.util.BeanRegistrar;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -59,6 +60,7 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
 
         registerReferenceAnnotationBeanPostProcessor(registry);
 
+        registerContextRefreshedEventListener(registry);
     }
 
     /**
@@ -89,6 +91,12 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
         BeanRegistrar.registerInfrastructureBean(registry,
                 ReferenceAnnotationBeanPostProcessor.BEAN_NAME, ReferenceAnnotationBeanPostProcessor.class);
 
+    }
+
+    private void registerContextRefreshedEventListener(BeanDefinitionRegistry registry) {
+        // Register @Reference Annotation Bean Processor
+        BeanRegistrar.registerInfrastructureBean(registry,
+                ReferenceAnnotationBeanPostProcessor.REFRESHED_LISTENER_BEAN_NAME, ContextRefreshedApplicationListener.class);
     }
 
     private Set<String> getPackagesToScan(AnnotationMetadata metadata) {

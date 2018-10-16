@@ -17,6 +17,7 @@
 package com.alibaba.dubbo.registry.multicast;
 
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.LockSwitch;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
@@ -94,6 +95,14 @@ public class MulticastRegistry extends FailbackRegistry {
                     byte[] buf = new byte[2048];
                     DatagramPacket recv = new DatagramPacket(buf, buf.length);
                     while (!mutilcastSocket.isClosed()) {
+//                        while (LockSwitch.INIT_TASK_NUM.get() > 0) {
+//                            try {
+//                                Thread.sleep(2000L);
+//                                logger.info("Multicat is waiting for Init task finished. there are still" + LockSwitch.INIT_TASK_NUM.get() + " tasks.");
+//                            } catch (InterruptedException e) {
+//                                logger.info("Task Interrupt.", e);
+//                            }
+//                        }
                         try {
                             mutilcastSocket.receive(recv);
                             String msg = new String(recv.getData()).trim();

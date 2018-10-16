@@ -16,6 +16,7 @@
  */
 package com.alibaba.dubbo.config.spring.beans.factory.annotation;
 
+import com.alibaba.dubbo.common.LockSwitch;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.spring.ReferenceBean;
 import org.apache.commons.logging.Log;
@@ -71,6 +72,8 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
      */
     public static final String BEAN_NAME = "referenceAnnotationBeanPostProcessor";
 
+    public static final String REFRESHED_LISTENER_BEAN_NAME = "contextRefreshedAppListener";
+
     private final Log logger = LogFactory.getLog(getClass());
 
     private ApplicationContext applicationContext;
@@ -82,6 +85,10 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
 
     private final ConcurrentMap<String, ReferenceBean<?>> referenceBeansCache =
             new ConcurrentHashMap<String, ReferenceBean<?>>();
+
+    static {
+        LockSwitch.INIT_TASK_NUM.incrementAndGet();
+    }
 
     @Override
     public PropertyValues postProcessPropertyValues(

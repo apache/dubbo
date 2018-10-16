@@ -19,6 +19,7 @@ package com.alibaba.dubbo.config.spring.schema;
 import com.alibaba.dubbo.config.spring.AnnotationBean;
 import com.alibaba.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import com.alibaba.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationBeanPostProcessor;
+import com.alibaba.dubbo.config.spring.listener.ContextRefreshedApplicationListener;
 import com.alibaba.dubbo.config.spring.util.BeanRegistrar;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -65,6 +66,8 @@ public class AnnotationBeanDefinitionParser extends AbstractSingleBeanDefinition
         // Registers ReferenceAnnotationBeanPostProcessor
         registerReferenceAnnotationBeanPostProcessor(parserContext.getRegistry());
 
+        registerContextRefreshedEventListener(parserContext.getRegistry());
+
     }
 
     @Override
@@ -83,6 +86,12 @@ public class AnnotationBeanDefinitionParser extends AbstractSingleBeanDefinition
         BeanRegistrar.registerInfrastructureBean(registry,
                 ReferenceAnnotationBeanPostProcessor.BEAN_NAME, ReferenceAnnotationBeanPostProcessor.class);
 
+    }
+
+    private void registerContextRefreshedEventListener(BeanDefinitionRegistry registry) {
+        // Register @Reference Annotation Bean Processor
+        BeanRegistrar.registerInfrastructureBean(registry,
+                ReferenceAnnotationBeanPostProcessor.REFRESHED_LISTENER_BEAN_NAME, ContextRefreshedApplicationListener.class);
     }
 
     @Override
