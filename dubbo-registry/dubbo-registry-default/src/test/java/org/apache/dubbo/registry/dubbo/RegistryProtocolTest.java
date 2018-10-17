@@ -33,13 +33,13 @@ import org.apache.dubbo.rpc.cluster.support.FailfastCluster;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboInvoker;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
-
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.apache.dubbo.common.Constants.EXCHANGING_KEYS;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -56,6 +56,15 @@ public class RegistryProtocolTest {
     final String serviceUrl = "dubbo://127.0.0.1:9453/" + service + "?notify=true&methods=test1,test2&side=con&side=consumer";
     final URL registryUrl = URL.valueOf("registry://127.0.0.1:9090/");
     final private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+
+    @Test
+    public void testSystemArray() {
+        String[] addionalParameterKeys = {"key1", "key2"};
+        int additionalLen = addionalParameterKeys.length;
+        String[] registryParams = new String[additionalLen + EXCHANGING_KEYS.length];
+        System.arraycopy(addionalParameterKeys, 0, registryParams, EXCHANGING_KEYS.length, additionalLen);
+        System.out.println(addionalParameterKeys);
+    }
 
     @Test
     public void testDefaultPort() {
