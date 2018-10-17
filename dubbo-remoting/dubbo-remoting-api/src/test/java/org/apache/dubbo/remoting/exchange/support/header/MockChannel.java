@@ -84,12 +84,16 @@ public class MockChannel implements Channel {
 
     @Override
     public void send(Object message) throws RemotingException {
+        attributes.put(HeaderExchangeHandler.KEY_WRITE_TIMESTAMP, System.currentTimeMillis());
         sentObjects.add(message);
+        attributes.put(HeaderExchangeHandler.KEY_READ_TIMESTAMP, System.currentTimeMillis());
     }
 
     @Override
     public void send(Object message, boolean sent) throws RemotingException {
+        attributes.put(HeaderExchangeHandler.KEY_WRITE_TIMESTAMP, System.currentTimeMillis());
         sentObjects.add(message);
+        attributes.put(HeaderExchangeHandler.KEY_READ_TIMESTAMP, System.currentTimeMillis());
     }
 
     @Override
