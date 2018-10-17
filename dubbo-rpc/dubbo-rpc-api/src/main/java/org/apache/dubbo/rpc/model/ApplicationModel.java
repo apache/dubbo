@@ -18,17 +18,10 @@ package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ConcurrentHashSet;
-import org.apache.dubbo.rpc.Invoker;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import static java.util.stream.Collectors.toSet;
 
 // adjust project structure in order to fully utilize the methods introduced here.
 public class ApplicationModel {
