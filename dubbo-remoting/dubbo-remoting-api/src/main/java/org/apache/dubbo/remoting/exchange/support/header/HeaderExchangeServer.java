@@ -65,8 +65,8 @@ public class HeaderExchangeServer implements ExchangeServer {
             throw new IllegalStateException("heartbeatTimeout < heartbeatInterval * 2");
         }
 
-        long heartbeatTick = heartbeat / Constants.HEARTBEAT_TICK;
-        long heartbeatTimeoutTick = heartbeatTimeout / Constants.HEARTBEAT_TICK;
+        long heartbeatTick = calcLeastTick(heartbeat);
+        long heartbeatTimeoutTick = calcLeastTick(heartbeatTimeout);
 
         // use heartbeatTick as every tick.
         heartbeatTimer = new HashedWheelTimer(heartbeatTick, TimeUnit.MILLISECONDS);
@@ -75,6 +75,17 @@ public class HeaderExchangeServer implements ExchangeServer {
 
     public Server getServer() {
         return server;
+    }
+
+    /**
+     * Each interval cannot be less than 100ms.
+     */
+    private long calcLeastTick(int time) {
+        if (time / Constants.HEARTBEAT_TICK <= 0) {
+            return Constants.HEARTBEAT_TICK_LEAST;
+        } else {
+            return time / Constants.HEARTBEAT_TICK;
+        }
     }
 
     @Override
@@ -220,8 +231,8 @@ public class HeaderExchangeServer implements ExchangeServer {
                     heartbeat = h;
                     heartbeatTimeout = t;
 
-                    long heartbeatTick = heartbeat / Constants.HEARTBEAT_TICK;
-                    long heartbeatTimeoutTick = heartbeatTimeout / Constants.HEARTBEAT_TICK;
+                    long heartbeatTick = calcLeastTick(heartbeat);
+                    long heartbeatTimeoutTick = calcLeastTick(heartbeatTimeout);
                     startHeartbeatTimer(heartbeatTick, heartbeatTimeoutTick);
                 }
             }

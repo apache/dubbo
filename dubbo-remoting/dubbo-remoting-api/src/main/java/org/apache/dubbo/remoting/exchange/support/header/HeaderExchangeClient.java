@@ -60,14 +60,25 @@ public class HeaderExchangeClient implements ExchangeClient {
             throw new IllegalStateException("heartbeatTimeout < heartbeatInterval * 2");
         }
         if (needHeartbeat) {
-            long heartbeatTick = heartbeat / Constants.HEARTBEAT_TICK;
-            long heartbeatTimeoutTick = heartbeatTimeout / Constants.HEARTBEAT_TICK;
+            long heartbeatTick = calcLeastTick(heartbeat);
+            long heartbeatTimeoutTick = calcLeastTick(heartbeatTimeout);
 
             // use heartbeatTick as every tick.
             heartbeatTimer = new HashedWheelTimer(heartbeatTick, TimeUnit.MILLISECONDS);
             startHeartbeatTimer(heartbeatTick, heartbeatTimeoutTick);
         } else {
             heartbeatTimer = null;
+        }
+    }
+
+    /**
+     * Each interval cannot be less than 100ms.
+     */
+    private long calcLeastTick(int time) {
+        if (time / Constants.HEARTBEAT_TICK <= 0) {
+            return Constants.HEARTBEAT_TICK_LEAST;
+        } else {
+            return time / Constants.HEARTBEAT_TICK;
         }
     }
 
