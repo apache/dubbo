@@ -16,14 +16,13 @@
  */
 package org.apache.dubbo.remoting.transport.netty;
 
+import junit.framework.TestCase;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.ResponseFuture;
 import org.apache.dubbo.remoting.exchange.support.Replier;
-
 import org.junit.Assert;
-import junit.framework.TestCase;
 import org.junit.Test;
 
 /**

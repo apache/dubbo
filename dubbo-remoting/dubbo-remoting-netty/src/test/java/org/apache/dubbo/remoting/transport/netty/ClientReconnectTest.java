@@ -26,7 +26,6 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.Server;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
-
 import org.apache.log4j.Level;
 import org.junit.Assert;
 import org.junit.Before;

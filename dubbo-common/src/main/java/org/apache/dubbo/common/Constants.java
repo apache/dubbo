@@ -248,6 +248,10 @@ public class Constants {
 
     public static final String HEARTBEAT_TIMEOUT_KEY = "heartbeat.timeout";
 
+    public static final int HEARTBEAT_TICK = 4;
+
+    public static final int HEARTBEAT_TICK_LEAST = 100;
+
     public static final String CONNECT_TIMEOUT_KEY = "connect.timeout";
 
     public static final String TIMEOUT_KEY = "timeout";
