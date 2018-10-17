@@ -14,17 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.servicedata;
+package org.apache.dubbo.servicedata.store.redis;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Adaptive;
-import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.servicedata.store.ServiceStore;
+import org.apache.dubbo.servicedata.support.AbstractServiceStoreFactory;
 
 /**
+ * ZookeeperRegistryFactory.
+ *
  */
-@SPI("dubbo")
-public interface ServiceStoreFactory {
+public class RedisServiceStoreFactory extends AbstractServiceStoreFactory {
 
-    @Adaptive({"protocol"})
-    ServiceStore getServiceStore(URL url);
+
+    @Override
+    public ServiceStore createServiceStore(URL url) {
+        return new RedisServiceStore(url);
+    }
+
 }

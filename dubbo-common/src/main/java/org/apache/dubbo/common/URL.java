@@ -250,16 +250,16 @@ public /**final**/ class URL implements Serializable {
         return new URL(protocol, username, password, host, port, path, parameters);
     }
 
-    public static URL valueOf(String url, String... reserveParams){
+    public static URL valueOf(String url, String... reserveParams) {
         URL result = valueOf(url);
-        if (reserveParams == null || reserveParams.length == 0){
+        if (reserveParams == null || reserveParams.length == 0) {
             return result;
         }
-        Map<String, String> newMap = new HashMap<String,String>(reserveParams.length);
+        Map<String, String> newMap = new HashMap<String, String>(reserveParams.length);
         Map<String, String> oldMap = result.getParameters();
-        for(String reserveParam : reserveParams){
+        for (String reserveParam : reserveParams) {
             String tmp = oldMap.get(reserveParam);
-            if(StringUtils.isNotEmpty(tmp)){
+            if (StringUtils.isNotEmpty(tmp)) {
                 newMap.put(reserveParam, tmp);
             }
         }

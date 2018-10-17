@@ -376,6 +376,8 @@ public class Constants {
 
     public static final String DEFAULT_CHANNEL_HANDLER = "default";
 
+    public static final String SERVICE_DESCIPTOR_KEY = "serviceDescriptor";
+
     public static final String ANY_VALUE = "*";
 
     public static final String COMMA_SEPARATOR = ",";

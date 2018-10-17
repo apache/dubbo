@@ -35,14 +35,13 @@ import org.apache.dubbo.rpc.InvokerListener;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.support.MockInvoker;
-import org.apache.dubbo.servicedata.ServiceStoreFactory;
+import org.apache.dubbo.servicedata.store.ServiceStoreFactory;
 import org.apache.dubbo.servicedata.integration.ServiceStoreService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 /**
  * AbstractDefaultConfig
