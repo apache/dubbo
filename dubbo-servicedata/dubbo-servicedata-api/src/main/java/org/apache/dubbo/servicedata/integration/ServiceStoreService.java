@@ -32,7 +32,6 @@ import org.apache.dubbo.servicedata.metadata.builder.ServiceDescriptorBuilder;
 import org.apache.dubbo.servicedata.store.ServiceStore;
 import org.apache.dubbo.servicedata.store.ServiceStoreFactory;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Random;
 import java.util.Set;
@@ -127,7 +126,8 @@ public class ServiceStoreService {
     long calculateStartTime() {
         Date now = new Date();
         long nowMill = now.getTime();
-        long today0 = DateUtils.truncate(now, Calendar.DAY_OF_MONTH).getTime();
+        // FIXME
+        long today0 = 0;
         long subtract = today0 + ONE_DAY_IN_MIll - nowMill;
         Random r = new Random();
         return subtract + (FOUR_HOURS_IN_MIll / 2) + r.nextInt(FOUR_HOURS_IN_MIll);
