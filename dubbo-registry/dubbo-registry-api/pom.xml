@@ -36,7 +36,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-config-dynamic</artifactId>
+            <artifactId>dubbo-governance-api</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
