@@ -14,33 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.dynamic.support.nop;
+package org.apache.dubbo.rpc.cluster.support;
 
-import org.apache.dubbo.config.dynamic.AbstractDynamicConfiguration;
-import org.apache.dubbo.config.dynamic.ConfigurationListener;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.Cluster;
+import org.apache.dubbo.rpc.cluster.Directory;
 
 /**
  *
  */
-public class NopDynamicConfiguration extends AbstractDynamicConfiguration {
+public class RegistryAwareCluster implements Cluster {
+
+    public final static String NAME = "registryaware";
 
     @Override
-    public void init() {
-
+    public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
+        return new RegistryAwareClusterInvoker<T>(directory);
     }
 
-    @Override
-    protected String getInternalProperty(String key, String group, long timeout) {
-        return null;
-    }
-
-    @Override
-    protected void addTargetListener(String key, Object o) {
-
-    }
-
-    @Override
-    protected Object createTargetConfigListener(String key, ConfigurationListener listener) {
-        return null;
-    }
 }

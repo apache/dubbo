@@ -74,6 +74,11 @@ public abstract class AbstractRouter implements Router {
     }
 
     @Override
+    public boolean isRuntime() {
+        return true;
+    }
+
+    @Override
     public boolean isForce() {
         return force;
     }

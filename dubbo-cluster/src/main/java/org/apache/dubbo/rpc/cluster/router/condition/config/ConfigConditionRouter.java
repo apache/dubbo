@@ -72,23 +72,23 @@ public class ConfigConditionRouter extends AbstractRouter implements Configurati
                 generateAppConditions();
             }
         } catch (Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
+            throw new IllegalStateException("Failed to init the condition router.", e);
         }
     }
 
     @Override
     public void process(ConfigChangeEvent event) {
-        try {
-            if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
-                // Now, we can only recognize if it's a app level or service level change by try to match event key.
-                if (event.getKey().endsWith(this.url.getParameter(Constants.APPLICATION_KEY) + Constants.ROUTERS_SUFFIX)) {
-                    appRouterRule = null;
-                    conditionRouters.clear();
-                } else {
-                    routerRule = null;
-                    appConditionRouters.clear();
-                }
+        if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
+            // Now, we can only recognize if it's a app level or service level change by try to match event key.
+            if (event.getKey().endsWith(this.url.getParameter(Constants.APPLICATION_KEY) + Constants.ROUTERS_SUFFIX)) {
+                appRouterRule = null;
+                conditionRouters.clear();
             } else {
+                routerRule = null;
+                appConditionRouters.clear();
+            }
+        } else {
+            try {
                 if (event.getKey().endsWith(this.url.getParameter(Constants.APPLICATION_KEY) + Constants.ROUTERS_SUFFIX)) {
                     appRouterRule = ConditionRuleParser.parse(event.getNewValue());
                     generateAppConditions();
@@ -96,12 +96,11 @@ public class ConfigConditionRouter extends AbstractRouter implements Configurati
                     routerRule = ConditionRuleParser.parse(event.getNewValue());
                     generateConditions();
                 }
+            } catch (Exception e) {
+                logger.error("Failed to parse the raw condition rule and it will not take effect, please check if the condition rule matches with the template, the raw rule is:\n " + event.getNewValue(), e);
             }
-            routerChain.notifyRuleChanged();
-        } catch (Exception e) {
-            logger.error(e);
-            // TODO
         }
+        routerChain.notifyRuleChanged();
     }
 
     @Override
@@ -138,7 +137,6 @@ public class ConfigConditionRouter extends AbstractRouter implements Configurati
                 || !isEnabled()) {
             return invokers;
         }
-
 
         if (isAppRuleEnabled()) {
             for (Router router : appConditionRouters) {

@@ -63,9 +63,7 @@ public interface Router extends Comparable<Router> {
         return "";
     }
 
-    default boolean isRuntime() {
-        return true;
-    }
+    boolean isRuntime();
 
     default String getKey() {
         return TreeNode.FAILOVER_KEY;

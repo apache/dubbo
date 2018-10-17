@@ -48,6 +48,7 @@ public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration<R
             System.setProperty(ZooKeeperConfigurationSource.ARCHAIUS_SOURCE_ADDRESS_KEY, address);
         }
         System.setProperty(ZooKeeperConfigurationSource.ARCHAIUS_CONFIG_ROOT_PATH_KEY, url.getParameter(Constants.CONFIG_NAMESPACE_KEY, ZooKeeperConfigurationSource.DEFAULT_CONFIG_ROOT_PATH));
+        System.setProperty(ZooKeeperConfigurationSource.ARCHAIUS_CONFIG_CHECK_KEY, url.getParameter(Constants.CONFIG_CHECK_KEY, "false"));
 
         try {
             ZooKeeperConfigurationSource zkConfigSource = new ZooKeeperConfigurationSource();
@@ -63,7 +64,7 @@ public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration<R
     }
 
     @Override
-    protected String getInternalProperty(String key, String group, long timeout, ConfigurationListener listener) {
+    protected String getInternalProperty(String key, String group, long timeout) {
         return DynamicPropertyFactory.getInstance()
                 .getStringProperty(key, null)
                 .get();
