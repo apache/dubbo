@@ -68,16 +68,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             throw new RpcException("Directory already destroyed .url: " + getUrl());
         }
 
-        List<Invoker<T>> invokers = doList(invocation);
-
-        try {
-            // Get invokers from cache, only runtime routers will be executed.
-            return routerChain.route(invokers, getConsumerUrl(), invocation);
-        } catch (Throwable t) {
-            logger.error("Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
-        }
-
-        return invokers;
+        return doList(invocation);
     }
 
     @Override

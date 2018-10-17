@@ -77,9 +77,13 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
         if (StringUtils.isEmpty(application)) {
             logger.error("TagRouter must getConfig from or subscribe to a specific application, but the application in this TagRouter is not specified.");
         }
-        String rawRule = this.configuration.getConfig(application + TAGROUTERRULES_DATAID, "dubbo", this);
-        if (StringUtils.isNotEmpty(rawRule)) {
-            this.tagRouterRule = TagRuleParser.parse(rawRule);
+        try {
+            String rawRule = this.configuration.getConfig(application + TAGROUTERRULES_DATAID, "dubbo", this);
+            if (StringUtils.isNotEmpty(rawRule)) {
+                this.tagRouterRule = TagRuleParser.parse(rawRule);
+            }
+        } catch (Exception e) {
+            logger.error("Failed to parse the raw tag router rule and it will not take effect, please check if the rule matches with the template, the raw rule is:\n ", e);
         }
     }
 
@@ -93,8 +97,7 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
             }
             routerChain.notifyRuleChanged();
         } catch (Exception e) {
-            // TODO
-            logger.error(e);
+            logger.error("Failed to parse the raw tag router rule and it will not take effect, please check if the rule matches with the template, the raw rule is:\n ", e);
         }
     }
 

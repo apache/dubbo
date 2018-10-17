@@ -75,7 +75,7 @@ public class RouterChain<T> {
     /**
      * @param methodInvokers
      * @param url
-     * @param invocation     TODO has no been used yet
+     * @param invocation     TODO has not being used yet
      */
     public void preRoute(Map<String, List<Invoker<T>>> methodInvokers, URL url, Invocation invocation) {
         if (CollectionUtils.isEmpty(routers)) {
@@ -103,11 +103,21 @@ public class RouterChain<T> {
         });
     }
 
-    public List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) {
+    public List<Invoker<T>> route(URL url, Invocation invocation) {
         List<Invoker<T>> finalInvokers = treeCache.getInvokers(treeCache.getTree(), url, invocation);
         for (Router router : routers) {
             if (router.isRuntime()) {
                 finalInvokers = router.route(finalInvokers, url, invocation);
+            }
+        }
+        return finalInvokers;
+    }
+
+    public List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) {
+        List<Invoker<T>> finalInvokers = invokers;
+        for (Router router : routers) {
+            if (router.isRuntime()) {
+                finalInvokers = router.route(invokers, url, invocation);
             }
         }
         return finalInvokers;
