@@ -51,7 +51,7 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
     public static final String ARCHAIUS_CONFIG_CHECK_KEY = "archaius.zk.check";
     public static final String DEFAULT_CONFIG_ROOT_PATH = "/dubbo/config";
 
-    private static final Logger logger = LoggerFactory.getLogger(com.netflix.config.source.ZooKeeperConfigurationSource.class);
+    private static final Logger logger = LoggerFactory.getLogger(ZooKeeperConfigurationSource.class);
     private Executor executor = Executors.newFixedThreadPool(1);
     private final CuratorFramework client;
 
