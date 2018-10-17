@@ -28,7 +28,7 @@ import org.apache.dubbo.remoting.Client;
  */
 public class ReconnectTimerTask extends AbstractTimerTask {
 
-    private static final Logger logger = LoggerFactory.getLogger(HeartBeatTimerTask.class);
+    private static final Logger logger = LoggerFactory.getLogger(ReconnectTimerTask.class);
 
     private final int heartbeatTimeout;
 
