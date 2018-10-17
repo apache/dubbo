@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.dubbo;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -58,12 +59,12 @@ public class RegistryProtocolTest {
     final private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
     @Test
-    public void testSystemArray() {
-        String[] addionalParameterKeys = {"key1", "key2"};
-        int additionalLen = addionalParameterKeys.length;
-        String[] registryParams = new String[additionalLen + EXCHANGING_KEYS.length];
-        System.arraycopy(addionalParameterKeys, 0, registryParams, EXCHANGING_KEYS.length, additionalLen);
-        System.out.println(addionalParameterKeys);
+    public void testGetParamsToRegistry() {
+        RegistryProtocol registryProtocol = new RegistryProtocol();
+        String[] additionalParams = new String[]{"key1", "key2"};
+        String[] registryParams = registryProtocol.getParamsToRegistry(additionalParams);
+        String[] expectParams = ArrayUtils.addAll(EXCHANGING_KEYS, additionalParams);
+        Assert.assertArrayEquals(expectParams, registryParams);
     }
 
     @Test

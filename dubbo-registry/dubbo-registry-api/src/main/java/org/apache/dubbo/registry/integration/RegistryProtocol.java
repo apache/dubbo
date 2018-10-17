@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.registry.integration;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -60,32 +59,17 @@ import java.util.stream.Collectors;
 import static org.apache.dubbo.common.Constants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.Constants.ADD_PARAM_KEYS_KEY;
 import static org.apache.dubbo.common.Constants.APPLICATION_KEY;
-import static org.apache.dubbo.common.Constants.CLUSTER_KEY;
-import static org.apache.dubbo.common.Constants.CODEC_KEY;
 import static org.apache.dubbo.common.Constants.CONFIGURATORS_SUFFIX;
 import static org.apache.dubbo.common.Constants.CONFIG_PROTOCOL;
-import static org.apache.dubbo.common.Constants.CONNECTIONS_KEY;
-import static org.apache.dubbo.common.Constants.DEPRECATED_KEY;
-import static org.apache.dubbo.common.Constants.EXCHANGER_KEY;
+import static org.apache.dubbo.common.Constants.EXCHANGING_KEYS;
 import static org.apache.dubbo.common.Constants.EXPORT_KEY;
-import static org.apache.dubbo.common.Constants.GROUP_KEY;
 import static org.apache.dubbo.common.Constants.INTERFACES;
 import static org.apache.dubbo.common.Constants.INTERFACE_KEY;
-import static org.apache.dubbo.common.Constants.LOADBALANCE_KEY;
 import static org.apache.dubbo.common.Constants.METHODS_KEY;
-import static org.apache.dubbo.common.Constants.MOCK_KEY;
-import static org.apache.dubbo.common.Constants.PATH_KEY;
 import static org.apache.dubbo.common.Constants.QOS_ENABLE;
 import static org.apache.dubbo.common.Constants.QOS_PORT;
 import static org.apache.dubbo.common.Constants.REFER_KEY;
-import static org.apache.dubbo.common.Constants.SERIALIZATION_KEY;
-import static org.apache.dubbo.common.Constants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.Constants.TIMESTAMP_KEY;
-import static org.apache.dubbo.common.Constants.TOKEN_KEY;
 import static org.apache.dubbo.common.Constants.VALIDATION_KEY;
-import static org.apache.dubbo.common.Constants.VERSION_KEY;
-import static org.apache.dubbo.common.Constants.WARMUP_KEY;
-import static org.apache.dubbo.common.Constants.WEIGHT_KEY;
 
 /**
  * RegistryProtocol
@@ -301,7 +285,7 @@ public class RegistryProtocol implements Protocol {
      */
     private URL getRegistedProviderUrl(final URL providerUrl, final URL registryUrl) {
         //The address you see at the registry
-        if(!registryUrl.getParameter(Constants.SIMPLE_KEY,false)){
+        if (!registryUrl.getParameter(Constants.SIMPLE_KEY, false)) {
             final URL registedProviderUrl = providerUrl.removeParameters(getFilteredKeys(providerUrl))
                     .removeParameter(Constants.MONITOR_KEY)
                     .removeParameter(Constants.BIND_IP_KEY)
@@ -312,13 +296,8 @@ public class RegistryProtocol implements Protocol {
                     .removeParameter(VALIDATION_KEY)
                     .removeParameter(INTERFACES);
             return registedProviderUrl;
-        }else{
-            String[] addionalParameterKeys = registryUrl.getParameter(ADD_PARAM_KEYS_KEY, new String[0]);
-            String[] registryParams = {APPLICATION_KEY, CODEC_KEY, EXCHANGER_KEY, SERIALIZATION_KEY, CLUSTER_KEY, CONNECTIONS_KEY, DEPRECATED_KEY,
-                    GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY, WEIGHT_KEY, TIMESTAMP_KEY};
-            ArrayUtils.addAll(registryParams, addionalParameterKeys);
-            String[] methods = providerUrl.getParameter(METHODS_KEY, (String[]) null);
-            return URL.valueOf(providerUrl, registryParams, methods);
+        } else {
+            return URL.valueOf(providerUrl, getParamsToRegistry(registryUrl.getParameter(ADD_PARAM_KEYS_KEY, new String[0])), providerUrl.getParameter(METHODS_KEY, (String[]) null));
         }
 
     }
@@ -405,18 +384,23 @@ public class RegistryProtocol implements Protocol {
     }
 
     private URL getRegistedConsumerUrl(final URL consumerUrl, URL registryUrl) {
-        if(!registryUrl.getParameter(Constants.SIMPLE_KEY,false)){
+        if (!registryUrl.getParameter(Constants.SIMPLE_KEY, false)) {
             return consumerUrl.addParameters(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY,
                     Constants.CHECK_KEY, String.valueOf(false));
-        }else{
-            String[] addionalParameterKeys = registryUrl.getParameter(ADD_PARAM_KEYS_KEY, new String[0]);
-            String[] registryParams = {APPLICATION_KEY, CODEC_KEY, EXCHANGER_KEY, SERIALIZATION_KEY, CLUSTER_KEY, CONNECTIONS_KEY, DEPRECATED_KEY,
-                    GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY, WEIGHT_KEY, TIMESTAMP_KEY};
-            ArrayUtils.addAll(registryParams, addionalParameterKeys);
-            String[] methods = consumerUrl.getParameter(METHODS_KEY, (String[]) null);
-            return URL.valueOf(consumerUrl, registryParams, methods).addParameters(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY,
-                    Constants.CHECK_KEY, String.valueOf(false));
+        } else {
+            return URL.valueOf(consumerUrl, getParamsToRegistry(registryUrl
+                    .getParameter(ADD_PARAM_KEYS_KEY, new String[0])), consumerUrl.getParameter(METHODS_KEY, (String[]) null))
+                    .addParameters(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY, Constants.CHECK_KEY, String.valueOf(false));
         }
+    }
+
+    // available to test
+    public String[] getParamsToRegistry(String[] addionalParameterKeys) {
+        int additionalLen = addionalParameterKeys.length;
+        String[] registryParams = new String[EXCHANGING_KEYS.length + additionalLen];
+        System.arraycopy(EXCHANGING_KEYS, 0, registryParams, 0, EXCHANGING_KEYS.length);
+        System.arraycopy(addionalParameterKeys, 0, registryParams, EXCHANGING_KEYS.length, additionalLen);
+        return registryParams;
     }
 
     @Override
