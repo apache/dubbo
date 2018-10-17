@@ -88,15 +88,16 @@ public class ConfigConditionRouterTest {
                 "scope: service\n" +
                 "force: true\n" +
                 "runtime: true\n" +
-                "enabled: false\n" +
+                "enabled: true\n" +
                 "priority: 1\n" +
-                "key: org.apache.dubbo.demo.DemoService\n" +
+                "key: org.apache.dubbo.demo.DemoService:1.0.2\n" +
                 "conditions:\n" +
                 "  - method!=sayHello =>\n" +
                 "  - method=routeMethod1 => address=30.5.120.37:20880\n" +
                 "...";
+//        String serviceStr = "";
         try {
-            String servicePath = "/dubbo/config/org.apache.dubbo.demo.DemoService/routers";
+            String servicePath = "/dubbo/config/org.apache.dubbo.demo.DemoService:1.0.2/routers";
             if (client.checkExists().forPath(servicePath) == null) {
                 client.create().creatingParentsIfNeeded().forPath(servicePath);
             }
