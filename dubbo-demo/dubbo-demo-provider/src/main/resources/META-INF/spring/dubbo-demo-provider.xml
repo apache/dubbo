@@ -26,7 +26,7 @@
     <!--<dubbo:provider tag="tag3"/>-->
 
     <!-- use multicast registry center to export service -->
-    <dubbo:registry address="zookeeper://127.0.0.1:2181" simple="true" />
+    <dubbo:registry address="zookeeper://127.0.0.1:2181" simple="true" plusparamkeys="qos.port,qos.enable" />
 
     <dubbo:servicestore address="redis://127.0.0.1:6379"/>
 
