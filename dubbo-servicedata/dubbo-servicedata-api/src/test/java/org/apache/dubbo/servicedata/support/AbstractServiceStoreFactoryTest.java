@@ -2,7 +2,7 @@ package org.apache.dubbo.servicedata.support;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.servicedata.ServiceStore;
+import org.apache.dubbo.servicedata.store.ServiceStore;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * @author cvictory ON 2018/9/14
+ *  2018/9/14
  */
 public class AbstractServiceStoreFactoryTest {
 
