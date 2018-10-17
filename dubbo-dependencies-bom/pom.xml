@@ -102,6 +102,7 @@
         <archaius_version>0.7.6</archaius_version>
         <snakeyaml_version>1.20</snakeyaml_version>
         <commons_configuration_version>1.8</commons_configuration_version>
+        <commons_lang3_version>3.8.1</commons_lang3_version>
 
         <rs_api_version>2.0</rs_api_version>
         <resteasy_version>3.0.19.Final</resteasy_version>
@@ -378,6 +379,11 @@
                 <artifactId>commons-configuration</artifactId>
                 <version>${commons_configuration_version}</version>
                 <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons_lang3_version}</version>
             </dependency>
 
 
