@@ -112,6 +112,7 @@
         <jaxb_version>2.2.7</jaxb_version>
         <activation_version>1.2.0</activation_version>
         <hessian_lite_version>3.2.4</hessian_lite_version>
+        <alibaba_spring_context_support_version>1.0.1</alibaba_spring_context_support_version>
     </properties>
 
     <dependencyManagement>
@@ -358,6 +359,16 @@
                 <artifactId>hessian-lite</artifactId>
                 <version>${hessian_lite_version}</version>
             </dependency>
+
+            <!-- Alibaba extensions -->
+
+            <!-- Spring Context Support -->
+            <dependency>
+                <groupId>com.alibaba.spring</groupId>
+                <artifactId>spring-context-support</artifactId>
+                <version>${alibaba_spring_context_support_version}</version>
+            </dependency>
+
             <!-- Test lib -->
             <dependency>
                 <groupId>org.apache.curator</groupId>
