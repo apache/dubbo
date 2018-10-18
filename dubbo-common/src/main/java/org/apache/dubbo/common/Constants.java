@@ -249,7 +249,7 @@ public class Constants {
 
     public static final int HEARTBEAT_TICK = 3;
 
-    public static final long LEAST_HEARTBEAT_TICK = 100;
+    public static final long LEAST_HEARTBEAT_TICK = 1000;
 
     /**
      * ticks per wheel. Currently only contains two tasks, so 16 locations are enough

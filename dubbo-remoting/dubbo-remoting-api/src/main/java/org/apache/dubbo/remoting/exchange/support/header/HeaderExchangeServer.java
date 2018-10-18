@@ -265,7 +265,7 @@ public class HeaderExchangeServer implements ExchangeServer {
     }
 
     /**
-     * Each interval cannot be less than 100ms.
+     * Each interval cannot be less than 1000ms.
      */
     private long calcLeastTick(int time) {
         if (time / Constants.HEARTBEAT_TICK <= 0) {
