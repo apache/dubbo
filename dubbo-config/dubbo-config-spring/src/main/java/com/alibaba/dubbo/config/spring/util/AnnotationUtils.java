@@ -18,7 +18,9 @@ package com.alibaba.dubbo.config.spring.util;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
+
 import org.springframework.core.env.PropertyResolver;
+import org.springframework.util.StringUtils;
 
 import java.lang.annotation.Annotation;
 import java.util.HashSet;
@@ -92,7 +94,7 @@ public class AnnotationUtils {
             throws IllegalStateException {
 
         String interfaceName;
-        if (!"".equals(service.interfaceName())) {
+        if (StringUtils.hasText(service.interfaceName())) {
             interfaceName = service.interfaceName();
         } else if (!void.class.equals(service.interfaceClass())) {
             interfaceName = service.interfaceClass().getName();

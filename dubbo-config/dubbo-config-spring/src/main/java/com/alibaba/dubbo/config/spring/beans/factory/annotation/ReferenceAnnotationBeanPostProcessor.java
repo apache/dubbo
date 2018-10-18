@@ -20,7 +20,9 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.spring.ReferenceBean;
 import com.alibaba.dubbo.config.spring.ServiceBean;
 import com.alibaba.dubbo.config.spring.context.event.ServiceBeanExportedEvent;
+import com.alibaba.dubbo.config.spring.util.AnnotationUtils;
 import com.alibaba.spring.beans.factory.annotation.AnnotationInjectedBeanPostProcessor;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
 import org.springframework.context.ApplicationContext;
@@ -167,7 +169,8 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
                                                  Class<?> injectedType, InjectionMetadata.InjectedElement injectedElement) {
 
         String key = buildReferencedBeanName(reference, injectedType) +
-                "#source=" + (injectedElement.getMember());
+                "#source=" + (injectedElement.getMember()) +
+                "#attributes=" + AnnotationUtils.getAttributes(reference,getEnvironment(),true);
 
         return key;
     }
