@@ -148,7 +148,7 @@ public class RestProtocol extends AbstractProxyProtocol {
 
         connectionMonitor.addConnectionManager(connectionManager);
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT))
+                .setConnectTimeout(url.getParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT))
                 .setSocketTimeout(url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT))
                 .build();
 

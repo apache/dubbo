@@ -106,7 +106,12 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
         Collection<ReferenceBean<?>> referenceBeans = beanPostProcessor.getReferenceBeans();
 
-        Assert.assertEquals(1, referenceBeans.size());
+        /**
+         * 1 -> demoService、demoServiceShouldBeSame
+         * 1 -> demoServiceShouldNotBeSame
+         * 1 -> demoServiceWithArray、demoServiceWithArrayShouldBeSame
+         */
+        Assert.assertEquals(3, referenceBeans.size());
 
         ReferenceBean<?> referenceBean = referenceBeans.iterator().next();
 
@@ -130,7 +135,10 @@ public class ReferenceAnnotationBeanPostProcessorTest {
         Map<InjectionMetadata.InjectedElement, ReferenceBean<?>> referenceBeanMap =
                 beanPostProcessor.getInjectedFieldReferenceBeanMap();
 
-        Assert.assertEquals(1, referenceBeanMap.size());
+        /**
+         * contains 5 fields.
+         */
+        Assert.assertEquals(5, referenceBeanMap.size());
 
         for (Map.Entry<InjectionMetadata.InjectedElement, ReferenceBean<?>> entry : referenceBeanMap.entrySet()) {
 
@@ -197,6 +205,49 @@ public class ReferenceAnnotationBeanPostProcessorTest {
         }
     }
 
+    @Test
+    public void testReferenceCache() throws Exception {
+
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestBean.class);
+
+        TestBean testBean = context.getBean(TestBean.class);
+
+        Assert.assertNotNull(testBean.getDemoServiceFromAncestor());
+        Assert.assertNotNull(testBean.getDemoServiceFromParent());
+        Assert.assertNotNull(testBean.getDemoService());
+
+        Assert.assertEquals(testBean.getDemoServiceFromAncestor(), testBean.getDemoServiceFromParent());
+        Assert.assertEquals(testBean.getDemoService(), testBean.getDemoServiceFromParent());
+
+        DemoService demoService = testBean.getDemoService();
+
+        Assert.assertEquals(demoService, testBean.getDemoServiceShouldBeSame());
+        Assert.assertNotEquals(demoService, testBean.getDemoServiceShouldNotBeSame());
+
+        context.close();
+
+    }
+
+    @Test
+    public void testReferenceCacheWithArray() throws Exception {
+
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestBean.class);
+
+        TestBean testBean = context.getBean(TestBean.class);
+
+        Assert.assertNotNull(testBean.getDemoServiceFromAncestor());
+        Assert.assertNotNull(testBean.getDemoServiceFromParent());
+        Assert.assertNotNull(testBean.getDemoService());
+
+        Assert.assertEquals(testBean.getDemoServiceFromAncestor(), testBean.getDemoServiceFromParent());
+        Assert.assertEquals(testBean.getDemoService(), testBean.getDemoServiceFromParent());
+
+        Assert.assertEquals(testBean.getDemoServiceWithArray(), testBean.getDemoServiceWithArrayShouldBeSame());
+
+        context.close();
+
+    }
+
     private static class AncestorBean {
 
 
@@ -239,6 +290,19 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
         private DemoService demoService;
 
+        @Reference(version = "1.2", url = "dubbo://127.0.0.1:12345")
+        private DemoService demoServiceShouldBeSame;
+
+        @Reference(version = "1.2", url = "dubbo://127.0.0.1:12345", async = true)
+        private DemoService demoServiceShouldNotBeSame;
+
+
+        @Reference(version = "1.2", url = "dubbo://127.0.0.1:12345", parameters = { "key1", "value1"})
+        private DemoService demoServiceWithArray;
+
+        @Reference(version = "1.2", url = "dubbo://127.0.0.1:12345", parameters = { "key1", "value1"})
+        private DemoService demoServiceWithArrayShouldBeSame;
+
         @Autowired
         private ApplicationContext applicationContext;
 
@@ -249,6 +313,22 @@ public class ReferenceAnnotationBeanPostProcessorTest {
         @Reference(version = "1.2", url = "dubbo://127.0.0.1:12345")
         public void setDemoService(DemoService demoService) {
             this.demoService = demoService;
+        }
+
+        public DemoService getDemoServiceShouldNotBeSame() {
+            return demoServiceShouldNotBeSame;
+        }
+
+        public DemoService getDemoServiceShouldBeSame() {
+            return demoServiceShouldBeSame;
+        }
+
+        public DemoService getDemoServiceWithArray() {
+            return demoServiceWithArray;
+        }
+
+        public DemoService getDemoServiceWithArrayShouldBeSame() {
+            return demoServiceWithArrayShouldBeSame;
         }
     }
 

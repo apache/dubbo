@@ -16,7 +16,7 @@
     </context-param>
 
     <listener>
-        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+        <listener-class>org.apache.dubbo.config.spring.initializer.DubboContextListener</listener-class>
     </listener>
 
 </web-fragment>
