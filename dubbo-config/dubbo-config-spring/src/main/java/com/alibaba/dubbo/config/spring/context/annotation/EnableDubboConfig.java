@@ -23,6 +23,7 @@ import com.alibaba.dubbo.config.MonitorConfig;
 import com.alibaba.dubbo.config.ProtocolConfig;
 import com.alibaba.dubbo.config.ProviderConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
+
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.Documented;

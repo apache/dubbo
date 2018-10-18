@@ -19,6 +19,7 @@ package com.alibaba.dubbo.config.spring.context.annotation.consumer.test;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.spring.api.DemoService;
 import com.alibaba.dubbo.config.spring.context.annotation.EnableDubbo;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.transaction.annotation.EnableTransactionManagement;

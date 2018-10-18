@@ -21,6 +21,7 @@ import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.dubbo.config.spring.ServiceBean;
 import com.alibaba.dubbo.config.spring.context.annotation.DubboClassPathBeanDefinitionScanner;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;

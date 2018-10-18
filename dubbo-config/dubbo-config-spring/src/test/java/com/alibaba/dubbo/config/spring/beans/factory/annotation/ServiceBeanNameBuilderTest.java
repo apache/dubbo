@@ -19,6 +19,7 @@ package com.alibaba.dubbo.config.spring.beans.factory.annotation;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.dubbo.config.spring.api.DemoService;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.core.annotation.AnnotationUtils;

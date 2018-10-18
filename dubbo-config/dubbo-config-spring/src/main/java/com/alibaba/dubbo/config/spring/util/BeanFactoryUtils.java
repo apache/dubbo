@@ -17,6 +17,7 @@
 package com.alibaba.dubbo.config.spring.util;
 
 import com.alibaba.dubbo.common.utils.StringUtils;
+
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
