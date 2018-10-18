@@ -55,6 +55,8 @@ import java.util.Set;
 
 /**
  * RegistryDirectory
+ * <p>
+ * 对 dubbo-cluster 的依赖集成
  */
 public class RegistryDirectory<T> extends AbstractDirectory<T> implements NotifyListener {
 
@@ -117,9 +119,12 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * Send all rules every time, the urls will be reassembled and calculated
      *
      * @param urls Contract:
-     *             </br>1.override://0.0.0.0/...( or override://ip:port...?anyhost=true)&para1=value1... means global rules (all of the providers take effect)
-     *             </br>2.override://ip:port...?anyhost=false Special rules (only for a certain provider)
-     *             </br>3.override:// rule is not supported... ,needs to be calculated by registry itself.
+     *             </br>1.override://0.0.0.0/...( or override://ip:port...?anyhost=true)&para1=value1...
+     *             means global rules (all of the providers take effect)
+     *             </br>2.override://ip:port...?anyhost=false Special rules (only for a certain
+     *             provider)
+     *             </br>3.override:// rule is not supported... ,needs to be calculated by registry
+     *             itself.
      *             </br>4.override://0.0.0.0/ without parameters means clearing the override
      * @return
      */
@@ -226,9 +231,11 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     /**
      * Convert the invokerURL list to the Invoker Map. The rules of the conversion are as follows:
-     * 1.If URL has been converted to invoker, it is no longer re-referenced and obtained directly from the cache, and notice that any parameter changes in the URL will be re-referenced.
+     * 1.If URL has been converted to invoker, it is no longer re-referenced and obtained directly
+     * from the cache, and notice that any parameter changes in the URL will be re-referenced.
      * 2.If the incoming invoker list is not empty, it means that it is the latest invoker list
-     * 3.If the list of incoming invokerUrl is empty, It means that the rule is only a override rule or a route rule, which needs to be re-contrasted to decide whether to re-reference.
+     * 3.If the list of incoming invokerUrl is empty, It means that the rule is only a override rule
+     * or a route rule, which needs to be re-contrasted to decide whether to re-reference.
      *
      * @param invokerUrls this parameter can't be null
      */
@@ -528,7 +535,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     /**
      * Check whether the invoker in the cache needs to be destroyed
-     * If set attribute of url: refer.autodestroy=false, the invokers will only increase without decreasing,there may be a refer leak
+     * If set attribute of url: refer.autodestroy=false, the invokers will only increase without
+     * decreasing,there may be a refer leak
      *
      * @param oldUrlInvokerMap
      * @param newUrlInvokerMap
@@ -663,7 +671,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
 
     /**
-     * The delegate class, which is mainly used to store the URL address sent by the registry,and can be reassembled on the basis of providerURL queryMap overrideMap for re-refer.
+     * The delegate class, which is mainly used to store the URL address sent by the registry,and
+     * can be reassembled on the basis of providerURL queryMap overrideMap for re-refer.
      *
      * @param <T>
      */

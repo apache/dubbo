@@ -20,6 +20,12 @@ import org.apache.dubbo.common.Node;
 import org.apache.dubbo.common.URL;
 
 /**
+ * 注册中心接口。Registry 继承了：
+ * <p>
+ * <p>
+ * {@link RegistryService} 接口，拥有拥有注册、订阅、查询三种操作方法。
+ * {@link Node} 接口，拥有节点相关的方法。
+ * <p>
  * Registry. (SPI, Prototype, ThreadSafe)
  *
  * @see org.apache.dubbo.registry.RegistryFactory#getRegistry(URL)

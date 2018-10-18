@@ -55,6 +55,8 @@ import static org.apache.dubbo.common.Constants.VALIDATION_KEY;
 
 /**
  * RegistryProtocol
+ * <p>
+ * 对 dubbo-rpc-api 的依赖集成
  */
 public class RegistryProtocol implements Protocol {
 
