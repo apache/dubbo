@@ -14,8 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.model;
 
-public enum AnimalEnum {
-    dog, cat, rat, cow, bull, horse;
+package org.apache.dubbo.common.serialize.protobuf;
+
+import org.apache.dubbo.common.serialize.base.AbstractSerializationTest;
+
+public class ProtobufSerializationTest extends AbstractSerializationTest {
+    {
+        serialization = new ProtobufSerialization();
+    }
 }

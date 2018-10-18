@@ -14,9 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.model.person;
 
-public enum PersonStatus {
-    ENABLED,
-    DISABLED
+package org.apache.dubbo.common.serialize.protobuf;
+
+import org.apache.dubbo.common.serialize.base.AbstractSerializationPersonOkTest;
+
+public class ProtobufPersonOkTest extends AbstractSerializationPersonOkTest {
+    {
+        serialization = new ProtobufSerialization();
+    }
 }
