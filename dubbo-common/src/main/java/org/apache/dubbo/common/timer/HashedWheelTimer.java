@@ -368,6 +368,11 @@ public class HashedWheelTimer implements Timer {
     }
 
     @Override
+    public boolean isStop() {
+        return WORKER_STATE_SHUTDOWN == WORKER_STATE_UPDATER.get(this);
+    }
+
+    @Override
     public Timeout newTimeout(TimerTask task, long delay, TimeUnit unit) {
         if (task == null) {
             throw new NullPointerException("task");

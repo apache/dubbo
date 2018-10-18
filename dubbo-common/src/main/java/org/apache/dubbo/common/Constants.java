@@ -19,6 +19,7 @@ package org.apache.dubbo.common;
 
 import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
+
 /**
  * Constants
  */
@@ -245,6 +246,15 @@ public class Constants {
     public static final String IDLE_TIMEOUT_KEY = "idle.timeout";
 
     public static final String HEARTBEAT_KEY = "heartbeat";
+
+    public static final int HEARTBEAT_TICK = 3;
+
+    public static final long LEAST_HEARTBEAT_TICK = 100;
+
+    /**
+     * ticks per wheel. Currently only contains two tasks, so 16 locations are enough
+     */
+    public static final int TICKS_PER_WHEEL = 16;
 
     public static final String HEARTBEAT_TIMEOUT_KEY = "heartbeat.timeout";
 

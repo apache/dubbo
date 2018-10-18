@@ -21,7 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
@@ -34,9 +34,6 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -47,17 +44,13 @@ public class HeaderExchangeServer implements ExchangeServer {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final ScheduledExecutorService scheduled = Executors.newScheduledThreadPool(1,
-            new NamedThreadFactory(
-                    "dubbo-remoting-server-heartbeat",
-                    true));
     private final Server server;
-    // heartbeat timer
-    private ScheduledFuture<?> heartbeatTimer;
     // heartbeat timeout (ms), default value is 0 , won't execute a heartbeat.
     private int heartbeat;
     private int heartbeatTimeout;
     private AtomicBoolean closed = new AtomicBoolean(false);
+
+    private HashedWheelTimer heartbeatTimer;
 
     public HeaderExchangeServer(Server server) {
         if (server == null) {
@@ -69,6 +62,10 @@ public class HeaderExchangeServer implements ExchangeServer {
         if (heartbeatTimeout < heartbeat * 2) {
             throw new IllegalStateException("heartbeatTimeout < heartbeatInterval * 2");
         }
+
+        long heartbeatTick = calcLeastTick(heartbeat);
+        // use heartbeatTick as every tick.
+        heartbeatTimer = new HashedWheelTimer(heartbeatTick, TimeUnit.MILLISECONDS, Constants.TICKS_PER_WHEEL);
         startHeartbeatTimer();
     }
 
@@ -153,11 +150,6 @@ public class HeaderExchangeServer implements ExchangeServer {
             return;
         }
         stopHeartbeatTimer();
-        try {
-            scheduled.shutdown();
-        } catch (Throwable t) {
-            logger.warn(t.getMessage(), t);
-        }
     }
 
     @Override
@@ -223,6 +215,12 @@ public class HeaderExchangeServer implements ExchangeServer {
                 if (h != heartbeat || t != heartbeatTimeout) {
                     heartbeat = h;
                     heartbeatTimeout = t;
+
+                    stopHeartbeatTimer();
+
+                    long heartbeatTick = calcLeastTick(heartbeat);
+                    // use heartbeatTick as every tick.
+                    heartbeatTimer = new HashedWheelTimer(heartbeatTick, TimeUnit.MILLISECONDS, Constants.TICKS_PER_WHEEL);
                     startHeartbeatTimer();
                 }
             }
@@ -254,29 +252,32 @@ public class HeaderExchangeServer implements ExchangeServer {
     }
 
     private void startHeartbeatTimer() {
-        stopHeartbeatTimer();
-        if (heartbeat > 0) {
-            heartbeatTimer = scheduled.scheduleWithFixedDelay(
-                    new HeartBeatTask(new HeartBeatTask.ChannelProvider() {
-                        @Override
-                        public Collection<Channel> getChannels() {
-                            return Collections.unmodifiableCollection(
-                                    HeaderExchangeServer.this.getChannels());
-                        }
-                    }, heartbeat, heartbeatTimeout),
-                    heartbeat, heartbeat, TimeUnit.MILLISECONDS);
+        AbstractTimerTask.ChannelProvider cp = () -> Collections.unmodifiableCollection(HeaderExchangeServer.this.getChannels());
+
+        long heartbeatTick = calcLeastTick(heartbeat);
+        long heartbeatTimeoutTick = calcLeastTick(heartbeatTimeout);
+        HeartbeatTimerTask heartBeatTimerTask = new HeartbeatTimerTask(cp, heartbeatTick, heartbeat);
+        ReconnectTimerTask reconnectTimerTask = new ReconnectTimerTask(cp, heartbeatTimeoutTick, heartbeatTimeout);
+
+        // init task and start timer.
+        heartbeatTimer.newTimeout(heartBeatTimerTask, heartbeatTick, TimeUnit.MILLISECONDS);
+        heartbeatTimer.newTimeout(reconnectTimerTask, heartbeatTimeoutTick, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Each interval cannot be less than 100ms.
+     */
+    private long calcLeastTick(int time) {
+        if (time / Constants.HEARTBEAT_TICK <= 0) {
+            return Constants.LEAST_HEARTBEAT_TICK;
+        } else {
+            return time / Constants.HEARTBEAT_TICK;
         }
     }
 
     private void stopHeartbeatTimer() {
-        try {
-            ScheduledFuture<?> timer = heartbeatTimer;
-            if (timer != null && !timer.isCancelled()) {
-                timer.cancel(true);
-            }
-        } catch (Throwable t) {
-            logger.warn(t.getMessage(), t);
-        } finally {
+        if (heartbeatTimer != null) {
+            heartbeatTimer.stop();
             heartbeatTimer = null;
         }
     }
