@@ -49,6 +49,7 @@ public class DataSourceStatusCheckerTest {
 
     @Before
     public void setUp() throws Exception {
+        SpringExtensionFactory.clearContexts();
         initMocks(this);
         this.dataSourceStatusChecker = new DataSourceStatusChecker();
         new ServiceBean<Object>().setApplicationContext(applicationContext);
@@ -56,7 +57,6 @@ public class DataSourceStatusCheckerTest {
 
     @After
     public void tearDown() throws Exception {
-        SpringExtensionFactory.clearContexts();
         Mockito.reset(applicationContext);
     }
 

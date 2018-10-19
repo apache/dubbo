@@ -47,14 +47,18 @@ import java.util.concurrent.atomic.AtomicLong;
  * ClassGenerator
  */
 public final class ClassGenerator {
+
     private static final AtomicLong CLASS_NAME_COUNTER = new AtomicLong(0);
     private static final String SIMPLE_NAME_TAG = "<init>";
     private static final Map<ClassLoader, ClassPool> POOL_MAP = new ConcurrentHashMap<ClassLoader, ClassPool>(); //ClassLoader - ClassPool
     private ClassPool mPool;
     private CtClass mCtc;
-    private String mClassName, mSuperClass;
+    private String mClassName;
+    private String mSuperClass;
     private Set<String> mInterfaces;
-    private List<String> mFields, mConstructors, mMethods;
+    private List<String> mFields;
+    private List<String> mConstructors;
+    private List<String> mMethods;
     private Map<String, Method> mCopyMethods; // <method desc,method instance>
     private Map<String, Constructor<?>> mCopyConstructors; // <constructor desc,constructor instance>
     private boolean mDefaultConstructor = false;
@@ -181,7 +185,8 @@ public final class ClassGenerator {
         return addMethod(name, mod, rt, pts, null, body);
     }
 
-    public ClassGenerator addMethod(String name, int mod, Class<?> rt, Class<?>[] pts, Class<?>[] ets, String body) {
+    public ClassGenerator addMethod(String name, int mod, Class<?> rt, Class<?>[] pts, Class<?>[] ets,
+                                    String body) {
         StringBuilder sb = new StringBuilder();
         sb.append(modifier(mod)).append(' ').append(ReflectUtils.getName(rt)).append(' ').append(name);
         sb.append('(');
@@ -278,7 +283,8 @@ public final class ClassGenerator {
     }
 
     public Class<?> toClass() {
-        return toClass(ClassHelper.getClassLoader(ClassGenerator.class), getClass().getProtectionDomain());
+        return toClass(ClassHelper.getClassLoader(ClassGenerator.class),
+                getClass().getProtectionDomain());
     }
 
     public Class<?> toClass(ClassLoader loader, ProtectionDomain pd) {
@@ -310,7 +316,8 @@ public final class ClassGenerator {
             if (mMethods != null) {
                 for (String code : mMethods) {
                     if (code.charAt(0) == ':') {
-                        mCtc.addMethod(CtNewMethod.copy(getCtMethod(mCopyMethods.get(code.substring(1))), code.substring(1, code.indexOf('(')), mCtc, null));
+                        mCtc.addMethod(CtNewMethod.copy(getCtMethod(mCopyMethods.get(code.substring(1))),
+                                code.substring(1, code.indexOf('(')), mCtc, null));
                     } else {
                         mCtc.addMethod(CtNewMethod.make(code, mCtc));
                     }
@@ -322,10 +329,12 @@ public final class ClassGenerator {
             if (mConstructors != null) {
                 for (String code : mConstructors) {
                     if (code.charAt(0) == ':') {
-                        mCtc.addConstructor(CtNewConstructor.copy(getCtConstructor(mCopyConstructors.get(code.substring(1))), mCtc, null));
+                        mCtc.addConstructor(CtNewConstructor
+                                .copy(getCtConstructor(mCopyConstructors.get(code.substring(1))), mCtc, null));
                     } else {
                         String[] sn = mCtc.getSimpleName().split("\\$+"); // inner class name include $.
-                        mCtc.addConstructor(CtNewConstructor.make(code.replaceFirst(SIMPLE_NAME_TAG, sn[sn.length - 1]), mCtc));
+                        mCtc.addConstructor(
+                                CtNewConstructor.make(code.replaceFirst(SIMPLE_NAME_TAG, sn[sn.length - 1]), mCtc));
                     }
                 }
             }
@@ -368,7 +377,8 @@ public final class ClassGenerator {
     }
 
     private CtMethod getCtMethod(Method m) throws NotFoundException {
-        return getCtClass(m.getDeclaringClass()).getMethod(m.getName(), ReflectUtils.getDescWithoutMethodName(m));
+        return getCtClass(m.getDeclaringClass())
+                .getMethod(m.getName(), ReflectUtils.getDescWithoutMethodName(m));
     }
 
     private CtConstructor getCtConstructor(Constructor<?> c) throws NotFoundException {
@@ -376,5 +386,6 @@ public final class ClassGenerator {
     }
 
     public static interface DC {
+
     } // dynamic class tag interface.
 }
