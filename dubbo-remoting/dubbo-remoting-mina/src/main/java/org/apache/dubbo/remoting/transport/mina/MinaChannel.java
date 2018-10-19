@@ -161,13 +161,23 @@ final class MinaChannel extends AbstractChannel {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
         MinaChannel other = (MinaChannel) obj;
         if (session == null) {
-            if (other.session != null) return false;
-        } else if (!session.equals(other.session)) return false;
+            if (other.session != null) {
+                return false;
+            }
+        } else if (!session.equals(other.session)) {
+            return false;
+        }
         return true;
     }
 

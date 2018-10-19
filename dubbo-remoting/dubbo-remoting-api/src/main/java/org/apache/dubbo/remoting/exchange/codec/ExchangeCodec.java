@@ -200,11 +200,13 @@ public class ExchangeCodec extends TelnetCodec {
 
     protected Object getRequestData(long id) {
         DefaultFuture future = DefaultFuture.getFuture(id);
-        if (future == null)
+        if (future == null) {
             return null;
+        }
         Request req = future.getRequest();
-        if (req == null)
+        if (req == null) {
             return null;
+        }
         return req.getData();
     }
 
@@ -218,8 +220,12 @@ public class ExchangeCodec extends TelnetCodec {
         // set request and serialization flag.
         header[2] = (byte) (FLAG_REQUEST | serialization.getContentTypeId());
 
-        if (req.isTwoWay()) header[2] |= FLAG_TWOWAY;
-        if (req.isEvent()) header[2] |= FLAG_EVENT;
+        if (req.isTwoWay()) {
+            header[2] |= FLAG_TWOWAY;
+        }
+        if (req.isEvent()) {
+            header[2] |= FLAG_EVENT;
+        }
 
         // set request id.
         Bytes.long2bytes(req.getId(), header, 4);
@@ -260,7 +266,9 @@ public class ExchangeCodec extends TelnetCodec {
             Bytes.short2bytes(MAGIC, header);
             // set request and serialization flag.
             header[2] = serialization.getContentTypeId();
-            if (res.isHeartbeat()) header[2] |= FLAG_EVENT;
+            if (res.isHeartbeat()) {
+                header[2] |= FLAG_EVENT;
+            }
             // set response status.
             byte status = res.getStatus();
             header[3] = status;
@@ -277,7 +285,9 @@ public class ExchangeCodec extends TelnetCodec {
                 } else {
                     encodeResponseData(channel, out, res.getResult(), res.getVersion());
                 }
-            } else out.writeUTF(res.getErrorMessage());
+            } else {
+                out.writeUTF(res.getErrorMessage());
+            }
             out.flushBuffer();
             if (out instanceof Cleanable) {
                 ((Cleanable) out).cleanup();

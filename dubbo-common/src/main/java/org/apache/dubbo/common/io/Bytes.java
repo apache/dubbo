@@ -395,12 +395,15 @@ public class Bytes {
      * @return hex string.
      */
     public static String bytes2hex(byte[] bs, int off, int len) {
-        if (off < 0)
+        if (off < 0) {
             throw new IndexOutOfBoundsException("bytes2hex: offset < 0, offset is " + off);
-        if (len < 0)
+        }
+        if (len < 0) {
             throw new IndexOutOfBoundsException("bytes2hex: length < 0, length is " + len);
-        if (off + len > bs.length)
+        }
+        if (off + len > bs.length) {
             throw new IndexOutOfBoundsException("bytes2hex: offset + length > array length.");
+        }
 
         byte b;
         int r = off, w = 0;
@@ -432,20 +435,25 @@ public class Bytes {
      * @return byte array.
      */
     public static byte[] hex2bytes(final String str, final int off, int len) {
-        if ((len & 1) == 1)
+        if ((len & 1) == 1) {
             throw new IllegalArgumentException("hex2bytes: ( len & 1 ) == 1.");
+        }
 
-        if (off < 0)
+        if (off < 0) {
             throw new IndexOutOfBoundsException("hex2bytes: offset < 0, offset is " + off);
-        if (len < 0)
+        }
+        if (len < 0) {
             throw new IndexOutOfBoundsException("hex2bytes: length < 0, length is " + len);
-        if (off + len > str.length())
+        }
+        if (off + len > str.length()) {
             throw new IndexOutOfBoundsException("hex2bytes: offset + length > array length.");
+        }
 
         int num = len / 2, r = off, w = 0;
         byte[] b = new byte[num];
-        for (int i = 0; i < num; i++)
+        for (int i = 0; i < num; i++) {
             b[w++] = (byte) (hex(str.charAt(r++)) << 4 | hex(str.charAt(r++)));
+        }
         return b;
     }
 
@@ -488,8 +496,9 @@ public class Bytes {
      * @return base64 string.
      */
     public static String bytes2base64(byte[] b, int offset, int length, String code) {
-        if (code.length() < 64)
+        if (code.length() < 64) {
             throw new IllegalArgumentException("Base64 code length < 64.");
+        }
 
         return bytes2base64(b, offset, length, code.toCharArray());
     }
@@ -515,15 +524,19 @@ public class Bytes {
      * @return base64 string.
      */
     public static String bytes2base64(final byte[] bs, final int off, final int len, final char[] code) {
-        if (off < 0)
+        if (off < 0) {
             throw new IndexOutOfBoundsException("bytes2base64: offset < 0, offset is " + off);
-        if (len < 0)
+        }
+        if (len < 0) {
             throw new IndexOutOfBoundsException("bytes2base64: length < 0, length is " + len);
-        if (off + len > bs.length)
+        }
+        if (off + len > bs.length) {
             throw new IndexOutOfBoundsException("bytes2base64: offset + length > array length.");
+        }
 
-        if (code.length < 64)
+        if (code.length < 64) {
             throw new IllegalArgumentException("Base64 code length < 64.");
+        }
 
         boolean pad = code.length > 64; // has pad char.
         int num = len / 3, rem = len % 3, r = off, w = 0;
@@ -551,8 +564,9 @@ public class Bytes {
             cs[w++] = code[b1 >> 2];
             cs[w++] = code[(b1 << 4) & MASK6 | (b2 >> 4)];
             cs[w++] = code[(b2 << 2) & MASK6];
-            if (pad)
+            if (pad) {
                 cs[w++] = code[64];
+            }
         }
         return new String(cs);
     }
@@ -600,24 +614,30 @@ public class Bytes {
      * @return byte array.
      */
     public static byte[] base642bytes(final String str, final int off, final int len, final String code) {
-        if (off < 0)
+        if (off < 0) {
             throw new IndexOutOfBoundsException("base642bytes: offset < 0, offset is " + off);
-        if (len < 0)
+        }
+        if (len < 0) {
             throw new IndexOutOfBoundsException("base642bytes: length < 0, length is " + len);
-        if (off + len > str.length())
+        }
+        if (off + len > str.length()) {
             throw new IndexOutOfBoundsException("base642bytes: offset + length > string length.");
+        }
 
-        if (code.length() < 64)
+        if (code.length() < 64) {
             throw new IllegalArgumentException("Base64 code length < 64.");
+        }
 
         int rem = len % 4;
-        if (rem == 1)
+        if (rem == 1) {
             throw new IllegalArgumentException("base642bytes: base64 string length % 4 == 1.");
+        }
 
         int num = len / 4, size = num * 3;
         if (code.length() > 64) {
-            if (rem != 0)
+            if (rem != 0) {
                 throw new IllegalArgumentException("base642bytes: base64 string length error.");
+            }
 
             char pc = code.charAt(64);
             if (str.charAt(off + len - 2) == pc) {
@@ -630,10 +650,11 @@ public class Bytes {
                 rem = 3;
             }
         } else {
-            if (rem == 2)
+            if (rem == 2) {
                 size++;
-            else if (rem == 3)
+            } else if (rem == 3) {
                 size += 2;
+            }
         }
 
         int r = off, w = 0;
@@ -681,35 +702,43 @@ public class Bytes {
      * @return byte array.
      */
     public static byte[] base642bytes(final String str, final int off, final int len, final char[] code) {
-        if (off < 0)
+        if (off < 0) {
             throw new IndexOutOfBoundsException("base642bytes: offset < 0, offset is " + off);
-        if (len < 0)
+        }
+        if (len < 0) {
             throw new IndexOutOfBoundsException("base642bytes: length < 0, length is " + len);
-        if (off + len > str.length())
+        }
+        if (off + len > str.length()) {
             throw new IndexOutOfBoundsException("base642bytes: offset + length > string length.");
+        }
 
-        if (code.length < 64)
+        if (code.length < 64) {
             throw new IllegalArgumentException("Base64 code length < 64.");
+        }
 
         int rem = len % 4;
-        if (rem == 1)
+        if (rem == 1) {
             throw new IllegalArgumentException("base642bytes: base64 string length % 4 == 1.");
+        }
 
         int num = len / 4, size = num * 3;
         if (code.length > 64) {
-            if (rem != 0)
+            if (rem != 0) {
                 throw new IllegalArgumentException("base642bytes: base64 string length error.");
+            }
 
             char pc = code[64];
-            if (str.charAt(off + len - 2) == pc)
+            if (str.charAt(off + len - 2) == pc) {
                 size -= 2;
-            else if (str.charAt(off + len - 1) == pc)
+            } else if (str.charAt(off + len - 1) == pc) {
                 size--;
+            }
         } else {
-            if (rem == 2)
+            if (rem == 2) {
                 size++;
-            else if (rem == 3)
+            } else if (rem == 3) {
                 size += 2;
+            }
         }
 
         int r = off, w = 0;
@@ -823,15 +852,24 @@ public class Bytes {
     }
 
     private static byte hex(char c) {
-        if (c <= '9') return (byte) (c - '0');
-        if (c >= 'a' && c <= 'f') return (byte) (c - 'a' + 10);
-        if (c >= 'A' && c <= 'F') return (byte) (c - 'A' + 10);
+        if (c <= '9') {
+            return (byte) (c - '0');
+        }
+        if (c >= 'a' && c <= 'f') {
+            return (byte) (c - 'a' + 10);
+        }
+        if (c >= 'A' && c <= 'F') {
+            return (byte) (c - 'A' + 10);
+        }
         throw new IllegalArgumentException("hex string format error [" + c + "].");
     }
 
     private static int indexOf(char[] cs, char c) {
-        for (int i = 0, len = cs.length; i < len; i++)
-            if (cs[i] == c) return i;
+        for (int i = 0, len = cs.length; i < len; i++) {
+            if (cs[i] == c) {
+                return i;
+            }
+        }
         return -1;
     }
 
@@ -839,14 +877,18 @@ public class Bytes {
         int hash = code.hashCode();
         byte[] ret = DECODE_TABLE_MAP.get(hash);
         if (ret == null) {
-            if (code.length() < 64)
+            if (code.length() < 64) {
                 throw new IllegalArgumentException("Base64 code length < 64.");
+            }
             // create new decode table.
             ret = new byte[128];
             for (int i = 0; i < 128; i++) // init table.
+            {
                 ret[i] = -1;
-            for (int i = 0; i < 64; i++)
+            }
+            for (int i = 0; i < 64; i++) {
                 ret[code.charAt(i)] = (byte) i;
+            }
             DECODE_TABLE_MAP.put(hash, ret);
         }
         return ret;
@@ -858,8 +900,9 @@ public class Bytes {
         while (is.available() > 0) {
             int read, total = 0;
             do {
-                if ((read = is.read(buf, total, bs - total)) <= 0)
+                if ((read = is.read(buf, total, bs - total)) <= 0) {
                     break;
+                }
                 total += read;
             }
             while (total < bs);

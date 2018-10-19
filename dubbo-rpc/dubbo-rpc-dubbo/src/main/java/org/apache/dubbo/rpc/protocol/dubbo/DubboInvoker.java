@@ -116,8 +116,9 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
 
     @Override
     public boolean isAvailable() {
-        if (!super.isAvailable())
+        if (!super.isAvailable()) {
             return false;
+        }
         for (ExchangeClient client : clients) {
             if (client.isConnected() && !client.hasAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY)) {
                 //cannot write == not Available ?

@@ -54,35 +54,47 @@ public class Log4jLoggerAdapter implements LoggerAdapter {
     }
 
     private static org.apache.log4j.Level toLog4jLevel(Level level) {
-        if (level == Level.ALL)
+        if (level == Level.ALL) {
             return org.apache.log4j.Level.ALL;
-        if (level == Level.TRACE)
+        }
+        if (level == Level.TRACE) {
             return org.apache.log4j.Level.TRACE;
-        if (level == Level.DEBUG)
+        }
+        if (level == Level.DEBUG) {
             return org.apache.log4j.Level.DEBUG;
-        if (level == Level.INFO)
+        }
+        if (level == Level.INFO) {
             return org.apache.log4j.Level.INFO;
-        if (level == Level.WARN)
+        }
+        if (level == Level.WARN) {
             return org.apache.log4j.Level.WARN;
-        if (level == Level.ERROR)
+        }
+        if (level == Level.ERROR) {
             return org.apache.log4j.Level.ERROR;
+        }
         // if (level == Level.OFF)
         return org.apache.log4j.Level.OFF;
     }
 
     private static Level fromLog4jLevel(org.apache.log4j.Level level) {
-        if (level == org.apache.log4j.Level.ALL)
+        if (level == org.apache.log4j.Level.ALL) {
             return Level.ALL;
-        if (level == org.apache.log4j.Level.TRACE)
+        }
+        if (level == org.apache.log4j.Level.TRACE) {
             return Level.TRACE;
-        if (level == org.apache.log4j.Level.DEBUG)
+        }
+        if (level == org.apache.log4j.Level.DEBUG) {
             return Level.DEBUG;
-        if (level == org.apache.log4j.Level.INFO)
+        }
+        if (level == org.apache.log4j.Level.INFO) {
             return Level.INFO;
-        if (level == org.apache.log4j.Level.WARN)
+        }
+        if (level == org.apache.log4j.Level.WARN) {
             return Level.WARN;
-        if (level == org.apache.log4j.Level.ERROR)
+        }
+        if (level == org.apache.log4j.Level.ERROR) {
             return Level.ERROR;
+        }
         // if (level == org.apache.log4j.Level.OFF)
         return Level.OFF;
     }
