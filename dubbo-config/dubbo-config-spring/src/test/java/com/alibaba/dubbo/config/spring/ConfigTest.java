@@ -244,7 +244,7 @@ public class ConfigTest {
             }
             assertNotNull(urls);
             assertEquals(1, urls.size());
-            assertEquals("dubbo://" + NetUtils.getLocalHost() + ":20883/com.alibaba.dubbo.config.spring.api.DemoService", urls.get(0).toIdentityString());
+            assertEquals("dubbo://" + NetUtils.getLocalHost() + ":20888/com.alibaba.dubbo.config.spring.api.DemoService", urls.get(0).toIdentityString());
         } finally {
             ctx.stop();
             ctx.close();
@@ -262,7 +262,7 @@ public class ConfigTest {
             List<URL> urls = registryService.getRegistered().get("com.alibaba.dubbo.config.spring.api.DemoService");
             assertNotNull(urls);
             assertEquals(1, urls.size());
-            assertEquals("dubbo://" + NetUtils.getLocalHost() + ":20883/com.alibaba.dubbo.config.spring.api.DemoService", urls.get(0).toIdentityString());
+            assertEquals("dubbo://" + NetUtils.getLocalHost() + ":20888/com.alibaba.dubbo.config.spring.api.DemoService", urls.get(0).toIdentityString());
         } finally {
             ctx.stop();
             ctx.close();

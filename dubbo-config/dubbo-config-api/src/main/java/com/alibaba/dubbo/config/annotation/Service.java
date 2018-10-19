@@ -56,7 +56,7 @@ public @interface Service {
 
     int executes() default 0;
 
-    boolean register() default false;
+    boolean register() default true;
 
     int weight() default 0;
 

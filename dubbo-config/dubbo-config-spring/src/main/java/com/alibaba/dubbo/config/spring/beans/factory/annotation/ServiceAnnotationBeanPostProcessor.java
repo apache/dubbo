@@ -73,7 +73,6 @@ import static org.springframework.util.ClassUtils.resolveClassName;
 public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistryPostProcessor, EnvironmentAware,
         ResourceLoaderAware, BeanClassLoaderAware {
 
-    private static final String SEPARATOR = ":";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -291,27 +290,10 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
      */
     private String generateServiceBeanName(Service service, Class<?> interfaceClass, String annotatedServiceBeanName) {
 
-        StringBuilder beanNameBuilder = new StringBuilder(ServiceBean.class.getSimpleName());
+        ServiceBeanNameBuilder builder = ServiceBeanNameBuilder.create(service, interfaceClass, environment);
 
-        beanNameBuilder.append(SEPARATOR).append(annotatedServiceBeanName);
 
-        String interfaceClassName = interfaceClass.getName();
-
-        beanNameBuilder.append(SEPARATOR).append(interfaceClassName);
-
-        String version = service.version();
-
-        if (StringUtils.hasText(version)) {
-            beanNameBuilder.append(SEPARATOR).append(version);
-        }
-
-        String group = service.group();
-
-        if (StringUtils.hasText(group)) {
-            beanNameBuilder.append(SEPARATOR).append(group);
-        }
-
-        return beanNameBuilder.toString();
+        return builder.build();
 
     }
 
