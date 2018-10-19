@@ -101,7 +101,7 @@ public abstract class AbstractServiceStore implements ServiceStore {
                     logger.error("Unexpected error occur at failed retry, cause: " + t.getMessage(), t);
                 }
             }
-        }, 100, 100, TimeUnit.MILLISECONDS);
+        }, 1000, 3000, TimeUnit.MILLISECONDS);
     }
 
     public URL getUrl() {

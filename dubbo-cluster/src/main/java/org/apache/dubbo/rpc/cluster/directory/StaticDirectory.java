@@ -17,6 +17,8 @@
 package org.apache.dubbo.rpc.cluster.directory;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
@@ -31,6 +33,7 @@ import java.util.List;
  *
  */
 public class StaticDirectory<T> extends AbstractDirectory<T> {
+    private static final Logger logger = LoggerFactory.getLogger(StaticDirectory.class);
 
     private final List<Invoker<T>> invokers;
 
@@ -85,8 +88,16 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
 
     @Override
     protected List<Invoker<T>> doList(Invocation invocation) throws RpcException {
-
-        return invokers;
+        List<Invoker<T>> finalInvokers = invokers;
+        if (routerChain != null) {
+            try {
+                // Get invokers from cache, only runtime routers will be executed.
+                finalInvokers = routerChain.route(getConsumerUrl(), invocation);
+            } catch (Throwable t) {
+                logger.error("Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
+            }
+        }
+        return finalInvokers;
     }
 
 }
