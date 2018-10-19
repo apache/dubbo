@@ -3,3 +3,4 @@ script=org.apache.dubbo.rpc.cluster.router.script.ScriptRouterFactory
 condition=org.apache.dubbo.rpc.cluster.router.condition.ConditionRouterFactory
 configcondition=org.apache.dubbo.rpc.cluster.router.condition.config.ConfigConditionRouterFactory
 tag=org.apache.dubbo.rpc.cluster.router.tag.TagRouterFactory
+mock=org.apache.dubbo.rpc.cluster.router.mock.MockRouterFactory

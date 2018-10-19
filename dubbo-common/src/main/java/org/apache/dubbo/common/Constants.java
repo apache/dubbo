@@ -61,6 +61,7 @@ public class Constants {
     public static final String CONFIG_ENV_KEY = "config.env";
     public static final String CONFIG_CLUSTER_KEY = "config.cluster";
     public static final String CONFIG_NAMESPACE_KEY = "config.namespace";
+    public static final String CONFIG_CHECK_KEY = "config.check";
 
     public static final String DEFAULT_CATEGORY = PROVIDERS_CATEGORY;
 

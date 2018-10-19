@@ -14,33 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.dynamic.support.nop;
+package org.apache.dubbo.demo.consumer;
 
-import org.apache.dubbo.config.dynamic.AbstractDynamicConfiguration;
-import org.apache.dubbo.config.dynamic.ConfigurationListener;
+import org.apache.dubbo.demo.DemoService;
 
 /**
  *
  */
-public class NopDynamicConfiguration extends AbstractDynamicConfiguration {
-
+public class DemoServiceMock implements DemoService {
     @Override
-    public void init() {
-
+    public String sayHello(String name) {
+        return "mock value";
     }
 
     @Override
-    protected String getInternalProperty(String key, String group, long timeout) {
+    public String routeMethod1() {
         return null;
     }
 
     @Override
-    protected void addTargetListener(String key, Object o) {
-
-    }
-
-    @Override
-    protected Object createTargetConfigListener(String key, ConfigurationListener listener) {
+    public String routeMethod2() {
         return null;
     }
 }

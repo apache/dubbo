@@ -57,7 +57,7 @@ public abstract class AbstractDynamicConfiguration<TargetConfigListener> impleme
             if (listener != null) {
                 this.addListener(key, listener);
             }
-            return getInternalProperty(key, group, timeout, listener);
+            return getInternalProperty(key, group, timeout);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -71,7 +71,7 @@ public abstract class AbstractDynamicConfiguration<TargetConfigListener> impleme
         this.url = url;
     }
 
-    protected abstract String getInternalProperty(String key, String group, long timeout, ConfigurationListener listener);
+    protected abstract String getInternalProperty(String key, String group, long timeout);
 
     protected abstract void addTargetListener(String key, TargetConfigListener listener);
 

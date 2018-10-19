@@ -53,7 +53,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -116,11 +115,20 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         this.serviceType = serviceType;
         this.serviceKey = url.getServiceKey();
         this.queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(Constants.REFER_KEY));
-        this.overrideDirectoryUrl = this.directoryUrl = url.setPath(url.getServiceInterface()).clearParameters().addParameters(queryMap).removeParameter(Constants.MONITOR_KEY);
+        this.overrideDirectoryUrl = this.directoryUrl = turnRegistryUrlToConsumerUrl(url);
         String group = directoryUrl.getParameter(Constants.GROUP_KEY, "");
         this.multiGroup = group != null && ("*".equals(group) || group.contains(","));
         String methods = queryMap.get(Constants.METHODS_KEY);
         this.serviceMethods = methods == null ? null : Constants.COMMA_SPLIT_PATTERN.split(methods);
+    }
+
+    private URL turnRegistryUrlToConsumerUrl(URL url) {
+        // save any parameter in registry that will be useful to the new url.
+        String isDefault = url.getParameter(Constants.DEFAULT_KEY);
+        if (StringUtils.isNotEmpty(isDefault)) {
+            queryMap.put(Constants.REGISTRY_KEY + "." + Constants.DEFAULT_KEY, isDefault);
+        }
+        return url.setPath(url.getServiceInterface()).clearParameters().addParameters(queryMap).removeParameter(Constants.MONITOR_KEY);
     }
 
     /**
@@ -176,14 +184,24 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     public void subscribe(URL url) {
         setConsumerUrl(url);
-        String rawConfig = dynamicConfiguration.getConfig(url.getServiceKey() + Constants.CONFIGURATORS_SUFFIX, "dubbo", this);
-        String rawConfigApp = dynamicConfiguration.getConfig(url.getParameter(Constants.APPLICATION_KEY) + Constants.CONFIGURATORS_SUFFIX, "dubbo", this);
-
-        if (StringUtils.isNotEmpty(rawConfig)) {
-            this.dynamicConfigurators = configToConfiguratiors(rawConfig);
+        String rawConfig = null;
+        try {
+            rawConfig = dynamicConfiguration.getConfig(url.getServiceKey() + Constants.CONFIGURATORS_SUFFIX, "dubbo", this);
+            if (StringUtils.isNotEmpty(rawConfig)) {
+                this.dynamicConfigurators = configToConfiguratiors(rawConfig);
+            }
+        } catch (Exception e) {
+            logger.error("Failed to load or parse dynamic config (service level), the raw config is: " + rawConfig, e);
         }
-        if (StringUtils.isNotEmpty(rawConfigApp)) {
-            this.appDynamicConfigurators = configToConfiguratiors(rawConfigApp);
+
+        String rawConfigApp = null;
+        try {
+            rawConfigApp = dynamicConfiguration.getConfig(url.getParameter(Constants.APPLICATION_KEY) + Constants.CONFIGURATORS_SUFFIX, "dubbo", this);
+            if (StringUtils.isNotEmpty(rawConfigApp)) {
+                this.appDynamicConfigurators = configToConfiguratiors(rawConfigApp);
+            }
+        } catch (Exception e) {
+            logger.error("Failed to load or parse dynamic config (application level), the raw config is: " + rawConfigApp, e);
         }
 
         registry.subscribe(url, this);
@@ -306,10 +324,12 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 logger.error(new IllegalStateException("urls to invokers error .invokerUrls.size :" + invokerUrls.size() + ", invoker.size :0. urls :" + invokerUrls.toString()));
                 return;
             }
+            // pre-route and build cache, notice that route cache should build on original Invoker list.
+            // toMergeMethodInvokerMap() will wrap some invokers having different groups, those wrapped invokers should be routed.
+            routerChain.notifyFullInvokers(newMethodInvokerMap, getConsumerUrl());
             this.methodInvokerMap = multiGroup ? toMergeMethodInvokerMap(newMethodInvokerMap) : newMethodInvokerMap;
             this.urlInvokerMap = newUrlInvokerMap;
-            // Route and build cache
-            routerChain.notifyFullInvokers(methodInvokerMap, getConsumerUrl());
+
             try {
                 destroyUnusedInvokers(oldUrlInvokerMap, newUrlInvokerMap); // Close the unused Invoker
             } catch (Exception e) {
@@ -338,7 +358,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             } else if (groupMap.size() > 1) {
                 List<Invoker<T>> groupInvokers = new ArrayList<Invoker<T>>();
                 for (List<Invoker<T>> groupList : groupMap.values()) {
-                    groupInvokers.add(cluster.join(new StaticDirectory<T>(groupList)));
+                    StaticDirectory<T> staticDirectory = new StaticDirectory<>(groupList);
+                    staticDirectory.setRouterChain(routerChain);
+                    groupInvokers.add(cluster.join(staticDirectory));
                 }
                 result.put(method, groupInvokers);
             } else {
@@ -624,18 +646,27 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                     "No provider available from registry " + getUrl().getAddress() + " for service " + getConsumerUrl().getServiceKey() + " on consumer " + NetUtils.getLocalHost()
                             + " use dubbo version " + Version.getVersion() + ", please check status of providers(disabled, not registered or in blacklist).");
         }
+
+        if (multiGroup) {
+            Map<String, List<Invoker<T>>> localMethodInvokerMap = this.methodInvokerMap; // local reference
+            String methodName = RpcUtils.getMethodName(invocation);
+            return localMethodInvokerMap.get(methodName);
+        }
+
         List<Invoker<T>> invokers = null;
-        Map<String, List<Invoker<T>>> localMethodInvokerMap = this.methodInvokerMap; // local reference
+        try {
+            // Get invokers from cache, only runtime routers will be executed.
+            invokers = routerChain.route(getConsumerUrl(), invocation);
+        } catch (Throwable t) {
+            logger.error("Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
+        }
+
+
+        // FIXME Is there any need of failing back to Constants.ANY_VALUE or the first available method invokers when invokers is null?
+        /*Map<String, List<Invoker<T>>> localMethodInvokerMap = this.methodInvokerMap; // local reference
         if (localMethodInvokerMap != null && localMethodInvokerMap.size() > 0) {
             String methodName = RpcUtils.getMethodName(invocation);
-            Object[] args = RpcUtils.getArguments(invocation);
-            if (args != null && args.length > 0 && args[0] != null
-                    && (args[0] instanceof String || args[0].getClass().isEnum())) {
-                invokers = localMethodInvokerMap.get(methodName + "." + args[0]); // The routing can be enumerated according to the first parameter
-            }
-            if (invokers == null) {
-                invokers = localMethodInvokerMap.get(methodName);
-            }
+            invokers = localMethodInvokerMap.get(methodName);
             if (invokers == null) {
                 invokers = localMethodInvokerMap.get(Constants.ANY_VALUE);
             }
@@ -645,8 +676,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                     invokers = iterator.next();
                 }
             }
-        }
-        return invokers == null ? new ArrayList<Invoker<T>>(0) : invokers;
+        }*/
+        return invokers == null ? new ArrayList<>(0) : invokers;
     }
 
     @Override
@@ -656,7 +687,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     @Override
     public void process(ConfigChangeEvent event) {
-        List<URL> urls;
+        List<URL> urls = new ArrayList<>();
         if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
             URL url = getConsumerUrl().clearParameters().setProtocol(Constants.EMPTY_PROTOCOL);
             if (event.getKey().endsWith(this.queryMap.get(APPLICATION_KEY) + CONFIGURATORS_SUFFIX)) {
@@ -664,10 +695,13 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             } else {
                 url = url.addParameter(Constants.CATEGORY_KEY, Constants.DYNAMIC_CONFIGURATORS_CATEGORY);
             }
-            urls = new ArrayList<>();
             urls.add(url);
         } else {
-            urls = ConfigParser.parseConfigurators(event.getNewValue());
+            try {
+                urls = ConfigParser.parseConfigurators(event.getNewValue());
+            } catch (Exception e) {
+                logger.error("Failed to parse raw dynamic config and it will not take effect, the raw config is: " + event.getNewValue(), e);
+            }
         }
         notify(urls);
     }

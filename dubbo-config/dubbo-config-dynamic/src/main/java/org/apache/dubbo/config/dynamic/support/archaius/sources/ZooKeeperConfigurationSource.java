@@ -48,6 +48,7 @@ import java.util.concurrent.TimeUnit;
 public class ZooKeeperConfigurationSource implements WatchedConfigurationSource, Closeable {
     public static final String ARCHAIUS_SOURCE_ADDRESS_KEY = "archaius.zk.address";
     public static final String ARCHAIUS_CONFIG_ROOT_PATH_KEY = "archaius.zk.rootpath";
+    public static final String ARCHAIUS_CONFIG_CHECK_KEY = "archaius.zk.check";
     public static final String DEFAULT_CONFIG_ROOT_PATH = "/dubbo/config";
 
     private static final Logger logger = LoggerFactory.getLogger(com.netflix.config.source.ZooKeeperConfigurationSource.class);
@@ -63,7 +64,7 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
     private List<WatchedUpdateListener> listeners = new CopyOnWriteArrayList<WatchedUpdateListener>();
 
     public ZooKeeperConfigurationSource() {
-        this(System.getProperty(ARCHAIUS_SOURCE_ADDRESS_KEY), 60 * 1000, 60 * 1000, System.getProperty(ARCHAIUS_CONFIG_ROOT_PATH_KEY, DEFAULT_CONFIG_ROOT_PATH));
+        this(System.getProperty(ARCHAIUS_SOURCE_ADDRESS_KEY), 60 * 1000, 10000, System.getProperty(ARCHAIUS_CONFIG_ROOT_PATH_KEY, DEFAULT_CONFIG_ROOT_PATH));
     }
 
     public ZooKeeperConfigurationSource(int sessionTimeout, int connectTimeout, String configRootPath) {
@@ -80,12 +81,17 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
                 new ExponentialBackoffRetry(1000, 3));
         client.start();
         try {
-            connected = client.blockUntilConnected(connectTimeout * 4, TimeUnit.MILLISECONDS);
+            connected = client.blockUntilConnected(connectTimeout, TimeUnit.MILLISECONDS);
             if (!connected) {
-                logger.warn("Cannot connect to ConfigCenter at zookeeper " + connectString + " in " + connectTimeout * 4 + "ms");
+                boolean check = Boolean.parseBoolean(System.getProperty(ARCHAIUS_CONFIG_CHECK_KEY, "false"));
+                if (check) {
+                    throw new IllegalStateException("Failed to connect to ConfigCenter Zookeeper : " + connectString + " in " + connectTimeout + "ms.");
+                } else {
+                    logger.warn("Cannot connect to ConfigCenter at zookeeper " + connectString + " in " + connectTimeout + "ms");
+                }
             }
         } catch (InterruptedException e) {
-            logger.error("The thread was interrupted unexpectedly when try connecting to zookeeper " + connectString + " as ConfigCenter, ", e);
+            throw new IllegalStateException("The thread was interrupted unexpectedly when try connecting to zookeeper " + connectString + " as ConfigCenter, ", e);
         }
         this.client = client;
         this.configRootPath = configRootPath;
@@ -181,7 +187,7 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
         Map<String, Object> all = new HashMap<>();
 
         if (!connected) {
-            logger.warn("ConfigServer is not connected yet, zookeeper don't support local snapshot yet, so there's no old data to use!");
+            logger.warn("ConfigCenter is not connected yet, zookeeper don't support local snapshot yet, so there's no old data to use!");
             return all;
         }
 

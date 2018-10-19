@@ -35,7 +35,6 @@ public class ClusterUtils {
         Map<String, String> map = new HashMap<String, String>();
         Map<String, String> remoteMap = remoteUrl.getParameters();
 
-
         if (remoteMap != null && remoteMap.size() > 0) {
             map.putAll(remoteMap);
 
@@ -66,6 +65,10 @@ public class ClusterUtils {
         }
 
         if (localMap != null && localMap.size() > 0) {
+            // All providers come to here have been filtered by group, which means only those providers that have the exact same group value with the consumer could come to here.
+            // So, generally, we don't need to care about the group value here.
+            // But when comes to group merger, there is an exception, the consumer group may be '*' while the provider group can be empty or any other values.
+            localMap.remove(Constants.GROUP_KEY);
             map.putAll(localMap);
         }
         if (remoteMap != null && remoteMap.size() > 0) {
@@ -77,10 +80,6 @@ public class ClusterUtils {
             String version = remoteMap.get(Constants.VERSION_KEY);
             if (version != null && version.length() > 0) {
                 map.put(Constants.VERSION_KEY, version);
-            }
-            String group = remoteMap.get(Constants.GROUP_KEY);
-            if (group != null && group.length() > 0) {
-                map.put(Constants.GROUP_KEY, group);
             }
             String methods = remoteMap.get(Constants.METHODS_KEY);
             if (methods != null && methods.length() > 0) {

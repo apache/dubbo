@@ -14,33 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.dynamic.support.nop;
+package org.apache.dubbo.rpc.cluster.router.mock;
 
-import org.apache.dubbo.config.dynamic.AbstractDynamicConfiguration;
-import org.apache.dubbo.config.dynamic.ConfigurationListener;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.config.dynamic.DynamicConfiguration;
+import org.apache.dubbo.rpc.cluster.Router;
+import org.apache.dubbo.rpc.cluster.RouterFactory;
 
 /**
  *
  */
-public class NopDynamicConfiguration extends AbstractDynamicConfiguration {
+@Activate
+public class MockRouterFactory implements RouterFactory {
 
     @Override
-    public void init() {
-
+    public Router getRouter(URL url) {
+        return new MockInvokersSelector();
     }
 
     @Override
-    protected String getInternalProperty(String key, String group, long timeout) {
-        return null;
-    }
-
-    @Override
-    protected void addTargetListener(String key, Object o) {
-
-    }
-
-    @Override
-    protected Object createTargetConfigListener(String key, ConfigurationListener listener) {
-        return null;
+    public Router getRouter(DynamicConfiguration dynamicConfiguration, URL url) {
+        return getRouter(url);
     }
 }
