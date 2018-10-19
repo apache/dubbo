@@ -25,7 +25,7 @@ import org.apache.dubbo.rpc.cluster.RouterFactory;
 /**
  *
  */
-@Activate
+@Activate(order = 100)
 public class TagRouterFactory implements RouterFactory {
 
     public static final String NAME = "tag";

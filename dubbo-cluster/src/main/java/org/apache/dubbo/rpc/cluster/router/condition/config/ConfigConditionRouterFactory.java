@@ -25,7 +25,7 @@ import org.apache.dubbo.rpc.cluster.RouterFactory;
 /**
  *
  */
-@Activate
+@Activate(order = 200)
 public class ConfigConditionRouterFactory implements RouterFactory {
     @Override
     public Router getRouter(URL url) {

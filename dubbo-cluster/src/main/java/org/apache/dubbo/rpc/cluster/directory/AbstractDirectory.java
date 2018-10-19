@@ -87,13 +87,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     protected void addRouters(List<Router> routers) {
         // copy list
         routers = routers == null ? new ArrayList<>() : new ArrayList<>(routers);
-        routers.forEach(this::addRouter);
-    }
-
-    protected void addRouter(Router router) {
-        routerChain.addRouter(router);
-        // FIXME append mock invoker selector
-//        routerChain.add(new MockInvokersSelector());
+        routerChain.setGeneratedRouters(routers);
     }
 
     public URL getConsumerUrl() {

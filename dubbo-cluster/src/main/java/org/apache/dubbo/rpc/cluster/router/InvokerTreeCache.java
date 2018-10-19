@@ -33,12 +33,12 @@ public class InvokerTreeCache<T> {
 
     private TreeNode<T> tree;
 
-    public TreeNode buildTree() {
-        tree = new TreeNode<>();
-        tree.setRouterName("ROOT_ROUTER");
-        tree.setConditionValue("root");
-        tree.setConditionKey("root");
-        return tree;
+    public TreeNode<T> buildRootNode() {
+        TreeNode<T> rootNode = new TreeNode<>();
+        rootNode.setRouterName("ROOT_ROUTER");
+        rootNode.setConditionValue("root");
+        rootNode.setConditionKey("root");
+        return rootNode;
     }
 
     public List<Invoker<T>> getInvokers(TreeNode<T> node, URL url, Invocation invocation) {
@@ -116,7 +116,11 @@ public class InvokerTreeCache<T> {
     }
 
 
-    public TreeNode getTree() {
+    public void refreshTree(TreeNode<T> node) {
+        this.tree = node;
+    }
+
+    public TreeNode<T> getTree() {
         return tree;
     }
 

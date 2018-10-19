@@ -46,6 +46,7 @@ import java.util.Map;
  */
 public class ConfigConditionRouter extends AbstractRouter implements ConfigurationListener {
     public static final String NAME = "CONFIG_CONDITION_OUTER";
+    public static final int DEFAULT_PRIORITY = 200;
     private static final Logger logger = LoggerFactory.getLogger(ConfigConditionRouter.class);
     private DynamicConfiguration configuration;
     private ConditionRouterRule routerRule;
@@ -55,24 +56,32 @@ public class ConfigConditionRouter extends AbstractRouter implements Configurati
 
     public ConfigConditionRouter(DynamicConfiguration configuration, URL url) {
         this.configuration = configuration;
-        this.priority = -2;
         this.force = false;
         this.url = url;
+        String app = this.url.getParameter(Constants.APPLICATION_KEY);
+        String serviceKey = this.url.getServiceKey();
         try {
-            String app = this.url.getParameter(Constants.APPLICATION_KEY);
-            String serviceKey = this.url.getServiceKey();
             String rawRule = this.configuration.getConfig(serviceKey + Constants.ROUTERS_SUFFIX, "dubbo", this);
             String appRawRule = this.configuration.getConfig(app + Constants.ROUTERS_SUFFIX, "dubbo", this);
             if (!StringUtils.isEmpty(rawRule)) {
-                routerRule = ConditionRuleParser.parse(rawRule);
-                generateConditions();
+                try {
+                    routerRule = ConditionRuleParser.parse(rawRule);
+                    generateConditions();
+                } catch (Exception e) {
+                    logger.error("Failed to parse the raw condition rule and it will not take effect, please check if the condition rule matches with the template, the raw rule is: \n" + rawRule, e);
+                }
             }
             if (!StringUtils.isEmpty(appRawRule)) {
-                appRouterRule = ConditionRuleParser.parse(appRawRule);
-                generateAppConditions();
+                try {
+                    appRouterRule = ConditionRuleParser.parse(appRawRule);
+                    generateAppConditions();
+                } catch (Exception e) {
+                    logger.error("Failed to parse the raw condition rule and it will not take effect, please check if the condition rule matches with the template, the raw rule is: \n" + appRawRule, e);
+                }
             }
+
         } catch (Exception e) {
-            throw new IllegalStateException("Failed to init the condition router.", e);
+            throw new IllegalStateException("Failed to init the condition router for service " + serviceKey + ", application " + app, e);
         }
     }
 
@@ -152,6 +161,16 @@ public class ConfigConditionRouter extends AbstractRouter implements Configurati
     }
 
     @Override
+    public String getName() {
+        return NAME;
+    }
+
+    @Override
+    public int getPriority() {
+        return DEFAULT_PRIORITY;
+    }
+
+    @Override
     public boolean isRuntime() {
         return isRuleRuntime() || isAppRuleRuntime();
     }
@@ -173,16 +192,6 @@ public class ConfigConditionRouter extends AbstractRouter implements Configurati
     public boolean isForce() {
         return (routerRule != null && routerRule.isForce())
                 || (appRouterRule != null && appRouterRule.isForce());
-    }
-
-    @Override
-    public String getName() {
-        return NAME;
-    }
-
-    @Override
-    public int compareTo(Router o) {
-        return 0;
     }
 
     private boolean isAppRuleEnabled() {

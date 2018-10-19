@@ -24,7 +24,6 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
 
 import javax.script.Bindings;
@@ -44,7 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  */
 public class ScriptRouter extends AbstractRouter {
-
+    public static final String NAME = "SCRIPT_ROUTER";
     private static final Logger logger = LoggerFactory.getLogger(ScriptRouter.class);
 
     private static final Map<String, ScriptEngine> engines = new ConcurrentHashMap<String, ScriptEngine>();
@@ -54,8 +53,6 @@ public class ScriptRouter extends AbstractRouter {
     private final int priority;
 
     private final String rule;
-
-    private final URL url;
 
     public ScriptRouter(URL url) {
         this.url = url;
@@ -116,6 +113,11 @@ public class ScriptRouter extends AbstractRouter {
     }
 
     @Override
+    public String getName() {
+        return NAME;
+    }
+
+    @Override
     public boolean isRuntime() {
         return this.url.getParameter(Constants.RUNTIME_KEY, false);
     }
@@ -126,12 +128,7 @@ public class ScriptRouter extends AbstractRouter {
     }
 
     @Override
-    public int compareTo(Router o) {
-        if (o == null || o.getClass() != ScriptRouter.class) {
-            return 1;
-        }
-        ScriptRouter c = (ScriptRouter) o;
-        return this.priority == c.priority ? rule.compareTo(c.rule) : (this.priority > c.priority ? 1 : -1);
+    public boolean isEnabled() {
+        return url.getParameter(Constants.ENABLED_KEY, false);
     }
-
 }
