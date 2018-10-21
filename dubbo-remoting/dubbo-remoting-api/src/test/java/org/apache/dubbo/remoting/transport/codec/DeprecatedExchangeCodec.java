@@ -142,7 +142,7 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
             byte status = header[3];
             res.setStatus(status);
             try {
-                ObjectInput in = deserialize(channel, is, proto);
+                ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
                 if (status == Response.OK) {
                     Object data;
                     if (res.isHeartbeat()) {
@@ -170,7 +170,7 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
                 req.setEvent(Request.HEARTBEAT_EVENT);
             }
             try {
-                ObjectInput in = deserialize(channel, is, proto);
+                ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
                 Object data;
                 if (req.isHeartbeat()) {
                     data = decodeHeartbeatData(channel, in);
@@ -187,11 +187,6 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
             }
             return req;
         }
-    }
-
-    private ObjectInput deserialize(Channel channel, InputStream is, byte proto) throws IOException {
-        Serialization s = CodecSupport.getSerialization(channel.getUrl(), proto);
-        return s.deserialize(channel.getUrl(), is);
     }
 
     protected Object getRequestData(long id) {
