@@ -647,6 +647,9 @@ public class Constants {
 
     public static final String REQUEST_TAG_KEY = "request.tag";
 
+
+    public static final String GLOBALCONFIG_ZK_PATH =   "/dubbo/global";
+
     /*
      * private Constants(){ }
      */
