@@ -1,11 +1,9 @@
 package org.apache.dubbo.rpc.cluster.configurator;
-
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.zookeeper.ChildListener;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.rpc.Invoker;
-
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
