@@ -28,7 +28,9 @@ import org.apache.dubbo.rpc.support.MyInvoker;
 import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 
 /**
@@ -36,7 +38,7 @@ import static org.junit.Assert.assertNotSame;
  */
 public class ActiveLimitFilterTest {
 
-    private static volatile int count = 0;
+    private static AtomicInteger count = new AtomicInteger(0);
     Filter activeLimitFilter = new ActiveLimitFilter();
 
     @Test
@@ -74,7 +76,7 @@ public class ActiveLimitFilterTest {
                         try {
                             activeLimitFilter.invoke(invoker, invocation);
                         } catch (RpcException expected) {
-                            count++;
+                            count.incrementAndGet();
                         }
                     }
                 }
@@ -88,6 +90,90 @@ public class ActiveLimitFilterTest {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        assertNotSame(0, count);
+        assertNotSame(0, count.intValue());
+    }
+
+    @Test
+    public void testInvokeTimeOut() {
+        int totalThread = 100;
+        int maxActives = 10;
+        long timeout = 1;
+        long boockTime = 100;
+        final CountDownLatch latch = new CountDownLatch(1);
+        final CountDownLatch latchBlocking = new CountDownLatch(totalThread);
+        URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives="+maxActives+"&timeout="+timeout+"");
+        final Invoker<ActiveLimitFilterTest> invoker = new BlockMyInvoker<ActiveLimitFilterTest>(url, boockTime);
+        final Invocation invocation = new MockInvocation();
+        for (int i = 0; i < totalThread; i++) {
+            Thread thread = new Thread(new Runnable() {
+                public void run() {
+                    try{
+                        try {
+                            latch.await();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        try {
+                            activeLimitFilter.invoke(invoker, invocation);
+                        } catch (RpcException expected) {
+                            count.incrementAndGet();
+                        }
+                    }finally {
+                        latchBlocking.countDown();
+                    }
+                }
+            });
+            thread.start();
+        }
+        latch.countDown();
+
+        try {
+            latchBlocking.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        assertEquals(90, count.intValue());
+    }
+
+    @Test
+    public void testInvokeNotTimeOut() {
+        int totalThread = 100;
+        int maxActives = 10;
+        long timeout = 1000;
+        long boockTime = 0;
+        final CountDownLatch latch = new CountDownLatch(1);
+        final CountDownLatch latchBlocking = new CountDownLatch(totalThread);
+        URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives="+maxActives+"&timeout="+timeout+"");
+        final Invoker<ActiveLimitFilterTest> invoker = new BlockMyInvoker<ActiveLimitFilterTest>(url, boockTime);
+        final Invocation invocation = new MockInvocation();
+        for (int i = 0; i < totalThread; i++) {
+            Thread thread = new Thread(new Runnable() {
+                public void run() {
+                    try{
+                        try {
+                            latch.await();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        try {
+                            activeLimitFilter.invoke(invoker, invocation);
+                        } catch (RpcException expected) {
+                            count.incrementAndGet();
+                        }
+                    }finally {
+                        latchBlocking.countDown();
+                    }
+                }
+            });
+            thread.start();
+        }
+        latch.countDown();
+
+        try {
+            latchBlocking.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        assertEquals(0, count.intValue());
     }
 }
