@@ -7,7 +7,10 @@ import org.apache.dubbo.rpc.Invoker;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-
+/**
+ * GlobalConfiguratorCenter
+ *
+ */
 public class GlobalConfiguratorCenter {
     private  static final ConcurrentHashMap<String,URL> configuratorMap= new ConcurrentHashMap();
     private  static   ZookeeperClient zkClient = null;
