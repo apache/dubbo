@@ -78,7 +78,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
     private ApplicationContext applicationContext;
 
     static {
-        LockSwitch.INIT_TASK_NUM.incrementAndGet();
+        LockSwitch.INIT_TASK_COUNTER.incrementAndGet();
     }
 
     /**

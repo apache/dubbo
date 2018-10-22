@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class LockSwitch {
     /**
-     * init task number.
+     * init task counter.
      */
-    public static AtomicInteger INIT_TASK_NUM = new AtomicInteger(0);
+    public static AtomicInteger INIT_TASK_COUNTER = new AtomicInteger(0);
 }

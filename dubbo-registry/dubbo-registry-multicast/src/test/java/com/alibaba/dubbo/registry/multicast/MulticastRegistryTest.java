@@ -134,12 +134,12 @@ public class MulticastRegistryTest {
 
     @Test
     public void testMultiThreadConstructor() throws InterruptedException {
-        LockSwitch.INIT_TASK_NUM.incrementAndGet();
+        LockSwitch.INIT_TASK_COUNTER.incrementAndGet();
         MulticastRegistry registry = new MulticastRegistry(registryUrl);
         Thread.sleep(300L);
         Assert.assertFalse(registry.startReceived);
         // recover the value
-        LockSwitch.INIT_TASK_NUM.set(0);
+        LockSwitch.INIT_TASK_COUNTER.set(0);
         Thread.sleep(3000L);
         Assert.assertTrue(registry.startReceived);
     }

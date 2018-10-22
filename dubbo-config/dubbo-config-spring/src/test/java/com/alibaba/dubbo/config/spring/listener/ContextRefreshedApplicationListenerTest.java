@@ -17,35 +17,35 @@ public class ContextRefreshedApplicationListenerTest {
 
     @Test
     public void testNotContextRefreshedEvent(){
-        Assert.assertTrue(LockSwitch.INIT_TASK_NUM.get() == 0);
+        Assert.assertTrue(LockSwitch.INIT_TASK_COUNTER.get() == 0);
         contextRefreshedApplicationListener.onApplicationEvent(new InnerTestApplicationEvent("source"));
         Assert.assertFalse(contextRefreshedApplicationListener.EXECUTED.get());
-        Assert.assertTrue(LockSwitch.INIT_TASK_NUM.get() == 0);
+        Assert.assertTrue(LockSwitch.INIT_TASK_COUNTER.get() == 0);
     }
 
     @Test
     public void testContextRefreshedEvent(){
-        Assert.assertTrue(LockSwitch.INIT_TASK_NUM.get() == 0);
+        Assert.assertTrue(LockSwitch.INIT_TASK_COUNTER.get() == 0);
         contextRefreshedApplicationListener.onApplicationEvent(new ContextRefreshedEvent(new StaticApplicationContext()));
         Assert.assertTrue(contextRefreshedApplicationListener.EXECUTED.get());
-        Assert.assertTrue(LockSwitch.INIT_TASK_NUM.get() == -1);
+        Assert.assertTrue(LockSwitch.INIT_TASK_COUNTER.get() == -1);
         //rediscovery
-        LockSwitch.INIT_TASK_NUM.set(0);
+        LockSwitch.INIT_TASK_COUNTER.set(0);
     }
 
     @Test
     public void testContextRefreshedEventTwice(){
-        Assert.assertTrue(LockSwitch.INIT_TASK_NUM.get() == 0);
+        Assert.assertTrue(LockSwitch.INIT_TASK_COUNTER.get() == 0);
         ApplicationContext applicationContext = new StaticApplicationContext();
         contextRefreshedApplicationListener.onApplicationEvent(new ContextRefreshedEvent(applicationContext));
         Assert.assertTrue(contextRefreshedApplicationListener.EXECUTED.get());
-        Assert.assertTrue(LockSwitch.INIT_TASK_NUM.get() == -1);
+        Assert.assertTrue(LockSwitch.INIT_TASK_COUNTER.get() == -1);
         contextRefreshedApplicationListener.onApplicationEvent(new ContextRefreshedEvent(applicationContext));
         Assert.assertTrue(contextRefreshedApplicationListener.EXECUTED.get());
-        Assert.assertTrue(LockSwitch.INIT_TASK_NUM.get() == -1);
+        Assert.assertTrue(LockSwitch.INIT_TASK_COUNTER.get() == -1);
 
         //rediscovery
-        LockSwitch.INIT_TASK_NUM.set(0);
+        LockSwitch.INIT_TASK_COUNTER.set(0);
     }
 
 

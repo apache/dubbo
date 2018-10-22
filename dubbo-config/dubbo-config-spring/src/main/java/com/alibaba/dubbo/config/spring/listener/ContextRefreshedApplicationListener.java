@@ -39,7 +39,7 @@ public class ContextRefreshedApplicationListener implements ApplicationListener<
         }
         if (event instanceof ContextRefreshedEvent) {
             EXECUTED.set(true);
-            LockSwitch.INIT_TASK_NUM.decrementAndGet();
+            LockSwitch.INIT_TASK_COUNTER.decrementAndGet();
         }
     }
 }

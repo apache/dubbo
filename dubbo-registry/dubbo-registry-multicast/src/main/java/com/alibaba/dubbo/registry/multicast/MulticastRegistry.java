@@ -97,10 +97,10 @@ public class MulticastRegistry extends FailbackRegistry {
                     byte[] buf = new byte[2048];
                     DatagramPacket recv = new DatagramPacket(buf, buf.length);
                     while (!mutilcastSocket.isClosed()) {
-                        while (LockSwitch.INIT_TASK_NUM.get() > 0) {
+                        while (LockSwitch.INIT_TASK_COUNTER.get() > 0) {
                             try {
                                 Thread.sleep(3000L);
-                                logger.info("Multicat is waiting for Init task finished. there are still" + LockSwitch.INIT_TASK_NUM.get() + " tasks.");
+                                logger.info("Multicat is waiting for Init task finished. there are still" + LockSwitch.INIT_TASK_COUNTER.get() + " tasks.");
                             } catch (InterruptedException e) {
                                 logger.info("Task Interrupt.", e);
                             }
