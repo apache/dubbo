@@ -17,8 +17,7 @@
 package org.apache.dubbo.servicedata.integration;
 
 import com.alibaba.fastjson.JSON;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DateUtils;
+
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -26,6 +25,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.servicedata.metadata.ServiceDescriptor;
 import org.apache.dubbo.servicedata.metadata.builder.ServiceDescriptorBuilder;

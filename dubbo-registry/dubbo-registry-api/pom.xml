@@ -36,7 +36,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-config-dynamic</artifactId>
+            <artifactId>dubbo-governance-api</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
@@ -53,6 +53,17 @@
                     <artifactId>jetty-servlet</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-framework</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-recipes</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

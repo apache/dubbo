@@ -146,6 +146,7 @@
         <module>dubbo-all</module>
         <module>dubbo-distribution</module>
         <module>dubbo-servicedata</module>
+        <module>dubbo-governance</module>
     </modules>
 
     <dependencyManagement>

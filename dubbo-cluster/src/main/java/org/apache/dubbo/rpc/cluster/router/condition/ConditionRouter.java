@@ -44,10 +44,9 @@ import java.util.regex.Pattern;
  *
  */
 public class ConditionRouter extends AbstractRouter implements Comparable<Router> {
-
+    public static final String NAME = "CONDITION_ROUTER";
     private static final Logger logger = LoggerFactory.getLogger(ConditionRouter.class);
     protected static Pattern ROUTE_PATTERN = Pattern.compile("([&!=,]*)\\s*([^&!=,\\s]+)");
-    protected URL url;
     protected Map<String, MatchPair> whenCondition;
     protected Map<String, MatchPair> thenCondition;
 
@@ -182,6 +181,11 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
     }
 
     @Override
+    public String getName() {
+        return NAME;
+    }
+
+    @Override
     public boolean isRuntime() {
         // We always return true for previously defined Router, that is, old Router doesn't support cache anymore.
 //        return true;
@@ -189,17 +193,13 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
     }
 
     @Override
-    public URL getUrl() {
-        return url;
+    public boolean isEnabled() {
+        return url.getParameter(Constants.ENABLED_KEY, false);
     }
 
     @Override
-    public int compareTo(Router o) {
-        if (o == null || o.getClass() != ConditionRouter.class) {
-            return 1;
-        }
-        ConditionRouter c = (ConditionRouter) o;
-        return this.priority > c.priority ? 1 : -1;
+    public URL getUrl() {
+        return url;
     }
 
     boolean matchWhen(URL url, Invocation invocation) {

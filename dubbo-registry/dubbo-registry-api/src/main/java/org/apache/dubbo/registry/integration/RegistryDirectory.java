@@ -24,10 +24,10 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.dynamic.ConfigChangeEvent;
-import org.apache.dubbo.config.dynamic.ConfigChangeType;
-import org.apache.dubbo.config.dynamic.ConfigurationListener;
-import org.apache.dubbo.config.dynamic.DynamicConfiguration;
+import org.apache.dubbo.governance.ConfigChangeEvent;
+import org.apache.dubbo.governance.ConfigChangeType;
+import org.apache.dubbo.governance.ConfigurationListener;
+import org.apache.dubbo.governance.DynamicConfiguration;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.integration.parser.ConfigParser;
@@ -304,6 +304,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             this.forbidden = true; // Forbid to access
             this.methodInvokerMap = null; // Set the method invoker map to null
             destroyAllInvokers(); // Close all invokers
+            routerChain.notifyFullInvokers(this.methodInvokerMap, getConsumerUrl());
         } else {
             this.forbidden = false; // Allow to access
             Map<String, Invoker<T>> oldUrlInvokerMap = this.urlInvokerMap; // local reference
@@ -325,7 +326,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 return;
             }
             // pre-route and build cache, notice that route cache should build on original Invoker list.
-            // toMergeMethodInvokerMap() will wrap some invokers having different groups, those wrapped invokers should be routed.
+            // toMergeMethodInvokerMap() will wrap some invokers having different groups, those wrapped invokers not should be routed.
             routerChain.notifyFullInvokers(newMethodInvokerMap, getConsumerUrl());
             this.methodInvokerMap = multiGroup ? toMergeMethodInvokerMap(newMethodInvokerMap) : newMethodInvokerMap;
             this.urlInvokerMap = newUrlInvokerMap;
@@ -392,6 +393,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 try {
                     Router router = routerFactory.getRouter(url);
                     router.setRouterChain(routerChain);
+//                    routerChain.addRouter(router);
                     if (!routers.contains(router))
                         routers.add(router);
                 } catch (Throwable t) {

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.dubbo;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -33,13 +34,13 @@ import org.apache.dubbo.rpc.cluster.support.FailfastCluster;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboInvoker;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
-
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.apache.dubbo.common.Constants.EXCHANGING_KEYS;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -56,6 +57,15 @@ public class RegistryProtocolTest {
     final String serviceUrl = "dubbo://127.0.0.1:9453/" + service + "?notify=true&methods=test1,test2&side=con&side=consumer";
     final URL registryUrl = URL.valueOf("registry://127.0.0.1:9090/");
     final private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+
+    @Test
+    public void testGetParamsToRegistry() {
+        RegistryProtocol registryProtocol = new RegistryProtocol();
+        String[] additionalParams = new String[]{"key1", "key2"};
+        String[] registryParams = registryProtocol.getParamsToRegistry(additionalParams);
+        String[] expectParams = ArrayUtils.addAll(EXCHANGING_KEYS, additionalParams);
+        Assert.assertArrayEquals(expectParams, registryParams);
+    }
 
     @Test
     public void testDefaultPort() {

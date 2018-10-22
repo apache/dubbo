@@ -1,0 +1,2 @@
+zookeeper=org.apache.dubbo.governance.support.archaius.ArchaiusDynamicConfigurationFactory
+archaius=org.apache.dubbo.governance.support.archaius.ArchaiusDynamicConfigurationFactory
