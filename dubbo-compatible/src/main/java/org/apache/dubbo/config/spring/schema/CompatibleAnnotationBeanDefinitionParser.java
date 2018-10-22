@@ -16,11 +16,8 @@
  */
 package org.apache.dubbo.config.spring.schema;
 
-import org.apache.dubbo.config.spring.AnnotationBean;
-
 import org.apache.dubbo.config.spring.beans.factory.annotation.CompatibleReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.CompatibleServiceAnnotationBeanPostProcessor;
-
 import org.apache.dubbo.config.spring.util.BeanRegistrar;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -35,7 +32,7 @@ import static org.springframework.util.StringUtils.commaDelimitedListToStringArr
 import static org.springframework.util.StringUtils.trimArrayElements;
 
 /**
- * {@link AnnotationBean} {@link BeanDefinitionParser}
+ * {@link BeanDefinitionParser}
  *
  * @see CompatibleServiceAnnotationBeanPostProcessor
  * @see CompatibleReferenceAnnotationBeanPostProcessor
