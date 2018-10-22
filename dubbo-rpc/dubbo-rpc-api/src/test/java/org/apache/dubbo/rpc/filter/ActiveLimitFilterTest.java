@@ -38,7 +38,6 @@ import static org.junit.Assert.assertNotSame;
  */
 public class ActiveLimitFilterTest {
 
-    private static AtomicInteger count = new AtomicInteger(0);
     Filter activeLimitFilter = new ActiveLimitFilter();
 
     @Test
@@ -59,6 +58,7 @@ public class ActiveLimitFilterTest {
 
     @Test
     public void testInvokeGreaterActives() {
+        AtomicInteger count = new AtomicInteger(0);
         URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives=1&timeout=1");
         final Invoker<ActiveLimitFilterTest> invoker = new BlockMyInvoker<ActiveLimitFilterTest>(url, 100);
         final Invocation invocation = new MockInvocation();
@@ -98,11 +98,12 @@ public class ActiveLimitFilterTest {
         int totalThread = 100;
         int maxActives = 10;
         long timeout = 1;
-        long boockTime = 100;
+        long blockTime = 100;
+        AtomicInteger count = new AtomicInteger(0);
         final CountDownLatch latch = new CountDownLatch(1);
         final CountDownLatch latchBlocking = new CountDownLatch(totalThread);
         URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives="+maxActives+"&timeout="+timeout+"");
-        final Invoker<ActiveLimitFilterTest> invoker = new BlockMyInvoker<ActiveLimitFilterTest>(url, boockTime);
+        final Invoker<ActiveLimitFilterTest> invoker = new BlockMyInvoker<ActiveLimitFilterTest>(url, blockTime);
         final Invocation invocation = new MockInvocation();
         for (int i = 0; i < totalThread; i++) {
             Thread thread = new Thread(new Runnable() {
@@ -140,11 +141,12 @@ public class ActiveLimitFilterTest {
         int totalThread = 100;
         int maxActives = 10;
         long timeout = 1000;
-        long boockTime = 0;
+        long blockTime = 0;
+        AtomicInteger count = new AtomicInteger(0);
         final CountDownLatch latch = new CountDownLatch(1);
         final CountDownLatch latchBlocking = new CountDownLatch(totalThread);
         URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives="+maxActives+"&timeout="+timeout+"");
-        final Invoker<ActiveLimitFilterTest> invoker = new BlockMyInvoker<ActiveLimitFilterTest>(url, boockTime);
+        final Invoker<ActiveLimitFilterTest> invoker = new BlockMyInvoker<ActiveLimitFilterTest>(url, blockTime);
         final Invocation invocation = new MockInvocation();
         for (int i = 0; i < totalThread; i++) {
             Thread thread = new Thread(new Runnable() {
