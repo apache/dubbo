@@ -34,6 +34,8 @@ import java.util.List;
  */
 public class MockInvokersSelector extends AbstractRouter {
 
+    public static final String NAME = "MOCK_ROUTER";
+
     @Override
     public <T> List<Invoker<T>> route(final List<Invoker<T>> invokers,
                                       URL url, final Invocation invocation) throws RpcException {
@@ -88,6 +90,17 @@ public class MockInvokersSelector extends AbstractRouter {
         return hasMockProvider;
     }
 
+    @Override
+    public String getName() {
+        return NAME;
+    }
+
+    /**
+     * Always stay on the top of the list
+     *
+     * @param o
+     * @return
+     */
     @Override
     public int compareTo(Router o) {
         return 1;

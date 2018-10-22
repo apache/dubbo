@@ -48,19 +48,14 @@ public abstract class AbstractRouter implements Router {
     }
 
     @Override
-    public <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
-        return invokers;
-    }
-
-    @Override
     public <T> Map<String, List<Invoker<T>>> preRoute(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
         Map<String, List<Invoker<T>>> map = new HashMap<>();
 
-        if (CollectionUtils.isEmpty(invokers) || !isEnabled()) {
+        if (CollectionUtils.isEmpty(invokers)) {
             return map;
         }
 
-        if (isRuntime()) {
+        if (isRuntime() || !isEnabled()) {
             map.put(TreeNode.FAILOVER_KEY, invokers);
         } else {
             map.put(TreeNode.FAILOVER_KEY, route(invokers, url, invocation));
@@ -101,5 +96,10 @@ public abstract class AbstractRouter implements Router {
 
     public void setPriority(int priority) {
         this.priority = priority;
+    }
+
+    @Override
+    public int compareTo(Router o) {
+        return (this.getPriority() >= o.getPriority()) ? 1 : -1;
     }
 }

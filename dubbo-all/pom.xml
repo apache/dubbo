@@ -327,6 +327,27 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-governance-api</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-governance-zookeeper</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-governance-apollo</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-compatible</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
@@ -432,6 +453,9 @@
                                     <include>org.apache.dubbo:dubbo-serialization-kryo</include>
                                     <include>org.apache.dubbo:dubbo-serialization-jdk</include>
                                     <include>org.apache.dubbo:dubbo-bootstrap</include>
+                                    <include>org.apache.dubbo:dubbo-governance-api</include>
+                                    <include>org.apache.dubbo:dubbo-governance-apollo</include>
+                                    <include>org.apache.dubbo:dubbo-governance-zookeeper</include>
                                 </includes>
                             </artifactSet>
                             <transformers>
@@ -547,6 +571,17 @@
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>META-INF/dubbo/internal/org.apache.dubbo.qos.command.BaseCommand
+                                    </resource>
+                                </transformer>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/dubbo/internal/org.apache.dubbo.governance.DynamicConfiguration
+                                    </resource>
+                                </transformer>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.governance.DynamicConfigurationFactory
                                     </resource>
                                 </transformer>
                             </transformers>

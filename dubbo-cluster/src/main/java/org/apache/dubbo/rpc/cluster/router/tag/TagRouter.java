@@ -23,11 +23,11 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.dynamic.ConfigChangeEvent;
-import org.apache.dubbo.config.dynamic.ConfigChangeType;
-import org.apache.dubbo.config.dynamic.ConfigurationListener;
-import org.apache.dubbo.config.dynamic.DynamicConfiguration;
-import org.apache.dubbo.config.dynamic.DynamicConfigurationFactory;
+import org.apache.dubbo.governance.ConfigChangeEvent;
+import org.apache.dubbo.governance.ConfigChangeType;
+import org.apache.dubbo.governance.ConfigurationListener;
+import org.apache.dubbo.governance.DynamicConfiguration;
+import org.apache.dubbo.governance.DynamicConfigurationFactory;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
@@ -49,13 +49,12 @@ import java.util.stream.Collectors;
  */
 public class TagRouter extends AbstractRouter implements Comparable<Router>, ConfigurationListener {
     public static final String NAME = "TAG_ROUTER";
+    public static final int DEFAULT_PRIORITY = 100;
     private static final Logger logger = LoggerFactory.getLogger(TagRouter.class);
     private static final String TAGROUTERRULES_DATAID = ".tagrouters"; // acts
     private DynamicConfiguration configuration;
     private TagRouterRule tagRouterRule;
     private String application;
-
-    protected int priority = -1; // FIXME A fixed value considering other routers in the chain.
 
     public TagRouter(URL url) {
         this(ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getAdaptiveExtension().getDynamicConfiguration(url), url);
@@ -245,6 +244,11 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
     }
 
     @Override
+    public int getPriority() {
+        return DEFAULT_PRIORITY;
+    }
+
+    @Override
     public boolean isRuntime() {
         return tagRouterRule != null && tagRouterRule.isRuntime();
 //        return false;
@@ -280,10 +284,5 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
 
     public void setApplication(String app) {
         this.application = app;
-    }
-
-    @Override
-    public int compareTo(Router o) {
-        return 0;
     }
 }
