@@ -16,6 +16,7 @@
  */
 package com.alibaba.dubbo.registry.multicast;
 
+import com.alibaba.dubbo.common.LockSwitch;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
@@ -49,6 +50,7 @@ public class MulticastRegistryTest {
      */
     @Before
     public void setUp() throws Exception {
+        System.setProperty("java.net.preferIPv4Stack", "true");
         registry.register(serviceUrl);
     }
 
@@ -122,6 +124,24 @@ public class MulticastRegistryTest {
         } finally {
             multicastRegistry.destroy();
         }
+    }
+
+    @Test
+    public void testConstructByDefault() throws InterruptedException {
+        Thread.sleep(300L);
+        Assert.assertTrue(registry.startReceived);
+    }
+
+    @Test
+    public void testMultiThreadConstructor() throws InterruptedException {
+        LockSwitch.INIT_TASK_NUM.incrementAndGet();
+        MulticastRegistry registry = new MulticastRegistry(registryUrl);
+        Thread.sleep(300L);
+        Assert.assertFalse(registry.startReceived);
+        // recover the value
+        LockSwitch.INIT_TASK_NUM.set(0);
+        Thread.sleep(3000L);
+        Assert.assertTrue(registry.startReceived);
     }
 
 }

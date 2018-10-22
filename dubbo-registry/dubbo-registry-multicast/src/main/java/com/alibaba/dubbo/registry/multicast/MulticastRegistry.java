@@ -74,6 +74,8 @@ public class MulticastRegistry extends FailbackRegistry {
     private final int cleanPeriod;
 
     private volatile boolean admin = false;
+    // to check if multicast start received. it is useful for unit test.
+    boolean startReceived = false;
 
     public MulticastRegistry(URL url) {
         super(url);
@@ -95,14 +97,15 @@ public class MulticastRegistry extends FailbackRegistry {
                     byte[] buf = new byte[2048];
                     DatagramPacket recv = new DatagramPacket(buf, buf.length);
                     while (!mutilcastSocket.isClosed()) {
-//                        while (LockSwitch.INIT_TASK_NUM.get() > 0) {
-//                            try {
-//                                Thread.sleep(2000L);
-//                                logger.info("Multicat is waiting for Init task finished. there are still" + LockSwitch.INIT_TASK_NUM.get() + " tasks.");
-//                            } catch (InterruptedException e) {
-//                                logger.info("Task Interrupt.", e);
-//                            }
-//                        }
+                        while (LockSwitch.INIT_TASK_NUM.get() > 0) {
+                            try {
+                                Thread.sleep(3000L);
+                                logger.info("Multicat is waiting for Init task finished. there are still" + LockSwitch.INIT_TASK_NUM.get() + " tasks.");
+                            } catch (InterruptedException e) {
+                                logger.info("Task Interrupt.", e);
+                            }
+                        }
+                        startReceived = true;
                         try {
                             mutilcastSocket.receive(recv);
                             String msg = new String(recv.getData()).trim();
