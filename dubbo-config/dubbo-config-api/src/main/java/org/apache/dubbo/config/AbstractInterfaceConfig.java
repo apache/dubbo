@@ -35,8 +35,8 @@ import org.apache.dubbo.rpc.InvokerListener;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.support.MockInvoker;
-import org.apache.dubbo.servicedata.store.ServiceStoreFactory;
-import org.apache.dubbo.servicedata.integration.ServiceStoreService;
+import org.apache.dubbo.metadata.store.MetadataReportFactory;
+import org.apache.dubbo.metadata.integration.MetadataReportService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -284,7 +284,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 map.put(Constants.PID_KEY, String.valueOf(ConfigUtils.getPid()));
             }
             if (!map.containsKey("protocol")) {
-                if (ExtensionLoader.getExtensionLoader(ServiceStoreFactory.class).hasExtension("remote")) {
+                if (ExtensionLoader.getExtensionLoader(MetadataReportFactory.class).hasExtension("remote")) {
                     map.put("protocol", "remote");
                 } else {
                     map.put("protocol", "dubbo");
@@ -300,11 +300,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         return null;
     }
 
-    protected ServiceStoreService getServiceStoreService() {
+    protected MetadataReportService getServiceStoreService() {
         if (serviceStoreConfig == null) {
             return null;
         }
-        return ServiceStoreService.instance(() -> {
+        return MetadataReportService.instance(() -> {
             return loadServiceStore(true);
         });
     }
