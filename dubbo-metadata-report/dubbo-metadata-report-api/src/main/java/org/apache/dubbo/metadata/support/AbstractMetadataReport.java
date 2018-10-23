@@ -64,13 +64,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     // Local disk cache file
     File file;
     private AtomicBoolean INIT = new AtomicBoolean(false);
-    final ScheduledExecutorService retryExecutor = Executors.newScheduledThreadPool(0, new NamedThreadFactory("DubboRegistryFailedRetryTimer", true));
-    ScheduledFuture retryScheduledFuture;
-    AtomicInteger retryTimes = new AtomicInteger(0);
-    // retry task schedule period
-    long retryPeriod = 3000L ;
-    // if no failed report, wait how many times to run retry task.
-    int retryTimesIfNonFail = 600;
+    public MetadataReportRetry metadataReportRetry;
 
     public AbstractMetadataReport(URL reportURL) {
         setUrl(reportURL);
@@ -91,6 +85,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
         this.file = file;
         loadProperties();
+        metadataReportRetry = new MetadataReportRetry();
     }
 
     public URL getUrl() {
@@ -153,31 +148,6 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             }
             logger.warn("Failed to save service store file, cause: " + e.getMessage(), e);
         }
-    }
-
-    void startRetryTask(){
-        if(retryScheduledFuture == null) {
-            synchronized (failedReports){
-                if(retryScheduledFuture == null){
-                    retryScheduledFuture = retryExecutor.scheduleWithFixedDelay(new Runnable() {
-                        @Override
-                        public void run() {
-                            // Check and connect to the registry
-                            try {
-                                retry();
-                            } catch (Throwable t) { // Defensive fault tolerance
-                                logger.error("Unexpected error occur at failed retry, cause: " + t.getMessage(), t);
-                            }
-                        }
-                    }, 500, retryPeriod, TimeUnit.MILLISECONDS);
-                }
-            }
-        }
-    }
-
-    void cancelRetryTask(){
-        retryScheduledFuture.cancel(false);
-        retryExecutor.shutdown();
     }
 
     void loadProperties() {
@@ -252,7 +222,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         } catch (Exception e) {
             // retry again. If failed again, throw exception.
             failedReports.add(url);
-            startRetryTask();
+            metadataReportRetry.startRetryTask();
             logger.error("Failed to put servicestore " + url + " in  " + getUrl().toFullString() + ", cause: " + e.getMessage(), e);
         }
     }
@@ -283,15 +253,56 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         return protocol;
     }
 
-    public void retry() {
-        if (retryTimes.incrementAndGet() > retryTimesIfNonFail && failedReports.isEmpty()) {
-            this.cancelRetryTask();
-        }
+    /**
+     * @return if need to continue
+     */
+    public boolean retry() {
         if (failedReports.isEmpty()) {
-            return;
+            return true;
         }
         for (URL url : new HashSet<URL>(failedReports)) {
             this.put(url);
+        }
+        return false;
+    }
+
+    class MetadataReportRetry {
+        protected final Logger logger = LoggerFactory.getLogger(getClass());
+
+        final ScheduledExecutorService retryExecutor = Executors.newScheduledThreadPool(0, new NamedThreadFactory("DubboRegistryFailedRetryTimer", true));
+        ScheduledFuture retryScheduledFuture;
+        AtomicInteger retryTimes = new AtomicInteger(0);
+        // retry task schedule period
+        long retryPeriod = 3000L;
+        // if no failed report, wait how many times to run retry task.
+        int retryTimesIfNonFail = 600;
+
+        void startRetryTask() {
+            if (retryScheduledFuture == null) {
+                synchronized (retryTimes) {
+                    if (retryScheduledFuture == null) {
+                        retryScheduledFuture = retryExecutor.scheduleWithFixedDelay(new Runnable() {
+                            @Override
+                            public void run() {
+                                // Check and connect to the registry
+                                try {
+                                    int times = retryTimes.incrementAndGet();
+                                    if (retry() && times > retryTimesIfNonFail) {
+                                        cancelRetryTask();
+                                    }
+                                } catch (Throwable t) { // Defensive fault tolerance
+                                    logger.error("Unexpected error occur at failed retry, cause: " + t.getMessage(), t);
+                                }
+                            }
+                        }, 500, retryPeriod, TimeUnit.MILLISECONDS);
+                    }
+                }
+            }
+        }
+
+        void cancelRetryTask() {
+            retryScheduledFuture.cancel(false);
+            retryExecutor.shutdown();
         }
     }
 

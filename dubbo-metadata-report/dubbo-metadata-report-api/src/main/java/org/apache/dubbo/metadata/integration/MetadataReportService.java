@@ -44,7 +44,9 @@ import java.util.function.Supplier;
 
 import static org.apache.dubbo.common.Constants.SERVICE_DESCIPTOR_KEY;
 
-
+/**
+ * @since 2.7.0
+ */
 public class MetadataReportService {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
@@ -54,14 +56,12 @@ public class MetadataReportService {
     private static MetadataReportService metadataReportService;
     private static Object lock = new Object();
 
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(0, new NamedThreadFactory("DubboRegistryFailedRetryTimer", true));
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(0, new NamedThreadFactory("DubboMetadataReportTimer", true));
     private MetadataReportFactory metadataReportFactory = ExtensionLoader.getExtensionLoader(MetadataReportFactory.class).getAdaptiveExtension();
     final Set<URL> providerURLs = new ConcurrentHashSet<>();
     final Set<URL> consumerURLs = new ConcurrentHashSet<URL>();
     MetadataReport metadataReport;
     URL serviceStoreUrl;
-
-
 
     MetadataReportService(URL serviceStoreURL) {
         if (Constants.SERVICE_STORE_KEY.equals(serviceStoreURL.getProtocol())) {
@@ -125,6 +125,10 @@ public class MetadataReportService {
         }
     }
 
+    /**
+     * between 2:00 am to 6:00 am, the time is random.
+     * @return
+     */
     long calculateStartTime() {
         Date now = new Date();
         long nowMill = now.getTime();
