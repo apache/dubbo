@@ -40,7 +40,7 @@ public class AbstractMetadataReportTest {
     }
 
     @Test
-    public void testGetProtocol(){
+    public void testGetProtocol() {
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic&side=provider");
         String protocol = abstractServiceStore.getProtocol(url);
         Assert.assertEquals(protocol, "provider");
@@ -63,7 +63,7 @@ public class AbstractMetadataReportTest {
         abstractServiceStore.put(urlTmp);
         Assert.assertNull(urlTmp.getServiceKey());
         // key is null, will add failed list.
-        Assert.assertFalse(abstractServiceStore.failedServiceStore.isEmpty());
+        Assert.assertFalse(abstractServiceStore.failedReports.isEmpty());
     }
 
     @Test
@@ -95,6 +95,45 @@ public class AbstractMetadataReportTest {
         Assert.assertEquals(url, result);
     }
 
+    @Test
+    public void testRetry() throws InterruptedException {
+        URL storeUrl = URL.valueOf("retryReport://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestServiceForRetry?version=1.0.0.retry&application=vic.retry");
+        RetryMetadataReport retryReport = new RetryMetadataReport(storeUrl, 2);
+        retryReport.retryPeriod = 200L;
+        URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
+        Assert.assertNull(retryReport.retryScheduledFuture);
+        Assert.assertTrue(retryReport.retryTimes.get() == 0);
+        Assert.assertTrue(retryReport.store.isEmpty());
+        Assert.assertTrue(retryReport.failedReports.isEmpty());
+        retryReport.put(url);
+        Assert.assertTrue(retryReport.store.isEmpty());
+        Assert.assertFalse(retryReport.failedReports.isEmpty());
+        Assert.assertNotNull(retryReport.retryScheduledFuture);
+        Thread.sleep(1000L);
+        Assert.assertTrue(retryReport.retryTimes.get() != 0);
+        Assert.assertTrue(retryReport.retryTimes.get() == 3);
+        Assert.assertFalse(retryReport.store.isEmpty());
+        Assert.assertTrue(retryReport.failedReports.isEmpty());
+    }
+
+    @Test
+    public void testRetryCancel() throws InterruptedException {
+        URL storeUrl = URL.valueOf("retryReport://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestServiceForRetry?version=1.0.0.retry&application=vic.retry");
+        RetryMetadataReport retryReport = new RetryMetadataReport(storeUrl, 2);
+        retryReport.retryPeriod = 150L;
+        retryReport.retryTimesIfNonFail = 2;
+        URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
+        Assert.assertNull(retryReport.retryScheduledFuture);
+        Assert.assertFalse(retryReport.retryExecutor.isShutdown());
+        retryReport.put(url);
+        Assert.assertFalse(retryReport.retryScheduledFuture.isCancelled());
+        Assert.assertFalse(retryReport.retryExecutor.isShutdown());
+        Thread.sleep(1000L);
+        Assert.assertTrue(retryReport.retryScheduledFuture.isCancelled());
+        Assert.assertTrue(retryReport.retryExecutor.isShutdown());
+
+    }
+
 
     private static class NewMetadataReport extends AbstractMetadataReport {
 
@@ -106,6 +145,34 @@ public class AbstractMetadataReportTest {
 
         @Override
         protected void doPut(URL url) {
+            store.put(url.getServiceKey(), url.toParameterString());
+        }
+
+        @Override
+        protected URL doPeek(URL url) {
+            String queryV = store.get(url.getServiceKey());
+            URL urlTmp = url.clearParameters().addParameterString(queryV);
+            return urlTmp;
+        }
+    }
+
+    private static class RetryMetadataReport extends AbstractMetadataReport {
+
+        Map<String, String> store = new ConcurrentHashMap<>();
+        int needRetryTimes;
+        int executeTimes = 0;
+
+        public RetryMetadataReport(URL servicestoreURL, int needRetryTimes) {
+            super(servicestoreURL);
+            this.needRetryTimes = needRetryTimes;
+        }
+
+        @Override
+        protected void doPut(URL url) {
+            ++executeTimes;
+            if (executeTimes <= needRetryTimes) {
+                throw new RuntimeException("must retry:" + executeTimes);
+            }
             store.put(url.getServiceKey(), url.toParameterString());
         }
 
