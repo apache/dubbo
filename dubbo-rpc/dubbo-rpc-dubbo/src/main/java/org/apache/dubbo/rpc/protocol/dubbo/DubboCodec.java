@@ -179,10 +179,11 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
         out.writeUTF(inv.getMethodName());
         out.writeUTF(ReflectUtils.getDesc(inv.getParameterTypes()));
         Object[] args = inv.getArguments();
-        if (args != null)
+        if (args != null) {
             for (int i = 0; i < args.length; i++) {
                 out.writeObject(encodeInvocationArgument(channel, inv, i));
             }
+        }
         out.writeObject(RpcUtils.getNecessaryAttachments(inv));
     }
 

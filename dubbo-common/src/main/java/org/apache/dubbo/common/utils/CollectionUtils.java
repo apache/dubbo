@@ -187,7 +187,9 @@ public class CollectionUtils {
     @SuppressWarnings("unchecked")
     public static <K, V> Map<K, V> toMap(Object... pairs) {
         Map<K, V> ret = new HashMap<K, V>();
-        if (pairs == null || pairs.length == 0) return ret;
+        if (pairs == null || pairs.length == 0) {
+            return ret;
+        }
 
         if (pairs.length % 2 != 0) {
             throw new IllegalArgumentException("Map pairs can not be odd number.");

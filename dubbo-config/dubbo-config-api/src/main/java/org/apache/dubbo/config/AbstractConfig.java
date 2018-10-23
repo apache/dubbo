@@ -257,8 +257,9 @@ public abstract class AbstractConfig implements Serializable {
                         && method.getParameterTypes().length == 0
                         && isPrimitive(method.getReturnType())) {
                     Parameter parameter = method.getAnnotation(Parameter.class);
-                    if (parameter == null || !parameter.attribute())
+                    if (parameter == null || !parameter.attribute()) {
                         continue;
+                    }
                     String key;
                     if (parameter.key().length() > 0) {
                         key = parameter.key();

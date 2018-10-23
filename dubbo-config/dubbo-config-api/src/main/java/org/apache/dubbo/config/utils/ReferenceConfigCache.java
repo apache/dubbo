@@ -117,7 +117,9 @@ public class ReferenceConfigCache {
 
     void destroyKey(String key) {
         ReferenceConfig<?> config = cache.remove(key);
-        if (config == null) return;
+        if (config == null) {
+            return;
+        }
         config.destroy();
     }
 
