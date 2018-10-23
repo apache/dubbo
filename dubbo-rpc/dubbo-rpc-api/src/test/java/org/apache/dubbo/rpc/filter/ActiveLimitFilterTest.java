@@ -102,7 +102,7 @@ public class ActiveLimitFilterTest {
         AtomicInteger count = new AtomicInteger(0);
         final CountDownLatch latch = new CountDownLatch(1);
         final CountDownLatch latchBlocking = new CountDownLatch(totalThread);
-        URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives="+maxActives+"&timeout="+timeout+"");
+        URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives="+maxActives+"&timeout="+timeout);
         final Invoker<ActiveLimitFilterTest> invoker = new BlockMyInvoker<ActiveLimitFilterTest>(url, blockTime);
         final Invocation invocation = new MockInvocation();
         for (int i = 0; i < totalThread; i++) {
@@ -145,7 +145,7 @@ public class ActiveLimitFilterTest {
         AtomicInteger count = new AtomicInteger(0);
         final CountDownLatch latch = new CountDownLatch(1);
         final CountDownLatch latchBlocking = new CountDownLatch(totalThread);
-        URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives="+maxActives+"&timeout="+timeout+"");
+        URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives="+maxActives+"&timeout="+timeout);
         final Invoker<ActiveLimitFilterTest> invoker = new BlockMyInvoker<ActiveLimitFilterTest>(url, blockTime);
         final Invocation invocation = new MockInvocation();
         for (int i = 0; i < totalThread; i++) {
