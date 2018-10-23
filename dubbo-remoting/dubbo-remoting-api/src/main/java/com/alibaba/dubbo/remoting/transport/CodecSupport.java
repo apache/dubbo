@@ -22,9 +22,11 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.serialize.ObjectInput;
 import com.alibaba.dubbo.common.serialize.Serialization;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -73,6 +75,11 @@ public class CodecSupport {
             throw new IOException("Unexpected serialization id:" + id + " received from network, please check if the peer send the right id.");
         }
         return serialization;
+    }
+
+    public static ObjectInput deserialize(URL url, InputStream is, byte proto) throws IOException {
+        Serialization s = getSerialization(url, proto);
+        return s.deserialize(url, is);
     }
 
 }
