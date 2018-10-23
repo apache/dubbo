@@ -39,6 +39,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -49,33 +50,32 @@ import java.util.concurrent.atomic.AtomicLong;
 public abstract class AbstractMetadataReport implements MetadataReport {
 
 
-    // URL address separator, used in file cache, service provider URL separation
-    private static final char URL_SEPARATOR = ' ';
-    // URL address separated regular expression for parsing the service provider URL list in the file cache
-    private static final String URL_SPLIT = "\\s+";
-
     private final static String TAG = "sd.";
     // Log output
     protected final Logger logger = LoggerFactory.getLogger(getClass());
     // Local disk cache, where the special key value.registies records the list of registry centers, and the others are the list of notified service providers
     final Properties properties = new Properties();
     // File cache timing writing
-    private final ExecutorService servicestoreCacheExecutor = Executors.newFixedThreadPool(1, new NamedThreadFactory("DubboSaveServicestoreCache", true));
+    private final ExecutorService reportCacheExecutor = Executors.newFixedThreadPool(1, new NamedThreadFactory("DubboSaveServicestoreCache", true));
 
     private final AtomicLong lastCacheChanged = new AtomicLong();
-    private final Set<URL> registered = new ConcurrentHashSet<URL>();
-    final Set<URL> failedServiceStore = new ConcurrentHashSet<URL>();
-    private URL serviceStoreURL;
+    final Set<URL> failedReports = new ConcurrentHashSet<URL>(4);
+    private URL reportURL;
     // Local disk cache file
     File file;
     private AtomicBoolean INIT = new AtomicBoolean(false);
-    private final ScheduledExecutorService retryExecutor = Executors.newScheduledThreadPool(0, new NamedThreadFactory("DubboRegistryFailedRetryTimer", true));
-    private AtomicInteger retryTimes = new AtomicInteger(0);
+    final ScheduledExecutorService retryExecutor = Executors.newScheduledThreadPool(0, new NamedThreadFactory("DubboRegistryFailedRetryTimer", true));
+    ScheduledFuture retryScheduledFuture;
+    AtomicInteger retryTimes = new AtomicInteger(0);
+    // retry task schedule period
+    long retryPeriod = 3000L ;
+    // if no failed report, wait how many times to run retry task.
+    int retryTimesIfNonFail = 600;
 
-    public AbstractMetadataReport(URL servicestoreURL) {
-        setUrl(servicestoreURL);
+    public AbstractMetadataReport(URL reportURL) {
+        setUrl(reportURL);
         // Start file save timer
-        String filename = servicestoreURL.getParameter(Constants.FILE_KEY, System.getProperty("user.home") + "/.dubbo/dubbo-servicestore-" + servicestoreURL.getParameter(Constants.APPLICATION_KEY) + "-" + servicestoreURL.getAddress() + ".cache");
+        String filename = reportURL.getParameter(Constants.FILE_KEY, System.getProperty("user.home") + "/.dubbo/dubbo-servicestore-" + reportURL.getParameter(Constants.APPLICATION_KEY) + "-" + reportURL.getAddress() + ".cache");
         File file = null;
         if (ConfigUtils.isNotEmpty(filename)) {
             file = new File(filename);
@@ -91,32 +91,17 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
         this.file = file;
         loadProperties();
-        retryExecutor.scheduleWithFixedDelay(new Runnable() {
-            @Override
-            public void run() {
-                // Check and connect to the registry
-                try {
-                    retry();
-                } catch (Throwable t) { // Defensive fault tolerance
-                    logger.error("Unexpected error occur at failed retry, cause: " + t.getMessage(), t);
-                }
-            }
-        }, 1000, 3000, TimeUnit.MILLISECONDS);
     }
 
     public URL getUrl() {
-        return serviceStoreURL;
+        return reportURL;
     }
 
     protected void setUrl(URL url) {
         if (url == null) {
             throw new IllegalArgumentException("servicestore url == null");
         }
-        this.serviceStoreURL = url;
-    }
-
-    public Set<URL> getRegistered() {
-        return registered;
+        this.reportURL = url;
     }
 
     private void doSaveProperties(long version) {
@@ -164,10 +149,35 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             if (version < lastCacheChanged.get()) {
                 return;
             } else {
-                servicestoreCacheExecutor.execute(new SaveProperties(lastCacheChanged.incrementAndGet()));
+                reportCacheExecutor.execute(new SaveProperties(lastCacheChanged.incrementAndGet()));
             }
             logger.warn("Failed to save service store file, cause: " + e.getMessage(), e);
         }
+    }
+
+    void startRetryTask(){
+        if(retryScheduledFuture == null) {
+            synchronized (failedReports){
+                if(retryScheduledFuture == null){
+                    retryScheduledFuture = retryExecutor.scheduleWithFixedDelay(new Runnable() {
+                        @Override
+                        public void run() {
+                            // Check and connect to the registry
+                            try {
+                                retry();
+                            } catch (Throwable t) { // Defensive fault tolerance
+                                logger.error("Unexpected error occur at failed retry, cause: " + t.getMessage(), t);
+                            }
+                        }
+                    }, 500, retryPeriod, TimeUnit.MILLISECONDS);
+                }
+            }
+        }
+    }
+
+    void cancelRetryTask(){
+        retryScheduledFuture.cancel(false);
+        retryExecutor.shutdown();
     }
 
     void loadProperties() {
@@ -205,7 +215,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
                 properties.remove(url.getServiceKey());
             }
             long version = lastCacheChanged.incrementAndGet();
-            servicestoreCacheExecutor.execute(new SaveProperties(version));
+            reportCacheExecutor.execute(new SaveProperties(version));
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
         }
@@ -236,12 +246,13 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             if (logger.isInfoEnabled()) {
                 logger.info("Servicestore Put: " + url);
             }
-            failedServiceStore.remove(url);
+            failedReports.remove(url);
             doPut(url);
             saveProperties(url, true);
         } catch (Exception e) {
             // retry again. If failed again, throw exception.
-            failedServiceStore.add(url);
+            failedReports.add(url);
+            startRetryTask();
             logger.error("Failed to put servicestore " + url + " in  " + getUrl().toFullString() + ", cause: " + e.getMessage(), e);
         }
     }
@@ -273,13 +284,13 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     }
 
     public void retry() {
-        if (retryTimes.incrementAndGet() > 120000 && failedServiceStore.isEmpty()) {
-            retryExecutor.shutdown();
+        if (retryTimes.incrementAndGet() > retryTimesIfNonFail && failedReports.isEmpty()) {
+            this.cancelRetryTask();
         }
-        if (failedServiceStore.isEmpty()) {
+        if (failedReports.isEmpty()) {
             return;
         }
-        for (URL url : new HashSet<URL>(failedServiceStore)) {
+        for (URL url : new HashSet<URL>(failedReports)) {
             this.put(url);
         }
     }
