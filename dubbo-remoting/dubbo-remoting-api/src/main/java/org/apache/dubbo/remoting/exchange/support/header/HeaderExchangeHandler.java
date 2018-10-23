@@ -83,9 +83,13 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
             Object data = req.getData();
 
             String msg;
-            if (data == null) msg = null;
-            else if (data instanceof Throwable) msg = StringUtils.toString((Throwable) data);
-            else msg = data.toString();
+            if (data == null) {
+                msg = null;
+            } else if (data instanceof Throwable) {
+                msg = StringUtils.toString((Throwable) data);
+            } else {
+                msg = data.toString();
+            }
             res.setErrorMessage("Fail to decode request due to: " + msg);
             res.setStatus(Response.BAD_REQUEST);
 

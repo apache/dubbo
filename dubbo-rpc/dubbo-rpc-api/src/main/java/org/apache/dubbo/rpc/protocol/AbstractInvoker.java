@@ -63,10 +63,12 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
     }
 
     public AbstractInvoker(Class<T> type, URL url, Map<String, String> attachment) {
-        if (type == null)
+        if (type == null) {
             throw new IllegalArgumentException("service type == null");
-        if (url == null)
+        }
+        if (url == null) {
             throw new IllegalArgumentException("service url == null");
+        }
         this.type = type;
         this.url = url;
         this.attachment = attachment == null ? null : Collections.unmodifiableMap(attachment);
