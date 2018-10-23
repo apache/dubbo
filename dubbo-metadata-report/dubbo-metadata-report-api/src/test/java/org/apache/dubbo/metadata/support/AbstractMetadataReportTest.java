@@ -99,19 +99,19 @@ public class AbstractMetadataReportTest {
     public void testRetry() throws InterruptedException {
         URL storeUrl = URL.valueOf("retryReport://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestServiceForRetry?version=1.0.0.retry&application=vic.retry");
         RetryMetadataReport retryReport = new RetryMetadataReport(storeUrl, 2);
-        retryReport.retryPeriod = 200L;
+        retryReport.metadataReportRetry.retryPeriod = 200L;
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
-        Assert.assertNull(retryReport.retryScheduledFuture);
-        Assert.assertTrue(retryReport.retryTimes.get() == 0);
+        Assert.assertNull(retryReport.metadataReportRetry.retryScheduledFuture);
+        Assert.assertTrue(retryReport.metadataReportRetry.retryTimes.get() == 0);
         Assert.assertTrue(retryReport.store.isEmpty());
         Assert.assertTrue(retryReport.failedReports.isEmpty());
         retryReport.put(url);
         Assert.assertTrue(retryReport.store.isEmpty());
         Assert.assertFalse(retryReport.failedReports.isEmpty());
-        Assert.assertNotNull(retryReport.retryScheduledFuture);
+        Assert.assertNotNull(retryReport.metadataReportRetry.retryScheduledFuture);
         Thread.sleep(1000L);
-        Assert.assertTrue(retryReport.retryTimes.get() != 0);
-        Assert.assertTrue(retryReport.retryTimes.get() == 3);
+        Assert.assertTrue(retryReport.metadataReportRetry.retryTimes.get() != 0);
+        Assert.assertTrue(retryReport.metadataReportRetry.retryTimes.get() == 3);
         Assert.assertFalse(retryReport.store.isEmpty());
         Assert.assertTrue(retryReport.failedReports.isEmpty());
     }
@@ -120,17 +120,17 @@ public class AbstractMetadataReportTest {
     public void testRetryCancel() throws InterruptedException {
         URL storeUrl = URL.valueOf("retryReport://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestServiceForRetry?version=1.0.0.retry&application=vic.retry");
         RetryMetadataReport retryReport = new RetryMetadataReport(storeUrl, 2);
-        retryReport.retryPeriod = 150L;
-        retryReport.retryTimesIfNonFail = 2;
+        retryReport.metadataReportRetry.retryPeriod = 150L;
+        retryReport.metadataReportRetry.retryTimesIfNonFail = 2;
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
-        Assert.assertNull(retryReport.retryScheduledFuture);
-        Assert.assertFalse(retryReport.retryExecutor.isShutdown());
+        Assert.assertNull(retryReport.metadataReportRetry.retryScheduledFuture);
+        Assert.assertFalse(retryReport.metadataReportRetry.retryExecutor.isShutdown());
         retryReport.put(url);
-        Assert.assertFalse(retryReport.retryScheduledFuture.isCancelled());
-        Assert.assertFalse(retryReport.retryExecutor.isShutdown());
+        Assert.assertFalse(retryReport.metadataReportRetry.retryScheduledFuture.isCancelled());
+        Assert.assertFalse(retryReport.metadataReportRetry.retryExecutor.isShutdown());
         Thread.sleep(1000L);
-        Assert.assertTrue(retryReport.retryScheduledFuture.isCancelled());
-        Assert.assertTrue(retryReport.retryExecutor.isShutdown());
+        Assert.assertTrue(retryReport.metadataReportRetry.retryScheduledFuture.isCancelled());
+        Assert.assertTrue(retryReport.metadataReportRetry.retryExecutor.isShutdown());
 
     }
 
