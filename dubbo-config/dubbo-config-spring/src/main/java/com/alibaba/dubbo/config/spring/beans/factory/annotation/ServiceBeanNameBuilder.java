@@ -26,6 +26,7 @@ import org.springframework.util.StringUtils;
 
 import static com.alibaba.dubbo.config.spring.util.AnnotationUtils.resolveInterfaceName;
 
+
 /**
  * Dubbo {@link Service @Service} Bean Builder
  *

@@ -31,8 +31,8 @@ import org.springframework.validation.DataBinder;
 import java.beans.PropertyEditorSupport;
 import java.util.Map;
 
-import static com.alibaba.dubbo.config.spring.util.BeanFactoryUtils.getOptionalBean;
-import static com.alibaba.dubbo.config.spring.util.ObjectUtils.of;
+import static com.alibaba.spring.util.BeanFactoryUtils.getOptionalBean;
+import static com.alibaba.spring.util.ObjectUtils.of;
 import static org.springframework.util.StringUtils.commaDelimitedListToStringArray;
 
 /**

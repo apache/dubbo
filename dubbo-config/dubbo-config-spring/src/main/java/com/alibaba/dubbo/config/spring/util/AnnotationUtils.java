@@ -43,53 +43,6 @@ import static org.springframework.util.StringUtils.trimAllWhitespace;
  */
 public class AnnotationUtils {
 
-    /**
-     * Get {@link Annotation} attributes
-     *
-     * @param annotation
-     * @param propertyResolver
-     * @param ignoreDefaultValue
-     * @return non-null
-     */
-    public static Map<String, Object> getAttributes(Annotation annotation, PropertyResolver propertyResolver,
-                                                    boolean ignoreDefaultValue, String... ignoreAttributeNames) {
-
-        Set<String> ignoreAttributeNamesSet = new HashSet<String>(arrayToList(ignoreAttributeNames));
-
-        Map<String, Object> attributes = getAnnotationAttributes(annotation);
-
-        Map<String, Object> actualAttributes = new LinkedHashMap<String, Object>();
-
-        boolean requiredResolve = propertyResolver != null;
-
-        for (Map.Entry<String, Object> entry : attributes.entrySet()) {
-
-            String attributeName = entry.getKey();
-            Object attributeValue = entry.getValue();
-
-            // ignore default attribute value
-            if (ignoreDefaultValue && nullSafeEquals(attributeValue, getDefaultValue(annotation, attributeName))) {
-                continue;
-            }
-
-            // ignore attribute name
-            if (ignoreAttributeNamesSet.contains(attributeName)) {
-                continue;
-            }
-
-            if (requiredResolve && attributeValue instanceof String) { // Resolve Placeholder
-                String resolvedValue = propertyResolver.resolvePlaceholders(valueOf(attributeValue));
-                attributeValue = trimAllWhitespace(resolvedValue);
-            }
-
-            actualAttributes.put(attributeName, attributeValue);
-
-        }
-
-        return actualAttributes;
-
-    }
-
     public static String resolveInterfaceName(Service service, Class<?> defaultInterfaceClass)
             throws IllegalStateException {
 
