@@ -450,7 +450,7 @@ public class Constants {
      * After simplify the registry, should add some paramter individually.
      * @since 2.7.0
      */
-    public static final String ADD_PARAM_KEYS_KEY = "addParamKeys";
+    public static final String ADD_PARAM_KEYS_KEY = "plusparamkeys";
 
     /**
      * To decide whether to exclude unavailable invoker from the cluster

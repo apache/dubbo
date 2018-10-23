@@ -226,7 +226,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                 // 第一个元素
                 super.setServiceStoreConfig(serviceStoreConfigMap.values().iterator().next());
             } else if(serviceStoreConfigMap != null && serviceStoreConfigMap.size() > 1){
-                throw new IllegalStateException("Multiple ServiceStore configs: " + serviceStoreConfigMap);
+                throw new IllegalStateException("Multiple MetadataReport configs: " + serviceStoreConfigMap);
             }
         }
         if (getMonitor() == null
