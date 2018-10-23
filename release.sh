@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #  Licensed to the Apache Software Foundation (ASF) under one or more
 #  contributor license agreements.  See the NOTICE file distributed with
 #  this work for additional information regarding copyright ownership.
@@ -14,26 +14,11 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-# set -e
-# set -x
-
-function fail {
-    >&2 echo "\033[31m\033[01m[
-    FATAL ERROR:
-    ------------------
-    $1 ]\033[0m"
-
-    echo "Clear current work dir"
-    git add .
-    git commit -m 'Failed preparation for release.'
-    exit 1
-}
 
 function fail_noclear {
-    >&2 echo "\033[31m\033[01m[
-    FATAL ERROR:
+    >&2 echo "    FATAL ERROR:
     ------------------
-    $1 ]\033[0m"
+    $1"
     exit 1
 }
 
@@ -44,142 +29,58 @@ xpath /pom:project/pom:version/text()
 EOF
 }
 
-function generate_promotion_script {
-    echo "Generating release promotion script 'promote-$version.sh'"
-read -d '' script <<- EOF
-#!/bin/bash
-echo "Promoting release $version
-Actions about to be performed:
-------------------------------
-\$(cat \$0 | tail -n +14)
-------------------------------------------"
-read -p "Press enter to continue or CTRL-C to abort"
-# promote the source distribution by moving it from the staging area to the release area
-# mv https://dist.apache.org/repos/dist/dev/incubator/dubbo/$version https://dist.apache.org/repos/dist/release/incubator/dubbo/ -m "Upload release to the mirrors"
-#mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.7:rc-release -DstagingRepositoryId=$stagingRepositoryId -DnexusUrl=https://oss.sonatype.org/ -DserverId=sonatype-nexus-staging -Ddescription="Release vote has passed"
-# Renumber the next development iteration $next_version:
-git checkout $branch
-mvn release:update-versions --batch-mode
-mvn versions:set versions:commit -DprocessAllModules=true -DnewVersion=$next_version
-git add --all
-git commit -m 'Start the next development version'
-echo "
-Please check the new versions and merge $branch to the base branch.
-"
-EOF
+REPO=""
+BRANCH=""
 
-echo "$script" > promote-$version.sh
-    chmod +x promote-$version.sh
-    git add promote-$version.sh
-}
-
-function generate_rollback_script {
-	echo "Generating release rollback script 'revert-$version.sh'"
-read -d '' script <<- EOF
-#!/bin/bash
-echo -n "Reverting release $version
-Actions about to be performed:
-------------------------------
-\$(cat \$0 | tail -n +14)
-------------------------------------------
-Press enter to continue or CTRL-C to abort"
-read
-# clean up local repository
-git checkout $GIT_BRANCH
-git branch -D $branch
-git tag -d $tag
-# clean up staging dist area
-#svn rm https://dist.apache.org/repos/dist/dev/incubator/dubbo/$version -m "Release vote has failed"
-# clean up staging maven repository
-#mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.7:rc-drop -DstagingRepositoryId=$stagingrepoid -DnexusUrl=https://oss.sonatype.org/ -DserverId=sonatype-nexus-staging -Ddescription="Release vote has failed"
-# clean up remaining release files
-find . -name "*.releaseBackup" -exec rm {} \\;
-[ -f release.properties ] && rm release.properties
-EOF
-echo "$script" > revert-$version.sh
-
-	chmod +x revert-$version.sh
-	git add revert-$version.sh
-}
-
-function generate_release_vote_email {
-
-    echo "Generating Vote email"
-
-    echo "
-    Hello Dubbo Community,
-
-    This is a call for vote to release Apache Dubbo (Incubating) version $version.
-
-    The release candidates (RC5):
-    https://dist.apache.org/repos/dist/dev/incubator/dubbo/$version
-
-    Git tag for the release (RC5):
-    https://github.com/apache/incubator-dubbo/tree/dubbo-$version
-    Hash for the release tag:
-    3963d8fd93642398375ea92acb7ed4d2bc1b0518
-
-    Release Notes:
-    https://github.com/apache/incubator-dubbo/blob/dubbo-$version/CHANGES.md
-
-    The artifacts have been signed with Key : 28681CB1, which can be found in the keys file:
-    https://dist.apache.org/repos/dist/dev/incubator/dubbo/KEYS
-
-    The vote will be open for at least 72 hours or until necessary number of votes are reached.
-
-    Please vote accordingly:
-
-    [ ] +1 approve
-    [ ] +0 no opinion
-    [ ] -1 disapprove with the reason
-
-" | tail -n+2 > release-vote.txt
-
-	git add release-vote.txt
-}
-
-hasFileChanged=`git status|grep -e "nothing to commit, working tree clean"|wc -l`
-if [ $hasFileChanged -lt 1 ] ; then
-    fail_noclear "ERROR: there are changes that have not committed in current branch ."
+if [[ $# -eq 2 ]]; then
+	REPO=$1
+	BRANCH=$2
+else
+	fail_noclear "Please use ./release.sh YOUR_GIT_REPO YOUR_BRANCH_NAME."
 fi
 
-if [ ! $( git config --get remote.staging.url ) ] ; then
-    fail "
-No staging remote git repository found. The staging repository is used to temporarily
-publish the build artifacts during the voting process. Since no staging repository is
-available at Apache, it is best to use a git mirror on your personal github account.
-First fork the github Apache Dubbo (Incubating) mirror (https://github.com/apache/dubbo) and then
-add the remote staging repository with the following command:
-    $ git remote add staging git@github.com:<your personal github username>/dubbo.git
-    $ git fetch staging
-    $ git push staging
-This will bring the staging area in sync with the origin and the release script can
-push the build branch and the tag to the staging area.
-"
+echo "Remote repo is: $REPO, branch is: $BRANCH"
+
+read -p "Input the local directory to work on (default is $BRANCH): " DIR_NAME
+
+DIR_NAME=${DIR_NAME:-$BRANCH}
+
+echo $DIR_NAME
+
+if [ -d $DIR_NAME ]; then
+	#fail_noclear "$DIR_NAME exist, please use a new name."
+	echo "$DIR_NAME exist, going on."
+else
+	#echo "$DIR_NAME exist, try to remove it."
+	#rm -rf $DIR_NAME
+	git clone -b $BRANCH $REPO $DIR_NAME
+	if [ $? -ne 0 ]; then
+		fail_noclear "git clone -b $BRANCH $REPO $DIR_NAME failed."
+	fi
 fi
 
+cd $DIR_NAME
 
-echo "Cleaning up any release artifacts that might linger: mvn -q release:clean"
-mvn -q release:clean
-
-# the branch on which the code base lives for this version
-read -p 'Input the branch on which the code base lives for this version: ' GIT_BRANCH
-
-version=$(getProjectVersionFromPom)
-while [[ ! $version =~ ^[0-9]+\.[0-9]+\.[0-9]+(-M[0-9]+)?$ ]]
+VERSION=$(getProjectVersionFromPom)
+ORIGIN_VERSION="$VERSION"
+while [[ ! $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+(-M[0-9]+)?$ ]]
 do
-    read -p "Version to release (in pom now is $version): " -e t1
+    read -p "Version to release (in pom now is $VERSION): " -e t1
     if [ -n "$t1" ]; then
-      version="$t1"
+      	VERSION="$t1"
     fi
 done
 
-tag=dubbo-$version
-branch=$version-release
+TAG=dubbo-$VERSION
+echo $TAG
 
-major_version=$(expr $version : '\(.*\)\..*\..*')
-minor_version=$(expr $version : '.*\.\(.*\)\..*')
-bugfix_version=$(expr $version : '.*\..*\.\(.*\)')
+# get last commit id
+COMMIT_ID=`git rev-parse HEAD`
+echo $COMMIT_ID
+
+major_version=$(expr $VERSION : '\(.*\)\..*\..*')
+minor_version=$(expr $VERSION : '.*\.\(.*\)\..*')
+bugfix_version=$(expr $VERSION : '.*\..*\.\(.*\)')
 
 next_version="$major_version.$minor_version.$(expr $bugfix_version + 1)-SNAPSHOT"
 previous_minor_version=$(expr $bugfix_version - 1)
@@ -189,91 +90,84 @@ else
     previous_version="$major_version.$minor_version.$(expr $bugfix_version - 1)"
 fi
 
-log=../release.out
+echo $major_version $minor_version $bugfix_version $next_version $previous_minor_version $previous_version
 
-if [ -f $log ] ; then
-    rm $log
-fi
-
-echo "Removing previous release tag $tag (if exists)"
-oldtag=`git tag -l |grep -e "$tag"|wc -l` >> $log
-[ "$oldtag" -ne 0 ] && git tag -d $tag >> $log
-
-echo "Removing previous build branch $branch (if exists)"
-oldbranch=`git branch |grep -e "$branch"|wc -l` >> $log
-[ "$oldbranch" -ne 0 ] && git branch -D $branch >> $log
-
-echo "Removing previous staging tag (if exists)"
-git push origin :refs/tags/$tag >> $log
-
-echo "Creating release branch"
-releasebranch=`git branch -a |grep -e "origin/$branch$"|wc -l` >> $log
-if [ $releasebranch -ne 0 ]
-then
-    echo "git checkout -b $branch origin/$branch"
-    read -p "test"
-    git checkout -b $branch origin/$branch >> $log
-    if [ $? -ne 0 ] ; then
-       fail_noclear "ERROR: git checkout -b $branch origin/$branch"
-    fi
+read -p "Need to run mvn clean install -Prelease -Dmaven.test.skip=false ? (y/n, default is n) " NEED_INSTALL
+echo $NEED_INSTALL
+if [ "$NEED_INSTALL" = "y" ]; then
+	echo "Start to mvn clean install"
+	mvn clean install -Prelease -Dmaven.test.skip=false
 else
-    echo "git checkout -b $branch origin/$GIT_BRANCH"
-    read -p "test"
-    git checkout -b $branch origin/$GIT_BRANCH >> $log
-    if [ $? -ne 0 ] ; then
-       fail_noclear "ERROR: git checkout -b $branch origin/$GIT_BRANCH"
-    fi
+	echo "Skip mvn clean install -Prelease -Dmaven.test.skip=false"
 fi
 
-# Change version from SNAPSHOT to release ready
-#mvn versions:set versions:commit -DprocessAllModules=true -DnewVersion=$version
-# Add tag
-#git tag -a dubbo-$version -m "generate tag dubbo-version" >> $log
-#git push origin dubbo-$version >> $log
-#mvn release:prepare -Darguments="-DskipTests" -DautoVersionSubmodules=true -Dusername=chickenlj -DupdateWorkingCopyVersions=true -DpushChanges=false -DdryRun=true
-#if [ $? -ne 0 ] ; then
-#    fail "ERROR: mvn release:prepare was not successful"
-#fi
-#mvn -Prelease release:perform  -Darguments="-DskipTests -Dmaven.deploy.skip=true" -DautoVersionSubmodules=true -Dusername=chickenlj -DdryRun=true
-#if [ $? -ne 0 ] ; then
-#   fail "ERROR: mvn release:perform was not successful"
-#fi
-mvn versions:set versions:commit -DprocessAllModules=true -DnewVersion=$version >> $log
+read -p "Need to run mvn deploy $ORIGIN_VERSION to central repo ? (y/n, default is n) " NEED_DEPLOY
 
-# Determine the staging repository and close it after deploying the release to the staging area
-stagingrepoid=$(mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.7:rc-list -DnexusUrl=https://oss.sonatype.org/ -DserverId=sonatype-nexus-staging | grep -v "CLOSED" | grep -Eo "(comalibaba-\d+)";)
-
-echo "Closing staging repository with id $stagingrepoid"
-#mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.7:rc-close -DstagingRepositoryId=$stagingrepoid -DnexusUrl=https://oss.sonatype.org/ -DserverId=sonatype-nexus-staging -Ddescription="Release has been built, awaiting vote"
-
-read -p "test"
-#mvn clean install -DskipTests
-cd ./distribution
-echo "Current dir: $(pwd)"
-echo "Prepare for source and binary releases: mvn install -Prelease"
-mvn install -Prelease >> $log
-if [ $? -ne 0 ] ; then
-   fail "ERROR: mvn clean install -Prelease"
+if [ "$NEED_DEPLOY" = "y" ]; then
+	echo "Start to run mvn deploy SNAPSHOT"
+	mvn deploy -Dmaven.test.skip=true
+else
+	echo "Skip deploy SNAPSHOT"
 fi
-cd ./target
-shasum -a 512 apache-dubbo-incubating-${version}-source-release.zip >> apache-dubbo-incubating-${version}-source-release.zip.sha512
-shasum -a 512 apache-dubbo-incubating-${version}-bin-release.zip >> apache-dubbo-incubating-${version}-bin-release.zip.sha512
 
-echo "Submit all release candidate packages to svn"
-#svn mkdir https://dist.apache.org/repos/dist/dev/incubator/dubbo/$version-test -m "Create $version release staging area"
-#svn co --force --depth=empty https://dist.apache.org/repos/dist/dev/incubator/dubbo/$version .
-#svn add *
-#svn commit -m "Upload dubbo-$version to staging area"
+echo "Start to run mvn release:clean..."
+mvn release:clean
+# remove local/remote tag
+echo "Delete local tag $TAG"
+git tag --delete $TAG
 
-cd ../..
-git add .
-git commit -m "Prepare for release $version"
-git push origin $branch
+read -p "Operate remote $BRANCH-staging and tag $TAG ? (y/n, default is n) " FORCE_DELETE
 
-generate_promotion_script
-generate_rollback_script
-generate_release_vote_email
-git checkout -b $branch-staging
-git add .
-git commit -m "Prepare for release $version"
-git push staging $branch-staging
+if [ "$FORCE_DELETE" = "y" ]; then
+	echo "Delete remote $BRANCH-staging and tag $TAG"
+	git push origin --delete $TAG
+	git push origin --delete $BRANCH-staging
+fi
+
+echo "Start to run mvn release:prepare..."
+read -p "Input your github username: " USER_NAME
+mvn release:prepare -Prelease -Darguments="-DskipTests" -DautoVersionSubmodules=true -Dusername=$USER_NAME -DupdateWorkingCopyVersions=true -DpushChanges=false -Dtag=$TAG -DreleaseVersion=$VERSION -DdevelopmentVersion=$next_version
+
+if [ "$FORCE_DELETE" = "y" ]; then
+	echo "Push local change to staging branch"
+	git push origin $BRANCH:$BRANCH-staging
+
+	# push tag to remote
+	echo "Push tag $TAG to remote"
+	git push origin $TAG
+fi
+
+if [ "$FORCE_DELETE" = "y" ]; then
+	echo "Start to run mvn release:perform..."
+	mvn -Prelease release:perform -Darguments="-DskipTests" -DautoVersionSubmodules=true -Dusername=$USER_NAME
+else
+	echo "Skip release"
+fi
+
+# reset working directory
+echo "Reset local repo to $COMMIT_ID"
+git reset --hard $COMMIT_ID
+
+cd distribution/target
+echo "Start to shasum for bin/source.zip"
+shasum -a 512 apache-dubbo-incubating-${VERSION}-source-release.zip >> apache-dubbo-incubating-${VERSION}-source-release.zip.sha512
+shasum -a 512 apache-dubbo-incubating-${VERSION}-bin-release.zip >> apache-dubbo-incubating-${VERSION}-bin-release.zip.sha512
+
+read -p "Need to push bin/source.zip to Apache svn repo ? (y/n, default is n) " NEED_PUSH_APACHE
+
+if [ "$NEED_PUSH_APACHE" = "y" ]; then
+	# Need to test
+	svn mkdir https://dist.apache.org/repos/dist/dev/incubator/dubbo/$VERSION -m "Create $VERSION directory"
+	svn co --force --depth=empty https://dist.apache.org/repos/dist/dev/incubator/dubbo/$VERSION .
+	svn add apache-dubbo-incubating-${VERSION}-source-release.zip
+	svn add apache-dubbo-incubating-${VERSION}-source-release.zip.asc
+	svn add apache-dubbo-incubating-${VERSION}-source-release.zip.sha512
+	svn add apache-dubbo-incubating-${VERSION}-bin-release.zip
+	svn add apache-dubbo-incubating-${VERSION}-bin-release.zip.asc
+	svn add apache-dubbo-incubating-${VERSION}-bin-release.zip.sha512
+	svn commit -m "Upload dubbo-$VERSION"
+
+	echo "If this is your first release, make sure adding PUBLIC_KEY to KEYS manually."
+else
+	echo "Skip push bin/source.zip to Apache svn repo"
+fi
