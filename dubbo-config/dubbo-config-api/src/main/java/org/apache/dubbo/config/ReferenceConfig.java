@@ -41,7 +41,7 @@ import org.apache.dubbo.rpc.cluster.support.RegistryAwareCluster;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
-import org.apache.dubbo.servicedata.integration.ServiceStoreService;
+import org.apache.dubbo.metadata.integration.MetadataReportService;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -433,10 +433,10 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
          * @since 2.7.0
          * ServiceData Store
          */
-        ServiceStoreService serviceStoreService = null;
-        if ((serviceStoreService = getServiceStoreService()) != null){
+        MetadataReportService metadataReportService = null;
+        if ((metadataReportService = getServiceStoreService()) != null){
             URL consumerURL = new URL(Constants.CONSUMER_PROTOCOL, map.remove(Constants.REGISTER_IP_KEY), 0, map.get(Constants.INTERFACE_KEY), map);
-            serviceStoreService.publishConsumer(consumerURL);
+            metadataReportService.publishConsumer(consumerURL);
         }
         // create service proxy
         return (T) proxyFactory.getProxy(invoker);

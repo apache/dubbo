@@ -290,17 +290,17 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-servicedata-api</artifactId>
+                <artifactId>dubbo-metadata-report-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-servicedata-zookeeper</artifactId>
+                <artifactId>dubbo-metadata-report-zookeeper</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-servicedata-redis</artifactId>
+                <artifactId>dubbo-metadata-report-redis</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

@@ -38,7 +38,7 @@ import org.apache.dubbo.rpc.ServiceClassHolder;
 import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
-import org.apache.dubbo.servicedata.integration.ServiceStoreService;
+import org.apache.dubbo.metadata.integration.MetadataReportService;
 
 import java.lang.reflect.Method;
 import java.net.InetAddress;
@@ -525,11 +525,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                  * @since 2.7.0
                  * ServiceData Store
                  */
-                ServiceStoreService serviceStoreService = null;
-                if ((serviceStoreService = getServiceStoreService()) != null){
+                MetadataReportService metadataReportService = null;
+                if ((metadataReportService = getServiceStoreService()) != null){
 //                    String protocol = url.getProtocol();
 //                    url = url.setProtocol(Constants.PROVIDER_PROTOCOL).addParameter(Constants.SIDE_KEY, Constants.PROVIDER_SIDE).addParameter(Constants.PROTOCOL_KEY, protocol);
-                    serviceStoreService.publishProvider(url);
+                    metadataReportService.publishProvider(url);
                 }
             }
         }
