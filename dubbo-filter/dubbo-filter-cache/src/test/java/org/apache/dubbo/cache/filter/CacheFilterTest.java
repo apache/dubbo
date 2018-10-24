@@ -134,7 +134,7 @@ public class CacheFilterTest {
         cacheFilter.invoke(invoker4, invocation);
         RpcResult rpcResult1 = (RpcResult) cacheFilter.invoke(invoker1, invocation);
         RpcResult rpcResult2 = (RpcResult) cacheFilter.invoke(invoker2, invocation);
-        Assert.assertEquals(rpcResult1.getValue(), "value1");
-        Assert.assertEquals(rpcResult2.getValue(), "value1");
+        Assert.assertEquals(rpcResult1.getValue(), null);
+        Assert.assertEquals(rpcResult2.getValue(), null);
     }
 }

@@ -24,7 +24,6 @@ import java.util.Set;
 /**
  * DemoServiceImpl
  */
-
 public class DemoServiceImpl implements DemoService {
     public DemoServiceImpl() {
         super();
@@ -103,4 +102,9 @@ public class DemoServiceImpl implements DemoService {
     public NonSerialized returnNonSerialized() {
         return new NonSerialized();
     }
+
+    public long add(int a, long b) {
+        return a + b;
+    }
+
 }

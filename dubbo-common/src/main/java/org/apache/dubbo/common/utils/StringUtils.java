@@ -18,9 +18,10 @@ package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.io.UnsafeStringWriter;
-import com.alibaba.fastjson.JSON;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+
+import com.alibaba.fastjson.JSON;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -339,8 +340,9 @@ public final class StringUtils {
     }
 
     public static boolean isBlank(String str) {
-        if (str == null || str.length() == 0)
+        if (str == null || str.length() == 0) {
             return true;
+        }
         return false;
     }
 
@@ -351,8 +353,9 @@ public final class StringUtils {
      * @return is empty.
      */
     public static boolean isEmpty(String str) {
-        if (str == null || str.length() == 0)
+        if (str == null || str.length() == 0) {
             return true;
+        }
         return false;
     }
 
@@ -372,10 +375,12 @@ public final class StringUtils {
      * @return equals
      */
     public static boolean isEquals(String s1, String s2) {
-        if (s1 == null && s2 == null)
+        if (s1 == null && s2 == null) {
             return true;
-        if (s1 == null || s2 == null)
+        }
+        if (s1 == null || s2 == null) {
             return false;
+        }
         return s1.equals(s2);
     }
 
@@ -386,14 +391,16 @@ public final class StringUtils {
      * @return is integer
      */
     public static boolean isInteger(String str) {
-        if (str == null || str.length() == 0)
+        if (str == null || str.length() == 0) {
             return false;
+        }
         return INT_PATTERN.matcher(str).matches();
     }
 
     public static int parseInteger(String str) {
-        if (!isInteger(str))
+        if (!isInteger(str)) {
             return 0;
+        }
         return Integer.parseInt(str);
     }
 
@@ -495,7 +502,9 @@ public final class StringUtils {
      * @return String.
      */
     public static String translat(String src, String from, String to) {
-        if (isEmpty(src)) return src;
+        if (isEmpty(src)) {
+            return src;
+        }
         StringBuilder sb = null;
         int ix;
         char c;
@@ -503,15 +512,17 @@ public final class StringUtils {
             c = src.charAt(i);
             ix = from.indexOf(c);
             if (ix == -1) {
-                if (sb != null)
+                if (sb != null) {
                     sb.append(c);
+                }
             } else {
                 if (sb == null) {
                     sb = new StringBuilder(len);
                     sb.append(src, 0, i);
                 }
-                if (ix < to.length())
+                if (ix < to.length()) {
                     sb.append(to.charAt(ix));
+                }
             }
         }
         return sb == null ? src : sb.toString();
@@ -530,14 +541,16 @@ public final class StringUtils {
         for (int i = 0; i < len; i++) {
             c = str.charAt(i);
             if (c == ch) {
-                if (list == null)
+                if (list == null) {
                     list = new ArrayList<String>();
+                }
                 list.add(str.substring(ix, i));
                 ix = i + 1;
             }
         }
-        if (ix > 0)
+        if (ix > 0) {
             list.add(str.substring(ix));
+        }
         return list == null ? EMPTY_STRING_ARRAY : (String[]) list.toArray(EMPTY_STRING_ARRAY);
     }
 
@@ -548,10 +561,13 @@ public final class StringUtils {
      * @return String.
      */
     public static String join(String[] array) {
-        if (array.length == 0) return "";
+        if (array.length == 0) {
+            return "";
+        }
         StringBuilder sb = new StringBuilder();
-        for (String s : array)
+        for (String s : array) {
             sb.append(s);
+        }
         return sb.toString();
     }
 
@@ -563,11 +579,14 @@ public final class StringUtils {
      * @return String.
      */
     public static String join(String[] array, char split) {
-        if (array.length == 0) return "";
+        if (array.length == 0) {
+            return "";
+        }
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < array.length; i++) {
-            if (i > 0)
+            if (i > 0) {
                 sb.append(split);
+            }
             sb.append(array[i]);
         }
         return sb.toString();
@@ -581,24 +600,32 @@ public final class StringUtils {
      * @return String.
      */
     public static String join(String[] array, String split) {
-        if (array.length == 0) return "";
+        if (array.length == 0) {
+            return "";
+        }
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < array.length; i++) {
-            if (i > 0)
+            if (i > 0) {
                 sb.append(split);
+            }
             sb.append(array[i]);
         }
         return sb.toString();
     }
 
     public static String join(Collection<String> coll, String split) {
-        if (coll.isEmpty()) return "";
+        if (coll.isEmpty()) {
+            return "";
+        }
 
         StringBuilder sb = new StringBuilder();
         boolean isFirst = true;
         for (String s : coll) {
-            if (isFirst) isFirst = false;
-            else sb.append(split);
+            if (isFirst) {
+                isFirst = false;
+            } else {
+                sb.append(split);
+            }
             sb.append(s);
         }
         return sb.toString();
@@ -616,8 +643,9 @@ public final class StringUtils {
         Map<String, String> map = new HashMap<String, String>(tmp.length);
         for (int i = 0; i < tmp.length; i++) {
             Matcher matcher = KVP_PATTERN.matcher(tmp[i]);
-            if (matcher.matches() == false)
+            if (matcher.matches() == false) {
                 continue;
+            }
             map.put(matcher.group(1), matcher.group(2));
         }
         return map;
@@ -635,8 +663,9 @@ public final class StringUtils {
      * @return Parameters instance.
      */
     public static Map<String, String> parseQueryString(String qs) {
-        if (qs == null || qs.length() == 0)
+        if (qs == null || qs.length() == 0) {
             return new HashMap<String, String>();
+        }
         return parseKeyValuePair(qs, "\\&");
     }
 

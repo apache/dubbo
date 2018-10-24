@@ -71,14 +71,21 @@ public class ApplicationConfig extends AbstractConfig {
     // directory for saving thread dump
     private String dumpDirectory;
 
+    // whether to enable qos or not
     private Boolean qosEnable;
 
+    // the qos port to listen
     private Integer qosPort;
 
+    // should we accept foreign ip or not?
     private Boolean qosAcceptForeignIp;
 
     // customized parameters
     private Map<String, String> parameters;
+
+    //config the shutdown.wait
+    private String shutwait;
+
 
     public ApplicationConfig() {
     }
@@ -250,5 +257,14 @@ public class ApplicationConfig extends AbstractConfig {
     public void setParameters(Map<String, String> parameters) {
         checkParameterName(parameters);
         this.parameters = parameters;
+    }
+
+    public String getShutwait() {
+        return shutwait;
+    }
+
+    public void setShutwait(String shutwait) {
+        System.setProperty( Constants.SHUTDOWN_WAIT_KEY, shutwait);
+        this.shutwait = shutwait;
     }
 }

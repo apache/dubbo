@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.cluster.loadbalance;
 
 import org.apache.dubbo.rpc.Invoker;
-
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -39,4 +38,31 @@ public class LeastActiveBalanceTest extends LoadBalanceBaseTest {
         }
     }
 
+    @Test
+    public void testSelectByWeight() {
+        int sumInvoker1 = 0;
+        int sumInvoker2 = 0;
+        int loop = 10000;
+
+        LeastActiveLoadBalance lb = new LeastActiveLoadBalance();
+        for (int i = 0; i < loop; i++) {
+            Invoker selected = lb.select(weightInvokers, null, weightTestInvocation);
+
+            if (selected.getUrl().getProtocol().equals("test1")) {
+                sumInvoker1++;
+            }
+
+            if (selected.getUrl().getProtocol().equals("test2")) {
+                sumInvoker2++;
+            }
+            // never select invoker3 because it's active is more than invoker1 and invoker2
+            Assert.assertTrue("select is not the least active one", !selected.getUrl().getProtocol().equals("test3"));
+        }
+
+        // the sumInvoker1 : sumInvoker2 approximately equal to 1: 9
+        System.out.println(sumInvoker1);
+        System.out.println(sumInvoker2);
+
+        Assert.assertEquals("select failed!", sumInvoker1 + sumInvoker2, loop);
+    }
 }

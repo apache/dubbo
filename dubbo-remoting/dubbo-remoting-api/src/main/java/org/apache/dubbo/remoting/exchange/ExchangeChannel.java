@@ -57,5 +57,4 @@ public interface ExchangeChannel extends Channel {
      */
     @Override
     void close(int timeout);
-
 }

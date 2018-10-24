@@ -55,7 +55,6 @@ import java.util.Set;
 
 /**
  * RegistryDirectory
- *
  */
 public class RegistryDirectory<T> extends AbstractDirectory<T> implements NotifyListener {
 
@@ -97,10 +96,12 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     public RegistryDirectory(Class<T> serviceType, URL url) {
         super(url);
-        if (serviceType == null)
+        if (serviceType == null) {
             throw new IllegalArgumentException("service type is null.");
-        if (url.getServiceKey() == null || url.getServiceKey().length() == 0)
+        }
+        if (url.getServiceKey() == null || url.getServiceKey().length() == 0) {
             throw new IllegalArgumentException("registry serviceKey is null.");
+        }
         this.serviceType = serviceType;
         this.serviceKey = url.getServiceKey();
         this.queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(Constants.REFER_KEY));
@@ -319,8 +320,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 }
                 try {
                     Router router = routerFactory.getRouter(url);
-                    if (!routers.contains(router))
+                    if (!routers.contains(router)) {
                         routers.add(router);
+                    }
                 } catch (Throwable t) {
                     logger.error("convert router url to router error, url: " + url, t);
                 }
@@ -445,7 +447,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         List<Router> routers = getRouters();
         if (routers != null) {
             for (Router router : routers) {
-                if (router.getUrl() != null) {
+                // If router's url not null and is not route by runtime,we filter invokers here
+                if (router.getUrl() != null && !router.getUrl().getParameter(Constants.RUNTIME_KEY, false)) {
                     invokers = router.route(invokers, getConsumerUrl(), invocation);
                 }
             }
@@ -573,8 +576,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         if (forbidden) {
             // 1. No service provider 2. Service providers are disabled
             throw new RpcException(RpcException.FORBIDDEN_EXCEPTION,
-                "No provider available from registry " + getUrl().getAddress() + " for service " + getConsumerUrl().getServiceKey() + " on consumer " +  NetUtils.getLocalHost()
-                        + " use dubbo version " + Version.getVersion() + ", please check status of providers(disabled, not registered or in blacklist).");
+                    "No provider available from registry " + getUrl().getAddress() + " for service " + getConsumerUrl().getServiceKey() + " on consumer " + NetUtils.getLocalHost()
+                            + " use dubbo version " + Version.getVersion() + ", please check status of providers(disabled, not registered or in blacklist).");
         }
         List<Invoker<T>> invokers = null;
         Map<String, List<Invoker<T>>> localMethodInvokerMap = this.methodInvokerMap; // local reference

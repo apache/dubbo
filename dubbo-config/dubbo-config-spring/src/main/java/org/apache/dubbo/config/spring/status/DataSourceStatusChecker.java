@@ -21,7 +21,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.common.status.StatusChecker;
-import org.apache.dubbo.config.spring.ServiceBean;
+import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
 import org.springframework.context.ApplicationContext;
 
 import javax.sql.DataSource;
@@ -41,10 +41,18 @@ public class DataSourceStatusChecker implements StatusChecker {
     @Override
     @SuppressWarnings("unchecked")
     public Status check() {
-        ApplicationContext context = ServiceBean.getSpringContext();
+        ApplicationContext context = null;
+        for (ApplicationContext c : SpringExtensionFactory.getContexts()) {
+            if (c != null) {
+                context = c;
+                break;
+            }
+        }
+
         if (context == null) {
             return new Status(Status.Level.UNKNOWN);
         }
+
         Map<String, DataSource> dataSources = context.getBeansOfType(DataSource.class, false, false);
         if (dataSources == null || dataSources.size() == 0) {
             return new Status(Status.Level.UNKNOWN);
