@@ -170,8 +170,13 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         if (StringUtils.isEmpty(rawConfig)) {
             return new LinkedList<>();
         }
-        List<URL> urls = ConfigParser.parseConfigurators(rawConfig);
-        return urls.stream().map(configuratorFactory::getConfigurator).collect(Collectors.toList());
+        try {
+            List<URL> urls = ConfigParser.parseConfigurators(rawConfig);
+            return urls.stream().map(configuratorFactory::getConfigurator).collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Failed to parse raw dynamic config and it will not take effect, the raw config is: " + rawConfig, e);
+        }
+        return new LinkedList<>();
     }
 
     public void setProtocol(Protocol protocol) {

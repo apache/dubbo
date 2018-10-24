@@ -616,8 +616,13 @@ public class RegistryProtocol implements Protocol {
                 urls = new ArrayList<>();
                 urls.add(originUrl);
             } else {
-                // parseConfigurators will recognize app/service config automatically.
-                urls = ConfigParser.parseConfigurators(event.getNewValue());
+                try {
+                    // parseConfigurators will recognize app/service config automatically.
+                    urls = ConfigParser.parseConfigurators(event.getNewValue());
+                } catch (Exception e) {
+                    logger.error("Failed to parse raw dynamic config and it will not take effect, the raw config is: " + event.getNewValue(), e);
+                    return;
+                }
             }
             notify(urls);
         }
