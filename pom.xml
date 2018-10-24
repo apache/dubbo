@@ -145,7 +145,7 @@
         <module>dubbo-bom</module>
         <module>dubbo-all</module>
         <module>dubbo-distribution</module>
-        <module>dubbo-servicedata</module>
+        <module>dubbo-metadata-report</module>
         <module>dubbo-governance</module>
     </modules>
 
