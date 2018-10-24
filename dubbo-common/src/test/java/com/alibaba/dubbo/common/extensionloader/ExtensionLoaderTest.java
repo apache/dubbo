@@ -46,6 +46,8 @@ import com.alibaba.dubbo.common.extensionloader.ext8_add.impl.AddExt3_ManualAdap
 import com.alibaba.dubbo.common.extensionloader.ext8_add.impl.AddExt4_ManualAdaptive;
 import com.alibaba.dubbo.common.extensionloader.ext9_empty.Ext9Empty;
 import com.alibaba.dubbo.common.extensionloader.ext9_empty.impl.Ext9EmptyImpl;
+import com.alibaba.dubbo.common.extensionloader.injection.InjectExt;
+import com.alibaba.dubbo.common.extensionloader.injection.impl.InjectExtImpl;
 
 import junit.framework.Assert;
 import org.junit.Test;
@@ -414,6 +416,16 @@ public class ExtensionLoaderTest {
         Assert.assertEquals(2, list.size());
         Assert.assertTrue(list.get(0).getClass() == ActivateExt1Impl1.class);
         Assert.assertTrue(list.get(1).getClass() == OrderActivateExtImpl1.class);
+    }
+
+    @Test
+    public void testInjectExtension() {
+        // test default
+        InjectExt injectExt = ExtensionLoader.getExtensionLoader(InjectExt.class).getExtension("injection");
+        InjectExtImpl injectExtImpl = (InjectExtImpl) injectExt;
+        org.junit.Assert.assertNotNull(injectExtImpl.getSimpleExt());
+        org.junit.Assert.assertNull(injectExtImpl.getSimpleExt1());
+        org.junit.Assert.assertNull(injectExtImpl.getGenericType());
     }
 
 }
