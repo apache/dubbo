@@ -555,7 +555,7 @@
                 <xsd:documentation><![CDATA[ Is simple. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="addParamKeys" type="xsd:string">
+        <xsd:attribute name="plusparamkeys" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Addtional Parameter Keys. ]]></xsd:documentation>
             </xsd:annotation>
