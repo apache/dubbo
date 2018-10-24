@@ -77,6 +77,10 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
             throw new IllegalArgumentException("connectString==null, must specify the address to connect for zookeeper archaius source.");
         }
 
+        if (!configRootPath.startsWith("/")) {
+            configRootPath = "/" + configRootPath;
+        }
+
         CuratorFramework client = CuratorFrameworkFactory.newClient(connectString, sessionTimeout, connectTimeout,
                 new ExponentialBackoffRetry(1000, 3));
         client.start();
