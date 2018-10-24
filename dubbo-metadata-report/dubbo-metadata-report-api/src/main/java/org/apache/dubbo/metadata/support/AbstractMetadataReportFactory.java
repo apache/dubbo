@@ -52,7 +52,7 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
     }
 
     @Override
-    public MetadataReport getServiceStore(URL url) {
+    public MetadataReport getMetadataReport(URL url) {
         url = url.setPath(MetadataReport.class.getName())
                 .addParameter(Constants.INTERFACE_KEY, MetadataReport.class.getName())
                 .removeParameters(Constants.EXPORT_KEY, Constants.REFER_KEY);
@@ -64,7 +64,7 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
             if (metadataReport != null) {
                 return metadataReport;
             }
-            metadataReport = createServiceStore(url);
+            metadataReport = createMetadataReport(url);
             if (metadataReport == null) {
                 throw new IllegalStateException("Can not create servicestore " + url);
             }
@@ -76,5 +76,5 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
         }
     }
 
-    protected abstract MetadataReport createServiceStore(URL url);
+    protected abstract MetadataReport createMetadataReport(URL url);
 }

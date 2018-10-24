@@ -29,7 +29,7 @@ public class ZookeeperMetadataReportTest {
 
         zookeeperServiceStoreFactory = new ZookeeperMetadataReportFactory();
         zookeeperServiceStoreFactory.setZookeeperTransporter(new CuratorZookeeperTransporter());
-        this.zookeeperServiceStore = (ZookeeperMetadataReport) zookeeperServiceStoreFactory.createServiceStore(registryUrl);
+        this.zookeeperServiceStore = (ZookeeperMetadataReport) zookeeperServiceStoreFactory.createMetadataReport(registryUrl);
     }
 
     @After
