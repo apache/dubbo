@@ -30,8 +30,8 @@
     </dubbo:application>
 
     <!-- use multicast registry center to discover service -->
-    <dubbo:registry address="zookeeper://127.0.0.1:2181" default="true"/>
-    <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
+    <dubbo:registry group="dubboregistrygroup1" address="zookeeper://127.0.0.1:2181" default="true"/>
+    <dubbo:registry group="dubboregistrygroup1" address="zookeeper://127.0.0.1:2181"/>
 
     <dubbo:servicestore address="redis://127.0.0.1:6379"/>
 
