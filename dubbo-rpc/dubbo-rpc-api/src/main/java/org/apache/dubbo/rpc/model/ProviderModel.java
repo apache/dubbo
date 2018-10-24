@@ -46,6 +46,10 @@ public class ProviderModel {
         return serviceName;
     }
 
+    public Class<?> getServiceInterfaceClass() {
+        return serviceInterfaceClass;
+    }
+
     public Object getServiceInstance() {
         return serviceInstance;
     }
