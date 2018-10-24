@@ -49,7 +49,7 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
     public static final String ARCHAIUS_SOURCE_ADDRESS_KEY = "archaius.zk.address";
     public static final String ARCHAIUS_CONFIG_ROOT_PATH_KEY = "archaius.zk.rootpath";
     public static final String ARCHAIUS_CONFIG_CHECK_KEY = "archaius.zk.check";
-    public static final String DEFAULT_CONFIG_ROOT_PATH = "/dubbo/config";
+    public static final String DEFAULT_CONFIG_ROOT_PATH = "/dubbo";
 
     private static final Logger logger = LoggerFactory.getLogger(ZooKeeperConfigurationSource.class);
     private Executor executor = Executors.newFixedThreadPool(1);
