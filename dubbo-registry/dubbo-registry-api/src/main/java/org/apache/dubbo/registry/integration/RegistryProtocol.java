@@ -202,6 +202,13 @@ public class RegistryProtocol implements Protocol {
         return providerUrl;
     }
 
+    /**
+     * generate a url contains configuration items for config center.
+     * if no configuration item found, use registry url instead.
+     *
+     * @param registryUrl
+     * @return
+     */
     private URL getConfigUrl(URL registryUrl) {
         Map<String, String> qs = StringUtils.parseQueryString(registryUrl.getParameterAndDecoded(REFER_KEY));
         URL url = registryUrl
@@ -216,6 +223,11 @@ public class RegistryProtocol implements Protocol {
         String configAddress = registryUrl.getParameter(Constants.CONFIG_ADDRESS_KEY);
         if (StringUtils.isNotEmpty(configAddress)) {
             url = url.setAddress(configAddress);
+        }
+
+        String configNamespace = registryUrl.getParameter(Constants.CONFIG_NAMESPACE_KEY);
+        if (StringUtils.isEmpty(configNamespace)) {
+            url = url.addParameter(Constants.CONFIG_NAMESPACE_KEY, registryUrl.getParameter(Constants.GROUP_KEY, Constants.DEFAULT_PROTOCOL));
         }
         return url;
     }
