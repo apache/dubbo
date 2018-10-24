@@ -25,7 +25,7 @@ public class RedisMetadataReportTest {
         this.redisServer = new RedisServer(redisPort);
         this.redisServer.start();
         URL registryUrl = URL.valueOf("redis://localhost:" + redisPort);
-        redisServiceStore = (RedisMetadataReport) new RedisMetadataReportFactory().createServiceStore(registryUrl);
+        redisServiceStore = (RedisMetadataReport) new RedisMetadataReportFactory().createMetadataReport(registryUrl);
     }
 
     @After

@@ -34,7 +34,7 @@ public class ZookeeperMetadataReportFactory extends AbstractMetadataReportFactor
     }
 
     @Override
-    public MetadataReport createServiceStore(URL url) {
+    public MetadataReport createMetadataReport(URL url) {
         return new ZookeeperMetadataReport(url, zookeeperTransporter);
     }
 

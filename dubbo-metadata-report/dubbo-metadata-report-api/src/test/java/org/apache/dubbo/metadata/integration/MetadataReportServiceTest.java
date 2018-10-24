@@ -41,7 +41,7 @@ public class MetadataReportServiceTest {
             }
         });
         Assert.assertSame(metadataReportService1, metadataReportService2);
-        Assert.assertEquals(metadataReportService1.serviceStoreUrl, url);
+        Assert.assertEquals(metadataReportService1.metadataReportUrl, url);
     }
 
     @Test

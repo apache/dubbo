@@ -61,15 +61,15 @@ public class MetadataReportService {
     final Set<URL> providerURLs = new ConcurrentHashSet<>();
     final Set<URL> consumerURLs = new ConcurrentHashSet<URL>();
     MetadataReport metadataReport;
-    URL serviceStoreUrl;
+    URL metadataReportUrl;
 
-    MetadataReportService(URL serviceStoreURL) {
-        if (Constants.SERVICE_STORE_KEY.equals(serviceStoreURL.getProtocol())) {
-            String protocol = serviceStoreURL.getParameter(Constants.SERVICE_STORE_KEY, Constants.DEFAULT_DIRECTORY);
-            serviceStoreURL = serviceStoreURL.setProtocol(protocol).removeParameter(Constants.SERVICE_STORE_KEY);
+    MetadataReportService(URL metadataReportURL) {
+        if (Constants.SERVICE_STORE_KEY.equals(metadataReportURL.getProtocol())) {
+            String protocol = metadataReportURL.getParameter(Constants.SERVICE_STORE_KEY, Constants.DEFAULT_DIRECTORY);
+            metadataReportURL = metadataReportURL.setProtocol(protocol).removeParameter(Constants.SERVICE_STORE_KEY);
         }
-        this.serviceStoreUrl = serviceStoreURL;
-        metadataReport = metadataReportFactory.getServiceStore(this.serviceStoreUrl);
+        this.metadataReportUrl = metadataReportURL;
+        metadataReport = metadataReportFactory.getMetadataReport(this.metadataReportUrl);
         scheduler.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
