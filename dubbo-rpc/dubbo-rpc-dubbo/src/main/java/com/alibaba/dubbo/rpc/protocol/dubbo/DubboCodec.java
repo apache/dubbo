@@ -17,7 +17,6 @@
 package com.alibaba.dubbo.rpc.protocol.dubbo;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.io.Bytes;
 import com.alibaba.dubbo.common.io.UnsafeByteArrayInputStream;
@@ -25,7 +24,6 @@ import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.serialize.ObjectInput;
 import com.alibaba.dubbo.common.serialize.ObjectOutput;
-import com.alibaba.dubbo.common.serialize.Serialization;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.Channel;
@@ -63,7 +61,6 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
     @Override
     protected Object decodeBody(Channel channel, InputStream is, byte[] header) throws IOException {
         byte flag = header[2], proto = (byte) (flag & SERIALIZATION_MASK);
-        Serialization s = CodecSupport.getSerialization(channel.getUrl(), proto);
         // get request id.
         long id = Bytes.bytes2long(header, 4);
         if ((flag & FLAG_REQUEST) == 0) {
@@ -75,13 +72,14 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
             // get status.
             byte status = header[3];
             res.setStatus(status);
-            if (status == Response.OK) {
-                try {
+            try {
+                ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
+                if (status == Response.OK) {
                     Object data;
                     if (res.isHeartbeat()) {
-                        data = decodeHeartbeatData(channel, deserialize(s, channel.getUrl(), is));
+                        data = decodeHeartbeatData(channel, in);
                     } else if (res.isEvent()) {
-                        data = decodeEventData(channel, deserialize(s, channel.getUrl(), is));
+                        data = decodeEventData(channel, in);
                     } else {
                         DecodeableRpcResult result;
                         if (channel.getUrl().getParameter(
@@ -98,15 +96,15 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
                         data = result;
                     }
                     res.setResult(data);
-                } catch (Throwable t) {
-                    if (log.isWarnEnabled()) {
-                        log.warn("Decode response failed: " + t.getMessage(), t);
-                    }
-                    res.setStatus(Response.CLIENT_ERROR);
-                    res.setErrorMessage(StringUtils.toString(t));
+                } else {
+                    res.setErrorMessage(in.readUTF());
                 }
-            } else {
-                res.setErrorMessage(deserialize(s, channel.getUrl(), is).readUTF());
+            } catch (Throwable t) {
+                if (log.isWarnEnabled()) {
+                    log.warn("Decode response failed: " + t.getMessage(), t);
+                }
+                res.setStatus(Response.CLIENT_ERROR);
+                res.setErrorMessage(StringUtils.toString(t));
             }
             return res;
         } else {
@@ -119,10 +117,11 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
             }
             try {
                 Object data;
+                ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
                 if (req.isHeartbeat()) {
-                    data = decodeHeartbeatData(channel, deserialize(s, channel.getUrl(), is));
+                    data = decodeHeartbeatData(channel, in);
                 } else if (req.isEvent()) {
-                    data = decodeEventData(channel, deserialize(s, channel.getUrl(), is));
+                    data = decodeEventData(channel, in);
                 } else {
                     DecodeableRpcInvocation inv;
                     if (channel.getUrl().getParameter(
@@ -147,11 +146,6 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
             }
             return req;
         }
-    }
-
-    private ObjectInput deserialize(Serialization serialization, URL url, InputStream is)
-            throws IOException {
-        return serialization.deserialize(url, is);
     }
 
     private byte[] readMessageData(InputStream is) throws IOException {
