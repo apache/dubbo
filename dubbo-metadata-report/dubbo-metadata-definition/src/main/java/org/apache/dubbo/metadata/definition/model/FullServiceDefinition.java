@@ -14,20 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.store;
+package org.apache.dubbo.metadata.definition.model;
 
-
-import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
-import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
-import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
+import java.util.Map;
 
 /**
+ *  2018/10/25
  */
-public interface MetadataReport {
+public class FullServiceDefinition extends ServiceDefinition{
 
+    private Map<String,String> parameters;
 
-    void storeProviderMetadata(ProviderMetadataIdentifier providerMetadataIdentifier, FullServiceDefinition serviceDefinition);
+    public Map<String, String> getParameters() {
+        return parameters;
+    }
 
-    void storeConsumerMetadata(ConsumerMetadataIdentifier consumerMetadataIdentifier, String serviceParameterString);
+    public void setParameters(Map<String, String> parameters) {
+        this.parameters = parameters;
+    }
 
 }

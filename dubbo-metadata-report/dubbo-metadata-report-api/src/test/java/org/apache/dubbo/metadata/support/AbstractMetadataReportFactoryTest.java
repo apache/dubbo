@@ -1,7 +1,11 @@
 package org.apache.dubbo.metadata.support;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
+import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
+import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
 import org.apache.dubbo.metadata.store.MetadataReport;
 import org.junit.Assert;
 import org.junit.Test;
@@ -19,18 +23,19 @@ public class AbstractMetadataReportFactoryTest {
         protected MetadataReport createMetadataReport(URL url) {
             return new MetadataReport() {
 
+                @Override
+                public void storeProviderMetadata(ProviderMetadataIdentifier providerMetadataIdentifier, FullServiceDefinition serviceDefinition) {
+                    store.put(providerMetadataIdentifier.getIdentifierKey(), JSON.toJSONString(serviceDefinition));
+                }
+
+                @Override
+                public void storeConsumerMetadata(ConsumerMetadataIdentifier consumerMetadataIdentifier, String serviceParameterString) {
+                    store.put(consumerMetadataIdentifier.getIdentifierKey(), serviceParameterString);
+                }
+
                 Map<String, String> store = new ConcurrentHashMap<>();
 
-                @Override
-                public void put(URL url) {
-                    store.put(url.getServiceKey(), url.toParameterString());
-                }
 
-                @Override
-                public URL peek(URL url) {
-                    String queryV = store.get(url.getServiceKey());
-                    return url.clearParameters().addParameterString(queryV);
-                }
             };
         }
     };

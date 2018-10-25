@@ -33,9 +33,6 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public abstract class AbstractMetadataReportFactory implements MetadataReportFactory {
 
-    // Log output
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractMetadataReportFactory.class);
-
     // The lock for the acquisition process of the registry
     private static final ReentrantLock LOCK = new ReentrantLock();
 

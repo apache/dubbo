@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.metadata.integration;
 
-import com.alibaba.fastjson.JSON;
-
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
@@ -27,11 +25,13 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.metadata.metadata.ServiceDescriptor;
-import org.apache.dubbo.metadata.metadata.builder.ServiceDescriptorBuilder;
+import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
+import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
+import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
+import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
 import org.apache.dubbo.metadata.store.MetadataReport;
 import org.apache.dubbo.metadata.store.MetadataReportFactory;
+import org.apache.dubbo.rpc.RpcException;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -41,8 +41,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
-
-import static org.apache.dubbo.common.Constants.SERVICE_DESCIPTOR_KEY;
 
 /**
  * @since 2.7.0
@@ -96,24 +94,33 @@ public class MetadataReportService {
 
     public void publishProvider(URL providerUrl) throws RpcException {
         //first add into the list
+        // remove the individul param
+        providerUrl = providerUrl.removeParameters(Constants.PID_KEY,Constants.TIMESTAMP_KEY,Constants.BIND_IP_KEY,Constants.BIND_PORT_KEY,Constants.TIMESTAMP_KEY);
         providerURLs.add(providerUrl);
         try {
             String interfaceName = providerUrl.getParameter(Constants.INTERFACE_KEY);
             if (StringUtils.isNotEmpty(interfaceName)) {
                 Class interfaceClass = Class.forName(interfaceName);
-                ServiceDescriptor serviceDescriptor = ServiceDescriptorBuilder.build(interfaceClass);
-                providerUrl = providerUrl.addParameter(SERVICE_DESCIPTOR_KEY, JSON.toJSONString(serviceDescriptor));
+//                ServiceDescriptor serviceDescriptor = ServiceDescriptorBuilder.build(interfaceClass);
+//                providerUrl = providerUrl.addParameter(SERVICE_DESCIPTOR_KEY, JSON.toJSONString(serviceDescriptor));
+                FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass, providerUrl.getParameters());
+                metadataReport.storeProviderMetadata(new ProviderMetadataIdentifier(providerUrl.getServiceInterface(),
+                        providerUrl.getParameter(Constants.VERSION_KEY), providerUrl.getParameter(Constants.GROUP_KEY)), fullServiceDefinition);
+                return;
             }
+            logger.error("publishProvider interfaceName is empty . providerUrl: " + providerUrl.toFullString());
         } catch (ClassNotFoundException e) {
             //ignore error
-            logger.error("Servicestore getServiceDescriptor error. providerUrl: " + providerUrl.toFullString(), e);
+            logger.error("publishProvider getServiceDescriptor error. providerUrl: " + providerUrl.toFullString(), e);
         }
-        metadataReport.put(providerUrl);
     }
 
     public void publishConsumer(URL consumerURL) throws RpcException {
+        consumerURL = consumerURL.removeParameters(Constants.PID_KEY,Constants.TIMESTAMP_KEY,Constants.BIND_IP_KEY,Constants.BIND_PORT_KEY,Constants.TIMESTAMP_KEY);
         consumerURLs.add(consumerURL);
-        metadataReport.put(consumerURL);
+        metadataReport.storeConsumerMetadata(new ConsumerMetadataIdentifier(consumerURL.getServiceInterface(),
+                consumerURL.getParameter(Constants.VERSION_KEY), consumerURL.getParameter(Constants.GROUP_KEY),
+                consumerURL.getParameter(Constants.APPLICATION_KEY)), consumerURL.toParameterString());
     }
 
     void publishAll() {
@@ -127,6 +134,7 @@ public class MetadataReportService {
 
     /**
      * between 2:00 am to 6:00 am, the time is random.
+     *
      * @return
      */
     long calculateStartTime() {

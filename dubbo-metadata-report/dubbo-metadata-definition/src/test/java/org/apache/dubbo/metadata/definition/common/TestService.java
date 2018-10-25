@@ -14,20 +14,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.store;
-
-
-import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
-import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
-import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
+package org.apache.dubbo.metadata.definition.common;
 
 /**
+ *  16/9/22.
  */
-public interface MetadataReport {
+public interface TestService {
+    /**
+     * 入参为内部类
+     *
+     * @param innerClass
+     * @return
+     */
+    void m1(OuterClass.InnerClass innerClass);
 
+    /**
+     * 入参为 int 数组
+     *
+     * @param a
+     */
+    void m2(int[] a);
 
-    void storeProviderMetadata(ProviderMetadataIdentifier providerMetadataIdentifier, FullServiceDefinition serviceDefinition);
+    /**
+     * 返回值自定义类型包含无泛型的 map
+     *
+     * @param s1
+     * @return
+     */
+    ResultWithRawCollections m3(String s1);
 
-    void storeConsumerMetadata(ConsumerMetadataIdentifier consumerMetadataIdentifier, String serviceParameterString);
+    /**
+     * 入参为枚举类型
+     *
+     * @param color
+     */
+    void m4(ColorEnum color);
 
+    /**
+     * 返回值自定义类型继承自Map
+     *
+     * @param s1
+     * @return
+     */
+    ClassExtendsMap m5(String s1);
 }

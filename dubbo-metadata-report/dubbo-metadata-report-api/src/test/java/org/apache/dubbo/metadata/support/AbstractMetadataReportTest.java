@@ -53,7 +53,7 @@ public class AbstractMetadataReportTest {
     @Test
     public void testPutUsual() {
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
-        abstractServiceStore.put(url);
+        abstractServiceStore.storeProviderMetadata(url);
         Assert.assertNotNull(abstractServiceStore.store.get(url.getServiceKey()));
     }
 

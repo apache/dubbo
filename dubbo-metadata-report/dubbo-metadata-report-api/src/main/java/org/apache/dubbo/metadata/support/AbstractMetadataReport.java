@@ -16,13 +16,17 @@
  */
 package org.apache.dubbo.metadata.support;
 
+import com.google.gson.Gson;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
+import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
+import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
+import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
 import org.apache.dubbo.metadata.store.MetadataReport;
 
 import java.io.File;
@@ -33,9 +37,10 @@ import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
-import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -59,7 +64,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     private final ExecutorService reportCacheExecutor = Executors.newFixedThreadPool(1, new NamedThreadFactory("DubboSaveServicestoreCache", true));
 
     private final AtomicLong lastCacheChanged = new AtomicLong();
-    final Set<URL> failedReports = new ConcurrentHashSet<URL>(4);
+    final Map<MetadataIdentifier, Object> failedReports = new ConcurrentHashMap<MetadataIdentifier, Object>(4);
     private URL reportURL;
     // Local disk cache file
     File file;
@@ -173,16 +178,16 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
-    private void saveProperties(URL url, boolean add) {
+    private void saveProperties(MetadataIdentifier metadataIdentifier, String value, boolean add) {
         if (file == null) {
             return;
         }
 
         try {
             if (add) {
-                properties.setProperty(url.getServiceKey(), url.toFullString());
+                properties.setProperty(metadataIdentifier.getIdentifierKey(), value);
             } else {
-                properties.remove(url.getServiceKey());
+                properties.remove(metadataIdentifier.getIdentifierKey());
             }
             long version = lastCacheChanged.incrementAndGet();
             reportCacheExecutor.execute(new SaveProperties(version));
@@ -209,36 +214,40 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
-    public void put(URL url) {
+    public void storeProviderMetadata(ProviderMetadataIdentifier providerMetadataIdentifier, FullServiceDefinition serviceDefinition) {
         try {
-            // remove the individul param
-            url = url.removeParameters(Constants.PID_KEY, Constants.TIMESTAMP_KEY);
             if (logger.isInfoEnabled()) {
-                logger.info("Servicestore Put: " + url);
+                logger.info("store provider metadata. Identifier : " + providerMetadataIdentifier + "; definition: " + serviceDefinition);
             }
-            failedReports.remove(url);
-            doPut(url);
-            saveProperties(url, true);
+            failedReports.remove(providerMetadataIdentifier);
+            Gson gson = new Gson();
+            String data = gson.toJson(serviceDefinition);
+            doStoreProviderMetadata(providerMetadataIdentifier, data);
+            saveProperties(providerMetadataIdentifier, data, true);
         } catch (Exception e) {
             // retry again. If failed again, throw exception.
-            failedReports.add(url);
+            failedReports.put(providerMetadataIdentifier, serviceDefinition);
             metadataReportRetry.startRetryTask();
-            logger.error("Failed to put servicestore " + url + " in  " + getUrl().toFullString() + ", cause: " + e.getMessage(), e);
+            logger.error("Failed to put provider metadata " + providerMetadataIdentifier + " in  " + serviceDefinition + ", cause: " + e.getMessage(), e);
         }
     }
 
-
-    public URL peek(URL url) {
+    public void storeConsumerMetadata(ConsumerMetadataIdentifier consumerMetadataIdentifier, String serviceParameterString) {
         try {
             if (logger.isInfoEnabled()) {
-                logger.info("Servicestore Peek: " + url);
+                logger.info("store consumer metadata. Identifier : " + consumerMetadataIdentifier + "; definition: " + serviceParameterString);
             }
-            return doPeek(url);
+            failedReports.remove(consumerMetadataIdentifier);
+            doStoreConsumerMetadata(consumerMetadataIdentifier, serviceParameterString);
+            saveProperties(consumerMetadataIdentifier, serviceParameterString, true);
         } catch (Exception e) {
-            logger.error("Failed to peek servicestore " + url + " in  " + getUrl().toFullString() + ", cause: " + e.getMessage(), e);
+            // retry again. If failed again, throw exception.
+            failedReports.put(consumerMetadataIdentifier, serviceParameterString);
+            metadataReportRetry.startRetryTask();
+            logger.error("Failed to put consumer metadata " + consumerMetadataIdentifier + ";  " + serviceParameterString + ", cause: " + e.getMessage(), e);
         }
-        return null;
     }
+
 
     public String getUrlKey(URL url) {
         String protocol = getProtocol(url);
@@ -260,8 +269,15 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         if (failedReports.isEmpty()) {
             return true;
         }
-        for (URL url : new HashSet<URL>(failedReports)) {
-            this.put(url);
+        Iterator<Map.Entry<MetadataIdentifier, Object>> iterable = failedReports.entrySet().iterator();
+        while (iterable.hasNext()) {
+            Map.Entry<MetadataIdentifier, Object> item = iterable.next();
+            if (item instanceof ProviderMetadataIdentifier) {
+                this.storeProviderMetadata((ProviderMetadataIdentifier) item.getKey(), (FullServiceDefinition) item.getValue());
+            } else if (item instanceof ConsumerMetadataIdentifier) {
+                this.storeConsumerMetadata((ConsumerMetadataIdentifier) item.getKey(), (String) item.getValue());
+            }
+
         }
         return false;
     }
@@ -306,9 +322,8 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
+    protected abstract void doStoreProviderMetadata(ProviderMetadataIdentifier providerMetadataIdentifier, String serviceDefinitions);
 
-    protected abstract void doPut(URL url);
-
-    protected abstract URL doPeek(URL url);
+    protected abstract void doStoreConsumerMetadata(ConsumerMetadataIdentifier consumerMetadataIdentifier, String serviceParameterString);
 
 }

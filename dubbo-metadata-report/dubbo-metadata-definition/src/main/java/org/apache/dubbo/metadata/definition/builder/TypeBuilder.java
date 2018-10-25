@@ -14,20 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.store;
+package org.apache.dubbo.metadata.definition.builder;
 
+import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 
-import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
-import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
-import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
+import java.lang.reflect.Type;
+import java.util.Map;
 
 /**
+ *  2015/1/27.
  */
-public interface MetadataReport {
+public interface TypeBuilder {
 
+    /**
+     * Whether the build accept the type or class passed in.
+     */
+    boolean accept(Type type, Class<?> clazz);
 
-    void storeProviderMetadata(ProviderMetadataIdentifier providerMetadataIdentifier, FullServiceDefinition serviceDefinition);
-
-    void storeConsumerMetadata(ConsumerMetadataIdentifier consumerMetadataIdentifier, String serviceParameterString);
+    /**
+     * Build type definition with the type or class.
+     */
+    TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache);
 
 }
