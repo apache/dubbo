@@ -14,20 +14,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.store;
+package org.apache.dubbo.metadata.definition.common;
 
-
-import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
-import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
-import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
+import java.util.List;
+import java.util.Map;
 
 /**
+ * Created by Arthur.xqw on 2017/4/11.
  */
-public interface MetadataReport {
+@SuppressWarnings("rawtypes")
+public class ResultWithRawCollections {
 
+    private Map map;
+    private List list;
 
-    void storeProviderMetadata(ProviderMetadataIdentifier providerMetadataIdentifier, FullServiceDefinition serviceDefinition);
+    public ResultWithRawCollections() {}
 
-    void storeConsumerMetadata(ConsumerMetadataIdentifier consumerMetadataIdentifier, String serviceParameterString);
+    public ResultWithRawCollections(Map map, List list) {
+        this.map = map;
+        this.list = list;
+    }
 
+    public List getList() {
+        return list;
+    }
+
+    public void setList(List list) {
+        this.list = list;
+    }
+
+    public Map getMap() {
+        return map;
+    }
+
+    public void setMap(Map map) {
+        this.map = map;
+    }
 }

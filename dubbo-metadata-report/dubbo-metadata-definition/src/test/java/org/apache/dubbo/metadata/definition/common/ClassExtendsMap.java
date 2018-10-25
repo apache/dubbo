@@ -14,20 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.store;
+package org.apache.dubbo.metadata.definition.common;
 
+import java.util.HashMap;
 
-import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
-import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
-import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
+public class ClassExtendsMap extends HashMap<String, Object> {
 
-/**
- */
-public interface MetadataReport {
+    private static final long serialVersionUID = 5108356684263812575L;
+    private ClassExtendsMap resultMap;
 
+    public ClassExtendsMap() {}
 
-    void storeProviderMetadata(ProviderMetadataIdentifier providerMetadataIdentifier, FullServiceDefinition serviceDefinition);
-
-    void storeConsumerMetadata(ConsumerMetadataIdentifier consumerMetadataIdentifier, String serviceParameterString);
-
+    public ClassExtendsMap getResultMap() {
+        return resultMap;
+    }
 }
