@@ -195,7 +195,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                     throw new IllegalStateException("Unload " + resolveFile + ", cause: " + e.getMessage(), e);
                 } finally {
                     try {
-                        if (null != fis) fis.close();
+                        if (null != fis) {
+                            fis.close();
+                        }
                     } catch (IOException e) {
                         logger.warn(e.getMessage(), e);
                     }
@@ -405,9 +407,13 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     private void resolveAsyncInterface(Class<?> interfaceClass, Map<String, String> map) {
         AsyncFor annotation = interfaceClass.getAnnotation(AsyncFor.class);
-        if (annotation == null) return;
+        if (annotation == null) {
+            return;
+        }
         Class<?> target = annotation.value();
-        if (!target.isAssignableFrom(interfaceClass)) return;
+        if (!target.isAssignableFrom(interfaceClass)) {
+            return;
+        }
         this.asyncInterfaceClass = interfaceClass;
         this.interfaceClass = target;
         setInterface(this.interfaceClass.getName());

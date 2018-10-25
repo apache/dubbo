@@ -29,6 +29,8 @@ import java.util.concurrent.ConcurrentMap;
  *
  * ApplicationModel includes many ProviderModel which is about published services
  * and many Consumer Model which is about subscribed services.
+ *
+ * adjust project structure in order to fully utilize the methods introduced here.
  */
 public class ApplicationModel {
 
