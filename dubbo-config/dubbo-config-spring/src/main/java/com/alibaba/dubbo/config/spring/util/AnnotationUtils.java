@@ -19,21 +19,7 @@ package com.alibaba.dubbo.config.spring.util;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 
-import org.springframework.core.env.PropertyResolver;
 import org.springframework.util.StringUtils;
-
-import java.lang.annotation.Annotation;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-
-import static java.lang.String.valueOf;
-import static org.springframework.core.annotation.AnnotationUtils.getAnnotationAttributes;
-import static org.springframework.core.annotation.AnnotationUtils.getDefaultValue;
-import static org.springframework.util.CollectionUtils.arrayToList;
-import static org.springframework.util.ObjectUtils.nullSafeEquals;
-import static org.springframework.util.StringUtils.trimAllWhitespace;
 
 /**
  * Annotation Utilities Class
