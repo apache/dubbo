@@ -537,17 +537,17 @@ public class Constants {
 
     public static final String ON_DISCONNECT_KEY = "ondisconnect";
 
-    public static final String ON_INVOKE_METHOD_KEY = "oninvoke.method";
+    public static final String ON_INVOKE_METHOD_KEY = "oninvokeMethod";
 
-    public static final String ON_RETURN_METHOD_KEY = "onreturn.method";
+    public static final String ON_RETURN_METHOD_KEY = "onreturnMethod";
 
-    public static final String ON_THROW_METHOD_KEY = "onthrow.method";
+    public static final String ON_THROW_METHOD_KEY = "onthrowMethod";
 
-    public static final String ON_INVOKE_INSTANCE_KEY = "oninvoke.instance";
+    public static final String ON_INVOKE_INSTANCE_KEY = "oninvokeInstance";
 
-    public static final String ON_RETURN_INSTANCE_KEY = "onreturn.instance";
+    public static final String ON_RETURN_INSTANCE_KEY = "onreturnInstance";
 
-    public static final String ON_THROW_INSTANCE_KEY = "onthrow.instance";
+    public static final String ON_THROW_INSTANCE_KEY = "onthrowInstance";
 
     public static final String OVERRIDE_PROTOCOL = "override";
 

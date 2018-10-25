@@ -22,19 +22,22 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Consumer Model which is about subscribed services.
+ */
 public class ConsumerModel {
     private final Object proxyObject;
     private final String serviceName;
 
     private final Map<Method, ConsumerMethodModel> methodModels = new IdentityHashMap<Method, ConsumerMethodModel>();
 
-    public ConsumerModel(String serviceName, Object proxyObject, Method[] methods) {
+    public ConsumerModel(String serviceName, Object proxyObject, Method[] methods, Map<String, Object> attributes) {
         this.serviceName = serviceName;
         this.proxyObject = proxyObject;
 
         if (proxyObject != null) {
             for (Method method : methods) {
-                methodModels.put(method, new ConsumerMethodModel(method));
+                methodModels.put(method, new ConsumerMethodModel(method, attributes));
             }
         }
     }
@@ -51,6 +54,16 @@ public class ConsumerModel {
      */
     public ConsumerMethodModel getMethodModel(Method method) {
         return methodModels.get(method);
+    }
+
+    /**
+     * Return method model for the given method on consumer side
+     *
+     * @param method method object
+     * @return method model
+     */
+    public ConsumerMethodModel getMethodModel(String method) {
+        return methodModels.entrySet().stream().filter(entry -> entry.getKey().getName().equals(method)).findFirst().get().getValue();
     }
 
     /**
