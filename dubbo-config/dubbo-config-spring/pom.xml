@@ -28,6 +28,9 @@
     <description>The spring config module of dubbo project</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
+        <!-- @Repeatable  -->
+        <java_source_version>1.8</java_source_version>
+        <java_target_version>1.8</java_target_version>
     </properties>
     <dependencies>
         <dependency>
