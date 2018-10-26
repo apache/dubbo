@@ -272,9 +272,9 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         Iterator<Map.Entry<MetadataIdentifier, Object>> iterable = failedReports.entrySet().iterator();
         while (iterable.hasNext()) {
             Map.Entry<MetadataIdentifier, Object> item = iterable.next();
-            if (item instanceof ProviderMetadataIdentifier) {
+            if (item.getKey() instanceof ProviderMetadataIdentifier) {
                 this.storeProviderMetadata((ProviderMetadataIdentifier) item.getKey(), (FullServiceDefinition) item.getValue());
-            } else if (item instanceof ConsumerMetadataIdentifier) {
+            } else if (item.getKey() instanceof ConsumerMetadataIdentifier) {
                 this.storeConsumerMetadata((ConsumerMetadataIdentifier) item.getKey(), (String) item.getValue());
             }
 
@@ -302,7 +302,9 @@ public abstract class AbstractMetadataReport implements MetadataReport {
                             public void run() {
                                 // Check and connect to the registry
                                 try {
+
                                     int times = retryTimes.incrementAndGet();
+                                    System.out.println("---" + times + ";" + System.currentTimeMillis());
                                     if (retry() && times > retryTimesIfNonFail) {
                                         cancelRetryTask();
                                     }

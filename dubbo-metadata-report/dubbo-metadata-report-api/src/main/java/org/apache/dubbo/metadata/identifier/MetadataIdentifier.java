@@ -10,7 +10,7 @@ import java.io.File;
  */
 public class MetadataIdentifier {
     public static final String SEPARATOR = ":";
-    final static String PATH_TAG = "metadata";
+    final static String DEFAULT_PATH_TAG = "metadata";
 
     private String serviceInterface;
     private String version;
@@ -32,7 +32,11 @@ public class MetadataIdentifier {
     }
 
     public String getFilePathKey() {
-        return toServicePath() + Constants.PATH_SEPARATOR + PATH_TAG + Constants.PATH_SEPARATOR + (version == null ? "" : (version + Constants.PATH_SEPARATOR))
+        return getFilePathKey(DEFAULT_PATH_TAG);
+    }
+
+    public String getFilePathKey(String pathTag) {
+        return toServicePath() + Constants.PATH_SEPARATOR + pathTag + Constants.PATH_SEPARATOR + (version == null ? "" : (version + Constants.PATH_SEPARATOR))
                 + side + getPathSegment();
     }
 
@@ -40,7 +44,7 @@ public class MetadataIdentifier {
         if (Constants.ANY_VALUE.equals(serviceInterface)) {
             return "";
         }
-        return Constants.PATH_SEPARATOR + URL.encode(serviceInterface);
+        return URL.encode(serviceInterface);
     }
 
     protected String getPathSegment(){
