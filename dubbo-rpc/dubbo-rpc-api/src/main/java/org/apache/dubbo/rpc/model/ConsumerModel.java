@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Consumer Model which is about subscribed services.
@@ -63,7 +64,8 @@ public class ConsumerModel {
      * @return method model
      */
     public ConsumerMethodModel getMethodModel(String method) {
-        return methodModels.entrySet().stream().filter(entry -> entry.getKey().getName().equals(method)).findFirst().get().getValue();
+        Optional<Map.Entry<Method, ConsumerMethodModel>> consumerMethodModelEntry = methodModels.entrySet().stream().filter(entry -> entry.getKey().getName().equals(method)).findFirst();
+        return consumerMethodModelEntry.isPresent() ? consumerMethodModelEntry.get().getValue() : null;
     }
 
     /**

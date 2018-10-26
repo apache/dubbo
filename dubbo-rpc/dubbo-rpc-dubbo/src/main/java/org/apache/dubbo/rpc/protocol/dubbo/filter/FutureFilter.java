@@ -197,10 +197,14 @@ public class FutureFilter implements PostProcessFilter {
 
     private ConsumerMethodModel.AsyncMethodInfo getAsyncMethodInfo(Invoker<?> invoker, Invocation invocation) {
         final ConsumerModel consumerModel = ApplicationModel.getConsumerModel(invoker.getUrl().getServiceKey());
-        if(consumerModel == null){
+        if (consumerModel == null) {
             return null;
         }
-        final ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = consumerModel.getMethodModel(invocation.getMethodName()).getAsyncInfo();
+        ConsumerMethodModel methodModel = consumerModel.getMethodModel(invocation.getMethodName());
+        if (methodModel == null) {
+            return null;
+        }
+        final ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = methodModel.getAsyncInfo();
         if (asyncMethodInfo == null) {
             return null;
         }
