@@ -168,6 +168,12 @@
                 <artifactId>fastjson</artifactId>
                 <version>${fastjson_version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>com.google.code.gson</groupId>
+                <artifactId>gson</artifactId>
+                <version>${gson_version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.google.code.gson</groupId>
                 <artifactId>gson</artifactId>

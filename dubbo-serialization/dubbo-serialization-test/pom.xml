@@ -41,12 +41,6 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-serialization-gson</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-serialization-fst</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
@@ -66,10 +60,9 @@
             <version>${project.parent.version}</version>
         </dependency>
 
-
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-serialization-protostuff</artifactId>
+            <artifactId>dubbo-serialization-gson</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>

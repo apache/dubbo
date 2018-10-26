@@ -15,7 +15,8 @@
  * limitations under the License.
  */
 package org.apache.dubbo.common.serialize.gson;
-import org.apache.dubbo.common.serialize.base.AbstractSerializationPersonOkTest;
+
+import com.google.gson.JsonObject;
 import org.apache.dubbo.common.serialize.model.Person;
 import org.junit.Test;
 import java.io.ByteArrayInputStream;
@@ -27,7 +28,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
-public class GsonJsonObjectInputTest  {
+public class GsonJsonObjectInputTest {
     private GsonJsonObjectInput gsonJsonObjectInput;
 
     @Test
@@ -127,8 +128,18 @@ public class GsonJsonObjectInputTest  {
     @Test(expected = EOFException.class)
     public void testEmptySpace() throws IOException, ClassNotFoundException {
         gsonJsonObjectInput = new GsonJsonObjectInput(new StringReader("  "));
+
         gsonJsonObjectInput.readObject();
     }
 
+/*    @Test
+    public void testReadObjectWithoutClass() throws IOException, ClassNotFoundException {
+        gsonJsonObjectInput = new GsonJsonObjectInput(new StringReader("{ \"name\":\"John\", \"age\":30 }"));
 
+        JsonObject readObject = (JsonObject) gsonJsonObjectInput.readObject();
+
+        assertThat(readObject, not(nullValue()));
+      *//*  assertThat(readObject.getString("name"), is("John"));
+        assertThat(readObject.getInteger("age"), is(30));*//*
+    }*/
 }

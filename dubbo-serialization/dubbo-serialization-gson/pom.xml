@@ -1,3 +1,4 @@
+
 <!--
 Licensed to the Apache Software Foundation (ASF) under one or more
 contributor license agreements.  See the NOTICE file distributed with
@@ -14,6 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
@@ -24,10 +26,9 @@ limitations under the License.
     <artifactId>dubbo-serialization-gson</artifactId>
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
-    <description>The  gson serialization module of dubbo project</description>
+    <description>The common module of dubbo project</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
-            <gosn.version>2.8.2</gosn.version>
     </properties>
     <dependencies>
         <dependency>
@@ -38,7 +39,6 @@ limitations under the License.
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>${gosn.version}</version>
         </dependency>
     </dependencies>
 </project>
