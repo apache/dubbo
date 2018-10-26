@@ -15,18 +15,41 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.serialize.protobuf.utils;
+package org.apache.dubbo.common.serialize.protostuff.utils;
 
-import org.apache.dubbo.common.serialize.protobuf.Wrapper;
+import io.protostuff.runtime.DefaultIdStrategy;
+import io.protostuff.runtime.RuntimeEnv;
+import org.apache.dubbo.common.serialize.protostuff.Wrapper;
+import org.apache.dubbo.common.serialize.protostuff.delegate.TimeDelegate;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.sql.Time;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class WrapperUtils {
     private static final Set<Class<?>> WRAPPER_SET = new HashSet<>();
 
     static {
+        if (RuntimeEnv.ID_STRATEGY instanceof DefaultIdStrategy) {
+            ((DefaultIdStrategy) RuntimeEnv.ID_STRATEGY).registerDelegate(new TimeDelegate());
+        }
+
         WRAPPER_SET.add(Map.class);
         WRAPPER_SET.add(HashMap.class);
         WRAPPER_SET.add(TreeMap.class);
@@ -52,8 +75,10 @@ public class WrapperUtils {
         WRAPPER_SET.add(BigDecimal.class);
         WRAPPER_SET.add(Date.class);
         WRAPPER_SET.add(Calendar.class);
+        WRAPPER_SET.add(Time.class);
 
         WRAPPER_SET.add(Wrapper.class);
+
     }
 
     public static boolean needWrapper(Class<?> clazz) {
