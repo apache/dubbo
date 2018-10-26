@@ -15,25 +15,28 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.serialize.protobuf;
+package org.apache.dubbo.common.serialize.protostuff;
 
-import io.protostuff.*;
+import io.protostuff.LinkedBuffer;
+import io.protostuff.ProtobufIOUtil;
+import io.protostuff.Schema;
 import io.protostuff.runtime.RuntimeSchema;
 import org.apache.dubbo.common.serialize.ObjectOutput;
-import org.apache.dubbo.common.serialize.protobuf.utils.WrapperUtils;
+import org.apache.dubbo.common.serialize.protostuff.utils.WrapperUtils;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class ProtobufObjectOutput implements ObjectOutput {
+public class ProtostuffObjectOutput implements ObjectOutput {
 
     private DataOutputStream dos;
 
-    public ProtobufObjectOutput(OutputStream outputStream) {
+    public ProtostuffObjectOutput(OutputStream outputStream) {
         dos = new DataOutputStream(outputStream);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void writeObject(Object obj) throws IOException {
         LinkedBuffer buffer = LinkedBuffer.allocate();

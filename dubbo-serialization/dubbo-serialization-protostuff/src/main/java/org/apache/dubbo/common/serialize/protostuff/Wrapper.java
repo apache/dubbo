@@ -15,12 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.serialize.protobuf;
+package org.apache.dubbo.common.serialize.protostuff;
 
-import org.apache.dubbo.common.serialize.base.AbstractSerializationPersonOkTest;
+/**
+ * Protostuff can only serialize/deserialize POJOs, for those it can't deal with, use this Wrapper.
+ */
+public class Wrapper<T> {
+    private T data;
 
-public class ProtobufPersonOkTest extends AbstractSerializationPersonOkTest {
-    {
-        serialization = new ProtobufSerialization();
+    Wrapper(T data) {
+        this.data = data;
+    }
+
+    Object getData() {
+        return data;
     }
 }
