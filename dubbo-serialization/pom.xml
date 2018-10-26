@@ -36,5 +36,6 @@
         <module>dubbo-serialization-fst</module>
         <module>dubbo-serialization-jdk</module>
         <module>dubbo-serialization-test</module>
+        <module>dubbo-serialization-gson</module>
     </modules>
 </project>

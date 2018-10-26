@@ -292,6 +292,13 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-serialization-gson</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-serialization-fst</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
@@ -427,6 +434,7 @@
                                     <include>org.apache.dubbo:dubbo-qos</include>
                                     <include>org.apache.dubbo:dubbo-serialization-api</include>
                                     <include>org.apache.dubbo:dubbo-serialization-fastjson</include>
+                                    <include>org.apache.dubbo:dubbo-serialization-gson</include>
                                     <include>org.apache.dubbo:dubbo-serialization-hessian2</include>
                                     <include>org.apache.dubbo:dubbo-serialization-fst</include>
                                     <include>org.apache.dubbo:dubbo-serialization-kryo</include>
