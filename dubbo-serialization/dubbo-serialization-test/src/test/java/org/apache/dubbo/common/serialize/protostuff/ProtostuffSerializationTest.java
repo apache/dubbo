@@ -18,7 +18,9 @@
 package org.apache.dubbo.common.serialize.protostuff;
 
 import org.apache.dubbo.common.serialize.base.AbstractSerializationTest;
+import org.junit.Ignore;
 
+@Ignore
 public class ProtostuffSerializationTest extends AbstractSerializationTest {
     {
         serialization = new ProtostuffSerialization();
