@@ -61,7 +61,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-serialization-protobuf</artifactId>
+            <artifactId>dubbo-serialization-protostuff</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>

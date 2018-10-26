@@ -25,13 +25,14 @@ limitations under the License.
         <version>2.7.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>dubbo-serialization-protobuf</artifactId>
+    <artifactId>dubbo-serialization-protostuff</artifactId>
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
-    <description>The protobuf serialization module of dubbo project</description>
+    <description>The protostuff serialization module of dubbo project</description>
 
     <properties>
-        <protobuf.version>1.5.9</protobuf.version>
+        <protostuff.version>1.5.9</protostuff.version>
+        <objenesis.version>2.6</objenesis.version>
     </properties>
 
     <dependencies>
@@ -43,17 +44,17 @@ limitations under the License.
         <dependency>
             <groupId>io.protostuff</groupId>
             <artifactId>protostuff-core</artifactId>
-            <version>${protobuf.version}</version>
+            <version>${protostuff.version}</version>
         </dependency>
         <dependency>
             <groupId>io.protostuff</groupId>
             <artifactId>protostuff-runtime</artifactId>
-            <version>${protobuf.version}</version>
+            <version>${protostuff.version}</version>
         </dependency>
         <dependency>
             <groupId>org.objenesis</groupId>
             <artifactId>objenesis</artifactId>
-            <version>2.6</version>
+            <version>${objenesis.version}</version>
         </dependency>
     </dependencies>
 

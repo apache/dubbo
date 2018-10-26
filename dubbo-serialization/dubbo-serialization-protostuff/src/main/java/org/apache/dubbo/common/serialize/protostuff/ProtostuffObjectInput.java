@@ -15,24 +15,24 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.serialize.protobuf;
+package org.apache.dubbo.common.serialize.protostuff;
 
 import io.protostuff.ProtobufIOUtil;
 import io.protostuff.Schema;
 import io.protostuff.runtime.RuntimeSchema;
 import org.apache.dubbo.common.serialize.ObjectInput;
-import org.apache.dubbo.common.serialize.protobuf.utils.WrapperUtils;
+import org.apache.dubbo.common.serialize.protostuff.utils.WrapperUtils;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 
-public class ProtobufObjectInput implements ObjectInput {
+public class ProtostuffObjectInput implements ObjectInput {
 
     private DataInputStream dis;
 
-    public ProtobufObjectInput(InputStream inputStream) {
+    public ProtostuffObjectInput(InputStream inputStream) {
         dis = new DataInputStream(inputStream);
     }
 
@@ -70,34 +70,10 @@ public class ProtobufObjectInput implements ObjectInput {
         return result;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T> T readObject(Class<T> clazz) throws IOException, ClassNotFoundException {
-        int classNameLength = dis.readInt();
-        int bytesLength = dis.readInt();
-
-        if (classNameLength < 0 || bytesLength < 0) {
-            throw new IOException();
-        }
-
-        byte[] classNameBytes = new byte[classNameLength];
-        dis.read(classNameBytes, 0, classNameLength);
-
-        byte[] bytes = new byte[bytesLength];
-        dis.read(bytes, 0, bytesLength);
-
-        T result;
-        if (WrapperUtils.needWrapper(clazz)) {
-            Schema<Wrapper> schema = RuntimeSchema.getSchema(Wrapper.class);
-            Wrapper wrapper = schema.newMessage();
-            ProtobufIOUtil.mergeFrom(bytes, wrapper, schema);
-            result = (T) wrapper.getData();
-        } else {
-            Schema<T> schema = RuntimeSchema.getSchema(clazz);
-            result = schema.newMessage();
-            ProtobufIOUtil.mergeFrom(bytes, result, schema);
-        }
-
-        return result;
+        return (T) readObject();
     }
 
     @Override

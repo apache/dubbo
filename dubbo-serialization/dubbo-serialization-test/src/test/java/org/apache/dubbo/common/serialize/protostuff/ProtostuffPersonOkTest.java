@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.serialize.protobuf;
+package org.apache.dubbo.common.serialize.protostuff;
 
-import org.apache.dubbo.common.serialize.base.AbstractSerializationTest;
+import org.apache.dubbo.common.serialize.base.AbstractSerializationPersonOkTest;
 
-public class ProtobufSerializationTest extends AbstractSerializationTest {
+public class ProtostuffPersonOkTest extends AbstractSerializationPersonOkTest {
     {
-        serialization = new ProtobufSerialization();
+        serialization = new ProtostuffSerialization();
     }
 }
