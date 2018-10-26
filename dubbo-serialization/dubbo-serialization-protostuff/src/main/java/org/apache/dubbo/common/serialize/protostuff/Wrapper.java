@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.serialize.protobuf;
+package org.apache.dubbo.common.serialize.protostuff;
 
 /**
  * Protostuff can only serialize/deserialize POJOs, for those it can't deal with, use this Wrapper.

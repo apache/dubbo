@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.serialize.protobuf;
+package org.apache.dubbo.common.serialize.protostuff;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.ObjectInput;
@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class ProtobufSerialization implements Serialization {
+public class ProtostuffSerialization implements Serialization {
     @Override
     public byte getContentTypeId() {
         return 10;
@@ -34,16 +34,16 @@ public class ProtobufSerialization implements Serialization {
 
     @Override
     public String getContentType() {
-        return "x-application/protobuf";
+        return "x-application/protostuff";
     }
 
     @Override
     public ObjectOutput serialize(URL url, OutputStream output) throws IOException {
-        return new ProtobufObjectOutput(output);
+        return new ProtostuffObjectOutput(output);
     }
 
     @Override
     public ObjectInput deserialize(URL url, InputStream input) throws IOException {
-        return new ProtobufObjectInput(input);
+        return new ProtostuffObjectInput(input);
     }
 }
