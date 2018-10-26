@@ -58,7 +58,7 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
         zkClient = zookeeperTransporter.connect(url);
     }
 
-    private void deletePath(String category) {
+    void deletePath(String category) {
         List<String> urlStrs = zkClient.getChildren(category);
         if (CollectionUtils.isEmpty(urlStrs)) {
             return;
@@ -68,7 +68,7 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
         }
     }
 
-    private String toRootDir() {
+    String toRootDir() {
         if (root.equals(Constants.PATH_SEPARATOR)) {
             return root;
         }
@@ -86,10 +86,14 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
     }
 
     private void storeMetadata(MetadataIdentifier metadataIdentifier, String v) {
-        String category = toRootDir() + metadataIdentifier.getFilePathKey();
-        String filePath = category + Constants.PATH_SEPARATOR + v;
+        String category = getCategory(metadataIdentifier);
+        String filePath = category + Constants.PATH_SEPARATOR + URL.encode(v);
         deletePath(category);
         zkClient.create(filePath, false);
+    }
+
+    String getCategory(MetadataIdentifier metadataIdentifier){
+        return toRootDir() + metadataIdentifier.getFilePathKey();
     }
 
 

@@ -18,6 +18,10 @@ package org.apache.dubbo.metadata.support;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
+import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
+import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
+import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,52 +55,40 @@ public class AbstractMetadataReportTest {
     }
 
     @Test
-    public void testPutUsual() {
-        URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
-        abstractServiceStore.storeProviderMetadata(url);
-        Assert.assertNotNull(abstractServiceStore.store.get(url.getServiceKey()));
+    public void testStoreProviderUsual() throws ClassNotFoundException {
+        String interfaceName = "org.apache.dubbo.metadata.integration.InterfaceNameTestService";
+        String version = "1.0.0";
+        String group = null;
+        String application = "vic";
+        ProviderMetadataIdentifier providerMetadataIdentifier = storePrivider(abstractServiceStore, interfaceName, version, group, application);
+        Assert.assertNotNull(abstractServiceStore.store.get(providerMetadataIdentifier.getIdentifierKey()));
     }
 
     @Test
-    public void testPutNoServiceKeyUrl() {
-        URL urlTmp = URL.valueOf("rmi://wrongHost:90?application=vic");
-        abstractServiceStore.put(urlTmp);
-        Assert.assertNull(urlTmp.getServiceKey());
-        // key is null, will add failed list.
-        Assert.assertFalse(abstractServiceStore.failedReports.isEmpty());
-    }
-
-    @Test
-    public void testPutNotFullServiceKeyUrl() {
-        URL urlTmp = URL.valueOf("rmi://wrongHost:90/org.dubbo.TestService");
-        abstractServiceStore.put(urlTmp);
-        Assert.assertNotNull(abstractServiceStore.store.get(urlTmp.getServiceKey()));
-    }
-
-    @Test
-    public void testFileExistAfterPut() throws InterruptedException {
+    public void testFileExistAfterPut() throws InterruptedException, ClassNotFoundException {
         //just for one method
-        URL singleUrl = URL.valueOf("redis://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=singleTest");
+        URL singleUrl = URL.valueOf("redis://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.metadata.integration.InterfaceNameTestService?version=1.0.0&application=singleTest");
         NewMetadataReport singleServiceStore = new NewMetadataReport(singleUrl);
 
         Assert.assertFalse(singleServiceStore.file.exists());
-        URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
-        singleServiceStore.put(url);
+
+        String interfaceName = "org.apache.dubbo.metadata.integration.InterfaceNameTestService";
+        String version = "1.0.0";
+        String group = null;
+        String application = "vic";
+        ProviderMetadataIdentifier providerMetadataIdentifier = storePrivider(singleServiceStore, interfaceName, version, group, application);
+
         Thread.sleep(2000);
         Assert.assertTrue(singleServiceStore.file.exists());
-        Assert.assertTrue(singleServiceStore.properties.containsKey(url.getServiceKey()));
+        Assert.assertTrue(singleServiceStore.properties.containsKey(providerMetadataIdentifier.getIdentifierKey()));
     }
 
     @Test
-    public void testPeek() {
-        URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
-        abstractServiceStore.put(url);
-        URL result = abstractServiceStore.peek(url);
-        Assert.assertEquals(url, result);
-    }
-
-    @Test
-    public void testRetry() throws InterruptedException {
+    public void testRetry() throws InterruptedException, ClassNotFoundException {
+        String interfaceName = "org.apache.dubbo.metadata.integration.RetryTestService";
+        String version = "1.0.0.retry";
+        String group = null;
+        String application = "vic.retry";
         URL storeUrl = URL.valueOf("retryReport://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestServiceForRetry?version=1.0.0.retry&application=vic.retry");
         RetryMetadataReport retryReport = new RetryMetadataReport(storeUrl, 2);
         retryReport.metadataReportRetry.retryPeriod = 200L;
@@ -105,33 +97,52 @@ public class AbstractMetadataReportTest {
         Assert.assertTrue(retryReport.metadataReportRetry.retryTimes.get() == 0);
         Assert.assertTrue(retryReport.store.isEmpty());
         Assert.assertTrue(retryReport.failedReports.isEmpty());
-        retryReport.put(url);
+
+
+        storePrivider(retryReport, interfaceName, version, group, application);
+
         Assert.assertTrue(retryReport.store.isEmpty());
         Assert.assertFalse(retryReport.failedReports.isEmpty());
         Assert.assertNotNull(retryReport.metadataReportRetry.retryScheduledFuture);
-        Thread.sleep(1000L);
+        Thread.sleep(1200L);
         Assert.assertTrue(retryReport.metadataReportRetry.retryTimes.get() != 0);
-        Assert.assertTrue(retryReport.metadataReportRetry.retryTimes.get() == 3);
+        Assert.assertTrue(retryReport.metadataReportRetry.retryTimes.get() >= 3);
         Assert.assertFalse(retryReport.store.isEmpty());
         Assert.assertTrue(retryReport.failedReports.isEmpty());
     }
 
     @Test
-    public void testRetryCancel() throws InterruptedException {
-        URL storeUrl = URL.valueOf("retryReport://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestServiceForRetry?version=1.0.0.retry&application=vic.retry");
+    public void testRetryCancel() throws InterruptedException, ClassNotFoundException {
+        String interfaceName = "org.apache.dubbo.metadata.integration.RetryTestService";
+        String version = "1.0.0.retrycancel";
+        String group = null;
+        String application = "vic.retry";
+        URL storeUrl = URL.valueOf("retryReport://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestServiceForRetryCancel?version=1.0.0.retrycancel&application=vic.retry");
         RetryMetadataReport retryReport = new RetryMetadataReport(storeUrl, 2);
         retryReport.metadataReportRetry.retryPeriod = 150L;
         retryReport.metadataReportRetry.retryTimesIfNonFail = 2;
-        URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
-        Assert.assertNull(retryReport.metadataReportRetry.retryScheduledFuture);
-        Assert.assertFalse(retryReport.metadataReportRetry.retryExecutor.isShutdown());
-        retryReport.put(url);
+
+        storePrivider(retryReport, interfaceName, version, group, application);
+
         Assert.assertFalse(retryReport.metadataReportRetry.retryScheduledFuture.isCancelled());
         Assert.assertFalse(retryReport.metadataReportRetry.retryExecutor.isShutdown());
         Thread.sleep(1000L);
         Assert.assertTrue(retryReport.metadataReportRetry.retryScheduledFuture.isCancelled());
         Assert.assertTrue(retryReport.metadataReportRetry.retryExecutor.isShutdown());
 
+    }
+
+    private ProviderMetadataIdentifier storePrivider(AbstractMetadataReport abstractMetadataReport, String interfaceName, String version, String group, String application) throws ClassNotFoundException {
+        URL url = URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":4444/" + interfaceName + "?version=" + version + "&application="
+                + application + (group == null ? "" : "&group=" + group));
+
+        ProviderMetadataIdentifier providerMetadataIdentifier = new ProviderMetadataIdentifier(interfaceName, version, group);
+        Class interfaceClass = Class.forName(interfaceName);
+        FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass, url.getParameters());
+
+        abstractMetadataReport.storeProviderMetadata(providerMetadataIdentifier, fullServiceDefinition);
+
+        return providerMetadataIdentifier;
     }
 
 
@@ -144,15 +155,13 @@ public class AbstractMetadataReportTest {
         }
 
         @Override
-        protected void doPut(URL url) {
-            store.put(url.getServiceKey(), url.toParameterString());
+        protected void doStoreProviderMetadata(ProviderMetadataIdentifier providerMetadataIdentifier, String serviceDefinitions) {
+            store.put(providerMetadataIdentifier.getIdentifierKey(), serviceDefinitions);
         }
 
         @Override
-        protected URL doPeek(URL url) {
-            String queryV = store.get(url.getServiceKey());
-            URL urlTmp = url.clearParameters().addParameterString(queryV);
-            return urlTmp;
+        protected void doStoreConsumerMetadata(ConsumerMetadataIdentifier consumerMetadataIdentifier, String serviceParameterString) {
+            store.put(consumerMetadataIdentifier.getIdentifierKey(), serviceParameterString);
         }
     }
 
@@ -168,19 +177,22 @@ public class AbstractMetadataReportTest {
         }
 
         @Override
-        protected void doPut(URL url) {
+        protected void doStoreProviderMetadata(ProviderMetadataIdentifier providerMetadataIdentifier, String serviceDefinitions) {
+            ++executeTimes;
+            System.out.println("***" + executeTimes + ";" + System.currentTimeMillis());
+            if (executeTimes <= needRetryTimes) {
+                throw new RuntimeException("must retry:" + executeTimes);
+            }
+            store.put(providerMetadataIdentifier.getIdentifierKey(), serviceDefinitions);
+        }
+
+        @Override
+        protected void doStoreConsumerMetadata(ConsumerMetadataIdentifier consumerMetadataIdentifier, String serviceParameterString) {
             ++executeTimes;
             if (executeTimes <= needRetryTimes) {
                 throw new RuntimeException("must retry:" + executeTimes);
             }
-            store.put(url.getServiceKey(), url.toParameterString());
-        }
-
-        @Override
-        protected URL doPeek(URL url) {
-            String queryV = store.get(url.getServiceKey());
-            URL urlTmp = url.clearParameters().addParameterString(queryV);
-            return urlTmp;
+            store.put(consumerMetadataIdentifier.getIdentifierKey(), serviceParameterString);
         }
     }
 

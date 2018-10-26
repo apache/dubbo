@@ -25,6 +25,8 @@ import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
  */
 public interface MetadataReport {
 
+    public static final String META_DATA_SOTRE_TAG = ".metaData";
+
 
     void storeProviderMetadata(ProviderMetadataIdentifier providerMetadataIdentifier, FullServiceDefinition serviceDefinition);
 
