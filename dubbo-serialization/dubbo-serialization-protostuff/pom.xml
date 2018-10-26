@@ -51,11 +51,11 @@ limitations under the License.
             <artifactId>protostuff-runtime</artifactId>
             <version>${protostuff.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.objenesis</groupId>
-            <artifactId>objenesis</artifactId>
-            <version>${objenesis.version}</version>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.objenesis</groupId>-->
+            <!--<artifactId>objenesis</artifactId>-->
+            <!--<version>${objenesis.version}</version>-->
+        <!--</dependency>-->
     </dependencies>
 
 </project>

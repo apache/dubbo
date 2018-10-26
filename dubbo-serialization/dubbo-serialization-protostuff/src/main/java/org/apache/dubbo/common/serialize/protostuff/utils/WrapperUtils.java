@@ -17,9 +17,19 @@
 
 package org.apache.dubbo.common.serialize.protostuff.utils;
 
+import io.protostuff.Input;
+import io.protostuff.Output;
+import io.protostuff.Pipe;
+import io.protostuff.WireFormat;
+import io.protostuff.runtime.DefaultIdStrategy;
+import io.protostuff.runtime.Delegate;
+import io.protostuff.runtime.RuntimeEnv;
 import org.apache.dubbo.common.serialize.protostuff.Wrapper;
+import org.apache.dubbo.common.serialize.protostuff.delegate.TimeDelegate;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Calendar;
@@ -42,6 +52,10 @@ public class WrapperUtils {
     private static final Set<Class<?>> WRAPPER_SET = new HashSet<>();
 
     static {
+        if (RuntimeEnv.ID_STRATEGY instanceof DefaultIdStrategy) {
+            ((DefaultIdStrategy) RuntimeEnv.ID_STRATEGY).registerDelegate(new TimeDelegate());
+        }
+
         WRAPPER_SET.add(Map.class);
         WRAPPER_SET.add(HashMap.class);
         WRAPPER_SET.add(TreeMap.class);
@@ -67,8 +81,10 @@ public class WrapperUtils {
         WRAPPER_SET.add(BigDecimal.class);
         WRAPPER_SET.add(Date.class);
         WRAPPER_SET.add(Calendar.class);
+        WRAPPER_SET.add(Time.class);
 
         WRAPPER_SET.add(Wrapper.class);
+
     }
 
     public static boolean needWrapper(Class<?> clazz) {

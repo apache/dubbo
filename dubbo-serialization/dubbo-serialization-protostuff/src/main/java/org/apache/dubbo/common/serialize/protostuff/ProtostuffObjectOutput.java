@@ -30,6 +30,7 @@ import java.io.OutputStream;
 
 public class ProtostuffObjectOutput implements ObjectOutput {
 
+    private LinkedBuffer buffer = LinkedBuffer.allocate();
     private DataOutputStream dos;
 
     public ProtostuffObjectOutput(OutputStream outputStream) {
@@ -39,20 +40,23 @@ public class ProtostuffObjectOutput implements ObjectOutput {
     @SuppressWarnings("unchecked")
     @Override
     public void writeObject(Object obj) throws IOException {
-        LinkedBuffer buffer = LinkedBuffer.allocate();
 
         byte[] bytes;
         byte[] classNameBytes;
 
-        if (WrapperUtils.needWrapper(obj)) {
-            Schema<Wrapper> schema = RuntimeSchema.getSchema(Wrapper.class);
-            Wrapper wrapper = new Wrapper(obj);
-            bytes = ProtobufIOUtil.toByteArray(wrapper, schema, buffer);
-            classNameBytes = Wrapper.class.getName().getBytes();
-        } else {
-            Schema schema = RuntimeSchema.getSchema(obj.getClass());
-            bytes = ProtobufIOUtil.toByteArray(obj, schema, buffer);
-            classNameBytes = obj.getClass().getName().getBytes();
+        try {
+            if (WrapperUtils.needWrapper(obj)) {
+                Schema<Wrapper> schema = RuntimeSchema.getSchema(Wrapper.class);
+                Wrapper wrapper = new Wrapper(obj);
+                bytes = ProtobufIOUtil.toByteArray(wrapper, schema, buffer);
+                classNameBytes = Wrapper.class.getName().getBytes();
+            } else {
+                Schema schema = RuntimeSchema.getSchema(obj.getClass());
+                bytes = ProtobufIOUtil.toByteArray(obj, schema, buffer);
+                classNameBytes = obj.getClass().getName().getBytes();
+            }
+        } finally {
+            buffer.clear();
         }
 
         dos.writeInt(classNameBytes.length);
