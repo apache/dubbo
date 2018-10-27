@@ -38,6 +38,5 @@
         <module>dubbo-serialization-jdk</module>
         <module>dubbo-serialization-protostuff</module>
         <module>dubbo-serialization-test</module>
-        <module>dubbo-serialization-gson</module>
     </modules>
 </project>
