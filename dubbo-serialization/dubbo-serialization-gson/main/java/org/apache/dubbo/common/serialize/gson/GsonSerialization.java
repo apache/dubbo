@@ -24,9 +24,6 @@ import org.apache.dubbo.common.serialize.Serialization;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-/**
- * Created by cr on 2018/10/23.
- */
 public class GsonSerialization   implements Serialization {
 
 
@@ -37,7 +34,7 @@ public class GsonSerialization   implements Serialization {
 
     @Override
     public String getContentType() {
-        return "text/json";
+        return "text/gson";
     }
 
     @Override

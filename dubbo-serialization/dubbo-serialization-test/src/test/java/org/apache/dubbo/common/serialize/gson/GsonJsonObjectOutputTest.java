@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.serialize.gson;
 
+import org.apache.dubbo.common.serialize.base.AbstractSerializationPersonOkTest;
 import org.apache.dubbo.common.serialize.model.media.Image;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,7 +28,7 @@ import java.io.IOException;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 
-public class GsonJsonObjectOutputTest {
+public class GsonJsonObjectOutputTest   {
     private GsonJsonObjectOutput gsonJsonObjectOutput;
     private GsonJsonObjectInput gsonJsonObjectInput;
     private ByteArrayOutputStream byteArrayOutputStream;
