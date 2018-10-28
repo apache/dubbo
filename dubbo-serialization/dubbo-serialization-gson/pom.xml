@@ -27,6 +27,7 @@ limitations under the License.
     <description>The  gson serialization module of dubbo project</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
+            <gosn.version>2.8.2</gosn.version>
     </properties>
     <dependencies>
         <dependency>
@@ -37,7 +38,7 @@ limitations under the License.
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.8.2</version>
+            <version>${gosn.version}</version>
         </dependency>
     </dependencies>
 </project>
