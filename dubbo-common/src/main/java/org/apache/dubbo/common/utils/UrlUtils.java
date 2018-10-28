@@ -361,8 +361,9 @@ public class UrlUtils {
     public static boolean isMatch(URL consumerUrl, URL providerUrl) {
         String consumerInterface = consumerUrl.getServiceInterface();
         String providerInterface = providerUrl.getServiceInterface();
-        if (!(Constants.ANY_VALUE.equals(consumerInterface) || StringUtils.isEquals(consumerInterface, providerInterface)))
+        if (!(Constants.ANY_VALUE.equals(consumerInterface) || StringUtils.isEquals(consumerInterface, providerInterface))) {
             return false;
+        }
 
         if (!isMatchCategory(providerUrl.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY),
                 consumerUrl.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY))) {
@@ -393,14 +394,17 @@ public class UrlUtils {
     }
 
     public static boolean isMatchGlobPattern(String pattern, String value) {
-        if ("*".equals(pattern))
+        if ("*".equals(pattern)) {
             return true;
+        }
         if ((pattern == null || pattern.length() == 0)
-                && (value == null || value.length() == 0))
+                && (value == null || value.length() == 0)) {
             return true;
+        }
         if ((pattern == null || pattern.length() == 0)
-                || (value == null || value.length() == 0))
+                || (value == null || value.length() == 0)) {
             return false;
+        }
 
         int i = pattern.lastIndexOf('*');
         // doesn't find "*"
