@@ -16,25 +16,19 @@
  */
 package org.apache.dubbo.common.serialize.gson;
 
-import com.google.gson.Gson;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
-import org.apache.dubbo.common.serialize.fastjson.FastJsonObjectInput;
-import org.apache.dubbo.common.serialize.fastjson.FastJsonObjectOutput;
-import org.apache.dubbo.common.serialize.fastjson.FastJsonSerialization;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 
-public class GsonJsonSerializationTest {
+public class GsonJsonSerializationTest  {
     private GsonSerialization gsonJsonSerialization;
 
     @Before
@@ -44,12 +38,12 @@ public class GsonJsonSerializationTest {
 
     @Test
     public void testContentType() {
-        assertThat(gsonJsonSerialization.getContentType(), is("text/json"));
+        assertThat(gsonJsonSerialization.getContentType(), is("text/gson"));
     }
 
     @Test
     public void testContentTypeId() {
-        assertThat(gsonJsonSerialization.getContentTypeId(), is((byte) 6));
+        assertThat(gsonJsonSerialization.getContentTypeId(), is((byte)26));
     }
 
     @Test
