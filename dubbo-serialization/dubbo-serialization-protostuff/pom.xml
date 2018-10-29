@@ -32,7 +32,6 @@ limitations under the License.
 
     <properties>
         <protostuff.version>1.5.9</protostuff.version>
-        <objenesis.version>2.6</objenesis.version>
     </properties>
 
     <dependencies>
@@ -51,11 +50,6 @@ limitations under the License.
             <artifactId>protostuff-runtime</artifactId>
             <version>${protostuff.version}</version>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>org.objenesis</groupId>-->
-            <!--<artifactId>objenesis</artifactId>-->
-            <!--<version>${objenesis.version}</version>-->
-        <!--</dependency>-->
     </dependencies>
 
 </project>
