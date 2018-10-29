@@ -21,6 +21,7 @@ import com.alibaba.dubbo.config.ApplicationConfig;
 import com.alibaba.dubbo.config.ModuleConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.spring.beans.factory.annotation.DubboConfigBindingBeanPostProcessor;
+
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.PropertySources;
 

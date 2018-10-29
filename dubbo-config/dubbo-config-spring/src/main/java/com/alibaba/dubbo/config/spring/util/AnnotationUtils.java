@@ -19,21 +19,7 @@ package com.alibaba.dubbo.config.spring.util;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 
-import org.springframework.core.env.PropertyResolver;
 import org.springframework.util.StringUtils;
-
-import java.lang.annotation.Annotation;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-
-import static java.lang.String.valueOf;
-import static org.springframework.core.annotation.AnnotationUtils.getAnnotationAttributes;
-import static org.springframework.core.annotation.AnnotationUtils.getDefaultValue;
-import static org.springframework.util.CollectionUtils.arrayToList;
-import static org.springframework.util.ObjectUtils.nullSafeEquals;
-import static org.springframework.util.StringUtils.trimAllWhitespace;
 
 /**
  * Annotation Utilities Class
@@ -42,53 +28,6 @@ import static org.springframework.util.StringUtils.trimAllWhitespace;
  * @since 2.5.11
  */
 public class AnnotationUtils {
-
-    /**
-     * Get {@link Annotation} attributes
-     *
-     * @param annotation
-     * @param propertyResolver
-     * @param ignoreDefaultValue
-     * @return non-null
-     */
-    public static Map<String, Object> getAttributes(Annotation annotation, PropertyResolver propertyResolver,
-                                                    boolean ignoreDefaultValue, String... ignoreAttributeNames) {
-
-        Set<String> ignoreAttributeNamesSet = new HashSet<String>(arrayToList(ignoreAttributeNames));
-
-        Map<String, Object> attributes = getAnnotationAttributes(annotation);
-
-        Map<String, Object> actualAttributes = new LinkedHashMap<String, Object>();
-
-        boolean requiredResolve = propertyResolver != null;
-
-        for (Map.Entry<String, Object> entry : attributes.entrySet()) {
-
-            String attributeName = entry.getKey();
-            Object attributeValue = entry.getValue();
-
-            // ignore default attribute value
-            if (ignoreDefaultValue && nullSafeEquals(attributeValue, getDefaultValue(annotation, attributeName))) {
-                continue;
-            }
-
-            // ignore attribute name
-            if (ignoreAttributeNamesSet.contains(attributeName)) {
-                continue;
-            }
-
-            if (requiredResolve && attributeValue instanceof String) { // Resolve Placeholder
-                String resolvedValue = propertyResolver.resolvePlaceholders(valueOf(attributeValue));
-                attributeValue = trimAllWhitespace(resolvedValue);
-            }
-
-            actualAttributes.put(attributeName, attributeValue);
-
-        }
-
-        return actualAttributes;
-
-    }
 
     public static String resolveInterfaceName(Service service, Class<?> defaultInterfaceClass)
             throws IllegalStateException {
