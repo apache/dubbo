@@ -20,8 +20,8 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.spring.ReferenceBean;
 import com.alibaba.dubbo.config.spring.ServiceBean;
 import com.alibaba.dubbo.config.spring.context.event.ServiceBeanExportedEvent;
-import com.alibaba.dubbo.config.spring.util.AnnotationUtils;
 import com.alibaba.spring.beans.factory.annotation.AnnotationInjectedBeanPostProcessor;
+import com.alibaba.spring.util.AnnotationUtils;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.InjectionMetadata;

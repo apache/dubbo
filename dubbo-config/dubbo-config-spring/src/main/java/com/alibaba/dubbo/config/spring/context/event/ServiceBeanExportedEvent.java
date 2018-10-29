@@ -17,6 +17,7 @@
 package com.alibaba.dubbo.config.spring.context.event;
 
 import com.alibaba.dubbo.config.spring.ServiceBean;
+
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 
