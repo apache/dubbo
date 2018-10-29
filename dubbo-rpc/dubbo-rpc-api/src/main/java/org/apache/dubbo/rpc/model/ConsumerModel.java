@@ -65,7 +65,7 @@ public class ConsumerModel {
      */
     public ConsumerMethodModel getMethodModel(String method) {
         Optional<Map.Entry<Method, ConsumerMethodModel>> consumerMethodModelEntry = methodModels.entrySet().stream().filter(entry -> entry.getKey().getName().equals(method)).findFirst();
-        return consumerMethodModelEntry.isPresent() ? consumerMethodModelEntry.get().getValue() : null;
+        return consumerMethodModelEntry.map(Map.Entry::getValue).orElse(null);
     }
 
     /**

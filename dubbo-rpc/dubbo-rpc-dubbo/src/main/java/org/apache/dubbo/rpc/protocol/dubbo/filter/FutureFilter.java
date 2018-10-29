@@ -82,7 +82,9 @@ public class FutureFilter implements PostProcessFilter {
 
     private void fireInvokeCallback(final Invoker<?> invoker, final Invocation invocation) {
         final ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = getAsyncMethodInfo(invoker, invocation);
-        if (asyncMethodInfo == null) return;
+        if (asyncMethodInfo == null) {
+            return;
+        }
         final Method onInvokeMethod = asyncMethodInfo.getOninvokeMethod();
         final Object onInvokeInst = asyncMethodInfo.getOninvokeInstance();
 
@@ -108,7 +110,9 @@ public class FutureFilter implements PostProcessFilter {
 
     private void fireReturnCallback(final Invoker<?> invoker, final Invocation invocation, final Object result) {
         final ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = getAsyncMethodInfo(invoker, invocation);
-        if (asyncMethodInfo == null) return;
+        if (asyncMethodInfo == null) {
+            return;
+        }
 
         final Method onReturnMethod = asyncMethodInfo.getOnreturnMethod();
         final Object onReturnInst = asyncMethodInfo.getOnreturnInstance();
@@ -152,7 +156,9 @@ public class FutureFilter implements PostProcessFilter {
 
     private void fireThrowCallback(final Invoker<?> invoker, final Invocation invocation, final Throwable exception) {
         final ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = getAsyncMethodInfo(invoker, invocation);
-        if (asyncMethodInfo == null) return;
+        if (asyncMethodInfo == null) {
+            return;
+        }
 
         final Method onthrowMethod = asyncMethodInfo.getOnthrowMethod();
         final Object onthrowInst = asyncMethodInfo.getOnthrowInstance();

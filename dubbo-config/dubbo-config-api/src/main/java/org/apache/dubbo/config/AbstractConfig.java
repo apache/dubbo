@@ -25,8 +25,6 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.DubboShutdownHook;
-import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 
@@ -254,8 +252,9 @@ public abstract class AbstractConfig implements Serializable {
         for (Method method : methods) {
             try {
                 Parameter parameter = method.getAnnotation(Parameter.class);
-                if (parameter == null || !parameter.attribute())
+                if (parameter == null || !parameter.attribute()) {
                     continue;
+                }
                 String name = method.getName();
                 if ((name.startsWith("get") || name.startsWith("is"))
                         && !"getClass".equals(name)
@@ -290,7 +289,7 @@ public abstract class AbstractConfig implements Serializable {
 
         //check config conflict
         if (Boolean.FALSE.equals(methodConfig.isReturn()) && (methodConfig.getOnreturn() != null || methodConfig.getOnthrow() != null)) {
-            throw new IllegalStateException("method config error : return attribute must be set true when onreturn or onthrow has been setted.");
+            throw new IllegalStateException("method config error : return attribute must be set true when onreturn or onthrow has been set.");
         }
 
         ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = new ConsumerMethodModel.AsyncMethodInfo();
