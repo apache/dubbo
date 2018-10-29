@@ -34,8 +34,6 @@ import java.util.concurrent.atomic.AtomicLong;
  * Round robin load balance.
  * 
  * Smoothly round robin's implementation @since 2.6.5 
- * @author jason
- *
  */
 public class RoundRobinLoadBalance extends AbstractLoadBalance {
     public static final String NAME = "roundrobin";
