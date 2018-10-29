@@ -21,7 +21,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
-import org.apache.dubbo.rpc.cluster.configurator.GlobalConfiguratorCenter;
 
 import java.util.List;
 
@@ -51,7 +50,6 @@ public abstract class AbstractLoadBalance implements LoadBalance {
 
     protected int getWeight(Invoker<?> invoker, Invocation invocation) {
         int weight = invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.WEIGHT_KEY, Constants.DEFAULT_WEIGHT);
-            weight=  GlobalConfiguratorCenter.getInvokerWeight(invoker,weight);
         if (weight > 0) {
             long timestamp = invoker.getUrl().getParameter(Constants.REMOTE_TIMESTAMP_KEY, 0L);
             if (timestamp > 0L) {
