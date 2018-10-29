@@ -22,4 +22,4 @@ For committers, make sure select the right label and target branch for every PR,
 
 [Example question](https://github.com/alibaba/dubbo/issues/742)  
 
-Dubbo support to specify ip/port via system environment variables, examples can be found [here](https://github.com/dubbo/dubbo-samples/tree/master/dubbo-samples-docker).
+Dubbo supports specifying ip/port via system environment variables, examples can be found [here](https://github.com/dubbo/dubbo-samples/tree/master/dubbo-samples-docker).

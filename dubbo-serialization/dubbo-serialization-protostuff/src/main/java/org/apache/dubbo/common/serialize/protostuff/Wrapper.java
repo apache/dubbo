@@ -14,21 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc;
 
-import org.junit.Assert;
-import org.junit.Test;
+package org.apache.dubbo.common.serialize.protostuff;
 
-public class ServiceHolderTest {
+/**
+ * Protostuff can only serialize/deserialize POJOs, for those it can't deal with, use this Wrapper.
+ */
+public class Wrapper<T> {
+    private T data;
 
-    @Test
-    public void testHolderClass() {
+    Wrapper(T data) {
+        this.data = data;
+    }
 
-        ServiceClassHolder holder = ServiceClassHolder.getInstance();
-
-        holder.pushServiceClass(ServiceHolderTest.class);
-
-        Assert.assertEquals(ServiceHolderTest.class, holder.popServiceClass());
-
+    Object getData() {
+        return data;
     }
 }
