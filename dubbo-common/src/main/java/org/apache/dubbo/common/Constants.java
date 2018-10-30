@@ -247,9 +247,17 @@ public class Constants {
 
     public static final String HEARTBEAT_KEY = "heartbeat";
 
-    public static final int HEARTBEAT_TICK = 3;
+    /**
+     * Every heartbeat duration / HEATBEAT_CHECK_TICK, check if a heartbeat should be sent. Every heartbeat timeout
+     * duration / HEATBEAT_CHECK_TICK, check if a connection should be closed on server side, and if reconnect on
+     * client side
+     */
+    public static final int HEARTBEAT_CHECK_TICK = 3;
 
-    public static final long LEAST_HEARTBEAT_TICK = 1000;
+    /**
+     * the least heartbeat during is 1000 ms.
+     */
+    public static final long LEAST_HEARTBEAT_DURATION = 1000;
 
     /**
      * ticks per wheel. Currently only contains two tasks, so 16 locations are enough
