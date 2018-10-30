@@ -51,17 +51,17 @@ public class HeaderExchangeClient implements ExchangeClient {
         this.client = client;
         this.channel = new HeaderExchangeChannel(client);
         String dubbo = client.getUrl().getParameter(Constants.DUBBO_VERSION_KEY);
-        this.heartbeat = client.getUrl().getParameter(Constants.HEARTBEAT_KEY, dubbo != null && dubbo.startsWith("1.0.") ? Constants.DEFAULT_HEARTBEAT : 0);
+
+        this.heartbeat = client.getUrl().getParameter(Constants.HEARTBEAT_KEY, dubbo != null &&
+                dubbo.startsWith("1.0.") ? Constants.DEFAULT_HEARTBEAT : 0);
         this.heartbeatTimeout = client.getUrl().getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartbeat * 3);
         if (heartbeatTimeout < heartbeat * 2) {
             throw new IllegalStateException("heartbeatTimeout < heartbeatInterval * 2");
         }
 
         if (needHeartbeat) {
-            long heartbeatTick = calcLeastTick(heartbeat);
-
-            // use heartbeatTick as every tick.
-            heartbeatTimer = new HashedWheelTimer(heartbeatTick, TimeUnit.MILLISECONDS, Constants.TICKS_PER_WHEEL);
+            long tickDuration = calculateLeastDuration(heartbeat);
+            heartbeatTimer = new HashedWheelTimer(tickDuration, TimeUnit.MILLISECONDS, Constants.TICKS_PER_WHEEL);
             startHeartbeatTimer();
         }
     }
@@ -179,8 +179,8 @@ public class HeaderExchangeClient implements ExchangeClient {
     private void startHeartbeatTimer() {
         AbstractTimerTask.ChannelProvider cp = () -> Collections.singletonList(HeaderExchangeClient.this);
 
-        long heartbeatTick = calcLeastTick(heartbeat);
-        long heartbeatTimeoutTick = calcLeastTick(heartbeatTimeout);
+        long heartbeatTick = calculateLeastDuration(heartbeat);
+        long heartbeatTimeoutTick = calculateLeastDuration(heartbeatTimeout);
         HeartbeatTimerTask heartBeatTimerTask = new HeartbeatTimerTask(cp, heartbeatTick, heartbeat);
         ReconnectTimerTask reconnectTimerTask = new ReconnectTimerTask(cp, heartbeatTimeoutTick, heartbeatTimeout);
 
@@ -203,11 +203,11 @@ public class HeaderExchangeClient implements ExchangeClient {
     /**
      * Each interval cannot be less than 1000ms.
      */
-    private long calcLeastTick(int time) {
-        if (time / Constants.HEARTBEAT_TICK <= 0) {
-            return Constants.LEAST_HEARTBEAT_TICK;
+    private long calculateLeastDuration(int time) {
+        if (time / Constants.HEARTBEAT_CHECK_TICK <= 0) {
+            return Constants.LEAST_HEARTBEAT_DURATION;
         } else {
-            return time / Constants.HEARTBEAT_TICK;
+            return time / Constants.HEARTBEAT_CHECK_TICK;
         }
     }
 

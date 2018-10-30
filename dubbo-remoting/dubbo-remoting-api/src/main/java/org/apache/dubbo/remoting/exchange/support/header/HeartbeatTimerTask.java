@@ -32,7 +32,7 @@ public class HeartbeatTimerTask extends AbstractTimerTask {
 
     private final int heartbeat;
 
-    protected HeartbeatTimerTask(ChannelProvider channelProvider, Long heartbeatTick, int heartbeat) {
+    HeartbeatTimerTask(ChannelProvider channelProvider, Long heartbeatTick, int heartbeat) {
         super(channelProvider, heartbeatTick);
         this.heartbeat = heartbeat;
     }
@@ -51,7 +51,8 @@ public class HeartbeatTimerTask extends AbstractTimerTask {
                 channel.send(req);
                 if (logger.isDebugEnabled()) {
                     logger.debug("Send heartbeat to remote channel " + channel.getRemoteAddress()
-                            + ", cause: The channel has no data-transmission exceeds a heartbeat period: " + heartbeat + "ms");
+                            + ", cause: The channel has no data-transmission exceeds a heartbeat period: "
+                            + heartbeat + "ms");
                 }
             }
         } catch (Throwable t) {

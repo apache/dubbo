@@ -30,11 +30,11 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class AbstractTimerTask implements TimerTask {
 
-    protected final ChannelProvider channelProvider;
+    private final ChannelProvider channelProvider;
 
-    protected final Long tick;
+    private final Long tick;
 
-    protected AbstractTimerTask(ChannelProvider channelProvider, Long tick) {
+    AbstractTimerTask(ChannelProvider channelProvider, Long tick) {
         if (channelProvider == null || tick == null) {
             throw new IllegalArgumentException();
         }
@@ -42,31 +42,28 @@ public abstract class AbstractTimerTask implements TimerTask {
         this.channelProvider = channelProvider;
     }
 
-    protected Long lastRead(Channel channel) {
-        return (Long) channel.getAttribute(
-                HeaderExchangeHandler.KEY_READ_TIMESTAMP);
+    static Long lastRead(Channel channel) {
+        return (Long) channel.getAttribute(HeaderExchangeHandler.KEY_READ_TIMESTAMP);
     }
 
-    protected Long lastWrite(Channel channel) {
-        return (Long) channel.getAttribute(
-                HeaderExchangeHandler.KEY_WRITE_TIMESTAMP);
+    static Long lastWrite(Channel channel) {
+        return (Long) channel.getAttribute(HeaderExchangeHandler.KEY_WRITE_TIMESTAMP);
     }
 
-    protected Long now() {
+    static Long now() {
         return System.currentTimeMillis();
     }
 
-    protected void reput(Timeout timeout, Long tick) {
+    private void reput(Timeout timeout, Long tick) {
         if (timeout == null || tick == null) {
             throw new IllegalArgumentException();
         }
+
         Timer timer = timeout.timer();
-        if (timer.isStop()) {
+        if (timer.isStop() || timeout.isCancelled()) {
             return;
         }
-        if (timeout.isCancelled()) {
-            return;
-        }
+
         timer.newTimeout(timeout.task(), tick, TimeUnit.MILLISECONDS);
     }
 
