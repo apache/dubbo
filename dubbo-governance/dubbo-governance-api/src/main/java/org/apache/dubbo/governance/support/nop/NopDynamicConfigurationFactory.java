@@ -24,12 +24,14 @@ import org.apache.dubbo.governance.DynamicConfigurationFactory;
  *
  */
 public class NopDynamicConfigurationFactory implements DynamicConfigurationFactory {
+    private static final URL FAkED_URL = URL.valueOf("config://0.0.0.0:20000/fakepath");
 
     private NopDynamicConfiguration dynamicConfiguration;
 
     @Override
     public DynamicConfiguration getDynamicConfiguration(URL url) {
         dynamicConfiguration = new NopDynamicConfiguration();
+        dynamicConfiguration.setUrl(FAkED_URL);
         return dynamicConfiguration;
     }
 

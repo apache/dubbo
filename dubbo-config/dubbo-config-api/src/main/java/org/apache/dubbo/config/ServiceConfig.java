@@ -870,7 +870,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     @Override
+    @Parameter(excluded = true)
     public String getPrefix() {
-        return Constants.DUBBO + ".service" + interfaceName;
+        return Constants.DUBBO + ".service." + interfaceName;
     }
 }

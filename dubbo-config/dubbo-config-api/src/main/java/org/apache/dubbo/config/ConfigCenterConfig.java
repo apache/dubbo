@@ -84,7 +84,9 @@ public class ConfigCenterConfig extends AbstractConfig {
 
         URL url = toConfigUrl();
         DynamicConfiguration dynamicConfiguration = ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getAdaptiveExtension().getDynamicConfiguration(url);
+        Environment.getInstance().setDynamicConfiguration(dynamicConfiguration);
         String configContent = dynamicConfiguration.getConfig(dataid, namespace);
+
         try {
             if (configContent == null) {
                 logger.warn("You specified the config centre, but there's not even one single config item in it.");
