@@ -14,39 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.governance.support.nop;
+package org.apache.dubbo.common.config;
 
-import org.apache.dubbo.governance.AbstractDynamicConfiguration;
-import org.apache.dubbo.governance.ConfigurationListener;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ConfigUtils;
 
-/**
- * The default extension of {@link org.apache.dubbo.governance.DynamicConfiguration}.
- * If user does not specify a config centre, or specifies one that is not a valid extension, it will default to this one.
- */
-public class NopDynamicConfiguration extends AbstractDynamicConfiguration {
+public class PropertiesConfiguration extends AbstractPrefixConfiguration {
+    private static final Logger logger = LoggerFactory.getLogger(PropertiesConfiguration.class);
 
-    @Override
-    public void init() {
-
+    public PropertiesConfiguration(String prefix, String id) {
+        super(prefix, id);
     }
 
-    @Override
-    protected String getInternalProperty(String key, String group, long timeout) {
-        return null;
-    }
-
-    @Override
-    protected void addTargetListener(String key, Object o) {
-
-    }
-
-    @Override
-    protected Object createTargetConfigListener(String key, ConfigurationListener listener) {
-        return null;
+    public PropertiesConfiguration() {
+        this(null, null);
     }
 
     @Override
     protected Object getInternalProperty(String key) {
-        return null;
+        return ConfigUtils.getProperty(key);
     }
 }

@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.bootstrap;
 
-import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.ServiceConfig;
 
 import java.util.ArrayList;

@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.compiler.support.AdaptiveCompiler;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 
 import java.util.ArrayList;
@@ -288,5 +289,9 @@ public class ApplicationConfig extends AbstractConfig {
     public void setShutwait(String shutwait) {
         System.setProperty( Constants.SHUTDOWN_WAIT_KEY, shutwait);
         this.shutwait = shutwait;
+    }
+
+    public boolean isValid() {
+        return !StringUtils.isEmpty(name);
     }
 }

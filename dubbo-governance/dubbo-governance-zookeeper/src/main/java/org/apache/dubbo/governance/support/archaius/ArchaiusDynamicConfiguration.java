@@ -71,6 +71,13 @@ public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration<R
     }
 
     @Override
+    protected Object getInternalProperty(String key) {
+        return DynamicPropertyFactory.getInstance()
+                .getStringProperty(key, null)
+                .get();
+    }
+
+    @Override
     protected void addTargetListener(String key, Runnable runnable) {
         DynamicStringProperty prop = DynamicPropertyFactory.getInstance()
                 .getStringProperty(key, null);
@@ -81,7 +88,6 @@ public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration<R
     protected Runnable createTargetConfigListener(String key, ConfigurationListener listener) {
         return new ArchaiusListener(key, listener);
     }
-
 
     private class ArchaiusListener implements Runnable {
         private ConfigurationListener listener;

@@ -30,6 +30,7 @@ import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.model.ApplicationModel;
 import org.apache.dubbo.config.model.ProviderModel;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.metadata.integration.MetadataReportService;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -38,7 +39,6 @@ import org.apache.dubbo.rpc.ServiceClassHolder;
 import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
-import org.apache.dubbo.metadata.integration.MetadataReportService;
 
 import java.lang.reflect.Method;
 import java.net.InetAddress;
@@ -193,42 +193,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         return unexported;
     }
 
-    public synchronized void export() {
-        if (provider != null) {
-            if (export == null) {
-                export = provider.getExport();
-            }
-            if (delay == null) {
-                delay = provider.getDelay();
-            }
-        }
-        if (export != null && !export) {
-            return;
-        }
-
-        if (delay != null && delay > 0) {
-            delayExportExecutor.schedule(new Runnable() {
-                @Override
-                public void run() {
-                    doExport();
-                }
-            }, delay, TimeUnit.MILLISECONDS);
-        } else {
-            doExport();
-        }
-    }
-
-    protected synchronized void doExport() {
-        if (unexported) {
-            throw new IllegalStateException("Already unexported!");
-        }
-        if (exported) {
-            return;
-        }
-        exported = true;
-        if (interfaceName == null || interfaceName.length() == 0) {
-            throw new IllegalStateException("<dubbo:service interface=\"\" /> interface not allow null!");
-        }
+    public void checkAndUpdateSubConfigs() {
         checkDefault();
         if (provider != null) {
             if (application == null) {
@@ -263,6 +228,17 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 monitor = application.getMonitor();
             }
         }
+
+        checkApplication();
+        checkRegistry();
+        checkProtocol();
+        this.refresh();
+        checkServiceStore();
+
+        if (interfaceName == null || interfaceName.length() == 0) {
+            throw new IllegalStateException("<dubbo:service interface=\"\" /> interface not allow null!");
+        }
+
         if (ref instanceof GenericService) {
             interfaceClass = GenericService.class;
             if (StringUtils.isEmpty(generic)) {
@@ -307,11 +283,43 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 throw new IllegalStateException("The stub implementation class " + stubClass.getName() + " not implement interface " + interfaceName);
             }
         }
-        checkApplication();
-        checkRegistry();
-        checkProtocol();
-        appendProperties(this);
         checkStubAndMock(interfaceClass);
+    }
+
+    public synchronized void export() {
+        if (provider != null) {
+            if (export == null) {
+                export = provider.getExport();
+            }
+            if (delay == null) {
+                delay = provider.getDelay();
+            }
+        }
+        if (export != null && !export) {
+            return;
+        }
+
+        if (delay != null && delay > 0) {
+            delayExportExecutor.schedule(new Runnable() {
+                @Override
+                public void run() {
+                    doExport();
+                }
+            }, delay, TimeUnit.MILLISECONDS);
+        } else {
+            doExport();
+        }
+    }
+
+    protected synchronized void doExport() {
+        if (unexported) {
+            throw new IllegalStateException("Already unexported!");
+        }
+        if (exported) {
+            return;
+        }
+        exported = true;
+
         if (path == null || path.length() == 0) {
             path = interfaceName;
         }
@@ -712,7 +720,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (provider == null) {
             provider = new ProviderConfig();
         }
-        appendProperties(provider);
+        provider.refresh();
     }
 
     private void checkProtocol() {
@@ -728,7 +736,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             if (StringUtils.isEmpty(protocolConfig.getName())) {
                 protocolConfig.setName(Constants.DUBBO_VERSION_KEY);
             }
-            appendProperties(protocolConfig);
+            protocolConfig.refresh();
         }
     }
 
@@ -861,5 +869,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             buf.append(":").append(version);
         }
         return buf.toString();
+    }
+
+    @Override
+    public String getPrefix() {
+        return Constants.DUBBO + ".service" + interfaceName;
     }
 }

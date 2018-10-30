@@ -17,13 +17,14 @@
 package org.apache.dubbo.governance;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.extension.SPI;
 
 /**
  *
  */
 @SPI("zookeeper")
-public interface DynamicConfiguration {
+public interface DynamicConfiguration extends Configuration {
 
     void init();
 
@@ -33,7 +34,11 @@ public interface DynamicConfiguration {
 
     void addListener(String key, ConfigurationListener listener);
 
+    String getConfig(String key);
+
     String getConfig(String key, String group);
+
+    String getConfig(String key, ConfigurationListener listener);
 
     String getConfig(String key, String group, long timeout, ConfigurationListener listener);
 

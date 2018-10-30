@@ -191,7 +191,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         setConsumerUrl(url);
         String rawConfig = null;
         try {
-            rawConfig = dynamicConfiguration.getConfig(url.getServiceKey() + Constants.CONFIGURATORS_SUFFIX, "dubbo", this);
+            rawConfig = dynamicConfiguration.getConfig(url.getServiceKey() + Constants.CONFIGURATORS_SUFFIX, this);
             if (StringUtils.isNotEmpty(rawConfig)) {
                 this.dynamicConfigurators = configToConfiguratiors(rawConfig);
             }
@@ -201,7 +201,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
         String rawConfigApp = null;
         try {
-            rawConfigApp = dynamicConfiguration.getConfig(url.getParameter(Constants.APPLICATION_KEY) + Constants.CONFIGURATORS_SUFFIX, "dubbo", this);
+            rawConfigApp = dynamicConfiguration.getConfig(url.getParameter(Constants.APPLICATION_KEY) + Constants.CONFIGURATORS_SUFFIX, this);
             if (StringUtils.isNotEmpty(rawConfigApp)) {
                 this.appDynamicConfigurators = configToConfiguratiors(rawConfigApp);
             }

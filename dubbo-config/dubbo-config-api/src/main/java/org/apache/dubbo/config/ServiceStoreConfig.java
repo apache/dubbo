@@ -16,8 +16,7 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.Map;
 
@@ -90,5 +89,9 @@ public class ServiceStoreConfig extends AbstractConfig {
 
     public void setParameters(Map<String, String> parameters) {
         this.parameters = parameters;
+    }
+
+    public boolean isValid() {
+        return StringUtils.isNotEmpty(address);
     }
 }

@@ -77,7 +77,7 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
             logger.error("TagRouter must getConfig from or subscribe to a specific application, but the application in this TagRouter is not specified.");
         }
         try {
-            String rawRule = this.configuration.getConfig(application + TAGROUTERRULES_DATAID, "dubbo", this);
+            String rawRule = this.configuration.getConfig(application + TAGROUTERRULES_DATAID, this);
             if (StringUtils.isNotEmpty(rawRule)) {
                 this.tagRouterRule = TagRuleParser.parse(rawRule);
             }
