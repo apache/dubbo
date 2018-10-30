@@ -108,21 +108,12 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        if (isDelay() && !isExported() && !isUnexported()) {
+        if (!isExported() && !isUnexported()) {
             if (logger.isInfoEnabled()) {
                 logger.info("The service ready on spring started. service: " + getInterface());
             }
             export();
         }
-    }
-
-    private boolean isDelay() {
-        Integer delay = getDelay();
-        ProviderConfig provider = getProvider();
-        if (delay == null && provider != null) {
-            delay = provider.getDelay();
-        }
-        return supportedApplicationListener && (delay == null || delay == -1);
     }
 
     @Override
@@ -264,7 +255,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
 
         checkAndUpdateSubConfigs();
 
-        if (!isDelay()) {
+        if (!supportedApplicationListener) {
             export();
         }
     }
