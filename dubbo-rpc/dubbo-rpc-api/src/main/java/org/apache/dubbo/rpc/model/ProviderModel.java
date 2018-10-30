@@ -23,6 +23,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * ProviderModel which is about published services
+ */
 public class ProviderModel {
     private final String serviceName;
     private final Object serviceInstance;
