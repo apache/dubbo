@@ -28,6 +28,7 @@ Bugfixes：
 - [#2680](https://github.com/apache/incubator-dubbo/pull/2680) merge fix from 2.7.0 to 2.6.x (if invoker is destroyed due to address refresh from registry, let's allow the current invoke to proceed)
 - [#1755](https://github.com/apache/incubator-dubbo/issues/1755) Bean name of @service annotated class does not resolve placeholder
 
+
 Issues and Pull Requests, check [milestone-2.6.5](https://github.com/apache/incubator-dubbo/milestone/21).
 
 ## 2.6.4
