@@ -43,9 +43,9 @@ public class MockInvokersSelector extends AbstractRouter {
             return getNormalInvokers(invokers);
         } else {
             String value = invocation.getAttachments().get(Constants.INVOCATION_NEED_MOCK);
-            if (value == null)
+            if (value == null) {
                 return getNormalInvokers(invokers);
-            else if (Boolean.TRUE.toString().equalsIgnoreCase(value)) {
+            } else if (Boolean.TRUE.toString().equalsIgnoreCase(value)) {
                 return getMockedInvokers(invokers);
             }
         }

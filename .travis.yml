@@ -2,13 +2,12 @@ language: java
 sudo: false # faster builds
 
 jdk:
-  - oraclejdk10
-  - oraclejdk9
+  - oraclejdk11
   - oraclejdk8
 
 cache:
   directories:
-    - '$HOME/.m2/repository'
+    - $HOME/.m2
 
 install: true
 
