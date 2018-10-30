@@ -24,13 +24,11 @@ import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.config.PropertiesConfiguration;
 import org.apache.dubbo.common.config.SystemConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.governance.DynamicConfiguration;
 import org.apache.dubbo.governance.DynamicConfigurationFactory;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -46,6 +44,8 @@ public class Environment {
     private volatile Map<String, CompositeConfiguration> runtimeCompositeConfsHolder = new ConcurrentHashMap<>();
 
     private volatile InmemoryConfiguration externalConfiguration = new InmemoryConfiguration();
+
+    private volatile DynamicConfiguration dynamicConfiguration;
 
     private volatile boolean isConfigCenterFirst;
 
@@ -97,13 +97,14 @@ public class Environment {
      * @return
      */
     public DynamicConfiguration getDynamicConfiguration() {
-        ExtensionLoader<DynamicConfigurationFactory> factoryLoader = ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class);
-        Set<Object> factories = factoryLoader.getLoadedExtensionInstances();
-        if (CollectionUtils.isEmpty(factories)) {
-            return factoryLoader.getDefaultExtension().getDynamicConfiguration(null);
+        if (dynamicConfiguration != null) {
+            return dynamicConfiguration;
         }
+        return ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getDefaultExtension().getDynamicConfiguration(null);
+    }
 
-        return ((DynamicConfigurationFactory) factories.iterator().next()).getExistedDynamicConfiguration();
+    public void setDynamicConfiguration(DynamicConfiguration dynamicConfiguration) {
+        this.dynamicConfiguration = dynamicConfiguration;
     }
 
     private static String toKey(String keypart1, String keypart2) {

@@ -26,11 +26,11 @@ import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.config.context.Environment;
 import org.apache.dubbo.governance.ConfigChangeEvent;
 import org.apache.dubbo.governance.ConfigChangeType;
 import org.apache.dubbo.governance.ConfigurationListener;
 import org.apache.dubbo.governance.DynamicConfiguration;
-import org.apache.dubbo.governance.DynamicConfigurationFactory;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
@@ -51,7 +51,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -89,7 +88,7 @@ public class RegistryProtocol implements Protocol {
 
     public RegistryProtocol() {
         INSTANCE = this;
-        dynamicConfiguration = getDynamicConfiguration();
+        dynamicConfiguration = Environment.getInstance().getDynamicConfiguration();
     }
 
     public static RegistryProtocol getRegistryProtocol() {
@@ -97,16 +96,6 @@ public class RegistryProtocol implements Protocol {
             ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(Constants.REGISTRY_PROTOCOL); // load
         }
         return INSTANCE;
-    }
-
-    public DynamicConfiguration getDynamicConfiguration() {
-        ExtensionLoader<DynamicConfigurationFactory> factoryLoader = ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class);
-        Set<Object> factories = factoryLoader.getLoadedExtensionInstances();
-        if (CollectionUtils.isEmpty(factories)) {
-            return factoryLoader.getDefaultExtension().getDynamicConfiguration(null);
-        }
-
-        return ((DynamicConfigurationFactory) factories.iterator().next()).getExistedDynamicConfiguration();
     }
 
     //Filter the parameters that do not need to be output in url(Starting with .)
