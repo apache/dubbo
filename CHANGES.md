@@ -7,7 +7,6 @@ Enhancements / Features：
 - @Service and @Reference Optimization [#2655](https://github.com/apache/incubator-dubbo/issues/2655) [#2657](https://github.com/apache/incubator-dubbo/issues/2657) 
 - [Enhancement] the algorithm of load issue on Windows good first issue help wanted. [#1641](https://github.com/apache/incubator-dubbo/issues/1641)
 - add javadoc to dubbo-all module good first issue help wanted. [#2600](https://github.com/apache/incubator-dubbo/issues/2600) 
-- Can we make the bom and all module become the child module of dubbo-parent?  [#2519](https://github.com/apache/incubator-dubbo/issues/2519) 
 - [Enhancement] Reactor the generation rule for @Service Bean name type/enhancement [#2235](https://github.com/apache/incubator-dubbo/issues/2235) 
 - Optimize LeastActiveLoadBalance and add weight test case. [#2584](https://github.com/apache/incubator-dubbo/issues/2584) 
 - Smooth Round Robin selection. [#2647](https://github.com/apache/incubator-dubbo/pull/2647) 
@@ -16,7 +15,7 @@ Enhancements / Features：
 Bugfixes：    
 
 - @Service(register=false) is not work. [#2063](https://github.com/apache/incubator-dubbo/issues/2063) 
-- Our customized serialization id exceeds the maximum limit, now it cannot work on 2.6.2 anymore. [#1903](https://github.com/apache/incubator-dubbo/issues/1903) 
+- Our customized serialization id exceeds the maximum limit, now it cannot work on 2.6.2 anymore. [#1903](https://github.com/apache/incubator-dubbo/issues/1903) [#2668](https://github.com/apache/incubator-dubbo/pull/2668)   
 - Annotation @Reference can't support to export a service with a sync one and an async one . [#2194](https://github.com/apache/incubator-dubbo/issues/2194) 
 - `org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor#generateReferenceBeanCacheKey` has a bug. [#2522](https://github.com/apache/incubator-dubbo/issues/2522) 
 - 2.6.x Spring Event & Bugfix. [#2256](https://github.com/apache/incubator-dubbo/issues/2256) 
@@ -24,7 +23,6 @@ Bugfixes：
 - Fix incorrect descriptions for dubbo-serialization module. [pr#2624](https://github.com/apache/incubator-dubbo/pull/2624) 
 - A empty directory dubbo-config/dubbo-config-spring/src/test/resources/work after package source tgz. [#2560](https://github.com/apache/incubator-dubbo/issues/2560) 
 - Fixed 2.6.x branch a minor issue with doConnect not using getConnectTimeout() in NettyClient. [#2622](https://github.com/apache/incubator-dubbo/issues/2622) 
-- merge issue 1903's fix from 2.7.0 to 2.6.x (Our customized serialization id exceeds the maximum limit, now it cannot work on 2.6.2 anymore). [#2668](https://github.com/apache/incubator-dubbo/pull/2668) 
 - merge fix from 2.7.0 to 2.6.x (if invoker is destroyed due to address refresh from registry, let's allow the current invoke to proceed). [#2680](https://github.com/apache/incubator-dubbo/pull/2680) 
 - Bean name of @service annotated class does not resolve placeholder. [#1755](https://github.com/apache/incubator-dubbo/issues/1755) 
 
