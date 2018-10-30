@@ -36,4 +36,9 @@ public class ArchaiusDynamicConfigurationFactory implements DynamicConfiguration
         }
         return configuration;
     }
+
+    @Override
+    public DynamicConfiguration getExistedDynamicConfiguration() {
+        return configuration;
+    }
 }

@@ -14,33 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.governance.support.apollo;
+package org.apache.dubbo.config.utils;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.governance.DynamicConfiguration;
-import org.apache.dubbo.governance.DynamicConfigurationFactory;
+import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.config.InmemoryConfiguration;
+import org.apache.dubbo.config.AbstractConfig;
 
 /**
  *
  */
-public class ApolloDynamicConfigurationFactory implements DynamicConfigurationFactory {
+public class ConfigConverter {
+    private static final String[] SUFFIXES = new String[]{"Config", "Bean"};
 
-    private DynamicConfiguration configuration;
-
-    @Override
-    public synchronized DynamicConfiguration getDynamicConfiguration(URL url) {
-        if (configuration == null) {
-            configuration = new ApolloDynamicConfiguration();
-            configuration.setUrl(url);
-            configuration.init();
-        }
+    /**
+     * @param config
+     * @return
+     */
+    public static Configuration toConfiguration(AbstractConfig config) {
+        InmemoryConfiguration configuration = new InmemoryConfiguration(config.getPrefix(), config.getId());
+        configuration.addProperties(config.getMetaData());
         return configuration;
     }
-
-    @Override
-    public DynamicConfiguration getExistedDynamicConfiguration() {
-        return configuration;
-    }
-
 
 }

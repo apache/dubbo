@@ -61,8 +61,8 @@ public class ConfigConditionRouter extends AbstractRouter implements Configurati
         String app = this.url.getParameter(Constants.APPLICATION_KEY);
         String serviceKey = this.url.getServiceKey();
         try {
-            String rawRule = this.configuration.getConfig(serviceKey + Constants.ROUTERS_SUFFIX, "dubbo", this);
-            String appRawRule = this.configuration.getConfig(app + Constants.ROUTERS_SUFFIX, "dubbo", this);
+            String rawRule = this.configuration.getConfig(serviceKey + Constants.ROUTERS_SUFFIX, this);
+            String appRawRule = this.configuration.getConfig(app + Constants.ROUTERS_SUFFIX, this);
             if (!StringUtils.isEmpty(rawRule)) {
                 try {
                     routerRule = ConditionRuleParser.parse(rawRule);

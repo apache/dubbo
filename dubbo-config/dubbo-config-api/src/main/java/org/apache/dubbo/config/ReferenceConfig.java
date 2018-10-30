@@ -30,6 +30,7 @@ import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.model.ApplicationModel;
 import org.apache.dubbo.config.model.ConsumerModel;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.metadata.integration.MetadataReportService;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
@@ -41,7 +42,6 @@ import org.apache.dubbo.rpc.cluster.support.RegistryAwareCluster;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
-import org.apache.dubbo.metadata.integration.MetadataReportService;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -158,44 +158,17 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         return urls;
     }
 
-    public synchronized T get() {
-        if (destroyed) {
-            throw new IllegalStateException("Already destroyed!");
-        }
-        if (ref == null) {
-            init();
-        }
-        return ref;
-    }
-
-    public synchronized void destroy() {
-        if (ref == null) {
-            return;
-        }
-        if (destroyed) {
-            return;
-        }
-        destroyed = true;
-        try {
-            invoker.destroy();
-        } catch (Throwable t) {
-            logger.warn("Unexpected err when destroy invoker of ReferenceConfig(" + url + ").", t);
-        }
-        invoker = null;
-        ref = null;
-    }
-
-    private void init() {
-        if (initialized) {
-            return;
-        }
-        initialized = true;
+    /**
+     * This method should be called right after the creation of this class's instance, before any property in other config modules is used.
+     * Check each config modules are created properly and override their properties if necessary.
+     */
+    public void checkAndUpdateSubConfigs() {
         if (interfaceName == null || interfaceName.length() == 0) {
             throw new IllegalStateException("<dubbo:reference interface=\"\" /> interface not allow null!");
         }
         // get consumer's global configuration
         checkDefault();
-        appendProperties(this);
+        this.refresh();
         if (getGeneric() == null && getConsumer() != null) {
             setGeneric(getConsumer().getGeneric());
         }
@@ -279,6 +252,41 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
         }
         checkApplication();
+        checkServiceStore();
+    }
+
+    public synchronized T get() {
+        if (destroyed) {
+            throw new IllegalStateException("Already destroyed!");
+        }
+        if (ref == null) {
+            init();
+        }
+        return ref;
+    }
+
+    public synchronized void destroy() {
+        if (ref == null) {
+            return;
+        }
+        if (destroyed) {
+            return;
+        }
+        destroyed = true;
+        try {
+            invoker.destroy();
+        } catch (Throwable t) {
+            logger.warn("Unexpected err when destroy invoker of ReferenceConfig(" + url + ").", t);
+        }
+        invoker = null;
+        ref = null;
+    }
+
+    private void init() {
+        if (initialized) {
+            return;
+        }
+        initialized = true;
         checkStubAndMock(interfaceClass);
         Map<String, String> map = new HashMap<String, String>();
         resolveAsyncInterface(interfaceClass, map);
@@ -446,7 +454,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         if (consumer == null) {
             consumer = new ConsumerConfig();
         }
-        appendProperties(consumer);
+        consumer.refresh();
     }
 
     private void resolveAsyncInterface(Class<?> interfaceClass, Map<String, String> map) {
@@ -568,6 +576,11 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             buf.append(":").append(version);
         }
         return buf.toString();
+    }
+
+    @Override
+    public String getPrefix() {
+        return Constants.DUBBO + ".reference" + interfaceName;
     }
 
 }

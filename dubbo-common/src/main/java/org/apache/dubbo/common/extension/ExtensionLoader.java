@@ -43,6 +43,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Load dubbo extensions
@@ -296,6 +297,14 @@ public class ExtensionLoader<T> {
      */
     public Set<String> getLoadedExtensions() {
         return Collections.unmodifiableSet(new TreeSet<String>(cachedInstances.keySet()));
+    }
+
+    public Set<Object> getLoadedExtensionInstances() {
+        return Collections.unmodifiableSet(cachedInstances.values().stream().map(Holder::get).collect(Collectors.toSet()));
+    }
+
+    public Object getLoadedAdaptiveExtensionInstances() {
+        return cachedAdaptiveInstance.get();
     }
 
     /**

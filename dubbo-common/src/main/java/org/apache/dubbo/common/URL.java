@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common;
 
+import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -1382,6 +1384,12 @@ public /**final**/ class URL implements Serializable {
     @Deprecated
     public boolean getMethodBooleanParameter(String method, String key, boolean defaultValue) {
         return getMethodParameter(method, key, defaultValue);
+    }
+
+    public Configuration toConfiguration() {
+        InmemoryConfiguration configuration = new InmemoryConfiguration();
+        configuration.addProperties(parameters);
+        return configuration;
     }
 
     @Override

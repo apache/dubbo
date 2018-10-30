@@ -17,9 +17,9 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -348,5 +348,10 @@ public class RegistryConfig extends AbstractConfig {
 
     public void setAddParamKeys(String addParamKeys) {
         this.addParamKeys = addParamKeys;
+    }
+
+    public boolean isValid() {
+        // empty protocol will default to 'dubbo'
+        return !StringUtils.isEmpty(address);
     }
 }

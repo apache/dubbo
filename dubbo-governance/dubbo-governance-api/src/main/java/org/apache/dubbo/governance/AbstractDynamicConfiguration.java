@@ -16,7 +16,9 @@
  */
 package org.apache.dubbo.governance;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.AbstractConfiguration;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -24,7 +26,8 @@ import java.util.concurrent.ConcurrentMap;
 /**
  *
  */
-public abstract class AbstractDynamicConfiguration<TargetConfigListener> implements DynamicConfiguration {
+public abstract class AbstractDynamicConfiguration<TargetConfigListener> extends AbstractConfiguration implements DynamicConfiguration {
+    public static final String DEFAULT_NAMESPACE = "dubbo";
     protected URL url;
     /**
      * One key can register multiple target listeners, but one target listener only maps to one configuration listener
@@ -42,8 +45,18 @@ public abstract class AbstractDynamicConfiguration<TargetConfigListener> impleme
     }
 
     @Override
+    public String getConfig(String key) {
+        return getConfig(key, url.getParameter(Constants.CONFIG_NAMESPACE_KEY, DEFAULT_NAMESPACE), null);
+    }
+
+    @Override
     public String getConfig(String key, String group) {
         return getConfig(key, group, null);
+    }
+
+    @Override
+    public String getConfig(String key, ConfigurationListener listener) {
+        return getConfig(key, url.getParameter(Constants.CONFIG_NAMESPACE_KEY, DEFAULT_NAMESPACE), listener);
     }
 
     @Override

@@ -24,8 +24,17 @@ import org.apache.dubbo.governance.DynamicConfigurationFactory;
  *
  */
 public class NopDynamicConfigurationFactory implements DynamicConfigurationFactory {
+
+    private NopDynamicConfiguration dynamicConfiguration;
+
     @Override
     public DynamicConfiguration getDynamicConfiguration(URL url) {
-        return new NopDynamicConfiguration();
+        dynamicConfiguration = new NopDynamicConfiguration();
+        return dynamicConfiguration;
+    }
+
+    @Override
+    public DynamicConfiguration getExistedDynamicConfiguration() {
+        return dynamicConfiguration;
     }
 }

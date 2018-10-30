@@ -14,33 +14,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.governance.support.apollo;
+package org.apache.dubbo.common.config;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.governance.DynamicConfiguration;
-import org.apache.dubbo.governance.DynamicConfigurationFactory;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  *
  */
-public class ApolloDynamicConfigurationFactory implements DynamicConfigurationFactory {
+public class InmemoryConfiguration extends AbstractPrefixConfiguration {
 
-    private DynamicConfiguration configuration;
+    /**
+     * stores the configuration key-value pairs
+     */
+    private Map<String, String> store = new LinkedHashMap<>();
 
-    @Override
-    public synchronized DynamicConfiguration getDynamicConfiguration(URL url) {
-        if (configuration == null) {
-            configuration = new ApolloDynamicConfiguration();
-            configuration.setUrl(url);
-            configuration.init();
-        }
-        return configuration;
+    public InmemoryConfiguration(String prefix, String id) {
+        super(prefix, id);
+    }
+
+    public InmemoryConfiguration() {
+        this(null, null);
     }
 
     @Override
-    public DynamicConfiguration getExistedDynamicConfiguration() {
-        return configuration;
+    protected Object getInternalProperty(String key) {
+        return store.get(key);
     }
 
+    /**
+     * Replace previous value if there is one
+     *
+     * @param key
+     * @param value
+     */
+    public void addProperty(String key, String value) {
+        store.put(key, value);
+    }
 
+    public void addProperties(Map<String, String> properties) {
+        store.putAll(properties);
+    }
 }
