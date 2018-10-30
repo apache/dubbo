@@ -24,7 +24,7 @@ Bugfixes：
 - the algorithm of load issue on Windows. [#1641](https://github.com/apache/incubator-dubbo/issues/1641) 
 - Fix incorrect descriptions for dubbo-serialization module. [#2665](https://github.com/apache/incubator-dubbo/issues/2665) 
 - A empty directory dubbo-config/dubbo-config-spring/src/test/resources/work after package source tgz. [#2560](https://github.com/apache/incubator-dubbo/issues/2560)
-- Fixed 2.6.x branch a minor issue with doConnect not using getConnectTimeout() in NettyClient.  *No issue*.[#2622](https://github.com/apache/incubator-dubbo/pull/2622) 
+- Fixed 2.6.x branch a minor issue with doConnect not using getConnectTimeout() in NettyClient.  (*No issue*). [#2622](https://github.com/apache/incubator-dubbo/pull/2622) 
 - Bean name of @service annotated class does not resolve placeholder. [#1755](https://github.com/apache/incubator-dubbo/issues/1755) 
 
 
