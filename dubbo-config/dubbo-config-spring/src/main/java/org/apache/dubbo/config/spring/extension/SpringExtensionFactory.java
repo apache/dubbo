@@ -42,6 +42,10 @@ public class SpringExtensionFactory implements ExtensionFactory {
         contexts.remove(context);
     }
 
+    public static Set<ApplicationContext> getContexts() {
+        return contexts;
+    }
+
     // currently for test purpose
     public static void clearContexts() {
         contexts.clear();

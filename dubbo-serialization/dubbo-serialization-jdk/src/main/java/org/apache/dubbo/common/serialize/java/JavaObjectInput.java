@@ -40,12 +40,15 @@ public class JavaObjectInput extends NativeJavaObjectInput {
     @Override
     public byte[] readBytes() throws IOException {
         int len = getObjectInputStream().readInt();
-        if (len < 0)
+        if (len < 0) {
             return null;
-        if (len == 0)
+        }
+        if (len == 0) {
             return new byte[0];
-        if (len > MAX_BYTE_ARRAY_LENGTH)
+        }
+        if (len > MAX_BYTE_ARRAY_LENGTH) {
             throw new IOException("Byte array length too large. " + len);
+        }
 
         byte[] b = new byte[len];
         getObjectInputStream().readFully(b);
@@ -55,8 +58,9 @@ public class JavaObjectInput extends NativeJavaObjectInput {
     @Override
     public String readUTF() throws IOException {
         int len = getObjectInputStream().readInt();
-        if (len < 0)
+        if (len < 0) {
             return null;
+        }
 
         return getObjectInputStream().readUTF();
     }
@@ -64,8 +68,9 @@ public class JavaObjectInput extends NativeJavaObjectInput {
     @Override
     public Object readObject() throws IOException, ClassNotFoundException {
         byte b = getObjectInputStream().readByte();
-        if (b == 0)
+        if (b == 0) {
             return null;
+        }
 
         return getObjectInputStream().readObject();
     }
