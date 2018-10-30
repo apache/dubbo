@@ -2,7 +2,7 @@
 
 ## 2.6.5
 
-Enhancements / Features：    
+Enhancements / Features：   
 
 - Reactor the generation rule for @Service Bean name [#2235](https://github.com/apache/incubator-dubbo/issues/2235) 
 - Introduce a new Spring ApplicationEvent for ServiceBean exporting [#2251](https://github.com/apache/incubator-dubbo/issues/2251) 
