@@ -13,6 +13,7 @@ Enhancements / Features：
 - Smooth Round Robin selection. [#2578](https://github.com/apache/incubator-dubbo/issues/2578) [#2647](https://github.com/apache/incubator-dubbo/pull/2647) 
 - [Enhancement] Resolve the placeholders for sub-properties. [#2297](https://github.com/apache/incubator-dubbo/issues/2297) 
 
+
 Bugfixes：    
 
 - @Service(register=false) is not work. [#2063](https://github.com/apache/incubator-dubbo/issues/2063) 
