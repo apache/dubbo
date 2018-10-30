@@ -31,7 +31,7 @@ public class ReconnectTimerTask extends AbstractTimerTask {
 
     private final int heartbeatTimeout;
 
-    protected ReconnectTimerTask(ChannelProvider channelProvider, Long heartbeatTimeoutTick, int heartbeatTimeout1) {
+    ReconnectTimerTask(ChannelProvider channelProvider, Long heartbeatTimeoutTick, int heartbeatTimeout1) {
         super(channelProvider, heartbeatTimeoutTick);
         this.heartbeatTimeout = heartbeatTimeout1;
     }
@@ -42,8 +42,8 @@ public class ReconnectTimerTask extends AbstractTimerTask {
             Long lastRead = lastRead(channel);
             Long now = now();
             if (lastRead != null && now - lastRead > heartbeatTimeout) {
-                logger.warn("Close channel " + channel
-                        + ", because heartbeat read idle time out: " + heartbeatTimeout + "ms");
+                logger.warn("Close channel " + channel + ", because heartbeat read idle time out: "
+                        + heartbeatTimeout + "ms");
                 if (channel instanceof Client) {
                     try {
                         ((Client) channel).reconnect();

@@ -33,9 +33,10 @@ import org.apache.dubbo.remoting.exchange.Request;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static java.util.Collections.unmodifiableCollection;
 
 /**
  * ExchangeServerImpl
@@ -63,9 +64,6 @@ public class HeaderExchangeServer implements ExchangeServer {
             throw new IllegalStateException("heartbeatTimeout < heartbeatInterval * 2");
         }
 
-        long heartbeatTick = calcLeastTick(heartbeat);
-        // use heartbeatTick as every tick.
-        heartbeatTimer = new HashedWheelTimer(heartbeatTick, TimeUnit.MILLISECONDS, Constants.TICKS_PER_WHEEL);
         startHeartbeatTimer();
     }
 
@@ -217,10 +215,6 @@ public class HeaderExchangeServer implements ExchangeServer {
                     heartbeatTimeout = t;
 
                     stopHeartbeatTimer();
-
-                    long heartbeatTick = calcLeastTick(heartbeat);
-                    // use heartbeatTick as every tick.
-                    heartbeatTimer = new HashedWheelTimer(heartbeatTick, TimeUnit.MILLISECONDS, Constants.TICKS_PER_WHEEL);
                     startHeartbeatTimer();
                 }
             }
@@ -238,7 +232,8 @@ public class HeaderExchangeServer implements ExchangeServer {
     @Override
     public void send(Object message) throws RemotingException {
         if (closed.get()) {
-            throw new RemotingException(this.getLocalAddress(), null, "Failed to send message " + message + ", cause: The server " + getLocalAddress() + " is closed!");
+            throw new RemotingException(this.getLocalAddress(), null, "Failed to send message " + message
+                    + ", cause: The server " + getLocalAddress() + " is closed!");
         }
         server.send(message);
     }
@@ -246,33 +241,37 @@ public class HeaderExchangeServer implements ExchangeServer {
     @Override
     public void send(Object message, boolean sent) throws RemotingException {
         if (closed.get()) {
-            throw new RemotingException(this.getLocalAddress(), null, "Failed to send message " + message + ", cause: The server " + getLocalAddress() + " is closed!");
+            throw new RemotingException(this.getLocalAddress(), null, "Failed to send message " + message
+                    + ", cause: The server " + getLocalAddress() + " is closed!");
         }
         server.send(message, sent);
     }
 
-    private void startHeartbeatTimer() {
-        AbstractTimerTask.ChannelProvider cp = () -> Collections.unmodifiableCollection(HeaderExchangeServer.this.getChannels());
+    /**
+     * Each interval cannot be less than 1000ms.
+     */
+    private long calculateLeastDuration(int time) {
+        if (time / Constants.HEARTBEAT_CHECK_TICK <= 0) {
+            return Constants.LEAST_HEARTBEAT_DURATION;
+        } else {
+            return time / Constants.HEARTBEAT_CHECK_TICK;
+        }
+    }
 
-        long heartbeatTick = calcLeastTick(heartbeat);
-        long heartbeatTimeoutTick = calcLeastTick(heartbeatTimeout);
+    private void startHeartbeatTimer() {
+        long tickDuration = calculateLeastDuration(heartbeat);
+        heartbeatTimer = new HashedWheelTimer(tickDuration, TimeUnit.MILLISECONDS, Constants.TICKS_PER_WHEEL);
+
+        AbstractTimerTask.ChannelProvider cp = () -> unmodifiableCollection(HeaderExchangeServer.this.getChannels());
+
+        long heartbeatTick = calculateLeastDuration(heartbeat);
+        long heartbeatTimeoutTick = calculateLeastDuration(heartbeatTimeout);
         HeartbeatTimerTask heartBeatTimerTask = new HeartbeatTimerTask(cp, heartbeatTick, heartbeat);
         ReconnectTimerTask reconnectTimerTask = new ReconnectTimerTask(cp, heartbeatTimeoutTick, heartbeatTimeout);
 
         // init task and start timer.
         heartbeatTimer.newTimeout(heartBeatTimerTask, heartbeatTick, TimeUnit.MILLISECONDS);
         heartbeatTimer.newTimeout(reconnectTimerTask, heartbeatTimeoutTick, TimeUnit.MILLISECONDS);
-    }
-
-    /**
-     * Each interval cannot be less than 1000ms.
-     */
-    private long calcLeastTick(int time) {
-        if (time / Constants.HEARTBEAT_TICK <= 0) {
-            return Constants.LEAST_HEARTBEAT_TICK;
-        } else {
-            return time / Constants.HEARTBEAT_TICK;
-        }
     }
 
     private void stopHeartbeatTimer() {
