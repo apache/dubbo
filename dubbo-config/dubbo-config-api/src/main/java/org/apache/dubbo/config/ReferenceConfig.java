@@ -24,14 +24,12 @@ import org.apache.dubbo.common.config.AsyncFor;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
-import org.apache.dubbo.rpc.StaticContext;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.AvailableCluster;
@@ -45,7 +43,6 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -114,39 +111,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     public ReferenceConfig(Reference reference) {
         appendAnnotation(Reference.class, reference);
-    }
-
-    private static void checkAndConvertImplicitConfig(MethodConfig method, Map<String, String> map, Map<Object, Object> attributes) {
-        //check config conflict
-        if (Boolean.FALSE.equals(method.isReturn()) && (method.getOnreturn() != null || method.getOnthrow() != null)) {
-            throw new IllegalStateException("method config error : return attribute must be set true when onreturn or onthrow has been setted.");
-        }
-        //convert onreturn methodName to Method
-        String onReturnMethodKey = StaticContext.getKey(map, method.getName(), Constants.ON_RETURN_METHOD_KEY);
-        Object onReturnMethod = attributes.get(onReturnMethodKey);
-        if (onReturnMethod instanceof String) {
-            attributes.put(onReturnMethodKey, getMethodByName(method.getOnreturn().getClass(), onReturnMethod.toString()));
-        }
-        //convert onthrow methodName to Method
-        String onThrowMethodKey = StaticContext.getKey(map, method.getName(), Constants.ON_THROW_METHOD_KEY);
-        Object onThrowMethod = attributes.get(onThrowMethodKey);
-        if (onThrowMethod instanceof String) {
-            attributes.put(onThrowMethodKey, getMethodByName(method.getOnthrow().getClass(), onThrowMethod.toString()));
-        }
-        //convert oninvoke methodName to Method
-        String onInvokeMethodKey = StaticContext.getKey(map, method.getName(), Constants.ON_INVOKE_METHOD_KEY);
-        Object onInvokeMethod = attributes.get(onInvokeMethodKey);
-        if (onInvokeMethod instanceof String) {
-            attributes.put(onInvokeMethodKey, getMethodByName(method.getOninvoke().getClass(), onInvokeMethod.toString()));
-        }
-    }
-
-    private static Method getMethodByName(Class<?> clazz, String methodName) {
-        try {
-            return ReflectUtils.findMethodByMethodName(clazz, methodName);
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
     }
 
     public URL toUrl() {
@@ -309,23 +273,20 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         appendParameters(map, module);
         appendParameters(map, consumer, Constants.DEFAULT_KEY);
         appendParameters(map, this);
-        String prefix = StringUtils.getServiceKey(map);
+        Map<String, Object> attributes = null;
         if (methods != null && !methods.isEmpty()) {
-            Map<Object, Object> attributes = new HashMap<Object, Object>();
-            for (MethodConfig method : methods) {
-                appendParameters(map, method, method.getName());
-                String retryKey = method.getName() + ".retry";
+            attributes = new HashMap<String, Object>();
+            for (MethodConfig methodConfig : methods) {
+                appendParameters(map, methodConfig, methodConfig.getName());
+                String retryKey = methodConfig.getName() + ".retry";
                 if (map.containsKey(retryKey)) {
                     String retryValue = map.remove(retryKey);
                     if ("false".equals(retryValue)) {
-                        map.put(method.getName() + ".retries", "0");
+                        map.put(methodConfig.getName() + ".retries", "0");
                     }
                 }
-                appendAttributes(attributes, method, prefix + "." + method.getName());
-                checkAndConvertImplicitConfig(method, map, attributes);
+                attributes.put(methodConfig.getName(), convertMethodConfig2AyncInfo(methodConfig));
             }
-            //attributes are stored by system context.
-            StaticContext.getSystemContext().putAll(attributes);
         }
 
         String hostToRegistry = ConfigUtils.getSystemProperty(Constants.DUBBO_IP_TO_REGISTRY);
@@ -337,7 +298,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         map.put(Constants.REGISTER_IP_KEY, hostToRegistry);
 
         ref = createProxy(map);
-        ConsumerModel consumerModel = new ConsumerModel(getUniqueServiceName(), ref, interfaceClass.getMethods());
+
+        ConsumerModel consumerModel = new ConsumerModel(getUniqueServiceName(), ref, interfaceClass.getMethods(), attributes);
         ApplicationModel.initConsumerModel(getUniqueServiceName(), consumerModel);
     }
 

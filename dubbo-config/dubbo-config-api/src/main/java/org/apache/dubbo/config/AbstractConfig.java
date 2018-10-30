@@ -26,6 +26,7 @@ import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -239,27 +240,27 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
-    protected static void appendAttributes(Map<Object, Object> parameters, Object config) {
+    protected static void appendAttributes(Map<String, Object> parameters, Object config) {
         appendAttributes(parameters, config, null);
     }
 
-    protected static void appendAttributes(Map<Object, Object> parameters, Object config, String prefix) {
+    protected static void appendAttributes(Map<String, Object> parameters, Object config, String prefix) {
         if (config == null) {
             return;
         }
         Method[] methods = config.getClass().getMethods();
         for (Method method : methods) {
             try {
+                Parameter parameter = method.getAnnotation(Parameter.class);
+                if (parameter == null || !parameter.attribute()) {
+                    continue;
+                }
                 String name = method.getName();
                 if ((name.startsWith("get") || name.startsWith("is"))
                         && !"getClass".equals(name)
                         && Modifier.isPublic(method.getModifiers())
                         && method.getParameterTypes().length == 0
                         && isPrimitive(method.getReturnType())) {
-                    Parameter parameter = method.getAnnotation(Parameter.class);
-                    if (parameter == null || !parameter.attribute()) {
-                        continue;
-                    }
                     String key;
                     if (parameter.key().length() > 0) {
                         key = parameter.key();
@@ -278,6 +279,52 @@ public abstract class AbstractConfig implements Serializable {
             } catch (Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
+        }
+    }
+
+    protected static ConsumerMethodModel.AsyncMethodInfo convertMethodConfig2AyncInfo(MethodConfig methodConfig) {
+        if (methodConfig == null || (methodConfig.getOninvoke() == null && methodConfig.getOnreturn() == null && methodConfig.getOnthrow() == null)) {
+            return null;
+        }
+
+        //check config conflict
+        if (Boolean.FALSE.equals(methodConfig.isReturn()) && (methodConfig.getOnreturn() != null || methodConfig.getOnthrow() != null)) {
+            throw new IllegalStateException("method config error : return attribute must be set true when onreturn or onthrow has been set.");
+        }
+
+        ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = new ConsumerMethodModel.AsyncMethodInfo();
+
+        asyncMethodInfo.setOninvokeInstance(methodConfig.getOninvoke());
+        asyncMethodInfo.setOnreturnInstance(methodConfig.getOnreturn());
+        asyncMethodInfo.setOnthrowInstance(methodConfig.getOnthrow());
+
+        try {
+            String oninvokeMethod = methodConfig.getOninvokeMethod();
+            if (StringUtils.isNotEmpty(oninvokeMethod)) {
+                asyncMethodInfo.setOninvokeMethod(getMethodByName(methodConfig.getOninvoke().getClass(), oninvokeMethod));
+            }
+
+            String onreturnMethod = methodConfig.getOnreturnMethod();
+            if (StringUtils.isNotEmpty(onreturnMethod)) {
+                asyncMethodInfo.setOnreturnMethod(getMethodByName(methodConfig.getOnreturn().getClass(), onreturnMethod));
+            }
+
+            String onthrowMethod = methodConfig.getOnthrowMethod();
+            if (StringUtils.isNotEmpty(onthrowMethod)) {
+                asyncMethodInfo.setOnthrowMethod(getMethodByName(methodConfig.getOnthrow().getClass(), onthrowMethod));
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+
+        return asyncMethodInfo;
+    }
+
+    private static Method getMethodByName(Class<?> clazz, String methodName) {
+        try {
+            return ReflectUtils.findMethodByMethodName(clazz, methodName);
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
         }
     }
 
