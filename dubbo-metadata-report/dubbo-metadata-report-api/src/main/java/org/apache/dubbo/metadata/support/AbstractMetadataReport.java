@@ -17,10 +17,13 @@
 package org.apache.dubbo.metadata.support;
 
 import com.google.gson.Gson;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
@@ -28,6 +31,7 @@ import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
 import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
 import org.apache.dubbo.metadata.store.MetadataReport;
+import org.apache.dubbo.metadata.store.MetadataReportFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -37,9 +41,13 @@ import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -55,13 +63,17 @@ import java.util.concurrent.atomic.AtomicLong;
 public abstract class AbstractMetadataReport implements MetadataReport {
 
 
-    private final static String TAG = "sd.";
+    private static final int ONE_DAY_IN_MIll = 60 * 24 * 60 * 1000;
+    private static final int FOUR_HOURS_IN_MIll = 60 * 4 * 60 * 1000;
     // Log output
     protected final Logger logger = LoggerFactory.getLogger(getClass());
+
     // Local disk cache, where the special key value.registies records the list of registry centers, and the others are the list of notified service providers
     final Properties properties = new Properties();
     // File cache timing writing
     private final ExecutorService reportCacheExecutor = Executors.newFixedThreadPool(1, new NamedThreadFactory("DubboSaveServicestoreCache", true));
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(0, new NamedThreadFactory("DubboMetadataReportTimer", true));
+    final Map<MetadataIdentifier, Object> allMetadataReports = new ConcurrentHashMap<MetadataIdentifier, Object>(4);
 
     private final AtomicLong lastCacheChanged = new AtomicLong();
     final Map<MetadataIdentifier, Object> failedReports = new ConcurrentHashMap<MetadataIdentifier, Object>(4);
@@ -91,6 +103,12 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         this.file = file;
         loadProperties();
         metadataReportRetry = new MetadataReportRetry();
+        scheduler.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                publishAll();
+            }
+        }, calculateStartTime(), ONE_DAY_IN_MIll, TimeUnit.MILLISECONDS);
     }
 
     public URL getUrl() {
@@ -219,6 +237,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             if (logger.isInfoEnabled()) {
                 logger.info("store provider metadata. Identifier : " + providerMetadataIdentifier + "; definition: " + serviceDefinition);
             }
+            allMetadataReports.put(providerMetadataIdentifier, serviceDefinition);
             failedReports.remove(providerMetadataIdentifier);
             Gson gson = new Gson();
             String data = gson.toJson(serviceDefinition);
@@ -237,6 +256,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             if (logger.isInfoEnabled()) {
                 logger.info("store consumer metadata. Identifier : " + consumerMetadataIdentifier + "; definition: " + serviceParameterString);
             }
+            allMetadataReports.put(consumerMetadataIdentifier, serviceParameterString);
             failedReports.remove(consumerMetadataIdentifier);
             doStoreConsumerMetadata(consumerMetadataIdentifier, serviceParameterString);
             saveProperties(consumerMetadataIdentifier, serviceParameterString, true);
@@ -249,13 +269,6 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     }
 
 
-    public String getUrlKey(URL url) {
-        String protocol = getProtocol(url);
-        String app = url.getParameter(Constants.APPLICATION_KEY);
-        String appStr = Constants.PROVIDER_PROTOCOL.equals(protocol) ? "" : (app == null ? "" : (app + "."));
-        return TAG + protocol + "." + appStr + url.getServiceKey();
-    }
-
     String getProtocol(URL url) {
         String protocol = url.getParameter(Constants.SIDE_KEY);
         protocol = protocol == null ? url.getProtocol() : protocol;
@@ -266,10 +279,14 @@ public abstract class AbstractMetadataReport implements MetadataReport {
      * @return if need to continue
      */
     public boolean retry() {
-        if (failedReports.isEmpty()) {
+        return doHandleMetadataCollection(failedReports);
+    }
+
+    private boolean doHandleMetadataCollection(Map<MetadataIdentifier, Object> metadataMap){
+        if (metadataMap.isEmpty()) {
             return true;
         }
-        Iterator<Map.Entry<MetadataIdentifier, Object>> iterable = failedReports.entrySet().iterator();
+        Iterator<Map.Entry<MetadataIdentifier, Object>> iterable = metadataMap.entrySet().iterator();
         while (iterable.hasNext()) {
             Map.Entry<MetadataIdentifier, Object> item = iterable.next();
             if (item.getKey() instanceof ProviderMetadataIdentifier) {
@@ -280,6 +297,27 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
         }
         return false;
+    }
+
+    /**
+     * not private. just for unittest.
+     */
+    void publishAll() {
+        this.doHandleMetadataCollection(allMetadataReports);
+    }
+
+    /**
+     * between 2:00 am to 6:00 am, the time is random.
+     *
+     * @return
+     */
+    long calculateStartTime() {
+        Date now = new Date();
+        long nowMill = now.getTime();
+        long today0 = DateUtils.truncate(now, Calendar.DAY_OF_MONTH).getTime();
+        long subtract = today0 + ONE_DAY_IN_MIll - nowMill;
+        Random r = new Random();
+        return subtract + (FOUR_HOURS_IN_MIll / 2) + r.nextInt(FOUR_HOURS_IN_MIll);
     }
 
     class MetadataReportRetry {

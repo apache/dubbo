@@ -48,16 +48,11 @@ import java.util.function.Supplier;
 public class MetadataReportService {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
-    private static final int ONE_DAY_IN_MIll = 60 * 24 * 60 * 1000;
-    private static final int FOUR_HOURS_IN_MIll = 60 * 4 * 60 * 1000;
 
     private static MetadataReportService metadataReportService;
     private static Object lock = new Object();
 
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(0, new NamedThreadFactory("DubboMetadataReportTimer", true));
     private MetadataReportFactory metadataReportFactory = ExtensionLoader.getExtensionLoader(MetadataReportFactory.class).getAdaptiveExtension();
-    final Set<URL> providerURLs = new ConcurrentHashSet<>();
-    final Set<URL> consumerURLs = new ConcurrentHashSet<URL>();
     MetadataReport metadataReport;
     URL metadataReportUrl;
 
@@ -68,12 +63,7 @@ public class MetadataReportService {
         }
         this.metadataReportUrl = metadataReportURL;
         metadataReport = metadataReportFactory.getMetadataReport(this.metadataReportUrl);
-        scheduler.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                publishAll();
-            }
-        }, calculateStartTime(), ONE_DAY_IN_MIll, TimeUnit.MILLISECONDS);
+
     }
 
 
@@ -96,13 +86,10 @@ public class MetadataReportService {
         //first add into the list
         // remove the individul param
         providerUrl = providerUrl.removeParameters(Constants.PID_KEY,Constants.TIMESTAMP_KEY,Constants.BIND_IP_KEY,Constants.BIND_PORT_KEY,Constants.TIMESTAMP_KEY);
-        providerURLs.add(providerUrl);
         try {
             String interfaceName = providerUrl.getParameter(Constants.INTERFACE_KEY);
             if (StringUtils.isNotEmpty(interfaceName)) {
                 Class interfaceClass = Class.forName(interfaceName);
-//                ServiceDescriptor serviceDescriptor = ServiceDescriptorBuilder.build(interfaceClass);
-//                providerUrl = providerUrl.addParameter(SERVICE_DESCIPTOR_KEY, JSON.toJSONString(serviceDescriptor));
                 FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass, providerUrl.getParameters());
                 metadataReport.storeProviderMetadata(new ProviderMetadataIdentifier(providerUrl.getServiceInterface(),
                         providerUrl.getParameter(Constants.VERSION_KEY), providerUrl.getParameter(Constants.GROUP_KEY)), fullServiceDefinition);
@@ -117,33 +104,9 @@ public class MetadataReportService {
 
     public void publishConsumer(URL consumerURL) throws RpcException {
         consumerURL = consumerURL.removeParameters(Constants.PID_KEY,Constants.TIMESTAMP_KEY,Constants.BIND_IP_KEY,Constants.BIND_PORT_KEY,Constants.TIMESTAMP_KEY);
-        consumerURLs.add(consumerURL);
         metadataReport.storeConsumerMetadata(new ConsumerMetadataIdentifier(consumerURL.getServiceInterface(),
                 consumerURL.getParameter(Constants.VERSION_KEY), consumerURL.getParameter(Constants.GROUP_KEY),
                 consumerURL.getParameter(Constants.APPLICATION_KEY)), consumerURL.toParameterString());
-    }
-
-    void publishAll() {
-        for (URL url : providerURLs) {
-            publishProvider(url);
-        }
-        for (URL url : consumerURLs) {
-            publishConsumer(url);
-        }
-    }
-
-    /**
-     * between 2:00 am to 6:00 am, the time is random.
-     *
-     * @return
-     */
-    long calculateStartTime() {
-        Date now = new Date();
-        long nowMill = now.getTime();
-        long today0 = DateUtils.truncate(now, Calendar.DAY_OF_MONTH).getTime();
-        long subtract = today0 + ONE_DAY_IN_MIll - nowMill;
-        Random r = new Random();
-        return subtract + (FOUR_HOURS_IN_MIll / 2) + r.nextInt(FOUR_HOURS_IN_MIll);
     }
 
 }

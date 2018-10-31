@@ -25,7 +25,7 @@ import java.util.Map;
  *
  * @export
  */
-public class ServiceStoreConfig extends AbstractConfig {
+public class MetadataReportConfig extends AbstractConfig {
 
     public static final String NO_AVAILABLE = "N/A";
     private static final long serialVersionUID = 55233L;
@@ -44,10 +44,10 @@ public class ServiceStoreConfig extends AbstractConfig {
     // customized parameters
     private Map<String, String> parameters;
 
-    public ServiceStoreConfig() {
+    public MetadataReportConfig() {
     }
 
-    public ServiceStoreConfig(String address) {
+    public MetadataReportConfig(String address) {
         setAddress(address);
     }
 

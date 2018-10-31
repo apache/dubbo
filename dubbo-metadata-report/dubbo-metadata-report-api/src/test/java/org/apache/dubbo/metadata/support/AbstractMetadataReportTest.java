@@ -16,16 +16,22 @@
  */
 package org.apache.dubbo.metadata.support;
 
+import com.google.gson.Gson;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
 import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
+import org.apache.dubbo.metadata.integration.MetadataReportService;
+import org.apache.dubbo.metadata.store.test.JTestMetadataReport4Test;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -134,7 +140,7 @@ public class AbstractMetadataReportTest {
 
     private ProviderMetadataIdentifier storePrivider(AbstractMetadataReport abstractMetadataReport, String interfaceName, String version, String group, String application) throws ClassNotFoundException {
         URL url = URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":4444/" + interfaceName + "?version=" + version + "&application="
-                + application + (group == null ? "" : "&group=" + group));
+                + application + (group == null ? "" : "&group=" + group) + "&testPKey=8989");
 
         ProviderMetadataIdentifier providerMetadataIdentifier = new ProviderMetadataIdentifier(interfaceName, version, group);
         Class interfaceClass = Class.forName(interfaceName);
@@ -143,6 +149,97 @@ public class AbstractMetadataReportTest {
         abstractMetadataReport.storeProviderMetadata(providerMetadataIdentifier, fullServiceDefinition);
 
         return providerMetadataIdentifier;
+    }
+
+    private ConsumerMetadataIdentifier storeConsumer(AbstractMetadataReport abstractMetadataReport, String interfaceName, String version, String group, String application, String storeValue) throws ClassNotFoundException {
+        URL url = URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":4444/" + interfaceName + "?version=" + version + "&application="
+                + application + (group == null ? "" : "&group=" + group) + "&testPKey=9090");
+
+        ConsumerMetadataIdentifier consumerMetadataIdentifier = new ConsumerMetadataIdentifier(interfaceName, version, group, application);
+
+        abstractMetadataReport.storeConsumerMetadata(consumerMetadataIdentifier, storeValue + "&" + url.toParameterString());
+
+        return consumerMetadataIdentifier;
+    }
+
+    @Test
+    public void testPublishAll() throws ClassNotFoundException {
+
+        Assert.assertTrue(abstractServiceStore.store.isEmpty());
+        Assert.assertTrue(abstractServiceStore.allMetadataReports.isEmpty());
+        String interfaceName = "org.apache.dubbo.metadata.integration.InterfaceNameTestService";
+        String version = "1.0.0";
+        String group = null;
+        String application = "vic";
+        ProviderMetadataIdentifier providerMetadataIdentifier1 = storePrivider(abstractServiceStore, interfaceName, version, group, application);
+        Assert.assertEquals(abstractServiceStore.allMetadataReports.size(), 1);
+        Assert.assertTrue(((FullServiceDefinition) abstractServiceStore.allMetadataReports.get(providerMetadataIdentifier1)).getParameters().containsKey("testPKey"));
+
+        ProviderMetadataIdentifier providerMetadataIdentifier2 = storePrivider(abstractServiceStore, interfaceName, version + "_2", group + "_2", application);
+        Assert.assertEquals(abstractServiceStore.allMetadataReports.size(), 2);
+        Assert.assertTrue(((FullServiceDefinition) abstractServiceStore.allMetadataReports.get(providerMetadataIdentifier2)).getParameters().containsKey("testPKey"));
+        Assert.assertEquals(((FullServiceDefinition) abstractServiceStore.allMetadataReports.get(providerMetadataIdentifier2)).getParameters().get("version"), version + "_2");
+
+        ConsumerMetadataIdentifier consumerMetadataIdentifier = storeConsumer(abstractServiceStore, interfaceName, version + "_3", group + "_3", application, "testKey=value");
+        Assert.assertEquals(abstractServiceStore.allMetadataReports.size(), 3);
+        Assert.assertTrue(((String) abstractServiceStore.allMetadataReports.get(consumerMetadataIdentifier)).contains("testPKey=9090"));
+        Assert.assertTrue(((String) abstractServiceStore.allMetadataReports.get(consumerMetadataIdentifier)).contains("testKey=value"));
+        Assert.assertTrue(abstractServiceStore.store.size() == 3);
+
+        abstractServiceStore.store.clear();
+
+        Assert.assertTrue(abstractServiceStore.store.size() == 0);
+
+        abstractServiceStore.publishAll();
+
+        Assert.assertTrue(abstractServiceStore.store.size() == 3);
+
+        String v = abstractServiceStore.store.get(providerMetadataIdentifier1.getIdentifierKey());
+        Gson gson = new Gson();
+        FullServiceDefinition data = gson.fromJson(v, FullServiceDefinition.class);
+        checkParam(data.getParameters(), application, version);
+
+        String v2 = abstractServiceStore.store.get(providerMetadataIdentifier2.getIdentifierKey());
+        gson = new Gson();
+        data = gson.fromJson(v2, FullServiceDefinition.class);
+        checkParam(data.getParameters(), application, version + "_2");
+
+        String v3 = abstractServiceStore.store.get(consumerMetadataIdentifier.getIdentifierKey());
+        checkParam(queryUrlToMap(v3), application, version + "_3");
+    }
+
+    @Test
+    public void testCalculateStartTime() {
+        for (int i = 0; i < 50; i++) {
+            long t = abstractServiceStore.calculateStartTime() + System.currentTimeMillis();
+            Date date = new Date(t);
+            Assert.assertTrue(date.getHours() >= 2);
+            Assert.assertTrue(date.getHours() <= 6);
+        }
+    }
+
+    private FullServiceDefinition toServiceDefinition(String v) {
+        Gson gson = new Gson();
+        FullServiceDefinition data = gson.fromJson(v, FullServiceDefinition.class);
+        return data;
+    }
+
+    private void checkParam(Map<String, String> map, String application, String version) {
+        Assert.assertEquals(map.get("application"), application);
+        Assert.assertEquals(map.get("version"), version);
+    }
+
+    private Map<String, String> queryUrlToMap(String urlQuery) {
+        if (urlQuery == null) {
+            return Collections.emptyMap();
+        }
+        String[] pairs = urlQuery.split("&");
+        Map<String, String> map = new HashMap<>();
+        for (String pairStr : pairs) {
+            String[] pair = pairStr.split("=");
+            map.put(pair[0], pair[1]);
+        }
+        return map;
     }
 
 
