@@ -23,7 +23,9 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.StaticContext;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ConsumerMethodModel;
+import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -72,6 +74,12 @@ public class ImplicitCallBackTest {
         referService();
     }
 
+    public void initOrResetExService() {
+        destroyService();
+        exportExService();
+        referService();
+    }
+
     public void destroyService() {
         demoProxy = null;
         try {
@@ -95,26 +103,36 @@ public class ImplicitCallBackTest {
 
     public void initOrResetUrl(boolean isAsync) throws Exception {
         int port = NetUtils.getAvailablePort();
-        consumerUrl = serviceURL = URL.valueOf("dubbo://127.0.0.1:" + port + "/" + IDemoService.class.getName() + "?group=test&async=" + isAsync + "&timeout=100000&reference.filter=future");
-        StaticContext.getSystemContext().clear();
+        consumerUrl = serviceURL = URL.valueOf("dubbo://127.0.0.1:" + port + "/" + IDemoService.class.getName() + "?group=" + System.nanoTime() + "&async=" + isAsync + "&timeout=100000&reference.filter=future");
     }
 
     public void initImplicitCallBackURL_onlyOnthrow() throws Exception {
-        StaticContext.getSystemContext().put(StaticContext.getKey(consumerUrl, "get", Constants.ON_THROW_METHOD_KEY), onThrowMethod);
-        StaticContext.getSystemContext().put(StaticContext.getKey(consumerUrl, "get", Constants.ON_THROW_INSTANCE_KEY), notify);
+        Map<String, Object> attitudes = new HashMap<>();
+        ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = new ConsumerMethodModel.AsyncMethodInfo();
+        asyncMethodInfo.setOnthrowInstance(notify);
+        asyncMethodInfo.setOnthrowMethod(onThrowMethod);
+        attitudes.put("get", asyncMethodInfo);
+        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceKey(), demoProxy, IDemoService.class.getMethods(), attitudes));
     }
 
     //================================================================================================
 
     public void initImplicitCallBackURL_onlyOnreturn() throws Exception {
-        StaticContext.getSystemContext().put(StaticContext.getKey(consumerUrl, "get", Constants.ON_RETURN_METHOD_KEY), onReturnMethod);
-        StaticContext.getSystemContext().put(StaticContext.getKey(consumerUrl, "get", Constants.ON_RETURN_INSTANCE_KEY), notify);
-
+        Map<String, Object> attitudes = new HashMap<>();
+        ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = new ConsumerMethodModel.AsyncMethodInfo();
+        asyncMethodInfo.setOnreturnInstance(notify);
+        asyncMethodInfo.setOnreturnMethod(onReturnMethod);
+        attitudes.put("get", asyncMethodInfo);
+        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceKey(), demoProxy, IDemoService.class.getMethods(), attitudes));
     }
 
     public void initImplicitCallBackURL_onlyOninvoke() throws Exception {
-        StaticContext.getSystemContext().put(StaticContext.getKey(consumerUrl, "get", Constants.ON_INVOKE_METHOD_KEY), onInvokeMethod);
-        StaticContext.getSystemContext().put(StaticContext.getKey(consumerUrl, "get", Constants.ON_INVOKE_INSTANCE_KEY), notify);
+        Map<String, Object> attitudes = new HashMap<>();
+        ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = new ConsumerMethodModel.AsyncMethodInfo();
+        asyncMethodInfo.setOninvokeInstance(notify);
+        asyncMethodInfo.setOninvokeMethod(onInvokeMethod);
+        attitudes.put("get", asyncMethodInfo);
+        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceKey(), demoProxy, IDemoService.class.getMethods(), attitudes));
     }
 
     @Test
@@ -129,8 +147,9 @@ public class ImplicitCallBackTest {
     @Test
     public void test_Sync_Onreturn() throws Exception {
         initOrResetUrl(false);
-        initImplicitCallBackURL_onlyOnreturn();
         initOrResetService();
+        initImplicitCallBackURL_onlyOnreturn();
+
         int requestId = 2;
         Person ret = demoProxy.get(requestId);
         Assert.assertEquals(requestId, ret.getId());
@@ -148,11 +167,9 @@ public class ImplicitCallBackTest {
     @Test
     public void test_Ex_OnReturn() throws Exception {
         initOrResetUrl(true);
+        initOrResetExService();
         initImplicitCallBackURL_onlyOnreturn();
 
-        destroyService();
-        exportExService();
-        referService();
 
         int requestId = 2;
         Person ret = demoProxy.get(requestId);
@@ -171,11 +188,8 @@ public class ImplicitCallBackTest {
     @Test
     public void test_Ex_OnInvoke() throws Exception {
         initOrResetUrl(true);
+        initOrResetExService();
         initImplicitCallBackURL_onlyOninvoke();
-
-        destroyService();
-        exportExService();
-        referService();
 
         int requestId = 2;
         Person ret = demoProxy.get(requestId);
@@ -194,11 +208,8 @@ public class ImplicitCallBackTest {
     @Test
     public void test_Ex_Onthrow() throws Exception {
         initOrResetUrl(true);
+        initOrResetExService();
         initImplicitCallBackURL_onlyOnthrow();
-
-        destroyService();
-        exportExService();
-        referService();
 
         int requestId = 2;
         Person ret = demoProxy.get(requestId);
@@ -218,10 +229,8 @@ public class ImplicitCallBackTest {
     @Test
     public void test_Sync_NoFuture() throws Exception {
         initOrResetUrl(false);
+        initOrResetService();
         initImplicitCallBackURL_onlyOnreturn();
-        destroyService();
-        exportService();
-        referService();
 
         int requestId = 2;
         Person ret = demoProxy.get(requestId);
@@ -234,9 +243,7 @@ public class ImplicitCallBackTest {
     @Test
     public void test_Async_Future() throws Exception {
         initOrResetUrl(true);
-        destroyService();
-        exportService();
-        referService();
+        initOrResetService();
 
         int requestId = 2;
         Person ret = demoProxy.get(requestId);
@@ -250,9 +257,7 @@ public class ImplicitCallBackTest {
     @Test
     public void test_Async_Future_Multi() throws Exception {
         initOrResetUrl(true);
-        destroyService();
-        exportService();
-        referService();
+        initOrResetService();
 
         int requestId1 = 1;
         Person ret = demoProxy.get(requestId1);
@@ -275,9 +280,7 @@ public class ImplicitCallBackTest {
     public void test_Async_Future_Ex() throws Throwable {
         try {
             initOrResetUrl(true);
-            destroyService();
-            exportExService();
-            referService();
+            initOrResetExService();
 
             int requestId = 2;
             Person ret = demoProxy.get(requestId);
@@ -295,9 +298,7 @@ public class ImplicitCallBackTest {
     @Test(expected = RuntimeException.class)
     public void test_Normal_Ex() throws Exception {
         initOrResetUrl(false);
-        destroyService();
-        exportExService();
-        referService();
+        initOrResetExService();
 
         int requestId = 2;
         Person ret = demoProxy.get(requestId);

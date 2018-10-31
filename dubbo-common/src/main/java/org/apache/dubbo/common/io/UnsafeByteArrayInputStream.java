@@ -48,16 +48,21 @@ public class UnsafeByteArrayInputStream extends InputStream {
 
     @Override
     public int read(byte b[], int off, int len) {
-        if (b == null)
+        if (b == null) {
             throw new NullPointerException();
-        if (off < 0 || len < 0 || len > b.length - off)
+        }
+        if (off < 0 || len < 0 || len > b.length - off) {
             throw new IndexOutOfBoundsException();
-        if (mPosition >= mLimit)
+        }
+        if (mPosition >= mLimit) {
             return -1;
-        if (mPosition + len > mLimit)
+        }
+        if (mPosition + len > mLimit) {
             len = mLimit - mPosition;
-        if (len <= 0)
+        }
+        if (len <= 0) {
             return 0;
+        }
         System.arraycopy(mData, mPosition, b, off, len);
         mPosition += len;
         return len;
@@ -65,10 +70,12 @@ public class UnsafeByteArrayInputStream extends InputStream {
 
     @Override
     public long skip(long len) {
-        if (mPosition + len > mLimit)
+        if (mPosition + len > mLimit) {
             len = mLimit - mPosition;
-        if (len <= 0)
+        }
+        if (len <= 0) {
             return 0;
+        }
         mPosition += len;
         return len;
     }

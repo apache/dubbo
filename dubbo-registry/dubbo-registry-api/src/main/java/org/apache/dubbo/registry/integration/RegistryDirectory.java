@@ -108,10 +108,12 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     public RegistryDirectory(Class<T> serviceType, URL url) {
         super(url);
-        if (serviceType == null)
+        if (serviceType == null) {
             throw new IllegalArgumentException("service type is null.");
-        if (url.getServiceKey() == null || url.getServiceKey().length() == 0)
+        }
+        if (url.getServiceKey() == null || url.getServiceKey().length() == 0) {
             throw new IllegalArgumentException("registry serviceKey is null.");
+        }
         this.serviceType = serviceType;
         this.serviceKey = url.getServiceKey();
         this.queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(Constants.REFER_KEY));
@@ -191,7 +193,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         setConsumerUrl(url);
         String rawConfig = null;
         try {
-            rawConfig = dynamicConfiguration.getConfig(url.getServiceKey() + Constants.CONFIGURATORS_SUFFIX, "dubbo", this);
+            rawConfig = dynamicConfiguration.getConfig(url.getServiceKey() + Constants.CONFIGURATORS_SUFFIX, this);
             if (StringUtils.isNotEmpty(rawConfig)) {
                 this.dynamicConfigurators = configToConfiguratiors(rawConfig);
             }
@@ -201,7 +203,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
         String rawConfigApp = null;
         try {
-            rawConfigApp = dynamicConfiguration.getConfig(url.getParameter(Constants.APPLICATION_KEY) + Constants.CONFIGURATORS_SUFFIX, "dubbo", this);
+            rawConfigApp = dynamicConfiguration.getConfig(url.getParameter(Constants.APPLICATION_KEY) + Constants.CONFIGURATORS_SUFFIX, this);
             if (StringUtils.isNotEmpty(rawConfigApp)) {
                 this.appDynamicConfigurators = configToConfiguratiors(rawConfigApp);
             }

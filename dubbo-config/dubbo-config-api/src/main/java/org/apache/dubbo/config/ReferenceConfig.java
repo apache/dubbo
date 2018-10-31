@@ -24,29 +24,26 @@ import org.apache.dubbo.common.config.AsyncFor;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Reference;
-import org.apache.dubbo.config.model.ApplicationModel;
-import org.apache.dubbo.config.model.ConsumerModel;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.metadata.integration.MetadataReportService;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
-import org.apache.dubbo.rpc.StaticContext;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.cluster.support.RegistryAwareCluster;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
-import org.apache.dubbo.metadata.integration.MetadataReportService;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -117,39 +114,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         appendAnnotation(Reference.class, reference);
     }
 
-    private static void checkAndConvertImplicitConfig(MethodConfig method, Map<String, String> map, Map<Object, Object> attributes) {
-        //check config conflict
-        if (Boolean.FALSE.equals(method.isReturn()) && (method.getOnreturn() != null || method.getOnthrow() != null)) {
-            throw new IllegalStateException("method config error : return attribute must be set true when onreturn or onthrow has been setted.");
-        }
-        //convert onreturn methodName to Method
-        String onReturnMethodKey = StaticContext.getKey(map, method.getName(), Constants.ON_RETURN_METHOD_KEY);
-        Object onReturnMethod = attributes.get(onReturnMethodKey);
-        if (onReturnMethod instanceof String) {
-            attributes.put(onReturnMethodKey, getMethodByName(method.getOnreturn().getClass(), onReturnMethod.toString()));
-        }
-        //convert onthrow methodName to Method
-        String onThrowMethodKey = StaticContext.getKey(map, method.getName(), Constants.ON_THROW_METHOD_KEY);
-        Object onThrowMethod = attributes.get(onThrowMethodKey);
-        if (onThrowMethod instanceof String) {
-            attributes.put(onThrowMethodKey, getMethodByName(method.getOnthrow().getClass(), onThrowMethod.toString()));
-        }
-        //convert oninvoke methodName to Method
-        String onInvokeMethodKey = StaticContext.getKey(map, method.getName(), Constants.ON_INVOKE_METHOD_KEY);
-        Object onInvokeMethod = attributes.get(onInvokeMethodKey);
-        if (onInvokeMethod instanceof String) {
-            attributes.put(onInvokeMethodKey, getMethodByName(method.getOninvoke().getClass(), onInvokeMethod.toString()));
-        }
-    }
-
-    private static Method getMethodByName(Class<?> clazz, String methodName) {
-        try {
-            return ReflectUtils.findMethodByMethodName(clazz, methodName);
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
     public URL toUrl() {
         return urls.isEmpty() ? null : urls.iterator().next();
     }
@@ -158,44 +122,17 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         return urls;
     }
 
-    public synchronized T get() {
-        if (destroyed) {
-            throw new IllegalStateException("Already destroyed!");
-        }
-        if (ref == null) {
-            init();
-        }
-        return ref;
-    }
-
-    public synchronized void destroy() {
-        if (ref == null) {
-            return;
-        }
-        if (destroyed) {
-            return;
-        }
-        destroyed = true;
-        try {
-            invoker.destroy();
-        } catch (Throwable t) {
-            logger.warn("Unexpected err when destroy invoker of ReferenceConfig(" + url + ").", t);
-        }
-        invoker = null;
-        ref = null;
-    }
-
-    private void init() {
-        if (initialized) {
-            return;
-        }
-        initialized = true;
+    /**
+     * This method should be called right after the creation of this class's instance, before any property in other config modules is used.
+     * Check each config modules are created properly and override their properties if necessary.
+     */
+    public void checkAndUpdateSubConfigs() {
         if (interfaceName == null || interfaceName.length() == 0) {
             throw new IllegalStateException("<dubbo:reference interface=\"\" /> interface not allow null!");
         }
         // get consumer's global configuration
         checkDefault();
-        appendProperties(this);
+        this.refresh();
         if (getGeneric() == null && getConsumer() != null) {
             setGeneric(getConsumer().getGeneric());
         }
@@ -230,7 +167,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                     throw new IllegalStateException("Unload " + resolveFile + ", cause: " + e.getMessage(), e);
                 } finally {
                     try {
-                        if (null != fis) fis.close();
+                        if (null != fis) {
+                            fis.close();
+                        }
                     } catch (IOException e) {
                         logger.warn(e.getMessage(), e);
                     }
@@ -279,10 +218,45 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
         }
         checkApplication();
+        checkServiceStore();
+    }
+
+    public synchronized T get() {
+        if (destroyed) {
+            throw new IllegalStateException("Already destroyed!");
+        }
+        if (ref == null) {
+            init();
+        }
+        return ref;
+    }
+
+    public synchronized void destroy() {
+        if (ref == null) {
+            return;
+        }
+        if (destroyed) {
+            return;
+        }
+        destroyed = true;
+        try {
+            invoker.destroy();
+        } catch (Throwable t) {
+            logger.warn("Unexpected err when destroy invoker of ReferenceConfig(" + url + ").", t);
+        }
+        invoker = null;
+        ref = null;
+    }
+
+    private void init() {
+        if (initialized) {
+            return;
+        }
+        initialized = true;
         checkStubAndMock(interfaceClass);
         Map<String, String> map = new HashMap<String, String>();
         resolveAsyncInterface(interfaceClass, map);
-        Map<Object, Object> attributes = new HashMap<Object, Object>();
+
         map.put(Constants.SIDE_KEY, Constants.CONSUMER_SIDE);
         map.put(Constants.DUBBO_VERSION_KEY, Version.getProtocolVersion());
         map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
@@ -308,19 +282,19 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         appendParameters(map, module);
         appendParameters(map, consumer, Constants.DEFAULT_KEY);
         appendParameters(map, this);
-        String prefix = StringUtils.getServiceKey(map);
+        Map<String, Object> attributes = null;
         if (methods != null && !methods.isEmpty()) {
-            for (MethodConfig method : methods) {
-                appendParameters(map, method, method.getName());
-                String retryKey = method.getName() + ".retry";
+            attributes = new HashMap<String, Object>();
+            for (MethodConfig methodConfig : methods) {
+                appendParameters(map, methodConfig, methodConfig.getName());
+                String retryKey = methodConfig.getName() + ".retry";
                 if (map.containsKey(retryKey)) {
                     String retryValue = map.remove(retryKey);
                     if ("false".equals(retryValue)) {
-                        map.put(method.getName() + ".retries", "0");
+                        map.put(methodConfig.getName() + ".retries", "0");
                     }
                 }
-                appendAttributes(attributes, method, prefix + "." + method.getName());
-                checkAndConvertImplicitConfig(method, map, attributes);
+                attributes.put(methodConfig.getName(), convertMethodConfig2AyncInfo(methodConfig));
             }
         }
 
@@ -332,10 +306,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
         map.put(Constants.REGISTER_IP_KEY, hostToRegistry);
 
-        //attributes are stored by system context.
-        StaticContext.getSystemContext().putAll(attributes);
         ref = createProxy(map);
-        ConsumerModel consumerModel = new ConsumerModel(getUniqueServiceName(), this, ref, interfaceClass.getMethods());
+
+        ConsumerModel consumerModel = new ConsumerModel(getUniqueServiceName(), ref, interfaceClass.getMethods(), attributes);
         ApplicationModel.initConsumerModel(getUniqueServiceName(), consumerModel);
     }
 
@@ -446,14 +419,18 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         if (consumer == null) {
             consumer = new ConsumerConfig();
         }
-        appendProperties(consumer);
+        consumer.refresh();
     }
 
     private void resolveAsyncInterface(Class<?> interfaceClass, Map<String, String> map) {
         AsyncFor annotation = interfaceClass.getAnnotation(AsyncFor.class);
-        if (annotation == null) return;
+        if (annotation == null) {
+            return;
+        }
         Class<?> target = annotation.value();
-        if (!target.isAssignableFrom(interfaceClass)) return;
+        if (!target.isAssignableFrom(interfaceClass)) {
+            return;
+        }
         this.asyncInterfaceClass = interfaceClass;
         this.interfaceClass = target;
         setInterface(this.interfaceClass.getName());
@@ -568,6 +545,12 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             buf.append(":").append(version);
         }
         return buf.toString();
+    }
+
+    @Override
+    @Parameter(excluded = true)
+    public String getPrefix() {
+        return Constants.DUBBO + ".reference." + interfaceName;
     }
 
 }

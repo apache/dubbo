@@ -25,6 +25,8 @@ import java.util.regex.Pattern;
  */
 public class Constants {
 
+    public static final String DUBBO = "dubbo";
+
     public static final String PROVIDER = "provider";
 
     public static final String CONSUMER = "consumer";
@@ -386,6 +388,8 @@ public class Constants {
             .compile("\\s*[,]+\\s*");
 
     public final static String PATH_SEPARATOR = "/";
+
+    public final static String PROTOCOL_SEPARATOR = "://";
 
     public static final String REGISTRY_SEPARATOR = "|";
 

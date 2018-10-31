@@ -2,7 +2,7 @@
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-fragment_3_0.xsd">
 
-    <name>dubbo-fragment</name>
+    <name>dubbo_fragment</name>
 
     <ordering>
         <before>
@@ -16,7 +16,7 @@
     </context-param>
 
     <listener>
-        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+        <listener-class>org.apache.dubbo.config.spring.initializer.DubboContextListener</listener-class>
     </listener>
 
 </web-fragment>

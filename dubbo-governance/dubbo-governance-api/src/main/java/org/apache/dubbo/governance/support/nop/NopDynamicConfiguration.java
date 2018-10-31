@@ -20,7 +20,8 @@ import org.apache.dubbo.governance.AbstractDynamicConfiguration;
 import org.apache.dubbo.governance.ConfigurationListener;
 
 /**
- *
+ * The default extension of {@link org.apache.dubbo.governance.DynamicConfiguration}.
+ * If user does not specify a config centre, or specifies one that is not a valid extension, it will default to this one.
  */
 public class NopDynamicConfiguration extends AbstractDynamicConfiguration {
 
@@ -41,6 +42,11 @@ public class NopDynamicConfiguration extends AbstractDynamicConfiguration {
 
     @Override
     protected Object createTargetConfigListener(String key, ConfigurationListener listener) {
+        return null;
+    }
+
+    @Override
+    protected Object getInternalProperty(String key) {
         return null;
     }
 }

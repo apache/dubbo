@@ -52,7 +52,9 @@ public class JSON {
      * @throws IOException
      */
     public static String json(Object obj) throws IOException {
-        if (obj == null) return NULL;
+        if (obj == null) {
+            return NULL;
+        }
         StringWriter sw = new StringWriter();
         try {
             json(obj, sw);
@@ -74,10 +76,11 @@ public class JSON {
     }
 
     public static void json(Object obj, Writer writer, boolean writeClass) throws IOException {
-        if (obj == null)
+        if (obj == null) {
             writer.write(NULL);
-        else
+        } else {
             json(obj, new JSONWriter(writer), writeClass);
+        }
     }
 
     /**
@@ -89,7 +92,9 @@ public class JSON {
      * @throws IOException
      */
     public static String json(Object obj, String[] properties) throws IOException {
-        if (obj == null) return NULL;
+        if (obj == null) {
+            return NULL;
+        }
         StringWriter sw = new StringWriter();
         try {
             json(obj, properties, sw);
@@ -112,17 +117,19 @@ public class JSON {
      * @throws IOException
      */
     public static void json(Object obj, final String[] properties, Writer writer, boolean writeClass) throws IOException {
-        if (obj == null)
+        if (obj == null) {
             writer.write(NULL);
-        else
+        } else {
             json(obj, properties, new JSONWriter(writer), writeClass);
+        }
     }
 
     private static void json(Object obj, JSONWriter jb, boolean writeClass) throws IOException {
-        if (obj == null)
+        if (obj == null) {
             jb.valueNull();
-        else
+        } else {
             DEFAULT_CONVERTER.writeValue(obj, jb, writeClass);
+        }
     }
 
     private static void json(Object obj, String[] properties, JSONWriter jb, boolean writeClass) throws IOException {
@@ -136,10 +143,11 @@ public class JSON {
             for (String prop : properties) {
                 jb.objectItem(prop);
                 value = wrapper.getPropertyValue(obj, prop);
-                if (value == null)
+                if (value == null) {
                     jb.valueNull();
-                else
+                } else {
                     DEFAULT_CONVERTER.writeValue(value, jb, writeClass);
+                }
             }
             jb.objectEnd();
         }

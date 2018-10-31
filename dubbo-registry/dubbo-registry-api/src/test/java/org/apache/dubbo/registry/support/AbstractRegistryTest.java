@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -47,9 +48,11 @@ public class AbstractRegistryTest {
 
     @Before
     public void init() {
-        URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":2233");
-        testUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A&interface=com.test");
-        mockUrl = new URL("dubbo", "127.0.0.0", 2200);
+        URL url = URL.valueOf("dubbo://192.168.0.2:2233");
+        //sync update cache file
+        url = url.addParameter("save.file",true);
+        testUrl = URL.valueOf("http://192.168.0.3:9090/registry?check=false&file=N/A&interface=com.test");
+        mockUrl = new URL("dubbo", "192.168.0.1", 2200);
 
         parametersConsumer.put("application", "demo-consumer");
         parametersConsumer.put("category", "consumer");
@@ -115,7 +118,7 @@ public class AbstractRegistryTest {
     @Test
     public void testUnregister() throws Exception {
         //test one unregister
-        URL url = new URL("dubbo", "127.0.0.0", 2200);
+        URL url = new URL("dubbo", "192.168.0.1", 2200);
         abstractRegistry.getRegistered().add(url);
         abstractRegistry.unregister(url);
         Assert.assertThat(false, Matchers.equalTo(abstractRegistry.getRegistered().contains(url)));
@@ -145,7 +148,7 @@ public class AbstractRegistryTest {
         //test subscribe
         final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
         NotifyListener listener = urls -> notified.set(Boolean.TRUE);
-        URL url = new URL("dubbo", "127.0.0.0", 2200);
+        URL url = new URL("dubbo", "192.168.0.1", 2200);
         abstractRegistry.subscribe(url, listener);
         Set<NotifyListener> subscribeListeners = abstractRegistry.getSubscribed().get(url);
         Assert.assertThat(true, Matchers.equalTo(subscribeListeners.contains(listener)));
@@ -159,7 +162,7 @@ public class AbstractRegistryTest {
     public void testSubscribeIfUrlNull() throws Exception {
         final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
         NotifyListener listener = urls -> notified.set(Boolean.TRUE);
-        URL url = new URL("dubbo", "127.0.0.0", 2200);
+        URL url = new URL("dubbo", "192.168.0.1", 2200);
         abstractRegistry.subscribe(null, listener);
         Assert.fail("subscribe url == null");
     }
@@ -168,7 +171,7 @@ public class AbstractRegistryTest {
     public void testSubscribeIfListenerNull() throws Exception {
         final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
         NotifyListener listener = urls -> notified.set(Boolean.TRUE);
-        URL url = new URL("dubbo", "127.0.0.0", 2200);
+        URL url = new URL("dubbo", "192.168.0.1", 2200);
         abstractRegistry.subscribe(url, null);
         Assert.fail("listener url == null");
     }
@@ -184,7 +187,7 @@ public class AbstractRegistryTest {
     @Test(expected = IllegalArgumentException.class)
     public void testUnsubscribeIfNotifyNull() throws Exception {
         final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
-        URL url = new URL("dubbo", "127.0.0.0", 2200);
+        URL url = new URL("dubbo", "192.168.0.1", 2200);
         abstractRegistry.unsubscribe(url, null);
         Assert.fail("unsubscribe listener == null");
     }
@@ -293,13 +296,13 @@ public class AbstractRegistryTest {
     public void testNotify() throws Exception {
         final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
         NotifyListener listner1 = urls -> notified.set(Boolean.TRUE);
-        URL url1 = new URL("dubbo", "127.0.0.0", 2200, parametersConsumer);
+        URL url1 = new URL("dubbo", "192.168.0.1", 2200, parametersConsumer);
         abstractRegistry.subscribe(url1, listner1);
         NotifyListener listner2 = urls -> notified.set(Boolean.TRUE);
-        URL url2 = new URL("dubbo", "127.0.0.1", 2201, parametersConsumer);
+        URL url2 = new URL("dubbo", "192.168.0.2", 2201, parametersConsumer);
         abstractRegistry.subscribe(url2, listner2);
         NotifyListener listner3 = urls -> notified.set(Boolean.TRUE);
-        URL url3 = new URL("dubbo", "127.0.0.2", 2202, parametersConsumer);
+        URL url3 = new URL("dubbo", "192.168.0.3", 2202, parametersConsumer);
         abstractRegistry.subscribe(url3, listner3);
         List<URL> urls = new ArrayList<>();
         urls.add(url1);
@@ -319,13 +322,13 @@ public class AbstractRegistryTest {
     public void testNotifyList() throws Exception {
         final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
         NotifyListener listner1 = urls -> notified.set(Boolean.TRUE);
-        URL url1 = new URL("dubbo", "127.0.0.0", 2200, parametersConsumer);
+        URL url1 = new URL("dubbo", "192.168.0.1", 2200, parametersConsumer);
         abstractRegistry.subscribe(url1, listner1);
         NotifyListener listner2 = urls -> notified.set(Boolean.TRUE);
-        URL url2 = new URL("dubbo", "127.0.0.1", 2201, parametersConsumer);
+        URL url2 = new URL("dubbo", "192.168.0.2", 2201, parametersConsumer);
         abstractRegistry.subscribe(url2, listner2);
         NotifyListener listner3 = urls -> notified.set(Boolean.TRUE);
-        URL url3 = new URL("dubbo", "127.0.0.2", 2202, parametersConsumer);
+        URL url3 = new URL("dubbo", "192.168.0.3", 2202, parametersConsumer);
         abstractRegistry.subscribe(url3, listner3);
         List<URL> urls = new ArrayList<>();
         urls.add(url1);
@@ -342,13 +345,13 @@ public class AbstractRegistryTest {
     public void testNotifyIfURLNull() throws Exception {
         final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
         NotifyListener listner1 = urls -> notified.set(Boolean.TRUE);
-        URL url1 = new URL("dubbo", "127.0.0.0", 2200, parametersConsumer);
+        URL url1 = new URL("dubbo", "192.168.0.1", 2200, parametersConsumer);
         abstractRegistry.subscribe(url1, listner1);
         NotifyListener listner2 = urls -> notified.set(Boolean.TRUE);
-        URL url2 = new URL("dubbo", "127.0.0.1", 2201, parametersConsumer);
+        URL url2 = new URL("dubbo", "192.168.0.2", 2201, parametersConsumer);
         abstractRegistry.subscribe(url2, listner2);
         NotifyListener listner3 = urls -> notified.set(Boolean.TRUE);
-        URL url3 = new URL("dubbo", "127.0.0.2", 2202, parametersConsumer);
+        URL url3 = new URL("dubbo", "192.168.0.3", 2202, parametersConsumer);
         abstractRegistry.subscribe(url3, listner3);
         List<URL> urls = new ArrayList<>();
         urls.add(url1);
@@ -362,13 +365,13 @@ public class AbstractRegistryTest {
     public void testNotifyIfNotifyNull() {
         final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
         NotifyListener listner1 = urls -> notified.set(Boolean.TRUE);
-        URL url1 = new URL("dubbo", "127.0.0.0", 2200, parametersConsumer);
+        URL url1 = new URL("dubbo", "192.168.0.1", 2200, parametersConsumer);
         abstractRegistry.subscribe(url1, listner1);
         NotifyListener listner2 = urls -> notified.set(Boolean.TRUE);
-        URL url2 = new URL("dubbo", "127.0.0.1", 2201, parametersConsumer);
+        URL url2 = new URL("dubbo", "192.168.0.2", 2201, parametersConsumer);
         abstractRegistry.subscribe(url2, listner2);
         NotifyListener listner3 = urls -> notified.set(Boolean.TRUE);
-        URL url3 = new URL("dubbo", "127.0.0.2", 2202, parametersConsumer);
+        URL url3 = new URL("dubbo", "192.168.0.3", 2202, parametersConsumer);
         abstractRegistry.subscribe(url3, listner3);
         List<URL> urls = new ArrayList<>();
         urls.add(url1);
@@ -507,12 +510,27 @@ public class AbstractRegistryTest {
 
     private List<URL> getList() {
         List<URL> list = new ArrayList<>();
-        URL url1 = new URL("dubbo", "127.0.0.0", 1000);
-        URL url2 = new URL("dubbo", "127.0.0.1", 1001);
-        URL url3 = new URL("dubbo", "127.0.0.2", 1002);
+        URL url1 = new URL("dubbo", "192.168.0.1", 1000);
+        URL url2 = new URL("dubbo", "192.168.0.2", 1001);
+        URL url3 = new URL("dubbo", "192.168.0.3", 1002);
         list.add(url1);
         list.add(url2);
         list.add(url3);
         return list;
+    }
+
+    @Test
+    public void getCacheUrlsTest(){
+        List<URL> urls = new ArrayList<>();
+        urls.add(testUrl);
+        // check if notify successfully
+        Assert.assertFalse(notifySuccess);
+        abstractRegistry.notify(testUrl, listener, urls);
+        Assert.assertTrue(notifySuccess);
+        List<URL> cacheUrl = abstractRegistry.getCacheUrls(testUrl);
+        Assert.assertTrue(cacheUrl.size() == 1);
+        URL nullUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A&interface=com.testa");
+        cacheUrl = abstractRegistry.getCacheUrls(nullUrl);
+        Assert.assertTrue(Objects.isNull(cacheUrl));
     }
 }

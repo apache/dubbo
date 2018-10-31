@@ -30,4 +30,6 @@ public interface DynamicConfigurationFactory {
     @Adaptive({Constants.CONFIG_TYPE_KEY})
     DynamicConfiguration getDynamicConfiguration(URL url);
 
+    DynamicConfiguration getExistedDynamicConfiguration();
+
 }
