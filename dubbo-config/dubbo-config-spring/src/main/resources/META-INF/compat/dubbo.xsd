@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-            xmlns:beans="http://www.springframework.org/schema/beans" 
+            xmlns:beans="http://www.springframework.org/schema/beans"
             xmlns:tool="http://www.springframework.org/schema/tool"
             xmlns="http://code.alibabatech.com/schema/dubbo"
             targetNamespace="http://code.alibabatech.com/schema/dubbo">
@@ -1327,7 +1327,7 @@
             <xsd:documentation><![CDATA[ The servicestore config ]]></xsd:documentation>
             <xsd:appinfo>
                 <tool:annotation>
-                    <tool:exports type="org.apache.dubbo.config.ServiceStoreConfig"/>
+                    <tool:exports type="org.apache.dubbo.config.MetadataReportConfig"/>
                 </tool:annotation>
             </xsd:appinfo>
         </xsd:annotation>
