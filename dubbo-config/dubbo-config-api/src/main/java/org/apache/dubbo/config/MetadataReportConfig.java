@@ -44,6 +44,14 @@ public class MetadataReportConfig extends AbstractConfig {
     // customized parameters
     private Map<String, String> parameters;
 
+    private Integer retrytimes = 100;
+
+    private Integer retryperiod = 3000;
+    /**
+     * by default the metadatastore will store full metadata repeatly every day .
+     */
+    private boolean cyclereport = true;
+
     public MetadataReportConfig() {
     }
 
@@ -91,7 +99,32 @@ public class MetadataReportConfig extends AbstractConfig {
         this.parameters = parameters;
     }
 
+    public Integer getRetrytimes() {
+        return retrytimes;
+    }
+
+    public void setRetrytimes(Integer retrytimes) {
+        this.retrytimes = retrytimes;
+    }
+
+    public Integer getRetryperiod() {
+        return retryperiod;
+    }
+
+    public void setRetryperiod(Integer retryperiod) {
+        this.retryperiod = retryperiod;
+    }
+
+    public boolean isCyclereport() {
+        return cyclereport;
+    }
+
+    public void setCyclereport(boolean cyclereport) {
+        this.cyclereport = cyclereport;
+    }
+
     public boolean isValid() {
         return StringUtils.isNotEmpty(address);
     }
+
 }
