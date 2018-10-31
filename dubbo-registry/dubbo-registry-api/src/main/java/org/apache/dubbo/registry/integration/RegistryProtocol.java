@@ -26,11 +26,11 @@ import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.config.context.Environment;
 import org.apache.dubbo.governance.ConfigChangeEvent;
 import org.apache.dubbo.governance.ConfigChangeType;
 import org.apache.dubbo.governance.ConfigurationListener;
 import org.apache.dubbo.governance.DynamicConfiguration;
-import org.apache.dubbo.governance.DynamicConfigurationFactory;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
@@ -60,11 +60,9 @@ import static org.apache.dubbo.common.Constants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.Constants.ADD_PARAM_KEYS_KEY;
 import static org.apache.dubbo.common.Constants.APPLICATION_KEY;
 import static org.apache.dubbo.common.Constants.CONFIGURATORS_SUFFIX;
-import static org.apache.dubbo.common.Constants.CONFIG_PROTOCOL;
 import static org.apache.dubbo.common.Constants.EXCHANGING_KEYS;
 import static org.apache.dubbo.common.Constants.EXPORT_KEY;
 import static org.apache.dubbo.common.Constants.INTERFACES;
-import static org.apache.dubbo.common.Constants.INTERFACE_KEY;
 import static org.apache.dubbo.common.Constants.METHODS_KEY;
 import static org.apache.dubbo.common.Constants.QOS_ENABLE;
 import static org.apache.dubbo.common.Constants.QOS_PORT;
@@ -90,6 +88,7 @@ public class RegistryProtocol implements Protocol {
 
     public RegistryProtocol() {
         INSTANCE = this;
+        dynamicConfiguration = Environment.getInstance().getDynamicConfiguration();
     }
 
     public static RegistryProtocol getRegistryProtocol() {
@@ -112,12 +111,6 @@ public class RegistryProtocol implements Protocol {
             return filteredKeys.toArray(new String[filteredKeys.size()]);
         } else {
             return new String[]{};
-        }
-    }
-
-    public void initDynamicConfiguration(URL url) {
-        if (dynamicConfiguration == null) {
-            dynamicConfiguration = ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getAdaptiveExtension().getDynamicConfiguration(getConfigUrl(url));
         }
     }
 
@@ -154,8 +147,6 @@ public class RegistryProtocol implements Protocol {
     @Override
     public <T> Exporter<T> export(final Invoker<T> originInvoker) throws RpcException {
         URL registryUrl = getRegistryUrl(originInvoker);
-        initDynamicConfiguration(registryUrl);
-
         // url to export locally
         URL providerUrl = getProviderUrl(originInvoker);
         providerUrl = overrideUrlWithConfig(providerUrl);
@@ -190,46 +181,16 @@ public class RegistryProtocol implements Protocol {
 
     private <T> URL overrideUrlWithConfig(URL providerUrl) {
         List<Configurator> dynamicConfigurators = new LinkedList<>();
-        String appRawConfig = dynamicConfiguration.getConfig(providerUrl.getParameter(Constants.APPLICATION_KEY) + Constants.CONFIGURATORS_SUFFIX, "dubbo");
+        String appRawConfig = dynamicConfiguration.getConfig(providerUrl.getParameter(Constants.APPLICATION_KEY) + Constants.CONFIGURATORS_SUFFIX);
         if (!StringUtils.isEmpty(appRawConfig)) {
             dynamicConfigurators.addAll(RegistryDirectory.configToConfiguratiors(appRawConfig));
         }
-        String rawConfig = dynamicConfiguration.getConfig(providerUrl.getServiceKey() + Constants.CONFIGURATORS_SUFFIX, "dubbo");
+        String rawConfig = dynamicConfiguration.getConfig(providerUrl.getServiceKey() + Constants.CONFIGURATORS_SUFFIX);
         if (!StringUtils.isEmpty(rawConfig)) {
             dynamicConfigurators.addAll(RegistryDirectory.configToConfiguratiors(rawConfig));
         }
         providerUrl = getConfigedInvokerUrl(dynamicConfigurators, providerUrl);
         return providerUrl;
-    }
-
-    /**
-     * generate a url contains configuration items for config center.
-     * if no configuration item found, use registry url instead.
-     *
-     * @param registryUrl
-     * @return
-     */
-    private URL getConfigUrl(URL registryUrl) {
-        Map<String, String> qs = StringUtils.parseQueryString(registryUrl.getParameterAndDecoded(REFER_KEY));
-        URL url = registryUrl
-                .removeParameters(EXPORT_KEY, REFER_KEY)
-                .setProtocol(CONFIG_PROTOCOL)
-                .setPath(qs.get(INTERFACE_KEY));
-        String configType = registryUrl.getParameter(Constants.CONFIG_TYPE_KEY);
-        if (StringUtils.isEmpty(configType)) {
-            url = url.addParameter(Constants.CONFIG_TYPE_KEY, registryUrl.getProtocol());
-        }
-
-        String configAddress = registryUrl.getParameter(Constants.CONFIG_ADDRESS_KEY);
-        if (StringUtils.isNotEmpty(configAddress)) {
-            url = url.setAddress(configAddress);
-        }
-
-        String configNamespace = registryUrl.getParameter(Constants.CONFIG_NAMESPACE_KEY);
-        if (StringUtils.isEmpty(configNamespace)) {
-            url = url.addParameter(Constants.CONFIG_NAMESPACE_KEY, registryUrl.getParameter(Constants.GROUP_KEY, Constants.DEFAULT_PROTOCOL));
-        }
-        return url;
     }
 
     @SuppressWarnings("unchecked")
@@ -350,7 +311,6 @@ public class RegistryProtocol implements Protocol {
     @SuppressWarnings("unchecked")
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
         url = url.setProtocol(url.getParameter(Constants.REGISTRY_KEY, Constants.DEFAULT_REGISTRY)).removeParameter(Constants.REGISTRY_KEY);
-        initDynamicConfiguration(url);
         Registry registry = registryFactory.getRegistry(url);
         if (RegistryService.class.equals(type)) {
             return proxyFactory.getInvoker((T) registry, type, url);

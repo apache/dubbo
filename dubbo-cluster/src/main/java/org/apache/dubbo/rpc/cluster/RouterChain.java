@@ -118,7 +118,7 @@ public class RouterChain<T> {
      * @param invocation     TODO has not been used yet
      */
     public void preRoute(Map<String, List<Invoker<T>>> methodInvokers, URL url, Invocation invocation) {
-        if (CollectionUtils.isEmpty(routers)) {
+        if (CollectionUtils.isEmpty(routers) || methodInvokers == null) {
             treeCache.refreshTree(null);
             return;
         }

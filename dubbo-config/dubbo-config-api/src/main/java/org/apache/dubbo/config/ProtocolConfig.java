@@ -470,13 +470,4 @@ public class ProtocolConfig extends AbstractConfig {
             ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(name).destroy();
         }
     }
-
-    /**
-     * Just for compatibility.
-     * It should be deleted in the next major version, say 2.7.x.
-     */
-    @Deprecated
-    public static void destroyAll() {
-        DubboShutdownHook.getDubboShutdownHook().destroyAll();
-    }
 }

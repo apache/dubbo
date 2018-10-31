@@ -204,8 +204,9 @@ public class MetricName implements Comparable<MetricName> {
                 nameBuilder.append(name);
             }
 
-            if (!part.getTags().isEmpty())
+            if (!part.getTags().isEmpty()) {
                 tags.putAll(part.getTags());
+            }
         }
 
         MetricLevel level = firstName == null ? null : firstName.getMetricLevel();
@@ -219,11 +220,13 @@ public class MetricName implements Comparable<MetricName> {
      * @return A newly created metric name with the specified path.
      **/
     public static MetricName build(String... parts) {
-        if (parts == null || parts.length == 0)
+        if (parts == null || parts.length == 0) {
             return MetricName.EMPTY;
+        }
 
-        if (parts.length == 1)
+        if (parts.length == 1) {
             return new MetricName(parts[0], EMPTY_TAGS);
+        }
 
         return new MetricName(buildName(parts), EMPTY_TAGS);
     }
@@ -233,8 +236,9 @@ public class MetricName implements Comparable<MetricName> {
         boolean first = true;
 
         for (String name : names) {
-            if (name == null || name.isEmpty())
+            if (name == null || name.isEmpty()) {
                 continue;
+            }
 
             if (first) {
                 first = false;
@@ -276,64 +280,78 @@ public class MetricName implements Comparable<MetricName> {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
+        }
 
-        if (obj == null)
+        if (obj == null) {
             return false;
+        }
 
-        if (getClass() != obj.getClass())
+        if (getClass() != obj.getClass()) {
             return false;
+        }
 
         MetricName other = (MetricName) obj;
 
         if (key == null) {
-            if (other.key != null)
+            if (other.key != null) {
                 return false;
-        } else if (!key.equals(other.key))
+            }
+        } else if (!key.equals(other.key)) {
             return false;
+        }
 
-        if (!tags.equals(other.tags))
+        if (!tags.equals(other.tags)) {
             return false;
+        }
 
         return true;
     }
 
     @Override
     public int compareTo(MetricName o) {
-        if (o == null)
+        if (o == null) {
             return -1;
+        }
 
         int c = compareName(key, o.getKey());
 
-        if (c != 0)
+        if (c != 0) {
             return c;
+        }
 
         return compareTags(tags, o.getTags());
     }
 
     private int compareName(String left, String right) {
-        if (left == null && right == null)
+        if (left == null && right == null) {
             return 0;
+        }
 
-        if (left == null)
+        if (left == null) {
             return 1;
+        }
 
-        if (right == null)
+        if (right == null) {
             return -1;
+        }
 
         return left.compareTo(right);
     }
 
     private int compareTags(Map<String, String> left, Map<String, String> right) {
-        if (left == null && right == null)
+        if (left == null && right == null) {
             return 0;
+        }
 
-        if (left == null)
+        if (left == null) {
             return 1;
+        }
 
-        if (right == null)
+        if (right == null) {
             return -1;
+        }
 
         final Iterable<String> keys = uniqueSortedKeys(left, right);
 
@@ -341,19 +359,23 @@ public class MetricName implements Comparable<MetricName> {
             final String a = left.get(key);
             final String b = right.get(key);
 
-            if (a == null && b == null)
+            if (a == null && b == null) {
                 continue;
+            }
 
-            if (a == null)
+            if (a == null) {
                 return -1;
+            }
 
-            if (b == null)
+            if (b == null) {
                 return 1;
+            }
 
             int c = a.compareTo(b);
 
-            if (c != 0)
+            if (c != 0) {
                 return c;
+            }
         }
 
         return 0;

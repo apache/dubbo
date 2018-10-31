@@ -95,7 +95,9 @@ final class MinaCodecAdapter implements ProtocolCodecFactory {
         @Override
         public void decode(IoSession session, ByteBuffer in, ProtocolDecoderOutput out) throws Exception {
             int readable = in.limit();
-            if (readable <= 0) return;
+            if (readable <= 0) {
+                return;
+            }
 
             ChannelBuffer frame;
 

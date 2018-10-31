@@ -36,4 +36,11 @@ public class ApolloDynamicConfigurationFactory implements DynamicConfigurationFa
         }
         return configuration;
     }
+
+    @Override
+    public DynamicConfiguration getExistedDynamicConfiguration() {
+        return configuration;
+    }
+
+
 }

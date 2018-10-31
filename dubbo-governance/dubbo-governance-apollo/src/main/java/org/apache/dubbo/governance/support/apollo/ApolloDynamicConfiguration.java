@@ -86,8 +86,31 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Con
         }
     }
 
+    /**
+     * This method will used by DynamicConfiguration,
+     * 1. to get configuration file at startup phase
+     * 2. to get all kinds of Dubbo rules
+     *
+     * @param key
+     * @param group
+     * @param timeout
+     * @return
+     */
     @Override
     protected String getInternalProperty(String key, String group, long timeout) {
+        return dubboConfig.getProperty(key, null);
+    }
+
+    /**
+     * This method will used by Configuration to get valid value at runtime.
+     * The group is expected to be 'app level', which can be fetched from the 'config.appnamespace' in url if necessary.
+     * But I think Apollo's inheritance feature of namespace can solve the problem, .
+     *
+     * @param key
+     * @return
+     */
+    @Override
+    protected String getInternalProperty(String key) {
         return dubboConfig.getProperty(key, null);
     }
 

@@ -1,4 +1,4 @@
-# Service scope, without  specific App
+# Application scope, apply to all services.
 ---
 scope: application
 key: app1

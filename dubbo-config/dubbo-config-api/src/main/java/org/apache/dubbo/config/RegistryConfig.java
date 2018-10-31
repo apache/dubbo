@@ -17,9 +17,9 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -175,8 +175,9 @@ public class RegistryConfig extends AbstractConfig {
     @Deprecated
     public void setWait(Integer wait) {
         this.wait = wait;
-        if (wait != null && wait > 0)
+        if (wait != null && wait > 0) {
             System.setProperty(Constants.SHUTDOWN_WAIT_KEY, String.valueOf(wait));
+        }
     }
 
     public Boolean isCheck() {
@@ -348,5 +349,10 @@ public class RegistryConfig extends AbstractConfig {
 
     public void setAddParamKeys(String addParamKeys) {
         this.addParamKeys = addParamKeys;
+    }
+
+    public boolean isValid() {
+        // empty protocol will default to 'dubbo'
+        return !StringUtils.isEmpty(address);
     }
 }

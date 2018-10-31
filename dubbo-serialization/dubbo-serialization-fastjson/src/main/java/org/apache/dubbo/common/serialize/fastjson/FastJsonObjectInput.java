@@ -18,6 +18,7 @@ package org.apache.dubbo.common.serialize.fastjson;
 
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.utils.PojoUtils;
+
 import com.alibaba.fastjson.JSON;
 
 import java.io.BufferedReader;
@@ -105,7 +106,9 @@ public class FastJsonObjectInput implements ObjectInput {
 
     private String readLine() throws IOException, EOFException {
         String line = reader.readLine();
-        if (line == null || line.trim().length() == 0) throw new EOFException();
+        if (line == null || line.trim().length() == 0) {
+            throw new EOFException();
+        }
         return line;
     }
 

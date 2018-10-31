@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 
 import java.util.Map;
@@ -131,6 +132,10 @@ public class MonitorConfig extends AbstractConfig {
 
     public String getInterval(){
         return interval;
+    }
+
+    public boolean isValid() {
+        return StringUtils.isNotEmpty(address);
     }
 
 }

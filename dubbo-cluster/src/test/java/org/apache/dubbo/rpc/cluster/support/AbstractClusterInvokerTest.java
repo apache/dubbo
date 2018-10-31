@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.cluster.loadbalance.LeastActiveLoadBalance;
 import org.apache.dubbo.rpc.cluster.loadbalance.RandomLoadBalance;
 import org.apache.dubbo.rpc.cluster.loadbalance.RoundRobinLoadBalance;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -74,6 +75,11 @@ public class AbstractClusterInvokerTest {
     public static void setUpBeforeClass() throws Exception {
     }
 
+    @After
+    public void teardown() throws Exception {
+        RpcContext.getContext().clearAttachments();
+    }
+
     @SuppressWarnings({"unchecked"})
     @Before
     public void setUp() throws Exception {
@@ -90,27 +96,27 @@ public class AbstractClusterInvokerTest {
 
         given(invoker1.isAvailable()).willReturn(false);
         given(invoker1.getInterface()).willReturn(IHelloService.class);
-        given(invoker1.getUrl()).willReturn(turl.addParameter("name", "invoker1"));
+        given(invoker1.getUrl()).willReturn(turl.setPort(1).addParameter("name", "invoker1"));
 
         given(invoker2.isAvailable()).willReturn(true);
         given(invoker2.getInterface()).willReturn(IHelloService.class);
-        given(invoker2.getUrl()).willReturn(turl.addParameter("name", "invoker2"));
+        given(invoker2.getUrl()).willReturn(turl.setPort(2).addParameter("name", "invoker2"));
 
         given(invoker3.isAvailable()).willReturn(false);
         given(invoker3.getInterface()).willReturn(IHelloService.class);
-        given(invoker3.getUrl()).willReturn(turl.addParameter("name", "invoker3"));
+        given(invoker3.getUrl()).willReturn(turl.setPort(3).addParameter("name", "invoker3"));
 
         given(invoker4.isAvailable()).willReturn(true);
         given(invoker4.getInterface()).willReturn(IHelloService.class);
-        given(invoker4.getUrl()).willReturn(turl.addParameter("name", "invoker4"));
+        given(invoker4.getUrl()).willReturn(turl.setPort(4).addParameter("name", "invoker4"));
 
         given(invoker5.isAvailable()).willReturn(false);
         given(invoker5.getInterface()).willReturn(IHelloService.class);
-        given(invoker5.getUrl()).willReturn(turl.addParameter("name", "invoker5"));
+        given(invoker5.getUrl()).willReturn(turl.setPort(5).addParameter("name", "invoker5"));
 
         given(mockedInvoker1.isAvailable()).willReturn(false);
         given(mockedInvoker1.getInterface()).willReturn(IHelloService.class);
-        given(mockedInvoker1.getUrl()).willReturn(turl.setProtocol("mock"));
+        given(mockedInvoker1.getUrl()).willReturn(turl.setPort(999).setProtocol("mock"));
 
         invokers.add(invoker1);
         dic = new StaticDirectory<IHelloService>(url, invokers, null);
