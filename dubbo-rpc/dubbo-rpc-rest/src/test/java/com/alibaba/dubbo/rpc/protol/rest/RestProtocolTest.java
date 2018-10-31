@@ -19,7 +19,12 @@ package com.alibaba.dubbo.rpc.protol.rest;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
-import com.alibaba.dubbo.rpc.*;
+import com.alibaba.dubbo.rpc.Exporter;
+import com.alibaba.dubbo.rpc.Invoker;
+import com.alibaba.dubbo.rpc.Protocol;
+import com.alibaba.dubbo.rpc.ProxyFactory;
+import com.alibaba.dubbo.rpc.StaticContext;
+
 import junit.framework.Assert;
 import org.junit.Test;
 
