@@ -39,15 +39,6 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
     // Registry Collection Map<RegistryAddress, Registry>
     private static final Map<String, MetadataReport> SERVICE_STORE_MAP = new ConcurrentHashMap<String, MetadataReport>();
 
-    /**
-     * Get all registries
-     *
-     * @return all registries
-     */
-    public static Collection<MetadataReport> getServiceStores() {
-        return Collections.unmodifiableCollection(SERVICE_STORE_MAP.values());
-    }
-
     @Override
     public MetadataReport getMetadataReport(URL url) {
         url = url.setPath(MetadataReport.class.getName())
@@ -63,7 +54,7 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
             }
             metadataReport = createMetadataReport(url);
             if (metadataReport == null) {
-                throw new IllegalStateException("Can not create servicestore " + url);
+                throw new IllegalStateException("Can not create metadata Report " + url);
             }
             SERVICE_STORE_MAP.put(key, metadataReport);
             return metadataReport;

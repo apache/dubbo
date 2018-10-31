@@ -67,7 +67,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     // Local disk cache, where the special key value.registies records the list of registry centers, and the others are the list of notified service providers
     final Properties properties = new Properties();
     // File cache timing writing
-    private final ExecutorService reportCacheExecutor = Executors.newFixedThreadPool(1, new NamedThreadFactory("DubboSaveServicestoreCache", true));
+    private final ExecutorService reportCacheExecutor = Executors.newFixedThreadPool(1, new NamedThreadFactory("DubboSaveMetadataReportCache", true));
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(0, new NamedThreadFactory("DubboMetadataReportTimer", true));
     final Map<MetadataIdentifier, Object> allMetadataReports = new ConcurrentHashMap<MetadataIdentifier, Object>(4);
 
@@ -82,7 +82,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     public AbstractMetadataReport(URL reportURL) {
         setUrl(reportURL);
         // Start file save timer
-        String filename = reportURL.getParameter(Constants.FILE_KEY, System.getProperty("user.home") + "/.dubbo/dubbo-servicestore-" + reportURL.getParameter(Constants.APPLICATION_KEY) + "-" + reportURL.getAddress() + ".cache");
+        String filename = reportURL.getParameter(Constants.FILE_KEY, System.getProperty("user.home") + "/.dubbo/dubbo-metadata-" + reportURL.getParameter(Constants.APPLICATION_KEY) + "-" + reportURL.getAddress() + ".cache");
         File file = null;
         if (ConfigUtils.isNotEmpty(filename)) {
             file = new File(filename);
@@ -116,7 +116,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
     protected void setUrl(URL url) {
         if (url == null) {
-            throw new IllegalArgumentException("servicestore url == null");
+            throw new IllegalArgumentException("metadataReport url == null");
         }
         this.reportURL = url;
     }
@@ -140,7 +140,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
                 try {
                     FileLock lock = channel.tryLock();
                     if (lock == null) {
-                        throw new IOException("Can not lock the servicestore cache file " + file.getAbsolutePath() + ", ignore and retry later, maybe multi java process use the file, please config: dubbo.servicestore.file=xxx.properties");
+                        throw new IOException("Can not lock the metadataReport cache file " + file.getAbsolutePath() + ", ignore and retry later, maybe multi java process use the file, please config: dubbo.metadata.file=xxx.properties");
                     }
                     // Save
                     try {
@@ -149,7 +149,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
                         }
                         FileOutputStream outputFile = new FileOutputStream(file);
                         try {
-                            properties.store(outputFile, "Dubbo Servicestore Cache");
+                            properties.store(outputFile, "Dubbo metadataReport Cache");
                         } finally {
                             outputFile.close();
                         }
