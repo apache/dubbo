@@ -860,19 +860,8 @@ public class ExtensionLoader<T> {
                 String[] value = adaptiveAnnotation.value();
                 // value is not set, use the value generated from class name as the key
                 if (value.length == 0) {
-                    char[] charArray = type.getSimpleName().toCharArray();
-                    StringBuilder sb = new StringBuilder(128);
-                    for (int i = 0; i < charArray.length; i++) {
-                        if (Character.isUpperCase(charArray[i])) {
-                            if (i != 0) {
-                                sb.append(".");
-                            }
-                            sb.append(Character.toLowerCase(charArray[i]));
-                        } else {
-                            sb.append(charArray[i]);
-                        }
-                    }
-                    value = new String[]{sb.toString()};
+                    String splitName = StringUtils.camelToSplitName(type.getSimpleName(), ".");
+                    value = new String[]{splitName};
                 }
 
                 boolean hasInvocation = false;
