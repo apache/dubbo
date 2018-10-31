@@ -28,6 +28,7 @@ Bugfixes：
 - Bean name of @service annotated class does not resolve placeholder. [#1755](https://github.com/apache/incubator-dubbo/issues/1755) 
 
 
+
 Issues and Pull Requests, check [milestone-2.6.5](https://github.com/apache/incubator-dubbo/milestone/21).
 
 ## 2.6.4
