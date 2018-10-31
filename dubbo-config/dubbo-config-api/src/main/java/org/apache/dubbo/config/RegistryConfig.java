@@ -335,22 +335,6 @@ public class RegistryConfig extends AbstractConfig {
         this.isDefault = isDefault;
     }
 
-    public Boolean getSimple() {
-        return simple;
-    }
-
-    public void setSimple(Boolean simple) {
-        this.simple = simple;
-    }
-
-    public String getAddParamKeys() {
-        return addParamKeys;
-    }
-
-    public void setAddParamKeys(String addParamKeys) {
-        this.addParamKeys = addParamKeys;
-    }
-
     public boolean isValid() {
         // empty protocol will default to 'dubbo'
         return !StringUtils.isEmpty(address);

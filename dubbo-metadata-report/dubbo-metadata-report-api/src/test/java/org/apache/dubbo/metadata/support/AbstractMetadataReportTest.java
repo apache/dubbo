@@ -23,8 +23,6 @@ import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
 import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
-import org.apache.dubbo.metadata.integration.MetadataReportService;
-import org.apache.dubbo.metadata.store.test.JTestMetadataReport4Test;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -100,7 +98,7 @@ public class AbstractMetadataReportTest {
         retryReport.metadataReportRetry.retryPeriod = 200L;
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
         Assert.assertNull(retryReport.metadataReportRetry.retryScheduledFuture);
-        Assert.assertTrue(retryReport.metadataReportRetry.retryTimes.get() == 0);
+        Assert.assertTrue(retryReport.metadataReportRetry.retryCounter.get() == 0);
         Assert.assertTrue(retryReport.store.isEmpty());
         Assert.assertTrue(retryReport.failedReports.isEmpty());
 
@@ -111,8 +109,8 @@ public class AbstractMetadataReportTest {
         Assert.assertFalse(retryReport.failedReports.isEmpty());
         Assert.assertNotNull(retryReport.metadataReportRetry.retryScheduledFuture);
         Thread.sleep(1200L);
-        Assert.assertTrue(retryReport.metadataReportRetry.retryTimes.get() != 0);
-        Assert.assertTrue(retryReport.metadataReportRetry.retryTimes.get() >= 3);
+        Assert.assertTrue(retryReport.metadataReportRetry.retryCounter.get() != 0);
+        Assert.assertTrue(retryReport.metadataReportRetry.retryCounter.get() >= 3);
         Assert.assertFalse(retryReport.store.isEmpty());
         Assert.assertTrue(retryReport.failedReports.isEmpty());
     }

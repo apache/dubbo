@@ -105,6 +105,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     protected MetadataReportConfig metadataReportConfig;
 
+    protected RegistryDataConfig registryDataConfig;
+
     protected void checkRegistry() {
         // for backward compatibility
         // -Ddubbo.registry.address is now deprecated.
@@ -175,7 +177,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
     }
 
-    public void checkMetadataReport() {
+    protected void checkMetadataReport() {
         if (metadataReportConfig == null) {
             metadataReportConfig = new MetadataReportConfig();
         }
@@ -185,11 +187,22 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
     }
 
+    protected void checkRegistryDataConfig() {
+        if (registryDataConfig == null) {
+            registryDataConfig = new RegistryDataConfig();
+        }
+        registryDataConfig.refresh();
+        if (!registryDataConfig.isValid()) {
+            logger.info("There's no valid registryData config found. So the registry will store full url parameter to registry server.");
+        }
+    }
+
     protected List<URL> loadRegistries(boolean provider) {
         // check && override if necessary
         checkRegistry();
         List<URL> registryList = new ArrayList<URL>();
         if (registries != null && !registries.isEmpty()) {
+            Map<String, String> registryDataConfigurationMap = this.registryDataConfig.transferMap();
             for (RegistryConfig config : registries) {
                 String address = config.getAddress();
                 if (address == null || address.length() == 0) {
@@ -210,9 +223,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                         map.put("protocol", "dubbo");
                     }
                     List<URL> urls = UrlUtils.parseURLs(address, map);
+
                     for (URL url : urls) {
                         url = url.addParameter(Constants.REGISTRY_KEY, url.getProtocol());
                         url = url.setProtocol(Constants.REGISTRY_PROTOCOL);
+                        url.addParameters(registryDataConfigurationMap);
                         if ((provider && url.getParameter(Constants.REGISTER_KEY, true))
                                 || (!provider && url.getParameter(Constants.SUBSCRIBE_KEY, true))) {
                             registryList.add(url);

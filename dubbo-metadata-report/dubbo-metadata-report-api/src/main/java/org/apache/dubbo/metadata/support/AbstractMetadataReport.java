@@ -20,10 +20,8 @@ import com.google.gson.Gson;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
@@ -31,7 +29,6 @@ import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
 import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
 import org.apache.dubbo.metadata.store.MetadataReport;
-import org.apache.dubbo.metadata.store.MetadataReportFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -47,7 +44,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -102,13 +98,16 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
         this.file = file;
         loadProperties();
-        metadataReportRetry = new MetadataReportRetry();
-        scheduler.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                publishAll();
-            }
-        }, calculateStartTime(), ONE_DAY_IN_MIll, TimeUnit.MILLISECONDS);
+        metadataReportRetry = new MetadataReportRetry(reportURL.getParameter(Constants.RETRY_TIMES_KEY, 60 * 60), reportURL.getParameter(Constants.RETRY_PERIOD_KEY, 3000));
+        // cycle report the data switch
+        if(reportURL.getParameter(Constants.CYCLE_REPORT_KEY, true)){
+            scheduler.scheduleAtFixedRate(new Runnable() {
+                @Override
+                public void run() {
+                    publishAll();
+                }
+            }, calculateStartTime(), ONE_DAY_IN_MIll, TimeUnit.MILLISECONDS);
+        }
     }
 
     public URL getUrl() {
@@ -282,7 +281,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         return doHandleMetadataCollection(failedReports);
     }
 
-    private boolean doHandleMetadataCollection(Map<MetadataIdentifier, Object> metadataMap){
+    private boolean doHandleMetadataCollection(Map<MetadataIdentifier, Object> metadataMap) {
         if (metadataMap.isEmpty()) {
             return true;
         }
@@ -325,25 +324,34 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
         final ScheduledExecutorService retryExecutor = Executors.newScheduledThreadPool(0, new NamedThreadFactory("DubboRegistryFailedRetryTimer", true));
         ScheduledFuture retryScheduledFuture;
-        AtomicInteger retryTimes = new AtomicInteger(0);
+        AtomicInteger retryCounter = new AtomicInteger(0);
         // retry task schedule period
-        long retryPeriod = 3000L;
+        long retryPeriod;
         // if no failed report, wait how many times to run retry task.
         int retryTimesIfNonFail = 600;
 
+        int retryLimit;
+
+        public MetadataReportRetry(int retryTimes, int retryPeriod) {
+            this.retryPeriod = retryPeriod;
+            this.retryLimit = retryTimes;
+        }
+
         void startRetryTask() {
             if (retryScheduledFuture == null) {
-                synchronized (retryTimes) {
+                synchronized (retryCounter) {
                     if (retryScheduledFuture == null) {
                         retryScheduledFuture = retryExecutor.scheduleWithFixedDelay(new Runnable() {
                             @Override
                             public void run() {
                                 // Check and connect to the registry
                                 try {
-
-                                    int times = retryTimes.incrementAndGet();
+                                    int times = retryCounter.incrementAndGet();
                                     System.out.println("---" + times + ";" + System.currentTimeMillis());
                                     if (retry() && times > retryTimesIfNonFail) {
+                                        cancelRetryTask();
+                                    }
+                                    if (times > retryLimit) {
                                         cancelRetryTask();
                                     }
                                 } catch (Throwable t) { // Defensive fault tolerance
