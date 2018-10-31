@@ -635,6 +635,8 @@ public class Constants {
 
     public static final String MULTICAST = "multicast";
 
+    public static final String SERVICE_IMPL_CLASS = "service.classimpl";
+
     /*
      * private Constants(){ }
      */
