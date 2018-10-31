@@ -67,15 +67,15 @@ public class MetadataReportService {
     }
 
 
-    public static MetadataReportService instance(Supplier<URL> loadServiceStoreUrl) {
+    public static MetadataReportService instance(Supplier<URL> metadataReportUrl) {
         if (metadataReportService == null) {
             synchronized (lock) {
                 if (metadataReportService == null) {
-                    URL serviceStoreURL = loadServiceStoreUrl.get();
-                    if (serviceStoreURL == null) {
+                    URL metadataReportURLTmp = metadataReportUrl.get();
+                    if (metadataReportURLTmp == null) {
                         return null;
                     }
-                    metadataReportService = new MetadataReportService(serviceStoreURL);
+                    metadataReportService = new MetadataReportService(metadataReportURLTmp);
                 }
             }
         }

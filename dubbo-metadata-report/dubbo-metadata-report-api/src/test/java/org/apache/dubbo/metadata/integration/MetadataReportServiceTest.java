@@ -53,10 +53,10 @@ public class MetadataReportServiceTest {
 
         Assert.assertTrue(metadataReportService1.metadataReport instanceof JTestMetadataReport4Test);
 
-        JTestMetadataReport4Test jTestServiceStore4Test = (JTestMetadataReport4Test) metadataReportService1.metadataReport;
-        Assert.assertTrue(jTestServiceStore4Test.store.containsKey(JTestMetadataReport4Test.getKey(publishUrl)));
+        JTestMetadataReport4Test jTestMetadataReport4Test = (JTestMetadataReport4Test) metadataReportService1.metadataReport;
+        Assert.assertTrue(jTestMetadataReport4Test.store.containsKey(JTestMetadataReport4Test.getKey(publishUrl)));
 
-        String value = jTestServiceStore4Test.store.get(JTestMetadataReport4Test.getKey(publishUrl));
+        String value = jTestMetadataReport4Test.store.get(JTestMetadataReport4Test.getKey(publishUrl));
         Map<String, String> map = queryUrlToMap(value);
         Assert.assertEquals(map.get("application"), "vicpubprovder");
         Assert.assertEquals(map.get("version"), "1.0.0");
@@ -71,10 +71,10 @@ public class MetadataReportServiceTest {
 
         Assert.assertTrue(metadataReportService1.metadataReport instanceof JTestMetadataReport4Test);
 
-        JTestMetadataReport4Test jTestServiceStore4Test = (JTestMetadataReport4Test) metadataReportService1.metadataReport;
-        Assert.assertTrue(jTestServiceStore4Test.store.containsKey(JTestMetadataReport4Test.getKey(publishUrl)));
+        JTestMetadataReport4Test jTestMetadataReport4Test = (JTestMetadataReport4Test) metadataReportService1.metadataReport;
+        Assert.assertTrue(jTestMetadataReport4Test.store.containsKey(JTestMetadataReport4Test.getKey(publishUrl)));
 
-        String value = jTestServiceStore4Test.store.get(JTestMetadataReport4Test.getKey(publishUrl));
+        String value = jTestMetadataReport4Test.store.get(JTestMetadataReport4Test.getKey(publishUrl));
         Map<String, String> map = queryUrlToMap(value);
         Assert.assertEquals(map.get("application"), "vicpu");
         Assert.assertEquals(map.get("version"), "1.0.0");
@@ -90,10 +90,10 @@ public class MetadataReportServiceTest {
 
         Assert.assertTrue(metadataReportService1.metadataReport instanceof JTestMetadataReport4Test);
 
-        JTestMetadataReport4Test jTestServiceStore4Test = (JTestMetadataReport4Test) metadataReportService1.metadataReport;
-        Assert.assertTrue(jTestServiceStore4Test.store.containsKey(JTestMetadataReport4Test.getKey(publishUrl)));
+        JTestMetadataReport4Test jTestMetadataReport4Test = (JTestMetadataReport4Test) metadataReportService1.metadataReport;
+        Assert.assertTrue(jTestMetadataReport4Test.store.containsKey(JTestMetadataReport4Test.getKey(publishUrl)));
 
-        String value = jTestServiceStore4Test.store.get(JTestMetadataReport4Test.getKey(publishUrl));
+        String value = jTestMetadataReport4Test.store.get(JTestMetadataReport4Test.getKey(publishUrl));
         Map<String, String> map = queryUrlToMap(value);
         Assert.assertEquals(map.get("application"), "vicpubp");
         Assert.assertEquals(map.get("version"), "1.0.3");
@@ -109,10 +109,10 @@ public class MetadataReportServiceTest {
 
         Assert.assertTrue(metadataReportService1.metadataReport instanceof JTestMetadataReport4Test);
 
-        JTestMetadataReport4Test jTestServiceStore4Test = (JTestMetadataReport4Test) metadataReportService1.metadataReport;
-        Assert.assertTrue(jTestServiceStore4Test.store.containsKey(JTestMetadataReport4Test.getKey(publishUrl)));
+        JTestMetadataReport4Test jTestMetadataReport4Test = (JTestMetadataReport4Test) metadataReportService1.metadataReport;
+        Assert.assertTrue(jTestMetadataReport4Test.store.containsKey(JTestMetadataReport4Test.getKey(publishUrl)));
 
-        String value = jTestServiceStore4Test.store.get(JTestMetadataReport4Test.getKey(publishUrl));
+        String value = jTestMetadataReport4Test.store.get(JTestMetadataReport4Test.getKey(publishUrl));
         Map<String, String> map = queryUrlToMap(value);
         Assert.assertEquals(map.get("application"), "vicpubconsumer");
         Assert.assertEquals(map.get("version"), "1.0.x");
