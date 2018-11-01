@@ -25,7 +25,7 @@ import java.util.Map;
  *
  * @export
  */
-public class ServiceStoreConfig extends AbstractConfig {
+public class MetadataReportConfig extends AbstractConfig {
 
     public static final String NO_AVAILABLE = "N/A";
     private static final long serialVersionUID = 55233L;
@@ -44,10 +44,18 @@ public class ServiceStoreConfig extends AbstractConfig {
     // customized parameters
     private Map<String, String> parameters;
 
-    public ServiceStoreConfig() {
+    private Integer retrytimes = 100;
+
+    private Integer retryperiod = 3000;
+    /**
+     * by default the metadatastore will store full metadata repeatly every day .
+     */
+    private boolean cyclereport = true;
+
+    public MetadataReportConfig() {
     }
 
-    public ServiceStoreConfig(String address) {
+    public MetadataReportConfig(String address) {
         setAddress(address);
     }
 
@@ -91,7 +99,32 @@ public class ServiceStoreConfig extends AbstractConfig {
         this.parameters = parameters;
     }
 
+    public Integer getRetrytimes() {
+        return retrytimes;
+    }
+
+    public void setRetrytimes(Integer retrytimes) {
+        this.retrytimes = retrytimes;
+    }
+
+    public Integer getRetryperiod() {
+        return retryperiod;
+    }
+
+    public void setRetryperiod(Integer retryperiod) {
+        this.retryperiod = retryperiod;
+    }
+
+    public boolean isCyclereport() {
+        return cyclereport;
+    }
+
+    public void setCyclereport(boolean cyclereport) {
+        this.cyclereport = cyclereport;
+    }
+
     public boolean isValid() {
         return StringUtils.isNotEmpty(address);
     }
+
 }

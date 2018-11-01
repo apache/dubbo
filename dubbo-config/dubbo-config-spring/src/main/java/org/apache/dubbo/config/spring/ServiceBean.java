@@ -23,7 +23,7 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.ServiceStoreConfig;
+import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
 import org.springframework.aop.support.AopUtils;
@@ -211,13 +211,13 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                 }
             }
         }
-        if (getServiceStoreConfig() == null) {
-            Map<String, ServiceStoreConfig> serviceStoreConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ServiceStoreConfig.class, false, false);
-            if (serviceStoreConfigMap != null && serviceStoreConfigMap.size() == 1) {
+        if (getMetadataReportConfig() == null) {
+            Map<String, MetadataReportConfig> metadataReportConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, MetadataReportConfig.class, false, false);
+            if (metadataReportConfigMap != null && metadataReportConfigMap.size() == 1) {
                 // 第一个元素
-                super.setServiceStoreConfig(serviceStoreConfigMap.values().iterator().next());
-            } else if(serviceStoreConfigMap != null && serviceStoreConfigMap.size() > 1){
-                throw new IllegalStateException("Multiple MetadataReport configs: " + serviceStoreConfigMap);
+                super.setMetadataReportConfig(metadataReportConfigMap.values().iterator().next());
+            } else if(metadataReportConfigMap != null && metadataReportConfigMap.size() > 1){
+                throw new IllegalStateException("Multiple MetadataReport configs: " + metadataReportConfigMap);
             }
         }
         if (getMonitor() == null

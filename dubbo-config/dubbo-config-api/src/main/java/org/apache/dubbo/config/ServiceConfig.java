@@ -232,7 +232,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         checkRegistry();
         checkProtocol();
         this.refresh();
-        checkServiceStore();
+        checkMetadataReport();
+        checkRegistryDataConfig();
 
         if (interfaceName == null || interfaceName.length() == 0) {
             throw new IllegalStateException("<dubbo:service interface=\"\" /> interface not allow null!");
@@ -533,9 +534,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                  * ServiceData Store
                  */
                 MetadataReportService metadataReportService = null;
-                if ((metadataReportService = getServiceStoreService()) != null){
-//                    String protocol = url.getProtocol();
-//                    url = url.setProtocol(Constants.PROVIDER_PROTOCOL).addParameter(Constants.SIDE_KEY, Constants.PROVIDER_SIDE).addParameter(Constants.PROTOCOL_KEY, protocol);
+                if ((metadataReportService = getMetadataReportService()) != null){
                     metadataReportService.publishProvider(url);
                 }
             }

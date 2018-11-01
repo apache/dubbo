@@ -34,7 +34,7 @@ public class JTestMetadataReportFactory4Test extends AbstractMetadataReportFacto
     }
 
     @Override
-    public MetadataReport createServiceStore(URL url) {
+    public MetadataReport createMetadataReport(URL url) {
         return new JTestMetadataReport4Test(url, zookeeperTransporter);
     }
 
