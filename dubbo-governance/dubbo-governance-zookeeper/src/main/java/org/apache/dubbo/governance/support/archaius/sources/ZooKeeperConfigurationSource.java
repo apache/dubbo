@@ -55,6 +55,7 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
     private Executor executor = Executors.newFixedThreadPool(1);
     private final CuratorFramework client;
 
+    // The final root path would be: /configRootPath/"config"
     private final String configRootPath;
     private final TreeCache treeCache;
     private boolean connected = false;
@@ -72,13 +73,19 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
     }
 
 
+    /**
+     * @param connectString,  the zookeeper address
+     * @param sessionTimeout, timeout for session
+     * @param connectTimeout, timeout to wait before build a connection
+     * @param configRootPath, the final path would be: configRootPath/"config"
+     */
     public ZooKeeperConfigurationSource(String connectString, int sessionTimeout, int connectTimeout, String configRootPath) {
         if (connectString == null) {
             throw new IllegalArgumentException("connectString==null, must specify the address to connect for zookeeper archaius source.");
         }
 
         if (!configRootPath.startsWith("/")) {
-            configRootPath = "/" + configRootPath;
+            configRootPath = "/" + configRootPath + "/config";
         }
 
         CuratorFramework client = CuratorFrameworkFactory.newClient(connectString, sessionTimeout, connectTimeout,
@@ -136,6 +143,7 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
                     return;
                 }
 
+                // TODO?
                 if (data.getPath().split("/").length == 5) {
                     byte[] value = data.getData();
                     String stringValue = new String(value, charset);
@@ -191,7 +199,7 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
         Map<String, Object> all = new HashMap<>();
 
         if (!connected) {
-            logger.warn("ConfigCenter is not connected yet, zookeeper don't support local snapshot yet, so there's no old data to use!");
+            logger.warn("ConfigCenter is not connected yet, zookeeper does't support local snapshot, so there's no backup data to use!");
             return all;
         }
 

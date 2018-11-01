@@ -43,11 +43,30 @@ public class ZKTools {
                 new ExponentialBackoffRetry(1000, 3));
         client.start();
 
-        testProviderConfig();
+        testStartupConfig();
+//        testProviderConfig();
 //        testPathCache();
 //        testTreeCache();
 //        testCuratorListener();
         System.in.read();
+    }
+
+    public static void testStartupConfig() {
+        String str = "dubbo.registry.address=\"zookeeper://127.0.0.1:2181\"\n" +
+                "dubbo.registry.group=\"dubboregistrygroup1\"\n" +
+                "dubbo.servicestore.address=\"zookeeper://127.0.0.1:2181\"\n" +
+                "dubbo.protocol.port=20990\n" +
+                "dubbo.service.org.apache.dubbo.demo.DemoService.timeout=9999\n";
+
+        try {
+            String path = "/dubboregistrygroup1/dubbo.properties";
+            if (client.checkExists().forPath(path) == null) {
+                client.create().creatingParentsIfNeeded().forPath(path);
+            }
+            setData(path, str);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static void testProviderConfig() {
