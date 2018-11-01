@@ -57,7 +57,6 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.Constants.ACCEPT_FOREIGN_IP;
-import static org.apache.dubbo.common.Constants.ADD_PARAM_KEYS_KEY;
 import static org.apache.dubbo.common.Constants.APPLICATION_KEY;
 import static org.apache.dubbo.common.Constants.CONFIGURATORS_SUFFIX;
 import static org.apache.dubbo.common.Constants.EXCHANGING_KEYS;
@@ -258,7 +257,7 @@ public class RegistryProtocol implements Protocol {
      */
     private URL getRegistedProviderUrl(final URL providerUrl, final URL registryUrl) {
         //The address you see at the registry
-        if (!registryUrl.getParameter(Constants.SIMPLE_KEY, false)) {
+        if (!registryUrl.getParameter(Constants.SIMPLE_PROVIDER_URL_KEY, false)) {
             final URL registedProviderUrl = providerUrl.removeParameters(getFilteredKeys(providerUrl))
                     .removeParameter(Constants.MONITOR_KEY)
                     .removeParameter(Constants.BIND_IP_KEY)
@@ -270,7 +269,7 @@ public class RegistryProtocol implements Protocol {
                     .removeParameter(INTERFACES);
             return registedProviderUrl;
         } else {
-            return URL.valueOf(providerUrl, getParamsToRegistry(registryUrl.getParameter(ADD_PARAM_KEYS_KEY, new String[0])), providerUrl.getParameter(METHODS_KEY, (String[]) null));
+            return URL.valueOf(providerUrl, getParamsToRegistry(registryUrl.getParameter(Constants.EXTRA_PROVIDER_URL_PARAM_KEYS_KEY, new String[0])), providerUrl.getParameter(METHODS_KEY, (String[]) null));
         }
 
     }
@@ -356,12 +355,12 @@ public class RegistryProtocol implements Protocol {
     }
 
     private URL getRegistedConsumerUrl(final URL consumerUrl, URL registryUrl) {
-        if (!registryUrl.getParameter(Constants.SIMPLE_KEY, false)) {
+        if (!registryUrl.getParameter(Constants.SIMPLE_CONSUMER_URL_KEY, false)) {
             return consumerUrl.addParameters(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY,
                     Constants.CHECK_KEY, String.valueOf(false));
         } else {
             return URL.valueOf(consumerUrl, getParamsToRegistry(registryUrl
-                    .getParameter(ADD_PARAM_KEYS_KEY, new String[0])), consumerUrl.getParameter(METHODS_KEY, (String[]) null))
+                    .getParameter(Constants.EXTRA_CONSUMER_URL_PARAM_KEYS_KEY, new String[0])), consumerUrl.getParameter(METHODS_KEY, (String[]) null))
                     .addParameters(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY, Constants.CHECK_KEY, String.valueOf(false));
         }
     }

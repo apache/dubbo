@@ -33,26 +33,14 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public abstract class AbstractMetadataReportFactory implements MetadataReportFactory {
 
-    // Log output
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractMetadataReportFactory.class);
-
     // The lock for the acquisition process of the registry
     private static final ReentrantLock LOCK = new ReentrantLock();
 
     // Registry Collection Map<RegistryAddress, Registry>
     private static final Map<String, MetadataReport> SERVICE_STORE_MAP = new ConcurrentHashMap<String, MetadataReport>();
 
-    /**
-     * Get all registries
-     *
-     * @return all registries
-     */
-    public static Collection<MetadataReport> getServiceStores() {
-        return Collections.unmodifiableCollection(SERVICE_STORE_MAP.values());
-    }
-
     @Override
-    public MetadataReport getServiceStore(URL url) {
+    public MetadataReport getMetadataReport(URL url) {
         url = url.setPath(MetadataReport.class.getName())
                 .addParameter(Constants.INTERFACE_KEY, MetadataReport.class.getName())
                 .removeParameters(Constants.EXPORT_KEY, Constants.REFER_KEY);
@@ -64,9 +52,9 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
             if (metadataReport != null) {
                 return metadataReport;
             }
-            metadataReport = createServiceStore(url);
+            metadataReport = createMetadataReport(url);
             if (metadataReport == null) {
-                throw new IllegalStateException("Can not create servicestore " + url);
+                throw new IllegalStateException("Can not create metadata Report " + url);
             }
             SERVICE_STORE_MAP.put(key, metadataReport);
             return metadataReport;
@@ -76,5 +64,5 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
         }
     }
 
-    protected abstract MetadataReport createServiceStore(URL url);
+    protected abstract MetadataReport createMetadataReport(URL url);
 }

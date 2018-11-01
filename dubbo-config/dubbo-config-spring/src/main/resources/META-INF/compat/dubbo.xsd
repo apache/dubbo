@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-            xmlns:beans="http://www.springframework.org/schema/beans" 
+            xmlns:beans="http://www.springframework.org/schema/beans"
             xmlns:tool="http://www.springframework.org/schema/tool"
             xmlns="http://code.alibabatech.com/schema/dubbo"
             targetNamespace="http://code.alibabatech.com/schema/dubbo">
@@ -562,7 +562,7 @@
         </xsd:attribute>
     </xsd:complexType>
 
-    <xsd:complexType name="serviceStoreType">
+    <xsd:complexType name="metadataReportType">
         <xsd:sequence minOccurs="0" maxOccurs="unbounded">
             <xsd:element ref="parameter" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
@@ -573,17 +573,17 @@
         </xsd:attribute>
         <xsd:attribute name="address" type="xsd:string" use="optional">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ The servicestore address. ]]></xsd:documentation>
+                <xsd:documentation><![CDATA[ The metadataReport address. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="username" type="xsd:string" use="optional">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ The servicestore username. ]]></xsd:documentation>
+                <xsd:documentation><![CDATA[ The metadataReport username. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="password" type="xsd:string" use="optional">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ The servicestore password. ]]></xsd:documentation>
+                <xsd:documentation><![CDATA[ The metadataReport password. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="timeout" type="xsd:string" use="optional">
@@ -1322,12 +1322,12 @@
         </xsd:annotation>
     </xsd:element>
 
-    <xsd:element name="servicestore" type="serviceStoreType">
+    <xsd:element name="metadata" type="metadataReportType">
         <xsd:annotation>
-            <xsd:documentation><![CDATA[ The servicestore config ]]></xsd:documentation>
+            <xsd:documentation><![CDATA[ The metadataReport config ]]></xsd:documentation>
             <xsd:appinfo>
                 <tool:annotation>
-                    <tool:exports type="org.apache.dubbo.config.ServiceStoreConfig"/>
+                    <tool:exports type="org.apache.dubbo.config.MetadataReportConfig"/>
                 </tool:annotation>
             </xsd:appinfo>
         </xsd:annotation>

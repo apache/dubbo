@@ -22,9 +22,9 @@ import org.apache.dubbo.common.extension.SPI;
 
 /**
  */
-@SPI("dubbo")
+@SPI("redis")
 public interface MetadataReportFactory {
 
     @Adaptive({"protocol"})
-    MetadataReport getServiceStore(URL url);
+    MetadataReport getMetadataReport(URL url);
 }
