@@ -429,7 +429,6 @@ public class ExtensionLoaderTest {
     @Test
     public void testInjectExtension() {
         // test default
-        URL url = URL.valueOf("test://localhost/test?ext=order1,default");
         InjectExt injectExt = ExtensionLoader.getExtensionLoader(InjectExt.class).getExtension("injection");
         InjectExtImpl injectExtImpl = (InjectExtImpl) injectExt;
         Assert.assertNotNull(injectExtImpl.getSimpleExt());
