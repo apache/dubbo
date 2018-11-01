@@ -100,6 +100,7 @@ public class AnnotationUtils {
 
     }
 
+
     public static String resolveInterfaceName(Service service, Class<?> defaultInterfaceClass)
             throws IllegalStateException {
 

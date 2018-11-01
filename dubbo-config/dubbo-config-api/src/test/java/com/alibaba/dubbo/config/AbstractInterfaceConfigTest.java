@@ -87,7 +87,7 @@ public class AbstractInterfaceConfigTest {
             interfaceConfig.checkApplication();
             ApplicationConfig appConfig = interfaceConfig.getApplication();
             TestCase.assertEquals("demo", appConfig.getName());
-            TestCase.assertEquals("100", System.getProperty(Constants.SHUTDOWN_WAIT_KEY));
+            TestCase.assertEquals("100", ConfigUtils.getProperty(Constants.SHUTDOWN_WAIT_KEY));
 
             System.clearProperty(Constants.SHUTDOWN_WAIT_KEY);
             ConfigUtils.setProperties(null);
@@ -386,6 +386,7 @@ public class AbstractInterfaceConfigTest {
             Properties properties = new Properties();
             properties.put(key, value);
             properties.store(os, "");
+            os.flush();
             os.close();
         } catch (IOException e) {
             if (os != null) {

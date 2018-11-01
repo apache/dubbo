@@ -18,6 +18,7 @@ package com.alibaba.dubbo.config.spring.context.annotation;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
+
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.Annotation;

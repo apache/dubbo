@@ -148,6 +148,23 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     }
 
     @Test
+    public void testInvalidSerializaitonId() throws Exception {
+        byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, (byte)0x8F, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        Object obj =  decode(header);
+        Assert.assertTrue(obj instanceof Request);
+        Request request = (Request) obj;
+        Assert.assertTrue(request.isBroken());
+        Assert.assertTrue(request.getData() instanceof IOException);
+        header = new byte[]{MAGIC_HIGH, MAGIC_LOW, (byte)0x1F, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+        obj = decode(header);
+        Assert.assertTrue(obj instanceof Response);
+        Response response = (Response) obj;
+        Assert.assertEquals(response.getStatus(), Response.CLIENT_ERROR);
+        Assert.assertTrue(response.getErrorMessage().contains("IOException"));
+    }
+
+    @Test
     public void test_Decode_Check_Payload() throws IOException {
         byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
         byte[] request = assemblyDataProtocol(header);
