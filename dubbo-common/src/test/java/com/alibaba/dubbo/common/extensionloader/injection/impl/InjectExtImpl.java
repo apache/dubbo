@@ -17,7 +17,7 @@
 package com.alibaba.dubbo.common.extensionloader.injection.impl;
 
 
-import com.alibaba.dubbo.common.extension.Inject;
+import com.alibaba.dubbo.common.extension.DisableInject;
 import com.alibaba.dubbo.common.extensionloader.ext1.SimpleExt;
 import com.alibaba.dubbo.common.extensionloader.injection.InjectExt;
 
@@ -33,7 +33,7 @@ public class InjectExtImpl implements InjectExt {
         this.simpleExt = simpleExt;
     }
 
-    @Inject(autoinject = false)
+    @DisableInject
     public void setSimpleExt1(SimpleExt simpleExt1) {
         this.simpleExt1 = simpleExt1;
     }

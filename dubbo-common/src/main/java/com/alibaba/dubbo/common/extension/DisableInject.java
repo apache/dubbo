@@ -25,6 +25,6 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
-public @interface Inject {
-    boolean autoinject() default true;
+public @interface DisableInject {
+    boolean disable() default true;
 }
