@@ -17,14 +17,20 @@
 package org.apache.dubbo.config.spring.extension;
 
 import java.util.Set;
+
 import org.apache.dubbo.common.extension.ExtensionFactory;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.config.DubboShutdownHook;
+import org.apache.dubbo.config.spring.util.BeanFactoryUtils;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextClosedEvent;
 
 /**
  * SpringExtensionFactory
@@ -33,9 +39,11 @@ public class SpringExtensionFactory implements ExtensionFactory {
     private static final Logger logger = LoggerFactory.getLogger(SpringExtensionFactory.class);
 
     private static final Set<ApplicationContext> contexts = new ConcurrentHashSet<ApplicationContext>();
+    private static final ApplicationListener shutdownHookListener = new ShutdownHookListener();
 
     public static void addApplicationContext(ApplicationContext context) {
         contexts.add(context);
+        BeanFactoryUtils.addApplicationListener(context, shutdownHookListener);
     }
 
     public static void removeApplicationContext(ApplicationContext context) {
@@ -88,4 +96,14 @@ public class SpringExtensionFactory implements ExtensionFactory {
         return null;
     }
 
+    private static class ShutdownHookListener implements ApplicationListener {
+        @Override
+        public void onApplicationEvent(ApplicationEvent event) {
+            if (event instanceof ContextClosedEvent) {
+                DubboShutdownHook shutdownHook = DubboShutdownHook.getDubboShutdownHook();
+                Runtime.getRuntime().removeShutdownHook(shutdownHook);
+                shutdownHook.destroyAll();
+            }
+        }
+    }
 }
