@@ -23,7 +23,8 @@ public class ClassExtendsMap extends HashMap<String, Object> {
     private static final long serialVersionUID = 5108356684263812575L;
     private ClassExtendsMap resultMap;
 
-    public ClassExtendsMap() {}
+    public ClassExtendsMap() {
+    }
 
     public ClassExtendsMap getResultMap() {
         return resultMap;

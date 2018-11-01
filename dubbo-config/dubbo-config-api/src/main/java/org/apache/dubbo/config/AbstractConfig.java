@@ -526,9 +526,9 @@ public abstract class AbstractConfig implements Serializable {
         try {
             Configuration configuration = ConfigConverter.toConfiguration(this);
             CompositeConfiguration compositeConfiguration = Environment.getInstance().getStartupCompositeConf(getPrefix(), getId());
-            int index = 1;
-            if (Environment.getInstance().isConfigCenterFirst()) {
-                index = 2;
+            int index = 2;
+            if (!Environment.getInstance().isConfigCenterFirst()) {
+                index = 1;
             }
             compositeConfiguration.addConfiguration(index, configuration);
             // loop methods, get override value and set the new value back to method

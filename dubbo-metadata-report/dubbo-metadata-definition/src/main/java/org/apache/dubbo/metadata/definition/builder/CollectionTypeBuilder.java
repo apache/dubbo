@@ -26,7 +26,7 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
- *  2015/1/27.
+ * 2015/1/27.
  */
 public class CollectionTypeBuilder implements TypeBuilder {
 
@@ -55,7 +55,7 @@ public class CollectionTypeBuilder implements TypeBuilder {
         if (actualTypeArgs == null || actualTypeArgs.length != 1) {
             throw new IllegalArgumentException(MessageFormat.format(
                     "[ServiceDefinitionBuilder] Collection type [{0}] with unexpected amount of arguments [{1}]." + actualTypeArgs,
-                    new Object[] { type, actualTypeArgs }));
+                    new Object[]{type, actualTypeArgs}));
         }
 
         Type actualType = actualTypeArgs[0];

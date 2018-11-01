@@ -17,7 +17,7 @@
 package org.apache.dubbo.metadata.definition.common;
 
 /**
- *  16/9/22.
+ * 16/9/22.
  */
 public interface TestService {
     /**

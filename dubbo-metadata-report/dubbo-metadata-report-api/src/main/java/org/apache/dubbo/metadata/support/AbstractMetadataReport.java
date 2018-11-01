@@ -100,7 +100,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         loadProperties();
         metadataReportRetry = new MetadataReportRetry(reportURL.getParameter(Constants.RETRY_TIMES_KEY, 60 * 60), reportURL.getParameter(Constants.RETRY_PERIOD_KEY, 3000));
         // cycle report the data switch
-        if(reportURL.getParameter(Constants.CYCLE_REPORT_KEY, true)){
+        if (reportURL.getParameter(Constants.CYCLE_REPORT_KEY, true)) {
             scheduler.scheduleAtFixedRate(new Runnable() {
                 @Override
                 public void run() {

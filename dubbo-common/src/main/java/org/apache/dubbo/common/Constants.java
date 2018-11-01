@@ -64,6 +64,9 @@ public class Constants {
     public static final String CONFIG_CLUSTER_KEY = "config.cluster";
     public static final String CONFIG_NAMESPACE_KEY = "config.namespace";
     public static final String CONFIG_CHECK_KEY = "config.check";
+    public static final String CONFIG_DATAID_KEY = "config.dataid";
+    public static final String CONFIG_PRIORITY_KEY = "config.priority";
+    public static final String CONFIG_TIMEOUT_KEY = "config.timeout";
 
     public static final String DEFAULT_CATEGORY = PROVIDERS_CATEGORY;
 
@@ -460,6 +463,7 @@ public class Constants {
     public static final String EXTRA_PROVIDER_URL_PARAM_KEYS_KEY = "extraProviderUrlParamKeys";
     /**
      * After simplify the registry, should add some paramter individually for consumer.
+     *
      * @since 2.7.0
      */
     public static final String EXTRA_CONSUMER_URL_PARAM_KEYS_KEY = "extraConsumerUrlParamKeys";

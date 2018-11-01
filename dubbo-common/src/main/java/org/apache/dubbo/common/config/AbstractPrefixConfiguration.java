@@ -27,13 +27,16 @@ public abstract class AbstractPrefixConfiguration extends AbstractConfiguration 
 
     public AbstractPrefixConfiguration(String prefix, String id) {
         super();
-        this.prefix = prefix;
+        if (StringUtils.isNotEmpty(prefix) && !prefix.endsWith(".")) {
+            this.prefix = prefix + ".";
+        } else {
+            this.prefix = prefix;
+        }
         this.id = id;
     }
 
     @Override
     public Object getProperty(String key, Object defaultValue) {
-
         Object value = null;
         if (StringUtils.isNotEmpty(prefix) && StringUtils.isNotEmpty(id)) {
             value = getInternalProperty(prefix + id + "." + key);

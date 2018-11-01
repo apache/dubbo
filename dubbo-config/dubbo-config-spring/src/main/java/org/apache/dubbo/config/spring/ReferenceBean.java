@@ -153,7 +153,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
             if (metadataReportConfigMap != null && metadataReportConfigMap.size() == 1) {
                 // first elements
                 super.setMetadataReportConfig(metadataReportConfigMap.values().iterator().next());
-            } else if(metadataReportConfigMap != null && metadataReportConfigMap.size() > 1){
+            } else if (metadataReportConfigMap != null && metadataReportConfigMap.size() > 1) {
                 throw new IllegalStateException("Multiple MetadataReport configs: " + metadataReportConfigMap);
             }
         }

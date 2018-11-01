@@ -27,6 +27,8 @@ import org.apache.curator.framework.recipes.cache.TreeCache;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
 import org.apache.curator.framework.recipes.cache.TreeCacheListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,8 +66,11 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
 
     private List<WatchedUpdateListener> listeners = new CopyOnWriteArrayList<WatchedUpdateListener>();
 
-    public ZooKeeperConfigurationSource() {
+    private URL url;
+
+    public ZooKeeperConfigurationSource(URL url) {
         this(System.getProperty(ARCHAIUS_SOURCE_ADDRESS_KEY), 60 * 1000, 10000, System.getProperty(ARCHAIUS_CONFIG_ROOT_PATH_KEY, DEFAULT_CONFIG_ROOT_PATH));
+        this.url = url;
     }
 
     public ZooKeeperConfigurationSource(int sessionTimeout, int connectTimeout, String configRootPath) {
@@ -143,7 +148,7 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
                     return;
                 }
 
-                // TODO?
+                // TODO We limit the notification of config changes to a specific path level, for example /dubbo/config/service/configurators, other config changes not in this level will not get notified, say /dubbo/config/dubbo.properties
                 if (data.getPath().split("/").length == 5) {
                     byte[] value = data.getData();
                     String stringValue = new String(value, charset);
@@ -205,10 +210,14 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
 
         Map<String, ChildData> dataMap = treeCache.getCurrentChildren(configRootPath);
         if (dataMap != null && dataMap.size() > 0) {
-            dataMap.forEach((childPath, v) -> {
+            dataMap.forEach((childPath, childData) -> {
                 String fullChildPath = configRootPath + "/" + childPath;
-                treeCache.getCurrentChildren(fullChildPath).forEach((subChildPath, childData) -> {
-                    all.put(pathToKey(fullChildPath + "/" + subChildPath), new String(childData.getData(), charset));
+                // special treatment for /dubbo/config/dubbo.properties, it's the only config item need to store in cache in this level.
+                if (childPath.equals(url.getParameter(Constants.CONFIG_DATAID_KEY))) {
+                    all.put(pathToKey(fullChildPath), new String(childData.getData(), charset));
+                }
+                treeCache.getCurrentChildren(fullChildPath).forEach((subChildPath, subChildData) -> {
+                    all.put(pathToKey(fullChildPath + "/" + subChildPath), new String(subChildData.getData(), charset));
                 });
             });
         }

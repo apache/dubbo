@@ -22,8 +22,8 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
 import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 import org.apache.dubbo.metadata.support.AbstractMetadataReport;
+import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

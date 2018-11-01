@@ -19,11 +19,11 @@ package org.apache.dubbo.metadata.definition.model;
 import java.util.Map;
 
 /**
- *  2018/10/25
+ * 2018/10/25
  */
-public class FullServiceDefinition extends ServiceDefinition{
+public class FullServiceDefinition extends ServiceDefinition {
 
-    private Map<String,String> parameters;
+    private Map<String, String> parameters;
 
     public Map<String, String> getParameters() {
         return parameters;
