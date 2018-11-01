@@ -98,6 +98,13 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Con
      */
     @Override
     protected String getInternalProperty(String key, String group, long timeout) {
+        if (group != null) {
+            Config config = ConfigService.getConfig(group);
+            if (config != null) {
+                return config.getProperty(key, null);
+            }
+            return null;
+        }
         return dubboConfig.getProperty(key, null);
     }
 

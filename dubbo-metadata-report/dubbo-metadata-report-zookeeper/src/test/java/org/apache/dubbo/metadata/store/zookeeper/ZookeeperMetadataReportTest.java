@@ -10,7 +10,6 @@ import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
 import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
 import org.apache.dubbo.remoting.zookeeper.curator.CuratorZookeeperTransporter;
-import org.apache.dubbo.rpc.RpcException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

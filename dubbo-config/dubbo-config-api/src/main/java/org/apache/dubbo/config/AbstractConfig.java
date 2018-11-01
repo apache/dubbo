@@ -31,7 +31,6 @@ import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigConverter;
 import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 
-import javax.annotation.PostConstruct;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -509,6 +508,7 @@ public abstract class AbstractConfig implements Serializable {
         return metaData;
     }
 
+    @Parameter(excluded = true)
     public String getPrefix() {
         return Constants.DUBBO + "." + getTagName(this.getClass());
     }
@@ -517,7 +517,6 @@ public abstract class AbstractConfig implements Serializable {
      * TODO
      * Currently, only support overriding of properties explicitly defined in Config class, doesn't support overriding of customized parameters stored in 'parameters'.
      */
-    @PostConstruct
     public void refresh() {
         if (init) {
             return;
@@ -527,9 +526,9 @@ public abstract class AbstractConfig implements Serializable {
         try {
             Configuration configuration = ConfigConverter.toConfiguration(this);
             CompositeConfiguration compositeConfiguration = Environment.getInstance().getStartupCompositeConf(getPrefix(), getId());
-            int index = 1;
-            if (Environment.getInstance().isConfigCenterFirst()) {
-                index = 2;
+            int index = 2;
+            if (!Environment.getInstance().isConfigCenterFirst()) {
+                index = 1;
             }
             compositeConfiguration.addConfiguration(index, configuration);
             // loop methods, get override value and set the new value back to method
@@ -620,6 +619,7 @@ public abstract class AbstractConfig implements Serializable {
     /**
      * FIXME check @Parameter(required=true) and any conditions that need to match.
      */
+    @Parameter(excluded = true)
     public boolean isValid() {
         return true;
     }

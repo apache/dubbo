@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by Arthur.xqw on 2017/4/11.
+ *
  */
 @SuppressWarnings("rawtypes")
 public class ResultWithRawCollections {
@@ -28,7 +28,8 @@ public class ResultWithRawCollections {
     private Map map;
     private List list;
 
-    public ResultWithRawCollections() {}
+    public ResultWithRawCollections() {
+    }
 
     public ResultWithRawCollections(Map map, List list) {
         this.map = map;

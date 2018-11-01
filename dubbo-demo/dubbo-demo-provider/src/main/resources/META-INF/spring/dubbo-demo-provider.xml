@@ -25,13 +25,13 @@
     <dubbo:application name="demo-provider"/>
     <!--<dubbo:provider tag="tag3"/>-->
 
-    <!-- use multicast registry center to export service -->
     <!--<dubbo:registry group="dubboregistrygroup1" address="zookeeper://127.0.0.1:2181" simple="false">
-        <dubbo:parameter key="config.check" value="false"/>
     </dubbo:registry>-->
     <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
 
     <!--<dubbo:servicestore address="zookeeper://127.0.0.1:2181"/>-->
+    <dubbo:configcenter type="zookeeper" address="127.0.0.1:2181" namespace="dubboregistrygroup1"
+                        dataid="dubbo.properties"/>
 
     <!-- use dubbo protocol to export service on port 20880 -->
     <dubbo:protocol name="dubbo" port="-1"/>

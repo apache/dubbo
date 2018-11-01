@@ -18,11 +18,8 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -36,17 +33,17 @@ public class RegistryDataConfig extends AbstractConfig {
     private boolean simpleConsumerUrl;
     private String extraConsumerUrlParamKeys;
 
-    public Map<String, String> transferMap(){
+    public Map<String, String> transferMap() {
         Map<String, String> map = new HashMap<String, String>(4);
-        if(simpleProviderUrl){
+        if (simpleProviderUrl) {
             map.put(Constants.SIMPLE_PROVIDER_URL_KEY, Boolean.TRUE.toString());
-            if (StringUtils.isNotEmpty(extraProviderUrlParamKeys)){
+            if (StringUtils.isNotEmpty(extraProviderUrlParamKeys)) {
                 map.put(Constants.EXTRA_PROVIDER_URL_PARAM_KEYS_KEY, extraProviderUrlParamKeys.trim());
             }
         }
-        if(simpleConsumerUrl){
+        if (simpleConsumerUrl) {
             map.put(Constants.SIMPLE_CONSUMER_URL_KEY, Boolean.TRUE.toString());
-            if (StringUtils.isNotEmpty(extraConsumerUrlParamKeys)){
+            if (StringUtils.isNotEmpty(extraConsumerUrlParamKeys)) {
                 map.put(Constants.EXTRA_CONSUMER_URL_PARAM_KEYS_KEY, extraConsumerUrlParamKeys.trim());
             }
         }

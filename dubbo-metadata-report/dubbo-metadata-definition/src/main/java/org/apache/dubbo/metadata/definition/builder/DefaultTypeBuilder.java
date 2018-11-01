@@ -57,7 +57,7 @@ public final class DefaultTypeBuilder {
             Class<?> fieldClass = field.getType();
             Type fieldType = field.getGenericType();
 
-            TypeDefinition fieldTd = TypeDefinitionBuilder.build(fieldType,fieldClass, typeCache);
+            TypeDefinition fieldTd = TypeDefinitionBuilder.build(fieldType, fieldClass, typeCache);
             td.getProperties().put(fieldName, fieldTd);
         }
 

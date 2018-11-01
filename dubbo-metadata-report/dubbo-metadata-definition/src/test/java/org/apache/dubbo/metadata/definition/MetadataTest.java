@@ -29,8 +29,8 @@ import org.junit.Test;
 
 /**
  * TypeDefinitionBuilder
- *
- *  16/9/22.
+ * <p>
+ * 16/9/22.
  */
 public class MetadataTest {
 

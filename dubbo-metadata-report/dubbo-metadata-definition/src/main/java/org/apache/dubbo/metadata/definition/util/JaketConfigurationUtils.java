@@ -20,7 +20,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
- *  2015/1/27.
+ * 2015/1/27.
  */
 public class JaketConfigurationUtils {
 

@@ -534,7 +534,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                  * ServiceData Store
                  */
                 MetadataReportService metadataReportService = null;
-                if ((metadataReportService = getMetadataReportService()) != null){
+                if ((metadataReportService = getMetadataReportService()) != null) {
                     metadataReportService.publishProvider(url);
                 }
             }

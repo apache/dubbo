@@ -75,7 +75,8 @@ public class MetadataReportService {
     public void publishProvider(URL providerUrl) throws RpcException {
         //first add into the list
         // remove the individul param
-        providerUrl = providerUrl.removeParameters(Constants.PID_KEY,Constants.TIMESTAMP_KEY,Constants.BIND_IP_KEY,Constants.BIND_PORT_KEY,Constants.TIMESTAMP_KEY);
+        providerUrl = providerUrl.removeParameters(Constants.PID_KEY, Constants.TIMESTAMP_KEY, Constants.BIND_IP_KEY, Constants.BIND_PORT_KEY, Constants.TIMESTAMP_KEY);
+
         try {
             String interfaceName = providerUrl.getParameter(Constants.INTERFACE_KEY);
             if (StringUtils.isNotEmpty(interfaceName)) {
@@ -93,7 +94,7 @@ public class MetadataReportService {
     }
 
     public void publishConsumer(URL consumerURL) throws RpcException {
-        consumerURL = consumerURL.removeParameters(Constants.PID_KEY,Constants.TIMESTAMP_KEY,Constants.BIND_IP_KEY,Constants.BIND_PORT_KEY,Constants.TIMESTAMP_KEY);
+        consumerURL = consumerURL.removeParameters(Constants.PID_KEY, Constants.TIMESTAMP_KEY, Constants.BIND_IP_KEY, Constants.BIND_PORT_KEY, Constants.TIMESTAMP_KEY);
         metadataReport.storeConsumerMetadata(new ConsumerMetadataIdentifier(consumerURL.getServiceInterface(),
                 consumerURL.getParameter(Constants.VERSION_KEY), consumerURL.getParameter(Constants.GROUP_KEY),
                 consumerURL.getParameter(Constants.APPLICATION_KEY)), consumerURL.toParameterString());

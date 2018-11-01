@@ -1322,6 +1322,12 @@
         </xsd:annotation>
     </xsd:element>
 
+    <xsd:element name="configcenter" type="configCenterType">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[ The config center config ]]></xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
     <xsd:element name="monitor" type="monitorType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ The logstat monitor config ]]></xsd:documentation>

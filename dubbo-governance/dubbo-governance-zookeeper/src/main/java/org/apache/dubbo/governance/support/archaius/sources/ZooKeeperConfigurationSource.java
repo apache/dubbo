@@ -27,6 +27,8 @@ import org.apache.curator.framework.recipes.cache.TreeCache;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
 import org.apache.curator.framework.recipes.cache.TreeCacheListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +57,7 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
     private Executor executor = Executors.newFixedThreadPool(1);
     private final CuratorFramework client;
 
+    // The final root path would be: /configRootPath/"config"
     private final String configRootPath;
     private final TreeCache treeCache;
     private boolean connected = false;
@@ -63,8 +66,11 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
 
     private List<WatchedUpdateListener> listeners = new CopyOnWriteArrayList<WatchedUpdateListener>();
 
-    public ZooKeeperConfigurationSource() {
+    private URL url;
+
+    public ZooKeeperConfigurationSource(URL url) {
         this(System.getProperty(ARCHAIUS_SOURCE_ADDRESS_KEY), 60 * 1000, 10000, System.getProperty(ARCHAIUS_CONFIG_ROOT_PATH_KEY, DEFAULT_CONFIG_ROOT_PATH));
+        this.url = url;
     }
 
     public ZooKeeperConfigurationSource(int sessionTimeout, int connectTimeout, String configRootPath) {
@@ -72,13 +78,19 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
     }
 
 
+    /**
+     * @param connectString,  the zookeeper address
+     * @param sessionTimeout, timeout for session
+     * @param connectTimeout, timeout to wait before build a connection
+     * @param configRootPath, the final path would be: configRootPath/"config"
+     */
     public ZooKeeperConfigurationSource(String connectString, int sessionTimeout, int connectTimeout, String configRootPath) {
         if (connectString == null) {
             throw new IllegalArgumentException("connectString==null, must specify the address to connect for zookeeper archaius source.");
         }
 
         if (!configRootPath.startsWith("/")) {
-            configRootPath = "/" + configRootPath;
+            configRootPath = "/" + configRootPath + "/config";
         }
 
         CuratorFramework client = CuratorFrameworkFactory.newClient(connectString, sessionTimeout, connectTimeout,
@@ -136,6 +148,7 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
                     return;
                 }
 
+                // TODO We limit the notification of config changes to a specific path level, for example /dubbo/config/service/configurators, other config changes not in this level will not get notified, say /dubbo/config/dubbo.properties
                 if (data.getPath().split("/").length == 5) {
                     byte[] value = data.getData();
                     String stringValue = new String(value, charset);
@@ -191,16 +204,20 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
         Map<String, Object> all = new HashMap<>();
 
         if (!connected) {
-            logger.warn("ConfigCenter is not connected yet, zookeeper don't support local snapshot yet, so there's no old data to use!");
+            logger.warn("ConfigCenter is not connected yet, zookeeper does't support local snapshot, so there's no backup data to use!");
             return all;
         }
 
         Map<String, ChildData> dataMap = treeCache.getCurrentChildren(configRootPath);
         if (dataMap != null && dataMap.size() > 0) {
-            dataMap.forEach((childPath, v) -> {
+            dataMap.forEach((childPath, childData) -> {
                 String fullChildPath = configRootPath + "/" + childPath;
-                treeCache.getCurrentChildren(fullChildPath).forEach((subChildPath, childData) -> {
-                    all.put(pathToKey(fullChildPath + "/" + subChildPath), new String(childData.getData(), charset));
+                // special treatment for /dubbo/config/dubbo.properties, it's the only config item need to store in cache in this level.
+                if (childPath.equals(url.getParameter(Constants.CONFIG_DATAID_KEY))) {
+                    all.put(pathToKey(fullChildPath), new String(childData.getData(), charset));
+                }
+                treeCache.getCurrentChildren(fullChildPath).forEach((subChildPath, subChildData) -> {
+                    all.put(pathToKey(fullChildPath + "/" + subChildPath), new String(subChildData.getData(), charset));
                 });
             });
         }

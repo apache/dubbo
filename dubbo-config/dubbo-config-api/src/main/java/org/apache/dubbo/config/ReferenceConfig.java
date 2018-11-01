@@ -408,7 +408,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
          * ServiceData Store
          */
         MetadataReportService metadataReportService = null;
-        if ((metadataReportService = getMetadataReportService()) != null){
+        if ((metadataReportService = getMetadataReportService()) != null) {
             URL consumerURL = new URL(Constants.CONSUMER_PROTOCOL, map.remove(Constants.REGISTER_IP_KEY), 0, map.get(Constants.INTERFACE_KEY), map);
             metadataReportService.publishConsumer(consumerURL);
         }

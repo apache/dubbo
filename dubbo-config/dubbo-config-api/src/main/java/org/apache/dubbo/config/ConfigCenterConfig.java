@@ -25,7 +25,6 @@ import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.governance.DynamicConfiguration;
 import org.apache.dubbo.governance.DynamicConfigurationFactory;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.HashMap;
@@ -40,15 +39,15 @@ public class ConfigCenterConfig extends AbstractConfig {
     private String address;
     private String env;
     private String cluster;
-    private String namespace;
+    private String namespace = "dubbo";
     private String appnamespace;
     private String username;
     private String password;
-    private long timeout;
-    private boolean priority;
-    private boolean check;
+    private Long timeout = 3000L;
+    private Boolean priority = true;
+    private Boolean check = true;
 
-    private String dataid;
+    private String dataid = "dubbo.properties";
 
     // customized parameters
     private Map<String, String> parameters;
@@ -74,10 +73,9 @@ public class ConfigCenterConfig extends AbstractConfig {
         }
 
         Map<String, String> map = this.getMetaData();
-        return new URL("config", username, password, host, port, ConfigCenterConfig.class.getSimpleName(), map);
+        return new URL(Constants.CONFIG_PROTOCOL, username, password, host, port, ConfigCenterConfig.class.getSimpleName(), map);
     }
 
-    @PostConstruct
     public void init() throws Exception {
         // give jvm properties the chance of overriding local configs.
         refresh();
@@ -98,7 +96,7 @@ public class ConfigCenterConfig extends AbstractConfig {
                         k -> map.put(k, properties.getProperty(k))
                 );
                 Environment.getInstance().setConfigCenterFirst(priority);
-                Environment.getInstance().updateExternalConfiguration(map);
+                Environment.getInstance().updateExternalConfigurationMap(map);
             }
         } catch (IOException e) {
             throw e;
@@ -160,20 +158,20 @@ public class ConfigCenterConfig extends AbstractConfig {
     }
 
     @Parameter(key = Constants.CONFIG_CHECK_KEY)
-    public boolean isCheck() {
+    public Boolean isCheck() {
         return check;
     }
 
-    public void setCheck(boolean check) {
+    public void setCheck(Boolean check) {
         this.check = check;
     }
 
-    @Parameter(key = "config.priority")
-    public boolean isPriority() {
+    @Parameter(key = Constants.CONFIG_PRIORITY_KEY)
+    public Boolean isPriority() {
         return priority;
     }
 
-    public void setPriority(boolean priority) {
+    public void setPriority(Boolean priority) {
         this.priority = priority;
     }
 
@@ -193,15 +191,16 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.password = password;
     }
 
-    @Parameter(key = "config.timeout")
-    public long getTimeout() {
+    @Parameter(key = Constants.CONFIG_TIMEOUT_KEY)
+    public Long getTimeout() {
         return timeout;
     }
 
-    public void setTimeout(long timeout) {
+    public void setTimeout(Long timeout) {
         this.timeout = timeout;
     }
 
+    @Parameter(key = Constants.CONFIG_DATAID_KEY)
     public String getDataid() {
         return dataid;
     }
