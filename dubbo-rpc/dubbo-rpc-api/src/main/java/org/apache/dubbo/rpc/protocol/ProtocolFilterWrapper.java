@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
@@ -43,48 +44,56 @@ public class ProtocolFilterWrapper implements Protocol {
         this.protocol = protocol;
     }
 
-    private static <T> Invoker<T> buildInvokerChain(final Invoker<T> invoker, String key, String group) {
-        Invoker<T> last = invoker;
-        List<Filter> filters = ExtensionLoader.getExtensionLoader(Filter.class).getActivateExtension(invoker.getUrl(), key, group);
-        if (!filters.isEmpty()) {
-            for (int i = filters.size() - 1; i >= 0; i--) {
-                final Filter filter = filters.get(i);
-                final Invoker<T> next = last;
-                last = new Invoker<T>() {
+    private static class FilterInvoker<T> implements Invoker<T> {
 
-                    @Override
-                    public Class<T> getInterface() {
-                        return invoker.getInterface();
-                    }
+        private Invoker<T> invoker;
 
-                    @Override
-                    public URL getUrl() {
-                        return invoker.getUrl();
-                    }
+        private List<Filter> filters;
 
-                    @Override
-                    public boolean isAvailable() {
-                        return invoker.isAvailable();
-                    }
-
-                    @Override
-                    public Result invoke(Invocation invocation) throws RpcException {
-                        return filter.invoke(next, invocation);
-                    }
-
-                    @Override
-                    public void destroy() {
-                        invoker.destroy();
-                    }
-
-                    @Override
-                    public String toString() {
-                        return invoker.toString();
-                    }
-                };
-            }
+        public FilterInvoker(Invoker<T> invoker, List<Filter> filters) {
+            this.invoker = invoker;
+            this.filters = filters;
         }
-        return last;
+
+        @Override
+        public Class<T> getInterface() {
+            return invoker.getInterface();
+        }
+
+        @Override
+        public Result invoke(Invocation invocation) throws RpcException {
+            for (Filter filter : filters) {
+                Result result = filter.invoke(invoker, invocation);
+                if (result != null) {
+                    return result;
+                }
+            }
+            return invoker.invoke(invocation);
+        }
+
+        @Override
+        public URL getUrl() {
+            return invoker.getUrl();
+        }
+
+        @Override
+        public boolean isAvailable() {
+            return invoker.isAvailable();
+        }
+
+        @Override
+        public void destroy() {
+            invoker.destroy();
+        }
+    }
+
+
+    private static <T> Invoker<T> buildInvokerChain(final Invoker<T> invoker, String key, String group) {
+        List<Filter> filters = ExtensionLoader.getExtensionLoader(Filter.class).getActivateExtension(invoker.getUrl(), key, group);
+        if (CollectionUtils.isNotEmpty(filters)) {
+            return new FilterInvoker<>(invoker, filters);
+        }
+        return invoker;
     }
 
     @Override
