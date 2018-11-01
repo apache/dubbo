@@ -253,11 +253,19 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }
             Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls);// Translate url list to Invoker map
             Map<String, List<Invoker<T>>> newMethodInvokerMap = toMethodInvokers(newUrlInvokerMap); // Change method name to map Invoker Map
-            // state change
-            // If the calculation is wrong, it is not processed.
-            if (newUrlInvokerMap == null || newUrlInvokerMap.size() == 0) {
-                logger.error(new IllegalStateException("urls to invokers error .invokerUrls.size :" + invokerUrls.size() + ", invoker.size :0. urls :" + invokerUrls.toString()));
-                return;
+
+            /**
+             *
+             * If there is no service, the service list is refreshed normally.
+             * For example, the service is disabled. If it is not refreshed at this time,
+             * it will be called to the invalid service provider.
+             *
+             * issues:
+             *   1. https://github.com/apache/incubator-dubbo/issues/2724
+             *   2. https://github.com/apache/incubator-dubbo-ops/issues/90
+             */
+            if (newUrlInvokerMap.isEmpty()) {
+                logger.warn(new IllegalStateException("urls to invokers error. invokerUrls.size :" + invokerUrls.size() + ", invoker.size :0. urls :" + invokerUrls.toString()));
             }
             this.methodInvokerMap = multiGroup ? toMergeMethodInvokerMap(newMethodInvokerMap) : newMethodInvokerMap;
             this.urlInvokerMap = newUrlInvokerMap;
