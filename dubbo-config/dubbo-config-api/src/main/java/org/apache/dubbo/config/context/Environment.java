@@ -79,16 +79,26 @@ public class Environment {
         });
     }
 
-    public CompositeConfiguration getRuntimeCompositeConf(URL url) {
-        return runtimeCompositeConfsHolder.computeIfAbsent(url.toIdentityString(), k -> {
-            CompositeConfiguration compositeConfiguration = new CompositeConfiguration();
-            compositeConfiguration.addConfiguration(getDynamicConfiguration());
-            compositeConfiguration.addConfiguration(this.getSystemConf(null, null));
-            compositeConfiguration.addConfiguration(url.toConfiguration());
-            compositeConfiguration.addConfiguration(this.getPropertiesConf(null, null));
-            return compositeConfiguration;
-        });
+    /**
+     * FIXME This method will recreate Configuration for each RPC, how much latency affect will this action has on performance?
+     *
+     * @param url
+     * @return
+     */
+    public CompositeConfiguration getRuntimeCompositeConf(URL url, String method) {
+        CompositeConfiguration compositeConfiguration = new CompositeConfiguration();
+
+        String app = url.getParameter(Constants.APPLICATION_KEY);
+        String service = url.getServiceKey();
+        compositeConfiguration.addConfiguration(new ConfigurationWrapper(app, service, method, getDynamicConfiguration()));
+
+        compositeConfiguration.addConfiguration(url.toConfiguration());
+        compositeConfiguration.addConfiguration(this.getSystemConf(null, null));
+        compositeConfiguration.addConfiguration(this.getPropertiesConf(null, null));
+        return compositeConfiguration;
     }
+
+
 
     /**
      * If user opens DynamicConfig, the extension instance must has been created during the initialization of ConfigCenterConfig with the right extension type user specified.
