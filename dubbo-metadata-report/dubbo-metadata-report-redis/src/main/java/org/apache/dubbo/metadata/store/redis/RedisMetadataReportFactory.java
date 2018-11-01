@@ -28,7 +28,7 @@ public class RedisMetadataReportFactory extends AbstractMetadataReportFactory {
 
 
     @Override
-    public MetadataReport createServiceStore(URL url) {
+    public MetadataReport createMetadataReport(URL url) {
         return new RedisMetadataReport(url);
     }
 

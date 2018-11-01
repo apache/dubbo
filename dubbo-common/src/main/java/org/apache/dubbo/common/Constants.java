@@ -87,8 +87,6 @@ public class Constants {
 
     public static final String REGISTRY_PROTOCOL = "registry";
 
-    public static final String SERVICE_STORE_PROTOCOL = "servicestore";
-
     public static final String $INVOKE = "$invoke";
 
     public static final String $ECHO = "$echo";
@@ -183,7 +181,7 @@ public class Constants {
 
     public static final String REGISTRY_KEY = "registry";
 
-    public static final String SERVICE_STORE_KEY = "servicestore";
+    public static final String METADATA_REPORT_KEY = "metadata";
 
     public static final String MONITOR_KEY = "monitor";
 
@@ -446,15 +444,25 @@ public class Constants {
     public static final String MERGER_KEY = "merger";
 
     /**
-     * simple the registry.
+     * simple the registry for provider.
      * @since 2.7.0
      */
-    public static final String SIMPLE_KEY = "simple";
+    public static final String SIMPLE_PROVIDER_URL_KEY = "simpleProviderUrl";
     /**
-     * After simplify the registry, should add some paramter individually.
+     * simple the registry for consumer.
      * @since 2.7.0
      */
-    public static final String ADD_PARAM_KEYS_KEY = "plusparamkeys";
+    public static final String SIMPLE_CONSUMER_URL_KEY = "simpleConsumerUrl";
+    /**
+     * After simplify the registry, should add some paramter individually for provider.
+     * @since 2.7.0
+     */
+    public static final String EXTRA_PROVIDER_URL_PARAM_KEYS_KEY = "extraProviderUrlParamKeys";
+    /**
+     * After simplify the registry, should add some paramter individually for consumer.
+     * @since 2.7.0
+     */
+    public static final String EXTRA_CONSUMER_URL_PARAM_KEYS_KEY = "extraConsumerUrlParamKeys";
 
     /**
      * To decide whether to exclude unavailable invoker from the cluster
@@ -690,6 +698,12 @@ public class Constants {
     public static final String HOST_KEY = "host";
 
     public static final String ADDRESS_KEY = "address";
+
+    public static final String RETRY_TIMES_KEY = "retrytimes";
+
+    public static final String RETRY_PERIOD_KEY = "retrytimes";
+
+    public static final String CYCLE_REPORT_KEY = "cyclereport";
 
     public static final String[] EXCHANGING_KEYS = {APPLICATION_KEY, CODEC_KEY, EXCHANGER_KEY, SERIALIZATION_KEY, CLUSTER_KEY, CONNECTIONS_KEY, DEPRECATED_KEY,
             GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY, WEIGHT_KEY, TIMESTAMP_KEY};

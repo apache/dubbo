@@ -21,6 +21,9 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
+import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
+import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 import org.apache.dubbo.rpc.RpcException;
@@ -30,15 +33,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * ZookeeperRegistry
+ * ZookeeperMetadataReport
  */
 public class ZookeeperMetadataReport extends AbstractMetadataReport {
 
     private final static Logger logger = LoggerFactory.getLogger(ZookeeperMetadataReport.class);
 
     private final static String DEFAULT_ROOT = "dubbo";
-
-    final static String TAG = "servicestore";
 
     private final String root;
 
@@ -57,79 +58,43 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
         zkClient = zookeeperTransporter.connect(url);
     }
 
-    @Override
-    protected void doPut(URL url) {
-        try {
-            deletePath(url);
-            url = url.removeParameters(Constants.BIND_IP_KEY, Constants.BIND_PORT_KEY, Constants.TIMESTAMP_KEY);
-            zkClient.create(toUrlPathWithParameter(url), false);
-        } catch (Throwable e) {
-            logger.error("Failed to put " + url + " to zookeeper " + url + ", cause: " + e.getMessage(), e);
-            throw new RpcException("Failed to put " + url + " to zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
-        }
-    }
-
-    private void deletePath(URL url) {
-        String path = toCategoryPath(url);
-        List<String> urlStrs = zkClient.getChildren(path);
+    void deletePath(String category) {
+        List<String> urlStrs = zkClient.getChildren(category);
         if (CollectionUtils.isEmpty(urlStrs)) {
             return;
         }
         for (String urlStr : urlStrs) {
-            zkClient.delete(path + Constants.PATH_SEPARATOR + urlStr);
+            zkClient.delete(category + Constants.PATH_SEPARATOR + urlStr);
         }
     }
 
-    @Override
-    protected URL doPeek(final URL url) {
-        try {
-            List<String> urlStrs = zkClient.getChildren((toCategoryPath(url)));
-            List<URL> urls = new ArrayList<URL>();
-            if (urlStrs != null && !urlStrs.isEmpty()) {
-                for (String urlStr : urlStrs) {
-                    urlStr = URL.decode(urlStr);
-                    return url.addParameterString(urlStr);
-                }
-            }
-            return urls.isEmpty() ? null : urls.get(0);
-        } catch (Throwable e) {
-            logger.error("Failed to peek " + url + " to zookeeper " + url + ", cause: " + e.getMessage(), e);
-            throw new RpcException("Failed to peek " + url + " to zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
-        }
-    }
-
-    private String toRootDir() {
+    String toRootDir() {
         if (root.equals(Constants.PATH_SEPARATOR)) {
             return root;
         }
         return root + Constants.PATH_SEPARATOR;
     }
 
-    private String toRootPath() {
-        return root;
+    @Override
+    protected void doStoreProviderMetadata(ProviderMetadataIdentifier providerMetadataIdentifier, String serviceDefinitions) {
+        storeMetadata(providerMetadataIdentifier, serviceDefinitions);
     }
 
-    private String toServicePath(URL url) {
-        String name = url.getServiceInterface();
-        if (Constants.ANY_VALUE.equals(name)) {
-            return toRootPath();
-        }
-        return toRootDir() + URL.encode(name);
+    @Override
+    protected void doStoreConsumerMetadata(ConsumerMetadataIdentifier consumerMetadataIdentifier, String value) {
+        storeMetadata(consumerMetadataIdentifier, value);
     }
 
-    String toCategoryPath(URL url) {
-        String protocol = url.getParameter(Constants.SIDE_KEY);
-        String version = url.getParameter(Constants.VERSION_KEY);
-
-        String app = url.getParameter(Constants.APPLICATION_KEY);
-        String appStr = Constants.PROVIDER_PROTOCOL.equals(protocol) ? "" : (app == null ? "" : (Constants.PATH_SEPARATOR + app));
-
-        return toServicePath(url) + Constants.PATH_SEPARATOR + TAG + Constants.PATH_SEPARATOR + (version == null ? "" : (version + Constants.PATH_SEPARATOR))
-                + (protocol != null ? protocol : url.getProtocol()) + appStr;
+    private void storeMetadata(MetadataIdentifier metadataIdentifier, String v) {
+        String category = getCategory(metadataIdentifier);
+        String filePath = category + Constants.PATH_SEPARATOR + URL.encode(v);
+        deletePath(category);
+        zkClient.create(filePath, false);
     }
 
-    private String toUrlPathWithParameter(URL url) {
-        return toCategoryPath(url) + Constants.PATH_SEPARATOR + URL.encode(url.toParameterString());
+    String getCategory(MetadataIdentifier metadataIdentifier){
+        return toRootDir() + metadataIdentifier.getFilePathKey();
     }
+
 
 }

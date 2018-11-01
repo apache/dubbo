@@ -26,10 +26,10 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.router.InvokerTreeCache;
 import org.apache.dubbo.rpc.cluster.router.TreeNode;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 /**
@@ -45,7 +45,7 @@ public class RouterChain<T> {
     // it's aimed to improve performance, only routers explicitly specifies 'runtime=true' will be executed when an RPC comes.
     private InvokerTreeCache<T> treeCache;
     // containing all routers, reconstruct every time 'route://' urls change.
-    private List<Router> routers;
+    private List<Router> routers = new CopyOnWriteArrayList<>();
     // Fixed router instances: ConfigConditionRouter, TagRouter, e.g., the rule for each instance may change but the instance will never delete or recreate.
     private List<Router> residentRouters;
 
@@ -63,12 +63,11 @@ public class RouterChain<T> {
     }
 
     protected RouterChain(List<Router> routers) {
-        this.routers = routers;
+        this.routers.addAll(routers);
         treeCache = new InvokerTreeCache<>();
     }
 
     protected RouterChain(URL url) {
-        this.routers = new ArrayList<>();
         treeCache = new InvokerTreeCache<>();
         this.url = url;
     }
@@ -92,9 +91,11 @@ public class RouterChain<T> {
      * @param generatedRouters
      */
     public void setGeneratedRouters(List<Router> generatedRouters) {
-        this.routers = new ArrayList<>();
-        this.routers.addAll(residentRouters);
-        this.routers.addAll(generatedRouters);
+        List<Router> newRouters = new CopyOnWriteArrayList<>();
+        newRouters.addAll(residentRouters);
+        newRouters.addAll(generatedRouters);
+        this.routers = newRouters;
+        // FIXME will sort cause concurrent problem? since it's kind of a write operation.
         this.sort();
         if (fullMethodInvokers != null) {
             this.preRoute(fullMethodInvokers, url, null);

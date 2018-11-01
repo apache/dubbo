@@ -18,11 +18,11 @@ package org.apache.dubbo.config.spring;
 
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConsumerConfig;
+import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.ServiceStoreConfig;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
 import org.apache.dubbo.config.support.Parameter;
@@ -148,13 +148,13 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
                 }
             }
         }
-        if (getServiceStoreConfig() == null) {
-            Map<String, ServiceStoreConfig> serviceStoreConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ServiceStoreConfig.class, false, false);
-            if (serviceStoreConfigMap != null && serviceStoreConfigMap.size() == 1) {
+        if (getMetadataReportConfig() == null) {
+            Map<String, MetadataReportConfig> metadataReportConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, MetadataReportConfig.class, false, false);
+            if (metadataReportConfigMap != null && metadataReportConfigMap.size() == 1) {
                 // first elements
-                super.setServiceStoreConfig(serviceStoreConfigMap.values().iterator().next());
-            } else if(serviceStoreConfigMap != null && serviceStoreConfigMap.size() > 1){
-                throw new IllegalStateException("Multiple MetadataReport configs: " + serviceStoreConfigMap);
+                super.setMetadataReportConfig(metadataReportConfigMap.values().iterator().next());
+            } else if(metadataReportConfigMap != null && metadataReportConfigMap.size() > 1){
+                throw new IllegalStateException("Multiple MetadataReport configs: " + metadataReportConfigMap);
             }
         }
         if (getMonitor() == null

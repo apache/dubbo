@@ -17,24 +17,19 @@
 package org.apache.dubbo.metadata.store;
 
 
-import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
+import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
+import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
 
 /**
  */
 public interface MetadataReport {
 
-    /**
-     *
-     * @param url  e.g: dubbo://10.20.153.10/org.apache.dubbo.foo.BarService?version=1.0.0&application=kylin or
-     *             consumer://10.20.153.10/org.apache.dubbo.foo.BarService?version=1.0.0&application=kylin
-     */
-    void put(URL url);
+    public static final String META_DATA_SOTRE_TAG = ".metaData";
 
-    /**
-     *
-     * @param url eg: dubbo://10.20.153.10/org.apache.dubbo.foo.BarService?version=1.0.0&application=cvictory&category=provider  or
-     *            eg: consumer://10.20.153.10/org.apache.dubbo.foo.BarService?version=1.0.0&application=cvictory&category=consumer
-     * @return
-     */
-    URL peek(URL url);
+
+    void storeProviderMetadata(ProviderMetadataIdentifier providerMetadataIdentifier, FullServiceDefinition serviceDefinition);
+
+    void storeConsumerMetadata(ConsumerMetadataIdentifier consumerMetadataIdentifier, String serviceParameterString);
+
 }

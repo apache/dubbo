@@ -27,7 +27,6 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.metadata.integration.MetadataReportService;
-import org.apache.dubbo.metadata.store.MetadataReportFactory;
 import org.apache.dubbo.monitor.MonitorFactory;
 import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.rpc.Filter;
@@ -40,6 +39,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.apache.dubbo.common.Constants.APPLICATION_KEY;
 
 /**
  * AbstractDefaultConfig
@@ -102,7 +103,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     // the scope for referring/exporting a service, if it's local, it means searching in current JVM only.
     private String scope;
 
-    protected ServiceStoreConfig serviceStoreConfig;
+    protected MetadataReportConfig metadataReportConfig;
+
+    protected RegistryDataConfig registryDataConfig;
 
     protected void checkRegistry() {
         // for backward compatibility
@@ -174,13 +177,23 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
     }
 
-    public void checkServiceStore() {
-        if (serviceStoreConfig == null) {
-            serviceStoreConfig = new ServiceStoreConfig();
+    protected void checkMetadataReport() {
+        if (metadataReportConfig == null) {
+            metadataReportConfig = new MetadataReportConfig();
         }
-        serviceStoreConfig.refresh();
-        if (!serviceStoreConfig.isValid()) {
+        metadataReportConfig.refresh();
+        if (!metadataReportConfig.isValid()) {
             logger.info("There's no valid metadata config found, if you are using the simplified mode of registry url, please make sure you have a metadata address configured properly.");
+        }
+    }
+
+    protected void checkRegistryDataConfig() {
+        if (registryDataConfig == null) {
+            registryDataConfig = new RegistryDataConfig();
+        }
+        registryDataConfig.refresh();
+        if (!registryDataConfig.isValid()) {
+            logger.info("There's no valid registryData config found. So the registry will store full url parameter to registry server.");
         }
     }
 
@@ -189,6 +202,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         checkRegistry();
         List<URL> registryList = new ArrayList<URL>();
         if (registries != null && !registries.isEmpty()) {
+            Map<String, String> registryDataConfigurationMap = this.registryDataConfig.transferMap();
             for (RegistryConfig config : registries) {
                 String address = config.getAddress();
                 if (address == null || address.length() == 0) {
@@ -209,9 +223,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                         map.put("protocol", "dubbo");
                     }
                     List<URL> urls = UrlUtils.parseURLs(address, map);
+
                     for (URL url : urls) {
                         url = url.addParameter(Constants.REGISTRY_KEY, url.getProtocol());
                         url = url.setProtocol(Constants.REGISTRY_PROTOCOL);
+                        url.addParameters(registryDataConfigurationMap);
                         if ((provider && url.getParameter(Constants.REGISTER_KEY, true))
                                 || (!provider && url.getParameter(Constants.SUBSCRIBE_KEY, true))) {
                             registryList.add(url);
@@ -262,52 +278,25 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         return null;
     }
 
-    protected URL loadServiceStore(boolean provider) {
-        // FIXME
-        // checkRegistry();
-        if(serviceStoreConfig == null){
+    final private URL loadMetadataReporterURL(boolean provider) {
+        this.checkApplication();
+        String address = metadataReportConfig.getAddress();
+        if (address == null || address.length() == 0) {
             return null;
         }
-        URL loadServiceUrl ;
-
-        String address = serviceStoreConfig.getAddress();
-        if (address == null || address.length() == 0) {
-            address = Constants.ANYHOST_VALUE;
-        }
-
-        if (address.length() > 0 && !RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
-            Map<String, String> map = new HashMap<String, String>();
-            appendParameters(map, application);
-            appendParameters(map, serviceStoreConfig);
-            map.put("path", ServiceStoreConfig.class.getName());
-            map.put("dubbo", Version.getProtocolVersion());
-            map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
-            if (ConfigUtils.getPid() > 0) {
-                map.put(Constants.PID_KEY, String.valueOf(ConfigUtils.getPid()));
-            }
-            if (!map.containsKey("protocol")) {
-                if (ExtensionLoader.getExtensionLoader(MetadataReportFactory.class).hasExtension("remote")) {
-                    map.put("protocol", "remote");
-                } else {
-                    map.put("protocol", "dubbo");
-                }
-            }
-            URL url = UrlUtils.parseURL(address, map);
-            url = url.addParameter(Constants.SERVICE_STORE_KEY, url.getProtocol()).setProtocol(Constants.SERVICE_STORE_PROTOCOL);
-            if ((provider && url.getParameter(Constants.REGISTER_KEY, true))
-                    || (!provider && url.getParameter(Constants.SUBSCRIBE_KEY, true))) {
-                return url;
-            }
-        }
-        return null;
+        Map<String, String> map = new HashMap<String, String>();
+        map.put(APPLICATION_KEY, application.getName());
+        appendParameters(map, metadataReportConfig);
+        return UrlUtils.parseURL(address, map);
     }
 
-    protected MetadataReportService getServiceStoreService() {
-        if (serviceStoreConfig == null || !serviceStoreConfig.isValid()) {
+    protected MetadataReportService getMetadataReportService() {
+
+        if (metadataReportConfig == null || !metadataReportConfig.isValid()) {
             return null;
         }
         return MetadataReportService.instance(() -> {
-            return loadServiceStore(true);
+            return loadMetadataReporterURL(true);
         });
     }
 
@@ -582,12 +571,12 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         this.scope = scope;
     }
 
-    public ServiceStoreConfig getServiceStoreConfig() {
-        return serviceStoreConfig;
+    public MetadataReportConfig getMetadataReportConfig() {
+        return metadataReportConfig;
     }
 
-    public void setServiceStoreConfig(ServiceStoreConfig serviceStoreConfig) {
-        this.serviceStoreConfig = serviceStoreConfig;
+    public void setMetadataReportConfig(MetadataReportConfig metadataReportConfig) {
+        this.metadataReportConfig = metadataReportConfig;
     }
 
 }
