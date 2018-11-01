@@ -60,13 +60,17 @@ public class SpringExtensionFactory implements ExtensionFactory {
             }
         }
 
-        logger.warn("No spring extension(bean) named:" + name + ", try to find an extension(bean) of type " + type.getName());
+        logger.warn("No spring extension (bean) named:" + name + ", try to find an extension (bean) of type " + type.getName());
+
+        if (Object.class == type) {
+            return null;
+        }
 
         for (ApplicationContext context : contexts) {
             try {
                 return context.getBean(type);
             } catch (NoUniqueBeanDefinitionException multiBeanExe) {
-                throw multiBeanExe;
+                logger.warn("Find more than 1 spring extensions (beans) of type " + type.getName() + ", will stop auto injection. Please make sure you have specified the concrete parameter type and there's only one extension of that type.");
             } catch (NoSuchBeanDefinitionException noBeanExe) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Error when get spring extension(bean) for type:" + type.getName(), noBeanExe);
@@ -74,7 +78,7 @@ public class SpringExtensionFactory implements ExtensionFactory {
             }
         }
 
-        logger.warn("No spring extension(bean) named:" + name + ", type:" + type.getName() + " found, stop get bean.");
+        logger.warn("No spring extension (bean) named:" + name + ", type:" + type.getName() + " found, stop get bean.");
 
         return null;
     }
