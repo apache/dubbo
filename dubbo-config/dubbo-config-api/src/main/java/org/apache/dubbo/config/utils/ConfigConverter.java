@@ -31,6 +31,7 @@ public class ConfigConverter {
      * @return
      */
     public static Configuration toConfiguration(AbstractConfig config) {
+        // FIXME does not need to pass prefix and id to Configuration? because keys generated in getMetadata() did not count prefix in.
         InmemoryConfiguration configuration = new InmemoryConfiguration(config.getPrefix(), config.getId());
         configuration.addProperties(config.getMetaData());
         return configuration;

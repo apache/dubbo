@@ -51,7 +51,7 @@ public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration<R
         System.setProperty(ZooKeeperConfigurationSource.ARCHAIUS_CONFIG_CHECK_KEY, url.getParameter(Constants.CONFIG_CHECK_KEY, "false"));
 
         try {
-            ZooKeeperConfigurationSource zkConfigSource = new ZooKeeperConfigurationSource();
+            ZooKeeperConfigurationSource zkConfigSource = new ZooKeeperConfigurationSource(url);
             zkConfigSource.start();
             /*if (!zkConfigSource.isConnected()) {
                 // we can check the status of config center here, and decide to fail or continue if we cannot reach the config server.

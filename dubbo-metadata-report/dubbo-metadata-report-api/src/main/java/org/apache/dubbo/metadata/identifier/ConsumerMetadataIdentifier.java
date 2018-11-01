@@ -17,9 +17,9 @@ public class ConsumerMetadataIdentifier extends MetadataIdentifier {
 
     private String application;
 
-    protected String getPathSegment(){
+    protected String getPathSegment() {
         return Constants.PATH_SEPARATOR + application;
-    };
+    }
 
     public String getApplication() {
         return application;

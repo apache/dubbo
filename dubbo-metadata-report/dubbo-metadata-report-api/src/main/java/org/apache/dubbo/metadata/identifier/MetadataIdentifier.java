@@ -3,8 +3,6 @@ package org.apache.dubbo.metadata.identifier;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 
-import java.io.File;
-
 /**
  * @author cvictory ON 2018/10/25
  */
@@ -47,9 +45,10 @@ public class MetadataIdentifier {
         return URL.encode(serviceInterface);
     }
 
-    protected String getPathSegment(){
+    protected String getPathSegment() {
         return "";
-    };
+    }
+
 
     public String getServiceInterface() {
         return serviceInterface;

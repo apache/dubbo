@@ -23,7 +23,7 @@ import java.lang.reflect.Type;
 import java.util.Map;
 
 /**
- *  2015/1/27.
+ * 2015/1/27.
  */
 public class EnumTypeBuilder implements TypeBuilder {
 

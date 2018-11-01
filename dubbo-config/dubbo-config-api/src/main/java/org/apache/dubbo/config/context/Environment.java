@@ -28,6 +28,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.governance.DynamicConfiguration;
 import org.apache.dubbo.governance.DynamicConfigurationFactory;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -40,14 +41,15 @@ public class Environment {
     private volatile Map<String, PropertiesConfiguration> propertiesConfsHolder = new ConcurrentHashMap<>();
     private volatile Map<String, SystemConfiguration> systemConfsHolder = new ConcurrentHashMap<>();
     private volatile Map<String, EnvironmentConfiguration> environmentConfsHolder = new ConcurrentHashMap<>();
+    private volatile Map<String, InmemoryConfiguration> externalConfsHolder = new ConcurrentHashMap<>();
     private volatile Map<String, CompositeConfiguration> startupCompositeConfsHolder = new ConcurrentHashMap<>();
     private volatile Map<String, CompositeConfiguration> runtimeCompositeConfsHolder = new ConcurrentHashMap<>();
 
-    private volatile InmemoryConfiguration externalConfiguration = new InmemoryConfiguration();
-
     private volatile DynamicConfiguration dynamicConfiguration;
 
-    private volatile boolean isConfigCenterFirst;
+    private volatile boolean isConfigCenterFirst = true;
+
+    private Map<String, String> externalConfigurationMap = new HashMap<>();
 
     public static Environment getInstance() {
         return INSTANCE;
@@ -61,34 +63,53 @@ public class Environment {
         return systemConfsHolder.computeIfAbsent(toKey(prefix, id), k -> new SystemConfiguration(prefix, id));
     }
 
+    public InmemoryConfiguration getExternalConfiguration(String prefix, String id) {
+        return externalConfsHolder.computeIfAbsent(toKey(prefix, id), k -> {
+            InmemoryConfiguration configuration = new InmemoryConfiguration(prefix, id);
+            configuration.addProperties(externalConfigurationMap);
+            return configuration;
+        });
+    }
+
     public EnvironmentConfiguration getEnvironmentConf(String prefix, String id) {
         return environmentConfsHolder.computeIfAbsent(toKey(prefix, id), k -> new EnvironmentConfiguration(prefix, id));
     }
 
-    public void updateExternalConfiguration(Map<String, String> externalMap) {
-        this.externalConfiguration.addProperties(externalMap);
+    public void updateExternalConfigurationMap(Map<String, String> externalMap) {
+        this.externalConfigurationMap.putAll(externalMap);
     }
 
     public CompositeConfiguration getStartupCompositeConf(String prefix, String id) {
         return startupCompositeConfsHolder.computeIfAbsent(toKey(prefix, id), k -> {
             CompositeConfiguration compositeConfiguration = new CompositeConfiguration();
             compositeConfiguration.addConfiguration(this.getSystemConf(prefix, id));
-            compositeConfiguration.addConfiguration(this.externalConfiguration);
+            compositeConfiguration.addConfiguration(this.getExternalConfiguration(prefix, id));
             compositeConfiguration.addConfiguration(this.getPropertiesConf(prefix, id));
             return compositeConfiguration;
         });
     }
 
-    public CompositeConfiguration getRuntimeCompositeConf(URL url) {
-        return runtimeCompositeConfsHolder.computeIfAbsent(url.toIdentityString(), k -> {
-            CompositeConfiguration compositeConfiguration = new CompositeConfiguration();
-            compositeConfiguration.addConfiguration(getDynamicConfiguration());
-            compositeConfiguration.addConfiguration(this.getSystemConf(null, null));
-            compositeConfiguration.addConfiguration(url.toConfiguration());
-            compositeConfiguration.addConfiguration(this.getPropertiesConf(null, null));
-            return compositeConfiguration;
-        });
+    /**
+     * FIXME This method will recreate Configuration for each RPC, how much latency affect will this action has on performance?
+     *
+     * @param url, the url metadata.
+     * @param method, the method name the RPC is trying to invoke.
+     * @return
+     */
+    public CompositeConfiguration getRuntimeCompositeConf(URL url, String method) {
+        CompositeConfiguration compositeConfiguration = new CompositeConfiguration();
+
+        String app = url.getParameter(Constants.APPLICATION_KEY);
+        String service = url.getServiceKey();
+        compositeConfiguration.addConfiguration(new ConfigurationWrapper(app, service, method, getDynamicConfiguration()));
+
+        compositeConfiguration.addConfiguration(url.toConfiguration());
+        compositeConfiguration.addConfiguration(this.getSystemConf(null, null));
+        compositeConfiguration.addConfiguration(this.getPropertiesConf(null, null));
+        return compositeConfiguration;
     }
+
+
 
     /**
      * If user opens DynamicConfig, the extension instance must has been created during the initialization of ConfigCenterConfig with the right extension type user specified.

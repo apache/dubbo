@@ -17,13 +17,13 @@
 package org.apache.dubbo.config.spring;
 
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
 import org.springframework.aop.support.AopUtils;
@@ -216,7 +216,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             if (metadataReportConfigMap != null && metadataReportConfigMap.size() == 1) {
                 // 第一个元素
                 super.setMetadataReportConfig(metadataReportConfigMap.values().iterator().next());
-            } else if(metadataReportConfigMap != null && metadataReportConfigMap.size() > 1){
+            } else if (metadataReportConfigMap != null && metadataReportConfigMap.size() > 1) {
                 throw new IllegalStateException("Multiple MetadataReport configs: " + metadataReportConfigMap);
             }
         }
