@@ -1322,7 +1322,7 @@
         </xsd:annotation>
     </xsd:element>
 
-    <xsd:element name="servicestore" type="servicestoreType">
+    <xsd:element name="servicestore" type="serviceStoreType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ The servicestore config ]]></xsd:documentation>
             <xsd:appinfo>
@@ -1330,6 +1330,12 @@
                     <tool:exports type="org.apache.dubbo.config.ServiceStoreConfig"/>
                 </tool:annotation>
             </xsd:appinfo>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="configcenter" type="configCenterType">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[ The config center config ]]></xsd:documentation>
         </xsd:annotation>
     </xsd:element>
 

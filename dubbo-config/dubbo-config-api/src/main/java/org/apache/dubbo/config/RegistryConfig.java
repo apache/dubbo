@@ -351,6 +351,7 @@ public class RegistryConfig extends AbstractConfig {
         this.addParamKeys = addParamKeys;
     }
 
+    @Parameter(excluded = true)
     public boolean isValid() {
         // empty protocol will default to 'dubbo'
         return !StringUtils.isEmpty(address);
