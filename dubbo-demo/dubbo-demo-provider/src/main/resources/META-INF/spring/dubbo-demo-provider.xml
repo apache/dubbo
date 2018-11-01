@@ -29,7 +29,7 @@
     <!--<dubbo:registry group="dubboregistrygroup1" address="zookeeper://127.0.0.1:2181" simple="false">
         <dubbo:parameter key="config.check" value="false"/>
     </dubbo:registry>-->
-    <dubbo:registry group="dubboregistrygroup1" address="zookeeper://127.0.0.1:2181"/>
+    <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
 
     <!--<dubbo:servicestore address="zookeeper://127.0.0.1:2181"/>-->
 
