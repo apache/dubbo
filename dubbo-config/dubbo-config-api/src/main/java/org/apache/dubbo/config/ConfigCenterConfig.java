@@ -25,7 +25,6 @@ import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.governance.DynamicConfiguration;
 import org.apache.dubbo.governance.DynamicConfigurationFactory;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.HashMap;
@@ -40,15 +39,15 @@ public class ConfigCenterConfig extends AbstractConfig {
     private String address;
     private String env;
     private String cluster;
-    private String namespace;
+    private String namespace = "dubbo";
     private String appnamespace;
     private String username;
     private String password;
-    private long timeout;
+    private long timeout = 3000;
     private boolean priority;
     private boolean check;
 
-    private String dataid;
+    private String dataid = "dubbo.properties";
 
     // customized parameters
     private Map<String, String> parameters;
@@ -74,10 +73,9 @@ public class ConfigCenterConfig extends AbstractConfig {
         }
 
         Map<String, String> map = this.getMetaData();
-        return new URL("config", username, password, host, port, ConfigCenterConfig.class.getSimpleName(), map);
+        return new URL(Constants.CONFIG_PROTOCOL, username, password, host, port, ConfigCenterConfig.class.getSimpleName(), map);
     }
 
-    @PostConstruct
     public void init() throws Exception {
         // give jvm properties the chance of overriding local configs.
         refresh();
