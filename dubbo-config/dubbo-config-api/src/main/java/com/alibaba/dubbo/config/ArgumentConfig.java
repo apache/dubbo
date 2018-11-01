@@ -37,9 +37,10 @@ public class ArgumentConfig implements Serializable {
     //callback interface
     private Boolean callback;
 
-    public ArgumentConfig(){
+    public ArgumentConfig() {
     }
-    public ArgumentConfig(Argument argument){
+
+    public ArgumentConfig(Argument argument) {
         this.index = argument.index();
         this.type = argument.type();
         this.callback = argument.callback();
