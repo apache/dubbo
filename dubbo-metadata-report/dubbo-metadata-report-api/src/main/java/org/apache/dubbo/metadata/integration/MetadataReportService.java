@@ -57,9 +57,9 @@ public class MetadataReportService {
     URL metadataReportUrl;
 
     MetadataReportService(URL metadataReportURL) {
-        if (Constants.SERVICE_STORE_KEY.equals(metadataReportURL.getProtocol())) {
-            String protocol = metadataReportURL.getParameter(Constants.SERVICE_STORE_KEY, Constants.DEFAULT_DIRECTORY);
-            metadataReportURL = metadataReportURL.setProtocol(protocol).removeParameter(Constants.SERVICE_STORE_KEY);
+        if (Constants.METADATA_REPORT_KEY.equals(metadataReportURL.getProtocol())) {
+            String protocol = metadataReportURL.getParameter(Constants.METADATA_REPORT_KEY, Constants.DEFAULT_DIRECTORY);
+            metadataReportURL = metadataReportURL.setProtocol(protocol).removeParameter(Constants.METADATA_REPORT_KEY);
         }
         this.metadataReportUrl = metadataReportURL;
         metadataReport = metadataReportFactory.getMetadataReport(this.metadataReportUrl);
