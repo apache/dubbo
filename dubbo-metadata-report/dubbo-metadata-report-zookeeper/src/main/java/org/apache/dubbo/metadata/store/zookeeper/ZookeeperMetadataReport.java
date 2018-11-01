@@ -24,12 +24,10 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
 import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
+import org.apache.dubbo.metadata.support.AbstractMetadataReport;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.metadata.support.AbstractMetadataReport;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -92,7 +90,7 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
         zkClient.create(filePath, false);
     }
 
-    String getCategory(MetadataIdentifier metadataIdentifier){
+    String getCategory(MetadataIdentifier metadataIdentifier) {
         return toRootDir() + metadataIdentifier.getFilePathKey();
     }
 

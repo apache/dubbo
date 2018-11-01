@@ -43,9 +43,9 @@ public class ConfigCenterConfig extends AbstractConfig {
     private String appnamespace;
     private String username;
     private String password;
-    private long timeout = 3000;
-    private boolean priority;
-    private boolean check;
+    private Long timeout = 3000L;
+    private Boolean priority = true;
+    private Boolean check = true;
 
     private String dataid = "dubbo.properties";
 
@@ -96,7 +96,7 @@ public class ConfigCenterConfig extends AbstractConfig {
                         k -> map.put(k, properties.getProperty(k))
                 );
                 Environment.getInstance().setConfigCenterFirst(priority);
-                Environment.getInstance().updateExternalConfiguration(map);
+                Environment.getInstance().updateExternalConfigurationMap(map);
             }
         } catch (IOException e) {
             throw e;
@@ -158,20 +158,20 @@ public class ConfigCenterConfig extends AbstractConfig {
     }
 
     @Parameter(key = Constants.CONFIG_CHECK_KEY)
-    public boolean isCheck() {
+    public Boolean isCheck() {
         return check;
     }
 
-    public void setCheck(boolean check) {
+    public void setCheck(Boolean check) {
         this.check = check;
     }
 
-    @Parameter(key = "config.priority")
-    public boolean isPriority() {
+    @Parameter(key = Constants.CONFIG_PRIORITY_KEY)
+    public Boolean isPriority() {
         return priority;
     }
 
-    public void setPriority(boolean priority) {
+    public void setPriority(Boolean priority) {
         this.priority = priority;
     }
 
@@ -191,15 +191,16 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.password = password;
     }
 
-    @Parameter(key = "config.timeout")
-    public long getTimeout() {
+    @Parameter(key = Constants.CONFIG_TIMEOUT_KEY)
+    public Long getTimeout() {
         return timeout;
     }
 
-    public void setTimeout(long timeout) {
+    public void setTimeout(Long timeout) {
         this.timeout = timeout;
     }
 
+    @Parameter(key = Constants.CONFIG_DATAID_KEY)
     public String getDataid() {
         return dataid;
     }

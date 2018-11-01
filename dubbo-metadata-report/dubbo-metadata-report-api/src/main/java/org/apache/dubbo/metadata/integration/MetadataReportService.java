@@ -16,14 +16,11 @@
  */
 package org.apache.dubbo.metadata.integration;
 
-import org.apache.commons.lang3.time.DateUtils;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ConcurrentHashSet;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
@@ -33,13 +30,6 @@ import org.apache.dubbo.metadata.store.MetadataReport;
 import org.apache.dubbo.metadata.store.MetadataReportFactory;
 import org.apache.dubbo.rpc.RpcException;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 /**
@@ -85,7 +75,7 @@ public class MetadataReportService {
     public void publishProvider(URL providerUrl) throws RpcException {
         //first add into the list
         // remove the individul param
-        providerUrl = providerUrl.removeParameters(Constants.PID_KEY,Constants.TIMESTAMP_KEY,Constants.BIND_IP_KEY,Constants.BIND_PORT_KEY,Constants.TIMESTAMP_KEY);
+        providerUrl = providerUrl.removeParameters(Constants.PID_KEY, Constants.TIMESTAMP_KEY, Constants.BIND_IP_KEY, Constants.BIND_PORT_KEY, Constants.TIMESTAMP_KEY);
         try {
             String interfaceName = providerUrl.getParameter(Constants.INTERFACE_KEY);
             if (StringUtils.isNotEmpty(interfaceName)) {
@@ -103,7 +93,7 @@ public class MetadataReportService {
     }
 
     public void publishConsumer(URL consumerURL) throws RpcException {
-        consumerURL = consumerURL.removeParameters(Constants.PID_KEY,Constants.TIMESTAMP_KEY,Constants.BIND_IP_KEY,Constants.BIND_PORT_KEY,Constants.TIMESTAMP_KEY);
+        consumerURL = consumerURL.removeParameters(Constants.PID_KEY, Constants.TIMESTAMP_KEY, Constants.BIND_IP_KEY, Constants.BIND_PORT_KEY, Constants.TIMESTAMP_KEY);
         metadataReport.storeConsumerMetadata(new ConsumerMetadataIdentifier(consumerURL.getServiceInterface(),
                 consumerURL.getParameter(Constants.VERSION_KEY), consumerURL.getParameter(Constants.GROUP_KEY),
                 consumerURL.getParameter(Constants.APPLICATION_KEY)), consumerURL.toParameterString());

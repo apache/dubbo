@@ -17,9 +17,9 @@
 package org.apache.dubbo.metadata.store.zookeeper;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 import org.apache.dubbo.metadata.store.MetadataReport;
 import org.apache.dubbo.metadata.support.AbstractMetadataReportFactory;
+import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
 /**
  * ZookeeperRegistryFactory.

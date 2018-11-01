@@ -26,15 +26,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *  2015/1/27.
+ * 2015/1/27.
  */
 public final class ClassUtils {
 
     /**
      * Get the code source file or class path of the Class passed in.
      *
-     * @param clazz
-     *            Class to find.
+     * @param clazz Class to find.
      * @return Jar file name or class path.
      */
     public static String getCodeSource(Class<?> clazz) {
@@ -60,8 +59,7 @@ public final class ClassUtils {
     /**
      * Get all non-static fields of the Class passed in or its super classes.
      *
-     * @param clazz
-     *            Class to parse.
+     * @param clazz Class to parse.
      * @return field list
      */
     public static List<Field> getNonStaticFields(final Class<?> clazz) {
@@ -90,8 +88,7 @@ public final class ClassUtils {
     /**
      * Get all public, non-static methods of the Class passed in.
      *
-     * @param clazz
-     *            Class to parse.
+     * @param clazz Class to parse.
      * @return methods list
      */
     public static List<Method> getPublicNonStaticMethods(final Class<?> clazz) {
