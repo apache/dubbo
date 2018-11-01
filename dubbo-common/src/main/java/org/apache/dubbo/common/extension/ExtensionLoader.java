@@ -535,8 +535,7 @@ public class ExtensionLoader<T> {
                         /**
                          * Check {@link DisableInject} to see if we need auto injection for this property
                          */
-                        DisableInject inject = method.getAnnotation(DisableInject.class);
-                        if (inject != null && inject.disable()) {
+                        if (method.getAnnotation(DisableInject.class) != null) {
                             continue;
                         }
                         Class<?> pt = method.getParameterTypes()[0];
