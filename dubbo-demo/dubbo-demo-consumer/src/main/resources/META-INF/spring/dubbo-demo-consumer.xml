@@ -21,14 +21,6 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
        http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
 
-    <!-- consumer's application name, used for tracing dependency relationship (not a matching criterion),
-    don't set it same as provider -->
-    <dubbo:application name="demo-consumer">
-        <dubbo:parameter key="config.type" value="zookeeper"/>
-        <dubbo:parameter key="config.address" value="127.0.0.1:2181"/>
-        <dubbo:parameter key="config.check" value="true"/>
-    </dubbo:application>
-
     <!-- use multicast registry center to discover service -->
     <dubbo:registry address="zookeeper://127.0.0.1:2181" default="true"/>
     <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
