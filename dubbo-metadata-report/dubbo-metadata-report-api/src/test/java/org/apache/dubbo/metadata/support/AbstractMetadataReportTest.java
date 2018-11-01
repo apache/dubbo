@@ -27,6 +27,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -208,11 +209,12 @@ public class AbstractMetadataReportTest {
 
     @Test
     public void testCalculateStartTime() {
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 300; i++) {
             long t = abstractMetadataReport.calculateStartTime() + System.currentTimeMillis();
-            Date date = new Date(t);
-            Assert.assertTrue(date.getHours() >= 2);
-            Assert.assertTrue(date.getHours() <= 6);
+            Calendar c = Calendar.getInstance();
+            c.setTimeInMillis(t);
+            Assert.assertTrue(c.get(Calendar.HOUR_OF_DAY) >= 2);
+            Assert.assertTrue(c.get(Calendar.HOUR_OF_DAY) <= 6);
         }
     }
 
