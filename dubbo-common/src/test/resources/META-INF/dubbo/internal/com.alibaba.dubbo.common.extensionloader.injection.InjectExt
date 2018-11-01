@@ -1,0 +1,1 @@
+injection=com.alibaba.dubbo.common.extensionloader.injection.impl.InjectExtImpl
