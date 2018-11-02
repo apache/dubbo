@@ -16,7 +16,14 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
-import org.apache.dubbo.common.Constants;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.util.concurrent.DefaultThreadFactory;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -28,17 +35,6 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.Server;
 import org.apache.dubbo.remoting.transport.AbstractServer;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
-
-import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.util.concurrent.DefaultThreadFactory;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
@@ -52,7 +48,7 @@ public class NettyServer extends AbstractServer implements Server {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyServer.class);
 
-    private Map<String, Channel> channels; // <ip:port, channel>
+    private Map<String, Channel> channels; // <ip:port, serverChannel>
 
     private ServerBootstrap bootstrap;
 
@@ -61,29 +57,31 @@ public class NettyServer extends AbstractServer implements Server {
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
 
+    private NettySupport nettySupport;
+
     public NettyServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, ChannelHandlers.wrap(handler, ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME)));
     }
 
     @Override
     protected void doOpen() throws Throwable {
+        nettySupport = new NettySupport(getUrl());
         bootstrap = new ServerBootstrap();
 
-        bossGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("NettyServerBoss", true));
-        workerGroup = new NioEventLoopGroup(getUrl().getPositiveParameter(Constants.IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS),
-                new DefaultThreadFactory("NettyServerWorker", true));
+        bossGroup = nettySupport.eventLoopGroup(1, new DefaultThreadFactory("NettyServerBoss", true));
+        workerGroup = nettySupport.eventLoopGroup(new DefaultThreadFactory("NettyServerWorker", true));
 
         final NettyServerHandler nettyServerHandler = new NettyServerHandler(getUrl(), this);
         channels = nettyServerHandler.getChannels();
 
         bootstrap.group(bossGroup, workerGroup)
-                .channel(NioServerSocketChannel.class)
+                .channel(nettySupport.serverChannel())
                 .childOption(ChannelOption.TCP_NODELAY, Boolean.TRUE)
                 .childOption(ChannelOption.SO_REUSEADDR, Boolean.TRUE)
                 .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .childHandler(new ChannelInitializer<NioSocketChannel>() {
+                .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
-                    protected void initChannel(NioSocketChannel ch) throws Exception {
+                    protected void initChannel(SocketChannel ch) throws Exception {
                         NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyServer.this);
                         ch.pipeline()//.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
                                 .addLast("decoder", adapter.getDecoder())

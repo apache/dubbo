@@ -121,7 +121,7 @@ public class DubboProtocol extends AbstractProtocol {
             }
             throw new RemotingException(channel, "Unsupported request: "
                     + (message == null ? null : (message.getClass().getName() + ": " + message))
-                    + ", channel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress());
+                    + ", serverChannel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress());
         }
 
         @Override
@@ -226,7 +226,7 @@ public class DubboProtocol extends AbstractProtocol {
         DubboExporter<?> exporter = (DubboExporter<?>) exporterMap.get(serviceKey);
 
         if (exporter == null) {
-            throw new RemotingException(channel, "Not found exported service: " + serviceKey + " in " + exporterMap.keySet() + ", may be version or group mismatch " + ", channel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress() + ", message:" + inv);
+            throw new RemotingException(channel, "Not found exported service: " + serviceKey + " in " + exporterMap.keySet() + ", may be version or group mismatch " + ", serverChannel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress() + ", message:" + inv);
         }
 
         return exporter.getInvoker();

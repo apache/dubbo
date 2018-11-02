@@ -16,6 +16,14 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
+import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.util.concurrent.DefaultThreadFactory;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
@@ -26,17 +34,9 @@ import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.transport.AbstractClient;
 
-import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.util.concurrent.DefaultThreadFactory;
-
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * NettyClient.
@@ -45,11 +45,17 @@ public class NettyClient extends AbstractClient {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyClient.class);
 
-    private static final NioEventLoopGroup nioEventLoopGroup = new NioEventLoopGroup(Constants.DEFAULT_IO_THREADS, new DefaultThreadFactory("NettyClientWorker", true));
+    private static EventLoopGroup eventLoopGroup;
 
     private Bootstrap bootstrap;
 
     private volatile Channel channel; // volatile, please copy reference to use
+
+    private NettySupport nettySupport;
+
+    private static volatile boolean initialized; // recored client global event loop group status.
+
+    private final static Lock lock = new ReentrantLock();
 
     public NettyClient(final URL url, final ChannelHandler handler) throws RemotingException {
         super(url, wrapChannelHandler(url, handler));
@@ -58,13 +64,16 @@ public class NettyClient extends AbstractClient {
     @Override
     protected void doOpen() throws Throwable {
         final NettyClientHandler nettyClientHandler = new NettyClientHandler(getUrl(), this);
+        nettySupport = new NettySupport(getUrl());
+        ensureEventLoopGroupInitialized();
+
         bootstrap = new Bootstrap();
-        bootstrap.group(nioEventLoopGroup)
+        bootstrap.group(eventLoopGroup)
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 //.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getTimeout())
-                .channel(NioSocketChannel.class);
+                .channel(nettySupport.clientChannel());
 
         if (getConnectTimeout() < 3000) {
             bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 3000);
@@ -85,6 +94,19 @@ public class NettyClient extends AbstractClient {
         });
     }
 
+    private void ensureEventLoopGroupInitialized() {
+        if (initialized) return;
+
+        lock.lock();
+        try {
+            eventLoopGroup = nettySupport.eventLoopGroup(Constants.DEFAULT_IO_THREADS,
+                    new DefaultThreadFactory("NettyClientWorker", true));
+            initialized = true;
+        } finally {
+            lock.unlock();
+        }
+    }
+
     @Override
     protected void doConnect() throws Throwable {
         long start = System.currentTimeMillis();
@@ -95,12 +117,12 @@ public class NettyClient extends AbstractClient {
             if (ret && future.isSuccess()) {
                 Channel newChannel = future.channel();
                 try {
-                    // Close old channel
+                    // Close old serverChannel
                     Channel oldChannel = NettyClient.this.channel; // copy reference
                     if (oldChannel != null) {
                         try {
                             if (logger.isInfoEnabled()) {
-                                logger.info("Close old netty channel " + oldChannel + " on create new netty channel " + newChannel);
+                                logger.info("Close old netty serverChannel " + oldChannel + " on create new netty serverChannel " + newChannel);
                             }
                             oldChannel.close();
                         } finally {
@@ -111,7 +133,7 @@ public class NettyClient extends AbstractClient {
                     if (NettyClient.this.isClosed()) {
                         try {
                             if (logger.isInfoEnabled()) {
-                                logger.info("Close new netty channel " + newChannel + ", because the client closed.");
+                                logger.info("Close new netty serverChannel " + newChannel + ", because the client closed.");
                             }
                             newChannel.close();
                         } finally {
@@ -149,8 +171,8 @@ public class NettyClient extends AbstractClient {
 
     @Override
     protected void doClose() throws Throwable {
-        //can't shutdown nioEventLoopGroup
-        //nioEventLoopGroup.shutdownGracefully();
+        //can't shutdown eventLoopGroup
+        //eventLoopGroup.shutdownGracefully();
     }
 
     @Override

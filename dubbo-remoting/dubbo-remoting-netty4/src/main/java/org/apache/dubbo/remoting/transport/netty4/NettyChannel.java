@@ -48,7 +48,7 @@ final class NettyChannel extends AbstractChannel {
     private NettyChannel(Channel channel, URL url, ChannelHandler handler) {
         super(url, handler);
         if (channel == null) {
-            throw new IllegalArgumentException("netty channel == null;");
+            throw new IllegalArgumentException("netty serverChannel == null;");
         }
         this.channel = channel;
     }
@@ -136,7 +136,7 @@ final class NettyChannel extends AbstractChannel {
         }
         try {
             if (logger.isInfoEnabled()) {
-                logger.info("Close netty channel " + channel);
+                logger.info("Close netty serverChannel " + channel);
             }
             channel.close();
         } catch (Exception e) {
@@ -200,7 +200,7 @@ final class NettyChannel extends AbstractChannel {
 
     @Override
     public String toString() {
-        return "NettyChannel [channel=" + channel + "]";
+        return "NettyChannel [serverChannel=" + channel + "]";
     }
 
 }

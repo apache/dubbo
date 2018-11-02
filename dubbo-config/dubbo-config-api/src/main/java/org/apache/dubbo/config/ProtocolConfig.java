@@ -136,6 +136,8 @@ public class ProtocolConfig extends AbstractConfig {
     // if it's default
     private Boolean isDefault;
 
+    private Boolean isEpoll;
+
     public ProtocolConfig() {
     }
 
@@ -463,6 +465,14 @@ public class ProtocolConfig extends AbstractConfig {
 
     public void setExtension(String extension) {
         this.extension = extension;
+    }
+
+    public Boolean isEpoll() {
+        return isEpoll;
+    }
+
+    public void setEpoll(Boolean epoll) {
+        isEpoll = epoll;
     }
 
     public void destroy() {

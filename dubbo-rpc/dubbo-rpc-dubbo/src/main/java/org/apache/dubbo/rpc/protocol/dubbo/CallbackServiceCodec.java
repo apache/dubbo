@@ -98,11 +98,11 @@ class CallbackServiceCodec {
         tmpmap.put(Constants.INTERFACE_KEY, clazz.getName());
         URL exporturl = new URL(DubboProtocol.NAME, channel.getLocalAddress().getAddress().getHostAddress(), channel.getLocalAddress().getPort(), clazz.getName() + "." + instid, tmpmap);
 
-        // no need to generate multiple exporters for different channel in the same JVM, cache key cannot collide.
+        // no need to generate multiple exporters for different serverChannel in the same JVM, cache key cannot collide.
         String cacheKey = getClientSideCallbackServiceCacheKey(instid);
         String countkey = getClientSideCountKey(clazz.getName());
         if (export) {
-            // one channel can have multiple callback instances, no need to re-export for different instance.
+            // one serverChannel can have multiple callback instances, no need to re-export for different instance.
             if (!channel.hasAttribute(cacheKey)) {
                 if (!isInstancesOverLimit(channel, url, clazz.getName(), instid, false)) {
                     Invoker<?> invoker = proxyFactory.getInvoker(inst, clazz, exporturl);
@@ -207,7 +207,7 @@ class CallbackServiceCodec {
         if (count != null && count >= limit) {
             //client side error
             throw new IllegalStateException("interface " + interfaceClass + " `s callback instances num exceed providers limit :" + limit
-                    + " ,current num: " + (count + 1) + ". The new callback service will not work !!! you can cancle the callback service which exported before. channel :" + channel);
+                    + " ,current num: " + (count + 1) + ". The new callback service will not work !!! you can cancle the callback service which exported before. serverChannel :" + channel);
         } else {
             return false;
         }
@@ -263,8 +263,8 @@ class CallbackServiceCodec {
     }
 
     public static Object decodeInvocationArgument(Channel channel, RpcInvocation inv, Class<?>[] pts, int paraIndex, Object inObject) throws IOException {
-        // if it's a callback, create proxy on client side, callback interface on client side can be invoked through channel
-        // need get URL from channel and env when decode
+        // if it's a callback, create proxy on client side, callback interface on client side can be invoked through serverChannel
+        // need get URL from serverChannel and env when decode
         URL url = null;
         try {
             url = DubboProtocol.getDubboProtocol().getInvoker(channel, inv).getUrl();
