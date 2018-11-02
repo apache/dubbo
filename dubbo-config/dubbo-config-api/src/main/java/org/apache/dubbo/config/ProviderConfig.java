@@ -109,6 +109,8 @@ public class ProviderConfig extends AbstractServiceConfig {
     // if it's default
     private Boolean isDefault;
 
+    private Boolean isEpoll;
+
     @Deprecated
     public void setProtocol(String protocol) {
         this.protocols = Arrays.asList(new ProtocolConfig[]{new ProtocolConfig(protocol)});
@@ -380,4 +382,11 @@ public class ProviderConfig extends AbstractServiceConfig {
         this.wait = wait;
     }
 
+    public Boolean getEpoll() {
+        return isEpoll;
+    }
+
+    public void setEpoll(Boolean epoll) {
+        isEpoll = epoll;
+    }
 }

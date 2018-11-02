@@ -43,6 +43,8 @@ public class ConsumerConfig extends AbstractReferenceConfig {
     // consumer threadpool queue size
     private Integer queues;
 
+    private Boolean isEpoll;
+
     @Override
     public void setTimeout(Integer timeout) {
         super.setTimeout(timeout);
@@ -103,5 +105,13 @@ public class ConsumerConfig extends AbstractReferenceConfig {
 
     public void setQueues(Integer queues) {
         this.queues = queues;
+    }
+
+    public Boolean getEpoll() {
+        return isEpoll;
+    }
+
+    public void setEpoll(Boolean epoll) {
+        isEpoll = epoll;
     }
 }
