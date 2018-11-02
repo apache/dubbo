@@ -14,32 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc;
+
+package org.apache.dubbo.common.serialize.protostuff;
 
 /**
- * TODO this is just a workaround for rest protocol, and now we just ensure it works in the most common dubbo usages
- *
+ * Protostuff can only serialize/deserialize POJOs, for those it can't deal with, use this Wrapper.
  */
-public class ServiceClassHolder {
+public class Wrapper<T> {
+    private T data;
 
-    private static final ServiceClassHolder INSTANCE = new ServiceClassHolder();
-
-    private final ThreadLocal<Class> holder  = new ThreadLocal<Class>();
-
-    public static ServiceClassHolder getInstance() {
-        return INSTANCE;
+    Wrapper(T data) {
+        this.data = data;
     }
 
-    private ServiceClassHolder() {
-    }
-
-    public Class popServiceClass() {
-        Class clazz = holder.get();
-        holder.remove();
-        return clazz;
-    }
-
-    public void pushServiceClass(Class clazz) {
-        holder.set(clazz);
+    Object getData() {
+        return data;
     }
 }

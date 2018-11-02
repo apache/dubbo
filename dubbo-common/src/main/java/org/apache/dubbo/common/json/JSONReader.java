@@ -57,10 +57,12 @@ public class JSONReader {
 
     public JSONToken nextToken(int expect) throws IOException, ParseException {
         JSONToken ret = mLex.yylex();
-        if (ret == null)
+        if (ret == null) {
             throw new ParseException("EOF error.");
-        if (expect != JSONToken.ANY && expect != ret.type)
+        }
+        if (expect != JSONToken.ANY && expect != ret.type) {
             throw new ParseException("Unexpected token.");
+        }
         return ret;
     }
 }
