@@ -100,8 +100,10 @@ public class SpringExtensionFactory implements ExtensionFactory {
         @Override
         public void onApplicationEvent(ApplicationEvent event) {
             if (event instanceof ContextClosedEvent) {
+                // we call it anyway since dubbo shutdown hook make sure its destroyAll() is re-entrant.
+                // pls. note we should not remove dubbo shutdown hook when spring framework is present, this is because
+                // its shutdown hook may not be installed.
                 DubboShutdownHook shutdownHook = DubboShutdownHook.getDubboShutdownHook();
-                Runtime.getRuntime().removeShutdownHook(shutdownHook);
                 shutdownHook.destroyAll();
             }
         }

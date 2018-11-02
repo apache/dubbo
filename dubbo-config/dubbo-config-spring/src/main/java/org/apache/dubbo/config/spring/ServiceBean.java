@@ -233,8 +233,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
 
     @Override
     public void destroy() throws Exception {
-        // This will only be called for singleton scope bean, and expected to be called by spring shutdown hook when BeanFactory/ApplicationContext destroys.
-        unexport();
+        // no need to export here, see org.apache.dubbo.config.spring.extension.SpringExtensionFactory.ShutdownHookListener
     }
 
     // merged from dubbox
