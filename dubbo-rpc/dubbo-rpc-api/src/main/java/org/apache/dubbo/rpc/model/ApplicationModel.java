@@ -23,7 +23,15 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-// adjust project structure in order to fully utilize the methods introduced here.
+/**
+ * Represent a application which is using Dubbo and store basic metadata info for using
+ * during the processing of RPC invoking.
+ *
+ * ApplicationModel includes many ProviderModel which is about published services
+ * and many Consumer Model which is about subscribed services.
+ *
+ * adjust project structure in order to fully utilize the methods introduced here.
+ */
 public class ApplicationModel {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(ApplicationModel.class);

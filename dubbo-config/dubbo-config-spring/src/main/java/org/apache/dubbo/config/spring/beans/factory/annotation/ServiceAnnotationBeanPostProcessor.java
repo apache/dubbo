@@ -261,7 +261,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         if (scanner.checkCandidate(beanName, serviceBeanDefinition)) { // check duplicated candidate bean
             registry.registerBeanDefinition(beanName, serviceBeanDefinition);
 
-            if (logger.isInfoEnabled()) {
+            if (logger.isWarnEnabled()) {
                 logger.warn("The BeanDefinition[" + serviceBeanDefinition +
                         "] of ServiceBean has been registered with name : " + beanName);
             }

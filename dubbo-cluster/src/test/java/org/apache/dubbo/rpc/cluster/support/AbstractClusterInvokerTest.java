@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.cluster.loadbalance.LeastActiveLoadBalance;
 import org.apache.dubbo.rpc.cluster.loadbalance.RandomLoadBalance;
 import org.apache.dubbo.rpc.cluster.loadbalance.RoundRobinLoadBalance;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -72,6 +73,11 @@ public class AbstractClusterInvokerTest {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
+    }
+
+    @After
+    public void teardown() throws Exception {
+        RpcContext.getContext().clearAttachments();
     }
 
     @SuppressWarnings({"unchecked"})
