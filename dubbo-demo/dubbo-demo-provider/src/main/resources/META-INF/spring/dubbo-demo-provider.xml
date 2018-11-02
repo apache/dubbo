@@ -27,10 +27,10 @@
 
     <!--<dubbo:registry group="dubboregistrygroup1" address="zookeeper://127.0.0.1:2181" simple="false">
     </dubbo:registry>-->
-    <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
+    <dubbo:registry address="zookeeper://127.0.0.1:2181" />
 
     <!--<dubbo:servicestore address="zookeeper://127.0.0.1:2181"/>-->
-    <dubbo:configcenter type="zookeeper" address="127.0.0.1:2181" namespace="dubboregistrygroup1"
+    <dubbo:configcenter type="zookeeper" address="127.0.0.1:2181"
                         dataid="dubbo.properties"/>
 
     <!-- use dubbo protocol to export service on port 20880 -->
@@ -40,6 +40,6 @@
     <bean id="demoService" class="org.apache.dubbo.demo.provider.DemoServiceImpl"/>
 
     <!-- declare the service interface to be exported -->
-    <dubbo:service interface="org.apache.dubbo.demo.DemoService" ref="demoService"/>
+    <dubbo:service interface="org.apache.dubbo.demo.DemoService" ref="demoService" version="1.0.4" group="dd-test"/>
 
 </beans>
