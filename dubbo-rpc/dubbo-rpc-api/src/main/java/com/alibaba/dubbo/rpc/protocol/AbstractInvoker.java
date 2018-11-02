@@ -124,11 +124,12 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
 
     @Override
     public Result invoke(Invocation inv) throws RpcException {
+        // if invoker is destroyed due to address refresh from registry, let's allow the current invoke to proceed
         if (destroyed.get()) {
-            throw new RpcException("Rpc invoker for service " + this + " on consumer " + NetUtils.getLocalHost()
-                    + " use dubbo version " + Version.getVersion()
-                    + " is DESTROYED, can not be invoked any more!");
+            logger.warn("Invoker for service " + this + " on consumer " + NetUtils.getLocalHost() + " is destroyed, "
+                    + ", dubbo version is " + Version.getVersion() + ", this invoker should not be used any longer");
         }
+
         RpcInvocation invocation = (RpcInvocation) inv;
         invocation.setInvoker(this);
         if (attachment != null && attachment.size() > 0) {

@@ -14,13 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.config.spring.context.annotation.provider;
+package com.alibaba.dubbo.config.spring.beans.factory.annotation;
 
 import com.alibaba.dubbo.config.ApplicationConfig;
 import com.alibaba.dubbo.config.ProtocolConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
-import com.alibaba.dubbo.config.spring.context.annotation.DubboComponentScan;
+import com.alibaba.dubbo.config.annotation.Service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
@@ -28,12 +29,14 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-@DubboComponentScan(basePackages = "com.alibaba.dubbo.config.spring.context.annotation.provider")
+/**
+ * {@link Service} Bean
+ *
+ * @since 2.6.5
+ */
 @PropertySource("META-INF/default.properties")
-@EnableTransactionManagement
-public class ProviderConfiguration {
+public class ServiceAnnotationTestConfiguration {
 
     /**
      * Current application configuration, to replace XML config:
@@ -103,5 +106,10 @@ public class ProviderConfiguration {
         };
     }
 
-}
+    @Bean
+    public ServiceAnnotationBeanPostProcessor serviceAnnotationBeanPostProcessor
+            (@Value("${packagesToScan}") String... packagesToScan) {
+        return new ServiceAnnotationBeanPostProcessor(packagesToScan);
+    }
 
+}

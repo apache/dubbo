@@ -16,20 +16,10 @@
  */
 package com.alibaba.dubbo.config.spring.util;
 
-import org.springframework.core.env.PropertyResolver;
+import com.alibaba.dubbo.config.annotation.Reference;
+import com.alibaba.dubbo.config.annotation.Service;
 
-import java.lang.annotation.Annotation;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-
-import static java.lang.String.valueOf;
-import static org.springframework.core.annotation.AnnotationUtils.getAnnotationAttributes;
-import static org.springframework.core.annotation.AnnotationUtils.getDefaultValue;
-import static org.springframework.util.CollectionUtils.arrayToList;
-import static org.springframework.util.ObjectUtils.nullSafeEquals;
-import static org.springframework.util.StringUtils.trimAllWhitespace;
+import org.springframework.util.StringUtils;
 
 /**
  * Annotation Utilities Class
@@ -39,50 +29,43 @@ import static org.springframework.util.StringUtils.trimAllWhitespace;
  */
 public class AnnotationUtils {
 
-    /**
-     * Get {@link Annotation} attributes
-     *
-     * @param annotation
-     * @param propertyResolver
-     * @param ignoreDefaultValue
-     * @return non-null
-     */
-    public static Map<String, Object> getAttributes(Annotation annotation, PropertyResolver propertyResolver,
-                                                    boolean ignoreDefaultValue, String... ignoreAttributeNames) {
+    public static String resolveInterfaceName(Service service, Class<?> defaultInterfaceClass)
+            throws IllegalStateException {
 
-        Set<String> ignoreAttributeNamesSet = new HashSet<String>(arrayToList(ignoreAttributeNames));
-
-        Map<String, Object> attributes = getAnnotationAttributes(annotation);
-
-        Map<String, Object> actualAttributes = new LinkedHashMap<String, Object>();
-
-        boolean requiredResolve = propertyResolver != null;
-
-        for (Map.Entry<String, Object> entry : attributes.entrySet()) {
-
-            String attributeName = entry.getKey();
-            Object attributeValue = entry.getValue();
-
-            // ignore default attribute value
-            if (ignoreDefaultValue && nullSafeEquals(attributeValue, getDefaultValue(annotation, attributeName))) {
-                continue;
-            }
-
-            // ignore attribute name
-            if (ignoreAttributeNamesSet.contains(attributeName)) {
-                continue;
-            }
-
-            if (requiredResolve && attributeValue instanceof String) { // Resolve Placeholder
-                String resolvedValue = propertyResolver.resolvePlaceholders(valueOf(attributeValue));
-                attributeValue = trimAllWhitespace(resolvedValue);
-            }
-
-            actualAttributes.put(attributeName, attributeValue);
-
+        String interfaceName;
+        if (StringUtils.hasText(service.interfaceName())) {
+            interfaceName = service.interfaceName();
+        } else if (!void.class.equals(service.interfaceClass())) {
+            interfaceName = service.interfaceClass().getName();
+        } else if (defaultInterfaceClass.isInterface()) {
+            interfaceName = defaultInterfaceClass.getName();
+        } else {
+            throw new IllegalStateException(
+                    "The @Service undefined interfaceClass or interfaceName, and the type "
+                            + defaultInterfaceClass.getName() + " is not a interface.");
         }
 
-        return actualAttributes;
+        return interfaceName;
+
+    }
+
+    public static String resolveInterfaceName(Reference reference, Class<?> defaultInterfaceClass)
+            throws IllegalStateException {
+
+        String interfaceName;
+        if (!"".equals(reference.interfaceName())) {
+            interfaceName = reference.interfaceName();
+        } else if (!void.class.equals(reference.interfaceClass())) {
+            interfaceName = reference.interfaceClass().getName();
+        } else if (defaultInterfaceClass.isInterface()) {
+            interfaceName = defaultInterfaceClass.getName();
+        } else {
+            throw new IllegalStateException(
+                    "The @Reference undefined interfaceClass or interfaceName, and the type "
+                            + defaultInterfaceClass.getName() + " is not a interface.");
+        }
+
+        return interfaceName;
 
     }
 

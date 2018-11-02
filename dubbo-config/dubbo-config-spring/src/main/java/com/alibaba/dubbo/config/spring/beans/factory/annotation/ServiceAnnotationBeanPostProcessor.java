@@ -21,6 +21,7 @@ import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.dubbo.config.spring.ServiceBean;
 import com.alibaba.dubbo.config.spring.context.annotation.DubboClassPathBeanDefinitionScanner;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -56,7 +57,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import static com.alibaba.dubbo.config.spring.util.ObjectUtils.of;
+import static com.alibaba.spring.util.ObjectUtils.of;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 import static org.springframework.context.annotation.AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR;
 import static org.springframework.core.annotation.AnnotationUtils.findAnnotation;
@@ -71,7 +72,6 @@ import static org.springframework.util.ClassUtils.resolveClassName;
 public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistryPostProcessor, EnvironmentAware,
         ResourceLoaderAware, BeanClassLoaderAware {
 
-    private static final String SEPARATOR = ":";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -289,27 +289,10 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
      */
     private String generateServiceBeanName(Service service, Class<?> interfaceClass, String annotatedServiceBeanName) {
 
-        StringBuilder beanNameBuilder = new StringBuilder(ServiceBean.class.getSimpleName());
+        ServiceBeanNameBuilder builder = ServiceBeanNameBuilder.create(service, interfaceClass, environment);
 
-        beanNameBuilder.append(SEPARATOR).append(annotatedServiceBeanName);
 
-        String interfaceClassName = interfaceClass.getName();
-
-        beanNameBuilder.append(SEPARATOR).append(interfaceClassName);
-
-        String version = service.version();
-
-        if (StringUtils.hasText(version)) {
-            beanNameBuilder.append(SEPARATOR).append(version);
-        }
-
-        String group = service.group();
-
-        if (StringUtils.hasText(group)) {
-            beanNameBuilder.append(SEPARATOR).append(group);
-        }
-
-        return beanNameBuilder.toString();
+        return builder.build();
 
     }
 

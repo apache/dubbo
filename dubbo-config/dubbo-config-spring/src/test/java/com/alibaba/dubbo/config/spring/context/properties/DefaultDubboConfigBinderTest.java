@@ -18,23 +18,49 @@ package com.alibaba.dubbo.config.spring.context.properties;
 
 
 import com.alibaba.dubbo.config.ApplicationConfig;
+import com.alibaba.dubbo.config.ConsumerConfig;
 import com.alibaba.dubbo.config.ProtocolConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
+import com.alibaba.dubbo.config.spring.beans.factory.config.YamlPropertySourceFactory;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @TestPropertySource(locations = "classpath:/dubbo.properties")
-@ContextConfiguration(classes = DefaultDubboConfigBinder.class)
+@PropertySource(name = "yaml-source", value = {"classpath:/META-INF/dubbo.yml"}, factory = YamlPropertySourceFactory.class)
+@Configuration
+@ContextConfiguration(classes = {DefaultDubboConfigBinder.class, DefaultDubboConfigBinderTest.class})
 public class DefaultDubboConfigBinderTest {
 
     @Autowired
     private DubboConfigBinder dubboConfigBinder;
+
+    @Value("${dubbo.consumer.default}")
+    private Boolean isDefault;
+
+    @Value("${dubbo.consumer.client}")
+    private String client;
+
+    @Value("${dubbo.consumer.threadpool}")
+    private String threadPool;
+
+    @Value("${dubbo.consumer.corethreads}")
+    private Integer coreThreads;
+
+    @Value("${dubbo.consumer.threads}")
+    private Integer threads;
+
+    @Value("${dubbo.consumer.queues}")
+    private Integer queues;
 
     @Test
     public void testBinder() {
@@ -52,5 +78,15 @@ public class DefaultDubboConfigBinderTest {
         dubboConfigBinder.bind("dubbo.protocol", protocolConfig);
         Assert.assertEquals(Integer.valueOf(20881), protocolConfig.getPort());
 
+        ConsumerConfig consumerConfig = new ConsumerConfig();
+        dubboConfigBinder.bind("dubbo.consumer", consumerConfig);
+
+        Assert.assertEquals(isDefault, consumerConfig.isDefault());
+        Assert.assertEquals(client, consumerConfig.getClient());
+        Assert.assertEquals(threadPool, consumerConfig.getThreadpool());
+        Assert.assertEquals(coreThreads, consumerConfig.getCorethreads());
+        Assert.assertEquals(threads, consumerConfig.getThreads());
+        Assert.assertEquals(queues, consumerConfig.getQueues());
     }
 }
+
