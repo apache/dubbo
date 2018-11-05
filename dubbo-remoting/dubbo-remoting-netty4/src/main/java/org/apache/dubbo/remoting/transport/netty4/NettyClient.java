@@ -34,9 +34,8 @@ import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.transport.AbstractClient;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * NettyClient.
@@ -45,17 +44,17 @@ public class NettyClient extends AbstractClient {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyClient.class);
 
-    private static EventLoopGroup eventLoopGroup;
-
     private Bootstrap bootstrap;
 
     private volatile Channel channel; // volatile, please copy reference to use
 
     private NettySupport nettySupport;
 
-    private static volatile boolean initialized; // recored client global event loop group status.
-
-    private final static Lock lock = new ReentrantLock();
+    /**
+     * Epoll and nio may exist at the same time,
+     * key = [Epoll|Nio]SocketChannel, value = eventLoopGroup
+     */
+    private final static ConcurrentHashMap<Class, EventLoopGroup> eventLoopGroups = new ConcurrentHashMap<>();
 
     public NettyClient(final URL url, final ChannelHandler handler) throws RemotingException {
         super(url, wrapChannelHandler(url, handler));
@@ -65,10 +64,9 @@ public class NettyClient extends AbstractClient {
     protected void doOpen() throws Throwable {
         final NettyClientHandler nettyClientHandler = new NettyClientHandler(getUrl(), this);
         nettySupport = new NettySupport(getUrl());
-        ensureEventLoopGroupInitialized();
 
         bootstrap = new Bootstrap();
-        bootstrap.group(eventLoopGroup)
+        bootstrap.group(eventLoopGroup())
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
@@ -94,16 +92,23 @@ public class NettyClient extends AbstractClient {
         });
     }
 
-    private void ensureEventLoopGroupInitialized() {
-        if (initialized) return;
+    private EventLoopGroup eventLoopGroup() {
 
-        lock.lock();
-        try {
-            eventLoopGroup = nettySupport.eventLoopGroup(Constants.DEFAULT_IO_THREADS,
+        EventLoopGroup group = eventLoopGroups.get(nettySupport.clientChannel());
+        if (group != null) return group;
+
+        synchronized (eventLoopGroups) {
+
+            // double check
+            group = eventLoopGroups.get(nettySupport.clientChannel());
+            if (group != null) {
+                return group;
+            }
+
+            group = nettySupport.eventLoopGroup(Constants.DEFAULT_IO_THREADS,
                     new DefaultThreadFactory("NettyClientWorker", true));
-            initialized = true;
-        } finally {
-            lock.unlock();
+            eventLoopGroups.put(nettySupport.clientChannel(), group);
+            return group;
         }
     }
 
