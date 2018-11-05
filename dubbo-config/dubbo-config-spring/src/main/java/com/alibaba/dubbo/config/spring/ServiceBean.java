@@ -56,8 +56,6 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
 
     private static final long serialVersionUID = 213195494150089726L;
 
-    private static transient ApplicationContext SPRING_CONTEXT;
-
     private final transient Service service;
 
     private transient ApplicationContext applicationContext;
@@ -76,10 +74,6 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
     public ServiceBean(Service service) {
         super(service);
         this.service = service;
-    }
-
-    public static ApplicationContext getSpringContext() {
-        return SPRING_CONTEXT;
     }
 
     @Override
