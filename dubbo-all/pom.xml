@@ -327,13 +327,6 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-bootstrap</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-compatible</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
@@ -439,7 +432,6 @@
                                     <include>org.apache.dubbo:dubbo-serialization-kryo</include>
                                     <include>org.apache.dubbo:dubbo-serialization-jdk</include>
                                     <include>org.apache.dubbo:dubbo-serialization-protostuff</include>
-                                    <include>org.apache.dubbo:dubbo-bootstrap</include>
                                 </includes>
                             </artifactSet>
                             <transformers>
