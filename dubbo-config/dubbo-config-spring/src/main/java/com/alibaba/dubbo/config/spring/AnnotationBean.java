@@ -28,7 +28,6 @@ import com.alibaba.dubbo.config.ModuleConfig;
 import com.alibaba.dubbo.config.MonitorConfig;
 import com.alibaba.dubbo.config.ProtocolConfig;
 import com.alibaba.dubbo.config.ProviderConfig;
-import com.alibaba.dubbo.config.ReferenceConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.ServiceConfig;
 import com.alibaba.dubbo.config.annotation.Reference;
@@ -112,17 +111,16 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
 
     @Override
     public void destroy() {
-
-        //  This will only be called for singleton scope bean, and expected to be called by spring shutdown hook when BeanFactory/ApplicationContext destroys.
-        //  We will guarantee dubbo related resources being released with dubbo shutdown hook.
-
-        //  for (ServiceConfig<?> serviceConfig : serviceConfigs) {
-        //      try {
-        //          serviceConfig.unexport();
-        //      } catch (Throwable e) {
-        //          logger.error(e.getMessage(), e);
-        //      }
-        //  }
+        // no need to destroy here
+        // see org.apache.dubbo.config.spring.extension.SpringExtensionFactory.ShutdownHookListener
+        /*
+        for (ServiceConfig<?> serviceConfig : serviceConfigs) {
+            try {
+                serviceConfig.unexport();
+            } catch (Throwable e) {
+                logger.error(e.getMessage(), e);
+            }
+        }
 
         for (ReferenceConfig<?> referenceConfig : referenceConfigs.values()) {
             try {
@@ -131,6 +129,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                 logger.error(e.getMessage(), e);
             }
         }
+        */
     }
 
     @Override
