@@ -55,19 +55,20 @@ public class ZookeeperMetadataReportTest {
         String application = "vic.zk.md";
         ProviderMetadataIdentifier providerMetadataIdentifier = storePrivider(zookeeperMetadataReport, interfaceName, version, group, application);
 
-        List<String> files = zookeeperMetadataReport.zkClient.getChildren(zookeeperMetadataReport.getCategory(providerMetadataIdentifier));
-        Assert.assertTrue(!files.isEmpty());
+        String fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(providerMetadataIdentifier));
+        Assert.assertNotNull(fileContent);
 
         deletePath(providerMetadataIdentifier, zookeeperMetadataReport);
-        files = zookeeperMetadataReport.zkClient.getChildren(zookeeperMetadataReport.getCategory(providerMetadataIdentifier));
-        Assert.assertTrue(files.isEmpty());
+        fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(providerMetadataIdentifier));
+        Assert.assertNull(fileContent);
+
 
         providerMetadataIdentifier = storePrivider(zookeeperMetadataReport, interfaceName, version, group, application);
-        files = zookeeperMetadataReport.zkClient.getChildren(zookeeperMetadataReport.getCategory(providerMetadataIdentifier));
-        Assert.assertTrue(files.size() == 1);
-        String result = URL.decode(files.get(0));
+        fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(providerMetadataIdentifier));
+        Assert.assertNotNull(fileContent);
+
         Gson gson = new Gson();
-        FullServiceDefinition fullServiceDefinition = gson.fromJson(result, FullServiceDefinition.class);
+        FullServiceDefinition fullServiceDefinition = gson.fromJson(fileContent, FullServiceDefinition.class);
         Assert.assertEquals(fullServiceDefinition.getParameters().get("paramTest"), "zkTest");
     }
 
@@ -80,18 +81,17 @@ public class ZookeeperMetadataReportTest {
         String application = "vic.zk.md";
         ConsumerMetadataIdentifier consumerMetadataIdentifier = storeConsumer(zookeeperMetadataReport, interfaceName, version, group, application);
 
-        List<String> files = zookeeperMetadataReport.zkClient.getChildren(zookeeperMetadataReport.getCategory(consumerMetadataIdentifier));
-        Assert.assertTrue(!files.isEmpty());
+        String fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(consumerMetadataIdentifier));
+        Assert.assertNotNull(fileContent);
 
         deletePath(consumerMetadataIdentifier, zookeeperMetadataReport);
-        files = zookeeperMetadataReport.zkClient.getChildren(zookeeperMetadataReport.getCategory(consumerMetadataIdentifier));
-        Assert.assertTrue(files.isEmpty());
+        fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(consumerMetadataIdentifier));
+        Assert.assertNull(fileContent);
 
         consumerMetadataIdentifier = storeConsumer(zookeeperMetadataReport, interfaceName, version, group, application);
-        files = zookeeperMetadataReport.zkClient.getChildren(zookeeperMetadataReport.getCategory(consumerMetadataIdentifier));
-        Assert.assertTrue(files.size() == 1);
-        String result = URL.decode(files.get(0));
-        Assert.assertEquals(result, "paramConsumerTest=zkCm");
+        fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(consumerMetadataIdentifier));
+        Assert.assertNotNull(fileContent);
+        Assert.assertEquals(fileContent, "paramConsumerTest=zkCm");
     }
 
 

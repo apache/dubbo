@@ -161,6 +161,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
             }
             return new String(dataBytes, charset);
         } catch (NodeExistsException e) {
+        } catch (NoNodeException e) {
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
