@@ -24,8 +24,7 @@
     <dubbo:application name="demo-consumer"/>
 
     <!-- use multicast registry center to discover service -->
-    <!--  <dubbo:registry group="dubboregistrygroup1" address="zookeeper://127.0.0.1:2181" default="true"/>
-      <dubbo:registry group="dubboregistrygroup1" address="zookeeper://127.0.0.1:2181"/>-->
+    <dubbo:registry group="dubboregistrygroup1" address="zookeeper://127.0.0.1:2181"/>
 
     <dubbo:configcenter type="zookeeper" address="127.0.0.1:2181" namespace="dubboregistrygroup1"
                         configfile="dubbo.properties"/>
