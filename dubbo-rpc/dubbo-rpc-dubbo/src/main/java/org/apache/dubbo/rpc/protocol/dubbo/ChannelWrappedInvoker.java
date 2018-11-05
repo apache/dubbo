@@ -35,7 +35,7 @@ import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import java.net.InetSocketAddress;
 
 /**
- * Wrap the existing invoker on the serverChannel.
+ * Wrap the existing invoker on the channel.
  */
 class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
 
@@ -83,7 +83,7 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
     public void destroy() {
 //        super.destroy();
 //        try {
-//            serverChannel.close();
+//            channel.close();
 //        } catch (Throwable t) {
 //            logger.warn(t.getMessage(), t);
 //        }

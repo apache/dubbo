@@ -61,7 +61,7 @@ public class PortTelnetHandlerTest {
     }
 
     /**
-     * In NAT network scenario, server's serverChannel.getRemoteAddress() possibly get the address of network gateway, or
+     * In NAT network scenario, server's channel.getRemoteAddress() possibly get the address of network gateway, or
      * the address converted by NAT. In this case, check port only.
      */
     @Test

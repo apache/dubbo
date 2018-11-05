@@ -74,7 +74,7 @@ public class ThriftProtocol extends AbstractProtocol {
                                     + " in "
                                     + exporterMap.keySet()
                                     + ", may be version or group mismatch "
-                                    + ", serverChannel: consumer: "
+                                    + ", channel: consumer: "
                                     + channel.getRemoteAddress()
                                     + " --> provider: "
                                     + channel.getLocalAddress()
@@ -90,7 +90,7 @@ public class ThriftProtocol extends AbstractProtocol {
             throw new RemotingException(channel,
                     "Unsupported request: "
                             + (msg.getClass().getName() + ": " + msg)
-                            + ", serverChannel: consumer: "
+                            + ", channel: consumer: "
                             + channel.getRemoteAddress()
                             + " --> provider: "
                             + channel.getLocalAddress());

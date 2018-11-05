@@ -117,12 +117,12 @@ public class NettyClient extends AbstractClient {
             if (ret && future.isSuccess()) {
                 Channel newChannel = future.channel();
                 try {
-                    // Close old serverChannel
+                    // Close old channel
                     Channel oldChannel = NettyClient.this.channel; // copy reference
                     if (oldChannel != null) {
                         try {
                             if (logger.isInfoEnabled()) {
-                                logger.info("Close old netty serverChannel " + oldChannel + " on create new netty serverChannel " + newChannel);
+                                logger.info("Close old netty channel " + oldChannel + " on create new netty channel " + newChannel);
                             }
                             oldChannel.close();
                         } finally {
@@ -133,7 +133,7 @@ public class NettyClient extends AbstractClient {
                     if (NettyClient.this.isClosed()) {
                         try {
                             if (logger.isInfoEnabled()) {
-                                logger.info("Close new netty serverChannel " + newChannel + ", because the client closed.");
+                                logger.info("Close new netty channel " + newChannel + ", because the client closed.");
                             }
                             newChannel.close();
                         } finally {
