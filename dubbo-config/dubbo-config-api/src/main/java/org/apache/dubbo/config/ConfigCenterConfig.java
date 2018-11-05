@@ -40,14 +40,15 @@ public class ConfigCenterConfig extends AbstractConfig {
     private String env;
     private String cluster;
     private String namespace = "dubbo";
-    private String appnamespace;
+    private String group = "dubbo";
     private String username;
     private String password;
     private Long timeout = 3000L;
     private Boolean priority = true;
     private Boolean check = true;
 
-    private String dataid = "dubbo.properties";
+    private String appname;
+    private String configfile = "dubbo.properties";
 
     // customized parameters
     private Map<String, String> parameters;
@@ -77,30 +78,36 @@ public class ConfigCenterConfig extends AbstractConfig {
     }
 
     public void init() throws Exception {
-        // give jvm properties the chance of overriding local configs.
+        // give jvm properties the chance to override local configs, e.g., -Ddubbo.configcenter.config.priority
         refresh();
 
         URL url = toConfigUrl();
         DynamicConfiguration dynamicConfiguration = ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getAdaptiveExtension().getDynamicConfiguration(url);
         Environment.getInstance().setDynamicConfiguration(dynamicConfiguration);
-        String configContent = dynamicConfiguration.getConfig(dataid, namespace);
+        String configContent = dynamicConfiguration.getConfig(configfile, group);
 
+        String appConfigContent = dynamicConfiguration.getConfig(configfile, appname);
         try {
-            if (configContent == null) {
-                logger.warn("You specified the config centre, but there's not even one single config item in it.");
-            } else {
-                Properties properties = new Properties();
-                properties.load(new StringReader(configContent));
-                Map<String, String> map = new HashMap<>();
-                properties.stringPropertyNames().forEach(
-                        k -> map.put(k, properties.getProperty(k))
-                );
-                Environment.getInstance().setConfigCenterFirst(priority);
-                Environment.getInstance().updateExternalConfigurationMap(map);
-            }
+            Environment.getInstance().setConfigCenterFirst(priority);
+            Environment.getInstance().updateExternalConfigurationMap(parseProperties(configContent));
+            Environment.getInstance().updateAppExternalConfigurationMap(parseProperties(appConfigContent));
         } catch (IOException e) {
             throw e;
         }
+    }
+
+    private Map<String, String> parseProperties(String content) throws IOException {
+        Map<String, String> map = new HashMap<>();
+        if (content == null) {
+            logger.warn("You specified the config centre, but there's not even one single config item in it.");
+        } else {
+            Properties properties = new Properties();
+            properties.load(new StringReader(content));
+            properties.stringPropertyNames().forEach(
+                    k -> map.put(k, properties.getProperty(k))
+            );
+        }
+        return map;
     }
 
     @Parameter(key = Constants.CONFIG_TYPE_KEY)
@@ -148,13 +155,13 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.namespace = namespace;
     }
 
-    @Parameter(key = "config.appnamespace")
-    public String getAppnamespace() {
-        return appnamespace;
+    @Parameter(key = Constants.CONFIG_GROUP_KEY)
+    public String getGroup() {
+        return group;
     }
 
-    public void setAppnamespace(String appnamespace) {
-        this.appnamespace = appnamespace;
+    public void setGroup(String group) {
+        this.group = group;
     }
 
     @Parameter(key = Constants.CONFIG_CHECK_KEY)
@@ -200,13 +207,22 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.timeout = timeout;
     }
 
-    @Parameter(key = Constants.CONFIG_DATAID_KEY)
-    public String getDataid() {
-        return dataid;
+    @Parameter(key = Constants.CONFIG_CONFIGFILE_KEY)
+    public String getConfigfile() {
+        return configfile;
     }
 
-    public void setDataid(String dataid) {
-        this.dataid = dataid;
+    public void setConfigfile(String configfile) {
+        this.configfile = configfile;
+    }
+
+    @Parameter(key = Constants.CONFIG_APPNAME_KEY)
+    public String getAppname() {
+        return appname;
+    }
+
+    public void setAppname(String appname) {
+        this.appname = appname;
     }
 
     public Map<String, String> getParameters() {

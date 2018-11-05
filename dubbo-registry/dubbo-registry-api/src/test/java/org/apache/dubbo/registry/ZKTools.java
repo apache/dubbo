@@ -52,7 +52,7 @@ public class ZKTools {
     }
 
     public static void testStartupConfig() {
-        String str = "dubbo.registry.address=zookeeper://127.0.0.1:2181\n" +
+        String str = "dubbo.registry.address=zookeeper://127.0.0.1:2182\n" +
                 "dubbo.registry.group=dubboregistrygroup1\n" +
                 "dubbo.metadatareport.address=zookeeper://127.0.0.1:2181\n" +
                 "dubbo.protocol.port=20990\n" +
@@ -61,7 +61,7 @@ public class ZKTools {
         System.out.println(str);
 
         try {
-            String path = "/dubbo/config/dubbo.properties";
+            String path = "/dubboregistrygroup1/config/demo-provider/dubbo.properties";
             if (client.checkExists().forPath(path) == null) {
                 client.create().creatingParentsIfNeeded().forPath(path);
             }

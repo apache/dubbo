@@ -44,7 +44,6 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Con
     private static final String APOLLO_ENV_KEY = "env";
     private static final String APOLLO_ADDR_KEY = "apollo.meta";
     private static final String APOLLO_CLUSTER_KEY = "apollo.cluster";
-    private static final String APPLO_DEFAULT_NAMESPACE = "dubbo";
 
     private Config dubboConfig;
 
@@ -72,7 +71,7 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Con
             System.setProperty(APOLLO_CLUSTER_KEY, configCluster);
         }
 
-        dubboConfig = ConfigService.getConfig(url.getParameter(Constants.CONFIG_NAMESPACE_KEY, APPLO_DEFAULT_NAMESPACE));
+        dubboConfig = ConfigService.getConfig(url.getParameter(Constants.CONFIG_GROUP_KEY, DEFAULT_GROUP));
         // Decide to fail or to continue when failed to connect to remote server.
         boolean check = url.getParameter(Constants.CONFIG_CHECK_KEY, false);
         if (dubboConfig.getSourceType() != ConfigSourceType.REMOTE) {
@@ -87,9 +86,9 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Con
     }
 
     /**
-     * This method will used by DynamicConfiguration,
-     * 1. to get configuration file at startup phase
-     * 2. to get all kinds of Dubbo rules
+     * This method will being used to,
+     * 1. get configuration file at startup phase
+     * 2. get all kinds of Dubbo rules
      *
      * @param key
      * @param group
@@ -98,7 +97,7 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Con
      */
     @Override
     protected String getInternalProperty(String key, String group, long timeout) {
-        if (group != null) {
+        if (DEFAULT_GROUP.equals(group)) {
             Config config = ConfigService.getConfig(group);
             if (config != null) {
                 return config.getProperty(key, null);
@@ -111,7 +110,7 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Con
     /**
      * This method will used by Configuration to get valid value at runtime.
      * The group is expected to be 'app level', which can be fetched from the 'config.appnamespace' in url if necessary.
-     * But I think Apollo's inheritance feature of namespace can solve the problem, .
+     * But I think Apollo's inheritance feature of namespace can solve the problem .
      *
      * @param key
      * @return

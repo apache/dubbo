@@ -42,6 +42,7 @@ public class Environment {
     private volatile Map<String, SystemConfiguration> systemConfsHolder = new ConcurrentHashMap<>();
     private volatile Map<String, EnvironmentConfiguration> environmentConfsHolder = new ConcurrentHashMap<>();
     private volatile Map<String, InmemoryConfiguration> externalConfsHolder = new ConcurrentHashMap<>();
+    private volatile Map<String, InmemoryConfiguration> appExternalConfsHolder = new ConcurrentHashMap<>();
     private volatile Map<String, CompositeConfiguration> startupCompositeConfsHolder = new ConcurrentHashMap<>();
     private volatile Map<String, CompositeConfiguration> runtimeCompositeConfsHolder = new ConcurrentHashMap<>();
 
@@ -50,6 +51,7 @@ public class Environment {
     private volatile boolean isConfigCenterFirst = true;
 
     private Map<String, String> externalConfigurationMap = new HashMap<>();
+    private Map<String, String> appExternalConfigurationMap = new HashMap<>();
 
     public static Environment getInstance() {
         return INSTANCE;
@@ -71,6 +73,14 @@ public class Environment {
         });
     }
 
+    public InmemoryConfiguration getAppExternalConfiguration(String prefix, String id) {
+        return appExternalConfsHolder.computeIfAbsent(toKey(prefix, id), k -> {
+            InmemoryConfiguration configuration = new InmemoryConfiguration(prefix, id);
+            configuration.addProperties(appExternalConfigurationMap);
+            return configuration;
+        });
+    }
+
     public EnvironmentConfiguration getEnvironmentConf(String prefix, String id) {
         return environmentConfsHolder.computeIfAbsent(toKey(prefix, id), k -> new EnvironmentConfiguration(prefix, id));
     }
@@ -79,10 +89,15 @@ public class Environment {
         this.externalConfigurationMap.putAll(externalMap);
     }
 
+    public void updateAppExternalConfigurationMap(Map<String, String> externalMap) {
+        this.appExternalConfigurationMap.putAll(externalMap);
+    }
+
     public CompositeConfiguration getStartupCompositeConf(String prefix, String id) {
         return startupCompositeConfsHolder.computeIfAbsent(toKey(prefix, id), k -> {
             CompositeConfiguration compositeConfiguration = new CompositeConfiguration();
             compositeConfiguration.addConfiguration(this.getSystemConf(prefix, id));
+            compositeConfiguration.addConfiguration(this.getAppExternalConfiguration(prefix, id));
             compositeConfiguration.addConfiguration(this.getExternalConfiguration(prefix, id));
             compositeConfiguration.addConfiguration(this.getPropertiesConf(prefix, id));
             return compositeConfiguration;
