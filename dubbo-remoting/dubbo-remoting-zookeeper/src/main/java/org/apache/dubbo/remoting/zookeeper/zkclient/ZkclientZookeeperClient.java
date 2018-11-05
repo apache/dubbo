@@ -79,7 +79,7 @@ public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildLis
     @Override
     protected void createPersistent(String path, String data) {
         try {
-            client.createPersistent(path);
+            client.createPersistent(path, data);
         } catch (ZkNodeExistsException e) {
         }
     }
