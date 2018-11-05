@@ -233,7 +233,8 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
 
     @Override
     public void destroy() throws Exception {
-        // no need to export here, see org.apache.dubbo.config.spring.extension.SpringExtensionFactory.ShutdownHookListener
+        // no need to call unexport() here, see
+        // org.apache.dubbo.config.spring.extension.SpringExtensionFactory.ShutdownHookListener
     }
 
     // merged from dubbox
