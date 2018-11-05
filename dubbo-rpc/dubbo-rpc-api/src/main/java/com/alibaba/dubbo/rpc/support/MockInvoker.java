@@ -170,7 +170,7 @@ final public class MockInvoker<T> implements Invoker<T> {
 
         Class<?> mockClass = ReflectUtils.forName(mockService);
         if (!serviceType.isAssignableFrom(mockClass)) {
-            throw new IllegalArgumentException("The mock class " + mockClass.getName() +
+            throw new IllegalStateException("The mock class " + mockClass.getName() +
                     " not implement interface " + serviceType.getName());
         }
 
@@ -188,12 +188,13 @@ final public class MockInvoker<T> implements Invoker<T> {
      * Normalize mock string:
      *
      * <ol>
-     *     <li>return => return null</li>
-     *     <li>fail => default</li>
-     *     <li>force => default</li>
-     *     <li>fail:throw/return foo => throw/return foo</li>
-     *     <li>force:throw/return foo => throw/return foo</li>
+     * <li>return => return null</li>
+     * <li>fail => default</li>
+     * <li>force => default</li>
+     * <li>fail:throw/return foo => throw/return foo</li>
+     * <li>force:throw/return foo => throw/return foo</li>
      * </ol>
+     *
      * @param mock mock string
      * @return normalized mock string
      */
