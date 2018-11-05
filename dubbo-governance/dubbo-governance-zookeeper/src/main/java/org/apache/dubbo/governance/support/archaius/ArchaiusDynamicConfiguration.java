@@ -63,13 +63,36 @@ public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration<R
         }
     }
 
+    /**
+     * The hierarchy of configuration properties is:
+     * 1. /{namespace}/config/dubbo/dubbo.properties
+     * 2. /{namespace}/config/applicationname/dubbo.properties
+     * <p>
+     * To make the API compatible with other configuration systems, the key doesn't has group as prefix, so we should add the group prefix before try to get value.
+     * If being used for dubbo router rules, the key must already contains group prefix.
+     *
+     * @param key
+     * @param group
+     * @param timeout
+     * @return
+     */
     @Override
     protected String getInternalProperty(String key, String group, long timeout) {
+        if (StringUtils.isNotEmpty(group)) {
+            key = group + "." + key;
+        }
+
         return DynamicPropertyFactory.getInstance()
                 .getStringProperty(key, null)
                 .get();
     }
 
+    /**
+     * First, get app level configuration
+     * If there's no value in app level, try to get global dubbo level.
+     * @param key
+     * @return
+     */
     @Override
     protected Object getInternalProperty(String key) {
         return DynamicPropertyFactory.getInstance()

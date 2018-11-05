@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentMap;
  *
  */
 public abstract class AbstractDynamicConfiguration<TargetConfigListener> extends AbstractConfiguration implements DynamicConfiguration {
-    public static final String DEFAULT_NAMESPACE = "dubbo";
+    public static final String DEFAULT_GROUP = "dubbo";
     protected URL url;
     /**
      * One key can register multiple target listeners, but one target listener only maps to one configuration listener
@@ -46,7 +46,7 @@ public abstract class AbstractDynamicConfiguration<TargetConfigListener> extends
 
     @Override
     public String getConfig(String key) {
-        return getConfig(key, url.getParameter(Constants.CONFIG_NAMESPACE_KEY, DEFAULT_NAMESPACE), null);
+        return getConfig(key, url.getParameter(Constants.CONFIG_GROUP_KEY, DEFAULT_GROUP), null);
     }
 
     @Override
@@ -56,7 +56,7 @@ public abstract class AbstractDynamicConfiguration<TargetConfigListener> extends
 
     @Override
     public String getConfig(String key, ConfigurationListener listener) {
-        return getConfig(key, url.getParameter(Constants.CONFIG_NAMESPACE_KEY, DEFAULT_NAMESPACE), listener);
+        return getConfig(key, url.getParameter(Constants.CONFIG_GROUP_KEY, DEFAULT_GROUP), listener);
     }
 
     @Override

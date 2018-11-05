@@ -526,7 +526,7 @@ public abstract class AbstractConfig implements Serializable {
         try {
             Configuration configuration = ConfigConverter.toConfiguration(this);
             CompositeConfiguration compositeConfiguration = Environment.getInstance().getStartupCompositeConf(getPrefix(), getId());
-            int index = 2;
+            int index = 3;
             if (!Environment.getInstance().isConfigCenterFirst()) {
                 index = 1;
             }
