@@ -21,9 +21,14 @@ import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
 
+import com.alibaba.dubbo.config.DubboShutdownHook;
+import com.alibaba.dubbo.config.spring.util.BeanFactoryUtils;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextClosedEvent;
 
 import java.util.Set;
 
@@ -35,8 +40,11 @@ public class SpringExtensionFactory implements ExtensionFactory {
 
     private static final Set<ApplicationContext> contexts = new ConcurrentHashSet<ApplicationContext>();
 
+    private static final ApplicationListener shutdownHookListener = new ShutdownHookListener();
+
     public static void addApplicationContext(ApplicationContext context) {
         contexts.add(context);
+        BeanFactoryUtils.addApplicationListener(context, shutdownHookListener);
     }
 
     public static void removeApplicationContext(ApplicationContext context) {
@@ -81,6 +89,19 @@ public class SpringExtensionFactory implements ExtensionFactory {
         logger.warn("No spring extension (bean) named:" + name + ", type:" + type.getName() + " found, stop get bean.");
 
         return null;
+    }
+
+    private static class ShutdownHookListener implements ApplicationListener {
+        @Override
+        public void onApplicationEvent(ApplicationEvent event) {
+            if (event instanceof ContextClosedEvent) {
+                // we call it anyway since dubbo shutdown hook make sure its destroyAll() is re-entrant.
+                // pls. note we should not remove dubbo shutdown hook when spring framework is present, this is because
+                // its shutdown hook may not be installed.
+                DubboShutdownHook shutdownHook = DubboShutdownHook.getDubboShutdownHook();
+                shutdownHook.destroyAll();
+            }
+        }
     }
 
 }
