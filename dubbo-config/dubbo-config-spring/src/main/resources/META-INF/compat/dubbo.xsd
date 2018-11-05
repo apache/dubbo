@@ -624,12 +624,12 @@
                     <![CDATA[ The group of the config center, an isolated space for config items in the same config center. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="appnamespace" type="xsd:string" use="optional">
+        <xsd:attribute name="appname" type="xsd:string" use="optional">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The group of the config center. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="dataid" type="xsd:string" use="optional">
+        <xsd:attribute name="configfile" type="xsd:string" use="optional">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The key used to get the configs at startup. ]]></xsd:documentation>
             </xsd:annotation>

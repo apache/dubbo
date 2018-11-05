@@ -38,6 +38,7 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
     private final static Logger logger = LoggerFactory.getLogger(ZookeeperMetadataReport.class);
 
     private final static String DEFAULT_ROOT = "dubbo";
+    private final static String METADATA_NODE_NAME = "metadata.data";
 
     private final String root;
 
@@ -85,9 +86,8 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
 
     private void storeMetadata(MetadataIdentifier metadataIdentifier, String v) {
         String category = getCategory(metadataIdentifier);
-        String filePath = category + Constants.PATH_SEPARATOR + URL.encode(v);
-        deletePath(category);
-        zkClient.create(filePath, false);
+        String filePath = category + Constants.PATH_SEPARATOR + METADATA_NODE_NAME;
+        zkClient.create(filePath, v, false);
     }
 
     String getCategory(MetadataIdentifier metadataIdentifier) {
