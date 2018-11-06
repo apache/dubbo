@@ -183,7 +183,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
         metadataReportConfig.refresh();
         if (!metadataReportConfig.isValid()) {
-            logger.info("There's no valid metadata config found, if you are using the simplified mode of registry url, please make sure you have a metadata address configured properly.");
+            logger.warn("There's no valid metadata config found, if you are using the simplified mode of registry url, please make sure you have a metadata address configured properly.");
         }
     }
 
