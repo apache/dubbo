@@ -4,7 +4,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 
 /**
- * @author cvictory ON 2018/10/25
+ * 2018/10/25
  */
 public class MetadataIdentifier {
     public static final String SEPARATOR = ":";

@@ -14,31 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.definition.model;
+package org.apache.dubbo.metadata.definition.service;
 
-import java.util.Map;
-import java.util.Objects;
+import java.util.List;
 
 /**
- * 2018/10/25
+ * for test
  */
-public class FullServiceDefinition extends ServiceDefinition {
+public interface DemoService {
 
-    private Map<String, String> parameters;
+    String complexCompute(String input, ComplexObject co);
 
-    public Map<String, String> getParameters() {
-        return parameters;
-    }
-
-    public void setParameters(Map<String, String> parameters) {
-        this.parameters = parameters;
-    }
-
-    @Override
-    public String toString() {
-        return "FullServiceDefinition{" +
-                "parameters=" + parameters +
-                "} " + super.toString();
-    }
+    ComplexObject findComplexObject(String var1, int var2, long l, String[] var3, List<Integer> var4, ComplexObject.TestEnum testEnum);
 
 }
