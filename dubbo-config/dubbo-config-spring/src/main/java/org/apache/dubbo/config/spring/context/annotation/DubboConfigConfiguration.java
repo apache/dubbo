@@ -24,6 +24,7 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.spring.ConfigCenterBean;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -39,6 +40,7 @@ import org.springframework.context.annotation.Configuration;
  * @see MonitorConfig
  * @see ProviderConfig
  * @see ConsumerConfig
+ * @see org.apache.dubbo.config.ConfigCenterConfig
  * @since 2.5.8
  */
 public class DubboConfigConfiguration {
@@ -53,7 +55,8 @@ public class DubboConfigConfiguration {
             @EnableDubboConfigBinding(prefix = "dubbo.protocol", type = ProtocolConfig.class),
             @EnableDubboConfigBinding(prefix = "dubbo.monitor", type = MonitorConfig.class),
             @EnableDubboConfigBinding(prefix = "dubbo.provider", type = ProviderConfig.class),
-            @EnableDubboConfigBinding(prefix = "dubbo.consumer", type = ConsumerConfig.class)
+            @EnableDubboConfigBinding(prefix = "dubbo.consumer", type = ConsumerConfig.class),
+            @EnableDubboConfigBinding(prefix = "dubbo.configcenter", type = ConfigCenterBean.class)
     })
     public static class Single {
 
