@@ -18,6 +18,7 @@ package org.apache.dubbo.metadata.definition.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 2015/1/27.
@@ -77,4 +78,19 @@ public class ServiceDefinition {
                 + methods + "]";
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ServiceDefinition)) return false;
+        ServiceDefinition that = (ServiceDefinition) o;
+        return Objects.equals(getCanonicalName(), that.getCanonicalName()) &&
+                Objects.equals(getCodeSource(), that.getCodeSource()) &&
+                Objects.equals(getMethods(), that.getMethods()) &&
+                Objects.equals(getTypes(), that.getTypes());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getCanonicalName(), getCodeSource(), getMethods(), getTypes());
+    }
 }

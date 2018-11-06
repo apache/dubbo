@@ -31,6 +31,8 @@ import java.util.concurrent.CountDownLatch;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 public class ZkclientZookeeperClientTest {
@@ -102,6 +104,32 @@ public class ZkclientZookeeperClientTest {
         }
         List<String> zookeeperClientChildren = zkclientZookeeperClient.getChildren(path);
         assertThat(zookeeperClientChildren, hasSize(5));
+    }
+
+    @Test
+    public void testCreateContentPersistent() {
+        String path = "/ZkclientZookeeperClient/content.data";
+        String content = "createContentTest";
+        zkclientZookeeperClient.delete(path);
+        assertThat(zkclientZookeeperClient.checkExists(path), is(false));
+        assertNull(zkclientZookeeperClient.getContent(path));
+
+        zkclientZookeeperClient.create(path, content, false);
+        assertThat(zkclientZookeeperClient.checkExists(path), is(true));
+        assertEquals(zkclientZookeeperClient.getContent(path), content);
+    }
+
+    @Test
+    public void testCreateContentTem() {
+        String path = "/ZkclientZookeeperClient/content.data";
+        String content = "createContentTest";
+        zkclientZookeeperClient.delete(path);
+        assertThat(zkclientZookeeperClient.checkExists(path), is(false));
+        assertNull(zkclientZookeeperClient.getContent(path));
+
+        zkclientZookeeperClient.create(path, content, true);
+        assertThat(zkclientZookeeperClient.checkExists(path), is(true));
+        assertEquals(zkclientZookeeperClient.getContent(path), content);
     }
 
     @After

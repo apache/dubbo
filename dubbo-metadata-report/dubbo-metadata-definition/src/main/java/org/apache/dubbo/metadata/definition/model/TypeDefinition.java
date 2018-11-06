@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * 2015/1/27.
@@ -103,4 +104,21 @@ public class TypeDefinition {
         return "TypeDefinition [id=" + id + ", type=" + type + ", properties=" + properties + ", $ref=" + $ref + "]";
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof TypeDefinition)) return false;
+        TypeDefinition that = (TypeDefinition) o;
+        return Objects.equals(getId(), that.getId()) &&
+                Objects.equals(getType(), that.getType()) &&
+                Objects.equals(getItems(), that.getItems()) &&
+                Objects.equals(getEnums(), that.getEnums()) &&
+                Objects.equals(get$ref(), that.get$ref()) &&
+                Objects.equals(getProperties(), that.getProperties());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getType(), getItems(), getEnums(), get$ref(), getProperties());
+    }
 }

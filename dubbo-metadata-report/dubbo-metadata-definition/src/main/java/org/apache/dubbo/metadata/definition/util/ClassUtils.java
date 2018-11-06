@@ -33,7 +33,7 @@ public final class ClassUtils {
     /**
      * Get the code source file or class path of the Class passed in.
      *
-     * @param clazz Class to find.
+     * @param clazz
      * @return Jar file name or class path.
      */
     public static String getCodeSource(Class<?> clazz) {
@@ -58,6 +58,7 @@ public final class ClassUtils {
 
     /**
      * Get all non-static fields of the Class passed in or its super classes.
+     * <p>
      *
      * @param clazz Class to parse.
      * @return field list
@@ -87,6 +88,7 @@ public final class ClassUtils {
 
     /**
      * Get all public, non-static methods of the Class passed in.
+     * <p>
      *
      * @param clazz Class to parse.
      * @return methods list

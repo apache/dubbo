@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata.definition.model;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * 2018/10/25
@@ -31,6 +32,13 @@ public class FullServiceDefinition extends ServiceDefinition {
 
     public void setParameters(Map<String, String> parameters) {
         this.parameters = parameters;
+    }
+
+    @Override
+    public String toString() {
+        return "FullServiceDefinition{" +
+                "parameters=" + parameters +
+                "} " + super.toString();
     }
 
 }

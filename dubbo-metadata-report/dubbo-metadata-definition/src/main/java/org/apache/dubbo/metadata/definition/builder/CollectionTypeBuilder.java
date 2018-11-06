@@ -28,7 +28,8 @@ import java.util.Map;
 /**
  * 2015/1/27.
  */
-public class CollectionTypeBuilder implements TypeBuilder {
+public class
+CollectionTypeBuilder implements TypeBuilder {
 
     @Override
     public boolean accept(Type type, Class<?> clazz) {

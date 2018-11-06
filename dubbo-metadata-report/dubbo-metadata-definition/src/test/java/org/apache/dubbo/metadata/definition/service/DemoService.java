@@ -14,41 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.definition.common;
+package org.apache.dubbo.metadata.definition.service;
 
 import java.util.List;
-import java.util.Map;
 
 /**
- *
+ * for test
  */
-@SuppressWarnings("rawtypes")
-public class ResultWithRawCollections {
+public interface DemoService {
 
-    private Map map;
-    private List list;
+    String complexCompute(String input, ComplexObject co);
 
-    public ResultWithRawCollections() {
-    }
+    ComplexObject findComplexObject(String var1, int var2, long l, String[] var3, List<Integer> var4, ComplexObject.TestEnum testEnum);
 
-    public ResultWithRawCollections(Map map, List list) {
-        this.map = map;
-        this.list = list;
-    }
-
-    public List getList() {
-        return list;
-    }
-
-    public void setList(List list) {
-        this.list = list;
-    }
-
-    public Map getMap() {
-        return map;
-    }
-
-    public void setMap(Map map) {
-        this.map = map;
-    }
 }
