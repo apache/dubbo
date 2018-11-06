@@ -20,6 +20,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.status.StatusChecker;
 import org.apache.dubbo.common.threadpool.ThreadPool;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.remoting.Codec;
 import org.apache.dubbo.remoting.Dispatcher;
@@ -469,5 +470,10 @@ public class ProtocolConfig extends AbstractConfig {
         if (name != null) {
             ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(name).destroy();
         }
+    }
+
+    @Override
+    public boolean isValid() {
+        return StringUtils.isNotEmpty(name);
     }
 }
