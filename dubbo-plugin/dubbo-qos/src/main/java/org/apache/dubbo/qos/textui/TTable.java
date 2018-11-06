@@ -21,13 +21,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import static java.lang.Math.abs;
+import static java.lang.Math.max;
+import static java.lang.String.format;
 import static org.apache.dubbo.common.utils.StringUtils.EMPTY;
 import static org.apache.dubbo.common.utils.StringUtils.length;
 import static org.apache.dubbo.common.utils.StringUtils.repeat;
 import static org.apache.dubbo.common.utils.StringUtils.replace;
-import static java.lang.Math.abs;
-import static java.lang.Math.max;
-import static java.lang.String.format;
 
 /**
  * Table
