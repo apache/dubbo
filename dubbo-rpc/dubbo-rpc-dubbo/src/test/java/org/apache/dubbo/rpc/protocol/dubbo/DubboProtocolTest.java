@@ -26,11 +26,13 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
 import org.apache.dubbo.rpc.protocol.dubbo.support.NonSerialized;
+import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 import org.apache.dubbo.rpc.protocol.dubbo.support.RemoteService;
 import org.apache.dubbo.rpc.protocol.dubbo.support.RemoteServiceImpl;
 import org.apache.dubbo.rpc.protocol.dubbo.support.Type;
 import org.apache.dubbo.rpc.service.EchoService;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -47,6 +49,11 @@ import static org.junit.Assert.assertEquals;
 public class DubboProtocolTest {
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
     private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+
+    @AfterClass
+    public static void after() {
+        ProtocolUtils.closeAll();
+    }
 
     @Test
     public void testDemoProtocol() throws Exception {
