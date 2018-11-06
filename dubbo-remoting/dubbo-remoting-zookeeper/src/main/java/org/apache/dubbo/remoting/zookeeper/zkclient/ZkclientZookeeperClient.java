@@ -77,6 +77,22 @@ public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildLis
     }
 
     @Override
+    protected void createPersistent(String path, String data) {
+        try {
+            client.createPersistent(path, data);
+        } catch (ZkNodeExistsException e) {
+        }
+    }
+
+    @Override
+    protected void createEphemeral(String path, String data) {
+        try {
+            client.createEphemeral(path, data);
+        } catch (ZkNodeExistsException e) {
+        }
+    }
+
+    @Override
     public void delete(String path) {
         try {
             client.delete(path);
@@ -105,6 +121,15 @@ public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildLis
     @Override
     public boolean isConnected() {
         return state == KeeperState.SyncConnected;
+    }
+
+    @Override
+    public String doGetContent(String path) {
+        try {
+            return client.getData(path);
+        } catch (ZkNoNodeException e) {
+            return null;
+        }
     }
 
     @Override

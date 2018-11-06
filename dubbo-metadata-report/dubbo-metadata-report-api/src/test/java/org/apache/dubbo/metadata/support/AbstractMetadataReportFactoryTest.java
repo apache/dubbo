@@ -1,7 +1,6 @@
 package org.apache.dubbo.metadata.support;
 
 import com.alibaba.fastjson.JSON;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
