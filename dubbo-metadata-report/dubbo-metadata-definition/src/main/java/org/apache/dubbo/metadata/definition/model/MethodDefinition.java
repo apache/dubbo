@@ -19,6 +19,7 @@ package org.apache.dubbo.metadata.definition.model;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 2015/1/27.
@@ -71,4 +72,21 @@ public class MethodDefinition {
                 + ", returnType=" + returnType + "]";
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof MethodDefinition)) return false;
+        MethodDefinition that = (MethodDefinition) o;
+        return Objects.equals(getName(), that.getName()) &&
+                Arrays.equals(getParameterTypes(), that.getParameterTypes()) &&
+                Objects.equals(getReturnType(), that.getReturnType()) &&
+                Objects.equals(getParameters(), that.getParameters());
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(getName(), getReturnType(), getParameters());
+        result = 31 * result + Arrays.hashCode(getParameterTypes());
+        return result;
+    }
 }
