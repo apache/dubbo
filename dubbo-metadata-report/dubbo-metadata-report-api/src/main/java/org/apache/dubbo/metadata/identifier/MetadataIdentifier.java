@@ -4,7 +4,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 
 /**
- * @author cvictory ON 2018/10/25
+ * 2018/10/25
  */
 public class MetadataIdentifier {
     public static final String SEPARATOR = ":";
@@ -35,7 +35,7 @@ public class MetadataIdentifier {
 
     public String getFilePathKey(String pathTag) {
         return toServicePath() + Constants.PATH_SEPARATOR + pathTag + Constants.PATH_SEPARATOR + (version == null ? "" : (version + Constants.PATH_SEPARATOR))
-                + side + getPathSegment();
+                + (group == null ? "" : (group + Constants.PATH_SEPARATOR)) + side + getPathSegment();
     }
 
     private String toServicePath() {
@@ -49,7 +49,6 @@ public class MetadataIdentifier {
         return "";
     }
 
-    ;
 
     public String getServiceInterface() {
         return serviceInterface;

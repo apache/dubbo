@@ -3,7 +3,7 @@ package org.apache.dubbo.metadata.identifier;
 import org.apache.dubbo.common.Constants;
 
 /**
- * @author cvictory ON 2018/10/25
+ * 2018/10/25
  */
 public class ConsumerMetadataIdentifier extends MetadataIdentifier {
 
@@ -20,8 +20,6 @@ public class ConsumerMetadataIdentifier extends MetadataIdentifier {
     protected String getPathSegment() {
         return Constants.PATH_SEPARATOR + application;
     }
-
-    ;
 
     public String getApplication() {
         return application;

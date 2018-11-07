@@ -36,7 +36,6 @@ public class JTestMetadataReport4Test extends AbstractMetadataReport {
     private final static Logger logger = LoggerFactory.getLogger(JTestMetadataReport4Test.class);
 
 
-
     public JTestMetadataReport4Test(URL url, ZookeeperTransporter zookeeperTransporter) {
         super(url);
     }
@@ -60,7 +59,7 @@ public class JTestMetadataReport4Test extends AbstractMetadataReport {
         store.put(consumerMetadataIdentifier.getIdentifierKey(), serviceParameterString);
     }
 
-    public static String getKey(URL url){
+    public static String getKey(URL url) {
         return getProtocol(url) + url.getServiceKey();
     }
 

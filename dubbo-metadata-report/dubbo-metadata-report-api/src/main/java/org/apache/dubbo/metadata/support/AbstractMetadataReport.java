@@ -17,7 +17,6 @@
 package org.apache.dubbo.metadata.support;
 
 import com.google.gson.Gson;
-import org.apache.commons.lang3.time.DateUtils;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
@@ -39,7 +38,6 @@ import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
@@ -311,10 +309,13 @@ public abstract class AbstractMetadataReport implements MetadataReport {
      * @return
      */
     long calculateStartTime() {
-        Date now = new Date();
-        long nowMill = now.getTime();
-        long today0 = DateUtils.truncate(now, Calendar.DAY_OF_MONTH).getTime();
-        long subtract = today0 + ONE_DAY_IN_MIll - nowMill;
+        Calendar calendar = Calendar.getInstance();
+        long nowMill = calendar.getTimeInMillis();
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        long subtract = calendar.getTimeInMillis() + ONE_DAY_IN_MIll - nowMill;
         Random r = new Random();
         return subtract + (FOUR_HOURS_IN_MIll / 2) + r.nextInt(FOUR_HOURS_IN_MIll);
     }
