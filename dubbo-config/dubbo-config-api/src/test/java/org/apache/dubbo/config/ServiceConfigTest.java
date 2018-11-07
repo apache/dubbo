@@ -194,6 +194,18 @@ public class ServiceConfigTest {
         service.setGeneric("illegal");
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testMock() throws Exception {
+        ServiceConfig service = new ServiceConfig();
+        service.setMock("true");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testMock2() throws Exception {
+        ServiceConfig service = new ServiceConfig();
+        service.setMock(true);
+    }
+
     @Test
     public void testUniqueServiceName() throws Exception {
         ServiceConfig<Greeting> service = new ServiceConfig<Greeting>();
