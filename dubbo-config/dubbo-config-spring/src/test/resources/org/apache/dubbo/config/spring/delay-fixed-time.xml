@@ -25,7 +25,7 @@
 
     <dubbo:registry address="N/A"/>
 
-    <dubbo:protocol name="dubbo" port="20883"/>
+    <dubbo:protocol name="dubbo" port="20888"/>
 
     <dubbo:service interface="org.apache.dubbo.config.spring.api.DemoService" ref="demoService" delay="300"/>
 

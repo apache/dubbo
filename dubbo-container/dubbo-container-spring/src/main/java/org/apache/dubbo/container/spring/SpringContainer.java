@@ -19,7 +19,6 @@ package org.apache.dubbo.container.spring;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
-import org.apache.dubbo.config.spring.initializer.DubboApplicationListener;
 import org.apache.dubbo.container.Container;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -44,10 +43,7 @@ public class SpringContainer implements Container {
         if (configPath == null || configPath.length() == 0) {
             configPath = DEFAULT_SPRING_CONFIG;
         }
-        context = new ClassPathXmlApplicationContext(configPath.split("[,\\s]+"), false);
-        context.addApplicationListener(new DubboApplicationListener());
-        context.registerShutdownHook();
-        context.refresh();
+        context = new ClassPathXmlApplicationContext(configPath.split("[,\\s]+"));
         context.start();
     }
 

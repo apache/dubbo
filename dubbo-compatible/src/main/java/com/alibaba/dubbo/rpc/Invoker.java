@@ -22,6 +22,7 @@ import org.apache.dubbo.common.URL;
 @Deprecated
 public interface Invoker<T> extends org.apache.dubbo.rpc.Invoker<T> {
 
+    @Override
     Result invoke(org.apache.dubbo.rpc.Invocation invocation) throws RpcException;
 
     default org.apache.dubbo.rpc.Invoker<T> getOriginal() {
@@ -61,6 +62,7 @@ public interface Invoker<T> extends org.apache.dubbo.rpc.Invoker<T> {
             invoker.destroy();
         }
 
+        @Override
         public org.apache.dubbo.rpc.Invoker<T> getOriginal() {
             return invoker;
         }

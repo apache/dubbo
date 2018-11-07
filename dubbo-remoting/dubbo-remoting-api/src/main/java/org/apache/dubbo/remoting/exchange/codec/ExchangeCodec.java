@@ -139,8 +139,6 @@ public class ExchangeCodec extends TelnetCodec {
 
     protected Object decodeBody(Channel channel, InputStream is, byte[] header) throws IOException {
         byte flag = header[2], proto = (byte) (flag & SERIALIZATION_MASK);
-        Serialization s = CodecSupport.getSerialization(channel.getUrl(), proto);
-        ObjectInput in = s.deserialize(channel.getUrl(), is);
         // get request id.
         long id = Bytes.bytes2long(header, 4);
         if ((flag & FLAG_REQUEST) == 0) {
@@ -152,8 +150,9 @@ public class ExchangeCodec extends TelnetCodec {
             // get status.
             byte status = header[3];
             res.setStatus(status);
-            if (status == Response.OK) {
-                try {
+            try {
+                ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
+                if (status == Response.OK) {
                     Object data;
                     if (res.isHeartbeat()) {
                         data = decodeHeartbeatData(channel, in);
@@ -163,12 +162,12 @@ public class ExchangeCodec extends TelnetCodec {
                         data = decodeResponseData(channel, in, getRequestData(id));
                     }
                     res.setResult(data);
-                } catch (Throwable t) {
-                    res.setStatus(Response.CLIENT_ERROR);
-                    res.setErrorMessage(StringUtils.toString(t));
+                } else {
+                    res.setErrorMessage(in.readUTF());
                 }
-            } else {
-                res.setErrorMessage(in.readUTF());
+            } catch (Throwable t) {
+                res.setStatus(Response.CLIENT_ERROR);
+                res.setErrorMessage(StringUtils.toString(t));
             }
             return res;
         } else {
@@ -180,6 +179,7 @@ public class ExchangeCodec extends TelnetCodec {
                 req.setEvent(Request.HEARTBEAT_EVENT);
             }
             try {
+                ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
                 Object data;
                 if (req.isHeartbeat()) {
                     data = decodeHeartbeatData(channel, in);
@@ -200,11 +200,13 @@ public class ExchangeCodec extends TelnetCodec {
 
     protected Object getRequestData(long id) {
         DefaultFuture future = DefaultFuture.getFuture(id);
-        if (future == null)
+        if (future == null) {
             return null;
+        }
         Request req = future.getRequest();
-        if (req == null)
+        if (req == null) {
             return null;
+        }
         return req.getData();
     }
 
@@ -218,8 +220,12 @@ public class ExchangeCodec extends TelnetCodec {
         // set request and serialization flag.
         header[2] = (byte) (FLAG_REQUEST | serialization.getContentTypeId());
 
-        if (req.isTwoWay()) header[2] |= FLAG_TWOWAY;
-        if (req.isEvent()) header[2] |= FLAG_EVENT;
+        if (req.isTwoWay()) {
+            header[2] |= FLAG_TWOWAY;
+        }
+        if (req.isEvent()) {
+            header[2] |= FLAG_EVENT;
+        }
 
         // set request id.
         Bytes.long2bytes(req.getId(), header, 4);
@@ -260,7 +266,9 @@ public class ExchangeCodec extends TelnetCodec {
             Bytes.short2bytes(MAGIC, header);
             // set request and serialization flag.
             header[2] = serialization.getContentTypeId();
-            if (res.isHeartbeat()) header[2] |= FLAG_EVENT;
+            if (res.isHeartbeat()) {
+                header[2] |= FLAG_EVENT;
+            }
             // set response status.
             byte status = res.getStatus();
             header[3] = status;
@@ -277,7 +285,9 @@ public class ExchangeCodec extends TelnetCodec {
                 } else {
                     encodeResponseData(channel, out, res.getResult(), res.getVersion());
                 }
-            } else out.writeUTF(res.getErrorMessage());
+            } else {
+                out.writeUTF(res.getErrorMessage());
+            }
             out.flushBuffer();
             if (out instanceof Cleanable) {
                 ((Cleanable) out).cleanup();

@@ -26,8 +26,8 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.RouterFactory;
 import org.apache.dubbo.rpc.cluster.router.MockInvoker;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -47,8 +47,9 @@ public class TagRouterTest {
     public static void setUpBeforeClass() throws Exception {
     }
 
-    @Before
-    public void setUp() throws Exception {
+    @After
+    public void teardown() throws Exception {
+        RpcContext.getContext().clearAttachments();
     }
 
     @Test
