@@ -49,6 +49,9 @@ public class ConfigCenterConfig extends AbstractConfig {
 
     private String appname;
     private String configfile = "dubbo.properties";
+    private String localconfigfile;
+
+    private ApplicationConfig application;
 
     // customized parameters
     private Map<String, String> parameters;
@@ -86,7 +89,11 @@ public class ConfigCenterConfig extends AbstractConfig {
         Environment.getInstance().setDynamicConfiguration(dynamicConfiguration);
         String configContent = dynamicConfiguration.getConfig(configfile, group);
 
-        String appConfigContent = dynamicConfiguration.getConfig(configfile, appname);
+        String appConfigContent = dynamicConfiguration.getConfig
+                (
+                        StringUtils.isNotEmpty(localconfigfile) ? localconfigfile : configfile,
+                        getApplicationName()
+                );
         try {
             Environment.getInstance().setConfigCenterFirst(priority);
             Environment.getInstance().updateExternalConfigurationMap(parseProperties(configContent));
@@ -94,6 +101,17 @@ public class ConfigCenterConfig extends AbstractConfig {
         } catch (IOException e) {
             throw e;
         }
+    }
+
+    private String getApplicationName() {
+        if (application != null) {
+            if (!application.isValid()) {
+                throw new IllegalStateException(
+                        "No application config found or it's not a valid config! Please add <dubbo:application name=\"...\" /> to your spring config.");
+            }
+            return application.getName();
+        }
+        return appname;
     }
 
     private Map<String, String> parseProperties(String content) throws IOException {
@@ -216,6 +234,15 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.configfile = configfile;
     }
 
+    @Parameter(excluded = true)
+    public String getLocalconfigfile() {
+        return localconfigfile;
+    }
+
+    public void setLocalconfigfile(String localconfigfile) {
+        this.localconfigfile = localconfigfile;
+    }
+
     @Parameter(key = Constants.CONFIG_APPNAME_KEY)
     public String getAppname() {
         return appname;
@@ -232,5 +259,13 @@ public class ConfigCenterConfig extends AbstractConfig {
     public void setParameters(Map<String, String> parameters) {
         checkParameterName(parameters);
         this.parameters = parameters;
+    }
+
+    public ApplicationConfig getApplication() {
+        return application;
+    }
+
+    public void setApplication(ApplicationConfig application) {
+        this.application = application;
     }
 }
