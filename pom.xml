@@ -139,7 +139,6 @@
         <module>dubbo-demo</module>
         <module>dubbo-plugin</module>
         <module>dubbo-serialization</module>
-        <module>dubbo-bootstrap</module>
         <module>dubbo-compatible</module>
         <module>dubbo-dependencies-bom</module>
         <module>dubbo-bom</module>
@@ -474,10 +473,10 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>jacoco-site</id>
-                        <phase>package</phase>
+                        <id>report-aggregate</id>
+                        <phase>verify</phase>
                         <goals>
-                            <goal>report</goal>
+                            <goal>report-aggregate</goal>
                         </goals>
                     </execution>
                 </executions>

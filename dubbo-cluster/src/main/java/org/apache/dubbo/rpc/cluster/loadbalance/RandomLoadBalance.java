@@ -34,13 +34,13 @@ public class RandomLoadBalance extends AbstractLoadBalance {
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         int length = invokers.size(); // Number of invokers
-        int totalWeight = 0; // The sum of weights
         boolean sameWeight = true; // Every invoker has the same weight?
-        for (int i = 0; i < length; i++) {
+        int firstWeight = getWeight(invokers.get(0), invocation);
+        int totalWeight = firstWeight; // The sum of weights
+        for (int i = 1; i < length; i++) {
             int weight = getWeight(invokers.get(i), invocation);
             totalWeight += weight; // Sum
-            if (sameWeight && i > 0
-                    && weight != getWeight(invokers.get(i - 1), invocation)) {
+            if (sameWeight && weight != firstWeight) {
                 sameWeight = false;
             }
         }
