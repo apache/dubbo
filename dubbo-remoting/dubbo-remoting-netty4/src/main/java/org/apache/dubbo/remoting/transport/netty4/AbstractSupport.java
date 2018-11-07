@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
+import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.util.internal.SystemPropertyUtil;
@@ -44,9 +45,9 @@ public abstract class AbstractSupport {
         }
         this.url = url;
         this.nThreads = url.getPositiveParameter(Constants.IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS);
-        this.epoll = isLinux() && url.getParameter(Constants.EPOLL_ENABLE, false);
+        this.epoll = epollAvailable() && url.getParameter(Constants.EPOLL_ENABLE, false);
     }
-    
+
     public NioEventLoopGroup nioEventLoopGroup(ThreadFactory threadFactory) {
         return new NioEventLoopGroup(nThreads, threadFactory);
     }
@@ -71,11 +72,11 @@ public abstract class AbstractSupport {
         return epoll;
     }
 
-    private boolean isLinux() {
+    private boolean epollAvailable() {
         boolean linux = SystemPropertyUtil.get("os.name", "").toLowerCase(Locale.US).contains("linux");
         if (linux) {
             logger.debug("Platform: Linux");
         }
-        return linux;
+        return linux && Epoll.isAvailable();
     }
 }
