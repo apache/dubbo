@@ -35,10 +35,14 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import static org.apache.dubbo.config.spring.util.PropertySourcesUtils.getSubProperties;
 import static org.apache.dubbo.config.spring.util.PropertySourcesUtils.normalizePrefix;
@@ -100,7 +104,7 @@ public class DubboConfigBindingRegistrar implements ImportBeanDefinitionRegistra
 
         for (String beanName : beanNames) {
 
-            registerDubboConfigBean(beanName, configClass, registry);
+            registerDubboConfigBean(beanName, configClass, registry,properties);
 
             registerDubboConfigBindingBeanPostProcessor(prefix, beanName, multiple, registry);
 
@@ -109,12 +113,14 @@ public class DubboConfigBindingRegistrar implements ImportBeanDefinitionRegistra
     }
 
     private void registerDubboConfigBean(String beanName, Class<? extends AbstractConfig> configClass,
-                                         BeanDefinitionRegistry registry) {
+                                         BeanDefinitionRegistry registry,Map<String, String> properties) {
 
         BeanDefinitionBuilder builder = rootBeanDefinition(configClass);
 
         AbstractBeanDefinition beanDefinition = builder.getBeanDefinition();
 
+        appendProperties(beanDefinition, configClass, properties);
+        
         registry.registerBeanDefinition(beanName, beanDefinition);
 
         if (log.isInfoEnabled()) {
@@ -123,6 +129,54 @@ public class DubboConfigBindingRegistrar implements ImportBeanDefinitionRegistra
         }
 
     }
+    
+    
+	private void appendProperties(AbstractBeanDefinition beanDefinition,Class<? extends AbstractConfig> configClass, 
+			Map<String, String> properties) {
+
+		if (properties == null || properties.isEmpty()) {
+			return;
+		}
+
+		Method[] methods = configClass.getMethods();
+
+		for (Method method : methods) {
+
+			String name = method.getName();
+			if (name.length() > 3 && name.startsWith("set") && Modifier.isPublic(method.getModifiers())
+					&& method.getParameterTypes().length == 1 && AbstractConfig.isPrimitive(method.getParameterTypes()[0])) {
+
+				String property = name.substring(3, 4).toLowerCase() + name.substring(4);
+				if (properties.get(property) != null) {
+					beanDefinition.getPropertyValues().add(property, properties.get(property));
+				}
+
+			} else if ("getParameters".equals(name)
+					&& Modifier.isPublic(method.getModifiers())
+					&& method.getParameterTypes().length == 0
+					&& method.getReturnType() == Map.class) {
+
+				Map<String, String> parameters = new HashMap<String, String>();
+
+				String pre = "parameters.";
+				for (Entry<String, String> entry : properties.entrySet()) {
+					String key = entry.getKey();
+					if (key.startsWith(pre)) {
+						String paramKey = key.replace(pre, "").trim();
+						if (paramKey.length() > 0) {
+							parameters.put(paramKey, entry.getValue());
+						}
+					}
+				}
+
+				if (!parameters.isEmpty()) {
+					beanDefinition.getPropertyValues().add("parameters", parameters);
+				}
+
+			}
+		}
+
+	}
 
     private void registerDubboConfigBindingBeanPostProcessor(String prefix, String beanName, boolean multiple,
                                                              BeanDefinitionRegistry registry) {

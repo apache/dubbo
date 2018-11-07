@@ -328,7 +328,7 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
-    private static boolean isPrimitive(Class<?> type) {
+    public static boolean isPrimitive(Class<?> type) {
         return type.isPrimitive()
                 || type == String.class
                 || type == Character.class
