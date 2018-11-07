@@ -16,9 +16,16 @@
  */
 package org.apache.dubbo.config.spring;
 
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
+import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
+import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
+import java.util.Map;
 
 /**
  * Since 2.7.0+, export and refer will only be executed when Spring is fully initialized, and each Config bean will get refreshed on the start of the export and refer process.
@@ -26,10 +33,36 @@ import org.springframework.beans.factory.InitializingBean;
  *
  * If use ConfigCenterConfig directly, you should make sure ConfigCenterConfig.init() is called before actually export/refer any Dubbo service.
  */
-public class ConfigCenterBean extends ConfigCenterConfig implements InitializingBean, DisposableBean {
+public class ConfigCenterBean extends ConfigCenterConfig implements InitializingBean, ApplicationContextAware, DisposableBean {
+
+    private transient ApplicationContext applicationContext;
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+        SpringExtensionFactory.addApplicationContext(applicationContext);
+    }
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        if (getApplication() == null) {
+            Map<String, ApplicationConfig> applicationConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ApplicationConfig.class, false, false);
+            if (applicationConfigMap != null && applicationConfigMap.size() > 0) {
+                ApplicationConfig applicationConfig = null;
+                for (ApplicationConfig config : applicationConfigMap.values()) {
+                    if (config.isDefault() == null || config.isDefault()) {
+                        if (applicationConfig != null) {
+                            throw new IllegalStateException("Duplicate application configs: " + applicationConfig + " and " + config);
+                        }
+                        applicationConfig = config;
+                    }
+                }
+                if (applicationConfig != null) {
+                    setApplication(applicationConfig);
+                }
+            }
+        }
+
         this.init();
     }
 
