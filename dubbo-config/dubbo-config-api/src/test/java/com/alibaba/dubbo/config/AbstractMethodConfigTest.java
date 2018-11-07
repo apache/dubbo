@@ -36,6 +36,13 @@ public class AbstractMethodConfigTest {
     }
 
     @Test
+    public void testForks() throws Exception {
+        MethodConfig methodConfig = new MethodConfig();
+        methodConfig.setForks(10);
+        assertThat(methodConfig.getForks(), equalTo(10));
+    }
+
+    @Test
     public void testRetries() throws Exception {
         MethodConfig methodConfig = new MethodConfig();
         methodConfig.setRetries(3);

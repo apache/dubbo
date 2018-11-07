@@ -64,6 +64,19 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
     // customized parameters
     protected Map<String, String> parameters;
 
+    /**
+     * forks for forking cluster
+     */
+    protected Integer forks;
+
+    public Integer getForks() {
+        return forks;
+    }
+
+    public void setForks(Integer forks) {
+        this.forks = forks;
+    }
+
     public Integer getTimeout() {
         return timeout;
     }
