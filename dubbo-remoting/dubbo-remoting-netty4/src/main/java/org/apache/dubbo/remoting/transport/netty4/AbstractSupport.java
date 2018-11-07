@@ -74,7 +74,7 @@ public abstract class AbstractSupport {
 
     private boolean epollAvailable() {
         boolean linux = SystemPropertyUtil.get("os.name", "").toLowerCase(Locale.US).contains("linux");
-        if (linux) {
+        if (linux && logger.isDebugEnabled()) {
             logger.debug("Platform: Linux");
         }
         return linux && Epoll.isAvailable();
