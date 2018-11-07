@@ -22,6 +22,7 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.governance.ConfigChangeEvent;
@@ -278,16 +279,26 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             List<Router> routers = toRouters(routerUrls);
             addRouters(routers);
         }
-        List<Configurator> localConfigurators = this.configurators; // local reference
         // merge override parameters
         this.overrideDirectoryUrl = directoryUrl;
+        List<Configurator> localConfigurators = this.configurators; // local reference
         if (localConfigurators != null && !localConfigurators.isEmpty()) {
             for (Configurator configurator : localConfigurators) {
                 this.overrideDirectoryUrl = configurator.configure(overrideDirectoryUrl);
             }
         }
-        // FIXME should we apply dynamicConfigurators to overrideDirectoryUrl?
-
+        List<Configurator> localAppDynamicConfigurators = this.appDynamicConfigurators; // local reference
+        if (CollectionUtils.isNotEmpty(localAppDynamicConfigurators)) {
+            localAppDynamicConfigurators.forEach(configurator -> {
+                this.overrideDirectoryUrl = configurator.configure(overrideDirectoryUrl);
+            });
+        }
+        List<Configurator> localDynamicConfigurators = this.dynamicConfigurators; // local reference
+        if (CollectionUtils.isNotEmpty(localDynamicConfigurators)) {
+            localDynamicConfigurators.forEach(configurator -> {
+                this.overrideDirectoryUrl = configurator.configure(overrideDirectoryUrl);
+            });
+        }
         // providers
         refreshInvoker(invokerUrls);
     }
