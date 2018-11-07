@@ -820,6 +820,16 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
     }
 
+    @Override
+    public void setMock(Boolean mock) {
+        throw new IllegalArgumentException("mock doesn't support on provider side");
+    }
+
+    @Override
+    public void setMock(String mock) {
+        throw new IllegalArgumentException("mock doesn't support on provider side");
+    }
+
     public List<URL> getExportedUrls() {
         return urls;
     }
