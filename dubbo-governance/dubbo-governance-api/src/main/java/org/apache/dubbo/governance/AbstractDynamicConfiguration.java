@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.governance;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.AbstractConfiguration;
 
@@ -46,7 +45,7 @@ public abstract class AbstractDynamicConfiguration<TargetConfigListener> extends
 
     @Override
     public String getConfig(String key) {
-        return getConfig(key, url.getParameter(Constants.CONFIG_GROUP_KEY, DEFAULT_GROUP), null);
+        return getConfig(key, null, null);
     }
 
     @Override
@@ -56,7 +55,7 @@ public abstract class AbstractDynamicConfiguration<TargetConfigListener> extends
 
     @Override
     public String getConfig(String key, ConfigurationListener listener) {
-        return getConfig(key, url.getParameter(Constants.CONFIG_GROUP_KEY, DEFAULT_GROUP), listener);
+        return getConfig(key, null, listener);
     }
 
     @Override
