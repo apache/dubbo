@@ -68,6 +68,29 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         retryTimer = new HashedWheelTimer(retryPeriod, TimeUnit.MILLISECONDS, 128);
     }
 
+    public void removeFailedRegisteredTask(URL url) {
+        failedRegistered.remove(url);
+    }
+
+    public void removeFailedUnregisteredTask(URL url) {
+        failedUnregistered.remove(url);
+    }
+
+    public void removeFailedSubscribedTask(URL url, NotifyListener listener) {
+        Holder h = new Holder(url, listener);
+        failedSubscribed.remove(h);
+    }
+
+    public void removeFailedUnsubscribedTask(URL url, NotifyListener listener) {
+        Holder h = new Holder(url, listener);
+        failedUnsubscribed.remove(h);
+    }
+
+    public void removeFailedNotifiedTask(URL url, NotifyListener listener) {
+        Holder h = new Holder(url, listener);
+        failedNotified.remove(h);
+    }
+
     private void addFailedRegistered(URL url) {
         FailedRegisteredTask newTask = new FailedRegisteredTask(url, this);
         FailedRegisteredTask oldOne = failedRegistered.putIfAbsent(url, newTask);

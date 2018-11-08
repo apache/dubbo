@@ -17,5 +17,6 @@ public final class FailedUnregisteredTask extends AbstractRetryTask {
     @Override
     protected void doRetry(URL url, FailbackRegistry registry) {
         registry.doUnregister(url);
+        registry.removeFailedUnregisteredTask(url);
     }
 }

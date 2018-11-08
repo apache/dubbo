@@ -24,5 +24,6 @@ public final class FailedSubscribedTask extends AbstractRetryTask {
     @Override
     protected void doRetry(URL url, FailbackRegistry registry) {
         registry.doSubscribe(url, listener);
+        registry.removeFailedSubscribedTask(url, listener);
     }
 }

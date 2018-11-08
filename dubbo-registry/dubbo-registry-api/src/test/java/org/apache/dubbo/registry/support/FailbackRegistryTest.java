@@ -52,8 +52,7 @@ public class FailbackRegistryTest {
     }
 
     /**
-     * Test method for
-     * {@link org.apache.dubbo.registry.support.FailbackRegistry#retry()}.
+     * Test method for retry
      *
      * @throws Exception
      */
@@ -61,7 +60,9 @@ public class FailbackRegistryTest {
     public void testDoRetry() throws Exception {
 
         final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
-        final CountDownLatch latch = new CountDownLatch(3);//All of them are called 3 times. Successful attempts to reduce the failure of 1. subscribe register will not be done again
+
+        // the latest latch just for 3. Because retry method has been removed.
+        final CountDownLatch latch = new CountDownLatch(2);
 
         NotifyListener listner = new NotifyListener() {
             @Override
@@ -78,7 +79,7 @@ public class FailbackRegistryTest {
 
         //Failure can not be called to listener.
         assertEquals(false, notified.get());
-        assertEquals(3, latch.getCount());
+        assertEquals(2, latch.getCount());
 
         registry.setBad(false);
 
