@@ -97,7 +97,7 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Con
      */
     @Override
     protected String getInternalProperty(String key, String group, long timeout) {
-        if (DEFAULT_GROUP.equals(group)) {
+        if (StringUtils.isNotEmpty(group) && !url.getParameter(Constants.CONFIG_GROUP_KEY, DEFAULT_GROUP).equals(group)) {
             Config config = ConfigService.getConfig(group);
             if (config != null) {
                 return config.getProperty(key, null);

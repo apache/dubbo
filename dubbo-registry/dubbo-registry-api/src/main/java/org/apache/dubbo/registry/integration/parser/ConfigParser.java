@@ -164,6 +164,7 @@ public class ConfigParser {
         if (i > 0) {
             sb.append("group=");
             sb.append(interfaceName.substring(0, i));
+            sb.append("&");
 
             interfaceName = interfaceName.substring(i + 1);
         }
@@ -171,6 +172,7 @@ public class ConfigParser {
         if (j > 0) {
             sb.append("version=");
             sb.append(interfaceName.substring(j + 1));
+            sb.append("&");
             interfaceName = interfaceName.substring(0, j);
         }
         sb.insert(0, interfaceName + "?");
