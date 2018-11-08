@@ -56,7 +56,7 @@ public class ProtocolFilterWrapper implements Protocol {
         Invoker<T> last = invoker;
         // 获得过滤器数组
         List<Filter> filters = ExtensionLoader.getExtensionLoader(Filter.class).getActivateExtension(invoker.getUrl(), key, group);
-        // 倒序循环 Filter ，创建带 Filter 链的 Invoker 对象
+
         //倒序循环 Filter ，创建带 Filter 链的 Invoker 对象。因为是通过嵌套声明匿名类循环调用的方式，
         // 所以要倒序。胖友可以手工模拟下这个过程。通过这样的方式，实际过滤的顺序，还是我们上面看到的正序。
         if (!filters.isEmpty()) {

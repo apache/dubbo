@@ -47,7 +47,9 @@ public class DubboExporter<T> extends AbstractExporter<T> {
 
     @Override
     public void unexport() {
+        //取消暴露
         super.unexport();
+        //移除
         exporterMap.remove(key);
     }
 

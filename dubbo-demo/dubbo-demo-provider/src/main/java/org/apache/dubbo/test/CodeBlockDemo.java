@@ -8,25 +8,21 @@ package org.apache.dubbo.test;
  * @author Shawn
  * @since 2018/11/8
  */
-public class CodeBlockDemo
-{
+public class CodeBlockDemo {
     {
         System.out.println("初始化代码");
     }
 
-    CodeBlockDemo()
-    {
+    CodeBlockDemo() {
         System.out.println("构造器");
     }
 
-    static
-    {
+    static {
         System.out.println("静态代码块");
     }
 
     //运行后输出结果?
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         {
             int a = 10;
             //10

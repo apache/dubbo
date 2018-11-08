@@ -292,6 +292,10 @@ public class ConfigUtils {
         return properties;
     }
 
+    /**
+     * 获取本地未使用的pid
+     * @return pid
+     */
     public static int getPid() {
         if (PID < 0) {
             try {

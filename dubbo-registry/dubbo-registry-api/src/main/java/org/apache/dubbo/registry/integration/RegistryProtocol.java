@@ -242,6 +242,8 @@ public class RegistryProtocol implements Protocol {
     /**
      * 获得注册中心 URL
      *
+     * 参照图 loadRegistries.png 逆向流程
+     *
      * @param originInvoker 原始 Invoker
      * @return URL
      */
@@ -473,6 +475,11 @@ public class RegistryProtocol implements Protocol {
     }
 
     /**
+     * 实现 Exporter 接口，Exporter 可变的包装器。
+     *
+     * 建立【返回的 Exporter】与【Protocol export 出的 Exporter】的对应关系。
+     * 在 override 时可以进行关系修改。
+     *
      * exporter proxy, establish the corresponding relationship between the returned exporter and
      * the exporter exported by the protocol, and can modify the relationship at the time of
      * override.
@@ -516,7 +523,7 @@ public class RegistryProtocol implements Protocol {
             exporter.unexport();
         }
     }
-
+    //实现 Exporter 接口，可销毁的 Exporter 实现类。
     static private class DestroyableExporter<T> implements Exporter<T> {
 
         public static final ExecutorService executor = Executors.newSingleThreadExecutor(new NamedThreadFactory("Exporter-Unexport", true));
