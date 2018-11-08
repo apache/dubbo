@@ -64,8 +64,8 @@ public abstract class AbstractRetryTask implements TimerTask {
 
     @Override
     public void run(Timeout timeout) throws Exception {
-        if (timeout.isCancelled()) {
-            // other thread cancel this timeout.
+        if (timeout.isCancelled() || timeout.timer().isStop()) {
+            // other thread cancel this timeout or stop the timer.
             return;
         }
         if (logger.isInfoEnabled()) {
