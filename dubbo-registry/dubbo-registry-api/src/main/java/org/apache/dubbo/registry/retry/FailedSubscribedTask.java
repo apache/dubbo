@@ -13,7 +13,7 @@ public final class FailedSubscribedTask extends AbstractRetryTask {
 
     private final NotifyListener listener;
 
-    FailedSubscribedTask(URL url, FailbackRegistry registry, NotifyListener listener) {
+    public FailedSubscribedTask(URL url, FailbackRegistry registry, NotifyListener listener) {
         super(url, registry, NAME);
         if (listener == null) {
             throw new IllegalArgumentException();

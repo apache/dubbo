@@ -20,7 +20,6 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.registry.NotifyListener;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -191,7 +190,7 @@ public class FailbackRegistryTest {
                 notified.set(Boolean.TRUE);
             }
         };
-        
+
         MockRegistry mockRegistry = new MockRegistry(registryUrl, countDownLatch);
         mockRegistry.register(serviceUrl);
         mockRegistry.subscribe(serviceUrl, listener);
@@ -200,7 +199,8 @@ public class FailbackRegistryTest {
         mockRegistry.recover();
         countDownLatch.await();
         Assert.assertEquals(0, mockRegistry.getFailedRegistered().size());
-        Assert.assertEquals(null, mockRegistry.getFailedSubscribed().get(registryUrl));
+        FailbackRegistry.Holder h = new FailbackRegistry.Holder(registryUrl, listener);
+        Assert.assertEquals(null, mockRegistry.getFailedSubscribed().get(h));
         Assert.assertEquals(countDownLatch.getCount(), 0);
     }
 
@@ -259,16 +259,6 @@ public class FailbackRegistryTest {
                 throw new RuntimeException("can not invoke!");
             }
             //System.out.println("do doUnsubscribe");
-            latch.countDown();
-        }
-
-        @Override
-        protected void retry() {
-            super.retry();
-            if (bad) {
-                throw new RuntimeException("can not invoke!");
-            }
-            //System.out.println("do retry");
             latch.countDown();
         }
 

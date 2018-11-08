@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class AbstractRetryTask implements TimerTask {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
      * url for retry task
@@ -32,30 +32,41 @@ public abstract class AbstractRetryTask implements TimerTask {
     /**
      * retry period
      */
-    private final long retryPeriod;
+    protected final long retryPeriod;
 
     /**
      * task name for this task
      */
-    private final String taskName;
+    protected final String taskName;
+
+    private volatile boolean cancel;
 
     AbstractRetryTask(URL url, FailbackRegistry registry, String taskName) {
-        if (url == null || registry == null || StringUtils.isBlank(taskName)) {
+        if (url == null || StringUtils.isBlank(taskName)) {
             throw new IllegalArgumentException();
         }
         this.url = url;
         this.registry = registry;
         this.taskName = taskName;
+        cancel = false;
         this.retryPeriod = url.getParameter(Constants.REGISTRY_RETRY_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RETRY_PERIOD);
     }
 
-    private void reput(Timeout timeout, Long tick) {
-        if (timeout == null || tick == null) {
+    public void cancel() {
+        cancel = true;
+    }
+
+    public boolean isCancel() {
+        return cancel;
+    }
+
+    protected void reput(Timeout timeout, long tick) {
+        if (timeout == null) {
             throw new IllegalArgumentException();
         }
 
         Timer timer = timeout.timer();
-        if (timer.isStop() || timeout.isCancelled()) {
+        if (timer.isStop() || timeout.isCancelled() || isCancel()) {
             return;
         }
 
@@ -64,7 +75,7 @@ public abstract class AbstractRetryTask implements TimerTask {
 
     @Override
     public void run(Timeout timeout) throws Exception {
-        if (timeout.isCancelled() || timeout.timer().isStop()) {
+        if (timeout.isCancelled() || timeout.timer().isStop() || isCancel()) {
             // other thread cancel this timeout or stop the timer.
             return;
         }

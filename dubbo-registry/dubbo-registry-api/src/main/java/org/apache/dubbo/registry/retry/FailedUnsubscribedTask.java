@@ -6,9 +6,6 @@ import org.apache.dubbo.registry.support.FailbackRegistry;
 
 /**
  * FailedUnsubscribedTask
- *
- * @author xiuyuhang [xiuyuhang]
- * @since 2018-11-08
  */
 public final class FailedUnsubscribedTask extends AbstractRetryTask {
 
@@ -16,8 +13,11 @@ public final class FailedUnsubscribedTask extends AbstractRetryTask {
 
     private final NotifyListener listener;
 
-    FailedUnsubscribedTask(URL url, FailbackRegistry registry, NotifyListener listener) {
+    public FailedUnsubscribedTask(URL url, FailbackRegistry registry, NotifyListener listener) {
         super(url, registry, NAME);
+        if (listener == null) {
+            throw new IllegalArgumentException();
+        }
         this.listener = listener;
     }
 
