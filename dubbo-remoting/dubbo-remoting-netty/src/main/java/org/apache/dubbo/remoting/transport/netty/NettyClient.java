@@ -67,7 +67,7 @@ public class NettyClient extends AbstractClient {
         // @see org.jboss.netty.channel.socket.SocketChannelConfig
         bootstrap.setOption("keepAlive", true);
         bootstrap.setOption("tcpNoDelay", true);
-        bootstrap.setOption("connectTimeoutMillis", getTimeout());
+        bootstrap.setOption("connectTimeoutMillis", getConnectTimeout());
         final NettyHandler nettyHandler = new NettyHandler(getUrl(), this);
         bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
             @Override
@@ -157,8 +157,9 @@ public class NettyClient extends AbstractClient {
     @Override
     protected org.apache.dubbo.remoting.Channel getChannel() {
         Channel c = channel;
-        if (c == null || !c.isConnected())
+        if (c == null || !c.isConnected()) {
             return null;
+        }
         return NettyChannel.getOrAddChannel(c, getUrl(), this);
     }
 

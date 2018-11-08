@@ -46,8 +46,9 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
 
     public StaticDirectory(URL url, List<Invoker<T>> invokers, List<Router> routers) {
         super(url == null && invokers != null && !invokers.isEmpty() ? invokers.get(0).getUrl() : url, routers);
-        if (invokers == null || invokers.isEmpty())
+        if (invokers == null || invokers.isEmpty()) {
             throw new IllegalArgumentException("invokers == null");
+        }
         this.invokers = invokers;
     }
 

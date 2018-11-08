@@ -21,10 +21,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import static java.lang.System.currentTimeMillis;
 import static org.apache.dubbo.common.utils.StringUtils.EMPTY;
 import static org.apache.dubbo.common.utils.StringUtils.length;
 import static org.apache.dubbo.common.utils.StringUtils.repeat;
-import static java.lang.System.currentTimeMillis;
 
 /**
  * tree

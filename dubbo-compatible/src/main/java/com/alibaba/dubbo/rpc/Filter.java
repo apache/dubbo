@@ -22,6 +22,7 @@ public interface Filter extends org.apache.dubbo.rpc.Filter {
 
     Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException;
 
+    @Override
     default org.apache.dubbo.rpc.Result invoke(org.apache.dubbo.rpc.Invoker<?> invoker,
                                                org.apache.dubbo.rpc.Invocation invocation)
             throws org.apache.dubbo.rpc.RpcException {
