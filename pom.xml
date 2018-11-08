@@ -279,30 +279,6 @@
             <build>
                 <plugins>
                     <plugin>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>${maven_javadoc_version}</version>
-                        <executions>
-                            <execution>
-                                <id>attach-javadoc</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                                <configuration>
-                                    <doclint>none</doclint>
-                                </configuration>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <show>public</show>
-                            <charset>UTF-8</charset>
-                            <encoding>UTF-8</encoding>
-                            <docencoding>UTF-8</docencoding>
-                            <links>
-                                <link>http://docs.oracle.com/javase/7/docs/api</link>
-                            </links>
-                        </configuration>
-                    </plugin>
-                    <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
                         <executions>
@@ -365,77 +341,6 @@
                             <Implementation-Version>${project.version}</Implementation-Version>
                         </manifestEntries>
                     </archive>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>${maven_surefire_version}</version>
-                <configuration>
-                    <useSystemClassLoader>true</useSystemClassLoader>
-                    <forkMode>once</forkMode>
-                    <argLine>${argline} ${jacocoArgLine}</argLine>
-                    <systemProperties>
-                        <!-- common shared -->
-                        <property>
-                            <name>transporter</name>
-                            <value>${transporter}</value>
-                        </property>
-                        <property>
-                            <name>serialization</name>
-                            <value>${serialization}</value>
-                        </property>
-                        <!-- server side -->
-                        <property>
-                            <name>port</name>
-                            <value>${port}</value>
-                        </property>
-                        <property>
-                            <name>threadpool</name>
-                            <value>${threadpool}</value>
-                        </property>
-                        <property>
-                            <name>threads</name>
-                            <value>${threads}</value>
-                        </property>
-                        <property>
-                            <name>iothreads</name>
-                            <value>${iothreads}</value>
-                        </property>
-                        <!-- client side -->
-                        <property>
-                            <name>server</name>
-                            <value>${server}</value>
-                        </property>
-                        <property>
-                            <name>timeout</name>
-                            <value>${timeout}</value>
-                        </property>
-                        <property>
-                            <name>length</name>
-                            <value>${length}</value>
-                        </property>
-                        <property>
-                            <name>connections</name>
-                            <value>${connections}</value>
-                        </property>
-                        <property>
-                            <name>base</name>
-                            <value>${base}</value>
-                        </property>
-                        <property>
-                            <name>concurrent</name>
-                            <value>${concurrent}</value>
-                        </property>
-                        <property>
-                            <name>runs</name>
-                            <value>${runs}</value>
-                        </property>
-                        <property>
-                            <name>onerror</name>
-                            <value>${onerror}</value>
-                        </property>
-                    </systemProperties>
                 </configuration>
             </plugin>
             <plugin>
@@ -546,65 +451,5 @@
             </plugin>
         </plugins>
 
-        <pluginManagement>
-            <plugins>
-                <!-- keep surefire and failsafe in sync -->
-                <plugin>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.19.1</version>
-                </plugin>
-                <!-- keep surefire and failsafe in sync -->
-                <plugin>
-                    <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>2.19.1</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-clean-plugin</artifactId>
-                    <version>3.0.0</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.ops4j.pax.exam</groupId>
-                    <artifactId>maven-paxexam-plugin</artifactId>
-                    <version>1.2.4</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-dependency-plugin</artifactId>
-                    <version>2.10</version>
-                </plugin>
-                <plugin>
-                    <!-- Do NOT upgrade -->
-                    <artifactId>maven-jxr-plugin</artifactId>
-                    <version>2.2</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>build-helper-maven-plugin</artifactId>
-                    <version>1.10</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.fusesource.hawtjni</groupId>
-                    <artifactId>maven-hawtjni-plugin</artifactId>
-                    <version>1.14</version>
-                </plugin>
-                <plugin>
-                    <groupId>kr.motd.maven</groupId>
-                    <artifactId>exec-maven-plugin</artifactId>
-                    <version>1.0.0.Final</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-shade-plugin</artifactId>
-                    <version>2.4.3</version>
-                    <configuration>
-                        <createDependencyReducedPom>false</createDependencyReducedPom>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.eclipse.jetty</groupId>
-                    <artifactId>jetty-maven-plugin</artifactId>
-                    <version>${maven_jetty_version}</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
     </build>
 </project>
