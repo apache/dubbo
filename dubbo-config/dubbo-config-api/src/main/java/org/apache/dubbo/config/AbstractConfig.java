@@ -504,7 +504,8 @@ public abstract class AbstractConfig implements Serializable {
                 try {
                     String name = method.getName();
                     if ((name.startsWith("get") || name.startsWith("is"))
-                            && !"getClass".equals(name) && !"get".equals(name) && !"is".equals(name)
+                            && !"get".equals(name) && !"is".equals(name)
+                            && !"getClass".equals(name) && !"getObject".equals(name)
                             && Modifier.isPublic(method.getModifiers())
                             && method.getParameterTypes().length == 0
                             && isPrimitive(method.getReturnType())) {
