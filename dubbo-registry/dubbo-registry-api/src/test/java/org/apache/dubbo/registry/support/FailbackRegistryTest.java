@@ -224,7 +224,7 @@ public class FailbackRegistryTest {
         }
 
         @Override
-        protected void doRegister(URL url) {
+        public void doRegister(URL url) {
             if (bad) {
                 throw new RuntimeException("can not invoke!");
             }
@@ -234,7 +234,7 @@ public class FailbackRegistryTest {
         }
 
         @Override
-        protected void doUnregister(URL url) {
+        public void doUnregister(URL url) {
             if (bad) {
                 throw new RuntimeException("can not invoke!");
             }
@@ -244,7 +244,7 @@ public class FailbackRegistryTest {
         }
 
         @Override
-        protected void doSubscribe(URL url, NotifyListener listener) {
+        public void doSubscribe(URL url, NotifyListener listener) {
             if (bad) {
                 throw new RuntimeException("can not invoke!");
             }
@@ -254,7 +254,7 @@ public class FailbackRegistryTest {
         }
 
         @Override
-        protected void doUnsubscribe(URL url, NotifyListener listener) {
+        public void doUnsubscribe(URL url, NotifyListener listener) {
             if (bad) {
                 throw new RuntimeException("can not invoke!");
             }

@@ -451,12 +451,12 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
     // ==== Template method ====
 
-    protected abstract void doRegister(URL url);
+    public abstract void doRegister(URL url);
 
-    protected abstract void doUnregister(URL url);
+    public abstract void doUnregister(URL url);
 
-    protected abstract void doSubscribe(URL url, NotifyListener listener);
+    public abstract void doSubscribe(URL url, NotifyListener listener);
 
-    protected abstract void doUnsubscribe(URL url, NotifyListener listener);
+    public abstract void doUnsubscribe(URL url, NotifyListener listener);
 
 }
