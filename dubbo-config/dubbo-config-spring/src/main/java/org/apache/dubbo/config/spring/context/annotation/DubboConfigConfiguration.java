@@ -19,6 +19,7 @@ package org.apache.dubbo.config.spring.context.annotation;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConsumerConfig;
+import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
@@ -56,7 +57,8 @@ public class DubboConfigConfiguration {
             @EnableDubboConfigBinding(prefix = "dubbo.monitor", type = MonitorConfig.class),
             @EnableDubboConfigBinding(prefix = "dubbo.provider", type = ProviderConfig.class),
             @EnableDubboConfigBinding(prefix = "dubbo.consumer", type = ConsumerConfig.class),
-            @EnableDubboConfigBinding(prefix = "dubbo.configcenter", type = ConfigCenterBean.class)
+            @EnableDubboConfigBinding(prefix = "dubbo.configcenter", type = ConfigCenterBean.class),
+            @EnableDubboConfigBinding(prefix = "dubbo.metadatareport", type = MetadataReportConfig.class)
     })
     public static class Single {
 
