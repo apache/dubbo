@@ -33,6 +33,7 @@ import com.alibaba.dubbo.config.spring.action.DemoActionBySetter;
 import com.alibaba.dubbo.config.spring.annotation.consumer.AnnotationAction;
 import com.alibaba.dubbo.config.spring.api.DemoService;
 import com.alibaba.dubbo.config.spring.api.HelloService;
+import com.alibaba.dubbo.config.spring.context.annotation.provider.ProviderConfiguration;
 import com.alibaba.dubbo.config.spring.filter.MockFilter;
 import com.alibaba.dubbo.config.spring.impl.DemoServiceImpl;
 import com.alibaba.dubbo.config.spring.impl.HelloServiceImpl;
@@ -51,6 +52,7 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.Collection;
@@ -104,6 +106,22 @@ public class ConfigTest {
             ctx.stop();
             ctx.close();
         }
+    }
+
+    @Test
+    public void testServiceAnnotation() {
+        AnnotationConfigApplicationContext providerContext = new AnnotationConfigApplicationContext();
+        providerContext.register(ProviderConfiguration.class);
+
+        providerContext.refresh();
+
+        ReferenceConfig<HelloService> reference = new ReferenceConfig<HelloService>();
+        reference.setApplication(new ApplicationConfig("consumer"));
+        reference.setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
+        reference.setInterface(HelloService.class);
+        reference.setUrl("dubbo://127.0.0.1:12345");
+        String hello = reference.get().sayHello("hello");
+        assertEquals("Hello, hello", hello);
     }
 
     @Test
