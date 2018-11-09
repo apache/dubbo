@@ -38,6 +38,7 @@ public class ConfigParser {
     public static List<URL> parseConfigurators(String rawConfig) {
         List<URL> urls = new ArrayList<>();
         ConfiguratorConfig configuratorConfig = parseObject(rawConfig, ConfiguratorConfig.class);
+
         String scope = configuratorConfig.getScope();
         List<ConfigItem> items = configuratorConfig.getConfigs();
 
@@ -46,10 +47,16 @@ public class ConfigParser {
                     appItemToUrls(item, configuratorConfig.getKey())
                             .stream()
                             .map(u -> u.addParameter(Constants.CATEGORY_KEY, Constants.APP_DYNAMIC_CONFIGURATORS_CATEGORY))
+                            .map(u -> u.addParameter(Constants.ENABLED_KEY, configuratorConfig.isEnabled()))
                             .collect(Collectors.toList())
             ));
         } else { // servcie scope by default.
-            items.forEach(item -> urls.addAll(serviceItemToUrls(item, configuratorConfig.getKey())));
+            items.forEach(item -> urls.addAll(
+                    serviceItemToUrls(item, configuratorConfig.getKey())
+                            .stream()
+                            .map(u -> u.addParameter(Constants.ENABLED_KEY, configuratorConfig.isEnabled()))
+                            .collect(Collectors.toList()))
+            );
         }
         return urls;
     }
@@ -105,7 +112,7 @@ public class ConfigParser {
                 services = new ArrayList<>();
             }
             if (services.size() == 0) {
-                services.add("*/*:*");
+                services.add("*");
             }
             for (String s : services) {
                 urls.add(URL.valueOf(urlStr + appendService(s) + toParameterString(item) + "&application=" + appKey));

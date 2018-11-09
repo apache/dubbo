@@ -79,6 +79,10 @@ public abstract class AbstractConfigurator implements Configurator {
                 conditionKeys.add(Constants.CHECK_KEY);
                 conditionKeys.add(Constants.DYNAMIC_KEY);
                 conditionKeys.add(Constants.ENABLED_KEY);
+                conditionKeys.add(Constants.GROUP_KEY);
+                conditionKeys.add(Constants.VERSION_KEY);
+                conditionKeys.add(Constants.APPLICATION_KEY);
+                conditionKeys.add(Constants.SIDE_KEY);
                 for (Map.Entry<String, String> entry : configuratorUrl.getParameters().entrySet()) {
                     String key = entry.getKey();
                     String value = entry.getValue();

@@ -23,33 +23,44 @@ import org.apache.dubbo.registry.integration.RegistryDirectory;
 import org.apache.dubbo.rpc.Invoker;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * @date 2017/11/23
  */
 public class ProviderConsumerRegTable {
-    public static ConcurrentHashMap<String, Set<ProviderInvokerWrapper>> providerInvokers = new ConcurrentHashMap<String, Set<ProviderInvokerWrapper>>();
-    public static ConcurrentHashMap<String, Set<ConsumerInvokerWrapper>> consumerInvokers = new ConcurrentHashMap<String, Set<ConsumerInvokerWrapper>>();
+    public static ConcurrentHashMap<String, ConcurrentMap<Invoker, ProviderInvokerWrapper>> providerInvokers = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<String, Set<ConsumerInvokerWrapper>> consumerInvokers = new ConcurrentHashMap<>();
 
     public static void registerProvider(Invoker invoker, URL registryUrl, URL providerUrl) {
         ProviderInvokerWrapper wrapperInvoker = new ProviderInvokerWrapper(invoker, registryUrl, providerUrl);
         String serviceUniqueName = providerUrl.getServiceKey();
-        Set<ProviderInvokerWrapper> invokers = providerInvokers.get(serviceUniqueName);
+        ConcurrentMap<Invoker, ProviderInvokerWrapper> invokers = providerInvokers.get(serviceUniqueName);
         if (invokers == null) {
-            providerInvokers.putIfAbsent(serviceUniqueName, new ConcurrentHashSet<ProviderInvokerWrapper>());
+            providerInvokers.putIfAbsent(serviceUniqueName, new ConcurrentHashMap<>());
             invokers = providerInvokers.get(serviceUniqueName);
         }
-        invokers.add(wrapperInvoker);
+        invokers.put(invoker, wrapperInvoker);
     }
 
-    public static Set<ProviderInvokerWrapper> getProviderInvoker(String serviceUniqueName) {
+    /*public static ProviderInvokerWrapper removeProviderWrapper(Invoker invoker, URL providerUrl) {
+        String serviceUniqueName = providerUrl.getServiceKey();
         Set<ProviderInvokerWrapper> invokers = providerInvokers.get(serviceUniqueName);
+        if (invokers == null) {
+            return null;
+        }
+        return invokers.remove(new ProviderInvokerWrapper(invoker, null, null));
+    }*/
+
+    public static Set<ProviderInvokerWrapper> getProviderInvoker(String serviceUniqueName) {
+        ConcurrentMap<Invoker, ProviderInvokerWrapper> invokers = providerInvokers.get(serviceUniqueName);
         if (invokers == null) {
             return Collections.emptySet();
         }
-        return invokers;
+        return new HashSet<>(invokers.values());
     }
 
     public static ProviderInvokerWrapper getProviderWrapper(Invoker invoker) {
@@ -58,15 +69,14 @@ public class ProviderConsumerRegTable {
             providerUrl = URL.valueOf(providerUrl.getParameterAndDecoded(Constants.EXPORT_KEY));
         }
         String serviceUniqueName = providerUrl.getServiceKey();
-        Set<ProviderInvokerWrapper> invokers = providerInvokers.get(serviceUniqueName);
+        ConcurrentMap<Invoker, ProviderInvokerWrapper> invokers = providerInvokers.get(serviceUniqueName);
         if (invokers == null) {
             return null;
         }
 
-        for (ProviderInvokerWrapper providerWrapper : invokers) {
-            Invoker providerInvoker = providerWrapper.getInvoker();
-            if (providerInvoker == invoker) {
-                return providerWrapper;
+        for (Invoker inv : invokers.keySet()) {
+            if (inv == invoker) {
+                return invokers.get(inv);
             }
         }
 
