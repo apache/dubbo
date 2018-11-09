@@ -47,7 +47,8 @@ public abstract class AbstractConfigurator implements Configurator {
 
     @Override
     public URL configure(URL url) {
-        if (configuratorUrl.getHost() == null || url == null || url.getHost() == null) {
+        // If override url is not enabled or is invalid, just return.
+        if (!configuratorUrl.getParameter(Constants.ENABLED_KEY, true) || configuratorUrl.getHost() == null || url == null || url.getHost() == null) {
             return url;
         }
         // If override url has port, means it is a provider address. We want to control a specific provider with this override url, it may take effect on the specific provider instance or on consumers holding this provider instance.
