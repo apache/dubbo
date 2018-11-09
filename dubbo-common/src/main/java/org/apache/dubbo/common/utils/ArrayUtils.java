@@ -15,27 +15,33 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.hessian;
+package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.rpc.RpcContext;
+/**
+ * Contains some methods to check array.
+ */
+public final class ArrayUtils {
 
-import com.caucho.hessian.client.HessianConnection;
-import com.caucho.hessian.client.HessianURLConnectionFactory;
+    private ArrayUtils() {
+    }
 
-import java.io.IOException;
-import java.net.URL;
+    /**
+     * <p>Checks if the array is null or empty. <p/>
+     *
+     * @param array th array to check
+     * @return {@code true} if the array is null or empty.
+     */
+    public static boolean isEmpty(final Object[] array) {
+        return array == null || array.length == 0;
+    }
 
-public class DubboHessianURLConnectionFactory extends HessianURLConnectionFactory {
-
-    @Override
-    public HessianConnection open(URL url) throws IOException {
-        HessianConnection connection = super.open(url);
-        RpcContext context = RpcContext.getContext();
-        for (String key : context.getAttachments().keySet()) {
-            connection.addHeader(Constants.DEFAULT_EXCHANGER + key, context.getAttachment(key));
-        }
-
-        return connection;
+    /**
+     * <p>Checks if the array is not null or empty. <p/>
+     *
+     * @param array th array to check
+     * @return {@code true} if the array is not null or empty.
+     */
+    public static boolean isNotEmpty(final Object[] array) {
+        return !isEmpty(array);
     }
 }
