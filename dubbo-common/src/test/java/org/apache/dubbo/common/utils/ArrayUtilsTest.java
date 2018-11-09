@@ -15,27 +15,27 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.hessian;
+package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.rpc.RpcContext;
+import static junit.framework.TestCase.assertFalse;
+import static junit.framework.TestCase.assertTrue;
 
-import com.caucho.hessian.client.HessianConnection;
-import com.caucho.hessian.client.HessianURLConnectionFactory;
+import org.junit.Test;
 
-import java.io.IOException;
-import java.net.URL;
+public class ArrayUtilsTest {
 
-public class DubboHessianURLConnectionFactory extends HessianURLConnectionFactory {
-
-    @Override
-    public HessianConnection open(URL url) throws IOException {
-        HessianConnection connection = super.open(url);
-        RpcContext context = RpcContext.getContext();
-        for (String key : context.getAttachments().keySet()) {
-            connection.addHeader(Constants.DEFAULT_EXCHANGER + key, context.getAttachment(key));
-        }
-
-        return connection;
+    @Test
+    public void isEmpty() throws Exception {
+        assertTrue(ArrayUtils.isEmpty(null));
+        assertTrue(ArrayUtils.isEmpty(new Object[0]));
+        assertFalse(ArrayUtils.isEmpty(new Object[]{"abc"}));
     }
+
+    @Test
+    public void isNotEmpty() throws Exception {
+        assertFalse(ArrayUtils.isNotEmpty(null));
+        assertFalse(ArrayUtils.isNotEmpty(new Object[0]));
+        assertTrue(ArrayUtils.isNotEmpty(new Object[]{"abc"}));
+    }
+
 }
