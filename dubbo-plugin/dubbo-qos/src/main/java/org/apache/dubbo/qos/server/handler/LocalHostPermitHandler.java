@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.qos.server.handler;
 
-
 import org.apache.dubbo.qos.common.QosConstants;
 
 import io.netty.buffer.ByteBuf;

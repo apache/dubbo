@@ -309,7 +309,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         checkRegistry();
         checkProtocol();
         appendProperties(this);
-        checkStubAndMock(interfaceClass);
+        checkStub(interfaceClass);
+        checkMock(interfaceClass);
         if (path == null || path.length() == 0) {
             path = interfaceName;
         }
@@ -815,6 +816,16 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         } else {
             throw new IllegalArgumentException("Unsupported generic type " + generic);
         }
+    }
+
+    @Override
+    public void setMock(Boolean mock) {
+        throw new IllegalArgumentException("mock doesn't support on provider side");
+    }
+
+    @Override
+    public void setMock(String mock) {
+        throw new IllegalArgumentException("mock doesn't support on provider side");
     }
 
     public List<URL> getExportedUrls() {
