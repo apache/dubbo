@@ -417,12 +417,7 @@ public class DubboProtocol extends AbstractProtocol {
 
             // If the clients is empty, then the first initialization is
             if(CollectionUtils.isEmpty(clients)) {
-                clients = new CopyOnWriteArrayList<ReferenceCountExchangeClient>();
-
-                for (int i = 0; i < connectNum; i++) {
-                    clients.add(buildReferenceCountExchangeClient(url, key));
-                }
-
+                clients = buildReferenceCountExchangeClientList(url, key, connectNum);
                 referenceClientMap.put(key, clients);
 
             } else {
@@ -500,8 +495,6 @@ public class DubboProtocol extends AbstractProtocol {
             clients.add(buildReferenceCountExchangeClient(url, key));
         }
 
-        ghostClientMap.remove(key);
-
         return clients;
     }
 
@@ -515,6 +508,8 @@ public class DubboProtocol extends AbstractProtocol {
         ExchangeClient exchangeClient = initClient(url);
 
         ReferenceCountExchangeClient client = new ReferenceCountExchangeClient(exchangeClient, ghostClientMap);
+
+        ghostClientMap.remove(key);
 
         return client;
     }
