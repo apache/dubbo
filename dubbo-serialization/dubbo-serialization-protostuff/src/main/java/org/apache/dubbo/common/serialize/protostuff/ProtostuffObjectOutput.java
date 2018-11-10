@@ -17,12 +17,13 @@
 
 package org.apache.dubbo.common.serialize.protostuff;
 
+import org.apache.dubbo.common.serialize.ObjectOutput;
+import org.apache.dubbo.common.serialize.protostuff.utils.WrapperUtils;
+
 import io.protostuff.LinkedBuffer;
 import io.protostuff.ProtobufIOUtil;
 import io.protostuff.Schema;
 import io.protostuff.runtime.RuntimeSchema;
-import org.apache.dubbo.common.serialize.ObjectOutput;
-import org.apache.dubbo.common.serialize.protostuff.utils.WrapperUtils;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
