@@ -57,6 +57,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * dubbo protocol support.
@@ -71,6 +72,7 @@ public class DubboProtocol extends AbstractProtocol {
     private final Map<String, ExchangeServer> serverMap = new ConcurrentHashMap<String, ExchangeServer>(); // <host:port,Exchanger>
     private final Map<String, List<ReferenceCountExchangeClient>> referenceClientMap = new ConcurrentHashMap<>(); // <host:port,Exchanger>
     private final ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap = new ConcurrentHashMap<String, LazyConnectExchangeClient>();
+    private final ConcurrentMap<String, Object> locks = new ConcurrentHashMap<String, Object>();
     private final Set<String> optimizers = new ConcurrentHashSet<String>();
     //consumer side export a stub service for dispatching event
     //servicekey-stubmethods
@@ -390,53 +392,129 @@ public class DubboProtocol extends AbstractProtocol {
      * Get shared connection
      *
      * @param url
-     * @param connectNum
+     * @param connectNum connectNum must be greater than or equal to 1
      */
     private List<ReferenceCountExchangeClient> getSharedClient(URL url, int connectNum) {
         String key = url.getAddress();
         List<ReferenceCountExchangeClient> clients = referenceClientMap.get(key);
-        boolean firstBuild = false;
 
-        if (clients == null) {
-            List<ReferenceCountExchangeClient> referenceCountExchangeClients = buildReferenceCountExchangeClientList(url, key, connectNum);
-            referenceClientMap.put(key, referenceCountExchangeClients);
-
-            clients = referenceCountExchangeClients;
-
-            firstBuild = true;
+        if (checkClientCanUse(clients)) {
+            batchClientRefIncr(clients);
+            return clients;
         }
 
-        for (int i = 0; i < clients.size(); i++) {
-            ReferenceCountExchangeClient client = clients.get(i);
-            if (client.isClosed()) {
-                client = buildReferenceCountExchangeClient(url, key);
-                clients.set(i, client);
+        locks.putIfAbsent(key, new Object());
+        synchronized (locks.get(key)) {
+            clients = referenceClientMap.get(key);
+            // dubbo check
+            if (checkClientCanUse(clients)) {
+                batchClientRefIncr(clients);
+                return clients;
+            }
 
-            } else if (!firstBuild) {
-                client.incrementAndGetCount();
+            // connectNum must be greater than or equal to 1
+            connectNum = Math.max(connectNum, 1);
+
+            // If the clients is empty, then the first initialization is
+            if(CollectionUtils.isEmpty(clients)) {
+                clients = new CopyOnWriteArrayList<ReferenceCountExchangeClient>();
+
+                for (int i = 0; i < connectNum; i++) {
+                    clients.add(buildReferenceCountExchangeClient(url, key));
+                }
+
+                referenceClientMap.put(key, clients);
+
+            } else {
+                for (int i = 0; i < clients.size(); i++) {
+                    ReferenceCountExchangeClient referenceCountExchangeClient = clients.get(i);
+                    // If there is a client in the list that is no longer available, create a new one to replace him.
+                    if(referenceCountExchangeClient == null || referenceCountExchangeClient.isClosed()) {
+                        clients.set(i, buildReferenceCountExchangeClient(url, key));
+                        continue;
+                    }
+
+                    referenceCountExchangeClient.incrementAndGetCount();
+                }
+            }
+
+            /**
+             * I understand that the purpose of the remove operation here is to avoid the expired url key
+             * always occupying this memory space.
+             */
+            locks.remove(key);
+
+            return clients;
+        }
+    }
+
+    /**
+     * Check if the client list is all available
+     *
+     * @param referenceCountExchangeClients
+     * @return true-available，false-unavailable
+     */
+    private boolean checkClientCanUse(List<ReferenceCountExchangeClient> referenceCountExchangeClients) {
+        if (CollectionUtils.isEmpty(referenceCountExchangeClients)) {
+            return false;
+        }
+
+        for (ReferenceCountExchangeClient referenceCountExchangeClient : referenceCountExchangeClients) {
+            // As long as one client is not available, you need to replace the unavailable client with the available one.
+            if (referenceCountExchangeClient == null || referenceCountExchangeClient.isClosed()) {
+                return false;
             }
         }
 
-        return clients;
+        return true;
     }
 
-    private List<ReferenceCountExchangeClient> buildReferenceCountExchangeClientList(URL url, String key, int connectNum) {
+    /**
+     * Add client references in bulk
+     *
+     * @param referenceCountExchangeClients
+     */
+    private void batchClientRefIncr(List<ReferenceCountExchangeClient> referenceCountExchangeClients) {
+        if (CollectionUtils.isEmpty(referenceCountExchangeClients)) {
+            return;
+        }
 
-        List<ReferenceCountExchangeClient> clients = new ArrayList<ReferenceCountExchangeClient>(connectNum);
+        for (ReferenceCountExchangeClient referenceCountExchangeClient : referenceCountExchangeClients) {
+            if (referenceCountExchangeClient != null) {
+                referenceCountExchangeClient.incrementAndGetCount();
+            }
+        }
+    }
+
+    /**
+     * Bulk build client
+     * @param url
+     * @param key
+     * @param connectNum
+     * @return
+     */
+    private List<ReferenceCountExchangeClient> buildReferenceCountExchangeClientList(URL url, String key, int connectNum) {
+        List<ReferenceCountExchangeClient> clients = new CopyOnWriteArrayList<ReferenceCountExchangeClient>();
 
         for (int i = 0; i < connectNum; i++) {
             clients.add(buildReferenceCountExchangeClient(url, key));
         }
 
+        ghostClientMap.remove(key);
+
         return clients;
     }
 
+    /**
+     * Build a single client
+     * @param url
+     * @param key
+     * @return
+     */
     private ReferenceCountExchangeClient buildReferenceCountExchangeClient(URL url, String key) {
-
         ExchangeClient exchangeClient = initClient(url);
 
         ReferenceCountExchangeClient client = new ReferenceCountExchangeClient(exchangeClient, ghostClientMap);
-        ghostClientMap.remove(key);
 
         return client;
     }
