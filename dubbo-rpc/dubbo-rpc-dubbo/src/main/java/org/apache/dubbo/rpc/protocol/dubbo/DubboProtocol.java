@@ -373,8 +373,8 @@ public class DubboProtocol extends AbstractProtocol {
         // if not configured, connection is shared, otherwise, one connection for one service
         if (connections == 0) {
             service_share_connect = true;
-            connections = Integer.parseInt(ConfigUtils.getProperty(Constants.DEFAULT_CONNECTIONS_KEY,
-                    Constants.DEFAULT_CONNECTIONS));
+            connections = Integer.parseInt(ConfigUtils.getProperty(Constants.SERVICE_CONNECTIONS_KEY,
+                    Constants.SERVICE_CONNECTIONS));
             shareClients = getSharedClient(url, connections);
         }
         ExchangeClient[] clients = new ExchangeClient[connections];
