@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -49,12 +50,14 @@ import java.util.stream.Collectors;
  */
 public class TagRouter extends AbstractRouter implements Comparable<Router>, ConfigurationListener {
     public static final String NAME = "TAG_ROUTER";
-    public static final int DEFAULT_PRIORITY = 100;
+    private static final int DEFAULT_PRIORITY = 100;
     private static final Logger logger = LoggerFactory.getLogger(TagRouter.class);
     private static final String TAGROUTERRULES_DATAID = ".tagrouters"; // acts
     private DynamicConfiguration configuration;
     private TagRouterRule tagRouterRule;
     private String application;
+
+    private AtomicBoolean isInited;
 
     public TagRouter(URL url) {
         this(ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getAdaptiveExtension().getDynamicConfiguration(url), url);
@@ -73,6 +76,9 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
     }
 
     private void init() {
+        if (!isInited.compareAndSet(false, true)) {
+            return;
+        }
         if (StringUtils.isEmpty(application)) {
             logger.error("TagRouter must getConfig from or subscribe to a specific application, but the application in this TagRouter is not specified.");
         }
