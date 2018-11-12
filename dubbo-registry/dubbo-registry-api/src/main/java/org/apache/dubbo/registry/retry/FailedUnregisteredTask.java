@@ -18,6 +18,7 @@
 package org.apache.dubbo.registry.retry;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.timer.Timeout;
 import org.apache.dubbo.registry.support.FailbackRegistry;
 
 /**
@@ -32,7 +33,7 @@ public final class FailedUnregisteredTask extends AbstractRetryTask {
     }
 
     @Override
-    protected void doRetry(URL url, FailbackRegistry registry) {
+    protected void doRetry(URL url, FailbackRegistry registry, Timeout timeout) {
         registry.doUnregister(url);
         registry.removeFailedUnregisteredTask(url);
     }

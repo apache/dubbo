@@ -57,27 +57,9 @@ public final class FailedNotifiedTask extends AbstractRetryTask {
     }
 
     @Override
-    public void run(Timeout timeout) throws Exception {
-        if (timeout.isCancelled() || timeout.timer().isStop() || isCancel()) {
-            // other thread cancel this timeout or stop the timer or cancel the task.
-            return;
-        }
-        if (logger.isInfoEnabled()) {
-            logger.info(taskName + " : " + url);
-        }
-        try {
-            listener.notify(urls);
-            urls.clear();
-        } catch (Throwable t) { // Ignore all the exceptions and wait for the next retry
-            logger.warn("Failed to " + taskName + url + ", waiting for again, cause:" + t.getMessage(), t);
-        }
-
-        // always reput this into timer.
+    protected void doRetry(URL url, FailbackRegistry registry, Timeout timeout) {
+        listener.notify(urls);
+        urls.clear();
         reput(timeout, retryPeriod);
-    }
-
-    @Override
-    protected void doRetry(URL url, FailbackRegistry registry) {
-        // do nothing.
     }
 }

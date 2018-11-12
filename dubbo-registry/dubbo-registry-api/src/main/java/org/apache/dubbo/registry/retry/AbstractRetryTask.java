@@ -100,7 +100,7 @@ public abstract class AbstractRetryTask implements TimerTask {
             logger.info(taskName + " : " + url);
         }
         try {
-            doRetry(url, registry);
+            doRetry(url, registry, timeout);
         } catch (Throwable t) { // Ignore all the exceptions and wait for the next retry
             logger.warn("Failed to execute task " + taskName + ", url: " + url + ", waiting for again, cause:" + t.getMessage(), t);
             // reput this task when catch exception.
@@ -108,5 +108,5 @@ public abstract class AbstractRetryTask implements TimerTask {
         }
     }
 
-    protected abstract void doRetry(URL url, FailbackRegistry registry);
+    protected abstract void doRetry(URL url, FailbackRegistry registry, Timeout timeout);
 }
