@@ -80,7 +80,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         return new URL(Constants.CONFIG_PROTOCOL, username, password, host, port, ConfigCenterConfig.class.getSimpleName(), map);
     }
 
-    public void init() throws Exception {
+    public void init() {
         // give jvm properties the chance to override local configs, e.g., -Ddubbo.configcenter.config.priority
         refresh();
 
@@ -99,7 +99,7 @@ public class ConfigCenterConfig extends AbstractConfig {
             Environment.getInstance().updateExternalConfigurationMap(parseProperties(configContent));
             Environment.getInstance().updateAppExternalConfigurationMap(parseProperties(appConfigContent));
         } catch (IOException e) {
-            throw e;
+            throw new IllegalStateException("Failed to parse configurations from Config Center.", e);
         }
     }
 
