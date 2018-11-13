@@ -150,8 +150,8 @@ git reset --hard $COMMIT_ID
 
 cd distribution/target
 echo "Start to shasum for bin/source.zip"
-shasum -a 512 apache-dubbo-incubating-${VERSION}-source-release.zip >> apache-dubbo-incubating-${VERSION}-source-release.zip.sha512
-shasum -a 512 apache-dubbo-incubating-${VERSION}-bin-release.zip >> apache-dubbo-incubating-${VERSION}-bin-release.zip.sha512
+shasum -b -a 512 apache-dubbo-incubating-${VERSION}-source-release.zip >> apache-dubbo-incubating-${VERSION}-source-release.zip.sha512
+shasum -b -a 512 apache-dubbo-incubating-${VERSION}-bin-release.zip >> apache-dubbo-incubating-${VERSION}-bin-release.zip.sha512
 
 read -p "Need to push bin/source.zip to Apache svn repo ? (y/n, default is n) " NEED_PUSH_APACHE
 
