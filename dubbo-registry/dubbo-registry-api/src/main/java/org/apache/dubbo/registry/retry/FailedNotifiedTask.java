@@ -58,8 +58,10 @@ public final class FailedNotifiedTask extends AbstractRetryTask {
 
     @Override
     protected void doRetry(URL url, FailbackRegistry registry, Timeout timeout) {
-        listener.notify(urls);
-        urls.clear();
+        if (!CollectionUtils.isEmpty(urls)) {
+            listener.notify(urls);
+            urls.clear();
+        }
         reput(timeout, retryPeriod);
     }
 }
