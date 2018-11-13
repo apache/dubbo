@@ -24,7 +24,10 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.EnvironmentAware;
+import org.springframework.core.env.Environment;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -33,9 +36,11 @@ import java.util.Map;
  *
  * If use ConfigCenterConfig directly, you should make sure ConfigCenterConfig.init() is called before actually export/refer any Dubbo service.
  */
-public class ConfigCenterBean extends ConfigCenterConfig implements InitializingBean, ApplicationContextAware, DisposableBean {
+public class ConfigCenterBean extends ConfigCenterConfig implements InitializingBean, ApplicationContextAware, DisposableBean, EnvironmentAware {
 
     private transient ApplicationContext applicationContext;
+
+    private boolean auto = false;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
@@ -63,11 +68,31 @@ public class ConfigCenterBean extends ConfigCenterConfig implements Initializing
             }
         }
 
-        this.init();
+        if (!auto) {
+            this.init();
+        }
     }
 
     @Override
     public void destroy() throws Exception {
 
+    }
+
+    @Override
+    public void setEnvironment(Environment environment) {
+        if (auto) {
+            Object rawProperties = environment.getProperty("dubbo.properties", Object.class);
+            Map<String, String> externalProperties = new HashMap<>();
+            try {
+                if (rawProperties instanceof Map) {
+                    externalProperties = (Map<String, String>) rawProperties;
+                } else if (rawProperties instanceof String) {
+                    externalProperties = parseProperties((String) rawProperties);
+                }
+                org.apache.dubbo.config.context.Environment.getInstance().updateExternalConfigurationMap(externalProperties);
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
+        }
     }
 }

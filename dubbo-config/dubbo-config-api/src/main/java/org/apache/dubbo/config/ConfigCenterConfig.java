@@ -114,7 +114,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         return appname;
     }
 
-    private Map<String, String> parseProperties(String content) throws IOException {
+    protected Map<String, String> parseProperties(String content) throws IOException {
         Map<String, String> map = new HashMap<>();
         if (content == null) {
             logger.warn("You specified the config centre, but there's not even one single config item in it.");
