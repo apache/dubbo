@@ -223,6 +223,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     }
 
     public synchronized T get() {
+        checkAndUpdateSubConfigs();
+
         if (destroyed) {
             throw new IllegalStateException("Already destroyed!");
         }
