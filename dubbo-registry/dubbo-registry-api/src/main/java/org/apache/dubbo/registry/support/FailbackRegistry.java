@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.support;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
+import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.retry.FailedNotifiedTask;
 import org.apache.dubbo.registry.retry.FailedRegisteredTask;
@@ -65,7 +66,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         this.retryPeriod = url.getParameter(Constants.REGISTRY_RETRY_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RETRY_PERIOD);
 
         // since the retry task will not be very much. 128 ticks is enough.
-        retryTimer = new HashedWheelTimer(retryPeriod, TimeUnit.MILLISECONDS, 128);
+        retryTimer = new HashedWheelTimer(new NamedThreadFactory("DubboRegistryRetryTimer", true), retryPeriod, TimeUnit.MILLISECONDS, 128);
     }
 
     public void removeFailedRegisteredTask(URL url) {
