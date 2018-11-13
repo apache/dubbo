@@ -57,7 +57,7 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
     private TagRouterRule tagRouterRule;
     private String application;
 
-    private AtomicBoolean isInited;
+    private AtomicBoolean isInited = new AtomicBoolean(false);
 
     public TagRouter(URL url) {
         this(ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getAdaptiveExtension().getDynamicConfiguration(url), url);
