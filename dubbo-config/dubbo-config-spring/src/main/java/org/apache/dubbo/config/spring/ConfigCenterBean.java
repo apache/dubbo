@@ -25,7 +25,9 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
+import org.springframework.core.env.PropertySource;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -85,14 +87,33 @@ public class ConfigCenterBean extends ConfigCenterConfig implements Initializing
             Map<String, String> externalProperties = new HashMap<>();
             try {
                 if (rawProperties instanceof Map) {
-                    externalProperties = (Map<String, String>) rawProperties;
+                    externalProperties.putAll((Map<String, String>) rawProperties);
                 } else if (rawProperties instanceof String) {
-                    externalProperties = parseProperties((String) rawProperties);
+                    externalProperties.putAll(parseProperties((String) rawProperties));
+                }
+
+                if (environment instanceof ConfigurableEnvironment && externalProperties.isEmpty()) {
+                    ConfigurableEnvironment configurableEnvironment = (ConfigurableEnvironment) environment;
+                    PropertySource propertySource = configurableEnvironment.getPropertySources().get("dubbo.properties");
+                    Object source = propertySource.getSource();
+                    if (source instanceof Map) {
+                        ((Map<String, Object>) source).forEach((k, v) -> {
+                            externalProperties.put(k, (String) v);
+                        });
+                    }
                 }
                 org.apache.dubbo.config.context.Environment.getInstance().updateExternalConfigurationMap(externalProperties);
             } catch (Exception e) {
                 throw new IllegalStateException(e);
             }
         }
+    }
+
+    public boolean isAuto() {
+        return auto;
+    }
+
+    public void setAuto(boolean auto) {
+        this.auto = auto;
     }
 }
