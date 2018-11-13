@@ -14,7 +14,7 @@
 
     <groupId>com.alibaba</groupId>
     <artifactId>dubbo-bom</artifactId>
-    <version>2.6.5-SNAPSHOT</version>
+    <version>2.6.5</version>
     <packaging>pom</packaging>
 
     <name>dubbo-bom</name>
@@ -33,7 +33,7 @@
         <url>https://github.com/apache/incubator-dubbo</url>
         <connection>scm:git:https://github.com/apache/incubator-dubbo.git</connection>
         <developerConnection>scm:git:https://github.com/apache/incubator-dubbo.git</developerConnection>
-      <tag>HEAD</tag>
+      <tag>dubbo-2.6.5</tag>
   </scm>
     <mailingLists>
         <mailingList>
