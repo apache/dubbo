@@ -27,6 +27,7 @@ public class ConfiguratorConfig {
 
     private String scope;
     private String key;
+    private boolean enabled = true;
     private List<ConfigItem> configs;
 
     public String getScope() {
@@ -43,6 +44,14 @@ public class ConfiguratorConfig {
 
     public void setKey(String key) {
         this.key = key;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     public List<ConfigItem> getConfigs() {

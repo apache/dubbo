@@ -361,7 +361,10 @@ public class UrlUtils {
     public static boolean isMatch(URL consumerUrl, URL providerUrl) {
         String consumerInterface = consumerUrl.getServiceInterface();
         String providerInterface = providerUrl.getServiceInterface();
-        if (!(Constants.ANY_VALUE.equals(consumerInterface) || StringUtils.isEquals(consumerInterface, providerInterface))) {
+        //FIXME accept providerUrl with '*' as interface name, after carefully thought about all possible scenarios I think it's ok to add this condition.
+        if (!(Constants.ANY_VALUE.equals(consumerInterface)
+                || Constants.ANY_VALUE.equals(providerInterface)
+                || StringUtils.isEquals(consumerInterface, providerInterface))) {
             return false;
         }
 
