@@ -47,7 +47,8 @@ public abstract class AbstractConfigurator implements Configurator {
 
     @Override
     public URL configure(URL url) {
-        if (configuratorUrl.getHost() == null || url == null || url.getHost() == null) {
+        // If override url is not enabled or is invalid, just return.
+        if (!configuratorUrl.getParameter(Constants.ENABLED_KEY, true) || configuratorUrl.getHost() == null || url == null || url.getHost() == null) {
             return url;
         }
         // If override url has port, means it is a provider address. We want to control a specific provider with this override url, it may take effect on the specific provider instance or on consumers holding this provider instance.
@@ -79,6 +80,10 @@ public abstract class AbstractConfigurator implements Configurator {
                 conditionKeys.add(Constants.CHECK_KEY);
                 conditionKeys.add(Constants.DYNAMIC_KEY);
                 conditionKeys.add(Constants.ENABLED_KEY);
+                conditionKeys.add(Constants.GROUP_KEY);
+                conditionKeys.add(Constants.VERSION_KEY);
+                conditionKeys.add(Constants.APPLICATION_KEY);
+                conditionKeys.add(Constants.SIDE_KEY);
                 for (Map.Entry<String, String> entry : configuratorUrl.getParameters().entrySet()) {
                     String key = entry.getKey();
                     String value = entry.getValue();

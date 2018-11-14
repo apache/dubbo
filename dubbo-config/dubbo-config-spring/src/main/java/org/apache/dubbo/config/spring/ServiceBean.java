@@ -253,8 +253,6 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             }
         }
 
-        checkAndUpdateSubConfigs();
-
         if (!supportedApplicationListener) {
             export();
         }
