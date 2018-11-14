@@ -59,7 +59,6 @@ import java.util.stream.Collectors;
 import static org.apache.dubbo.common.Constants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.Constants.APPLICATION_KEY;
 import static org.apache.dubbo.common.Constants.CONFIGURATORS_SUFFIX;
-import static org.apache.dubbo.common.Constants.EXCHANGING_KEYS;
 import static org.apache.dubbo.common.Constants.EXPORT_KEY;
 import static org.apache.dubbo.common.Constants.INTERFACES;
 import static org.apache.dubbo.common.Constants.METHODS_KEY;
@@ -259,17 +258,10 @@ public class RegistryProtocol implements Protocol {
         //The address you see at the registry
         if (!registryUrl.getParameter(Constants.SIMPLE_PROVIDER_URL_KEY, false)) {
             final URL registedProviderUrl = providerUrl.removeParameters(getFilteredKeys(providerUrl))
-                    .removeParameter(Constants.MONITOR_KEY)
-                    .removeParameter(Constants.BIND_IP_KEY)
-                    .removeParameter(Constants.BIND_PORT_KEY)
-                    .removeParameter(QOS_ENABLE)
-                    .removeParameter(QOS_PORT)
-                    .removeParameter(ACCEPT_FOREIGN_IP)
-                    .removeParameter(VALIDATION_KEY)
-                    .removeParameter(INTERFACES);
+                    .removeParameters(Constants.MONITOR_KEY, Constants.BIND_IP_KEY, Constants.BIND_PORT_KEY, QOS_ENABLE, QOS_PORT, ACCEPT_FOREIGN_IP, VALIDATION_KEY, INTERFACES);
             return registedProviderUrl;
         } else {
-            return URL.valueOf(providerUrl, getParamsToRegistry(registryUrl.getParameter(Constants.EXTRA_PROVIDER_URL_PARAM_KEYS_KEY, new String[0])), providerUrl.getParameter(METHODS_KEY, (String[]) null));
+            return URL.valueOf(providerUrl, getParamsToRegistry(Constants.DEFAULT_REGISTER_PROVIDER_KEYS, registryUrl.getParameter(Constants.EXTRA_PROVIDER_URL_PARAM_KEYS_KEY, new String[0])), providerUrl.getParameter(METHODS_KEY, (String[]) null));
         }
 
     }
@@ -342,7 +334,7 @@ public class RegistryProtocol implements Protocol {
         URL subscribeUrl = new URL(Constants.CONSUMER_PROTOCOL, parameters.remove(Constants.REGISTER_IP_KEY), 0, type.getName(), parameters);
         if (!Constants.ANY_VALUE.equals(url.getServiceInterface())
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
-            registry.register(getRegistedConsumerUrl(subscribeUrl, directory.getUrl()));
+            registry.register(getRegistedConsumerUrl(subscribeUrl, url));
         }
         directory.subscribe(subscribeUrl.addParameter(Constants.CATEGORY_KEY,
                 Constants.PROVIDERS_CATEGORY
@@ -359,18 +351,17 @@ public class RegistryProtocol implements Protocol {
             return consumerUrl.addParameters(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY,
                     Constants.CHECK_KEY, String.valueOf(false));
         } else {
-            return URL.valueOf(consumerUrl, getParamsToRegistry(registryUrl
-                    .getParameter(Constants.EXTRA_CONSUMER_URL_PARAM_KEYS_KEY, new String[0])), consumerUrl.getParameter(METHODS_KEY, (String[]) null))
+            return URL.valueOf(consumerUrl, getParamsToRegistry(Constants.DEFAULT_REGISTER_CONSUMER_KEYS, registryUrl.getParameter(Constants.EXTRA_CONSUMER_URL_PARAM_KEYS_KEY, new String[0])), null)
                     .addParameters(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY, Constants.CHECK_KEY, String.valueOf(false));
         }
     }
 
     // available to test
-    public String[] getParamsToRegistry(String[] addionalParameterKeys) {
+    String[] getParamsToRegistry(String[] defaultKeys, String[] addionalParameterKeys) {
         int additionalLen = addionalParameterKeys.length;
-        String[] registryParams = new String[EXCHANGING_KEYS.length + additionalLen];
-        System.arraycopy(EXCHANGING_KEYS, 0, registryParams, 0, EXCHANGING_KEYS.length);
-        System.arraycopy(addionalParameterKeys, 0, registryParams, EXCHANGING_KEYS.length, additionalLen);
+        String[] registryParams = new String[defaultKeys.length + additionalLen];
+        System.arraycopy(defaultKeys, 0, registryParams, 0, defaultKeys.length);
+        System.arraycopy(addionalParameterKeys, 0, registryParams, defaultKeys.length, additionalLen);
         return registryParams;
     }
 

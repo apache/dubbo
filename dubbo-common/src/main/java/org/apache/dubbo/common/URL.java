@@ -279,8 +279,8 @@ public /**final**/ class URL implements Serializable {
         Map<String, String> oldMap = url.getParameters();
         if (reserveParamPrefixs != null && reserveParamPrefixs.length != 0) {
             for (Map.Entry<String, String> entry : oldMap.entrySet()) {
-                for (String reserveParamPrefix : reserveParamPrefixs){
-                    if (entry.getKey().startsWith(reserveParamPrefix) && StringUtils.isNotEmpty(entry.getValue())){
+                for (String reserveParamPrefix : reserveParamPrefixs) {
+                    if (entry.getKey().startsWith(reserveParamPrefix) && StringUtils.isNotEmpty(entry.getValue())) {
                         newMap.put(entry.getKey(), entry.getValue());
                     }
                 }
@@ -295,8 +295,8 @@ public /**final**/ class URL implements Serializable {
                 }
             }
         }
-
-        return newMap.isEmpty() ? url : url.clearParameters().addParameters(newMap);
+        return newMap.isEmpty() ? new URL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath())
+                : new URL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(), newMap);
     }
 
     public static String encode(String value) {

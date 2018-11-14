@@ -550,16 +550,16 @@
                 <xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="simple" type="xsd:boolean">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[ Is simple. ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="plusparamkeys" type="xsd:string">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[ Addtional Parameter Keys. ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
+        <!--<xsd:attribute name="simple" type="xsd:boolean">-->
+            <!--<xsd:annotation>-->
+                <!--<xsd:documentation><![CDATA[ Is simple. ]]></xsd:documentation>-->
+            <!--</xsd:annotation>-->
+        <!--</xsd:attribute>-->
+        <!--<xsd:attribute name="plusparamkeys" type="xsd:string">-->
+            <!--<xsd:annotation>-->
+                <!--<xsd:documentation><![CDATA[ Addtional Parameter Keys. ]]></xsd:documentation>-->
+            <!--</xsd:annotation>-->
+        <!--</xsd:attribute>-->
     </xsd:complexType>
 
     <xsd:complexType name="metadataReportType">

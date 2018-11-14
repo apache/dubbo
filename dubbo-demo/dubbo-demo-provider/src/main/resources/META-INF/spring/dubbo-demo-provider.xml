@@ -25,7 +25,7 @@
     <dubbo:application name="demo-provider"/>
     <!--<dubbo:provider tag="tag3"/>-->
 
-    <dubbo:registry group="dubboregistrygroup1" address="zookeeper://127.0.0.1:2181" simple="false">
+    <dubbo:registry group="dubboregistrygroup1" address="zookeeper://127.0.0.1:2181">
     </dubbo:registry>
 
     <dubbo:configcenter type="zookeeper" address="127.0.0.1:2181" namespace="dubboregistrygroup1"
