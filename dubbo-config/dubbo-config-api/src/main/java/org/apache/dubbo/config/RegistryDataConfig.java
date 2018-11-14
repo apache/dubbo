@@ -33,7 +33,7 @@ public class RegistryDataConfig extends AbstractConfig {
     private boolean simpleConsumerUrl;
     private String extraConsumerUrlParamKeys;
 
-    public Map<String, String> transferMap() {
+    public Map<String, String> transferToMap() {
         Map<String, String> map = new HashMap<String, String>(4);
         if (simpleProviderUrl) {
             map.put(Constants.SIMPLE_PROVIDER_URL_KEY, Boolean.TRUE.toString());
