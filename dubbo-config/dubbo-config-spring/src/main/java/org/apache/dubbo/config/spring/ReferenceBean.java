@@ -23,6 +23,7 @@ import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.RegistryDataConfig;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
 import org.apache.dubbo.config.support.Parameter;
@@ -162,6 +163,17 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
                 throw new IllegalStateException("Multiple MetadataReport configs: " + metadataReportConfigMap);
             }
         }
+
+
+        if (getRegistryDataConfig() == null) {
+            Map<String, RegistryDataConfig> registryDataConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, RegistryDataConfig.class, false, false);
+            if (registryDataConfigMap != null && registryDataConfigMap.size() == 1) {
+                super.setRegistryDataConfig(registryDataConfigMap.values().iterator().next());
+            } else if (registryDataConfigMap != null && registryDataConfigMap.size() > 1) {
+                throw new IllegalStateException("Multiple RegistryData configs: " + registryDataConfigMap);
+            }
+        }
+
         if (getMonitor() == null
                 && (getConsumer() == null || getConsumer().getMonitor() == null)
                 && (getApplication() == null || getApplication().getMonitor() == null)) {
