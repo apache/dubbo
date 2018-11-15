@@ -58,7 +58,7 @@ public class Constants {
 
     public static final String ROUTERS_SUFFIX = ".routers";
 
-    public static final String CONFIG_TYPE_KEY = "config.type";
+    public static final String DEFAULT_CONFIG_PROTOCOL = "nop";
     public static final String CONFIG_ADDRESS_KEY = "config.address";
     public static final String CONFIG_ENV_KEY = "config.env";
     public static final String CONFIG_CLUSTER_KEY = "config.cluster";

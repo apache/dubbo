@@ -59,7 +59,7 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Con
 //        String configEnv = env.getCompositeConf().getString(ENV_KEY);
 //        String configCluster = env.getCompositeConf().getString(CLUSTER_KEY);
         String configEnv = url.getParameter(Constants.CONFIG_ENV_KEY);
-        String configAddr = url.getAddress();
+        String configAddr = url.getBackupAddress();
         String configCluster = url.getParameter(Constants.CONFIG_CLUSTER_KEY);
         if (configEnv != null) {
             System.setProperty(APOLLO_ENV_KEY, configEnv);

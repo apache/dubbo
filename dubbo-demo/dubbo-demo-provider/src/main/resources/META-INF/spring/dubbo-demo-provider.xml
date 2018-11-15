@@ -28,7 +28,7 @@
     <dubbo:registry group="dubboregistrygroup1" address="zookeeper://127.0.0.1:2181" simple="false">
     </dubbo:registry>
 
-    <dubbo:configcenter type="zookeeper" address="127.0.0.1:2181" namespace="dubboregistrygroup1"
+    <dubbo:configcenter address="zookeeper://127.0.0.1:2181?backup=127.0.0.1:2182" namespace="dubboregistrygroup1"
                         configfile="dubbo.properties" appname="demo-provider"/>
 
     <!-- use dubbo protocol to export service on port 20880 -->

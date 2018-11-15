@@ -25,6 +25,7 @@ import org.apache.dubbo.common.config.PropertiesConfiguration;
 import org.apache.dubbo.common.config.SystemConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.governance.DynamicConfiguration;
 import org.apache.dubbo.governance.DynamicConfigurationFactory;
 
@@ -49,6 +50,7 @@ public class Environment {
     private volatile DynamicConfiguration dynamicConfiguration;
 
     private volatile boolean isConfigCenterFirst = true;
+    private volatile ConfigCenterConfig configCenter;
 
     private Map<String, String> externalConfigurationMap = new HashMap<>();
     private Map<String, String> appExternalConfigurationMap = new HashMap<>();
@@ -83,6 +85,26 @@ public class Environment {
 
     public EnvironmentConfiguration getEnvironmentConf(String prefix, String id) {
         return environmentConfsHolder.computeIfAbsent(toKey(prefix, id), k -> new EnvironmentConfiguration(prefix, id));
+    }
+
+    public void setConfigCenter(ConfigCenterConfig configCenter) {
+        this.configCenter = configCenter;
+    }
+
+    public synchronized void setExternalConfiguration(Map<String, String> externalConfiguration) {
+        this.externalConfigurationMap = externalConfiguration;
+        if (configCenter == null) {
+            configCenter = new ConfigCenterConfig();
+        }
+        configCenter.init();
+    }
+
+    public synchronized void setAppExternalConfiguration(Map<String, String> appExternalConfiguration) {
+        this.appExternalConfigurationMap = appExternalConfiguration;
+        if (configCenter == null) {
+            configCenter = new ConfigCenterConfig();
+        }
+        configCenter.init();
     }
 
     public void updateExternalConfigurationMap(Map<String, String> externalMap) {
