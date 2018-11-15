@@ -61,7 +61,7 @@ public class ZKTools {
         System.out.println(str);
 
         try {
-            String path = "/dubboregistrygroup1/config/demo-provider/dubbo.properties";
+            String path = "/dubboregistrygroup1/config/dubbo/dubbo.properties";
             if (client.checkExists().forPath(path) == null) {
                 client.create().creatingParentsIfNeeded().forPath(path);
             }

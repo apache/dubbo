@@ -89,6 +89,7 @@ public class ConfigCenterConfig extends AbstractConfig {
 
     private DynamicConfiguration startDynamicConfiguration() {
         // give jvm properties the chance to override local configs, e.g., -Ddubbo.configcenter.config.priority
+
         refresh();
 //        checkConfigCenter();
 
