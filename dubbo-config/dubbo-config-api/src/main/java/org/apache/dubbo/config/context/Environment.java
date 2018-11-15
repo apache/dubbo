@@ -24,13 +24,14 @@ import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.config.PropertiesConfiguration;
 import org.apache.dubbo.common.config.SystemConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.governance.DynamicConfiguration;
-import org.apache.dubbo.governance.DynamicConfigurationFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -146,8 +147,6 @@ public class Environment {
         return compositeConfiguration;
     }
 
-
-
     /**
      * If user opens DynamicConfig, the extension instance must has been created during the initialization of ConfigCenterConfig with the right extension type user specified.
      * If no DynamicConfig presents, NopDynamicConfiguration will be used.
@@ -155,14 +154,12 @@ public class Environment {
      * @return
      */
     public DynamicConfiguration getDynamicConfiguration() {
-        if (dynamicConfiguration != null) {
-            return dynamicConfiguration;
+        Set<Object> configurations = ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getLoadedExtensionInstances();
+        if (CollectionUtils.isEmpty(configurations)) {
+            return ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getDefaultExtension();
+        } else {
+            return (DynamicConfiguration) configurations.iterator().next();
         }
-        return ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getDefaultExtension().getDynamicConfiguration(null);
-    }
-
-    public void setDynamicConfiguration(DynamicConfiguration dynamicConfiguration) {
-        this.dynamicConfiguration = dynamicConfiguration;
     }
 
     private static String toKey(String keypart1, String keypart2) {

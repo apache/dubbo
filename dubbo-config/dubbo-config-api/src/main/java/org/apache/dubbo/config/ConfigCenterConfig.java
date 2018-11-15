@@ -24,7 +24,6 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.context.Environment;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.governance.DynamicConfiguration;
-import org.apache.dubbo.governance.DynamicConfigurationFactory;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -94,8 +93,10 @@ public class ConfigCenterConfig extends AbstractConfig {
 //        checkConfigCenter();
 
         URL url = toConfigUrl();
-        DynamicConfiguration dynamicConfiguration = ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getAdaptiveExtension().getDynamicConfiguration(url);
-        Environment.getInstance().setDynamicConfiguration(dynamicConfiguration);
+        DynamicConfiguration dynamicConfiguration = ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getExtension(url.getProtocol());
+        // TODO, maybe we need a factory to do this?
+        dynamicConfiguration.setUrl(url);
+        dynamicConfiguration.init();
         return dynamicConfiguration;
     }
 
