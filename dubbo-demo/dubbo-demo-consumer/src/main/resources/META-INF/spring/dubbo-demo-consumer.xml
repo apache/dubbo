@@ -25,14 +25,14 @@
 
     <!-- use multicast registry center to discover service -->
 
-    <dubbo:registry group="dubboregistrygroup1" address="zookeeper://127.0.0.1:2181"/>
+    <!--<dubbo:registry group="dubboregistrygroup1" address="zookeeper://127.0.0.1:2181"/>-->
 
-    <dubbo:configcenter protocol="zookeeper" address="127.0.0.1:2181" namespace="dubboregistrygroup1"
+    <dubbo:configcenter address="zookeeper://127.0.0.1:2181" namespace="dubboregistrygroup1"
                         configfile="dubbo.properties"/>
 
     <!-- generate proxy for the remote service, then demoService can be used in the same way as the
     local regular interface -->
-    <dubbo:reference url="dubbo://127.0.0.1:20880/org.apache.dubbo.demo.DemoService" id="demoService" check="false"
+    <dubbo:reference id="demoService" check="false"
                      interface="org.apache.dubbo.demo.DemoService" version="1.0.4" group="dd-test"/>
 
 </beans>
