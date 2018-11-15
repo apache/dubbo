@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.transport.netty4.logging;
 
-
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;

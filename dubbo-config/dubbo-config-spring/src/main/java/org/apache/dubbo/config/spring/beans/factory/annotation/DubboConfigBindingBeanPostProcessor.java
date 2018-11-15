@@ -22,6 +22,7 @@ import org.apache.dubbo.config.spring.context.annotation.DubboConfigBindingRegis
 import org.apache.dubbo.config.spring.context.annotation.EnableDubboConfigBinding;
 import org.apache.dubbo.config.spring.context.properties.DefaultDubboConfigBinder;
 import org.apache.dubbo.config.spring.context.properties.DubboConfigBinder;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
