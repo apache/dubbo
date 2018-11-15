@@ -544,7 +544,7 @@ public abstract class AbstractConfig implements Serializable {
                             method.invoke(this, convertPrimitive(method.getParameterTypes()[0], value));
                         }
                     } catch (NoSuchMethodException e) {
-                        logger.warn("Failed to override the property " + method.getName() + " in " + this.getClass().getSimpleName() + ", please make sure every property has a getter/setter pair.", e);
+                        logger.info("Failed to override the property " + method.getName() + " in " + this.getClass().getSimpleName() + ", please make sure every property has a getter/setter pair.");
                     }
                 }
             }
