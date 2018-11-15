@@ -256,7 +256,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             return;
         }
         initialized = true;
-        checkStubAndMock(interfaceClass);
+        checkStub(interfaceClass);
+        checkMock(interfaceClass);
         Map<String, String> map = new HashMap<String, String>();
         resolveAsyncInterface(interfaceClass, map);
 

@@ -64,6 +64,7 @@ public abstract class AbstractResult implements Result {
         return result;
     }
 
+    @Override
     public void setAttachment(String key, String value) {
         attachments.put(key, value);
     }
