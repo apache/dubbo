@@ -43,7 +43,7 @@ public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration<R
         //  String address = env.getCompositeConf().getString(ADDRESS_KEY);
         //  String app = env.getCompositeConf().getString(APP_KEY);
 
-        String address = url.getParameter(Constants.CONFIG_ADDRESS_KEY, url.getAddress());
+        String address = url.getBackupAddress();
         if (!address.equals(Constants.ANYHOST_VALUE)) {
             System.setProperty(ZooKeeperConfigurationSource.ARCHAIUS_SOURCE_ADDRESS_KEY, address);
         }

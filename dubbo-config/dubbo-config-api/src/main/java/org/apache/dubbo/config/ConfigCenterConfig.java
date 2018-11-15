@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.context.Environment;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.governance.DynamicConfiguration;
@@ -35,7 +36,7 @@ import java.util.Properties;
  *
  */
 public class ConfigCenterConfig extends AbstractConfig {
-    private String type;
+    private String protocol;
     private String address;
     private String env;
     private String cluster;
@@ -61,39 +62,19 @@ public class ConfigCenterConfig extends AbstractConfig {
     public ConfigCenterConfig() {
     }
 
-    private URL toConfigUrl() {
-        String host = address;
-        int port = 0;
-        try {
-            if (StringUtils.isNotEmpty(address)) {
-                String[] addrs = address.split(":");
-                if (addrs.length == 2) {
-                    host = addrs[0];
-                    port = Integer.parseInt(addrs[1]);
-                }
-            }
-        } catch (Exception e) {
-            throw e;
-        }
-
-        Map<String, String> map = this.getMetaData();
-        return new URL(Constants.CONFIG_PROTOCOL, username, password, host, port, ConfigCenterConfig.class.getSimpleName(), map);
-    }
-
     public void init() {
-        // give jvm properties the chance to override local configs, e.g., -Ddubbo.configcenter.config.priority
-        refresh();
-
-        URL url = toConfigUrl();
-        DynamicConfiguration dynamicConfiguration = ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getAdaptiveExtension().getDynamicConfiguration(url);
-        Environment.getInstance().setDynamicConfiguration(dynamicConfiguration);
+        DynamicConfiguration dynamicConfiguration = startDynamicConfiguration();
         String configContent = dynamicConfiguration.getConfig(configfile, group);
 
-        String appConfigContent = dynamicConfiguration.getConfig
-                (
-                        StringUtils.isNotEmpty(localconfigfile) ? localconfigfile : configfile,
-                        getApplicationName()
-                );
+        String appGroup = getApplicationName();
+        String appConfigContent = null;
+        if (StringUtils.isNotEmpty(appGroup)) {
+            appConfigContent = dynamicConfiguration.getConfig
+                    (
+                            StringUtils.isNotEmpty(localconfigfile) ? localconfigfile : configfile,
+                            appGroup
+                    );
+        }
         try {
             Environment.getInstance().setConfigCenterFirst(priority);
             Environment.getInstance().updateExternalConfigurationMap(parseProperties(configContent));
@@ -101,6 +82,30 @@ public class ConfigCenterConfig extends AbstractConfig {
         } catch (IOException e) {
             throw new IllegalStateException("Failed to parse configurations from Config Center.", e);
         }
+    }
+
+    /*public void initWithoutRemoteConfig() {
+        startDynamicConfiguration();
+    }*/
+
+    private DynamicConfiguration startDynamicConfiguration() {
+        // give jvm properties the chance to override local configs, e.g., -Ddubbo.configcenter.config.priority
+        refresh();
+//        checkConfigCenter();
+
+        URL url = toConfigUrl();
+        DynamicConfiguration dynamicConfiguration = ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getAdaptiveExtension().getDynamicConfiguration(url);
+        Environment.getInstance().setDynamicConfiguration(dynamicConfiguration);
+        return dynamicConfiguration;
+    }
+
+    private URL toConfigUrl() {
+        Map<String, String> map = this.getMetaData();
+        if (StringUtils.isNotEmpty(env) && StringUtils.isEmpty(address)) {
+            address = Constants.ANYHOST_VALUE;
+        }
+        map.put(Constants.PATH_KEY, ConfigCenterConfig.class.getSimpleName());
+        return UrlUtils.parseURL(address, map);
     }
 
     private String getApplicationName() {
@@ -116,7 +121,7 @@ public class ConfigCenterConfig extends AbstractConfig {
 
     protected Map<String, String> parseProperties(String content) throws IOException {
         Map<String, String> map = new HashMap<>();
-        if (content == null) {
+        if (StringUtils.isEmpty(content)) {
             logger.warn("You specified the config centre, but there's not even one single config item in it.");
         } else {
             Properties properties = new Properties();
@@ -128,16 +133,16 @@ public class ConfigCenterConfig extends AbstractConfig {
         return map;
     }
 
-    @Parameter(key = Constants.CONFIG_TYPE_KEY)
-    public String getType() {
-        return type;
+
+    public String getProtocol() {
+        return protocol;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
     }
 
-    @Parameter(key = Constants.CONFIG_ADDRESS_KEY)
+    @Parameter(excluded = true)
     public String getAddress() {
         return address;
     }
@@ -267,5 +272,12 @@ public class ConfigCenterConfig extends AbstractConfig {
 
     public void setApplication(ApplicationConfig application) {
         this.application = application;
+    }
+
+    private void checkConfigCenter() {
+        if ((StringUtils.isEmpty(env) && StringUtils.isEmpty(address))
+                || (StringUtils.isEmpty(protocol) && (StringUtils.isEmpty(address) || !address.contains("://")))) {
+            throw new IllegalStateException("You must specify the right parameter for configcenter.");
+        }
     }
 }

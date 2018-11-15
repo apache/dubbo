@@ -570,7 +570,7 @@ public abstract class AbstractConfig implements Serializable {
             getter = getClass().getMethod("is" + propertyName);
         }
         Parameter parameter = getter.getAnnotation(Parameter.class);
-        if (parameter != null && StringUtils.isNotEmpty(parameter.key())) {
+        if (parameter != null && StringUtils.isNotEmpty(parameter.key()) && parameter.propertyKey()) {
             propertyName = parameter.key();
         } else {
             propertyName = propertyName.toLowerCase();

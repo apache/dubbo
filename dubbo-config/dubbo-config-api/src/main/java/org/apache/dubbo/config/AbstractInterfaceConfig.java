@@ -25,6 +25,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.config.context.Environment;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.metadata.integration.MetadataReportService;
 import org.apache.dubbo.monitor.MonitorFactory;
@@ -36,6 +37,7 @@ import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.support.MockInvoker;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -125,8 +127,18 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
         if (registries == null || registries.isEmpty()) {
             registries = new ArrayList<>();
-            RegistryConfig registryConfig = new RegistryConfig();
-            registries.add(registryConfig);
+            String registryIds = Environment.getInstance().getStartupCompositeConf(null, null).getString("dubbo.registries");
+            if (StringUtils.isNotEmpty(registryIds)) {
+                Arrays.stream(Constants.COMMA_SPLIT_PATTERN.split(registryIds))
+                        .map(regId -> {
+                            RegistryConfig registryConfig = new RegistryConfig();
+                            registryConfig.setId(regId);
+                            return registryConfig;
+                        })
+                        .forEach(registries::add);
+            } else {
+                registries.add(new RegistryConfig());
+            }
         }
 
         for (RegistryConfig registryConfig : registries) {

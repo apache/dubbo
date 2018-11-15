@@ -26,6 +26,7 @@ import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
+import org.apache.dubbo.config.context.Environment;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.metadata.integration.MetadataReportService;
@@ -729,7 +730,19 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
         // backward compatibility
         if (protocols == null || protocols.isEmpty()) {
-            setProtocol(new ProtocolConfig());
+            //check 'dubbo.protocols=dubboProtocolId,hessianProtocolId' and decide if we need multiple protocols
+            String protocolIds = Environment.getInstance().getStartupCompositeConf(null, null).getString("dubbo.protocols");
+            if (StringUtils.isNotEmpty(protocolIds)) {
+                Arrays.stream(Constants.COMMA_SPLIT_PATTERN.split(protocolIds))
+                        .map(pId -> {
+                            ProtocolConfig protocolConfig = new ProtocolConfig();
+                            protocolConfig.setId(pId);
+                            return protocolConfig;
+                        })
+                        .forEach(protocols::add);
+            } else {
+                setProtocol(new ProtocolConfig());
+            }
         }
         for (ProtocolConfig protocolConfig : protocols) {
             if (StringUtils.isEmpty(protocolConfig.getName())) {

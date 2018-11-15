@@ -81,10 +81,6 @@ public class ApplicationConfig extends AbstractConfig {
     // should we accept foreign ip or not?
     private Boolean qosAcceptForeignIp;
 
-    // used for dynamic configuration
-    private String config;
-    private String address;
-
     // customized parameters
     private Map<String, String> parameters;
 
@@ -99,7 +95,7 @@ public class ApplicationConfig extends AbstractConfig {
         setName(name);
     }
 
-    @Parameter(key = Constants.APPLICATION_KEY, required = true)
+    @Parameter(key = Constants.APPLICATION_KEY, required = true, propertyKey = false)
     public String getName() {
         return name;
     }
@@ -253,24 +249,6 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setQosAcceptForeignIp(Boolean qosAcceptForeignIp) {
         this.qosAcceptForeignIp = qosAcceptForeignIp;
-    }
-
-    @Parameter(key = "config.type")
-    public String getConfig() {
-        return config;
-    }
-
-    public void setConfig(String config) {
-        this.config = config;
-    }
-
-    @Parameter(key = "config.address")
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
     }
 
     public Map<String, String> getParameters() {

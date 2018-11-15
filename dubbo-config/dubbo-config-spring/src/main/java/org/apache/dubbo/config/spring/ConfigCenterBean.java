@@ -19,6 +19,7 @@ package org.apache.dubbo.config.spring;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
+import org.apache.dubbo.config.support.Parameter;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -83,18 +84,28 @@ public class ConfigCenterBean extends ConfigCenterConfig implements Initializing
     @Override
     public void setEnvironment(Environment environment) {
         if (auto) {
-            Object rawProperties = environment.getProperty("dubbo.properties", Object.class);
-            Map<String, String> externalProperties = new HashMap<>();
-            try {
-                if (rawProperties instanceof Map) {
-                    externalProperties.putAll((Map<String, String>) rawProperties);
-                } else if (rawProperties instanceof String) {
-                    externalProperties.putAll(parseProperties((String) rawProperties));
-                }
+            Map<String, String> externalProperties = getConfigurations(getConfigfile(), environment);
+            Map<String, String> appExternalProperties = getConfigurations("application." + getConfigfile(), environment);
+            org.apache.dubbo.config.context.Environment.getInstance().setConfigCenter(this);
+            org.apache.dubbo.config.context.Environment.getInstance().setExternalConfiguration(externalProperties);
+            org.apache.dubbo.config.context.Environment.getInstance().setAppExternalConfiguration(appExternalProperties);
+        }
+    }
 
-                if (environment instanceof ConfigurableEnvironment && externalProperties.isEmpty()) {
-                    ConfigurableEnvironment configurableEnvironment = (ConfigurableEnvironment) environment;
-                    PropertySource propertySource = configurableEnvironment.getPropertySources().get("dubbo.properties");
+    private Map<String, String> getConfigurations(String key, Environment environment) {
+        Object rawProperties = environment.getProperty(key, Object.class);
+        Map<String, String> externalProperties = new HashMap<>();
+        try {
+            if (rawProperties instanceof Map) {
+                externalProperties.putAll((Map<String, String>) rawProperties);
+            } else if (rawProperties instanceof String) {
+                externalProperties.putAll(parseProperties((String) rawProperties));
+            }
+
+            if (environment instanceof ConfigurableEnvironment && externalProperties.isEmpty()) {
+                ConfigurableEnvironment configurableEnvironment = (ConfigurableEnvironment) environment;
+                PropertySource propertySource = configurableEnvironment.getPropertySources().get(key);
+                if (propertySource != null) {
                     Object source = propertySource.getSource();
                     if (source instanceof Map) {
                         ((Map<String, Object>) source).forEach((k, v) -> {
@@ -102,13 +113,14 @@ public class ConfigCenterBean extends ConfigCenterConfig implements Initializing
                         });
                     }
                 }
-                org.apache.dubbo.config.context.Environment.getInstance().updateExternalConfigurationMap(externalProperties);
-            } catch (Exception e) {
-                throw new IllegalStateException(e);
             }
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
         }
+        return externalProperties;
     }
 
+    @Parameter(excluded = true)
     public boolean isAuto() {
         return auto;
     }

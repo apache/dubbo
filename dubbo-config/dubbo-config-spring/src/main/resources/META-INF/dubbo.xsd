@@ -591,9 +591,9 @@
         <xsd:sequence minOccurs="0" maxOccurs="unbounded">
             <xsd:element ref="parameter" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
-        <xsd:attribute name="type" type="xsd:string" use="required">
+        <xsd:attribute name="protocol" type="xsd:string">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ The config center type. ]]></xsd:documentation>
+                <xsd:documentation><![CDATA[ The config center protocol. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="address" type="xsd:string" use="optional">
