@@ -13,8 +13,8 @@ public class RegistryDataConfigTest {
     @Test
     public void testProviderNoValue(){
         RegistryDataConfig registryDataConfig = new RegistryDataConfig();
-        registryDataConfig.setSimpleProviderUrl(false);
-        registryDataConfig.setExtraProviderUrlParamKeys("xxx,sss");
+        registryDataConfig.setSimpleProviderConfig(false);
+        registryDataConfig.setExtraProviderKeys("xxx,sss");
         Map<String,String> result = registryDataConfig.transferToMap();
         Assert.assertTrue(result.isEmpty());
     }
@@ -22,29 +22,29 @@ public class RegistryDataConfigTest {
     @Test
     public void testProviderNoParamKey(){
         RegistryDataConfig registryDataConfig = new RegistryDataConfig();
-        registryDataConfig.setSimpleProviderUrl(true);
+        registryDataConfig.setSimpleProviderConfig(true);
         Map<String,String> result = registryDataConfig.transferToMap();
         Assert.assertFalse(result.isEmpty());
-        Assert.assertEquals(result.get("simpleProviderUrl"), "true");
-        Assert.assertNull(result.get("extraProviderUrlParamKeys"));
+        Assert.assertEquals(result.get("simpleProviderConfig"), "true");
+        Assert.assertNull(result.get("extraProviderKeys"));
     }
 
     @Test
     public void testProviderHasParamKey(){
         RegistryDataConfig registryDataConfig = new RegistryDataConfig();
-        registryDataConfig.setSimpleProviderUrl(true);
-        registryDataConfig.setExtraProviderUrlParamKeys("xxx,sss");
+        registryDataConfig.setSimpleProviderConfig(true);
+        registryDataConfig.setExtraProviderKeys("xxx,sss");
         Map<String,String> result = registryDataConfig.transferToMap();
         Assert.assertFalse(result.isEmpty());
-        Assert.assertEquals(result.get("simpleProviderUrl"), "true");
-        Assert.assertEquals(result.get("extraProviderUrlParamKeys"), "xxx,sss");
+        Assert.assertEquals(result.get("simpleProviderConfig"), "true");
+        Assert.assertEquals(result.get("extraProviderKeys"), "xxx,sss");
     }
 
     @Test
     public void testConsumerNoValue(){
         RegistryDataConfig registryDataConfig = new RegistryDataConfig();
-        registryDataConfig.setSimpleConsumerUrl(false);
-        registryDataConfig.setExtraConsumerUrlParamKeys("xxx,sss");
+        registryDataConfig.setSimpleConsumerConfig(false);
+        registryDataConfig.setExtraConsumerKeys("xxx,sss");
         Map<String,String> result = registryDataConfig.transferToMap();
         Assert.assertTrue(result.isEmpty());
     }
@@ -52,36 +52,36 @@ public class RegistryDataConfigTest {
     @Test
     public void testConsumerNoParamKey(){
         RegistryDataConfig registryDataConfig = new RegistryDataConfig();
-        registryDataConfig.setSimpleConsumerUrl(true);
+        registryDataConfig.setSimpleConsumerConfig(true);
         Map<String,String> result = registryDataConfig.transferToMap();
         Assert.assertFalse(result.isEmpty());
-        Assert.assertEquals(result.get("simpleConsumerUrl"), "true");
-        Assert.assertNull(result.get("extraConsumerUrlParamKeys"));
+        Assert.assertEquals(result.get("simpleConsumerConfig"), "true");
+        Assert.assertNull(result.get("extraConsumerKeys"));
     }
 
     @Test
     public void testConsumerHasParamKey(){
         RegistryDataConfig registryDataConfig = new RegistryDataConfig();
-        registryDataConfig.setSimpleConsumerUrl(true);
-        registryDataConfig.setExtraConsumerUrlParamKeys("xxx,sss");
+        registryDataConfig.setSimpleConsumerConfig(true);
+        registryDataConfig.setExtraConsumerKeys("xxx,sss");
         Map<String,String> result = registryDataConfig.transferToMap();
         Assert.assertFalse(result.isEmpty());
-        Assert.assertEquals(result.get("simpleConsumerUrl"), "true");
-        Assert.assertEquals(result.get("extraConsumerUrlParamKeys"), "xxx,sss");
+        Assert.assertEquals(result.get("simpleConsumerConfig"), "true");
+        Assert.assertEquals(result.get("extraConsumerKeys"), "xxx,sss");
     }
 
     @Test
     public void testMixHasParamKey(){
         RegistryDataConfig registryDataConfig = new RegistryDataConfig();
-        registryDataConfig.setSimpleConsumerUrl(true);
-        registryDataConfig.setExtraConsumerUrlParamKeys("xxx,sss");
-        registryDataConfig.setSimpleProviderUrl(true);
-        registryDataConfig.setExtraProviderUrlParamKeys("yyy,xxx");
+        registryDataConfig.setSimpleConsumerConfig(true);
+        registryDataConfig.setExtraConsumerKeys("xxx,sss");
+        registryDataConfig.setSimpleProviderConfig(true);
+        registryDataConfig.setExtraProviderKeys("yyy,xxx");
         Map<String,String> result = registryDataConfig.transferToMap();
         Assert.assertTrue(result.size() == 4);
-        Assert.assertEquals(result.get("simpleProviderUrl"), "true");
-        Assert.assertEquals(result.get("extraProviderUrlParamKeys"), "yyy,xxx");
-        Assert.assertEquals(result.get("simpleConsumerUrl"), "true");
-        Assert.assertEquals(result.get("extraConsumerUrlParamKeys"), "xxx,sss");
+        Assert.assertEquals(result.get("simpleProviderConfig"), "true");
+        Assert.assertEquals(result.get("extraProviderKeys"), "yyy,xxx");
+        Assert.assertEquals(result.get("simpleConsumerConfig"), "true");
+        Assert.assertEquals(result.get("extraConsumerKeys"), "xxx,sss");
     }
 }

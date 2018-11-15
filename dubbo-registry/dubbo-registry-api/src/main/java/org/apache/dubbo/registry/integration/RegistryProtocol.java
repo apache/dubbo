@@ -283,12 +283,12 @@ public class RegistryProtocol implements Protocol {
      */
     private URL getRegistedProviderUrl(final URL providerUrl, final URL registryUrl) {
         //The address you see at the registry
-        if (!registryUrl.getParameter(Constants.SIMPLE_PROVIDER_URL_KEY, false)) {
+        if (!registryUrl.getParameter(Constants.SIMPLE_PROVIDER_CONFIG_KEY, false)) {
             final URL registedProviderUrl = providerUrl.removeParameters(getFilteredKeys(providerUrl))
                     .removeParameters(Constants.MONITOR_KEY, Constants.BIND_IP_KEY, Constants.BIND_PORT_KEY, QOS_ENABLE, QOS_PORT, ACCEPT_FOREIGN_IP, VALIDATION_KEY, INTERFACES);
             return registedProviderUrl;
         } else {
-            return URL.valueOf(providerUrl, getParamsToRegistry(Constants.DEFAULT_REGISTER_PROVIDER_KEYS, registryUrl.getParameter(Constants.EXTRA_PROVIDER_URL_PARAM_KEYS_KEY, new String[0])), providerUrl.getParameter(METHODS_KEY, (String[]) null));
+            return URL.valueOf(providerUrl, getParamsToRegistry(Constants.DEFAULT_REGISTER_PROVIDER_KEYS, registryUrl.getParameter(Constants.EXTRA_PROVIDER_CONFIG_KEYS_KEY, new String[0])), providerUrl.getParameter(METHODS_KEY, (String[]) null));
         }
 
     }
@@ -374,11 +374,11 @@ public class RegistryProtocol implements Protocol {
     }
 
     private URL getRegistedConsumerUrl(final URL consumerUrl, URL registryUrl) {
-        if (!registryUrl.getParameter(Constants.SIMPLE_CONSUMER_URL_KEY, false)) {
+        if (!registryUrl.getParameter(Constants.SIMPLE_CONSUMER_CONFIG_KEY, false)) {
             return consumerUrl.addParameters(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY,
                     Constants.CHECK_KEY, String.valueOf(false));
         } else {
-            return URL.valueOf(consumerUrl, getParamsToRegistry(Constants.DEFAULT_REGISTER_CONSUMER_KEYS, registryUrl.getParameter(Constants.EXTRA_CONSUMER_URL_PARAM_KEYS_KEY, new String[0])), null)
+            return URL.valueOf(consumerUrl, getParamsToRegistry(Constants.DEFAULT_REGISTER_CONSUMER_KEYS, registryUrl.getParameter(Constants.EXTRA_CONSUMER_CONFIG_KEYS_KEY, new String[0])), null)
                     .addParameters(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY, Constants.CHECK_KEY, String.valueOf(false));
         }
     }
