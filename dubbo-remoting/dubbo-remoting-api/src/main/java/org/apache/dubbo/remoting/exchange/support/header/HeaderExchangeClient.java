@@ -19,6 +19,7 @@ package org.apache.dubbo.remoting.exchange.support.header;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
+import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Client;
 import org.apache.dubbo.remoting.RemotingException;
@@ -61,7 +62,8 @@ public class HeaderExchangeClient implements ExchangeClient {
 
         if (needHeartbeat) {
             long tickDuration = calculateLeastDuration(heartbeat);
-            heartbeatTimer = new HashedWheelTimer(tickDuration, TimeUnit.MILLISECONDS, Constants.TICKS_PER_WHEEL);
+            heartbeatTimer = new HashedWheelTimer(new NamedThreadFactory("dubbo-client-heartbeat", true), tickDuration,
+                    TimeUnit.MILLISECONDS, Constants.TICKS_PER_WHEEL);
             startHeartbeatTimer();
         }
     }
