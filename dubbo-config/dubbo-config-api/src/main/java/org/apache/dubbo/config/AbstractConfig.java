@@ -459,7 +459,9 @@ public abstract class AbstractConfig implements Serializable {
                     } else {
                         key = prop;
                     }
-                    if (method.getReturnType() == Object.class || parameter != null && parameter.excluded()) {
+                    // treat url and configuration differently, the value should always present in configuration though it may not need to present in url.
+                    //if (method.getReturnType() == Object.class || parameter != null && parameter.excluded()) {
+                    if (method.getReturnType() == Object.class) {
                         metaData.put(key, null);
                         continue;
                     }
