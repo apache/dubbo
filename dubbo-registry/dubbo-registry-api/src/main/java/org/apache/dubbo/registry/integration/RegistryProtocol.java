@@ -26,7 +26,6 @@ import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
-import org.apache.dubbo.config.context.Environment;
 import org.apache.dubbo.governance.ConfigChangeEvent;
 import org.apache.dubbo.governance.ConfigChangeType;
 import org.apache.dubbo.governance.ConfigurationListener;
@@ -51,6 +50,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -86,7 +86,12 @@ public class RegistryProtocol implements Protocol {
 
     public RegistryProtocol() {
         INSTANCE = this;
-        dynamicConfiguration = Environment.getInstance().getDynamicConfiguration();
+        Set<Object> configurations = ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getLoadedExtensionInstances();
+        if (CollectionUtils.isEmpty(configurations)) {
+            dynamicConfiguration = ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getDefaultExtension();
+        } else {
+            dynamicConfiguration = (DynamicConfiguration) configurations.iterator().next();
+        }
     }
 
     public static RegistryProtocol getRegistryProtocol() {

@@ -27,7 +27,6 @@ import org.apache.dubbo.governance.ConfigChangeEvent;
 import org.apache.dubbo.governance.ConfigChangeType;
 import org.apache.dubbo.governance.ConfigurationListener;
 import org.apache.dubbo.governance.DynamicConfiguration;
-import org.apache.dubbo.governance.DynamicConfigurationFactory;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
@@ -59,8 +58,13 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
 
     private AtomicBoolean isInited = new AtomicBoolean(false);
 
+    /**
+     * compatible constructor, it should never be called to create TagRouter.
+     *
+     * @param url
+     */
     public TagRouter(URL url) {
-        this(ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getAdaptiveExtension().getDynamicConfiguration(url), url);
+        this(ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getDefaultExtension(), url);
     }
 
     public TagRouter(DynamicConfiguration configuration, URL url) {
