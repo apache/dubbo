@@ -469,23 +469,23 @@ public class Constants {
      * simple the registry for provider.
      * @since 2.7.0
      */
-    public static final String SIMPLE_PROVIDER_URL_KEY = "simpleProviderUrl";
+    public static final String SIMPLE_PROVIDER_CONFIG_KEY = "simpleProviderConfig";
     /**
      * simple the registry for consumer.
      * @since 2.7.0
      */
-    public static final String SIMPLE_CONSUMER_URL_KEY = "simpleConsumerUrl";
+    public static final String SIMPLE_CONSUMER_CONFIG_KEY = "simpleConsumerConfig";
     /**
      * After simplify the registry, should add some paramter individually for provider.
      * @since 2.7.0
      */
-    public static final String EXTRA_PROVIDER_URL_PARAM_KEYS_KEY = "extraProviderUrlParamKeys";
+    public static final String EXTRA_PROVIDER_CONFIG_KEYS_KEY = "extraProviderKeys";
     /**
      * After simplify the registry, should add some paramter individually for consumer.
      *
      * @since 2.7.0
      */
-    public static final String EXTRA_CONSUMER_URL_PARAM_KEYS_KEY = "extraConsumerUrlParamKeys";
+    public static final String EXTRA_CONSUMER_CONFIG_KEYS_KEY = "extraConsumerKeys";
 
     /**
      * To decide whether to exclude unavailable invoker from the cluster

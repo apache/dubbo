@@ -561,6 +561,14 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         this.owner = owner;
     }
 
+    public RegistryDataConfig getRegistryDataConfig() {
+        return registryDataConfig;
+    }
+
+    public void setRegistryDataConfig(RegistryDataConfig registryDataConfig) {
+        this.registryDataConfig = registryDataConfig;
+    }
+
     public Integer getCallbacks() {
         return callbacks;
     }

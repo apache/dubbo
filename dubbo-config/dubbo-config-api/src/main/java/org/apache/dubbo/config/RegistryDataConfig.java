@@ -27,60 +27,59 @@ import java.util.Map;
  */
 public class RegistryDataConfig extends AbstractConfig {
 
-    private boolean simpleProviderUrl;
-    private String extraProviderUrlParamKeys;
+    private boolean simpleProviderConfig;
+    private String extraProviderKeys;
 
-    private boolean simpleConsumerUrl;
-    private String extraConsumerUrlParamKeys;
+    private boolean simpleConsumerConfig;
+    private String extraConsumerKeys;
 
     public Map<String, String> transferToMap() {
         Map<String, String> map = new HashMap<String, String>(4);
-        if (simpleProviderUrl) {
-            map.put(Constants.SIMPLE_PROVIDER_URL_KEY, Boolean.TRUE.toString());
-            if (StringUtils.isNotEmpty(extraProviderUrlParamKeys)) {
-                map.put(Constants.EXTRA_PROVIDER_URL_PARAM_KEYS_KEY, extraProviderUrlParamKeys.trim());
+        if (simpleProviderConfig) {
+            map.put(Constants.SIMPLE_PROVIDER_CONFIG_KEY, Boolean.TRUE.toString());
+            if (StringUtils.isNotEmpty(extraProviderKeys)) {
+                map.put(Constants.EXTRA_PROVIDER_CONFIG_KEYS_KEY, extraProviderKeys.trim());
             }
         }
-        if (simpleConsumerUrl) {
-            map.put(Constants.SIMPLE_CONSUMER_URL_KEY, Boolean.TRUE.toString());
-            if (StringUtils.isNotEmpty(extraConsumerUrlParamKeys)) {
-                map.put(Constants.EXTRA_CONSUMER_URL_PARAM_KEYS_KEY, extraConsumerUrlParamKeys.trim());
+        if (simpleConsumerConfig) {
+            map.put(Constants.SIMPLE_CONSUMER_CONFIG_KEY, Boolean.TRUE.toString());
+            if (StringUtils.isNotEmpty(extraConsumerKeys)) {
+                map.put(Constants.EXTRA_CONSUMER_CONFIG_KEYS_KEY, extraConsumerKeys.trim());
             }
         }
 
         return map;
     }
 
-
-    public boolean isSimpleProviderUrl() {
-        return simpleProviderUrl;
+    public boolean isSimpleProviderConfig() {
+        return simpleProviderConfig;
     }
 
-    public void setSimpleProviderUrl(boolean simpleProviderUrl) {
-        this.simpleProviderUrl = simpleProviderUrl;
+    public void setSimpleProviderConfig(boolean simpleProviderConfig) {
+        this.simpleProviderConfig = simpleProviderConfig;
     }
 
-    public String getExtraProviderUrlParamKeys() {
-        return extraProviderUrlParamKeys;
+    public String getExtraProviderKeys() {
+        return extraProviderKeys;
     }
 
-    public void setExtraProviderUrlParamKeys(String extraProviderUrlParamKeys) {
-        this.extraProviderUrlParamKeys = extraProviderUrlParamKeys;
+    public void setExtraProviderKeys(String extraProviderKeys) {
+        this.extraProviderKeys = extraProviderKeys;
     }
 
-    public boolean isSimpleConsumerUrl() {
-        return simpleConsumerUrl;
+    public boolean isSimpleConsumerConfig() {
+        return simpleConsumerConfig;
     }
 
-    public void setSimpleConsumerUrl(boolean simpleConsumerUrl) {
-        this.simpleConsumerUrl = simpleConsumerUrl;
+    public void setSimpleConsumerConfig(boolean simpleConsumerConfig) {
+        this.simpleConsumerConfig = simpleConsumerConfig;
     }
 
-    public String getExtraConsumerUrlParamKeys() {
-        return extraConsumerUrlParamKeys;
+    public String getExtraConsumerKeys() {
+        return extraConsumerKeys;
     }
 
-    public void setExtraConsumerUrlParamKeys(String extraConsumerUrlParamKeys) {
-        this.extraConsumerUrlParamKeys = extraConsumerUrlParamKeys;
+    public void setExtraConsumerKeys(String extraConsumerKeys) {
+        this.extraConsumerKeys = extraConsumerKeys;
     }
 }

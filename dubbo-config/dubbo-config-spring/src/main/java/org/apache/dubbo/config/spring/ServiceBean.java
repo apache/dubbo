@@ -23,6 +23,7 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.RegistryDataConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
@@ -190,12 +191,21 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         if (getMetadataReportConfig() == null) {
             Map<String, MetadataReportConfig> metadataReportConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, MetadataReportConfig.class, false, false);
             if (metadataReportConfigMap != null && metadataReportConfigMap.size() == 1) {
-                // 第一个元素
                 super.setMetadataReportConfig(metadataReportConfigMap.values().iterator().next());
             } else if (metadataReportConfigMap != null && metadataReportConfigMap.size() > 1) {
                 throw new IllegalStateException("Multiple MetadataReport configs: " + metadataReportConfigMap);
             }
         }
+
+        if (getRegistryDataConfig() == null) {
+            Map<String, RegistryDataConfig> registryDataConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, RegistryDataConfig.class, false, false);
+            if (registryDataConfigMap != null && registryDataConfigMap.size() == 1) {
+                super.setRegistryDataConfig(registryDataConfigMap.values().iterator().next());
+            } else if (registryDataConfigMap != null && registryDataConfigMap.size() > 1) {
+                throw new IllegalStateException("Multiple RegistryData configs: " + registryDataConfigMap);
+            }
+        }
+
         if (getMonitor() == null
                 && (getProvider() == null || getProvider().getMonitor() == null)
                 && (getApplication() == null || getApplication().getMonitor() == null)) {
