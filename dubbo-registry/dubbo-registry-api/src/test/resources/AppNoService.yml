@@ -1,15 +1,13 @@
 # Application scope, no service means apply to all
 ---
+apiVersion: v2.7
 scope: application
-key: app1
+key: demo-consumer
 configs:
  - addresses:
     - 127.0.0.1
-   rules:
-    cluster:
+   parameters:
      loadbalance: random
      cluster: failfast
-    config:
      timeout: 6666
-     weight: 222
 ...

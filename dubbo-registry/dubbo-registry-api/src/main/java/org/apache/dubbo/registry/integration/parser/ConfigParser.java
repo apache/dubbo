@@ -18,16 +18,17 @@ package org.apache.dubbo.registry.integration.parser;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.integration.parser.model.ConfigItem;
 import org.apache.dubbo.registry.integration.parser.model.ConfiguratorConfig;
-import org.apache.dubbo.registry.integration.parser.model.ConfiguratorRule;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -129,33 +130,23 @@ public class ConfigParser {
             sb.append("&side=");
             sb.append(item.getSide());
         }
-        ConfiguratorRule rules = item.getRules();
-        if (rules == null || (rules.getThreadpool() == null && rules.getConfig() == null && rules.getCluster() == null)) {
-            throw new IllegalStateException("Invalid configurator rules!");
+        Map<String, String> parameters = item.getParameters();
+        if (parameters == null || parameters.isEmpty()) {
+            throw new IllegalStateException("Invalid configurator rule, please specify at least one parameter you want to change in the rule!");
         }
-        if (rules.getThreadpool() != null) {
-            rules.getThreadpool().forEach((k, v) -> {
-                sb.append("&");
-                sb.append(k);
-                sb.append("=");
-                sb.append(v);
-            });
-        }
-        if (rules.getCluster() != null) {
-            rules.getCluster().forEach((k, v) -> {
-                sb.append("&");
-                sb.append(k);
-                sb.append("=");
-                sb.append(v);
-            });
-        }
-        if (rules.getConfig() != null) {
-            rules.getConfig().forEach((k, v) -> {
-                sb.append("&");
-                sb.append(k);
-                sb.append("=");
-                sb.append(v);
-            });
+
+        parameters.forEach((k, v) -> {
+            sb.append("&");
+            sb.append(k);
+            sb.append("=");
+            sb.append(v);
+        });
+
+        if (CollectionUtils.isNotEmpty(item.getProviderAddresses())) {
+            sb.append("&");
+            sb.append(Constants.OVERRIDE_PROVIDERS_KEY);
+            sb.append("=");
+            sb.append(CollectionUtils.join(item.getProviderAddresses(), ","));
         }
 
         return sb.toString();

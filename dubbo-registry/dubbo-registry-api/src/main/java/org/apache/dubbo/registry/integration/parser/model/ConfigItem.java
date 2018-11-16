@@ -17,15 +17,17 @@
 package org.apache.dubbo.registry.integration.parser.model;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  *
  */
 public class ConfigItem {
     private List<String> addresses;
+    private List<String> providerAddresses;
     private List<String> services;
     private List<String> applications;
-    private ConfiguratorRule rules;
+    private Map<String, String> parameters;
     private String side;
 
     public List<String> getAddresses() {
@@ -52,12 +54,20 @@ public class ConfigItem {
         this.applications = applications;
     }
 
-    public ConfiguratorRule getRules() {
-        return rules;
+    public List<String> getProviderAddresses() {
+        return providerAddresses;
     }
 
-    public void setRules(ConfiguratorRule rules) {
-        this.rules = rules;
+    public void setProviderAddresses(List<String> providerAddresses) {
+        this.providerAddresses = providerAddresses;
+    }
+
+    public Map<String, String> getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(Map<String, String> parameters) {
+        this.parameters = parameters;
     }
 
     public String getSide() {

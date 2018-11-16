@@ -67,11 +67,8 @@ public class ConfigParserTest {
         Assert.assertNotNull(urls);
         Assert.assertEquals(2, urls.size());
         URL url = urls.get(0);
-        Assert.assertEquals(url.getAddress(), "127.0.0.1");
-        Assert.assertEquals(url.getParameter(Constants.TIMEOUT_KEY, 0), 6666);
+        Assert.assertEquals(url.getAddress(), "127.0.0.1:20880");
         Assert.assertEquals(url.getParameter(Constants.WEIGHT_KEY, 0), 222);
-        Assert.assertEquals(url.getParameter(Constants.LOADBALANCE_KEY), "random");
-        Assert.assertEquals(url.getParameter(Constants.APPLICATION_KEY, ""), "");
     }
 
     @Test
@@ -82,7 +79,7 @@ public class ConfigParserTest {
         Assert.assertEquals(1, urls.size());
         URL url = urls.get(0);
         Assert.assertEquals("testgroup", url.getParameter(Constants.GROUP_KEY));
-        Assert.assertEquals("1.0.0", url.getParameter(Constants.GROUP_KEY));
+        Assert.assertEquals("1.0.0", url.getParameter(Constants.VERSION_KEY));
     }
 
     @Test
@@ -94,8 +91,6 @@ public class ConfigParserTest {
         URL url = urls.get(0);
         Assert.assertEquals("127.0.0.1", url.getAddress());
         Assert.assertEquals(6666, url.getParameter(Constants.TIMEOUT_KEY, 0));
-        Assert.assertEquals(222, url.getParameter(Constants.WEIGHT_KEY, 0));
-        Assert.assertEquals("random", url.getParameter(Constants.LOADBALANCE_KEY));
         Assert.assertNotNull(url.getParameter(Constants.APPLICATION_KEY));
     }
 
@@ -116,9 +111,8 @@ public class ConfigParserTest {
         Assert.assertEquals("127.0.0.1", url.getAddress());
         Assert.assertEquals("service1", url.getServiceInterface());
         Assert.assertEquals(6666, url.getParameter(Constants.TIMEOUT_KEY, 0));
-        Assert.assertEquals(222, url.getParameter(Constants.WEIGHT_KEY, 0));
         Assert.assertEquals("random", url.getParameter(Constants.LOADBALANCE_KEY));
-        Assert.assertEquals(url.getParameter(Constants.APPLICATION_KEY), "app1");
+        Assert.assertEquals(url.getParameter(Constants.APPLICATION_KEY), "demo-consumer");
     }
 
 
@@ -132,9 +126,8 @@ public class ConfigParserTest {
         Assert.assertEquals("127.0.0.1", url.getAddress());
         Assert.assertEquals("*", url.getServiceInterface());
         Assert.assertEquals(6666, url.getParameter(Constants.TIMEOUT_KEY, 0));
-        Assert.assertEquals(222, url.getParameter(Constants.WEIGHT_KEY, 0));
         Assert.assertEquals("random", url.getParameter(Constants.LOADBALANCE_KEY));
-        Assert.assertEquals(url.getParameter(Constants.APPLICATION_KEY), "app1");
+        Assert.assertEquals(url.getParameter(Constants.APPLICATION_KEY), "demo-consumer");
     }
 
     @Test
@@ -147,9 +140,23 @@ public class ConfigParserTest {
         Assert.assertEquals("127.0.0.1", url.getAddress());
         Assert.assertEquals("*", url.getServiceInterface());
         Assert.assertEquals(6666, url.getParameter(Constants.TIMEOUT_KEY, 0));
-        Assert.assertEquals(222, url.getParameter(Constants.WEIGHT_KEY, 0));
         Assert.assertEquals("random", url.getParameter(Constants.LOADBALANCE_KEY));
-        Assert.assertEquals(url.getParameter(Constants.APPLICATION_KEY), "app1");
+        Assert.assertEquals(url.getParameter(Constants.APPLICATION_KEY), "demo-consumer");
+    }
+
+    @Test
+    public void parseConsumerSpecificProvidersTest() {
+        InputStream yamlStream = this.getClass().getResourceAsStream("/ConsumerSpecificProviders.yml");
+        List<URL> urls = ConfigParser.parseConfigurators(streamToString(yamlStream));
+        Assert.assertNotNull(urls);
+        Assert.assertEquals(1, urls.size());
+        URL url = urls.get(0);
+        Assert.assertEquals("127.0.0.1", url.getAddress());
+        Assert.assertEquals("*", url.getServiceInterface());
+        Assert.assertEquals(6666, url.getParameter(Constants.TIMEOUT_KEY, 0));
+        Assert.assertEquals("random", url.getParameter(Constants.LOADBALANCE_KEY));
+        Assert.assertEquals("127.0.0.1:20880", url.getParameter(Constants.OVERRIDE_PROVIDERS_KEY));
+        Assert.assertEquals(url.getParameter(Constants.APPLICATION_KEY), "demo-consumer");
     }
 
 }
