@@ -1,15 +1,10 @@
 # Service scope, without any app
 ---
+apiVersion: v2.7
 scope: service
 key: serviceKey
 configs:
- - addresses: [127.0.0.1, 0.0.0.0]
-   side: provider
-   rules:
-    cluster:
-     loadbalance: random
-     cluster: failfast
-    config:
-     timeout: 6666
-     weight: 222
+- addresses: ['127.0.0.1:20880', '0.0.0.0:20881']
+  parameters:
+    weight: 222
 ...

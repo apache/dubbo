@@ -1,16 +1,13 @@
 # Application scope, apply to all services.
 ---
+apiVersion: v2.7
 scope: application
-key: app1
+key: demo-consumer
 configs:
  - addresses: [127.0.0.1, 0.0.0.0]
    services: ['*']
-   side: provider
-   rules:
-    cluster:
+   parameters:
      loadbalance: random
      cluster: failfast
-    config:
      timeout: 6666
-     weight: 222
 ...

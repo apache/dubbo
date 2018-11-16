@@ -25,10 +25,20 @@ public class ConfiguratorConfig {
     public static final String SCOPE_SERVICE = "service";
     public static final String SCOPE_APPLICATION = "application";
 
+    private String apiVersion;
     private String scope;
     private String key;
     private boolean enabled = true;
     private List<ConfigItem> configs;
+
+
+    public String getApiVersion() {
+        return apiVersion;
+    }
+
+    public void setApiVersion(String apiVersion) {
+        this.apiVersion = apiVersion;
+    }
 
     public String getScope() {
         return scope;
