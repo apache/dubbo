@@ -107,4 +107,14 @@ public class DemoServiceImpl implements DemoService {
         return a + b;
     }
 
+    @Override
+    public int getPerson(Person person) {
+        return 1;
+    }
+
+    @Override
+    public int getPerson(Person person1, Person perso2) {
+        return 2;
+    }
+
 }

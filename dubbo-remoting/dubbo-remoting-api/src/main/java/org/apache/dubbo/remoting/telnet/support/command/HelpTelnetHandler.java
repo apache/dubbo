@@ -59,9 +59,9 @@ public class HelpTelnetHandler implements TelnetHandler {
                     Help help = handler.getClass().getAnnotation(Help.class);
                     List<String> row = new ArrayList<String>();
                     String parameter = " " + extensionLoader.getExtensionName(handler) + " " + (help != null ? help.parameter().replace("\r\n", " ").replace("\n", " ") : "");
-                    row.add(parameter.length() > 50 ? parameter.substring(0, 50) + "..." : parameter);
+                    row.add(parameter.length() > 55 ? parameter.substring(0, 55) + "..." : parameter);
                     String summary = help != null ? help.summary().replace("\r\n", " ").replace("\n", " ") : "";
-                    row.add(summary.length() > 50 ? summary.substring(0, 50) + "..." : summary);
+                    row.add(summary.length() > 55 ? summary.substring(0, 55) + "..." : summary);
                     table.add(row);
                 }
             }
