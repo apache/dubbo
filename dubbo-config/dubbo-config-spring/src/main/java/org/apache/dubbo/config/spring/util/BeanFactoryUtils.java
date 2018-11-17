@@ -17,10 +17,15 @@
 package org.apache.dubbo.config.spring.util;
 
 import org.apache.dubbo.common.utils.StringUtils;
+
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.support.AbstractApplicationContext;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -89,4 +94,27 @@ public class BeanFactoryUtils {
 
     }
 
+    public static boolean addApplicationListener(ApplicationContext applicationContext, ApplicationListener listener) {
+        try {
+            // backward compatibility to spring 2.0.1
+            Method method = applicationContext.getClass().getMethod("addApplicationListener", ApplicationListener.class);
+            method.invoke(applicationContext, listener);
+            return true;
+        } catch (Throwable t) {
+            if (applicationContext instanceof AbstractApplicationContext) {
+                try {
+                    // backward compatibility to spring 2.0.1
+                    Method method = AbstractApplicationContext.class.getDeclaredMethod("addListener", ApplicationListener.class);
+                    if (!method.isAccessible()) {
+                        method.setAccessible(true);
+                    }
+                    method.invoke(applicationContext, listener);
+                    return true;
+                } catch (Throwable t2) {
+                    // ignore
+                }
+            }
+        }
+        return false;
+    }
 }

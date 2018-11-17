@@ -46,7 +46,7 @@ public class CacheTest extends TestCase {
         ServiceConfig<CacheService> service = new ServiceConfig<CacheService>();
         service.setApplication(new ApplicationConfig("cache-provider"));
         service.setRegistry(new RegistryConfig("N/A"));
-        service.setProtocol(new ProtocolConfig("dubbo", 29582));
+        service.setProtocol(new ProtocolConfig("injvm"));
         service.setInterface(CacheService.class.getName());
         service.setRef(new CacheServiceImpl());
         service.export();
@@ -54,7 +54,7 @@ public class CacheTest extends TestCase {
             ReferenceConfig<CacheService> reference = new ReferenceConfig<CacheService>();
             reference.setApplication(new ApplicationConfig("cache-consumer"));
             reference.setInterface(CacheService.class);
-            reference.setUrl("dubbo://127.0.0.1:29582?scope=remote&cache=true");
+            reference.setUrl("injvm://127.0.0.1?scope=remote&cache=true");
 
             MethodConfig method = new MethodConfig();
             method.setName("findCache");

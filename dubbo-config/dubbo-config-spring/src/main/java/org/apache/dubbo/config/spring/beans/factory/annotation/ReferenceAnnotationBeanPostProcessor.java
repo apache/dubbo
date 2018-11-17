@@ -16,8 +16,11 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
+import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.ReferenceBean;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeanUtils;
@@ -35,15 +38,18 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.PriorityOrdered;
 import org.springframework.core.env.Environment;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ConcurrentReferenceHashMap;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
-import org.springframework.util.StringUtils;
 
 import java.beans.PropertyDescriptor;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -82,6 +88,9 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
 
     private final ConcurrentMap<String, ReferenceBean<?>> referenceBeansCache =
             new ConcurrentHashMap<String, ReferenceBean<?>>();
+
+    private static final Map<Class<? extends Annotation>, List<Method>> annotationMethodsCache =
+            new ConcurrentReferenceHashMap<Class<? extends Annotation>, List<Method>>(256);
 
     @Override
     public PropertyValues postProcessPropertyValues(
@@ -193,7 +202,7 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
 
     private InjectionMetadata findReferenceMetadata(String beanName, Class<?> clazz, PropertyValues pvs) {
         // Fall back to class name as cache key, for backwards compatibility with custom callers.
-        String cacheKey = (StringUtils.hasLength(beanName) ? beanName : clazz.getName());
+        String cacheKey = (StringUtils.isNotEmpty(beanName) ? beanName : clazz.getName());
         // Quick check on the concurrent map first, with minimal locking.
         ReferenceInjectionMetadata metadata = this.injectionMetadataCache.get(cacheKey);
         if (InjectionMetadata.needsRefresh(metadata, clazz)) {
@@ -402,11 +411,7 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
      */
     private String generateReferenceBeanCacheKey(Reference reference, Class<?> beanClass) {
 
-        String interfaceName = resolveInterfaceName(reference, beanClass);
-
-        String key = reference.url() + "/" + interfaceName +
-                "/" + reference.version() +
-                "/" + reference.group();
+        String key = resolveReferenceKey(annotationValues(reference));
 
         Environment environment = applicationContext.getEnvironment();
 
@@ -501,5 +506,92 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
 
     }
 
+    /**
+     * Generate a key based on the annotation.
+     *
+     * @param annotations annotatoin value
+     * @return unique key, never null will be returned.
+     * @since 2.7.0
+     */
+    private String resolveReferenceKey(Map<String, Object> annotations) {
+        Iterator<Map.Entry<String, Object>> annotationVisitor = annotations.entrySet().iterator();
+        StringBuilder builder = new StringBuilder();
+        while (annotationVisitor.hasNext()) {
+            Map.Entry<String, Object> attribute = annotationVisitor.next();
+            String attributeValue = null;
+            if (attribute.getValue() instanceof String[]) {
+                attributeValue = toPlainString((String[]) attribute.getValue());
+            } else {
+                attributeValue = attribute.getValue() == null ? "" : attribute.getValue().toString();
+            }
 
+            if (StringUtils.isNotEmpty(attributeValue)) {
+                if (builder.length() > 0) {
+                    builder.append(Constants.PATH_SEPARATOR);
+                }
+                builder.append(attributeValue);
+            }
+        }
+        return builder.toString();
+    }
+
+    private Map<String, Object> annotationValues(Annotation annotation) {
+        Map<String, Object> annotations = new LinkedHashMap<>();
+
+        for (Method method : getAnnotationMethods(annotation.annotationType())) {
+            try {
+                Object attributeValue = method.invoke(annotation);
+                Object defaultValue = method.getDefaultValue();
+                if (nullSafeEquals(attributeValue, defaultValue)) {
+                    continue;
+                }
+                annotations.put(method.getName(), attributeValue);
+            } catch (Throwable e) {
+                throw new IllegalStateException("Failed to obtain annotation attribute value for " + method, e);
+            }
+        }
+        return annotations;
+    }
+
+    private static List<Method> getAnnotationMethods(Class<? extends Annotation> annotationType) {
+        List<Method> methods = annotationMethodsCache.get(annotationType);
+        if (methods != null) {
+            return methods;
+        }
+
+        methods = new ArrayList<Method>();
+        for (Method method : annotationType.getDeclaredMethods()) {
+            if (isAnnotationMethod(method)) {
+                ReflectionUtils.makeAccessible(method);
+                methods.add(method);
+            }
+        }
+
+        annotationMethodsCache.put(annotationType, methods);
+        return methods;
+    }
+
+    private static boolean isAnnotationMethod(Method method) {
+        return (method != null
+                && method.getParameterTypes().length == 0
+                && method.getReturnType() != void.class);
+    }
+
+    private static boolean nullSafeEquals(Object first, Object another) {
+        return ObjectUtils.nullSafeEquals(first, another);
+    }
+
+    private String toPlainString(String[] array) {
+        if (array == null || array.length == 0) {
+            return "";
+        }
+        StringBuilder buffer = new StringBuilder();
+        for (int i = 0; i < array.length; i++) {
+            if (i > 0) {
+                buffer.append(Constants.COMMA_SEPARATOR);
+            }
+            buffer.append(array[i]);
+        }
+        return buffer.toString();
+    }
 }

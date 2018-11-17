@@ -27,15 +27,14 @@ import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
-import org.apache.dubbo.config.model.ApplicationModel;
-import org.apache.dubbo.config.model.ProviderModel;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
-import org.apache.dubbo.rpc.ServiceClassHolder;
 import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
@@ -310,12 +309,13 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         checkRegistry();
         checkProtocol();
         appendProperties(this);
-        checkStubAndMock(interfaceClass);
+        checkStub(interfaceClass);
+        checkMock(interfaceClass);
         if (path == null || path.length() == 0) {
             path = interfaceName;
         }
         doExportUrls();
-        ProviderModel providerModel = new ProviderModel(getUniqueServiceName(), this, ref);
+        ProviderModel providerModel = new ProviderModel(getUniqueServiceName(), ref, interfaceClass);
         ApplicationModel.initProviderModel(getUniqueServiceName(), providerModel);
     }
 
@@ -532,7 +532,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     .setProtocol(Constants.LOCAL_PROTOCOL)
                     .setHost(LOCALHOST)
                     .setPort(0);
-            ServiceClassHolder.getInstance().pushServiceClass(getServiceClass(ref));
             Exporter<?> exporter = protocol.export(
                     proxyFactory.getInvoker(ref, (Class) interfaceClass, local));
             exporters.add(exporter);
@@ -817,6 +816,16 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         } else {
             throw new IllegalArgumentException("Unsupported generic type " + generic);
         }
+    }
+
+    @Override
+    public void setMock(Boolean mock) {
+        throw new IllegalArgumentException("mock doesn't support on provider side");
+    }
+
+    @Override
+    public void setMock(String mock) {
+        throw new IllegalArgumentException("mock doesn't support on provider side");
     }
 
     public List<URL> getExportedUrls() {

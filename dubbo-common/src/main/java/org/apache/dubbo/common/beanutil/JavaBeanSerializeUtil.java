@@ -399,14 +399,16 @@ public final class JavaBeanSerializeUtil {
             }
             result = Array.newInstance(componentType, beanDescriptor.propertySize());
             cache.put(beanDescriptor, result);
-        } else try {
-            Class<?> cl = name2Class(loader, beanDescriptor.getClassName());
-            result = instantiate(cl);
-            cache.put(beanDescriptor, result);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e.getMessage(), e);
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
+        } else {
+            try {
+                Class<?> cl = name2Class(loader, beanDescriptor.getClassName());
+                result = instantiate(cl);
+                cache.put(beanDescriptor, result);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e.getMessage(), e);
+            } catch (Exception e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
         }
 
         return result;
