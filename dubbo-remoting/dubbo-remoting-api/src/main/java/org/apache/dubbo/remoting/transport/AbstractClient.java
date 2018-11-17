@@ -199,56 +199,63 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     @Override
     public InetSocketAddress getRemoteAddress() {
         Channel channel = getChannel();
-        if (channel == null)
+        if (channel == null) {
             return getUrl().toInetSocketAddress();
+        }
         return channel.getRemoteAddress();
     }
 
     @Override
     public InetSocketAddress getLocalAddress() {
         Channel channel = getChannel();
-        if (channel == null)
+        if (channel == null) {
             return InetSocketAddress.createUnresolved(NetUtils.getLocalHost(), 0);
+        }
         return channel.getLocalAddress();
     }
 
     @Override
     public boolean isConnected() {
         Channel channel = getChannel();
-        if (channel == null)
+        if (channel == null) {
             return false;
+        }
         return channel.isConnected();
     }
 
     @Override
     public Object getAttribute(String key) {
         Channel channel = getChannel();
-        if (channel == null)
+        if (channel == null) {
             return null;
+        }
         return channel.getAttribute(key);
     }
 
     @Override
     public void setAttribute(String key, Object value) {
         Channel channel = getChannel();
-        if (channel == null)
+        if (channel == null) {
             return;
+        }
         channel.setAttribute(key, value);
     }
 
     @Override
     public void removeAttribute(String key) {
         Channel channel = getChannel();
-        if (channel == null)
+        if (channel == null) {
             return;
+        }
         channel.removeAttribute(key);
     }
 
     @Override
     public boolean hasAttribute(String key) {
         Channel channel = getChannel();
-        if (channel == null)
+        if (channel == null) {
             return false;
+        }
         return channel.hasAttribute(key);
     }
 
@@ -276,7 +283,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
             if (!isConnected()) {
                 throw new RemotingException(this, "Failed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
                         + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
-                        + ", cause: Connect wait timeout: " + getTimeout() + "ms.");
+                        + ", cause: Connect wait timeout: " + getConnectTimeout() + "ms.");
             } else {
                 if (logger.isInfoEnabled()) {
                     logger.info("Successed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "

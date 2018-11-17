@@ -98,6 +98,7 @@
         <kryo_version>4.0.1</kryo_version>
         <kryo_serializers_version>0.42</kryo_serializers_version>
         <fst_version>2.48-jdk-6</fst_version>
+        <protostuff_version>1.5.9</protostuff_version>
 
         <rs_api_version>2.0</rs_api_version>
         <resteasy_version>3.0.19.Final</resteasy_version>
@@ -160,7 +161,7 @@
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpcore</artifactId>
-                <version>${httpcore_version}</version>            
+                <version>${httpcore_version}</version>
             </dependency>
             <dependency>
                 <groupId>com.alibaba</groupId>
@@ -266,6 +267,16 @@
                 <groupId>de.ruedigermoeller</groupId>
                 <artifactId>fst</artifactId>
                 <version>${fst_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.protostuff</groupId>
+                <artifactId>protostuff-core</artifactId>
+                <version>${protostuff_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.protostuff</groupId>
+                <artifactId>protostuff-runtime</artifactId>
+                <version>${protostuff_version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.ws.rs</groupId>

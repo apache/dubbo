@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 @Deprecated
 public interface Monitor extends org.apache.dubbo.monitor.Monitor {
 
+    @Override
     com.alibaba.dubbo.common.URL getUrl();
 
     void collect(com.alibaba.dubbo.common.URL statistics);

@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
-import com.alibaba.dubbo.config.annotation.Reference;
-
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.convert.converter.StringArrayToMapConverter;
 import org.apache.dubbo.config.spring.convert.converter.StringArrayToStringConverter;
+
+import com.alibaba.dubbo.config.annotation.Reference;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
