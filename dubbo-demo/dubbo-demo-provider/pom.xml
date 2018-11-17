@@ -61,7 +61,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-governance-zookeeper</artifactId>
+            <artifactId>dubbo-configcenter-zookeeper</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>

@@ -27,7 +27,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ConfigCenterConfig;
-import org.apache.dubbo.governance.DynamicConfiguration;
+import org.apache.dubbo.configcenter.DynamicConfiguration;
 
 import java.util.HashMap;
 import java.util.Map;

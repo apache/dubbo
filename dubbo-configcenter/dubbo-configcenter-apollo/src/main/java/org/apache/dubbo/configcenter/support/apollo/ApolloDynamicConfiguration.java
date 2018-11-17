@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.governance.support.apollo;
+package org.apache.dubbo.configcenter.support.apollo;
 
 import com.ctrip.framework.apollo.Config;
 import com.ctrip.framework.apollo.ConfigChangeListener;
@@ -28,10 +28,10 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.governance.AbstractDynamicConfiguration;
-import org.apache.dubbo.governance.ConfigChangeType;
-import org.apache.dubbo.governance.ConfigType;
-import org.apache.dubbo.governance.ConfigurationListener;
+import org.apache.dubbo.configcenter.AbstractDynamicConfiguration;
+import org.apache.dubbo.configcenter.ConfigChangeType;
+import org.apache.dubbo.configcenter.ConfigType;
+import org.apache.dubbo.configcenter.ConfigurationListener;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -158,9 +158,9 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Con
                 ConfigChange change = changeEvent.getChange(key);
                 // TODO Maybe we no longer need to identify the type of change. Because there's no scenario that a callback will subscribe for both configurators and routers
                 if (change.getPropertyName().endsWith(Constants.CONFIGURATORS_SUFFIX)) {
-                    listener.process(new org.apache.dubbo.governance.ConfigChangeEvent(key, change.getNewValue(), ConfigType.CONFIGURATORS, getChangeType(change)));
+                    listener.process(new org.apache.dubbo.configcenter.ConfigChangeEvent(key, change.getNewValue(), ConfigType.CONFIGURATORS, getChangeType(change)));
                 } else {
-                    listener.process(new org.apache.dubbo.governance.ConfigChangeEvent(key, change.getNewValue(), ConfigType.ROUTERS, getChangeType(change)));
+                    listener.process(new org.apache.dubbo.configcenter.ConfigChangeEvent(key, change.getNewValue(), ConfigType.ROUTERS, getChangeType(change)));
                 }
             }
         }

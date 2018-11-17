@@ -14,16 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.governance;
-
-import org.apache.dubbo.common.URL;
+package org.apache.dubbo.configcenter;
 
 /**
  *
  */
-public interface ConfigurationListener {
-
-    void process(ConfigChangeEvent event);
-
-    URL getUrl();
+public enum ConfigChangeType {
+    ADDED,
+    MODIFIED,
+    DELETED
 }

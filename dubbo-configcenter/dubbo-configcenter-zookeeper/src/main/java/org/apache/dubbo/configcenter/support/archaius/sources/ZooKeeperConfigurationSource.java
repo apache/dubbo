@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.governance.support.archaius.sources;
+package org.apache.dubbo.configcenter.support.archaius.sources;
 
 import com.google.common.io.Closeables;
 import com.netflix.config.WatchedConfigurationSource;
