@@ -19,13 +19,13 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-governance</artifactId>
+        <artifactId>dubbo-configcenter</artifactId>
         <version>2.7.0-SNAPSHOT</version>
     </parent>
-    <artifactId>dubbo-governance-apollo</artifactId>
+    <artifactId>dubbo-configcenter-api</artifactId>
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
-    <description>The Apollo implementation of the governance api</description>
+    <description>The api definition of the service configcenter module</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
@@ -33,12 +33,8 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-governance-api</artifactId>
+            <artifactId>dubbo-common</artifactId>
             <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.ctrip.framework.apollo</groupId>
-            <artifactId>apollo-client</artifactId>
         </dependency>
     </dependencies>
 </project>
