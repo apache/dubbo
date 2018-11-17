@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.governance.support.archaius;
+package org.apache.dubbo.configcenter.support.archaius;
 
 import com.netflix.config.ConfigurationManager;
 import com.netflix.config.DynamicPropertyFactory;
@@ -23,12 +23,12 @@ import com.netflix.config.DynamicWatchedConfiguration;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.governance.AbstractDynamicConfiguration;
-import org.apache.dubbo.governance.ConfigChangeEvent;
-import org.apache.dubbo.governance.ConfigChangeType;
-import org.apache.dubbo.governance.ConfigType;
-import org.apache.dubbo.governance.ConfigurationListener;
-import org.apache.dubbo.governance.support.archaius.sources.ZooKeeperConfigurationSource;
+import org.apache.dubbo.configcenter.AbstractDynamicConfiguration;
+import org.apache.dubbo.configcenter.ConfigChangeEvent;
+import org.apache.dubbo.configcenter.ConfigChangeType;
+import org.apache.dubbo.configcenter.ConfigType;
+import org.apache.dubbo.configcenter.ConfigurationListener;
+import org.apache.dubbo.configcenter.support.archaius.sources.ZooKeeperConfigurationSource;
 
 /**
  * Archaius supports various sources and it's extensiable: JDBC, ZK, Properties, ..., so should we make it extensiable?
@@ -90,6 +90,7 @@ public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration<R
     /**
      * First, get app level configuration
      * If there's no value in app level, try to get global dubbo level.
+     *
      * @param key
      * @return
      */

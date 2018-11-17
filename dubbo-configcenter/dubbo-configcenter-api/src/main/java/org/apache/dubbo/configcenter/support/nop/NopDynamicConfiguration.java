@@ -14,13 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.governance.support.nop;
+package org.apache.dubbo.configcenter.support.nop;
 
-import org.apache.dubbo.governance.AbstractDynamicConfiguration;
-import org.apache.dubbo.governance.ConfigurationListener;
+import org.apache.dubbo.configcenter.AbstractDynamicConfiguration;
+import org.apache.dubbo.configcenter.ConfigurationListener;
+import org.apache.dubbo.configcenter.DynamicConfiguration;
 
 /**
- * The default extension of {@link org.apache.dubbo.governance.DynamicConfiguration}.
+ * The default extension of {@link DynamicConfiguration}.
  * If user does not specify a config centre, or specifies one that is not a valid extension, it will default to this one.
  */
 public class NopDynamicConfiguration extends AbstractDynamicConfiguration {

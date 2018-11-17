@@ -24,7 +24,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.context.Environment;
 import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.governance.DynamicConfiguration;
+import org.apache.dubbo.configcenter.DynamicConfiguration;
 
 import java.io.IOException;
 import java.io.StringReader;

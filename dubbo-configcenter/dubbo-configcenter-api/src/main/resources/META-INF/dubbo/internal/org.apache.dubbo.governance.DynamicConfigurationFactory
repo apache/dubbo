@@ -1,1 +1,0 @@
-nop=org.apache.dubbo.governance.support.nop.NopDynamicConfigurationFactory

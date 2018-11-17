@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc.cluster;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.governance.DynamicConfiguration;
+import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
