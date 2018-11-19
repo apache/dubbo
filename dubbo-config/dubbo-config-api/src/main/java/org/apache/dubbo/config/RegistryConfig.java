@@ -335,6 +335,22 @@ public class RegistryConfig extends AbstractConfig {
         this.isDefault = isDefault;
     }
 
+    public boolean isZookeeperProtocol() {
+        boolean isZookeeper = StringUtils.isNotEmpty(this.getProtocol()) && this.getProtocol().equals("zookeeper");
+        if (!isZookeeper) {
+            String address = this.getAddress();
+            int index = address.indexOf("://");
+            if (StringUtils.isNotEmpty(address) && index >= 0) {
+                address = address.substring(0, index);
+            }
+            if (address.equals("zookeeper")) {
+                isZookeeper = true;
+            }
+        }
+        return isZookeeper;
+    }
+
+    @Override
     public boolean isValid() {
         // empty protocol will default to 'dubbo'
         return !StringUtils.isEmpty(address);

@@ -54,6 +54,7 @@ public class ConfigCenterConfig extends AbstractConfig {
     private String localconfigfile;
 
     private ApplicationConfig application;
+    private RegistryConfig registry;
 
     // customized parameters
     private Map<String, String> parameters;
@@ -93,6 +94,11 @@ public class ConfigCenterConfig extends AbstractConfig {
         // give jvm properties the chance to override local configs, e.g., -Ddubbo.configcenter.config.priority
 
         refresh();
+        // try to use registryConfig as the default configcenter, only applies to zookeeper.
+        if (!isValid() && registry != null && registry.isZookeeperProtocol()) {
+            setAddress(registry.getAddress());
+            setProtocol(registry.getProtocol());
+        }
 //        checkConfigCenter();
 
         URL url = toConfigUrl();
@@ -114,6 +120,10 @@ public class ConfigCenterConfig extends AbstractConfig {
             address = Constants.ANYHOST_VALUE;
         }
         map.put(Constants.PATH_KEY, ConfigCenterConfig.class.getSimpleName());
+        // use 'zookeeper' as the default configcenter.
+        if (StringUtils.isEmpty(map.get(Constants.PROTOCOL_KEY))) {
+            map.put(Constants.PROTOCOL_KEY, "zookeeper");
+        }
         return UrlUtils.parseURL(address, map);
     }
 
@@ -141,7 +151,6 @@ public class ConfigCenterConfig extends AbstractConfig {
         }
         return map;
     }
-
 
     public String getProtocol() {
         return protocol;
@@ -283,10 +292,33 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.application = application;
     }
 
+    public RegistryConfig getRegistry() {
+        return registry;
+    }
+
+    public void setRegistry(RegistryConfig registry) {
+        this.registry = registry;
+    }
+
     private void checkConfigCenter() {
         if ((StringUtils.isEmpty(env) && StringUtils.isEmpty(address))
                 || (StringUtils.isEmpty(protocol) && (StringUtils.isEmpty(address) || !address.contains("://")))) {
             throw new IllegalStateException("You must specify the right parameter for configcenter.");
         }
+    }
+
+    @Override
+    public boolean isValid() {
+        if (StringUtils.isEmpty(address) && StringUtils.isEmpty(env)) {
+            return false;
+        }
+        if (StringUtils.isNotEmpty(address)) {
+            if (!address.contains("://") && StringUtils.isEmpty(protocol)) {
+                return false;
+            }
+        } else if (StringUtils.isNotEmpty(env) && StringUtils.isEmpty(protocol)) {
+            return false;
+        }
+        return true;
     }
 }
