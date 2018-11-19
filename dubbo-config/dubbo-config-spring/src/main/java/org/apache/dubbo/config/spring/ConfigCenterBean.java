@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring;
 
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
+import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
 import org.apache.dubbo.config.support.Parameter;
 import org.springframework.beans.factory.BeanFactoryUtils;
@@ -30,7 +31,9 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.PropertySource;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -67,6 +70,24 @@ public class ConfigCenterBean extends ConfigCenterConfig implements Initializing
                 }
                 if (applicationConfig != null) {
                     setApplication(applicationConfig);
+                }
+            }
+        }
+
+        if ((getRegistry() == null)) {
+            List<RegistryConfig> registryConfigs = new ArrayList<>();
+            if (getApplication() == null || getApplication().getRegistries() == null || getApplication().getRegistries().isEmpty()) {
+                registryConfigs = getApplication().getRegistries();
+            } else {
+                Map<String, RegistryConfig> registryConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, RegistryConfig.class, false, false);
+                if (registryConfigMap != null && registryConfigMap.size() > 0) {
+                    registryConfigs.addAll(registryConfigMap.values());
+                }
+            }
+            for (RegistryConfig config : registryConfigs) {
+                if (config.isDefault() == null || config.isDefault() && config.isZookeeperProtocol()) {
+                    setRegistry(config);
+                    break;
                 }
             }
         }

@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -27,6 +28,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.context.Environment;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.metadata.integration.MetadataReportService;
 import org.apache.dubbo.monitor.MonitorFactory;
 import org.apache.dubbo.monitor.MonitorService;
@@ -41,6 +43,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.apache.dubbo.common.Constants.APPLICATION_KEY;
 
@@ -150,6 +153,17 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 throw new IllegalStateException("No registry config found or it's not a valid config!");
             }
         }
+
+        // For compatibility purpose, use registry as the default config center if there's no one specified explicitly.
+        RegistryConfig registry = registries.get(0);
+        if (registry.isZookeeperProtocol()) {
+            Set<Object> loadedConfigurations = ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getLoadedExtensionInstances();
+            if (CollectionUtils.isEmpty(loadedConfigurations)) {
+                ConfigCenterConfig configCenterConfig = new ConfigCenterConfig();
+                configCenterConfig.setProtocol(registry.getProtocol());
+                configCenterConfig.setAddress(registry.getAddress());
+            }
+        }
     }
 
     @SuppressWarnings("deprecation")
@@ -207,6 +221,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (!registryDataConfig.isValid()) {
             logger.info("There's no valid registryData config found. So the registry will store full url parameter to registry server.");
         }
+    }
+
+    protected void checkConfigCenter() {
+
     }
 
     protected List<URL> loadRegistries(boolean provider) {
