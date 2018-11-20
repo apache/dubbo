@@ -21,6 +21,7 @@ import com.alibaba.dubbo.config.ApplicationConfig;
 import com.alibaba.dubbo.config.ModuleConfig;
 import com.alibaba.dubbo.config.MonitorConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
@@ -29,11 +30,12 @@ import org.springframework.util.Assert;
 import java.lang.annotation.Annotation;
 import java.util.List;
 
-import static com.alibaba.dubbo.config.spring.util.BeanFactoryUtils.getBeans;
-import static com.alibaba.dubbo.config.spring.util.BeanFactoryUtils.getOptionalBean;
+import static com.alibaba.spring.util.BeanFactoryUtils.getBeans;
+import static com.alibaba.spring.util.BeanFactoryUtils.getOptionalBean;
 
 /**
  * Abstract Configurable {@link Annotation} Bean Builder
+ *
  * @since 2.5.7
  */
 abstract class AbstractAnnotationConfigBeanBuilder<A extends Annotation, B extends AbstractInterfaceConfig> {
@@ -76,7 +78,7 @@ abstract class AbstractAnnotationConfigBeanBuilder<A extends Annotation, B exten
         configureBean(bean);
 
         if (logger.isInfoEnabled()) {
-            logger.info(bean + " has been built.");
+            logger.info("The bean[type:" + bean.getClass().getSimpleName() + "] has been built.");
         }
 
         return bean;

@@ -14,24 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.config.spring.convert.converter;
+package com.alibaba.dubbo.common.extension;
 
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-
-/**
- * String[] to String {@ConditionalGenericConverter}
- *
- * @see StringUtils#arrayToCommaDelimitedString(Object[])
- * @since 2.5.11
- */
-public class StringArrayToStringConverter implements Converter<String[], String> {
-
-    @Override
-    public String convert(String[] source) {
-        return ObjectUtils.isEmpty(source) ? null : StringUtils.arrayToCommaDelimitedString(source);
-    }
-
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.METHOD})
+public @interface DisableInject {
 }

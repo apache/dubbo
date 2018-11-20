@@ -21,6 +21,7 @@ import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.spring.api.DemoService;
 import com.alibaba.dubbo.config.spring.context.annotation.consumer.test.TestConsumerConfiguration;
 import com.alibaba.dubbo.config.spring.context.annotation.provider.DemoServiceImpl;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.aop.support.AopUtils;

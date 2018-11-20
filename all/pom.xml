@@ -321,13 +321,6 @@
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
-            <artifactId>dubbo-bootstrap</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>com.alibaba</groupId>
             <artifactId>hessian-lite</artifactId>
             <scope>compile</scope>
             <optional>true</optional>
@@ -424,7 +417,6 @@
                                     <include>com.alibaba:dubbo-serialization-fst</include>
                                     <include>com.alibaba:dubbo-serialization-kryo</include>
                                     <include>com.alibaba:dubbo-serialization-jdk</include>
-                                    <include>com.alibaba:dubbo-bootstrap</include>
                                 </includes>
                             </artifactSet>
                             <transformers>

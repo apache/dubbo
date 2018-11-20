@@ -33,6 +33,7 @@ import com.alibaba.dubbo.config.spring.action.DemoActionBySetter;
 import com.alibaba.dubbo.config.spring.annotation.consumer.AnnotationAction;
 import com.alibaba.dubbo.config.spring.api.DemoService;
 import com.alibaba.dubbo.config.spring.api.HelloService;
+import com.alibaba.dubbo.config.spring.context.annotation.provider.ProviderConfiguration;
 import com.alibaba.dubbo.config.spring.filter.MockFilter;
 import com.alibaba.dubbo.config.spring.impl.DemoServiceImpl;
 import com.alibaba.dubbo.config.spring.impl.HelloServiceImpl;
@@ -46,10 +47,12 @@ import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.service.GenericException;
 import com.alibaba.dubbo.rpc.service.GenericService;
+
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.Collection;
@@ -106,6 +109,22 @@ public class ConfigTest {
     }
 
     @Test
+    public void testServiceAnnotation() {
+        AnnotationConfigApplicationContext providerContext = new AnnotationConfigApplicationContext();
+        providerContext.register(ProviderConfiguration.class);
+
+        providerContext.refresh();
+
+        ReferenceConfig<HelloService> reference = new ReferenceConfig<HelloService>();
+        reference.setApplication(new ApplicationConfig("consumer"));
+        reference.setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
+        reference.setInterface(HelloService.class);
+        reference.setUrl("dubbo://127.0.0.1:12345");
+        String hello = reference.get().sayHello("hello");
+        assertEquals("Hello, hello", hello);
+    }
+
+    @Test
     @SuppressWarnings("unchecked")
     public void testProviderNestedService() {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/provider-nested-service.xml");
@@ -145,6 +164,19 @@ public class ConfigTest {
         assertTrue(str.contains(" url=\"dubbo://127.0.0.1:20881\" "));
         assertTrue(str.contains(" interface=\"com.alibaba.dubbo.config.spring.api.DemoService\" "));
         assertTrue(str.endsWith(" />"));
+    }
+
+    @Test
+    public void testForks() {
+        ReferenceConfig<DemoService> reference = new ReferenceConfig<DemoService>();
+        reference.setApplication(new ApplicationConfig("consumer"));
+        reference.setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
+        reference.setInterface(DemoService.class);
+        reference.setUrl("dubbo://127.0.0.1:20881");
+        int forks = 10;
+        reference.setForks(forks);
+        String str = reference.toString();
+        assertTrue(str.contains("forks=\"" + forks + "\""));
     }
 
     @Test

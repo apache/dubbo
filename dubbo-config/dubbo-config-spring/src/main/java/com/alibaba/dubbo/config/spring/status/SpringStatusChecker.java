@@ -21,7 +21,8 @@ import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.status.Status;
 import com.alibaba.dubbo.common.status.StatusChecker;
-import com.alibaba.dubbo.config.spring.ServiceBean;
+
+import com.alibaba.dubbo.config.spring.extension.SpringExtensionFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.Lifecycle;
 
@@ -37,7 +38,13 @@ public class SpringStatusChecker implements StatusChecker {
 
     @Override
     public Status check() {
-        ApplicationContext context = ServiceBean.getSpringContext();
+        ApplicationContext context = null;
+        for (ApplicationContext c : SpringExtensionFactory.getContexts()) {
+            if (c != null) {
+                context = c;
+                break;
+            }
+        }
         if (context == null) {
             return new Status(Status.Level.UNKNOWN);
         }

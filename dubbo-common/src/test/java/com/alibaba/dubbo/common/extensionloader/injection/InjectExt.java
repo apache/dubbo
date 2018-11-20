@@ -14,39 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.config.spring.convert.converter;
+package com.alibaba.dubbo.common.extensionloader.injection;
 
-import org.junit.Assert;
-import org.junit.Test;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
+import com.alibaba.dubbo.common.extension.SPI;
 
 /**
- * {@link StringArrayToMapConverter} Test
+ *
  */
-public class StringArrayToMapConverterTest {
-
-    @Test
-    public void testConvert() {
-
-        StringArrayToMapConverter converter = new StringArrayToMapConverter();
-
-        Map<String, String> value = converter.convert(new String[]{"Hello", "World"});
-
-        Map<String, String> expected = new LinkedHashMap<String, String>();
-
-        expected.put("Hello", "World");
-
-        Assert.assertEquals(expected, value);
-
-        value = converter.convert(new String[]{});
-
-        Assert.assertNull(value);
-
-        value = converter.convert(null);
-
-        Assert.assertNull(value);
-
-    }
+@SPI("injection")
+public interface InjectExt {
+    String echo(String msg);
 }

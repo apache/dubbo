@@ -18,9 +18,13 @@ package com.alibaba.dubbo.config.spring.status;
 
 import com.alibaba.dubbo.common.status.Status;
 import com.alibaba.dubbo.config.spring.ServiceBean;
+
+import com.alibaba.dubbo.config.spring.extension.SpringExtensionFactory;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.Lifecycle;
 
@@ -43,6 +47,12 @@ public class SpringStatusCheckerTest {
         new ServiceBean<Object>().setApplicationContext(applicationContext);
     }
 
+    @After
+    public void tearDown() throws Exception {
+        SpringExtensionFactory.clearContexts();
+        Mockito.reset(applicationContext);
+    }
+
     @Test
     public void testWithoutApplicationContext() {
         Status status = springStatusChecker.check();
@@ -52,6 +62,7 @@ public class SpringStatusCheckerTest {
 
     @Test
     public void testWithLifeCycleRunning() {
+        SpringExtensionFactory.clearContexts();
         ApplicationLifeCycle applicationLifeCycle = mock(ApplicationLifeCycle.class);
         new ServiceBean<Object>().setApplicationContext(applicationLifeCycle);
         given(applicationLifeCycle.getConfigLocations()).willReturn(new String[]{"test1", "test2"});
@@ -65,6 +76,7 @@ public class SpringStatusCheckerTest {
 
     @Test
     public void testWithoutLifeCycleRunning() {
+        SpringExtensionFactory.clearContexts();
         ApplicationLifeCycle applicationLifeCycle = mock(ApplicationLifeCycle.class);
         new ServiceBean<Object>().setApplicationContext(applicationLifeCycle);
         given(applicationLifeCycle.isRunning()).willReturn(false);
