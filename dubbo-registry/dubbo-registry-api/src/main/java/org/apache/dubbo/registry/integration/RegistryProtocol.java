@@ -36,6 +36,7 @@ import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.registry.integration.parser.ConfigParser;
 import org.apache.dubbo.registry.support.ProviderConsumerRegTable;
+import org.apache.dubbo.registry.support.ProviderInvokerWrapper;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -147,6 +148,11 @@ public class RegistryProtocol implements Protocol {
         registry.register(registedProviderUrl);
     }
 
+    public void unregister(URL registryUrl, URL registedProviderUrl) {
+        Registry registry = registryFactory.getRegistry(registryUrl);
+        registry.unregister(registedProviderUrl);
+    }
+
     @Override
     public <T> Exporter<T> export(final Invoker<T> originInvoker) throws RpcException {
         URL registryUrl = getRegistryUrl(originInvoker);
@@ -226,9 +232,13 @@ public class RegistryProtocol implements Protocol {
         final URL registeredProviderUrl = getRegistedProviderUrl(newInvokerUrl, registryUrl);
 
         //decide if we need to re-publish
-        boolean shouldReregister = ProviderConsumerRegTable.getProviderWrapper(originInvoker).isReg();
+        ProviderInvokerWrapper<T> providerInvokerWrapper = ProviderConsumerRegTable.getProviderWrapper(originInvoker);
         ProviderConsumerRegTable.registerProvider(originInvoker, registryUrl, registeredProviderUrl);
-        if (shouldReregister) {
+        /**
+         * Only if the new url going to Registry is different with the previous one should we do unregister and register.
+         */
+        if (providerInvokerWrapper.isReg() && !registeredProviderUrl.equals(providerInvokerWrapper.getProviderUrl())) {
+            unregister(registryUrl, providerInvokerWrapper.getProviderUrl());
             register(registryUrl, registeredProviderUrl);
         }
 
