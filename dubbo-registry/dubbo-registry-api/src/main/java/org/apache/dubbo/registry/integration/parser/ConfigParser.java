@@ -49,6 +49,7 @@ public class ConfigParser {
                             .stream()
                             .map(u -> u.addParameter(Constants.CATEGORY_KEY, Constants.APP_DYNAMIC_CONFIGURATORS_CATEGORY))
                             .map(u -> u.addParameter(Constants.ENABLED_KEY, configuratorConfig.isEnabled()))
+                            .map(u -> u.addParameter(Constants.API_VERSION_KEY, configuratorConfig.getApiVersion()))
                             .collect(Collectors.toList())
             ));
         } else { // servcie scope by default.
@@ -56,6 +57,7 @@ public class ConfigParser {
                     serviceItemToUrls(item, configuratorConfig.getKey())
                             .stream()
                             .map(u -> u.addParameter(Constants.ENABLED_KEY, configuratorConfig.isEnabled()))
+                            .map(u -> u.addParameter(Constants.API_VERSION_KEY, configuratorConfig.getApiVersion()))
                             .collect(Collectors.toList()))
             );
         }
