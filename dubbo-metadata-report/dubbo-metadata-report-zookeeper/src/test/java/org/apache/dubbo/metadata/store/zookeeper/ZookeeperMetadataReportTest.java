@@ -15,7 +15,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 2018/10/9
@@ -91,7 +92,7 @@ public class ZookeeperMetadataReportTest {
         consumerMetadataIdentifier = storeConsumer(zookeeperMetadataReport, interfaceName, version, group, application);
         fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(consumerMetadataIdentifier));
         Assert.assertNotNull(fileContent);
-        Assert.assertEquals(fileContent, "paramConsumerTest=zkCm");
+        Assert.assertEquals(fileContent, "{\"paramConsumerTest\":\"zkCm\"}");
     }
 
 
@@ -115,7 +116,9 @@ public class ZookeeperMetadataReportTest {
         ConsumerMetadataIdentifier consumerMetadataIdentifier = new ConsumerMetadataIdentifier(interfaceName, version, group, application);
         Class interfaceClass = Class.forName(interfaceName);
 
-        zookeeperMetadataReport.storeConsumerMetadata(consumerMetadataIdentifier, "paramConsumerTest=zkCm");
+        Map<String, String> tmp = new HashMap<>();
+        tmp.put("paramConsumerTest", "zkCm");
+        zookeeperMetadataReport.storeConsumerMetadata(consumerMetadataIdentifier, tmp);
 
         return consumerMetadataIdentifier;
     }

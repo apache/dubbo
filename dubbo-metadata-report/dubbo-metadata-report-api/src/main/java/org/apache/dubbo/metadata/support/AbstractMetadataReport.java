@@ -248,20 +248,23 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
-    public void storeConsumerMetadata(ConsumerMetadataIdentifier consumerMetadataIdentifier, String serviceParameterString) {
+    public void storeConsumerMetadata(ConsumerMetadataIdentifier consumerMetadataIdentifier, Map<String,String> serviceParameterMap) {
         try {
             if (logger.isInfoEnabled()) {
-                logger.info("store consumer metadata. Identifier : " + consumerMetadataIdentifier + "; definition: " + serviceParameterString);
+                logger.info("store consumer metadata. Identifier : " + consumerMetadataIdentifier + "; definition: " + serviceParameterMap);
             }
-            allMetadataReports.put(consumerMetadataIdentifier, serviceParameterString);
+            allMetadataReports.put(consumerMetadataIdentifier, serviceParameterMap);
             failedReports.remove(consumerMetadataIdentifier);
-            doStoreConsumerMetadata(consumerMetadataIdentifier, serviceParameterString);
-            saveProperties(consumerMetadataIdentifier, serviceParameterString, true);
+
+            Gson gson = new Gson();
+            String data = gson.toJson(serviceParameterMap);
+            doStoreConsumerMetadata(consumerMetadataIdentifier, data);
+            saveProperties(consumerMetadataIdentifier, data, true);
         } catch (Exception e) {
             // retry again. If failed again, throw exception.
-            failedReports.put(consumerMetadataIdentifier, serviceParameterString);
+            failedReports.put(consumerMetadataIdentifier, serviceParameterMap);
             metadataReportRetry.startRetryTask();
-            logger.error("Failed to put consumer metadata " + consumerMetadataIdentifier + ";  " + serviceParameterString + ", cause: " + e.getMessage(), e);
+            logger.error("Failed to put consumer metadata " + consumerMetadataIdentifier + ";  " + serviceParameterMap + ", cause: " + e.getMessage(), e);
         }
     }
 
@@ -289,7 +292,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             if (item.getKey() instanceof ProviderMetadataIdentifier) {
                 this.storeProviderMetadata((ProviderMetadataIdentifier) item.getKey(), (FullServiceDefinition) item.getValue());
             } else if (item.getKey() instanceof ConsumerMetadataIdentifier) {
-                this.storeConsumerMetadata((ConsumerMetadataIdentifier) item.getKey(), (String) item.getValue());
+                this.storeConsumerMetadata((ConsumerMetadataIdentifier) item.getKey(), (Map) item.getValue());
             }
 
         }
