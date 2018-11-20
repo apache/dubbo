@@ -124,6 +124,20 @@ public class ExtensionLoader<T> {
         return loader;
     }
 
+    // For testing purposes only
+    public static void resetExtensionLoader(Class type) {
+        ExtensionLoader loader = EXTENSION_LOADERS.get(type);
+        if (loader != null) {
+            // Remove all instances associated with this loader as well
+            Map<String, Class<?>> classes = loader.getExtensionClasses();
+            for (Map.Entry<String, Class<?>> entry : classes.entrySet()) {
+                EXTENSION_INSTANCES.remove(entry.getValue());
+            }
+            classes.clear();
+            EXTENSION_LOADERS.remove(type);
+        }
+    }
+
     private static ClassLoader findClassLoader() {
         return ClassHelper.getClassLoader(ExtensionLoader.class);
     }
