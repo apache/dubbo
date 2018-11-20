@@ -335,7 +335,11 @@ public class RegistryConfig extends AbstractConfig {
         this.isDefault = isDefault;
     }
 
+    @Parameter(excluded = true)
     public boolean isZookeeperProtocol() {
+        if (!isValid()) {
+            return false;
+        }
         boolean isZookeeper = StringUtils.isNotEmpty(this.getProtocol()) && this.getProtocol().equals("zookeeper");
         if (!isZookeeper) {
             String address = this.getAddress();

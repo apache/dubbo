@@ -194,7 +194,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         setConsumerUrl(url);
         String rawConfig = null;
         try {
-            rawConfig = dynamicConfiguration.getConfig(url.getServiceKey() + Constants.CONFIGURATORS_SUFFIX, this);
+            rawConfig = dynamicConfiguration.getConfig(url.getEncodedServiceKey() + Constants.CONFIGURATORS_SUFFIX, this);
             if (StringUtils.isNotEmpty(rawConfig)) {
                 this.dynamicConfigurators = configToConfiguratiors(rawConfig);
             }

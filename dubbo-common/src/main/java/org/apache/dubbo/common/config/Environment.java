@@ -14,24 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.context;
+package org.apache.dubbo.common.config;
 
 import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.CompositeConfiguration;
-import org.apache.dubbo.common.config.EnvironmentConfiguration;
-import org.apache.dubbo.common.config.InmemoryConfiguration;
-import org.apache.dubbo.common.config.PropertiesConfiguration;
-import org.apache.dubbo.common.config.SystemConfiguration;
-import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.ConfigCenterConfig;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -46,12 +35,8 @@ public class Environment {
     private volatile Map<String, InmemoryConfiguration> externalConfsHolder = new ConcurrentHashMap<>();
     private volatile Map<String, InmemoryConfiguration> appExternalConfsHolder = new ConcurrentHashMap<>();
     private volatile Map<String, CompositeConfiguration> startupCompositeConfsHolder = new ConcurrentHashMap<>();
-    private volatile Map<String, CompositeConfiguration> runtimeCompositeConfsHolder = new ConcurrentHashMap<>();
-
-    private volatile DynamicConfiguration dynamicConfiguration;
 
     private volatile boolean isConfigCenterFirst = true;
-    private volatile ConfigCenterConfig configCenter;
 
     private Map<String, String> externalConfigurationMap = new HashMap<>();
     private Map<String, String> appExternalConfigurationMap = new HashMap<>();
@@ -88,24 +73,12 @@ public class Environment {
         return environmentConfsHolder.computeIfAbsent(toKey(prefix, id), k -> new EnvironmentConfiguration(prefix, id));
     }
 
-    public void setConfigCenter(ConfigCenterConfig configCenter) {
-        this.configCenter = configCenter;
-    }
-
     public synchronized void setExternalConfiguration(Map<String, String> externalConfiguration) {
         this.externalConfigurationMap = externalConfiguration;
-        if (configCenter == null) {
-            configCenter = new ConfigCenterConfig();
-        }
-        configCenter.init();
     }
 
     public synchronized void setAppExternalConfiguration(Map<String, String> appExternalConfiguration) {
         this.appExternalConfigurationMap = appExternalConfiguration;
-        if (configCenter == null) {
-            configCenter = new ConfigCenterConfig();
-        }
-        configCenter.init();
     }
 
     public void updateExternalConfigurationMap(Map<String, String> externalMap) {
@@ -125,41 +98,6 @@ public class Environment {
             compositeConfiguration.addConfiguration(this.getPropertiesConf(prefix, id));
             return compositeConfiguration;
         });
-    }
-
-    /**
-     * FIXME This method will recreate Configuration for each RPC, how much latency affect will this action has on performance?
-     *
-     * @param url, the url metadata.
-     * @param method, the method name the RPC is trying to invoke.
-     * @return
-     */
-    public CompositeConfiguration getRuntimeCompositeConf(URL url, String method) {
-        CompositeConfiguration compositeConfiguration = new CompositeConfiguration();
-
-        String app = url.getParameter(Constants.APPLICATION_KEY);
-        String service = url.getServiceKey();
-        compositeConfiguration.addConfiguration(new ConfigurationWrapper(app, service, method, getDynamicConfiguration()));
-
-        compositeConfiguration.addConfiguration(url.toConfiguration());
-        compositeConfiguration.addConfiguration(this.getSystemConf(null, null));
-        compositeConfiguration.addConfiguration(this.getPropertiesConf(null, null));
-        return compositeConfiguration;
-    }
-
-    /**
-     * If user opens DynamicConfig, the extension instance must has been created during the initialization of ConfigCenterConfig with the right extension type user specified.
-     * If no DynamicConfig presents, NopDynamicConfiguration will be used.
-     *
-     * @return
-     */
-    public DynamicConfiguration getDynamicConfiguration() {
-        Set<Object> configurations = ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getLoadedExtensionInstances();
-        if (CollectionUtils.isEmpty(configurations)) {
-            return ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getDefaultExtension();
-        } else {
-            return (DynamicConfiguration) configurations.iterator().next();
-        }
     }
 
     private static String toKey(String keypart1, String keypart2) {

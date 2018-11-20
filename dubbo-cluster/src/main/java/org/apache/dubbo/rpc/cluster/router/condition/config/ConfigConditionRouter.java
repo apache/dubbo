@@ -58,11 +58,9 @@ public class ConfigConditionRouter extends AbstractRouter implements Configurati
         this.configuration = configuration;
         this.force = false;
         this.url = url;
-        String app = this.url.getParameter(Constants.APPLICATION_KEY);
-        String serviceKey = this.url.getServiceKey();
         try {
-            String rawRule = this.configuration.getConfig(serviceKey + Constants.ROUTERS_SUFFIX, this);
-            String appRawRule = this.configuration.getConfig(app + Constants.ROUTERS_SUFFIX, this);
+            String rawRule = this.configuration.getConfig(url.getEncodedServiceKey() + Constants.ROUTERS_SUFFIX, this);
+            String appRawRule = this.configuration.getConfig(url.getParameter(Constants.APPLICATION_KEY) + Constants.ROUTERS_SUFFIX, this);
             if (!StringUtils.isEmpty(rawRule)) {
                 try {
                     routerRule = ConditionRuleParser.parse(rawRule);
@@ -81,7 +79,7 @@ public class ConfigConditionRouter extends AbstractRouter implements Configurati
             }
 
         } catch (Exception e) {
-            throw new IllegalStateException("Failed to init the condition router for service " + serviceKey + ", application " + app, e);
+            throw new IllegalStateException("Failed to init the condition router for service " + url.getServiceKey() + ", application " + url.getParameter(Constants.APPLICATION_KEY), e);
         }
     }
 

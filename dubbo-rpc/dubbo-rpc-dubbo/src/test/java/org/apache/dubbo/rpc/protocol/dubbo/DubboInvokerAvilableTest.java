@@ -20,8 +20,8 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.configcenter.ConfigurationUtils;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.ProxyFactory;
@@ -91,7 +91,7 @@ public class DubboInvokerAvilableTest {
 
         try{
             System.setProperty(Constants.SHUTDOWN_WAIT_KEY, "2000");
-            System.out.println("------------ConfigUtils.getServerShutdownTimeout(): " + ConfigUtils.getServerShutdownTimeout());
+            System.out.println("------------ConfigUtils.getServerShutdownTimeout(): " + ConfigurationUtils.getServerShutdownTimeout());
             protocol.destroy();
         }finally {
             System.getProperties().remove(Constants.SHUTDOWN_WAIT_KEY);

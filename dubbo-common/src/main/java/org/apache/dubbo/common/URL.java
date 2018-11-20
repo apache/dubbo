@@ -1285,6 +1285,12 @@ public /**final**/ class URL implements Serializable {
         return new InetSocketAddress(host, port);
     }
 
+    public String getEncodedServiceKey() {
+        String serviceKey = this.getServiceKey();
+        serviceKey = serviceKey.replaceFirst("/", "*");
+        return serviceKey;
+    }
+
     public String getServiceKey() {
         String inf = getServiceInterface();
         if (inf == null) {

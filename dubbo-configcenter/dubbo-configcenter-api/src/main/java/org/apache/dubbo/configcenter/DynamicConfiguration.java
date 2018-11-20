@@ -23,7 +23,7 @@ import org.apache.dubbo.common.extension.SPI;
 /**
  *
  */
-@SPI("zookeeper")
+@SPI("nop")
 public interface DynamicConfiguration extends Configuration {
 
     void init();
