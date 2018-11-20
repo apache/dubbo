@@ -22,13 +22,13 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.ConfigChangeType;
 import org.apache.dubbo.configcenter.ConfigurationListener;
+import org.apache.dubbo.configcenter.ConfigurationUtils;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
@@ -190,7 +190,7 @@ public class RegistryProtocol implements Protocol {
             listener.setAppDynamicConfigurators(appDynamicConfigurators);
             configurators.addAll(appDynamicConfigurators);
         }
-        String rawConfig = dynamicConfiguration.getConfig(providerUrl.getServiceKey() + Constants.CONFIGURATORS_SUFFIX, listener);
+        String rawConfig = dynamicConfiguration.getConfig(providerUrl.getEncodedServiceKey() + Constants.CONFIGURATORS_SUFFIX, listener);
         if (!StringUtils.isEmpty(rawConfig)) {
             List<Configurator> dynamicConfigurators = RegistryDirectory.configToConfiguratiors(rawConfig);
             listener.setDynamicConfigurators(dynamicConfigurators);
@@ -637,7 +637,7 @@ public class RegistryProtocol implements Protocol {
                 @Override
                 public void run() {
                     try {
-                        int timeout = ConfigUtils.getServerShutdownTimeout();
+                        int timeout = ConfigurationUtils.getServerShutdownTimeout();
                         if (timeout > 0) {
                             logger.info("Waiting " + timeout + "ms for registry to notify all consumers before unexport. Usually, this is called when you use dubbo API");
                             Thread.sleep(timeout);

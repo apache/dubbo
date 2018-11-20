@@ -16,9 +16,8 @@
  */
 package org.apache.dubbo.container.log4j;
 
-import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.configcenter.ConfigurationUtils;
 import org.apache.dubbo.container.Container;
-
 import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.LogManager;
@@ -43,9 +42,9 @@ public class Log4jContainer implements Container {
     @Override
     @SuppressWarnings("unchecked")
     public void start() {
-        String file = ConfigUtils.getProperty(LOG4J_FILE);
+        String file = ConfigurationUtils.getProperty(LOG4J_FILE);
         if (file != null && file.length() > 0) {
-            String level = ConfigUtils.getProperty(LOG4J_LEVEL);
+            String level = ConfigurationUtils.getProperty(LOG4J_LEVEL);
             if (level == null || level.length() == 0) {
                 level = DEFAULT_LOG4J_LEVEL;
             }
@@ -59,7 +58,7 @@ public class Log4jContainer implements Container {
             properties.setProperty("log4j.appender.application.layout.ConversionPattern", "%d [%t] %-5p %C{6} (%F:%L) - %m%n");
             PropertyConfigurator.configure(properties);
         }
-        String subdirectory = ConfigUtils.getProperty(LOG4J_SUBDIRECTORY);
+        String subdirectory = ConfigurationUtils.getProperty(LOG4J_SUBDIRECTORY);
         if (subdirectory != null && subdirectory.length() > 0) {
             Enumeration<org.apache.log4j.Logger> ls = LogManager.getCurrentLoggers();
             while (ls.hasMoreElements()) {

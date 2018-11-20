@@ -43,8 +43,8 @@ public class ZKTools {
                 new ExponentialBackoffRetry(1000, 3));
         client.start();
 
-        testStartupConfig();
-//        testProviderConfig();
+//        testStartupConfig();
+        testProviderConfig();
 //        testPathCache();
 //        testTreeCache();
 //        testCuratorListener();
@@ -72,20 +72,22 @@ public class ZKTools {
     }
 
     public static void testProviderConfig() {
-        String str = "{\n" +
-                "\t\"service\": \"org.apache.dubbo.demo.DemoService\",\n" +
-                "\t\"items\": [{\n" +
-                "\t\t\"addresses\": [\"30.5.120.49\"],\n" +
-                "\t\t\"rules\": [{\n" +
-                "\t\t\t\"key\": \"weight\",\n" +
-                "\t\t\t\"value\": 500\n" +
-                "\t\t}],\n" +
-                "\t\t\"app\": \"demo-provider\",\n" +
-                "\t\t\"side\": \"provider\"\n" +
-                "\t}]\n" +
-                "}";
+        String str = "---\n" +
+                "apiVersion: v2.7\n" +
+                "scope: service\n" +
+                "key: dd-test/org.apache.dubbo.demo.DemoService:1.0.4\n" +
+                "enabled: true\n" +
+                "configs:\n" +
+                "- addresses: ['0.0.0.0:20880']\n" +
+                "  side: provider\n" +
+                "  parameters:\n" +
+                "    timeout: 6000\n" +
+                "...";
+
+        System.out.println(str);
+
         try {
-            String path = "/dubbo/config/demo-provider/org.apache.dubbo.demo.DemoService.CONFIGURATORS";
+            String path = "/dubbo/config/dd-test*org.apache.dubbo.demo.DemoService:1.0.4/configurators";
             if (client.checkExists().forPath(path) == null) {
                 client.create().creatingParentsIfNeeded().forPath(path);
             }

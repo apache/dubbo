@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
@@ -26,7 +27,6 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
-import org.apache.dubbo.config.context.Environment;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.metadata.integration.MetadataReportService;
@@ -154,14 +154,16 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             }
         }
 
-        // For compatibility purpose, use registry as the default config center if there's no one specified explicitly.
+        // For compatibility purpose, use registry as the default config center if the registry protocol is zookeeper and there's no config center specified explicitly.
         RegistryConfig registry = registries.get(0);
         if (registry.isZookeeperProtocol()) {
             Set<Object> loadedConfigurations = ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getLoadedExtensionInstances();
+            // we use the loading status of DynamicConfiguration to decide whether ConfigCenter has been initiated.
             if (CollectionUtils.isEmpty(loadedConfigurations)) {
                 ConfigCenterConfig configCenterConfig = new ConfigCenterConfig();
                 configCenterConfig.setProtocol(registry.getProtocol());
                 configCenterConfig.setAddress(registry.getAddress());
+                configCenterConfig.init();
             }
         }
     }

@@ -76,7 +76,7 @@ public class ConfigCenterBean extends ConfigCenterConfig implements Initializing
 
         if ((getRegistry() == null)) {
             List<RegistryConfig> registryConfigs = new ArrayList<>();
-            if (getApplication() == null || getApplication().getRegistries() == null || getApplication().getRegistries().isEmpty()) {
+            if (getApplication() != null && getApplication().getRegistries() != null && !getApplication().getRegistries().isEmpty()) {
                 registryConfigs = getApplication().getRegistries();
             } else {
                 Map<String, RegistryConfig> registryConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, RegistryConfig.class, false, false);
@@ -107,9 +107,9 @@ public class ConfigCenterBean extends ConfigCenterConfig implements Initializing
         if (auto) {
             Map<String, String> externalProperties = getConfigurations(getConfigfile(), environment);
             Map<String, String> appExternalProperties = getConfigurations("application." + getConfigfile(), environment);
-            org.apache.dubbo.config.context.Environment.getInstance().setConfigCenter(this);
-            org.apache.dubbo.config.context.Environment.getInstance().setExternalConfiguration(externalProperties);
-            org.apache.dubbo.config.context.Environment.getInstance().setAppExternalConfiguration(appExternalProperties);
+            org.apache.dubbo.common.config.Environment.getInstance().setExternalConfiguration(externalProperties);
+            org.apache.dubbo.common.config.Environment.getInstance().setAppExternalConfiguration(appExternalProperties);
+            this.init();
         }
     }
 
