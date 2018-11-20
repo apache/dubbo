@@ -97,7 +97,7 @@ public class MetadataReportService {
         consumerURL = consumerURL.removeParameters(Constants.PID_KEY, Constants.TIMESTAMP_KEY, Constants.BIND_IP_KEY, Constants.BIND_PORT_KEY, Constants.TIMESTAMP_KEY);
         metadataReport.storeConsumerMetadata(new ConsumerMetadataIdentifier(consumerURL.getServiceInterface(),
                 consumerURL.getParameter(Constants.VERSION_KEY), consumerURL.getParameter(Constants.GROUP_KEY),
-                consumerURL.getParameter(Constants.APPLICATION_KEY)), consumerURL.toParameterString());
+                consumerURL.getParameter(Constants.APPLICATION_KEY)), consumerURL.getParameters());
     }
 
 }

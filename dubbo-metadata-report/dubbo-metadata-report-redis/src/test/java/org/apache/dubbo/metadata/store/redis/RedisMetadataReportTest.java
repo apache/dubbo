@@ -16,6 +16,8 @@ import redis.clients.jedis.Jedis;
 import redis.embedded.RedisServer;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.apache.dubbo.metadata.store.MetadataReport.META_DATA_SOTRE_TAG;
 
@@ -78,7 +80,7 @@ public class RedisMetadataReportTest {
         try {
             jedis = redisMetadataReport.pool.getResource();
             String value = jedis.get(consumerMetadataIdentifier.getIdentifierKey() + META_DATA_SOTRE_TAG);
-            Assert.assertEquals(value, "paramConsumerTest=redisCm");
+            Assert.assertEquals(value, "{\"paramConsumerTest\":\"redisCm\"}");
         } catch (Throwable e) {
             throw new RpcException("Failed to put to redis . cause: " + e.getMessage(), e);
         } finally {
@@ -109,7 +111,9 @@ public class RedisMetadataReportTest {
         ConsumerMetadataIdentifier consumerMetadataIdentifier = new ConsumerMetadataIdentifier(interfaceName, version, group, application);
         Class interfaceClass = Class.forName(interfaceName);
 
-        redisMetadataReport.storeConsumerMetadata(consumerMetadataIdentifier, "paramConsumerTest=redisCm");
+        Map<String, String> tmp = new HashMap<>();
+        tmp.put("paramConsumerTest", "redisCm");
+        redisMetadataReport.storeConsumerMetadata(consumerMetadataIdentifier, tmp);
 
         return consumerMetadataIdentifier;
     }
