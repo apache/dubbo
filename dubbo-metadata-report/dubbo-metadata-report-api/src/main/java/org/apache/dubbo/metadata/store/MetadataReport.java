@@ -21,6 +21,8 @@ import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
 import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
 
+import java.util.Map;
+
 /**
  */
 public interface MetadataReport {
@@ -30,6 +32,6 @@ public interface MetadataReport {
 
     void storeProviderMetadata(ProviderMetadataIdentifier providerMetadataIdentifier, FullServiceDefinition serviceDefinition);
 
-    void storeConsumerMetadata(ConsumerMetadataIdentifier consumerMetadataIdentifier, String serviceParameterString);
+    void storeConsumerMetadata(ConsumerMetadataIdentifier consumerMetadataIdentifier, Map<String,String> serviceParameterMap);
 
 }

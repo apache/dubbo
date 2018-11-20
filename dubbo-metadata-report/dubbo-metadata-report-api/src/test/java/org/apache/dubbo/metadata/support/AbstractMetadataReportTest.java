@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata.support;
 
+import com.alibaba.fastjson.JSON;
 import com.google.gson.Gson;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -149,13 +150,14 @@ public class AbstractMetadataReportTest {
         return providerMetadataIdentifier;
     }
 
-    private ConsumerMetadataIdentifier storeConsumer(AbstractMetadataReport abstractMetadataReport, String interfaceName, String version, String group, String application, String storeValue) throws ClassNotFoundException {
+    private ConsumerMetadataIdentifier storeConsumer(AbstractMetadataReport abstractMetadataReport, String interfaceName, String version, String group, String application, Map<String, String> tmp) throws ClassNotFoundException {
         URL url = URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":4444/" + interfaceName + "?version=" + version + "&application="
                 + application + (group == null ? "" : "&group=" + group) + "&testPKey=9090");
 
+        tmp.putAll(url.getParameters());
         ConsumerMetadataIdentifier consumerMetadataIdentifier = new ConsumerMetadataIdentifier(interfaceName, version, group, application);
 
-        abstractMetadataReport.storeConsumerMetadata(consumerMetadataIdentifier, storeValue + "&" + url.toParameterString());
+        abstractMetadataReport.storeConsumerMetadata(consumerMetadataIdentifier, tmp);
 
         return consumerMetadataIdentifier;
     }
@@ -178,10 +180,14 @@ public class AbstractMetadataReportTest {
         Assert.assertTrue(((FullServiceDefinition) abstractMetadataReport.allMetadataReports.get(providerMetadataIdentifier2)).getParameters().containsKey("testPKey"));
         Assert.assertEquals(((FullServiceDefinition) abstractMetadataReport.allMetadataReports.get(providerMetadataIdentifier2)).getParameters().get("version"), version + "_2");
 
-        ConsumerMetadataIdentifier consumerMetadataIdentifier = storeConsumer(abstractMetadataReport, interfaceName, version + "_3", group + "_3", application, "testKey=value");
+        Map<String, String> tmpMap = new HashMap<>();
+        tmpMap.put("testKey", "value");
+        ConsumerMetadataIdentifier consumerMetadataIdentifier = storeConsumer(abstractMetadataReport, interfaceName, version + "_3", group + "_3", application, tmpMap);
         Assert.assertEquals(abstractMetadataReport.allMetadataReports.size(), 3);
-        Assert.assertTrue(((String) abstractMetadataReport.allMetadataReports.get(consumerMetadataIdentifier)).contains("testPKey=9090"));
-        Assert.assertTrue(((String) abstractMetadataReport.allMetadataReports.get(consumerMetadataIdentifier)).contains("testKey=value"));
+
+        Map tmpMapResult = (Map) abstractMetadataReport.allMetadataReports.get(consumerMetadataIdentifier);
+        Assert.assertEquals(tmpMapResult.get("testPKey"), "9090");
+        Assert.assertEquals(tmpMapResult.get("testKey"), "value");
         Assert.assertTrue(abstractMetadataReport.store.size() == 3);
 
         abstractMetadataReport.store.clear();
@@ -203,7 +209,9 @@ public class AbstractMetadataReportTest {
         checkParam(data.getParameters(), application, version + "_2");
 
         String v3 = abstractMetadataReport.store.get(consumerMetadataIdentifier.getIdentifierKey());
-        checkParam(queryUrlToMap(v3), application, version + "_3");
+        gson = new Gson();
+        Map v3Map = gson.fromJson(v3, Map.class);
+        checkParam(v3Map, application, version + "_3");
     }
 
     @Test
