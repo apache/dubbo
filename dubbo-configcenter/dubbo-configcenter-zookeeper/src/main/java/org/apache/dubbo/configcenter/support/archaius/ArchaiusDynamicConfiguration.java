@@ -22,6 +22,8 @@ import com.netflix.config.DynamicStringProperty;
 import com.netflix.config.DynamicWatchedConfiguration;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.configcenter.AbstractDynamicConfiguration;
 import org.apache.dubbo.configcenter.ConfigChangeEvent;
@@ -34,6 +36,7 @@ import org.apache.dubbo.configcenter.support.archaius.sources.ZooKeeperConfigura
  * Archaius supports various sources and it's extensiable: JDBC, ZK, Properties, ..., so should we make it extensiable?
  */
 public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration<Runnable> {
+    private static final Logger logger = LoggerFactory.getLogger(ArchaiusDynamicConfiguration.class);
 
     public ArchaiusDynamicConfiguration() {
     }
@@ -142,10 +145,14 @@ public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration<R
                     .getStringProperty(key, null);
             String newValue = prop.get();
             ConfigChangeEvent event = new ConfigChangeEvent(key, newValue, type);
-            if (StringUtils.isEmpty(newValue)) {
+            if (newValue == null) {
                 event.setChangeType(ConfigChangeType.DELETED);
                 listener.process(event);
             } else {
+                if (newValue.equals("")) {
+                    logger.warn("We received an empty rule for " + key + ", the current working rule is unknown, the empty rule will not take effect.");
+                    return;
+                }
                 event.setChangeType(ConfigChangeType.MODIFIED);
                 listener.process(event);
             }
