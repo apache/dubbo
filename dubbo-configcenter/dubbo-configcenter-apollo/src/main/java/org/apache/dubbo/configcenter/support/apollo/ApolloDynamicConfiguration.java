@@ -133,7 +133,7 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Con
     }
 
     public ConfigChangeType getChangeType(ConfigChange change) {
-        if (change.getChangeType() == PropertyChangeType.DELETED || StringUtils.isEmpty(change.getNewValue())) {
+        if (change.getChangeType() == PropertyChangeType.DELETED) {
             return ConfigChangeType.DELETED;
         }
         return ConfigChangeType.MODIFIED;
@@ -156,6 +156,10 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Con
         public void onChange(ConfigChangeEvent changeEvent) {
             for (String key : changeEvent.changedKeys()) {
                 ConfigChange change = changeEvent.getChange(key);
+                if (StringUtils.isEmpty(change.getNewValue())) {
+                    logger.warn("We received an empty rule for " + key + ", the current working rule is " + change.getOldValue() + ", the empty rule will not take effect.");
+                    return;
+                }
                 // TODO Maybe we no longer need to identify the type of change. Because there's no scenario that a callback will subscribe for both configurators and routers
                 if (change.getPropertyName().endsWith(Constants.CONFIGURATORS_SUFFIX)) {
                     listener.process(new org.apache.dubbo.configcenter.ConfigChangeEvent(key, change.getNewValue(), ConfigType.CONFIGURATORS, getChangeType(change)));
