@@ -20,7 +20,6 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.compiler.support.AdaptiveCompiler;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.remoting.telnet.support.TelnetHandlerAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -86,8 +85,6 @@ public class ApplicationConfig extends AbstractConfig {
 
     //config the shutdown.wait
     private String shutwait;
-    // whether to enable telnet or not
-    private boolean enableTelnet;
 
 
     public ApplicationConfig() {
@@ -269,14 +266,5 @@ public class ApplicationConfig extends AbstractConfig {
     public void setShutwait(String shutwait) {
         System.setProperty( Constants.SHUTDOWN_WAIT_KEY, shutwait);
         this.shutwait = shutwait;
-    }
-
-    public boolean isEnableTelnet() {
-        return enableTelnet;
-    }
-
-    public void setEnableTelnet(boolean enableTelnet) {
-        this.enableTelnet = enableTelnet;
-        TelnetHandlerAdapter.setEnableTelnet(enableTelnet);
     }
 }

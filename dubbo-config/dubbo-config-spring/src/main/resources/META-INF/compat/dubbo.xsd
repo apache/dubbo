@@ -972,6 +972,11 @@
                 <xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="enable-telnet" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Enable telnet. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:anyAttribute namespace="##other" processContents="lax"/>
     </xsd:complexType>
 

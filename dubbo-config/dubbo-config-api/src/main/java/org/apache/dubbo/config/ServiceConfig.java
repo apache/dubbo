@@ -476,7 +476,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             url = ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
                     .getExtension(url.getProtocol()).getConfigurator(url).configure(url);
         }
-
+        if (protocolConfig.getEnableTelnet() != null) {
+            url.addParameter(Constants.TELNET_ENABLE, protocolConfig.getEnableTelnet());
+        }
         String scope = url.getParameter(Constants.SCOPE_KEY);
         // don't export when none is configured
         if (!Constants.SCOPE_NONE.equalsIgnoreCase(scope)) {
