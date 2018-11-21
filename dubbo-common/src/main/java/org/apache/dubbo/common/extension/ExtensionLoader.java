@@ -302,10 +302,6 @@ public class ExtensionLoader<T> {
         return Collections.unmodifiableSet(new TreeSet<String>(cachedInstances.keySet()));
     }
 
-    public Set<Object> getLoadedExtensionInstances() {
-        return Collections.unmodifiableSet(cachedInstances.values().stream().map(Holder::get).collect(Collectors.toSet()));
-    }
-
     public Object getLoadedAdaptiveExtensionInstances() {
         return cachedAdaptiveInstance.get();
     }
@@ -338,6 +334,14 @@ public class ExtensionLoader<T> {
             }
         }
         return (T) instance;
+    }
+
+    /**
+     * Return all available extension instances.
+     */
+    public Set<T> getExtensions() {
+        return Collections.unmodifiableSet(getSupportedExtensions().stream().map(this::getExtension)
+                .collect(Collectors.toSet()));
     }
 
     /**

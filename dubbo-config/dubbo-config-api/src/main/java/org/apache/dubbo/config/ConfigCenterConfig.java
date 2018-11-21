@@ -20,7 +20,6 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.support.Parameter;
@@ -31,7 +30,6 @@ import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 /**
  *
@@ -102,16 +100,11 @@ public class ConfigCenterConfig extends AbstractConfig {
 //        checkConfigCenter();
 
         URL url = toConfigUrl();
-        Set<Object> loadedConfigurations = ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getLoadedExtensionInstances();
-        if (CollectionUtils.isEmpty(loadedConfigurations)) {
-            DynamicConfiguration dynamicConfiguration = ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getExtension(url.getProtocol());
-            // TODO, maybe we need a factory to do this?
-            dynamicConfiguration.setUrl(url);
-            dynamicConfiguration.init();
-            return dynamicConfiguration;
-        }
 
-        return (DynamicConfiguration) loadedConfigurations.iterator().next();
+        DynamicConfiguration dynamicConfiguration = ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getExtension(url.getProtocol());
+        // TODO, maybe we need a factory to do this?
+        dynamicConfiguration.initWith(url);
+        return dynamicConfiguration;
     }
 
     private URL toConfigUrl() {

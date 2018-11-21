@@ -17,9 +17,16 @@
 package org.apache.dubbo.configcenter;
 
 /**
- *
+ * Config type
  */
 public enum ConfigType {
+    /**
+     * For Dubbo dynamic config other than routing rules.
+     */
     CONFIGURATORS,
+
+    /**
+     * For Dubbo routing rules
+     */
     ROUTERS
 }

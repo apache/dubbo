@@ -23,23 +23,36 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
+ * Dynamic configuration template class. The concrete implementation needs to provide implementation for three methods.
  *
+ * @see AbstractDynamicConfiguration#getTargetConfig(String, String, long)
+ * @see AbstractDynamicConfiguration#addListener(String, ConfigurationListener)
+ * @see AbstractDynamicConfiguration#createTargetListener(String, ConfigurationListener)
  */
-public abstract class AbstractDynamicConfiguration<TargetConfigListener> extends AbstractConfiguration implements DynamicConfiguration {
-    public static final String DEFAULT_GROUP = "dubbo";
+public abstract class AbstractDynamicConfiguration<TargetListener> extends AbstractConfiguration
+        implements DynamicConfiguration {
+    protected static final String DEFAULT_GROUP = "dubbo";
+
     protected URL url;
-    /**
-     * One key can register multiple target listeners, but one target listener only maps to one configuration listener
-     */
-    private ConcurrentMap<String, ConcurrentMap<ConfigurationListener, TargetConfigListener>> listenerToTargetListenerMap = new ConcurrentHashMap<>();
+
+    // One key can register multiple target listeners, but one target listener only maps to one configuration listener
+    private ConcurrentMap<String, ConcurrentMap<ConfigurationListener, TargetListener>> targetListeners =
+            new ConcurrentHashMap<>();
 
     public AbstractDynamicConfiguration() {
     }
 
     @Override
+    public void initWith(URL url) {
+        this.url = url;
+    }
+
+    @Override
     public void addListener(String key, ConfigurationListener listener) {
-        ConcurrentMap<ConfigurationListener, TargetConfigListener> listeners = listenerToTargetListenerMap.computeIfAbsent(key, k -> new ConcurrentHashMap<>());
-        TargetConfigListener targetListener = listeners.computeIfAbsent(listener, k -> createTargetConfigListener(key, listener));
+        ConcurrentMap<ConfigurationListener, TargetListener> listeners = targetListeners.computeIfAbsent(key,
+                k -> new ConcurrentHashMap<>());
+        TargetListener targetListener = listeners.computeIfAbsent(listener,
+                k -> createTargetListener(key, listener));
         addTargetListener(key, targetListener);
     }
 
@@ -60,33 +73,48 @@ public abstract class AbstractDynamicConfiguration<TargetConfigListener> extends
 
     @Override
     public String getConfig(String key, String group, ConfigurationListener listener) {
-        return getConfig(key, group, 0l, listener);
+        return getConfig(key, group, listener, 0L);
     }
 
     @Override
-    public String getConfig(String key, String group, long timeout, ConfigurationListener listener) {
+    public String getConfig(String key, String group, ConfigurationListener listener, long timeout) {
         try {
             if (listener != null) {
                 this.addListener(key, listener);
             }
-            return getInternalProperty(key, group, timeout);
+            return getTargetConfig(key, group, timeout);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
-    public URL getUrl() {
-        return url;
-    }
+    /**
+     * Fetch dynamic configuration from backend config storage. If timeout exceeds, exception should be thrown.
+     *
+     * @param key     property key
+     * @param group   group
+     * @param timeout timeout
+     * @return target config value
+     */
+    protected abstract String getTargetConfig(String key, String group, long timeout);
 
-    public void setUrl(URL url) {
-        this.url = url;
-    }
+    /**
+     * Register a native listener to the backend config storage so that Dubbo has chance to get notified when the
+     * value changes.
+     *
+     * @param key      property key listener is interested.
+     * @param listener native listener for the backend config storage
+     */
+    protected abstract void addTargetListener(String key, TargetListener listener);
 
-    protected abstract String getInternalProperty(String key, String group, long timeout);
-
-    protected abstract void addTargetListener(String key, TargetConfigListener listener);
-
-    protected abstract TargetConfigListener createTargetConfigListener(String key, ConfigurationListener listener);
+    /**
+     * Create a native listener for the backend config storage, eventually ConfigurationListener will get notified once
+     * the value changes.
+     *
+     * @param key      property key the native listener will listen on
+     * @param listener ConfigurationListener instance
+     * @return native listener for the backend config storage
+     */
+    protected abstract TargetListener createTargetListener(String key, ConfigurationListener listener);
 
 }

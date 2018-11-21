@@ -42,7 +42,9 @@ public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration<R
     }
 
     @Override
-    public void init() {
+    public void initWith(URL url) {
+        super.initWith(url);
+
         //  String address = env.getCompositeConf().getString(ADDRESS_KEY);
         //  String app = env.getCompositeConf().getString(APP_KEY);
 
@@ -80,7 +82,7 @@ public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration<R
      * @return
      */
     @Override
-    protected String getInternalProperty(String key, String group, long timeout) {
+    protected String getTargetConfig(String key, String group, long timeout) {
         if (StringUtils.isNotEmpty(group)) {
             key = group + "." + key;
         }
@@ -112,7 +114,7 @@ public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration<R
     }
 
     @Override
-    protected Runnable createTargetConfigListener(String key, ConfigurationListener listener) {
+    protected Runnable createTargetListener(String key, ConfigurationListener listener) {
         return new ArchaiusListener(key, listener);
     }
 

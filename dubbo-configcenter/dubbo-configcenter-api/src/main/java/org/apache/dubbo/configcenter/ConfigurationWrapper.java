@@ -20,7 +20,7 @@ import org.apache.dubbo.common.config.AbstractConfiguration;
 import org.apache.dubbo.common.config.Configuration;
 
 /**
- *
+ * A wrapper to fetch a config for the specific key with the different prefix in the specified order.
  */
 public class ConfigurationWrapper extends AbstractConfiguration {
     private String application;
@@ -36,6 +36,7 @@ public class ConfigurationWrapper extends AbstractConfiguration {
         this.delegate = configuration;
     }
 
+    // FIXME: I think the order is wrong, service.method.key go first, then service.key, and then application.key
     @Override
     protected Object getInternalProperty(String key) {
         Object value = delegate.getProperty(application + "." + key);
