@@ -57,13 +57,12 @@ public abstract class AbstractConfigurator implements Configurator {
          */
         String apiVersion = configuratorUrl.getParameter(Constants.API_VERSION_KEY);
         if (StringUtils.isNotEmpty(apiVersion)) {
-            int configuratorPort = configuratorUrl.getPort();
-            if (configuratorPort == 0) {
-                configureIfMatch(NetUtils.getLocalHost(), url, configuratorUrl);
-            } else {
-                if (url.getPort() == configuratorPort) {
-                    configureIfMatch(configuratorUrl.getHost(), url, configuratorUrl);
-                }
+            String currentSide = url.getParameter(Constants.SIDE_KEY);
+            String configuratorSide = configuratorUrl.getParameter(Constants.SIDE_KEY);
+            if (currentSide.equals(configuratorSide) && Constants.CONSUMER.equals(configuratorSide) && 0 == configuratorUrl.getPort()) {
+                url = configureIfMatch(NetUtils.getLocalHost(), url);
+            } else if (currentSide.equals(configuratorSide) && Constants.PROVIDER.equals(configuratorSide) && url.getPort() == configuratorUrl.getPort()) {
+                url = configureIfMatch(url.getHost(), url);
             }
         }
         /**
@@ -80,21 +79,21 @@ public abstract class AbstractConfigurator implements Configurator {
         // If override url has port, means it is a provider address. We want to control a specific provider with this override url, it may take effect on the specific provider instance or on consumers holding this provider instance.
         if (configuratorUrl.getPort() != 0) {
             if (url.getPort() == configuratorUrl.getPort()) {
-                return configureIfMatch(url.getHost(), url, configuratorUrl);
+                return configureIfMatch(url.getHost(), url);
             }
         } else {// override url don't have a port, means the ip override url specify is a consumer address or 0.0.0.0
             // 1.If it is a consumer ip address, the intention is to control a specific consumer instance, it must takes effect at the consumer side, any provider received this override url should ignore;
             // 2.If the ip is 0.0.0.0, this override url can be used on consumer, and also can be used on provider
             if (url.getParameter(Constants.SIDE_KEY, Constants.PROVIDER).equals(Constants.CONSUMER)) {
-                return configureIfMatch(NetUtils.getLocalHost(), url, configuratorUrl);// NetUtils.getLocalHost is the ip address consumer registered to registry.
+                return configureIfMatch(NetUtils.getLocalHost(), url);// NetUtils.getLocalHost is the ip address consumer registered to registry.
             } else if (url.getParameter(Constants.SIDE_KEY, Constants.CONSUMER).equals(Constants.PROVIDER)) {
-                return configureIfMatch(Constants.ANYHOST_VALUE, url, configuratorUrl);// take effect on all providers, so address must be 0.0.0.0, otherwise it won't flow to this if branch
+                return configureIfMatch(Constants.ANYHOST_VALUE, url);// take effect on all providers, so address must be 0.0.0.0, otherwise it won't flow to this if branch
             }
         }
         return url;
     }
 
-    private URL configureIfMatch(String host, URL url, URL configuratorUrl) {
+    private URL configureIfMatch(String host, URL url) {
         if (Constants.ANYHOST_VALUE.equals(configuratorUrl.getHost()) || host.equals(configuratorUrl.getHost())) {
             // TODO, to support wildcards
             String providers = configuratorUrl.getParameter(Constants.OVERRIDE_PROVIDERS_KEY);
@@ -113,6 +112,7 @@ public abstract class AbstractConfigurator implements Configurator {
                     conditionKeys.add(Constants.VERSION_KEY);
                     conditionKeys.add(Constants.APPLICATION_KEY);
                     conditionKeys.add(Constants.SIDE_KEY);
+                    conditionKeys.add(Constants.API_VERSION_KEY);
                     for (Map.Entry<String, String> entry : configuratorUrl.getParameters().entrySet()) {
                         String key = entry.getKey();
                         String value = entry.getValue();
