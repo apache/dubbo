@@ -70,11 +70,11 @@ public class ConfigurationUtils {
      * @return
      */
     public static DynamicConfiguration getDynamicConfiguration() {
-        Set<Object> configurations = ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getLoadedExtensionInstances();
+        Set<DynamicConfiguration> configurations = ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getExtensions();
         if (CollectionUtils.isEmpty(configurations)) {
             return ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getDefaultExtension();
         } else {
-            return (DynamicConfiguration) configurations.iterator().next();
+            return configurations.iterator().next();
         }
     }
 

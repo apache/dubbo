@@ -157,7 +157,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         // For compatibility purpose, use registry as the default config center if the registry protocol is zookeeper and there's no config center specified explicitly.
         RegistryConfig registry = registries.get(0);
         if (registry.isZookeeperProtocol()) {
-            Set<Object> loadedConfigurations = ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getLoadedExtensionInstances();
+            Set<DynamicConfiguration> loadedConfigurations = ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getExtensions();
             // we use the loading status of DynamicConfiguration to decide whether ConfigCenter has been initiated.
             if (CollectionUtils.isEmpty(loadedConfigurations)) {
                 ConfigCenterConfig configCenterConfig = new ConfigCenterConfig();
