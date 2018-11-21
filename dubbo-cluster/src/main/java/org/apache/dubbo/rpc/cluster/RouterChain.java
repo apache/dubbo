@@ -51,7 +51,7 @@ public class RouterChain<T> {
 
     public static <T> RouterChain<T> buildChain(DynamicConfiguration dynamicConfiguration, URL url) {
         RouterChain<T> routerChain = new RouterChain<>(url);
-        List<RouterFactory> extensionFactories = ExtensionLoader.getExtensionLoader(RouterFactory.class).getActivateExtension(dynamicConfiguration.getUrl(), (String[]) null);
+        List<RouterFactory> extensionFactories = ExtensionLoader.getExtensionLoader(RouterFactory.class).getActivateExtension(url, (String[]) null);
         List<Router> routers = extensionFactories.stream()
                 .map(factory -> {
                     Router router = factory.getRouter(dynamicConfiguration, url);

@@ -28,7 +28,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- *
+ * Utilities for manipulating configurations from different sources
  */
 public class ConfigurationUtils {
     private static final CompositeConfiguration compositeConfiguration;

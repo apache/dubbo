@@ -21,28 +21,23 @@ import org.apache.dubbo.configcenter.ConfigurationListener;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 
 /**
- * The default extension of {@link DynamicConfiguration}.
- * If user does not specify a config centre, or specifies one that is not a valid extension, it will default to this one.
+ * The default extension of {@link DynamicConfiguration}. If user does not specify a config centre, or specifies one
+ * that is not a valid extension, it will default to this one.
  */
 public class NopDynamicConfiguration extends AbstractDynamicConfiguration {
 
     @Override
-    public void init() {
-
-    }
-
-    @Override
-    protected String getInternalProperty(String key, String group, long timeout) {
+    protected String getTargetConfig(String key, String group, long timeout) {
         return null;
     }
 
     @Override
     protected void addTargetListener(String key, Object o) {
-
+        // no-op
     }
 
     @Override
-    protected Object createTargetConfigListener(String key, ConfigurationListener listener) {
+    protected Object createTargetListener(String key, ConfigurationListener listener) {
         return null;
     }
 

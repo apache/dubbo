@@ -52,7 +52,8 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Con
     }
 
     @Override
-    public void init() {
+    public void initWith(URL url) {
+        super.initWith(url);
         /**
          * Instead of using Dubbo's configuration, I would suggest use the original configuration method Apollo provides.
          */
@@ -96,7 +97,7 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Con
      * @return
      */
     @Override
-    protected String getInternalProperty(String key, String group, long timeout) {
+    protected String getTargetConfig(String key, String group, long timeout) {
         if (StringUtils.isNotEmpty(group) && !url.getParameter(Constants.CONFIG_GROUP_KEY, DEFAULT_GROUP).equals(group)) {
             Config config = ConfigService.getConfig(group);
             if (config != null) {
@@ -128,7 +129,7 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Con
     }
 
     @Override
-    protected ConfigChangeListener createTargetConfigListener(String key, ConfigurationListener listener) {
+    protected ConfigChangeListener createTargetListener(String key, ConfigurationListener listener) {
         return new ApolloListener(listener);
     }
 
