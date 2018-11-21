@@ -29,14 +29,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Environment {
     private static final Environment INSTANCE = new Environment();
 
-    private volatile Map<String, PropertiesConfiguration> propertiesConfsHolder = new ConcurrentHashMap<>();
-    private volatile Map<String, SystemConfiguration> systemConfsHolder = new ConcurrentHashMap<>();
-    private volatile Map<String, EnvironmentConfiguration> environmentConfsHolder = new ConcurrentHashMap<>();
-    private volatile Map<String, InmemoryConfiguration> externalConfsHolder = new ConcurrentHashMap<>();
-    private volatile Map<String, InmemoryConfiguration> appExternalConfsHolder = new ConcurrentHashMap<>();
-    private volatile Map<String, CompositeConfiguration> startupCompositeConfsHolder = new ConcurrentHashMap<>();
+    private Map<String, PropertiesConfiguration> propertiesConfsHolder = new ConcurrentHashMap<>();
+    private Map<String, SystemConfiguration> systemConfsHolder = new ConcurrentHashMap<>();
+    private Map<String, EnvironmentConfiguration> environmentConfsHolder = new ConcurrentHashMap<>();
+    private Map<String, InmemoryConfiguration> externalConfsHolder = new ConcurrentHashMap<>();
+    private Map<String, InmemoryConfiguration> appExternalConfsHolder = new ConcurrentHashMap<>();
+    private Map<String, CompositeConfiguration> startupCompositeConfsHolder = new ConcurrentHashMap<>();
 
-    private volatile boolean isConfigCenterFirst = true;
+    private boolean isConfigCenterFirst = true;
 
     private Map<String, String> externalConfigurationMap = new HashMap<>();
     private Map<String, String> appExternalConfigurationMap = new HashMap<>();
