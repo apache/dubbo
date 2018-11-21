@@ -220,8 +220,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
                             channel.send(echo);
                         }
                     }else{
-                        channel.send("telnet disabled");
-                        channel.close();
+                        channel.send("telnet disabled\r\n");
                     }
 
                 }
