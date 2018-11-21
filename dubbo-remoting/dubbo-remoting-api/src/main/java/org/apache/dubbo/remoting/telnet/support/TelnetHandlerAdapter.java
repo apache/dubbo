@@ -24,6 +24,7 @@ import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.transport.ChannelHandlerAdapter;
 
 public class TelnetHandlerAdapter extends ChannelHandlerAdapter implements TelnetHandler {
+    private static volatile boolean enableTelnet = true;
 
     private final ExtensionLoader<TelnetHandler> extensionLoader = ExtensionLoader.getExtensionLoader(TelnetHandler.class);
 
@@ -72,4 +73,11 @@ public class TelnetHandlerAdapter extends ChannelHandlerAdapter implements Telne
         return buf.toString();
     }
 
+    public static void setEnableTelnet(boolean enableTelnet) {
+        TelnetHandlerAdapter.enableTelnet = enableTelnet;
+    }
+
+    public static boolean isEnableTelnet() {
+        return enableTelnet;
+    }
 }
