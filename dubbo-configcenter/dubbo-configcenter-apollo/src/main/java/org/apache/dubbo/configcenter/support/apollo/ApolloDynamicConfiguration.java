@@ -56,8 +56,6 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Con
         /**
          * Instead of using Dubbo's configuration, I would suggest use the original configuration method Apollo provides.
          */
-//        String configEnv = env.getCompositeConf().getString(ENV_KEY);
-//        String configCluster = env.getCompositeConf().getString(CLUSTER_KEY);
         String configEnv = url.getParameter(Constants.CONFIG_ENV_KEY);
         String configAddr = url.getBackupAddress();
         String configCluster = url.getParameter(Constants.CONFIG_CLUSTER_KEY);
