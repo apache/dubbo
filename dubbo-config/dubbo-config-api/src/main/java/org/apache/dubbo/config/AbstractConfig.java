@@ -505,8 +505,6 @@ public abstract class AbstractConfig implements Serializable {
                     }
                 }
             } catch (Exception e) {
-                System.out.println(this.getClass().getName());
-                System.out.println(method.getName());
                 throw new IllegalStateException(e.getMessage(), e);
             }
         }

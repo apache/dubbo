@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -59,7 +60,7 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
     // The final root path would be: /configRootPath/"config"
     private final String configRootPath;
     private final TreeCache treeCache;
-    private boolean connected = false;
+    private CountDownLatch initializedLatch = new CountDownLatch(1);
 
     private final Charset charset = Charset.forName("UTF-8");
 
@@ -96,7 +97,7 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
                 new ExponentialBackoffRetry(1000, 3));
         client.start();
         try {
-            connected = client.blockUntilConnected(connectTimeout, TimeUnit.MILLISECONDS);
+            boolean connected = client.blockUntilConnected(connectTimeout, TimeUnit.MILLISECONDS);
             if (!connected) {
                 boolean check = Boolean.parseBoolean(System.getProperty(ARCHAIUS_CONFIG_CHECK_KEY, "false"));
                 if (check) {
@@ -138,8 +139,8 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
 
                 TreeCacheEvent.Type type = event.getType();
                 ChildData data = event.getData();
-                if (type == TreeCacheEvent.Type.INITIALIZED || type == TreeCacheEvent.Type.CONNECTION_RECONNECTED) {
-                    connected = true;
+                if (type == TreeCacheEvent.Type.INITIALIZED) {
+                    initializedLatch.countDown();
                 }
 
                 // TODO, ignore other event types
@@ -202,9 +203,10 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
 
         Map<String, Object> all = new HashMap<>();
 
-        if (!connected) {
-            logger.warn("ConfigCenter is not connected yet, zookeeper does't support local snapshot, so there's no backup data to use!");
-            return all;
+        try {
+            initializedLatch.await();
+        } catch (InterruptedException e) {
+            logger.error("Being interrupted unexpectedly when waiting zookeeper to initialize, the config data may not ready yet, be careful!");
         }
 
         Map<String, ChildData> dataMap = treeCache.getCurrentChildren(configRootPath);
@@ -256,9 +258,5 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
         } catch (IOException exc) {
             logger.error("IOException should not have been thrown.", exc);
         }
-    }
-
-    public boolean isConnected() {
-        return connected;
     }
 }
