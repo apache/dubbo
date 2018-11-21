@@ -140,14 +140,8 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Con
 
     private class ApolloListener implements ConfigChangeListener {
         private ConfigurationListener listener;
-        private URL url;
 
-        public ApolloListener(ConfigurationListener listener) {
-            this(listener.getUrl(), listener);
-        }
-
-        public ApolloListener(URL url, ConfigurationListener listener) {
-            this.url = url;
+        ApolloListener(ConfigurationListener listener) {
             this.listener = listener;
         }
 

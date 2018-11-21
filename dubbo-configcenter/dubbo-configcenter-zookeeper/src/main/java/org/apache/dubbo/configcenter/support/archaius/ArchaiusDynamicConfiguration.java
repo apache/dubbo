@@ -120,14 +120,12 @@ public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration<R
 
     private class ArchaiusListener implements Runnable {
         private ConfigurationListener listener;
-        private URL url;
         private String key;
         private ConfigType type;
 
         public ArchaiusListener(String key, ConfigurationListener listener) {
             this.key = key;
             this.listener = listener;
-            this.url = listener.getUrl();
             // Maybe we no longer need to identify the type of change. Because there's no scenario that a callback will subscribe for both configurators and routers
             if (key.endsWith(Constants.CONFIGURATORS_SUFFIX)) {
                 type = ConfigType.CONFIGURATORS;
