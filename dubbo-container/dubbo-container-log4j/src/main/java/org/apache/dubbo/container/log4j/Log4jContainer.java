@@ -18,6 +18,7 @@ package org.apache.dubbo.container.log4j;
 
 import org.apache.dubbo.configcenter.ConfigurationUtils;
 import org.apache.dubbo.container.Container;
+
 import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.LogManager;
