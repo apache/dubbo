@@ -34,6 +34,8 @@ import org.apache.dubbo.configcenter.support.archaius.sources.ZooKeeperConfigura
 
 /**
  * Archaius supports various sources and it's extensiable: JDBC, ZK, Properties, ..., so should we make it extensiable?
+ * FIXME: we should get rid of Archaius or move it to eco system since Archaius is out of maintenance, instead, we
+ * should rely on curator-x-async which looks quite promising.
  */
 public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration<Runnable> {
     private static final Logger logger = LoggerFactory.getLogger(ArchaiusDynamicConfiguration.class);
