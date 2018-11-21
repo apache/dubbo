@@ -17,7 +17,9 @@
 package org.apache.dubbo.configcenter;
 
 /**
+ * Config change event.
  *
+ * @see ConfigChangeType
  */
 public class ConfigChangeEvent {
     private String key;

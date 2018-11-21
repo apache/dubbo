@@ -28,7 +28,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- *
+ * Utilities for manipulating configurations from different sources
  */
 public class ConfigurationUtils {
     private static final CompositeConfiguration compositeConfiguration;
@@ -64,17 +64,16 @@ public class ConfigurationUtils {
     }
 
     /**
-     * If user opens DynamicConfig, the extension instance must has been created during the initialization of ConfigCenterConfig with the right extension type user specified.
-     * If no DynamicConfig presents, NopDynamicConfiguration will be used.
-     *
-     * @return
+     * If user opens DynamicConfig, the extension instance must has been created during the initialization of
+     * ConfigCenterConfig with the right extension type user specified. If no DynamicConfig presents,
+     * NopDynamicConfiguration will be used.
      */
     public static DynamicConfiguration getDynamicConfiguration() {
-        Set<Object> configurations = ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getLoadedExtensionInstances();
+        Set<DynamicConfiguration> configurations = ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getExtensions();
         if (CollectionUtils.isEmpty(configurations)) {
             return ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getDefaultExtension();
         } else {
-            return (DynamicConfiguration) configurations.iterator().next();
+            return configurations.iterator().next();
         }
     }
 
