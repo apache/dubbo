@@ -86,12 +86,7 @@ public class RegistryProtocol implements Protocol {
 
     public RegistryProtocol() {
         INSTANCE = this;
-        Set<DynamicConfiguration> configurations = ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getExtensions();
-        if (CollectionUtils.isEmpty(configurations)) {
-            dynamicConfiguration = ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getDefaultExtension();
-        } else {
-            dynamicConfiguration = (DynamicConfiguration) configurations.iterator().next();
-        }
+        dynamicConfiguration = ConfigurationUtils.getDynamicConfiguration();
     }
 
     public static RegistryProtocol getRegistryProtocol() {

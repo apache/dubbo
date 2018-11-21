@@ -64,10 +64,9 @@ public class ConfigurationUtils {
     }
 
     /**
-     * If user opens DynamicConfig, the extension instance must has been created during the initialization of ConfigCenterConfig with the right extension type user specified.
-     * If no DynamicConfig presents, NopDynamicConfiguration will be used.
-     *
-     * @return
+     * If user opens DynamicConfig, the extension instance must has been created during the initialization of
+     * ConfigCenterConfig with the right extension type user specified. If no DynamicConfig presents,
+     * NopDynamicConfiguration will be used.
      */
     public static DynamicConfiguration getDynamicConfiguration() {
         Set<DynamicConfiguration> configurations = ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getExtensions();
