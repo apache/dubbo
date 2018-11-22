@@ -241,7 +241,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         checkRegistry();
         List<URL> registryList = new ArrayList<URL>();
         if (registries != null && !registries.isEmpty()) {
-            Map<String, String> registryDataConfigurationMap = this.registryDataConfig.transferToMap();
+            Map<String, String> registryDataConfigurationMap = new HashMap<>(4);
+            appendParameters(registryDataConfigurationMap, registryDataConfig);
             for (RegistryConfig config : registries) {
                 String address = config.getAddress();
                 if (address == null || address.length() == 0) {

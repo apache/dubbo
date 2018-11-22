@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.support.Parameter;
 
 import java.util.Map;
 
@@ -27,7 +28,6 @@ import java.util.Map;
  */
 public class MetadataReportConfig extends AbstractConfig {
 
-    public static final String NO_AVAILABLE = "N/A";
     private static final long serialVersionUID = 55233L;
     // register center address
     private String address;
@@ -44,13 +44,13 @@ public class MetadataReportConfig extends AbstractConfig {
     // customized parameters
     private Map<String, String> parameters;
 
-    private Integer retrytimes = 100;
+    private Integer retrytimes;
 
-    private Integer retryperiod = 3000;
+    private Integer retryperiod;
     /**
      * by default the metadatastore will store full metadata repeatly every day .
      */
-    private boolean cyclereport = true;
+    private Boolean cyclereport;
 
     public MetadataReportConfig() {
     }
@@ -99,6 +99,7 @@ public class MetadataReportConfig extends AbstractConfig {
         this.parameters = parameters;
     }
 
+    @Parameter(key = "retry-times")
     public Integer getRetrytimes() {
         return retrytimes;
     }
@@ -107,6 +108,7 @@ public class MetadataReportConfig extends AbstractConfig {
         this.retrytimes = retrytimes;
     }
 
+    @Parameter(key = "retry-period")
     public Integer getRetryperiod() {
         return retryperiod;
     }
@@ -115,13 +117,15 @@ public class MetadataReportConfig extends AbstractConfig {
         this.retryperiod = retryperiod;
     }
 
-    public boolean isCyclereport() {
+    @Parameter(key = "cycle-report")
+    public Boolean getCyclereport() {
         return cyclereport;
     }
 
-    public void setCyclereport(boolean cyclereport) {
+    public void setCyclereport(Boolean cyclereport) {
         this.cyclereport = cyclereport;
     }
+
 
     public boolean isValid() {
         return StringUtils.isNotEmpty(address);

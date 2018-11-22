@@ -66,7 +66,6 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     final Properties properties = new Properties();
     // File cache timing writing
     private final ExecutorService reportCacheExecutor = Executors.newFixedThreadPool(1, new NamedThreadFactory("DubboSaveMetadataReportCache", true));
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(0, new NamedThreadFactory("DubboMetadataReportTimer", true));
     final Map<MetadataIdentifier, Object> allMetadataReports = new ConcurrentHashMap<MetadataIdentifier, Object>(4);
 
     private final AtomicLong lastCacheChanged = new AtomicLong();
@@ -77,10 +76,10 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     private AtomicBoolean INIT = new AtomicBoolean(false);
     public MetadataReportRetry metadataReportRetry;
 
-    public AbstractMetadataReport(URL reportURL) {
-        setUrl(reportURL);
+    public AbstractMetadataReport(URL reportServerURL) {
+        setUrl(reportServerURL);
         // Start file save timer
-        String filename = reportURL.getParameter(Constants.FILE_KEY, System.getProperty("user.home") + "/.dubbo/dubbo-metadata-" + reportURL.getParameter(Constants.APPLICATION_KEY) + "-" + reportURL.getAddress() + ".cache");
+        String filename = reportServerURL.getParameter(Constants.FILE_KEY, System.getProperty("user.home") + "/.dubbo/dubbo-metadata-" + reportServerURL.getParameter(Constants.APPLICATION_KEY) + "-" + reportServerURL.getAddress() + ".cache");
         File file = null;
         if (ConfigUtils.isNotEmpty(filename)) {
             file = new File(filename);
@@ -96,9 +95,11 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
         this.file = file;
         loadProperties();
-        metadataReportRetry = new MetadataReportRetry(reportURL.getParameter(Constants.RETRY_TIMES_KEY, 60 * 60), reportURL.getParameter(Constants.RETRY_PERIOD_KEY, 3000));
+        metadataReportRetry = new MetadataReportRetry(reportServerURL.getParameter(Constants.RETRY_TIMES_KEY, Constants.DEFAULT_METADATA_REPORT_RETRY_TIMES),
+                reportServerURL.getParameter(Constants.RETRY_PERIOD_KEY, Constants.DEFAULT_METADATA_REPORT_RETRY_PERIOD));
         // cycle report the data switch
-        if (reportURL.getParameter(Constants.CYCLE_REPORT_KEY, true)) {
+        if (reportServerURL.getParameter(Constants.CYCLE_REPORT_KEY, Constants.DEFAULT_METADATA_REPORT_CYCLE_REPORT)) {
+            ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(0, new NamedThreadFactory("DubboMetadataReportTimer", true));
             scheduler.scheduleAtFixedRate(new Runnable() {
                 @Override
                 public void run() {
@@ -134,8 +135,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             }
             RandomAccessFile raf = new RandomAccessFile(lockfile, "rw");
             try {
-                FileChannel channel = raf.getChannel();
-                try {
+                try (FileChannel channel = raf.getChannel()) {
                     FileLock lock = channel.tryLock();
                     if (lock == null) {
                         throw new IOException("Can not lock the metadataReport cache file " + file.getAbsolutePath() + ", ignore and retry later, maybe multi java process use the file, please config: dubbo.metadata.file=xxx.properties");
@@ -145,17 +145,12 @@ public abstract class AbstractMetadataReport implements MetadataReport {
                         if (!file.exists()) {
                             file.createNewFile();
                         }
-                        FileOutputStream outputFile = new FileOutputStream(file);
-                        try {
+                        try (FileOutputStream outputFile = new FileOutputStream(file)) {
                             properties.store(outputFile, "Dubbo metadataReport Cache");
-                        } finally {
-                            outputFile.close();
                         }
                     } finally {
                         lock.release();
                     }
-                } finally {
-                    channel.close();
                 }
             } finally {
                 raf.close();
@@ -200,9 +195,9 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
         try {
             if (add) {
-                properties.setProperty(metadataIdentifier.getIdentifierKey(), value);
+                properties.setProperty(metadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY), value);
             } else {
-                properties.remove(metadataIdentifier.getIdentifierKey());
+                properties.remove(metadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY));
             }
             long version = lastCacheChanged.incrementAndGet();
             reportCacheExecutor.execute(new SaveProperties(version));
@@ -248,7 +243,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
-    public void storeConsumerMetadata(ConsumerMetadataIdentifier consumerMetadataIdentifier, Map<String,String> serviceParameterMap) {
+    public void storeConsumerMetadata(ConsumerMetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap) {
         try {
             if (logger.isInfoEnabled()) {
                 logger.info("store consumer metadata. Identifier : " + consumerMetadataIdentifier + "; definition: " + serviceParameterMap);

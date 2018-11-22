@@ -25,11 +25,18 @@ public class MetadataIdentifier {
         this.side = side;
     }
 
+    public String getUniqueKey(KeyTypeEnum keyType) {
+        if (keyType == KeyTypeEnum.UNIQUE_KEY) {
+            return getFilePathKey();
+        }
+        return getIdentifierKey();
+    }
+
     public String getIdentifierKey() {
         return serviceInterface + SEPARATOR + version + SEPARATOR + group + SEPARATOR + side;
     }
 
-    public String getFilePathKey() {
+    private String getFilePathKey() {
         return getFilePathKey(DEFAULT_PATH_TAG);
     }
 
@@ -80,5 +87,9 @@ public class MetadataIdentifier {
 
     public void setSide(String side) {
         this.side = side;
+    }
+
+    public static enum KeyTypeEnum {
+        PATH, UNIQUE_KEY
     }
 }

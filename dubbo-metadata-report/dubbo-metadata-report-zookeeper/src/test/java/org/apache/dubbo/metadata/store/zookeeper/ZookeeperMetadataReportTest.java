@@ -44,7 +44,7 @@ public class ZookeeperMetadataReportTest {
     }
 
     private void deletePath(MetadataIdentifier metadataIdentifier, ZookeeperMetadataReport zookeeperMetadataReport) {
-        String category = zookeeperMetadataReport.toRootDir() + metadataIdentifier.getFilePathKey();
+        String category = zookeeperMetadataReport.toRootDir() + metadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.PATH);
         zookeeperMetadataReport.deletePath(category);
     }
 

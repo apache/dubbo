@@ -16,8 +16,10 @@
  */
 package org.apache.dubbo.config;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.support.Parameter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,21 +29,21 @@ import java.util.Map;
  */
 public class RegistryDataConfig extends AbstractConfig {
 
-    private boolean simpleProviderConfig;
+    private Boolean simpleProviderConfig;
     private String extraProviderKeys;
 
-    private boolean simpleConsumerConfig;
+    private Boolean simpleConsumerConfig;
     private String extraConsumerKeys;
 
-    public Map<String, String> transferToMap() {
+    Map<String, String> transferToMap() {
         Map<String, String> map = new HashMap<String, String>(4);
-        if (simpleProviderConfig) {
+        if (simpleProviderConfig != null && simpleProviderConfig) {
             map.put(Constants.SIMPLE_PROVIDER_CONFIG_KEY, Boolean.TRUE.toString());
             if (StringUtils.isNotEmpty(extraProviderKeys)) {
                 map.put(Constants.EXTRA_PROVIDER_CONFIG_KEYS_KEY, extraProviderKeys.trim());
             }
         }
-        if (simpleConsumerConfig) {
+        if (simpleConsumerConfig != null && simpleConsumerConfig) {
             map.put(Constants.SIMPLE_CONSUMER_CONFIG_KEY, Boolean.TRUE.toString());
             if (StringUtils.isNotEmpty(extraConsumerKeys)) {
                 map.put(Constants.EXTRA_CONSUMER_CONFIG_KEYS_KEY, extraConsumerKeys.trim());
@@ -51,14 +53,25 @@ public class RegistryDataConfig extends AbstractConfig {
         return map;
     }
 
-    public boolean isSimpleProviderConfig() {
+    @Parameter(key = "simple-provider-config")
+    public Boolean getSimpleProviderConfig() {
         return simpleProviderConfig;
     }
 
-    public void setSimpleProviderConfig(boolean simpleProviderConfig) {
+    public void setSimpleProviderConfig(Boolean simpleProviderConfig) {
         this.simpleProviderConfig = simpleProviderConfig;
     }
 
+    @Parameter(key = "simple-consumer-config")
+    public Boolean getSimpleConsumerConfig() {
+        return simpleConsumerConfig;
+    }
+
+    public void setSimpleConsumerConfig(Boolean simpleConsumerConfig) {
+        this.simpleConsumerConfig = simpleConsumerConfig;
+    }
+
+    @Parameter(key = "extra-provider-keys")
     public String getExtraProviderKeys() {
         return extraProviderKeys;
     }
@@ -67,14 +80,8 @@ public class RegistryDataConfig extends AbstractConfig {
         this.extraProviderKeys = extraProviderKeys;
     }
 
-    public boolean isSimpleConsumerConfig() {
-        return simpleConsumerConfig;
-    }
 
-    public void setSimpleConsumerConfig(boolean simpleConsumerConfig) {
-        this.simpleConsumerConfig = simpleConsumerConfig;
-    }
-
+    @Parameter(key = "extra-consumer-keys")
     public String getExtraConsumerKeys() {
         return extraConsumerKeys;
     }
