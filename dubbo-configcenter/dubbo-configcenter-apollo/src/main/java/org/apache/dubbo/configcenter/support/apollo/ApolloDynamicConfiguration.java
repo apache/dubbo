@@ -33,14 +33,13 @@ import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.ConfigChangeType;
 import org.apache.dubbo.configcenter.ConfigurationListener;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collections;
 
 import static org.apache.dubbo.configcenter.ConfigType.CONFIGURATORS;
 import static org.apache.dubbo.configcenter.ConfigType.ROUTERS;
 
 /**
- *
+ * Apollo implementation, https://github.com/ctripcorp/apollo
  */
 public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<ConfigChangeListener> {
     private static final Logger logger = LoggerFactory.getLogger(ApolloDynamicConfiguration.class);
@@ -88,14 +87,9 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Con
     }
 
     /**
-     * This method will being used to,
+     * This method will be used to:
      * 1. get configuration file at startup phase
      * 2. get all kinds of Dubbo rules
-     *
-     * @param key
-     * @param group
-     * @param timeout
-     * @return
      */
     @Override
     protected String getTargetConfig(String key, String group, long timeout) {
@@ -113,9 +107,6 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Con
      * This method will used by Configuration to get valid value at runtime.
      * The group is expected to be 'app level', which can be fetched from the 'config.appnamespace' in url if necessary.
      * But I think Apollo's inheritance feature of namespace can solve the problem .
-     *
-     * @param key
-     * @return
      */
     @Override
     protected String getInternalProperty(String key) {
@@ -124,9 +115,7 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Con
 
     @Override
     protected void addTargetListener(String key, ConfigChangeListener listener) {
-        Set<String> keys = new HashSet<>(1);
-        keys.add(key);
-        this.dubboConfig.addChangeListener(listener, keys);
+        this.dubboConfig.addChangeListener(listener, Collections.singleton(key));
     }
 
     @Override
