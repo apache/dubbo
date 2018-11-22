@@ -302,6 +302,21 @@ public abstract class AbstractConfig implements Serializable {
         return value;
     }
 
+    /**
+     * We only check boolean value at this moment.
+     *
+     * @param type
+     * @param value
+     * @return
+     */
+    private static boolean isTypeMatch(Class<?> type, String value) {
+        if ((type == boolean.class || type == Boolean.class)
+                && !("true".equals(value) || "false".equals(value))) {
+            return false;
+        }
+        return true;
+    }
+
     protected static void checkExtension(Class<?> type, String property, String value) {
         checkName(property, value);
         if (value != null && value.length() > 0
@@ -540,7 +555,8 @@ public abstract class AbstractConfig implements Serializable {
                 if (isSetter(method)) {
                     try {
                         String value = compositeConfiguration.getString(extractPropertyName(method));
-                        if (value != null) {
+                        // isTypeMatch() is called to avoid duplicate and incorrect update, for example, we have two 'setGeneric' methods in ReferenceConfig.
+                        if (value != null && isTypeMatch(method.getParameterTypes()[0], value)) {
                             method.invoke(this, convertPrimitive(method.getParameterTypes()[0], value));
                         }
                     } catch (NoSuchMethodException e) {
@@ -564,7 +580,7 @@ public abstract class AbstractConfig implements Serializable {
         return false;
     }
 
-    public String extractPropertyName(Method setter) throws Exception {
+    private String extractPropertyName(Method setter) throws Exception {
         String propertyName = setter.getName().substring("set".length());
         Method getter = null;
         try {
