@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.configcenter;
 
-import org.apache.dubbo.common.URL;
-
 /**
  * Config listener, will get notified when the config it listens on changes.
  */
@@ -30,7 +28,4 @@ public interface ConfigurationListener {
      * @param event config change event
      */
     void process(ConfigChangeEvent event);
-
-    // FIXME: why we need this?
-    URL getUrl();
 }
