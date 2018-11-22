@@ -284,4 +284,19 @@ public class ClassHelper {
         }
         return value;
     }
+
+    /**
+     * We only check boolean value at this moment.
+     *
+     * @param type
+     * @param value
+     * @return
+     */
+    public static boolean isTypeMatch(Class<?> type, String value) {
+        if ((type == boolean.class || type == Boolean.class)
+                && !("true".equals(value) || "false".equals(value))) {
+            return false;
+        }
+        return true;
+    }
 }
