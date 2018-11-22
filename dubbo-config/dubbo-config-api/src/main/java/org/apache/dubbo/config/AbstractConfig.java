@@ -423,9 +423,10 @@ public abstract class AbstractConfig implements Serializable {
                     Object value = method.invoke(this);
                     String str = String.valueOf(value).trim();
                     if (value != null && str.length() > 0) {
-                        if (parameter != null && parameter.escaped()) {
+                        // ignore escape, keep the original value.
+                        /*if (parameter != null && parameter.escaped()) {
                             str = URL.encode(str);
-                        }
+                        }*/
                         if (parameter != null && parameter.append()) {
                             String pre = String.valueOf(metaData.get(Constants.DEFAULT_KEY + "." + key));
                             if (pre != null && pre.length() > 0) {

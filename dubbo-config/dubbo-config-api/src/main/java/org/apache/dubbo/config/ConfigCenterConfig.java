@@ -301,6 +301,7 @@ public class ConfigCenterConfig extends AbstractConfig {
     }
 
     @Override
+    @Parameter(excluded = true)
     public boolean isValid() {
         if (StringUtils.isEmpty(address) && StringUtils.isEmpty(env)) {
             return false;

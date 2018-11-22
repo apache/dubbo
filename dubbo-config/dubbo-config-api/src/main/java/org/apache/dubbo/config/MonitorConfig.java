@@ -134,6 +134,8 @@ public class MonitorConfig extends AbstractConfig {
         return interval;
     }
 
+    @Override
+    @Parameter(excluded = true)
     public boolean isValid() {
         return StringUtils.isNotEmpty(address);
     }
