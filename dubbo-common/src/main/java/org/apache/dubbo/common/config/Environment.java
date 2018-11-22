@@ -34,7 +34,6 @@ public class Environment {
     private Map<String, EnvironmentConfiguration> environmentConfsHolder = new ConcurrentHashMap<>();
     private Map<String, InmemoryConfiguration> externalConfsHolder = new ConcurrentHashMap<>();
     private Map<String, InmemoryConfiguration> appExternalConfsHolder = new ConcurrentHashMap<>();
-    private Map<String, CompositeConfiguration> startupCompositeConfsHolder = new ConcurrentHashMap<>();
 
     private boolean isConfigCenterFirst = true;
 
@@ -89,15 +88,22 @@ public class Environment {
         this.appExternalConfigurationMap.putAll(externalMap);
     }
 
+    /**
+     * Create new instance for each call, since it will be called only at startup, I think there's no big deal of the potential cost.
+     * Otherwise, if use cache, we should make sure each Config has a unique id which is difficult to guarantee because is on the user's side,
+     * especially when it comes to ServiceConfig and ReferenceConfig.
+     *
+     * @param prefix
+     * @param id
+     * @return
+     */
     public CompositeConfiguration getStartupCompositeConf(String prefix, String id) {
-        return startupCompositeConfsHolder.computeIfAbsent(toKey(prefix, id), k -> {
-            CompositeConfiguration compositeConfiguration = new CompositeConfiguration();
-            compositeConfiguration.addConfiguration(this.getSystemConf(prefix, id));
-            compositeConfiguration.addConfiguration(this.getAppExternalConfiguration(prefix, id));
-            compositeConfiguration.addConfiguration(this.getExternalConfiguration(prefix, id));
-            compositeConfiguration.addConfiguration(this.getPropertiesConf(prefix, id));
-            return compositeConfiguration;
-        });
+        CompositeConfiguration compositeConfiguration = new CompositeConfiguration();
+        compositeConfiguration.addConfiguration(this.getSystemConf(prefix, id));
+        compositeConfiguration.addConfiguration(this.getAppExternalConfiguration(prefix, id));
+        compositeConfiguration.addConfiguration(this.getExternalConfiguration(prefix, id));
+        compositeConfiguration.addConfiguration(this.getPropertiesConf(prefix, id));
+        return compositeConfiguration;
     }
 
     private static String toKey(String keypart1, String keypart2) {

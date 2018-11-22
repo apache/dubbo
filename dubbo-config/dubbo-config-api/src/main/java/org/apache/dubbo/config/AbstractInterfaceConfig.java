@@ -31,6 +31,7 @@ import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.metadata.integration.MetadataReportService;
 import org.apache.dubbo.monitor.MonitorFactory;
 import org.apache.dubbo.monitor.MonitorService;
+import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.InvokerListener;
 import org.apache.dubbo.rpc.ProxyFactory;
@@ -232,13 +233,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
     }
 
-    protected void checkConfigCenter() {
-
-    }
-
     protected List<URL> loadRegistries(boolean provider) {
         // check && override if necessary
         checkRegistry();
+        checkRegistryDataConfig();
         List<URL> registryList = new ArrayList<URL>();
         if (registries != null && !registries.isEmpty()) {
             Map<String, String> registryDataConfigurationMap = new HashMap<>(4);
@@ -252,8 +250,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                     Map<String, String> map = new HashMap<String, String>();
                     appendParameters(map, application);
                     appendParameters(map, config);
-                    //TODO temporarily use literal value to avoid depending on dubbo-registry-api module.
-                    map.put("path", "org.apache.dubbo.registry.RegistryService");
+                    map.put("path", RegistryService.class.getName());
                     map.put("dubbo", Version.getProtocolVersion());
                     map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
                     if (ConfigUtils.getPid() > 0) {
