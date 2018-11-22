@@ -435,6 +435,8 @@ public abstract class AbstractConfig implements Serializable {
 
     /**
      * Should be called after Config was fully initialized.
+     * // FIXME: this method should be completely replaced by appendParameters
+     * @see AbstractConfig#appendParameters(Map, Object, String)
      *
      * @return
      */
