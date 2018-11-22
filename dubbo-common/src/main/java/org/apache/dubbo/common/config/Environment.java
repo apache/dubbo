@@ -34,6 +34,7 @@ public class Environment {
     private Map<String, EnvironmentConfiguration> environmentConfsHolder = new ConcurrentHashMap<>();
     private Map<String, InmemoryConfiguration> externalConfsHolder = new ConcurrentHashMap<>();
     private Map<String, InmemoryConfiguration> appExternalConfsHolder = new ConcurrentHashMap<>();
+    private Map<String, InmemoryConfiguration> appConfigs = new ConcurrentHashMap<>();
 
     private boolean isConfigCenterFirst = true;
 
@@ -72,12 +73,24 @@ public class Environment {
         return environmentConfsHolder.computeIfAbsent(toKey(prefix, id), k -> new EnvironmentConfiguration(prefix, id));
     }
 
+    public InmemoryConfiguration getAppConfig(String prefix, String id) {
+        return appConfigs.get(toKey(prefix, id));
+    }
+
     public synchronized void setExternalConfiguration(Map<String, String> externalConfiguration) {
         this.externalConfigurationMap = externalConfiguration;
     }
 
     public synchronized void setAppExternalConfiguration(Map<String, String> appExternalConfiguration) {
         this.appExternalConfigurationMap = appExternalConfiguration;
+    }
+
+    public void addAppConfig(String prefix, String id, Map<String, String> properties) {
+        appConfigs.computeIfAbsent(toKey(prefix, id), k -> {
+            InmemoryConfiguration configuration = new InmemoryConfiguration(prefix, id);
+            configuration.addProperties(properties);
+            return configuration;
+        });
     }
 
     public void updateExternalConfigurationMap(Map<String, String> externalMap) {
@@ -103,6 +116,12 @@ public class Environment {
         compositeConfiguration.addConfiguration(this.getAppExternalConfiguration(prefix, id));
         compositeConfiguration.addConfiguration(this.getExternalConfiguration(prefix, id));
         compositeConfiguration.addConfiguration(this.getPropertiesConf(prefix, id));
+
+        InmemoryConfiguration appConfig = this.getAppConfig(prefix, id);
+        if (appConfig != null) {
+            int index = isConfigCenterFirst ? 3 : 1;
+            compositeConfiguration.addConfiguration(index, appConfig);
+        }
         return compositeConfiguration;
     }
 
