@@ -236,7 +236,13 @@ public class MethodConfig extends AbstractMethodConfig {
         this.serviceId = serviceId;
     }
 
+    /**
+     * service and name must not be null.
+     *
+     * @return
+     */
     @Override
+    @Parameter(excluded = true)
     public String getPrefix() {
         return Constants.DUBBO + "." + service
                 + (StringUtils.isEmpty(serviceId) ? "" : ("." + serviceId))

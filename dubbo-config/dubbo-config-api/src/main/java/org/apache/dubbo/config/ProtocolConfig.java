@@ -473,6 +473,7 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     @Override
+    @Parameter(excluded = true)
     public boolean isValid() {
         return StringUtils.isNotEmpty(name);
     }

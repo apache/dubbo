@@ -269,6 +269,8 @@ public class ApplicationConfig extends AbstractConfig {
         this.shutwait = shutwait;
     }
 
+    @Override
+    @Parameter(excluded = true)
     public boolean isValid() {
         return !StringUtils.isEmpty(name);
     }

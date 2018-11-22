@@ -127,6 +127,8 @@ public class MetadataReportConfig extends AbstractConfig {
     }
 
 
+    @Override
+    @Parameter(excluded = true)
     public boolean isValid() {
         return StringUtils.isNotEmpty(address);
     }
