@@ -165,6 +165,10 @@ public class Constants {
     // default buffer size is 8k.
     public static final int DEFAULT_BUFFER_SIZE = 8 * 1024;
 
+    public static final Integer DEFAULT_METADATA_REPORT_RETRY_TIMES = 100;
+    public static final Integer DEFAULT_METADATA_REPORT_RETRY_PERIOD = 3000;
+    public static final Boolean DEFAULT_METADATA_REPORT_CYCLE_REPORT = true;
+
     public static final int MAX_BUFFER_SIZE = 16 * 1024;
 
     public static final int MIN_BUFFER_SIZE = 1 * 1024;
@@ -469,23 +473,23 @@ public class Constants {
      * simple the registry for provider.
      * @since 2.7.0
      */
-    public static final String SIMPLE_PROVIDER_CONFIG_KEY = "simpleProviderConfig";
+    public static final String SIMPLE_PROVIDER_CONFIG_KEY = "simple-provider-config";
     /**
      * simple the registry for consumer.
      * @since 2.7.0
      */
-    public static final String SIMPLE_CONSUMER_CONFIG_KEY = "simpleConsumerConfig";
+    public static final String SIMPLE_CONSUMER_CONFIG_KEY = "simple-consumer-config";
     /**
      * After simplify the registry, should add some paramter individually for provider.
      * @since 2.7.0
      */
-    public static final String EXTRA_PROVIDER_CONFIG_KEYS_KEY = "extraProviderKeys";
+    public static final String EXTRA_PROVIDER_CONFIG_KEYS_KEY = "extra-provider-keys";
     /**
      * After simplify the registry, should add some paramter individually for consumer.
      *
      * @since 2.7.0
      */
-    public static final String EXTRA_CONSUMER_CONFIG_KEYS_KEY = "extraConsumerKeys";
+    public static final String EXTRA_CONSUMER_CONFIG_KEYS_KEY = "extra-consumer-keys";
 
     /**
      * To decide whether to exclude unavailable invoker from the cluster
@@ -722,11 +726,11 @@ public class Constants {
 
     public static final String ADDRESS_KEY = "address";
 
-    public static final String RETRY_TIMES_KEY = "retrytimes";
+    public static final String RETRY_TIMES_KEY = "retry-times";
 
-    public static final String RETRY_PERIOD_KEY = "retrytimes";
+    public static final String RETRY_PERIOD_KEY = "retry-period";
 
-    public static final String CYCLE_REPORT_KEY = "cyclereport";
+    public static final String CYCLE_REPORT_KEY = "cycle-report";
 
     public static final String API_VERSION_KEY = "apiVersion";
     // package version in the manifest

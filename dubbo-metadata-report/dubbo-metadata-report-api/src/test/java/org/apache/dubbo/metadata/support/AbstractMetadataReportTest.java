@@ -16,13 +16,13 @@
  */
 package org.apache.dubbo.metadata.support;
 
-import com.alibaba.fastjson.JSON;
 import com.google.gson.Gson;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
+import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
 import org.junit.Assert;
 import org.junit.Before;
@@ -66,7 +66,7 @@ public class AbstractMetadataReportTest {
         String group = null;
         String application = "vic";
         ProviderMetadataIdentifier providerMetadataIdentifier = storePrivider(abstractMetadataReport, interfaceName, version, group, application);
-        Assert.assertNotNull(abstractMetadataReport.store.get(providerMetadataIdentifier.getIdentifierKey()));
+        Assert.assertNotNull(abstractMetadataReport.store.get(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY)));
     }
 
     @Test
@@ -85,7 +85,7 @@ public class AbstractMetadataReportTest {
 
         Thread.sleep(2000);
         Assert.assertTrue(singleMetadataReport.file.exists());
-        Assert.assertTrue(singleMetadataReport.properties.containsKey(providerMetadataIdentifier.getIdentifierKey()));
+        Assert.assertTrue(singleMetadataReport.properties.containsKey(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY)));
     }
 
     @Test
@@ -198,17 +198,17 @@ public class AbstractMetadataReportTest {
 
         Assert.assertTrue(abstractMetadataReport.store.size() == 3);
 
-        String v = abstractMetadataReport.store.get(providerMetadataIdentifier1.getIdentifierKey());
+        String v = abstractMetadataReport.store.get(providerMetadataIdentifier1.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY));
         Gson gson = new Gson();
         FullServiceDefinition data = gson.fromJson(v, FullServiceDefinition.class);
         checkParam(data.getParameters(), application, version);
 
-        String v2 = abstractMetadataReport.store.get(providerMetadataIdentifier2.getIdentifierKey());
+        String v2 = abstractMetadataReport.store.get(providerMetadataIdentifier2.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY));
         gson = new Gson();
         data = gson.fromJson(v2, FullServiceDefinition.class);
         checkParam(data.getParameters(), application, version + "_2");
 
-        String v3 = abstractMetadataReport.store.get(consumerMetadataIdentifier.getIdentifierKey());
+        String v3 = abstractMetadataReport.store.get(consumerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY));
         gson = new Gson();
         Map v3Map = gson.fromJson(v3, Map.class);
         checkParam(v3Map, application, version + "_3");
@@ -260,12 +260,12 @@ public class AbstractMetadataReportTest {
 
         @Override
         protected void doStoreProviderMetadata(ProviderMetadataIdentifier providerMetadataIdentifier, String serviceDefinitions) {
-            store.put(providerMetadataIdentifier.getIdentifierKey(), serviceDefinitions);
+            store.put(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY), serviceDefinitions);
         }
 
         @Override
         protected void doStoreConsumerMetadata(ConsumerMetadataIdentifier consumerMetadataIdentifier, String serviceParameterString) {
-            store.put(consumerMetadataIdentifier.getIdentifierKey(), serviceParameterString);
+            store.put(consumerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY), serviceParameterString);
         }
     }
 
@@ -287,7 +287,7 @@ public class AbstractMetadataReportTest {
             if (executeTimes <= needRetryTimes) {
                 throw new RuntimeException("must retry:" + executeTimes);
             }
-            store.put(providerMetadataIdentifier.getIdentifierKey(), serviceDefinitions);
+            store.put(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY), serviceDefinitions);
         }
 
         @Override
@@ -296,7 +296,7 @@ public class AbstractMetadataReportTest {
             if (executeTimes <= needRetryTimes) {
                 throw new RuntimeException("must retry:" + executeTimes);
             }
-            store.put(consumerMetadataIdentifier.getIdentifierKey(), serviceParameterString);
+            store.put(consumerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY), serviceParameterString);
         }
     }
 

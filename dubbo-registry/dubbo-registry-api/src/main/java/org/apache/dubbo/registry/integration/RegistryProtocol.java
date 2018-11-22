@@ -581,11 +581,6 @@ public class RegistryProtocol implements Protocol {
             }
             notify(urls);
         }
-
-        @Override
-        public URL getUrl() {
-            return subscribeUrl;
-        }
     }
 
     /**

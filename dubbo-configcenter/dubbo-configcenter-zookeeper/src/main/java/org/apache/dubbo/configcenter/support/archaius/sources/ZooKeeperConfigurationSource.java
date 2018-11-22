@@ -45,7 +45,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 /**
- *
+ * zookeeper archaius source.
  */
 public class ZooKeeperConfigurationSource implements WatchedConfigurationSource, Closeable {
     public static final String ARCHAIUS_SOURCE_ADDRESS_KEY = "archaius.zk.address";
@@ -69,7 +69,8 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
     private URL url;
 
     public ZooKeeperConfigurationSource(URL url) {
-        this(System.getProperty(ARCHAIUS_SOURCE_ADDRESS_KEY), 60 * 1000, 10000, System.getProperty(ARCHAIUS_CONFIG_ROOT_PATH_KEY, DEFAULT_CONFIG_ROOT_PATH));
+        this(System.getProperty(ARCHAIUS_SOURCE_ADDRESS_KEY), 60 * 1000, 10000,
+                System.getProperty(ARCHAIUS_CONFIG_ROOT_PATH_KEY, DEFAULT_CONFIG_ROOT_PATH));
         this.url = url;
     }
 
@@ -86,7 +87,8 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
      */
     public ZooKeeperConfigurationSource(String connectString, int sessionTimeout, int connectTimeout, String configRootPath) {
         if (connectString == null) {
-            throw new IllegalArgumentException("connectString==null, must specify the address to connect for zookeeper archaius source.");
+            throw new IllegalArgumentException("connectString is null, must specify the address to connect for " +
+                    "zookeeper archaius source.");
         }
 
         if (!configRootPath.startsWith("/")) {
@@ -101,13 +103,16 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
             if (!connected) {
                 boolean check = Boolean.parseBoolean(System.getProperty(ARCHAIUS_CONFIG_CHECK_KEY, "false"));
                 if (check) {
-                    throw new IllegalStateException("Failed to connect to ConfigCenter Zookeeper : " + connectString + " in " + connectTimeout + "ms.");
+                    throw new IllegalStateException("Failed to connect to config center (zookeeper): "
+                            + connectString + " in " + connectTimeout + "ms.");
                 } else {
-                    logger.warn("Cannot connect to ConfigCenter at zookeeper " + connectString + " in " + connectTimeout + "ms");
+                    logger.warn("Cannot connect to config center (zookeeper) " + connectString
+                            + " in " + connectTimeout + "ms");
                 }
             }
         } catch (InterruptedException e) {
-            throw new IllegalStateException("The thread was interrupted unexpectedly when try connecting to zookeeper " + connectString + " as ConfigCenter, ", e);
+            throw new IllegalStateException("The thread was interrupted unexpectedly when try connecting to zookeeper "
+                    + connectString + " config center, ", e);
         }
         this.client = client;
         this.configRootPath = configRootPath;
@@ -117,7 +122,7 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
     /**
      * Creates the pathChildrenCache using the CuratorFramework client and ZK root path node for the config
      *
-     * @param client
+     * @param client         zookeeper client
      * @param configRootPath path to ZK root parent node for the rest of the configuration properties (ie. /<my-app>/config)
      */
     public ZooKeeperConfigurationSource(CuratorFramework client, String configRootPath) {
@@ -127,15 +132,13 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
     }
 
     /**
-     * Adds a listener to the pathChildrenCache, initializes the cache, then starts the cache-management background thread
-     *
-     * @throws Exception
+     * Adds a listener to the pathChildrenCache, initializes the cache, then starts the cache-management background
+     * thread
      */
     public void start() throws Exception {
-        // create the watcher for future configuration updatess
+        // create the watcher for future configuration updates
         treeCache.getListenable().addListener(new TreeCacheListener() {
-            public void childEvent(CuratorFramework aClient, TreeCacheEvent event)
-                    throws Exception {
+            public void childEvent(CuratorFramework aClient, TreeCacheEvent event) throws Exception {
 
                 TreeCacheEvent.Type type = event.getType();
                 ChildData data = event.getData();
@@ -148,7 +151,9 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
                     return;
                 }
 
-                // TODO We limit the notification of config changes to a specific path level, for example /dubbo/config/service/configurators, other config changes not in this level will not get notified, say /dubbo/config/dubbo.properties
+                // TODO We limit the notification of config changes to a specific path level, for example
+                //  /dubbo/config/service/configurators, other config changes not in this level will not get notified,
+                //  say /dubbo/config/dubbo.properties
                 if (data.getPath().split("/").length == 5) {
                     byte[] value = data.getData();
                     String stringValue = new String(value, charset);
@@ -206,7 +211,8 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
         try {
             initializedLatch.await();
         } catch (InterruptedException e) {
-            logger.error("Being interrupted unexpectedly when waiting zookeeper to initialize, the config data may not ready yet, be careful!");
+            logger.error("Being interrupted unexpectedly when waiting zookeeper to initialize, the config data " +
+                    "may not ready yet, be careful!");
         }
 
         Map<String, ChildData> dataMap = treeCache.getCurrentChildren(configRootPath);
