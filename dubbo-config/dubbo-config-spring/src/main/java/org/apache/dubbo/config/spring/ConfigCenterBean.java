@@ -46,7 +46,7 @@ public class ConfigCenterBean extends ConfigCenterConfig implements Initializing
 
     private transient ApplicationContext applicationContext;
 
-    private boolean auto = false;
+    private Boolean auto = false;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {

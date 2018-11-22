@@ -65,7 +65,7 @@ public class ConfigurationUtils {
 
     /**
      * If user opens DynamicConfig, the extension instance must has been created during the initialization of
-     * ConfigCenterConfig with the right extension type user specified. If no DynamicConfig presents,
+     * ConfigCenterConfig with the right extension type user specifies. If no DynamicConfig presents,
      * NopDynamicConfiguration will be used.
      */
     public static DynamicConfiguration getDynamicConfiguration() {
