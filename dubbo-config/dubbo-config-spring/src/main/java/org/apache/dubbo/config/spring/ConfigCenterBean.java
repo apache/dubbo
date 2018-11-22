@@ -107,8 +107,8 @@ public class ConfigCenterBean extends ConfigCenterConfig implements Initializing
         if (auto) {
             Map<String, String> externalProperties = getConfigurations(getConfigfile(), environment);
             Map<String, String> appExternalProperties = getConfigurations("application." + getConfigfile(), environment);
-            org.apache.dubbo.common.config.Environment.getInstance().setExternalConfiguration(externalProperties);
-            org.apache.dubbo.common.config.Environment.getInstance().setAppExternalConfiguration(appExternalProperties);
+            org.apache.dubbo.common.config.Environment.getInstance().setExternalConfig(externalProperties);
+            org.apache.dubbo.common.config.Environment.getInstance().setAppExternalConfig(appExternalProperties);
             this.init();
         }
     }

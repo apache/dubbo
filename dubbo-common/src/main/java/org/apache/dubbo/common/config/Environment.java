@@ -29,14 +29,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Environment {
     private static final Environment INSTANCE = new Environment();
 
-    private Map<String, PropertiesConfiguration> propertiesConfsHolder = new ConcurrentHashMap<>();
-    private Map<String, SystemConfiguration> systemConfsHolder = new ConcurrentHashMap<>();
-    private Map<String, EnvironmentConfiguration> environmentConfsHolder = new ConcurrentHashMap<>();
-    private Map<String, InmemoryConfiguration> externalConfsHolder = new ConcurrentHashMap<>();
-    private Map<String, InmemoryConfiguration> appExternalConfsHolder = new ConcurrentHashMap<>();
+    private Map<String, PropertiesConfiguration> propertiesConfigs = new ConcurrentHashMap<>();
+    private Map<String, SystemConfiguration> systemConfigs = new ConcurrentHashMap<>();
+    private Map<String, EnvironmentConfiguration> environmentConfigs = new ConcurrentHashMap<>();
+    private Map<String, InmemoryConfiguration> externalConfigs = new ConcurrentHashMap<>();
+    private Map<String, InmemoryConfiguration> appExternalConfigs = new ConcurrentHashMap<>();
     private Map<String, InmemoryConfiguration> appConfigs = new ConcurrentHashMap<>();
 
-    private boolean isConfigCenterFirst = true;
+    private boolean configCenterFirst = true;
 
     private Map<String, String> externalConfigurationMap = new HashMap<>();
     private Map<String, String> appExternalConfigurationMap = new HashMap<>();
@@ -45,43 +45,43 @@ public class Environment {
         return INSTANCE;
     }
 
-    public PropertiesConfiguration getPropertiesConf(String prefix, String id) {
-        return propertiesConfsHolder.computeIfAbsent(toKey(prefix, id), k -> new PropertiesConfiguration(prefix, id));
+    public PropertiesConfiguration getPropertiesConfig(String prefix, String id) {
+        return propertiesConfigs.computeIfAbsent(toKey(prefix, id), k -> new PropertiesConfiguration(prefix, id));
     }
 
-    public SystemConfiguration getSystemConf(String prefix, String id) {
-        return systemConfsHolder.computeIfAbsent(toKey(prefix, id), k -> new SystemConfiguration(prefix, id));
+    public SystemConfiguration getSystemConfig(String prefix, String id) {
+        return systemConfigs.computeIfAbsent(toKey(prefix, id), k -> new SystemConfiguration(prefix, id));
     }
 
-    public InmemoryConfiguration getExternalConfiguration(String prefix, String id) {
-        return externalConfsHolder.computeIfAbsent(toKey(prefix, id), k -> {
+    public InmemoryConfiguration getExternalConfig(String prefix, String id) {
+        return externalConfigs.computeIfAbsent(toKey(prefix, id), k -> {
             InmemoryConfiguration configuration = new InmemoryConfiguration(prefix, id);
             configuration.addProperties(externalConfigurationMap);
             return configuration;
         });
     }
 
-    public InmemoryConfiguration getAppExternalConfiguration(String prefix, String id) {
-        return appExternalConfsHolder.computeIfAbsent(toKey(prefix, id), k -> {
+    public InmemoryConfiguration getAppExternalConfig(String prefix, String id) {
+        return appExternalConfigs.computeIfAbsent(toKey(prefix, id), k -> {
             InmemoryConfiguration configuration = new InmemoryConfiguration(prefix, id);
             configuration.addProperties(appExternalConfigurationMap);
             return configuration;
         });
     }
 
-    public EnvironmentConfiguration getEnvironmentConf(String prefix, String id) {
-        return environmentConfsHolder.computeIfAbsent(toKey(prefix, id), k -> new EnvironmentConfiguration(prefix, id));
+    public EnvironmentConfiguration getEnvironmentConfig(String prefix, String id) {
+        return environmentConfigs.computeIfAbsent(toKey(prefix, id), k -> new EnvironmentConfiguration(prefix, id));
     }
 
     public InmemoryConfiguration getAppConfig(String prefix, String id) {
         return appConfigs.get(toKey(prefix, id));
     }
 
-    public synchronized void setExternalConfiguration(Map<String, String> externalConfiguration) {
+    public synchronized void setExternalConfig(Map<String, String> externalConfiguration) {
         this.externalConfigurationMap = externalConfiguration;
     }
 
-    public synchronized void setAppExternalConfiguration(Map<String, String> appExternalConfiguration) {
+    public synchronized void setAppExternalConfig(Map<String, String> appExternalConfiguration) {
         this.appExternalConfigurationMap = appExternalConfiguration;
     }
 
@@ -112,26 +112,26 @@ public class Environment {
      */
     public CompositeConfiguration getStartupCompositeConf(String prefix, String id) {
         CompositeConfiguration compositeConfiguration = new CompositeConfiguration();
-        compositeConfiguration.addConfiguration(this.getSystemConf(prefix, id));
-        compositeConfiguration.addConfiguration(this.getAppExternalConfiguration(prefix, id));
-        compositeConfiguration.addConfiguration(this.getExternalConfiguration(prefix, id));
-        compositeConfiguration.addConfiguration(this.getPropertiesConf(prefix, id));
+        compositeConfiguration.addConfiguration(this.getSystemConfig(prefix, id));
+        compositeConfiguration.addConfiguration(this.getAppExternalConfig(prefix, id));
+        compositeConfiguration.addConfiguration(this.getExternalConfig(prefix, id));
+        compositeConfiguration.addConfiguration(this.getPropertiesConfig(prefix, id));
 
         InmemoryConfiguration appConfig = this.getAppConfig(prefix, id);
         if (appConfig != null) {
-            int index = isConfigCenterFirst ? 3 : 1;
+            int index = configCenterFirst ? 3 : 1;
             compositeConfiguration.addConfiguration(index, appConfig);
         }
         return compositeConfiguration;
     }
 
-    private static String toKey(String keypart1, String keypart2) {
+    private static String toKey(String prefix, String id) {
         StringBuilder sb = new StringBuilder();
-        if (StringUtils.isNotEmpty(keypart1)) {
-            sb.append(keypart1);
+        if (StringUtils.isNotEmpty(prefix)) {
+            sb.append(prefix);
         }
-        if (StringUtils.isNotEmpty(keypart2)) {
-            sb.append(keypart2);
+        if (StringUtils.isNotEmpty(id)) {
+            sb.append(id);
         }
 
         if (sb.length() > 0 && sb.charAt(sb.length() - 1) != '.') {
@@ -145,10 +145,10 @@ public class Environment {
     }
 
     public boolean isConfigCenterFirst() {
-        return isConfigCenterFirst;
+        return configCenterFirst;
     }
 
     public void setConfigCenterFirst(boolean configCenterFirst) {
-        isConfigCenterFirst = configCenterFirst;
+        this.configCenterFirst = configCenterFirst;
     }
 }
