@@ -32,6 +32,12 @@ import org.apache.dubbo.configcenter.ConfigType;
 import org.apache.dubbo.configcenter.ConfigurationListener;
 import org.apache.dubbo.configcenter.support.archaius.sources.ZooKeeperConfigurationSource;
 
+import static org.apache.dubbo.common.Constants.CONFIG_NAMESPACE_KEY;
+import static org.apache.dubbo.configcenter.support.archaius.sources.ZooKeeperConfigurationSource.ARCHAIUS_CONFIG_CHECK_KEY;
+import static org.apache.dubbo.configcenter.support.archaius.sources.ZooKeeperConfigurationSource.ARCHAIUS_CONFIG_ROOT_PATH_KEY;
+import static org.apache.dubbo.configcenter.support.archaius.sources.ZooKeeperConfigurationSource.ARCHAIUS_SOURCE_ADDRESS_KEY;
+import static org.apache.dubbo.configcenter.support.archaius.sources.ZooKeeperConfigurationSource.DEFAULT_CONFIG_ROOT_PATH;
+
 /**
  * Archaius supports various sources and it's extensiable: JDBC, ZK, Properties, ..., so should we make it extensiable?
  * FIXME: we should get rid of Archaius or move it to eco system since Archaius is out of maintenance, instead, we
@@ -52,10 +58,10 @@ public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration<R
 
         String address = url.getBackupAddress();
         if (!address.equals(Constants.ANYHOST_VALUE)) {
-            System.setProperty(ZooKeeperConfigurationSource.ARCHAIUS_SOURCE_ADDRESS_KEY, address);
+            System.setProperty(ARCHAIUS_SOURCE_ADDRESS_KEY, address);
         }
-        System.setProperty(ZooKeeperConfigurationSource.ARCHAIUS_CONFIG_ROOT_PATH_KEY, url.getParameter(Constants.CONFIG_NAMESPACE_KEY, ZooKeeperConfigurationSource.DEFAULT_CONFIG_ROOT_PATH));
-        System.setProperty(ZooKeeperConfigurationSource.ARCHAIUS_CONFIG_CHECK_KEY, url.getParameter(Constants.CONFIG_CHECK_KEY, "false"));
+        System.setProperty(ARCHAIUS_CONFIG_ROOT_PATH_KEY, url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_CONFIG_ROOT_PATH));
+        System.setProperty(ARCHAIUS_CONFIG_CHECK_KEY, url.getParameter(Constants.CONFIG_CHECK_KEY, "false"));
 
         try {
             ZooKeeperConfigurationSource zkConfigSource = new ZooKeeperConfigurationSource(url);
@@ -73,15 +79,11 @@ public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration<R
     /**
      * The hierarchy of configuration properties is:
      * 1. /{namespace}/config/dubbo/dubbo.properties
-     * 2. /{namespace}/config/applicationname/dubbo.properties
+     * 2. /{namespace}/config/{applicationname}/dubbo.properties
      * <p>
-     * To make the API compatible with other configuration systems, the key doesn't has group as prefix, so we should add the group prefix before try to get value.
-     * If being used for dubbo router rules, the key must already contains group prefix.
-     *
-     * @param key
-     * @param group
-     * @param timeout
-     * @return
+     * To make the API compatible with other configuration systems, the key doesn't has group as prefix, so we should
+     * add the group prefix before try to get value. If being used for dubbo router rules, the key must already
+     * contains group prefix.
      */
     @Override
     protected String getTargetConfig(String key, String group, long timeout) {
@@ -95,11 +97,7 @@ public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration<R
     }
 
     /**
-     * First, get app level configuration
-     * If there's no value in app level, try to get global dubbo level.
-     *
-     * @param key
-     * @return
+     * First, get app level configuration. If there's no value in app level, try to get global dubbo level.
      */
     @Override
     protected Object getInternalProperty(String key) {
@@ -128,7 +126,8 @@ public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration<R
         public ArchaiusListener(String key, ConfigurationListener listener) {
             this.key = key;
             this.listener = listener;
-            // Maybe we no longer need to identify the type of change. Because there's no scenario that a callback will subscribe for both configurators and routers
+            // Maybe we no longer need to identify the type of change. Because there's no scenario that a callback
+            // will subscribe for both configurators and routers
             if (key.endsWith(Constants.CONFIGURATORS_SUFFIX)) {
                 type = ConfigType.CONFIGURATORS;
             } else {
@@ -152,7 +151,8 @@ public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration<R
                 listener.process(event);
             } else {
                 if (newValue.equals("")) {
-                    logger.warn("We received an empty rule for " + key + ", the current working rule is unknown, the empty rule will not take effect.");
+                    logger.warn("an empty rule is received for " + key + ", the current working rule is unknown, " +
+                            "the empty rule will not take effect.");
                     return;
                 }
                 event.setChangeType(ConfigChangeType.MODIFIED);
