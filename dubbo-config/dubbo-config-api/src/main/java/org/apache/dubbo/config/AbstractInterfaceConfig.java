@@ -20,7 +20,6 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.Environment;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -46,6 +45,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.apache.dubbo.common.Constants.APPLICATION_KEY;
+import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
 /**
  * AbstractDefaultConfig
@@ -154,10 +154,17 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             }
         }
 
-        // For compatibility purpose, use registry as the default config center if the registry protocol is zookeeper and there's no config center specified explicitly.
+        useRegistryForConfigIfNecessary();
+    }
+
+    /**
+     * For compatibility purpose, use registry as the default config center if the registry protocol is zookeeper and
+     * there's no config center specified explicitly.
+     */
+    private void useRegistryForConfigIfNecessary() {
         RegistryConfig registry = registries.get(0);
         if (registry.isZookeeperProtocol()) {
-            Set<DynamicConfiguration> loadedConfigurations = ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getExtensions();
+            Set<DynamicConfiguration> loadedConfigurations = getExtensionLoader(DynamicConfiguration.class).getExtensions();
             // we use the loading status of DynamicConfiguration to decide whether ConfigCenter has been initiated.
             if (CollectionUtils.isEmpty(loadedConfigurations)) {
                 ConfigCenterConfig configCenterConfig = new ConfigCenterConfig();
@@ -298,7 +305,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
         if (ConfigUtils.isNotEmpty(address)) {
             if (!map.containsKey(Constants.PROTOCOL_KEY)) {
-                if (ExtensionLoader.getExtensionLoader(MonitorFactory.class).hasExtension("logstat")) {
+                if (getExtensionLoader(MonitorFactory.class).hasExtension("logstat")) {
                     map.put(Constants.PROTOCOL_KEY, "logstat");
                 } else {
                     map.put(Constants.PROTOCOL_KEY, "dubbo");
