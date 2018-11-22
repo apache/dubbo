@@ -126,22 +126,24 @@ public class Environment {
     }
 
     private static String toKey(String prefix, String id) {
-        StringBuilder sb = new StringBuilder();
+        String key = calculatePrefix(prefix, id);
+        // FIXME: why return "dubbo", it doesn't keep consistent behavior with AbstractPrefixConfiguration.getProperty
+        return StringUtils.isNoneEmpty(key) ? key : Constants.DUBBO;
+    }
+
+    static String calculatePrefix(String prefix, String id) {
+        StringBuilder buffer = new StringBuilder();
         if (StringUtils.isNotEmpty(prefix)) {
-            sb.append(prefix);
+            buffer.append(prefix);
         }
         if (StringUtils.isNotEmpty(id)) {
-            sb.append(id);
+            buffer.append(id);
         }
 
-        if (sb.length() > 0 && sb.charAt(sb.length() - 1) != '.') {
-            sb.append(".");
+        if (buffer.length() > 0 && buffer.charAt(buffer.length() - 1) != '.') {
+            buffer.append(".");
         }
-
-        if (sb.length() > 0) {
-            return sb.toString();
-        }
-        return Constants.DUBBO;
+        return buffer.toString();
     }
 
     public boolean isConfigCenterFirst() {
