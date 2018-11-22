@@ -19,16 +19,16 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.CompositeConfiguration;
-import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ClassHelper;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.config.utils.ConfigConverter;
 import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 
 import java.io.Serializable;
@@ -121,22 +121,16 @@ public abstract class AbstractConfig implements Serializable {
         for (Method method : methods) {
             try {
                 String name = method.getName();
-                if ((name.startsWith("get") || name.startsWith("is"))
-                        && !"getClass".equals(name)
-                        && Modifier.isPublic(method.getModifiers())
-                        && method.getParameterTypes().length == 0
-                        && isPrimitive(method.getReturnType())) {
+                if (ClassHelper.isGetter(method)) {
                     Parameter parameter = method.getAnnotation(Parameter.class);
                     if (method.getReturnType() == Object.class || parameter != null && parameter.excluded()) {
                         continue;
                     }
-                    int i = name.startsWith("get") ? 3 : 2;
-                    String prop = StringUtils.camelToSplitName(name.substring(i, i + 1).toLowerCase() + name.substring(i + 1), ".");
                     String key;
                     if (parameter != null && parameter.key().length() > 0) {
                         key = parameter.key();
                     } else {
-                        key = prop;
+                        key = calculatePropertyFromGetter(name);
                     }
                     Object value = method.invoke(config);
                     String str = String.valueOf(value).trim();
@@ -195,17 +189,12 @@ public abstract class AbstractConfig implements Serializable {
                     continue;
                 }
                 String name = method.getName();
-                if ((name.startsWith("get") || name.startsWith("is"))
-                        && !"getClass".equals(name)
-                        && Modifier.isPublic(method.getModifiers())
-                        && method.getParameterTypes().length == 0
-                        && isPrimitive(method.getReturnType())) {
+                if (ClassHelper.isGetter(method)) {
                     String key;
                     if (parameter.key().length() > 0) {
                         key = parameter.key();
                     } else {
-                        int i = name.startsWith("get") ? 3 : 2;
-                        key = name.substring(i, i + 1).toLowerCase() + name.substring(i + 1);
+                        key = calculateAttributeFromGetter(name);
                     }
                     Object value = method.invoke(config);
                     if (value != null) {
@@ -265,41 +254,6 @@ public abstract class AbstractConfig implements Serializable {
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
-    }
-
-    private static boolean isPrimitive(Class<?> type) {
-        return type.isPrimitive()
-                || type == String.class
-                || type == Character.class
-                || type == Boolean.class
-                || type == Byte.class
-                || type == Short.class
-                || type == Integer.class
-                || type == Long.class
-                || type == Float.class
-                || type == Double.class
-                || type == Object.class;
-    }
-
-    private static Object convertPrimitive(Class<?> type, String value) {
-        if (type == char.class || type == Character.class) {
-            return value.length() > 0 ? value.charAt(0) : '\0';
-        } else if (type == boolean.class || type == Boolean.class) {
-            return Boolean.valueOf(value);
-        } else if (type == byte.class || type == Byte.class) {
-            return Byte.valueOf(value);
-        } else if (type == short.class || type == Short.class) {
-            return Short.valueOf(value);
-        } else if (type == int.class || type == Integer.class) {
-            return Integer.valueOf(value);
-        } else if (type == long.class || type == Long.class) {
-            return Long.valueOf(value);
-        } else if (type == float.class || type == Float.class) {
-            return Float.valueOf(value);
-        } else if (type == double.class || type == Double.class) {
-            return Double.valueOf(value);
-        }
-        return value;
     }
 
     protected static void checkExtension(Class<?> type, String property, String value) {
@@ -435,6 +389,8 @@ public abstract class AbstractConfig implements Serializable {
 
     /**
      * Should be called after Config was fully initialized.
+     * // FIXME: this method should be completely replaced by appendParameters
+     * @see AbstractConfig#appendParameters(Map, Object, String)
      *
      * @return
      */
@@ -449,9 +405,8 @@ public abstract class AbstractConfig implements Serializable {
                         && !"getClass".equals(name)
                         && Modifier.isPublic(method.getModifiers())
                         && method.getParameterTypes().length == 0
-                        && isPrimitive(method.getReturnType())) {
-                    int i = name.startsWith("get") ? 3 : 2;
-                    String prop = StringUtils.camelToSplitName(name.substring(i, i + 1).toLowerCase() + name.substring(i + 1), ".");
+                        && ClassHelper.isPrimitive(method.getReturnType())) {
+                    String prop = calculatePropertyFromGetter(name);
                     String key;
                     Parameter parameter = method.getAnnotation(Parameter.class);
                     if (parameter != null && parameter.key().length() > 0) {
@@ -517,8 +472,8 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     /**
-     * TODO
-     * Currently, only support overriding of properties explicitly defined in Config class, doesn't support overriding of customized parameters stored in 'parameters'.
+     * TODO: Currently, only support overriding of properties explicitly defined in Config class, doesn't support
+     * overriding of customized parameters stored in 'parameters'.
      */
     public void refresh() {
         if (init) {
@@ -527,24 +482,25 @@ public abstract class AbstractConfig implements Serializable {
         init = true;
 
         try {
-            Configuration configuration = ConfigConverter.toConfiguration(this);
+            InmemoryConfiguration configuration = new InmemoryConfiguration(getPrefix(), getId());
+            configuration.addProperties(getMetaData());
             CompositeConfiguration compositeConfiguration = Environment.getInstance().getStartupCompositeConf(getPrefix(), getId());
-            int index = 3;
-            if (!Environment.getInstance().isConfigCenterFirst()) {
-                index = 1;
-            }
+            int index = Environment.getInstance().isConfigCenterFirst() ? 3 : 1;
             compositeConfiguration.addConfiguration(index, configuration);
+
             // loop methods, get override value and set the new value back to method
             Method[] methods = getClass().getMethods();
             for (Method method : methods) {
-                if (isSetter(method)) {
+                if (ClassHelper.isSetter(method)) {
                     try {
-                        String value = compositeConfiguration.getString(extractPropertyName(method));
+                        String value = compositeConfiguration.getString(extractPropertyName(getClass(), method));
                         if (value != null) {
-                            method.invoke(this, convertPrimitive(method.getParameterTypes()[0], value));
+                            method.invoke(this, ClassHelper.convertPrimitive(method.getParameterTypes()[0], value));
                         }
                     } catch (NoSuchMethodException e) {
-                        logger.info("Failed to override the property " + method.getName() + " in " + this.getClass().getSimpleName() + ", please make sure every property has a getter/setter pair.");
+                        logger.info("Failed to override the property " + method.getName() + " in " +
+                                this.getClass().getSimpleName() +
+                                ", please make sure every property has getter/setter method provided.");
                     }
                 }
             }
@@ -553,24 +509,13 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
-    private static boolean isSetter(Method method) {
-        if (method.getName().startsWith("set")
-                && !"set".equals(method.getName())
-                && Modifier.isPublic(method.getModifiers())
-                && method.getParameterCount() == 1
-                && isPrimitive(method.getParameterTypes()[0])) {
-            return true;
-        }
-        return false;
-    }
-
-    public String extractPropertyName(Method setter) throws Exception {
+    private static String extractPropertyName(Class<?> clazz, Method setter) throws Exception {
         String propertyName = setter.getName().substring("set".length());
         Method getter = null;
         try {
-            getter = getClass().getMethod("get" + propertyName);
+            getter = clazz.getMethod("get" + propertyName);
         } catch (NoSuchMethodException e) {
-            getter = getClass().getMethod("is" + propertyName);
+            getter = clazz.getMethod("is" + propertyName);
         }
         Parameter parameter = getter.getAnnotation(Parameter.class);
         if (parameter != null && StringUtils.isNotEmpty(parameter.key()) && parameter.propertyKey()) {
@@ -579,6 +524,16 @@ public abstract class AbstractConfig implements Serializable {
             propertyName = propertyName.toLowerCase();
         }
         return propertyName;
+    }
+
+    private static String calculatePropertyFromGetter(String name) {
+        int i = name.startsWith("get") ? 3 : 2;
+        return StringUtils.camelToSplitName(name.substring(i, i + 1).toLowerCase() + name.substring(i + 1), ".");
+    }
+
+    private static String calculateAttributeFromGetter(String getter) {
+        int i = getter.startsWith("get") ? 3 : 2;
+        return getter.substring(i, i + 1).toLowerCase() + getter.substring(i + 1);
     }
 
     @Override
@@ -590,15 +545,9 @@ public abstract class AbstractConfig implements Serializable {
             Method[] methods = getClass().getMethods();
             for (Method method : methods) {
                 try {
-                    String name = method.getName();
-                    if ((name.startsWith("get") || name.startsWith("is"))
-                            && !"get".equals(name) && !"is".equals(name)
-                            && !"getClass".equals(name) && !"getObject".equals(name)
-                            && Modifier.isPublic(method.getModifiers())
-                            && method.getParameterTypes().length == 0
-                            && isPrimitive(method.getReturnType())) {
-                        int i = name.startsWith("get") ? 3 : 2;
-                        String key = name.substring(i, i + 1).toLowerCase() + name.substring(i + 1);
+                    if (ClassHelper.isGetter(method)) {
+                        String name = method.getName();
+                        String key = calculateAttributeFromGetter(name);
                         Object value = method.invoke(this);
                         if (value != null) {
                             buf.append(" ");
