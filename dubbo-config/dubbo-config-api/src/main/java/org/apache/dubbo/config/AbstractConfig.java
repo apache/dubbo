@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.CompositeConfiguration;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -519,8 +520,8 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     /**
-     * TODO
-     * Currently, only support overriding of properties explicitly defined in Config class, doesn't support overriding of customized parameters stored in 'parameters'.
+     * TODO: Currently, only support overriding of properties explicitly defined in Config class, doesn't support
+     * overriding of customized parameters stored in 'parameters'.
      */
     public void refresh() {
         if (init) {
@@ -529,24 +530,25 @@ public abstract class AbstractConfig implements Serializable {
         init = true;
 
         try {
-            Configuration configuration = ConfigConverter.toConfiguration(this);
+            InmemoryConfiguration configuration = new InmemoryConfiguration(getPrefix(), getId());
+            configuration.addProperties(getMetaData());
             CompositeConfiguration compositeConfiguration = Environment.getInstance().getStartupCompositeConf(getPrefix(), getId());
-            int index = 3;
-            if (!Environment.getInstance().isConfigCenterFirst()) {
-                index = 1;
-            }
+            int index = Environment.getInstance().isConfigCenterFirst() ? 3 : 1;
             compositeConfiguration.addConfiguration(index, configuration);
+
             // loop methods, get override value and set the new value back to method
             Method[] methods = getClass().getMethods();
             for (Method method : methods) {
                 if (isSetter(method)) {
                     try {
-                        String value = compositeConfiguration.getString(extractPropertyName(method));
+                        String value = compositeConfiguration.getString(extractPropertyName(getClass(), method));
                         if (value != null) {
                             method.invoke(this, convertPrimitive(method.getParameterTypes()[0], value));
                         }
                     } catch (NoSuchMethodException e) {
-                        logger.info("Failed to override the property " + method.getName() + " in " + this.getClass().getSimpleName() + ", please make sure every property has a getter/setter pair.");
+                        logger.info("Failed to override the property " + method.getName() + " in " +
+                                this.getClass().getSimpleName() +
+                                ", please make sure every property has getter/setter method provided.");
                     }
                 }
             }
@@ -556,23 +558,20 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     private static boolean isSetter(Method method) {
-        if (method.getName().startsWith("set")
+        return method.getName().startsWith("set")
                 && !"set".equals(method.getName())
                 && Modifier.isPublic(method.getModifiers())
                 && method.getParameterCount() == 1
-                && isPrimitive(method.getParameterTypes()[0])) {
-            return true;
-        }
-        return false;
+                && isPrimitive(method.getParameterTypes()[0]);
     }
 
-    public String extractPropertyName(Method setter) throws Exception {
+    private static String extractPropertyName(Class<?> clazz, Method setter) throws Exception {
         String propertyName = setter.getName().substring("set".length());
         Method getter = null;
         try {
-            getter = getClass().getMethod("get" + propertyName);
+            getter = clazz.getMethod("get" + propertyName);
         } catch (NoSuchMethodException e) {
-            getter = getClass().getMethod("is" + propertyName);
+            getter = clazz.getMethod("is" + propertyName);
         }
         Parameter parameter = getter.getAnnotation(Parameter.class);
         if (parameter != null && StringUtils.isNotEmpty(parameter.key()) && parameter.propertyKey()) {
