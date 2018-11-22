@@ -89,7 +89,7 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
     }
 
     String getNodePath(MetadataIdentifier metadataIdentifier) {
-        return toRootDir() + metadataIdentifier.getFilePathKey() + Constants.PATH_SEPARATOR + METADATA_NODE_NAME;
+        return toRootDir() + metadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.PATH) + Constants.PATH_SEPARATOR + METADATA_NODE_NAME;
     }
 
 
