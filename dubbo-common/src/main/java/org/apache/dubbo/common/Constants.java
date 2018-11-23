@@ -159,6 +159,10 @@ public class Constants {
 
     public static final int DEFAULT_RETRIES = 2;
 
+    public static final int DEFAULT_FAIL_CAPACITY_SIZE = 1000;
+
+    public static final int DEFAULT_FAIL_RETRY_SIZE = 100;
+
     // default buffer size is 8k.
     public static final int DEFAULT_BUFFER_SIZE = 8 * 1024;
 
@@ -299,6 +303,8 @@ public class Constants {
     public static final String TIMEOUT_KEY = "timeout";
 
     public static final String RETRIES_KEY = "retries";
+
+    public static final String FAIL_CAPACITY_KEY = "failcapacity";
 
     public static final String PROMPT_KEY = "prompt";
 

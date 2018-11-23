@@ -126,7 +126,7 @@ public class FailbackClusterInvokerTest {
                 dic);
         invoker.invoke(invocation);
         Assert.assertNull(RpcContext.getContext().getInvoker());
-        invoker.retryFailed();// when retry the invoker which get from failed map already is not the mocked invoker,so
+//        invoker.retryFailed();// when retry the invoker which get from failed map already is not the mocked invoker,so
         // it can be invoke successfully
     }
 }

@@ -25,6 +25,11 @@
                 <xsd:documentation><![CDATA[ The method retry times. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="failcapacity" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The max failback capacity size. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="actives" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The max active requests. ]]></xsd:documentation>
