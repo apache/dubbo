@@ -110,7 +110,7 @@ public class Environment {
      * @param id
      * @return
      */
-    public CompositeConfiguration getStartupCompositeConf(String prefix, String id) {
+    public Configuration getConfiguration(String prefix, String id) {
         CompositeConfiguration compositeConfiguration = new CompositeConfiguration();
         compositeConfiguration.addConfiguration(this.getSystemConfig(prefix, id));
         compositeConfiguration.addConfiguration(this.getAppExternalConfig(prefix, id));
@@ -123,6 +123,10 @@ public class Environment {
             compositeConfiguration.addConfiguration(index, appConfig);
         }
         return compositeConfiguration;
+    }
+
+    public Configuration getConfiguration() {
+        return getConfiguration(null, null);
     }
 
     private static String toKey(String prefix, String id) {

@@ -17,61 +17,27 @@
 package org.apache.dubbo.configcenter;
 
 import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.CompositeConfiguration;
+import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.Environment;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
 
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+
+import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
 /**
  * Utilities for manipulating configurations from different sources
  */
 public class ConfigurationUtils {
-    private static final CompositeConfiguration compositeConfiguration;
-
-    static {
-        compositeConfiguration = new CompositeConfiguration();
-        compositeConfiguration.addConfiguration(getDynamicConfiguration());
-        compositeConfiguration.addConfiguration(Environment.getInstance().getAppExternalConfig(null, null));
-        compositeConfiguration.addConfiguration(Environment.getInstance().getExternalConfig(null, null));
-        compositeConfiguration.addConfiguration(Environment.getInstance().getSystemConfig(null, null));
-        compositeConfiguration.addConfiguration(Environment.getInstance().getPropertiesConfig(null, null));
-    }
-
-    private volatile Map<String, CompositeConfiguration> runtimeCompositeConfsHolder = new ConcurrentHashMap<>();
-
-    /**
-     * FIXME This method will recreate Configuration for each RPC, how much latency affect will this action has on performance?
-     *
-     * @param url,    the url metadata.
-     * @param method, the method name the RPC is trying to invoke.
-     * @return
-     */
-    public static CompositeConfiguration getRuntimeCompositeConf(URL url, String method) {
-        CompositeConfiguration compositeConfiguration = new CompositeConfiguration();
-
-        String app = url.getParameter(Constants.APPLICATION_KEY);
-        String service = url.getServiceKey();
-        compositeConfiguration.addConfiguration(new ConfigurationWrapper(app, service, method, getDynamicConfiguration()));
-
-        compositeConfiguration.addConfiguration(url.toConfiguration());
-
-        return compositeConfiguration;
-    }
-
     /**
      * If user opens DynamicConfig, the extension instance must has been created during the initialization of
      * ConfigCenterConfig with the right extension type user specifies. If no DynamicConfig presents,
      * NopDynamicConfiguration will be used.
      */
     public static DynamicConfiguration getDynamicConfiguration() {
-        Set<DynamicConfiguration> configurations = ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getExtensions();
+        Set<DynamicConfiguration> configurations = getExtensionLoader(DynamicConfiguration.class).getExtensions();
         if (CollectionUtils.isEmpty(configurations)) {
-            return ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getDefaultExtension();
+            return getExtensionLoader(DynamicConfiguration.class).getDefaultExtension();
         } else {
             return configurations.iterator().next();
         }
@@ -80,7 +46,9 @@ public class ConfigurationUtils {
     @SuppressWarnings("deprecation")
     public static int getServerShutdownTimeout() {
         int timeout = Constants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
-        String value = getProperty(Constants.SHUTDOWN_WAIT_KEY);
+        Configuration configuration = Environment.getInstance().getConfiguration();
+        String value = configuration.getString(Constants.SHUTDOWN_WAIT_KEY);
+
         if (value != null && value.length() > 0) {
             try {
                 timeout = Integer.parseInt(value);
@@ -88,7 +56,7 @@ public class ConfigurationUtils {
                 // ignore
             }
         } else {
-            value = getProperty(Constants.SHUTDOWN_WAIT_SECONDS_KEY);
+            value = configuration.getString(Constants.SHUTDOWN_WAIT_SECONDS_KEY);
             if (value != null && value.length() > 0) {
                 try {
                     timeout = Integer.parseInt(value) * 1000;
@@ -99,13 +67,4 @@ public class ConfigurationUtils {
         }
         return timeout;
     }
-
-    public static String getProperty(String key) {
-        return compositeConfiguration.getString(key);
-    }
-
-    public static String getProperty(String key, String defaultValue) {
-        return compositeConfiguration.getString(key, defaultValue);
-    }
-
 }

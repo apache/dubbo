@@ -131,7 +131,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
         if (registries == null || registries.isEmpty()) {
             registries = new ArrayList<>();
-            String registryIds = Environment.getInstance().getStartupCompositeConf(null, null).getString("dubbo.registries");
+            String registryIds = Environment.getInstance().getConfiguration(null, null).getString("dubbo.registries");
             if (StringUtils.isNotEmpty(registryIds)) {
                 Arrays.stream(Constants.COMMA_SPLIT_PATTERN.split(registryIds))
                         .map(regId -> {
