@@ -125,6 +125,10 @@ public class Environment {
         return compositeConfiguration;
     }
 
+    public Configuration getConfiguration() {
+        return getConfiguration(null, null);
+    }
+
     private static String toKey(String prefix, String id) {
         StringBuilder sb = new StringBuilder();
         if (StringUtils.isNotEmpty(prefix)) {
