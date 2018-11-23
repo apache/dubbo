@@ -16,8 +16,11 @@
  */
 package org.apache.dubbo.common.config;
 
+
 /**
- *
+ * FIXME: is this really necessary? PropertiesConfiguration should have already covered this:
+ * @see PropertiesConfiguration
+ * @See ConfigUtils#getProperty(String)
  */
 public class SystemConfiguration extends AbstractPrefixConfiguration {
 
