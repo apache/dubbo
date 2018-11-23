@@ -44,7 +44,6 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * Load dubbo extensions
@@ -334,14 +333,6 @@ public class ExtensionLoader<T> {
             }
         }
         return (T) instance;
-    }
-
-    /**
-     * Return all available extension instances.
-     */
-    public Set<T> getExtensions() {
-        return Collections.unmodifiableSet(getSupportedExtensions().stream().map(this::getExtension)
-                .collect(Collectors.toSet()));
     }
 
     /**

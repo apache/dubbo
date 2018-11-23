@@ -19,9 +19,6 @@ package org.apache.dubbo.configcenter;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.Environment;
-import org.apache.dubbo.common.utils.CollectionUtils;
-
-import java.util.Set;
 
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
@@ -35,12 +32,11 @@ public class ConfigurationUtils {
      * NopDynamicConfiguration will be used.
      */
     public static DynamicConfiguration getDynamicConfiguration() {
-        Set<DynamicConfiguration> configurations = getExtensionLoader(DynamicConfiguration.class).getExtensions();
-        if (CollectionUtils.isEmpty(configurations)) {
-            return getExtensionLoader(DynamicConfiguration.class).getDefaultExtension();
-        } else {
-            return configurations.iterator().next();
+        DynamicConfiguration dynamicConfiguration = (DynamicConfiguration) Environment.getInstance().getDynamicConfiguration();
+        if (dynamicConfiguration == null) {
+            dynamicConfiguration = getExtensionLoader(DynamicConfiguration.class).getDefaultExtension();
         }
+        return dynamicConfiguration;
     }
 
     @SuppressWarnings("deprecation")
