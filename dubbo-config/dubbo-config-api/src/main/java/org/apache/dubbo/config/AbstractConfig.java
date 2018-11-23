@@ -409,7 +409,7 @@ public abstract class AbstractConfig implements Serializable {
                     String prop = calculatePropertyFromGetter(name);
                     String key;
                     Parameter parameter = method.getAnnotation(Parameter.class);
-                    if (parameter != null && parameter.key().length() > 0) {
+                    if (parameter != null && parameter.key().length() > 0 && parameter.propertyKey()) {
                         key = parameter.key();
                     } else {
                         key = prop;
