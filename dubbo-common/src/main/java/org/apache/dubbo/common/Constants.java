@@ -304,8 +304,6 @@ public class Constants {
 
     public static final String RETRIES_KEY = "retries";
 
-    public static final String FAIL_BACK_TASKS_KEY = "failbacktasks";
-
     public static final String PROMPT_KEY = "prompt";
 
     public static final String DEFAULT_PROMPT = "dubbo>";
