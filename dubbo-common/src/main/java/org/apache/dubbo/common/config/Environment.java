@@ -36,10 +36,15 @@ public class Environment {
     private Map<String, InmemoryConfiguration> appExternalConfigs = new ConcurrentHashMap<>();
     private Map<String, InmemoryConfiguration> appConfigs = new ConcurrentHashMap<>();
 
-    private boolean configCenterFirst = true;
-
     private Map<String, String> externalConfigurationMap = new HashMap<>();
     private Map<String, String> appExternalConfigurationMap = new HashMap<>();
+
+    private boolean configCenterFirst = true;
+
+    /**
+     * FIXME, this instance will always be a type of DynamicConfiguration, ConfigCenterConfig will load the instance at startup and assign it to here.
+     */
+    private Configuration dynamicConfiguration;
 
     public static Environment getInstance() {
         return INSTANCE;
@@ -154,5 +159,13 @@ public class Environment {
 
     public void setConfigCenterFirst(boolean configCenterFirst) {
         this.configCenterFirst = configCenterFirst;
+    }
+
+    public Configuration getDynamicConfiguration() {
+        return dynamicConfiguration;
+    }
+
+    public void setDynamicConfiguration(Configuration dynamicConfiguration) {
+        this.dynamicConfiguration = dynamicConfiguration;
     }
 }

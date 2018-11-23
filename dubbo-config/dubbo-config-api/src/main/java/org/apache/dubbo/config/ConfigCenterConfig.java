@@ -84,10 +84,6 @@ public class ConfigCenterConfig extends AbstractConfig {
         }
     }
 
-    /*public void initWithoutRemoteConfig() {
-        startDynamicConfiguration();
-    }*/
-
     private DynamicConfiguration startDynamicConfiguration() {
         // give jvm properties the chance to override local configs, e.g., -Ddubbo.configcenter.config.priority
 
@@ -104,6 +100,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         DynamicConfiguration dynamicConfiguration = ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getExtension(url.getProtocol());
         // TODO, maybe we need a factory to do this?
         dynamicConfiguration.initWith(url);
+        Environment.getInstance().setDynamicConfiguration(dynamicConfiguration);
         return dynamicConfiguration;
     }
 

@@ -20,14 +20,12 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.Environment;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.metadata.integration.MetadataReportService;
 import org.apache.dubbo.monitor.MonitorFactory;
 import org.apache.dubbo.monitor.MonitorService;
@@ -43,7 +41,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static org.apache.dubbo.common.Constants.APPLICATION_KEY;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
@@ -165,9 +162,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     private void useRegistryForConfigIfNecessary() {
         RegistryConfig registry = registries.get(0);
         if (registry.isZookeeperProtocol()) {
-            Set<DynamicConfiguration> loadedConfigurations = getExtensionLoader(DynamicConfiguration.class).getExtensions();
             // we use the loading status of DynamicConfiguration to decide whether ConfigCenter has been initiated.
-            if (CollectionUtils.isEmpty(loadedConfigurations)) {
+            if (Environment.getInstance().getDynamicConfiguration() == null) {
                 ConfigCenterConfig configCenterConfig = new ConfigCenterConfig();
                 configCenterConfig.setProtocol(registry.getProtocol());
                 configCenterConfig.setAddress(registry.getAddress());
