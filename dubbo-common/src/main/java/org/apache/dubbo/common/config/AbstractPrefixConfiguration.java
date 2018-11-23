@@ -38,11 +38,12 @@ public abstract class AbstractPrefixConfiguration extends AbstractConfiguration 
     @Override
     public Object getProperty(String key, Object defaultValue) {
         Object value = null;
-        String prefix = Environment.calculatePrefix(this.prefix, this.id);
-        if (StringUtils.isNotEmpty(prefix)) {
+        if (StringUtils.isNotEmpty(prefix) && StringUtils.isNotEmpty(id)) {
+            value = getInternalProperty(prefix + id + "." + key);
+        }
+        if (value == null && StringUtils.isNotEmpty(prefix)) {
             value = getInternalProperty(prefix + key);
         }
-
         if (value == null) {
             value = super.getProperty(key, defaultValue);
         }
