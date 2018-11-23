@@ -17,7 +17,7 @@
 package org.apache.dubbo.common.config;
 
 /**
- *
+ * Configuration from system environment
  */
 public class EnvironmentConfiguration extends AbstractPrefixConfiguration {
 
