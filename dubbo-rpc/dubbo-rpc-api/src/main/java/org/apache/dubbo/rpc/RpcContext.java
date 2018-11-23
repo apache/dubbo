@@ -662,7 +662,7 @@ public class RpcContext {
                     if (o instanceof CompletableFuture) {
                         return (CompletableFuture<T>) o;
                     }
-                    CompletableFuture.completedFuture(o);
+                    return CompletableFuture.completedFuture(o);
                 } else {
                     // The service has a normal sync method signature, should get future from RpcContext.
                 }
