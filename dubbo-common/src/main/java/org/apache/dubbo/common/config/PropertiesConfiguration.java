@@ -20,6 +20,9 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
 
+/**
+ * Configuration from system properties and dubbo.properties
+ */
 public class PropertiesConfiguration extends AbstractPrefixConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(PropertiesConfiguration.class);
 

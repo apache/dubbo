@@ -36,10 +36,10 @@ public class ConfigurationUtils {
     static {
         compositeConfiguration = new CompositeConfiguration();
         compositeConfiguration.addConfiguration(getDynamicConfiguration());
-        compositeConfiguration.addConfiguration(Environment.getInstance().getAppExternalConfiguration(null, null));
-        compositeConfiguration.addConfiguration(Environment.getInstance().getExternalConfiguration(null, null));
-        compositeConfiguration.addConfiguration(Environment.getInstance().getSystemConf(null, null));
-        compositeConfiguration.addConfiguration(Environment.getInstance().getPropertiesConf(null, null));
+        compositeConfiguration.addConfiguration(Environment.getInstance().getAppExternalConfig(null, null));
+        compositeConfiguration.addConfiguration(Environment.getInstance().getExternalConfig(null, null));
+        compositeConfiguration.addConfiguration(Environment.getInstance().getSystemConfig(null, null));
+        compositeConfiguration.addConfiguration(Environment.getInstance().getPropertiesConfig(null, null));
     }
 
     private volatile Map<String, CompositeConfiguration> runtimeCompositeConfsHolder = new ConcurrentHashMap<>();
