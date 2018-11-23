@@ -733,7 +733,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         // backward compatibility
         if (protocols == null || protocols.isEmpty()) {
             //check 'dubbo.protocols=dubboProtocolId,hessianProtocolId' and decide if we need multiple protocols
-            String protocolIds = Environment.getInstance().getStartupCompositeConf(null, null).getString("dubbo.protocols");
+            String protocolIds = Environment.getInstance().getConfiguration(null, null).getString("dubbo.protocols");
             if (StringUtils.isNotEmpty(protocolIds)) {
                 Arrays.stream(Constants.COMMA_SPLIT_PATTERN.split(protocolIds))
                         .map(pId -> {

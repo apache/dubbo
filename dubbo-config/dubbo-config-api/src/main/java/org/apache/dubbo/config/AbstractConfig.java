@@ -18,7 +18,7 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.CompositeConfiguration;
+import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -499,14 +499,14 @@ public abstract class AbstractConfig implements Serializable {
         try {
             Environment env = Environment.getInstance();
             env.addAppConfig(getPrefix(), getId(), getMetaData());
-            CompositeConfiguration compositeConfiguration = env.getStartupCompositeConf(getPrefix(), getId());
+            Configuration configuration = env.getConfiguration(getPrefix(), getId());
 
             // loop methods, get override value and set the new value back to method
             Method[] methods = getClass().getMethods();
             for (Method method : methods) {
                 if (ClassHelper.isSetter(method)) {
                     try {
-                        String value = compositeConfiguration.getString(extractPropertyName(getClass(), method));
+                        String value = configuration.getString(extractPropertyName(getClass(), method));
                         // isTypeMatch() is called to avoid duplicate and incorrect update, for example, we have two 'setGeneric' methods in ReferenceConfig.
                         if (value != null && ClassHelper.isTypeMatch(method.getParameterTypes()[0], value)) {
                             method.invoke(this, ClassHelper.convertPrimitive(method.getParameterTypes()[0], value));
