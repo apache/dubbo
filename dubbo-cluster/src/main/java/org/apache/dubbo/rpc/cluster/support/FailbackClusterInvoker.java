@@ -32,9 +32,9 @@ import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * When fails, record failure requests and schedule for retry on a regular interval.
@@ -50,37 +50,37 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
     private final int retries;
 
-    private final int failbackTasks;
+    private final int failCapacitySize;
 
     private volatile Timer failTimer;
 
     public FailbackClusterInvoker(Directory<T> directory) {
         super(directory);
 
-        int retriesConfig = getUrl().getParameter(Constants.RETRIES_KEY, Constants.DEFAULT_FAILBACK_TIMES);
+        int retriesConfig = getUrl().getParameter(Constants.RETRIES_KEY, Constants.DEFAULT_FAIL_RETRY_SIZE) + 1;
         if (retriesConfig <= 0) {
-            retriesConfig = Constants.DEFAULT_FAILBACK_TIMES;
+            retriesConfig = Constants.DEFAULT_FAIL_RETRY_SIZE;
         }
-        int failbackTasksConfig = getUrl().getParameter(Constants.FAIL_BACK_TASKS_KEY, Constants.DEFAULT_FAILBACK_TASKS);
-        if (failbackTasksConfig <= 0) {
-            failbackTasksConfig = Constants.DEFAULT_FAILBACK_TASKS;
+        int failCapacitySizeConfig = getUrl().getParameter(Constants.FAIL_CAPACITY_KEY, Constants.DEFAULT_FAIL_CAPACITY_SIZE);
+        if (failCapacitySizeConfig <= 0) {
+            failCapacitySizeConfig = Constants.DEFAULT_FAIL_RETRY_SIZE;
         }
         retries = retriesConfig;
-        failbackTasks = failbackTasksConfig;
+        failCapacitySize = failCapacitySizeConfig;
     }
 
-    private void addFailed(LoadBalance loadbalance, Invocation invocation, List<Invoker<T>> invokers, Invoker<T> lastInvoker) {
+    private void addFailed(Invocation invocation, AbstractClusterInvoker<?> router) {
         if (failTimer == null) {
             synchronized (this) {
                 if (failTimer == null) {
                     failTimer = new HashedWheelTimer(
                             new NamedThreadFactory("failback-cluster-timer", true),
                             1,
-                            TimeUnit.SECONDS, 32, failbackTasks);
+                            TimeUnit.SECONDS, 32, failCapacitySize);
                 }
             }
         }
-        RetryTimerTask retryTimerTask = new RetryTimerTask(loadbalance, invocation, invokers, lastInvoker, retries, RETRY_FAILED_PERIOD);
+        RetryTimerTask retryTimerTask = new RetryTimerTask(invocation, router, retries, RETRY_FAILED_PERIOD);
         try {
             failTimer.newTimeout(retryTimerTask, RETRY_FAILED_PERIOD, TimeUnit.SECONDS);
         } catch (Throwable e) {
@@ -90,15 +90,14 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
     @Override
     protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
-        Invoker<T> invoker = null;
         try {
             checkInvokers(invokers, invocation);
-            invoker = select(loadbalance, invocation, invokers, null);
+            Invoker<T> invoker = select(loadbalance, invocation, invokers, null);
             return invoker.invoke(invocation);
         } catch (Throwable e) {
             logger.error("Failback to invoke method " + invocation.getMethodName() + ", wait for retry in background. Ignored exception: "
                     + e.getMessage() + ", ", e);
-            addFailed(loadbalance, invocation, invokers, invoker);
+            addFailed(invocation, this);
             return new RpcResult(); // ignore
         }
     }
@@ -114,34 +113,27 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
     /**
      * RetryTimerTask
      */
-    private class RetryTimerTask implements TimerTask {
+    private static class RetryTimerTask implements TimerTask {
         private final Invocation invocation;
-        private final LoadBalance loadbalance;
-        private final List<Invoker<T>> invokers;
-        private final List<Invoker<T>> selectedInvokers = new ArrayList<>();
+        private final AbstractClusterInvoker<?> router;
         private final int retries;
         private final long tick;
-        private int retryTimes = 0;
+        private final AtomicInteger retryTimes = new AtomicInteger(0);
 
-        RetryTimerTask(LoadBalance loadbalance, Invocation invocation, List<Invoker<T>> invokers, Invoker<T> lastInvoker, int retries, long tick) {
-            this.loadbalance = loadbalance;
+        RetryTimerTask(Invocation invocation, AbstractClusterInvoker<?> router, int retries, long tick) {
             this.invocation = invocation;
-            this.invokers = invokers;
+            this.router = router;
             this.retries = retries;
             this.tick = tick;
-            selectedInvokers.add(lastInvoker);
         }
 
         @Override
-        public void run(Timeout timeout) {
+        public void run(Timeout timeout) throws Exception {
             try {
-                Invoker<T> retryInvoker = select(loadbalance, invocation, invokers, selectedInvokers);
-                selectedInvokers.clear();
-                selectedInvokers.add(retryInvoker);
-                retryInvoker.invoke(invocation);
+                router.invoke(invocation);
             } catch (Throwable e) {
                 logger.error("Failed retry to invoke method " + invocation.getMethodName() + ", waiting again.", e);
-                if ((++retryTimes) >= retries) {
+                if (retryTimes.incrementAndGet() >= retries) {
                     logger.error("Failed retry times exceed threshold (" + retries + "), We have to abandon, invocation->" + invocation);
                 } else {
                     rePut(timeout);

@@ -31,8 +31,6 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.given;
@@ -42,7 +40,7 @@ import static org.mockito.Mockito.mock;
 public class FailbackClusterInvokerTest {
 
     List<Invoker<FailbackClusterInvokerTest>> invokers = new ArrayList<Invoker<FailbackClusterInvokerTest>>();
-    URL url = URL.valueOf("test://test:11/test?retries=2&failbacktasks=2");
+    URL url = URL.valueOf("test://test:11/test");
     Invoker<FailbackClusterInvokerTest> invoker = mock(Invoker.class);
     RpcInvocation invocation = new RpcInvocation();
     Directory<FailbackClusterInvokerTest> dic;
@@ -78,7 +76,7 @@ public class FailbackClusterInvokerTest {
     }
 
     @Test
-    public void testInvokeException() {
+    public void testInvokeExceptoin() {
         resetInvokerToException();
         FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<FailbackClusterInvokerTest>(
                 dic);
@@ -87,7 +85,7 @@ public class FailbackClusterInvokerTest {
     }
 
     @Test()
-    public void testInvokeNoException() {
+    public void testInvokeNoExceptoin() {
 
         resetInvokerToNoException();
 
@@ -120,21 +118,15 @@ public class FailbackClusterInvokerTest {
     }
 
     @Test()
-    public void testRetryFailed() throws Exception{
-        //Test retries and
+    public void testRetryFailed() {
 
         resetInvokerToException();
 
         FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<FailbackClusterInvokerTest>(
                 dic);
         invoker.invoke(invocation);
-        invoker.invoke(invocation);
-        invoker.invoke(invocation);
         Assert.assertNull(RpcContext.getContext().getInvoker());
 //        invoker.retryFailed();// when retry the invoker which get from failed map already is not the mocked invoker,so
-        //Ensure that the main thread is online
-        CountDownLatch countDown = new CountDownLatch(1);
-        countDown.await(30000L, TimeUnit.MILLISECONDS);
         // it can be invoke successfully
     }
 }
