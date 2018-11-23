@@ -20,7 +20,6 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.CompositeConfiguration;
 import org.apache.dubbo.common.config.Environment;
-import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -256,6 +255,21 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
+    /**
+     * We only check boolean value at this moment.
+     *
+     * @param type
+     * @param value
+     * @return
+     */
+    private static boolean isTypeMatch(Class<?> type, String value) {
+        if ((type == boolean.class || type == Boolean.class)
+                && !("true".equals(value) || "false".equals(value))) {
+            return false;
+        }
+        return true;
+    }
+
     protected static void checkExtension(Class<?> type, String property, String value) {
         checkName(property, value);
         if (value != null && value.length() > 0
@@ -483,11 +497,9 @@ public abstract class AbstractConfig implements Serializable {
         init = true;
 
         try {
-            InmemoryConfiguration configuration = new InmemoryConfiguration(getPrefix(), getId());
-            configuration.addProperties(getMetaData());
-            CompositeConfiguration compositeConfiguration = Environment.getInstance().getStartupCompositeConf(getPrefix(), getId());
-            int index = Environment.getInstance().isConfigCenterFirst() ? 3 : 1;
-            compositeConfiguration.addConfiguration(index, configuration);
+            Environment env = Environment.getInstance();
+            env.addAppConfig(getPrefix(), getId(), getMetaData());
+            CompositeConfiguration compositeConfiguration = env.getStartupCompositeConf(getPrefix(), getId());
 
             // loop methods, get override value and set the new value back to method
             Method[] methods = getClass().getMethods();
