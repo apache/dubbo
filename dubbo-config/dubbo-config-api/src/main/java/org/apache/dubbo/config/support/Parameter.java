@@ -42,6 +42,6 @@ public @interface Parameter {
 
     boolean append() default false;
 
-    boolean propertyKey() default true;
+    boolean useKeyAsProperty() default true;
 
 }

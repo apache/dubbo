@@ -61,7 +61,7 @@ public class Environment {
     public InmemoryConfiguration getExternalConfig(String prefix, String id) {
         return externalConfigs.computeIfAbsent(toKey(prefix, id), k -> {
             InmemoryConfiguration configuration = new InmemoryConfiguration(prefix, id);
-            configuration.addProperties(externalConfigurationMap);
+            configuration.setProperties(externalConfigurationMap);
             return configuration;
         });
     }
@@ -69,7 +69,7 @@ public class Environment {
     public InmemoryConfiguration getAppExternalConfig(String prefix, String id) {
         return appExternalConfigs.computeIfAbsent(toKey(prefix, id), k -> {
             InmemoryConfiguration configuration = new InmemoryConfiguration(prefix, id);
-            configuration.addProperties(appExternalConfigurationMap);
+            configuration.setProperties(appExternalConfigurationMap);
             return configuration;
         });
     }
@@ -82,11 +82,11 @@ public class Environment {
         return appConfigs.get(toKey(prefix, id));
     }
 
-    public synchronized void setExternalConfig(Map<String, String> externalConfiguration) {
+    public void setExternalConfig(Map<String, String> externalConfiguration) {
         this.externalConfigurationMap = externalConfiguration;
     }
 
-    public synchronized void setAppExternalConfig(Map<String, String> appExternalConfiguration) {
+    public void setAppExternalConfig(Map<String, String> appExternalConfiguration) {
         this.appExternalConfigurationMap = appExternalConfiguration;
     }
 
@@ -167,5 +167,15 @@ public class Environment {
 
     public void setDynamicConfiguration(Configuration dynamicConfiguration) {
         this.dynamicConfiguration = dynamicConfiguration;
+    }
+
+    // For test
+    public void clearExternalConfigs() {
+        this.externalConfigs.clear();
+    }
+
+    // For test
+    public void clearAppExternalConfigs() {
+        this.appExternalConfigs.clear();
     }
 }

@@ -406,6 +406,7 @@ public abstract class AbstractConfig implements Serializable {
      * // FIXME: this method should be completely replaced by appendParameters
      * @see AbstractConfig#appendParameters(Map, Object, String)
      *
+     * Notice! This method should include all properties in the returning map, treat @Parameter differently compared to appendParameters.
      * @return
      */
     public Map<String, String> getMetaData() {
@@ -423,7 +424,7 @@ public abstract class AbstractConfig implements Serializable {
                     String prop = calculatePropertyFromGetter(name);
                     String key;
                     Parameter parameter = method.getAnnotation(Parameter.class);
-                    if (parameter != null && parameter.key().length() > 0 && parameter.propertyKey()) {
+                    if (parameter != null && parameter.key().length() > 0 && parameter.useKeyAsProperty()) {
                         key = parameter.key();
                     } else {
                         key = prop;
@@ -532,7 +533,7 @@ public abstract class AbstractConfig implements Serializable {
             getter = clazz.getMethod("is" + propertyName);
         }
         Parameter parameter = getter.getAnnotation(Parameter.class);
-        if (parameter != null && StringUtils.isNotEmpty(parameter.key()) && parameter.propertyKey()) {
+        if (parameter != null && StringUtils.isNotEmpty(parameter.key()) && parameter.useKeyAsProperty()) {
             propertyName = parameter.key();
         } else {
             propertyName = propertyName.toLowerCase();

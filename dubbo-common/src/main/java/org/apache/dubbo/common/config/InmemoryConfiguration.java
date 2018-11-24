@@ -51,6 +51,17 @@ public class InmemoryConfiguration extends AbstractPrefixConfiguration {
      * Add a set of properties into the store
      */
     public void addProperties(Map<String, String> properties) {
-        store.putAll(properties);
+        if (properties != null) {
+            this.store.putAll(properties);
+        }
+    }
+
+    /**
+     * set store
+     */
+    public void setProperties(Map<String, String> properties) {
+        if (properties != null) {
+            this.store = properties;
+        }
     }
 }
