@@ -187,28 +187,21 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         //Allocating one in advance, this list is certain to be used.
         List<Invoker<T>> reselectInvokers = new ArrayList<Invoker<T>>(invokers.size() > 1 ? (invokers.size() - 1) : invokers.size());
 
-        //First, try picking a invoker not in `selected`.
-        if (availablecheck) { // invoker.isAvailable() should be checked
-            for (Invoker<T> invoker : invokers) {
-                if (invoker.isAvailable()) {
-                    if (selected == null || !selected.contains(invoker)) {
-                        reselectInvokers.add(invoker);
-                    }
-                }
+        // First, try picking a invoker not in `selected`.
+        for (Invoker<T> invoker : invokers) {
+            if (availablecheck && !invoker.isAvailable()) {
+                continue;
             }
-            if (!reselectInvokers.isEmpty()) {
-                return loadbalance.select(reselectInvokers, getUrl(), invocation);
-            }
-        } else { // do not check invoker.isAvailable()
-            for (Invoker<T> invoker : invokers) {
-                if (selected == null || !selected.contains(invoker)) {
-                    reselectInvokers.add(invoker);
-                }
-            }
-            if (!reselectInvokers.isEmpty()) {
-                return loadbalance.select(reselectInvokers, getUrl(), invocation);
+
+            if (selected == null || !selected.contains(invoker)) {
+                reselectInvokers.add(invoker);
             }
         }
+
+        if (!reselectInvokers.isEmpty()) {
+            return loadbalance.select(reselectInvokers, getUrl(), invocation);
+        }
+
         // Just pick an available invoker using loadbalance policy
         {
             if (selected != null) {
