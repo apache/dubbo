@@ -57,36 +57,11 @@ public class ConfigCenterConfig extends AbstractConfig {
     // customized parameters
     private Map<String, String> parameters;
 
-//    private RegistryConfig registry;
-
     public ConfigCenterConfig() {
     }
 
     public void init() {
-        DynamicConfiguration dynamicConfiguration = startDynamicConfiguration();
-        String configContent = dynamicConfiguration.getConfig(configfile, group);
-
-        String appGroup = getApplicationName();
-        String appConfigContent = null;
-        if (StringUtils.isNotEmpty(appGroup)) {
-            appConfigContent = dynamicConfiguration.getConfig
-                    (
-                            StringUtils.isNotEmpty(localconfigfile) ? localconfigfile : configfile,
-                            appGroup
-                    );
-        }
-        try {
-            Environment.getInstance().setConfigCenterFirst(priority);
-            Environment.getInstance().updateExternalConfigurationMap(parseProperties(configContent));
-            Environment.getInstance().updateAppExternalConfigurationMap(parseProperties(appConfigContent));
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to parse configurations from Config Center.", e);
-        }
-    }
-
-    private DynamicConfiguration startDynamicConfiguration() {
         // give jvm properties the chance to override local configs, e.g., -Ddubbo.configcenter.config.priority
-
         refresh();
         // try to use registryConfig as the default configcenter, only applies to zookeeper.
         if (!isValid() && registry != null && registry.isZookeeperProtocol()) {
@@ -95,8 +70,30 @@ public class ConfigCenterConfig extends AbstractConfig {
         }
 //        checkConfigCenter();
 
-        URL url = toConfigUrl();
+        if (isValid()) {
+            DynamicConfiguration dynamicConfiguration = startDynamicConfiguration(toConfigUrl());
+            String configContent = dynamicConfiguration.getConfig(configfile, group);
 
+            String appGroup = getApplicationName();
+            String appConfigContent = null;
+            if (StringUtils.isNotEmpty(appGroup)) {
+                appConfigContent = dynamicConfiguration.getConfig
+                        (
+                                StringUtils.isNotEmpty(localconfigfile) ? localconfigfile : configfile,
+                                appGroup
+                        );
+            }
+            try {
+                Environment.getInstance().setConfigCenterFirst(priority);
+                Environment.getInstance().updateExternalConfigurationMap(parseProperties(configContent));
+                Environment.getInstance().updateAppExternalConfigurationMap(parseProperties(appConfigContent));
+            } catch (IOException e) {
+                throw new IllegalStateException("Failed to parse configurations from Config Center.", e);
+            }
+        }
+    }
+
+    private DynamicConfiguration startDynamicConfiguration(URL url) {
         DynamicConfiguration dynamicConfiguration = ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getExtension(url.getProtocol());
         // TODO, maybe we need a factory to do this?
         dynamicConfiguration.initWith(url);

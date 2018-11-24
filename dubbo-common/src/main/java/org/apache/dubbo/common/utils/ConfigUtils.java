@@ -21,6 +21,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
@@ -218,7 +219,7 @@ public class ConfigUtils {
     public static Properties loadProperties(String fileName, boolean allowMultiFile, boolean optional) {
         Properties properties = new Properties();
         // add scene judgement in windows environment Fix 2557
-        if (fileName.startsWith("/") || fileName.matches("^[A-z]:\\\\\\S+$")) {
+        if (checkFileNameExist(fileName)) {
             try {
                 FileInputStream input = new FileInputStream(fileName);
                 try {
@@ -291,6 +292,18 @@ public class ConfigUtils {
 
         return properties;
     }
+
+    /**
+     * check if the fileName can be found in filesystem
+     *
+     * @param fileName
+     * @return
+     */
+    private static boolean checkFileNameExist(String fileName) {
+        File file = new File(fileName);
+        return file.exists();
+    }
+
 
     public static int getPid() {
         if (PID < 0) {

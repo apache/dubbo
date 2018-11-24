@@ -175,4 +175,5 @@ public class RegistryConfigTest {
         registry.setDefault(true);
         assertThat(registry.isDefault(), is(true));
     }
+
 }

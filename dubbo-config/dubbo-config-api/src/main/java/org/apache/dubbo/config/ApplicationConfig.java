@@ -95,7 +95,7 @@ public class ApplicationConfig extends AbstractConfig {
         setName(name);
     }
 
-    @Parameter(key = Constants.APPLICATION_KEY, required = true, propertyKey = false)
+    @Parameter(key = Constants.APPLICATION_KEY, required = true, useKeyAsProperty = false)
     public String getName() {
         return name;
     }
