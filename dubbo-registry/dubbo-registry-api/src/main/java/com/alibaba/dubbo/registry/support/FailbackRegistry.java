@@ -38,7 +38,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * FailbackRegistry. (SPI, Prototype, ThreadSafe)
- *
  */
 public abstract class FailbackRegistry extends AbstractRegistry {
 
@@ -103,13 +102,22 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         return failedNotified;
     }
 
-    private void addFailedSubscribed(URL url, NotifyListener listener) {
-        Set<NotifyListener> listeners = failedSubscribed.get(url);
+    private void addFailedNotifyListener(URL url, NotifyListener listener,
+                                         ConcurrentMap<URL, Set<NotifyListener>> failedSet) {
+        Set<NotifyListener> listeners = failedSet.get(url);
         if (listeners == null) {
-            failedSubscribed.putIfAbsent(url, new ConcurrentHashSet<NotifyListener>());
-            listeners = failedSubscribed.get(url);
+            failedSet.putIfAbsent(url, new ConcurrentHashSet<NotifyListener>());
+            listeners = failedSet.get(url);
         }
         listeners.add(listener);
+    }
+
+    private void removeNullNotifyListener(Map failed) {
+        for (Map.Entry<URL, Set<NotifyListener>> entry : new HashMap<URL, Set<NotifyListener>>(failed).entrySet()) {
+            if (entry.getValue() == null || entry.getValue().size() == 0) {
+                failed.remove(entry.getKey());
+            }
+        }
     }
 
     private void removeFailedSubscribed(URL url, NotifyListener listener) {
@@ -217,7 +225,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             }
 
             // Record a failed registration request to a failed list, retry regularly
-            addFailedSubscribed(url, listener);
+            addFailedNotifyListener(url, listener, failedSubscribed);
         }
     }
 
@@ -245,12 +253,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             }
 
             // Record a failed registration request to a failed list, retry regularly
-            Set<NotifyListener> listeners = failedUnsubscribed.get(url);
-            if (listeners == null) {
-                failedUnsubscribed.putIfAbsent(url, new ConcurrentHashSet<NotifyListener>());
-                listeners = failedUnsubscribed.get(url);
-            }
-            listeners.add(listener);
+            addFailedNotifyListener(url, listener, failedUnsubscribed);
         }
     }
 
@@ -301,7 +304,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             for (Map.Entry<URL, Set<NotifyListener>> entry : recoverSubscribed.entrySet()) {
                 URL url = entry.getKey();
                 for (NotifyListener listener : entry.getValue()) {
-                    addFailedSubscribed(url, listener);
+                    addFailedNotifyListener(url, listener, failedSubscribed);
                 }
             }
         }
@@ -351,11 +354,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
         if (!failedSubscribed.isEmpty()) {
             Map<URL, Set<NotifyListener>> failed = new HashMap<URL, Set<NotifyListener>>(failedSubscribed);
-            for (Map.Entry<URL, Set<NotifyListener>> entry : new HashMap<URL, Set<NotifyListener>>(failed).entrySet()) {
-                if (entry.getValue() == null || entry.getValue().size() == 0) {
-                    failed.remove(entry.getKey());
-                }
-            }
+            removeNullNotifyListener(failed);
             if (failed.size() > 0) {
                 if (logger.isInfoEnabled()) {
                     logger.info("Retry subscribe " + failed);
@@ -380,11 +379,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
         if (!failedUnsubscribed.isEmpty()) {
             Map<URL, Set<NotifyListener>> failed = new HashMap<URL, Set<NotifyListener>>(failedUnsubscribed);
-            for (Map.Entry<URL, Set<NotifyListener>> entry : new HashMap<URL, Set<NotifyListener>>(failed).entrySet()) {
-                if (entry.getValue() == null || entry.getValue().isEmpty()) {
-                    failed.remove(entry.getKey());
-                }
-            }
+            removeNullNotifyListener(failed);
             if (failed.size() > 0) {
                 if (logger.isInfoEnabled()) {
                     logger.info("Retry unsubscribe " + failed);
