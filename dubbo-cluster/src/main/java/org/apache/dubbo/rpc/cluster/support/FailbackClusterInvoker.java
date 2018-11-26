@@ -57,13 +57,13 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
     public FailbackClusterInvoker(Directory<T> directory) {
         super(directory);
 
-        int retriesConfig = getUrl().getParameter(Constants.RETRIES_KEY, Constants.DEFAULT_FAIL_RETRY_SIZE) + 1;
+        int retriesConfig = getUrl().getParameter(Constants.RETRIES_KEY, Constants.DEFAULT_FAILBACK_TIMES);
         if (retriesConfig <= 0) {
-            retriesConfig = Constants.DEFAULT_FAIL_RETRY_SIZE;
+            retriesConfig = Constants.DEFAULT_FAILBACK_TIMES;
         }
-        int failCapacitySizeConfig = getUrl().getParameter(Constants.FAIL_CAPACITY_KEY, Constants.DEFAULT_FAIL_CAPACITY_SIZE);
+        int failCapacitySizeConfig = getUrl().getParameter(Constants.FAIL_BACK_TASKS_KEY, Constants.DEFAULT_FAILBACK_TASKS);
         if (failCapacitySizeConfig <= 0) {
-            failCapacitySizeConfig = Constants.DEFAULT_FAIL_RETRY_SIZE;
+            failCapacitySizeConfig = Constants.DEFAULT_FAILBACK_TASKS;
         }
         retries = retriesConfig;
         failCapacitySize = failCapacitySizeConfig;
