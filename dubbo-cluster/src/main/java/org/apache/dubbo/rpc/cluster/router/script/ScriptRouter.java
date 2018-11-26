@@ -26,7 +26,12 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Router;
 
-import javax.script.*;
+import javax.script.Bindings;
+import javax.script.Compilable;
+import javax.script.CompiledScript;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -128,7 +133,7 @@ public class ScriptRouter implements Router {
             }
             return 0;
         } else {
-            return (this.priority > o.getPriority() ? 1 : -1);
+            return this.priority > o.getPriority() ? 1 : -1;
         }
     }
 }

@@ -40,7 +40,6 @@ import java.util.regex.Pattern;
 
 /**
  * ConditionRouter
- *
  */
 public class ConditionRouter implements Router {
 
@@ -192,13 +191,13 @@ public class ConditionRouter implements Router {
         if (o == null) {
             throw new IllegalArgumentException();
         }
-        if(o.getUrl()==null){
+        if (o.getUrl() == null) {
             return -1;
         }
-        if (this.priority == o.getPriority()){
+        if (this.priority == o.getPriority()) {
             return url.toFullString().compareTo(o.getUrl().toFullString());
-        }else{
-            return (this.priority > o.getPriority() ? 1 : -1) ;
+        } else {
+            return this.priority > o.getPriority() ? 1 : -1;
         }
     }
 

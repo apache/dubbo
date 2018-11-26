@@ -113,7 +113,7 @@ public class TagRouter implements Router {
         if (this.priority == o.getPriority()) {
             return url.toFullString().compareTo(o.getUrl().toFullString());
         } else {
-            return (this.priority > o.getPriority() ? 1 : -1);
+            return this.priority > o.getPriority() ? 1 : -1;
         }
     }
 }
