@@ -50,7 +50,7 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
     private final int retries;
 
-    private final int failCapacitySize;
+    private final int failbacktasks;
 
     private volatile Timer failTimer;
 
@@ -61,12 +61,12 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
         if (retriesConfig <= 0) {
             retriesConfig = Constants.DEFAULT_FAILBACK_TIMES;
         }
-        int failCapacitySizeConfig = getUrl().getParameter(Constants.FAIL_BACK_TASKS_KEY, Constants.DEFAULT_FAILBACK_TASKS);
-        if (failCapacitySizeConfig <= 0) {
-            failCapacitySizeConfig = Constants.DEFAULT_FAILBACK_TASKS;
+        int failbacktasksConfig = getUrl().getParameter(Constants.FAIL_BACK_TASKS_KEY, Constants.DEFAULT_FAILBACK_TASKS);
+        if (failbacktasksConfig <= 0) {
+            failbacktasksConfig = Constants.DEFAULT_FAILBACK_TASKS;
         }
         retries = retriesConfig;
-        failCapacitySize = failCapacitySizeConfig;
+        failbacktasks = failbacktasksConfig;
     }
 
     private void addFailed(Invocation invocation, AbstractClusterInvoker<?> router) {
@@ -76,7 +76,7 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
                     failTimer = new HashedWheelTimer(
                             new NamedThreadFactory("failback-cluster-timer", true),
                             1,
-                            TimeUnit.SECONDS, 32, failCapacitySize);
+                            TimeUnit.SECONDS, 32, failbacktasks);
                 }
             }
         }
