@@ -80,7 +80,7 @@ public class TagRouter implements Router {
                         }
                     }
                 }
-            // Normal request
+                // Normal request
             } else {
                 for (Invoker<T> invoker : invokers) {
                     // Can't access tag invoker,only normal invoker should be selected
@@ -98,11 +98,22 @@ public class TagRouter implements Router {
     }
 
     @Override
+    public Integer getPriority() {
+        return priority;
+    }
+
+    @Override
     public int compareTo(Router o) {
-        if (o == null || o.getClass() != TagRouter.class) {
-            return 1;
+        if (o == null) {
+            throw new IllegalArgumentException();
         }
-        TagRouter c = (TagRouter) o;
-        return this.priority == c.priority ? url.toFullString().compareTo(c.url.toFullString()) : (this.priority > c.priority ? 1 : -1);
+        if (o.getUrl() == null) {
+            return -1;
+        }
+        if (this.priority == o.getPriority()) {
+            return url.toFullString().compareTo(o.getUrl().toFullString());
+        } else {
+            return (this.priority > o.getPriority() ? 1 : -1);
+        }
     }
 }

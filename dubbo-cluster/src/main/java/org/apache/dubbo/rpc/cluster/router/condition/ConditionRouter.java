@@ -178,17 +178,28 @@ public class ConditionRouter implements Router {
     }
 
     @Override
+    public Integer getPriority() {
+        return priority;
+    }
+
+    @Override
     public URL getUrl() {
         return url;
     }
 
     @Override
     public int compareTo(Router o) {
-        if (o == null || o.getClass() != ConditionRouter.class) {
-            return 1;
+        if (o == null) {
+            throw new IllegalArgumentException();
         }
-        ConditionRouter c = (ConditionRouter) o;
-        return this.priority == c.priority ? url.toFullString().compareTo(c.url.toFullString()) : (this.priority > c.priority ? 1 : -1);
+        if(o.getUrl()==null){
+            return -1;
+        }
+        if (this.priority == o.getPriority()){
+            return url.toFullString().compareTo(o.getUrl().toFullString());
+        }else{
+            return (this.priority > o.getPriority() ? 1 : -1) ;
+        }
     }
 
     boolean matchWhen(URL url, Invocation invocation) {

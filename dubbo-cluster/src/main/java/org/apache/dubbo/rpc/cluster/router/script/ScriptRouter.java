@@ -26,12 +26,7 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Router;
 
-import javax.script.Bindings;
-import javax.script.Compilable;
-import javax.script.CompiledScript;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
+import javax.script.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -40,7 +35,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * ScriptRouter
- *
  */
 public class ScriptRouter implements Router {
 
@@ -115,12 +109,26 @@ public class ScriptRouter implements Router {
     }
 
     @Override
-    public int compareTo(Router o) {
-        if (o == null || o.getClass() != ScriptRouter.class) {
-            return 1;
-        }
-        ScriptRouter c = (ScriptRouter) o;
-        return this.priority == c.priority ? rule.compareTo(c.rule) : (this.priority > c.priority ? 1 : -1);
+    public Integer getPriority() {
+        return priority;
     }
 
+    @Override
+    public int compareTo(Router o) {
+        if (o == null) {
+            throw new IllegalArgumentException();
+        }
+        if (o.getUrl() == null) {
+            return -1;
+        }
+        if (this.priority == o.getPriority()) {
+            if (o instanceof ScriptRouter) {
+                ScriptRouter c = (ScriptRouter) o;
+                return rule.compareTo(c.rule);
+            }
+            return 0;
+        } else {
+            return (this.priority > o.getPriority() ? 1 : -1);
+        }
+    }
 }
