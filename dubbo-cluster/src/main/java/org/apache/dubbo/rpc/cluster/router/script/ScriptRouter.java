@@ -124,9 +124,6 @@ public class ScriptRouter implements Router {
             throw new IllegalArgumentException();
         }
         if (this.priority == o.getPriority()) {
-            if (o.getUrl() == null) {
-                return -1;
-            }
             if (o instanceof ScriptRouter) {
                 ScriptRouter c = (ScriptRouter) o;
                 return rule.compareTo(c.rule);
