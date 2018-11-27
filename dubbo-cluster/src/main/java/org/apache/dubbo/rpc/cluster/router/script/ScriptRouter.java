@@ -123,10 +123,10 @@ public class ScriptRouter implements Router {
         if (o == null) {
             throw new IllegalArgumentException();
         }
-        if (o.getUrl() == null) {
-            return -1;
-        }
         if (this.priority == o.getPriority()) {
+            if (o.getUrl() == null) {
+                return -1;
+            }
             if (o instanceof ScriptRouter) {
                 ScriptRouter c = (ScriptRouter) o;
                 return rule.compareTo(c.rule);

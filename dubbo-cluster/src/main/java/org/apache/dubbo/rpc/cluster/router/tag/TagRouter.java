@@ -107,10 +107,10 @@ public class TagRouter implements Router {
         if (o == null) {
             throw new IllegalArgumentException();
         }
-        if (o.getUrl() == null) {
-            return -1;
-        }
         if (this.priority == o.getPriority()) {
+            if (o.getUrl() == null) {
+                return -1;
+            }
             return url.toFullString().compareTo(o.getUrl().toFullString());
         } else {
             return this.priority > o.getPriority() ? 1 : -1;
