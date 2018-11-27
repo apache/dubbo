@@ -51,7 +51,11 @@ public class FileNetworkerTest {
 
     @Test
     public void testJoin() throws RemotingException, InterruptedException, IOException {
-        final String groupURL = "file://" + folder.newFile();
+        String filePath = folder.newFile().getAbsolutePath();
+        if (!filePath.startsWith("/")) {
+            filePath = "/" + filePath;
+        }
+        final String groupURL = "file://" + filePath;
 
         FileNetworker networker = new FileNetworker();
         Group group = networker.lookup(URL.valueOf(groupURL));
