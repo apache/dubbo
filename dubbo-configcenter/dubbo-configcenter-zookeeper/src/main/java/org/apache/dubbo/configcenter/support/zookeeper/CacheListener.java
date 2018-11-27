@@ -20,7 +20,6 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
 import org.apache.curator.framework.recipes.cache.TreeCacheListener;
-import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.ConfigChangeType;
