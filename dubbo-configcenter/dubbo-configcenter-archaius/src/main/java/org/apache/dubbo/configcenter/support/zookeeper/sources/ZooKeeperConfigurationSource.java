@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.configcenter.support.archaius.sources;
+package org.apache.dubbo.configcenter.support.zookeeper.sources;
 
 import com.google.common.io.Closeables;
 import com.netflix.config.WatchedConfigurationSource;
@@ -185,7 +185,7 @@ public class ZooKeeperConfigurationSource implements WatchedConfigurationSource,
             }
         }, executor);
 
-        // passing true to trigger an initial rebuild upon starting.  (blocking call)
+        // it's not blocking, so we use an extra latch 'initializedLatch' to make sure cache fully initialized before use.
         treeCache.start();
     }
 
