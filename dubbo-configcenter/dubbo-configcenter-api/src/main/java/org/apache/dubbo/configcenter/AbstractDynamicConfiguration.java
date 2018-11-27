@@ -26,8 +26,8 @@ import java.util.concurrent.ConcurrentMap;
  * Dynamic configuration template class. The concrete implementation needs to provide implementation for three methods.
  *
  * @see AbstractDynamicConfiguration#getTargetConfig(String, String, long)
- * @see AbstractDynamicConfiguration#addListener(String, ConfigurationListener)
- * @see AbstractDynamicConfiguration#createTargetListener(String, ConfigurationListener)
+ * @see AbstractDynamicConfiguration#addConfigurationListener(TargetListener, ConfigurationListener)
+ * @see AbstractDynamicConfiguration#createTargetListener(String)
  */
 public abstract class AbstractDynamicConfiguration<TargetListener> extends AbstractConfiguration
         implements DynamicConfiguration {
@@ -36,7 +36,7 @@ public abstract class AbstractDynamicConfiguration<TargetListener> extends Abstr
     protected URL url;
 
     // One key can register multiple target listeners, but one target listener only maps to one configuration listener
-    private ConcurrentMap<String, ConcurrentMap<ConfigurationListener, TargetListener>> targetListeners =
+    protected ConcurrentMap<String, TargetListener> targetListeners =
             new ConcurrentHashMap<>();
 
     public AbstractDynamicConfiguration() {
@@ -49,11 +49,8 @@ public abstract class AbstractDynamicConfiguration<TargetListener> extends Abstr
 
     @Override
     public void addListener(String key, ConfigurationListener listener) {
-        ConcurrentMap<ConfigurationListener, TargetListener> listeners = targetListeners.computeIfAbsent(key,
-                k -> new ConcurrentHashMap<>());
-        TargetListener targetListener = listeners.computeIfAbsent(listener,
-                k -> createTargetListener(key, listener));
-        addTargetListener(key, targetListener);
+        TargetListener targetListener = targetListeners.computeIfAbsent(key, this::createTargetListener);
+        addConfigurationListener(key, targetListener, listener);
     }
 
     @Override
@@ -88,6 +85,13 @@ public abstract class AbstractDynamicConfiguration<TargetListener> extends Abstr
         }
     }
 
+    @Override
+    public void removeListener(String key) {
+
+    }
+
+    protected abstract void recover();
+
     /**
      * Fetch dynamic configuration from backend config storage. If timeout exceeds, exception should be thrown.
      *
@@ -101,20 +105,19 @@ public abstract class AbstractDynamicConfiguration<TargetListener> extends Abstr
     /**
      * Register a native listener to the backend config storage so that Dubbo has chance to get notified when the
      * value changes.
-     *
-     * @param key      property key listener is interested.
-     * @param listener native listener for the backend config storage
+     * @param key
+     * @param targetListener Implementation dependent listener, such as, zookeeper watcher, Apollo listener, ...
+     * @param configurationListener Listener in Dubbo that will handle notification.
      */
-    protected abstract void addTargetListener(String key, TargetListener listener);
+    protected abstract void addConfigurationListener(String key, TargetListener targetListener, ConfigurationListener configurationListener);
 
     /**
      * Create a native listener for the backend config storage, eventually ConfigurationListener will get notified once
      * the value changes.
      *
      * @param key      property key the native listener will listen on
-     * @param listener ConfigurationListener instance
      * @return native listener for the backend config storage
      */
-    protected abstract TargetListener createTargetListener(String key, ConfigurationListener listener);
+    protected abstract TargetListener createTargetListener(String key);
 
 }

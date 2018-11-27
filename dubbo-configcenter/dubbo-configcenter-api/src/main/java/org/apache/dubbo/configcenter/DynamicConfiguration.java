@@ -41,6 +41,8 @@ public interface DynamicConfiguration extends Configuration {
      */
     void addListener(String key, ConfigurationListener listener);
 
+    void removeListener(String key);
+
     /**
      * Get the configuration mapped to the given key
      *

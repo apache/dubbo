@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.configcenter.support.archaius;
+package org.apache.dubbo.configcenter.support.zookeeper;
 
 import com.netflix.config.ConfigurationManager;
 import com.netflix.config.DynamicPropertyFactory;
@@ -24,26 +24,29 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.configcenter.AbstractDynamicConfiguration;
 import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.ConfigChangeType;
 import org.apache.dubbo.configcenter.ConfigType;
 import org.apache.dubbo.configcenter.ConfigurationListener;
-import org.apache.dubbo.configcenter.support.archaius.sources.ZooKeeperConfigurationSource;
+import org.apache.dubbo.configcenter.support.zookeeper.sources.ZooKeeperConfigurationSource;
+
+import java.util.Set;
 
 import static org.apache.dubbo.common.Constants.CONFIG_NAMESPACE_KEY;
-import static org.apache.dubbo.configcenter.support.archaius.sources.ZooKeeperConfigurationSource.ARCHAIUS_CONFIG_CHECK_KEY;
-import static org.apache.dubbo.configcenter.support.archaius.sources.ZooKeeperConfigurationSource.ARCHAIUS_CONFIG_ROOT_PATH_KEY;
-import static org.apache.dubbo.configcenter.support.archaius.sources.ZooKeeperConfigurationSource.ARCHAIUS_SOURCE_ADDRESS_KEY;
-import static org.apache.dubbo.configcenter.support.archaius.sources.ZooKeeperConfigurationSource.DEFAULT_CONFIG_ROOT_PATH;
+import static org.apache.dubbo.configcenter.support.zookeeper.sources.ZooKeeperConfigurationSource.ARCHAIUS_CONFIG_CHECK_KEY;
+import static org.apache.dubbo.configcenter.support.zookeeper.sources.ZooKeeperConfigurationSource.ARCHAIUS_CONFIG_ROOT_PATH_KEY;
+import static org.apache.dubbo.configcenter.support.zookeeper.sources.ZooKeeperConfigurationSource.ARCHAIUS_SOURCE_ADDRESS_KEY;
+import static org.apache.dubbo.configcenter.support.zookeeper.sources.ZooKeeperConfigurationSource.DEFAULT_CONFIG_ROOT_PATH;
 
 /**
  * Archaius supports various sources and it's extensiable: JDBC, ZK, Properties, ..., so should we make it extensiable?
  * FIXME: we should get rid of Archaius or move it to eco system since Archaius is out of maintenance, instead, we
  * should rely on curator-x-async which looks quite promising.
  */
-public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration<Runnable> {
+public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration<ArchaiusDynamicConfiguration.ArchaiusListener> {
     private static final Logger logger = LoggerFactory.getLogger(ArchaiusDynamicConfiguration.class);
 
     public ArchaiusDynamicConfiguration() {
@@ -107,37 +110,35 @@ public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration<R
     }
 
     @Override
-    protected void addTargetListener(String key, Runnable runnable) {
-        DynamicStringProperty prop = DynamicPropertyFactory.getInstance()
-                .getStringProperty(key, null);
-        prop.addCallback(runnable);
+    protected void addConfigurationListener(String key, ArchaiusListener targetListener, ConfigurationListener configurationListener) {
+        targetListener.addListener(configurationListener);
     }
 
     @Override
-    protected Runnable createTargetListener(String key, ConfigurationListener listener) {
-        return new ArchaiusListener(key, listener);
+    protected ArchaiusListener createTargetListener(String key) {
+        ArchaiusListener archaiusListener = new ArchaiusListener(key);
+        DynamicStringProperty prop = DynamicPropertyFactory.getInstance()
+                .getStringProperty(key, null);
+        prop.addCallback(archaiusListener);
+        return archaiusListener;
     }
 
-    private class ArchaiusListener implements Runnable {
-        private ConfigurationListener listener;
+    @Override
+    protected void recover() {
+        // FIXME will Archaius recover automatically?
+    }
+
+    public class ArchaiusListener implements Runnable {
+        private Set<ConfigurationListener> listeners = new ConcurrentHashSet<>();
         private String key;
         private ConfigType type;
 
-        public ArchaiusListener(String key, ConfigurationListener listener) {
+        public ArchaiusListener(String key) {
             this.key = key;
-            this.listener = listener;
-            // Maybe we no longer need to identify the type of change. Because there's no scenario that a callback
-            // will subscribe for both configurators and routers
-            if (key.endsWith(Constants.CONFIGURATORS_SUFFIX)) {
-                type = ConfigType.CONFIGURATORS;
-            } else {
-                /**
-                 * used for all router rules:
-                 * {@link Constants.ROUTERS_SUFFIX}
-                 * {@link org.apache.dubbo.rpc.cluster.router.tag.TagRouter.TAGRULE_DATAID}
-                 */
-                type = ConfigType.ROUTERS;
-            }
+        }
+
+        public void addListener(ConfigurationListener listener) {
+            this.listeners.add(listener);
         }
 
         @Override
@@ -145,10 +146,9 @@ public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration<R
             DynamicStringProperty prop = DynamicPropertyFactory.getInstance()
                     .getStringProperty(key, null);
             String newValue = prop.get();
-            ConfigChangeEvent event = new ConfigChangeEvent(key, newValue, type);
+            ConfigChangeEvent event = new ConfigChangeEvent(key, newValue);
             if (newValue == null) {
                 event.setChangeType(ConfigChangeType.DELETED);
-                listener.process(event);
             } else {
                 if (newValue.equals("")) {
                     logger.warn("an empty rule is received for " + key + ", the current working rule is unknown, " +
@@ -156,8 +156,8 @@ public class ArchaiusDynamicConfiguration extends AbstractDynamicConfiguration<R
                     return;
                 }
                 event.setChangeType(ConfigChangeType.MODIFIED);
-                listener.process(event);
             }
+            listeners.forEach(listener -> listener.process(event));
         }
     }
 }

@@ -25,16 +25,14 @@ public class ConfigChangeEvent {
     private String key;
     private String newValue;
     private ConfigChangeType changeType;
-    private ConfigType type;
 
-    public ConfigChangeEvent(String key, String value, ConfigType type) {
-        this(key, value, type, ConfigChangeType.MODIFIED);
+    public ConfigChangeEvent(String key, String value) {
+        this(key, value, ConfigChangeType.MODIFIED);
     }
 
-    public ConfigChangeEvent(String key, String value, ConfigType type, ConfigChangeType changeType) {
+    public ConfigChangeEvent(String key, String value, ConfigChangeType changeType) {
         this.key = key;
         this.newValue = value;
-        this.type = type;
         this.changeType = changeType;
     }
 
@@ -60,13 +58,5 @@ public class ConfigChangeEvent {
 
     public void setChangeType(ConfigChangeType changeType) {
         this.changeType = changeType;
-    }
-
-    public ConfigType getType() {
-        return type;
-    }
-
-    public void setType(ConfigType type) {
-        this.type = type;
     }
 }

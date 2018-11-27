@@ -22,7 +22,6 @@ import com.ctrip.framework.apollo.ConfigService;
 import com.ctrip.framework.apollo.enums.ConfigSourceType;
 import com.ctrip.framework.apollo.enums.PropertyChangeType;
 import com.ctrip.framework.apollo.model.ConfigChange;
-
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
@@ -33,15 +32,13 @@ import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.ConfigChangeType;
 import org.apache.dubbo.configcenter.ConfigurationListener;
 
-import java.util.Collections;
-
-import static org.apache.dubbo.configcenter.ConfigType.CONFIGURATORS;
-import static org.apache.dubbo.configcenter.ConfigType.ROUTERS;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * Apollo implementation, https://github.com/ctripcorp/apollo
  */
-public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<ConfigChangeListener> {
+public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<ApolloDynamicConfiguration.ApolloListener> {
     private static final Logger logger = LoggerFactory.getLogger(ApolloDynamicConfiguration.class);
     private static final String APOLLO_ENV_KEY = "env";
     private static final String APOLLO_ADDR_KEY = "apollo.meta";
@@ -104,7 +101,7 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Con
     }
 
     /**
-     * This method will used by Configuration to get valid value at runtime.
+     * This method will be used by Configuration to get valid value at runtime.
      * The group is expected to be 'app level', which can be fetched from the 'config.appnamespace' in url if necessary.
      * But I think Apollo's inheritance feature of namespace can solve the problem .
      */
@@ -114,21 +111,31 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Con
     }
 
     @Override
-    protected void addTargetListener(String key, ConfigChangeListener listener) {
-        this.dubboConfig.addChangeListener(listener, Collections.singleton(key));
+    protected void addConfigurationListener(String key, ApolloListener listener, ConfigurationListener configurationListener) {
+        listener.addListener(configurationListener);
     }
 
     @Override
-    protected ConfigChangeListener createTargetListener(String key, ConfigurationListener listener) {
-        return new ApolloListener(listener);
+    protected ApolloListener createTargetListener(String key) {
+        ApolloListener listener = new ApolloListener();
+        this.dubboConfig.addChangeListener(listener);
+        return listener;
     }
 
-    private class ApolloListener implements ConfigChangeListener {
+    @Override
+    protected void recover() {
+        // Apollo will handle things well.
+    }
 
-        private ConfigurationListener listener;
+    public class ApolloListener implements ConfigChangeListener {
 
-        ApolloListener(ConfigurationListener listener) {
-            this.listener = listener;
+        private Set<ConfigurationListener> listeners = new CopyOnWriteArraySet<>();
+
+        ApolloListener() {
+        }
+
+        public void addListener(ConfigurationListener configurationListener) {
+            this.listeners.add(configurationListener);
         }
 
         @Override
@@ -140,13 +147,10 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Con
                             change.getOldValue() + ", the empty rule will not take effect.");
                     return;
                 }
-                // TODO Maybe we no longer need to identify the type of change. Because there's no scenario that
-                // a callback will subscribe for both configurators and routers
-                if (change.getPropertyName().endsWith(Constants.CONFIGURATORS_SUFFIX)) {
-                    listener.process(new ConfigChangeEvent(key, change.getNewValue(), CONFIGURATORS, getChangeType(change)));
-                } else {
-                    listener.process(new ConfigChangeEvent(key, change.getNewValue(), ROUTERS, getChangeType(change)));
-                }
+
+                listeners.forEach(
+                        listener -> listener.process(new ConfigChangeEvent(key, change.getNewValue(), getChangeType(change)))
+                );
             }
         }
 
