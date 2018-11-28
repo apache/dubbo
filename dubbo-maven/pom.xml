@@ -44,7 +44,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework</groupId>
-			<artifactId>spring</artifactId>
+			<artifactId>spring-context</artifactId>
 			<version>2.5.6.SEC03</version>
 		</dependency>
 		<dependency>
