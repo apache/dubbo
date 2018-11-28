@@ -41,9 +41,9 @@ public final class Version {
 
     /**
      * For protocol compatibility purpose.
-     * Because {@link #isSupportResponseAttatchment} is checked for every call, int compare expect to has higher performance than string.
+     * Because {@link #isSupportResponseAttachment} is checked for every call, int compare expect to has higher performance than string.
      */
-    private static final int LOWEST_VERSION_FOR_RESPONSE_ATTATCHMENT = 20002; // 2.0.2
+    private static final int LOWEST_VERSION_FOR_RESPONSE_ATTACHMENT = 20002; // 2.0.2
     private static final Map<String, Integer> VERSION2INT = new HashMap<String, Integer>();
 
     static {
@@ -62,7 +62,7 @@ public final class Version {
         return VERSION;
     }
 
-    public static boolean isSupportResponseAttatchment(String version) {
+    public static boolean isSupportResponseAttachment(String version) {
         if (version == null || version.length() == 0) {
             return false;
         }
@@ -72,7 +72,7 @@ public final class Version {
             return false;
         }
 
-        return iVersion >= LOWEST_VERSION_FOR_RESPONSE_ATTATCHMENT;
+        return iVersion >= LOWEST_VERSION_FOR_RESPONSE_ATTACHMENT;
     }
 
     public static int getIntVersion(String version) {

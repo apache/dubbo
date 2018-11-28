@@ -466,7 +466,7 @@ public class PojoUtils {
                                 try {
                                     field.set(dest, value);
                                 } catch (IllegalAccessException e) {
-                                    throw new RuntimeException("Failed to set filed " + name + " of pojo " + dest.getClass().getName() + " : " + e.getMessage(), e);
+                                    throw new RuntimeException("Failed to set field " + name + " of pojo " + dest.getClass().getName() + " : " + e.getMessage(), e);
                                 }
                             }
                         }
@@ -476,11 +476,11 @@ public class PojoUtils {
                     Object message = map.get("message");
                     if (message instanceof String) {
                         try {
-                            Field filed = Throwable.class.getDeclaredField("detailMessage");
-                            if (!filed.isAccessible()) {
-                                filed.setAccessible(true);
+                            Field field = Throwable.class.getDeclaredField("detailMessage");
+                            if (!field.isAccessible()) {
+                                field.setAccessible(true);
                             }
-                            filed.set(dest, message);
+                            field.set(dest, message);
                         } catch (Exception e) {
                         }
                     }
