@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -33,7 +34,6 @@ import org.apache.dubbo.rpc.cluster.filter.DemoService;
 import org.apache.dubbo.rpc.cluster.loadbalance.LeastActiveLoadBalance;
 import org.apache.dubbo.rpc.cluster.loadbalance.RandomLoadBalance;
 import org.apache.dubbo.rpc.cluster.loadbalance.RoundRobinLoadBalance;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -42,6 +42,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -59,9 +60,9 @@ public class AbstractClusterInvokerTest {
     List<Invoker<IHelloService>> selectedInvokers = new ArrayList<Invoker<IHelloService>>();
     AbstractClusterInvoker<IHelloService> cluster;
     AbstractClusterInvoker<IHelloService> cluster_nocheck;
-    Directory<IHelloService> dic;
+    StaticDirectory<IHelloService> dic;
     RpcInvocation invocation = new RpcInvocation();
-    URL url = URL.valueOf("registry://localhost:9090");
+    URL url = URL.valueOf("registry://localhost:9090/org.apache.dubbo.rpc.cluster.support.AbstractClusterInvokerTest.IHelloService");
 
     Invoker<IHelloService> invoker1;
     Invoker<IHelloService> invoker2;
@@ -454,6 +455,12 @@ public class AbstractClusterInvokerTest {
         invokers.add(invoker5);
     }
 
+    private void initDic() {
+        Map<String, List<Invoker<IHelloService>>> map = new HashMap<>();
+        map.put("sayHello", invokers);
+        dic.buildRouterChain(map, ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getDefaultExtension());
+    }
+
     @Test()
     public void testTimeoutExceptionCode() {
         List<Invoker<DemoService>> invokers = new ArrayList<Invoker<DemoService>>();
@@ -512,6 +519,8 @@ public class AbstractClusterInvokerTest {
     public void testMockedInvokerSelect() {
         initlistsize5();
         invokers.add(mockedInvoker1);
+
+        initDic();
 
         RpcInvocation mockedInvocation = new RpcInvocation();
         mockedInvocation.setMethodName("sayHello");
