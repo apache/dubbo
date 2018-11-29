@@ -20,6 +20,7 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
 import org.apache.curator.framework.recipes.cache.TreeCacheListener;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.ConfigChangeType;
@@ -36,7 +37,7 @@ import java.util.concurrent.CountDownLatch;
  *
  */
 public class CacheListener implements TreeCacheListener {
-    private Map<String, Set<ConfigurationListener>> listeners = new ConcurrentHashMap<>();
+    private Map<String, Set<ConfigurationListener>> keyListeners = new ConcurrentHashMap<>();
     private CountDownLatch initializedLatch;
     private String rootPath;
 
@@ -82,12 +83,15 @@ public class CacheListener implements TreeCacheListener {
             }
 
             ConfigChangeEvent configChangeEvent = new ConfigChangeEvent(key, new String(value, StandardCharsets.UTF_8), changeType);
-            listeners.get(key).forEach(listener -> listener.process(configChangeEvent));
+            Set<ConfigurationListener> listeners = keyListeners.get(key);
+            if (CollectionUtils.isNotEmpty(listeners)) {
+                listeners.forEach(listener -> listener.process(configChangeEvent));
+            }
         }
     }
 
     public void addListener(String key, ConfigurationListener configurationListener) {
-        Set<ConfigurationListener> set = this.listeners.computeIfAbsent(key, k -> new CopyOnWriteArraySet<>());
+        Set<ConfigurationListener> set = this.keyListeners.computeIfAbsent(key, k -> new CopyOnWriteArraySet<>());
         set.add(configurationListener);
     }
 
