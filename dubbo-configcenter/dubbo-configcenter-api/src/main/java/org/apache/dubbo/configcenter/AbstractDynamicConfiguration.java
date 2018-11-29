@@ -21,6 +21,7 @@ import org.apache.dubbo.common.config.AbstractConfiguration;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Dynamic configuration template class. The concrete implementation needs to provide implementation for three methods.
@@ -34,6 +35,7 @@ public abstract class AbstractDynamicConfiguration<TargetListener> extends Abstr
     protected static final String DEFAULT_GROUP = "dubbo";
 
     protected URL url;
+    private AtomicBoolean inited = new AtomicBoolean(false);
 
     // One key can register multiple target listeners, but one target listener only maps to one configuration listener
     protected ConcurrentMap<String, TargetListener> targetListeners =
@@ -44,6 +46,9 @@ public abstract class AbstractDynamicConfiguration<TargetListener> extends Abstr
 
     @Override
     public void initWith(URL url) {
+        if (!inited.compareAndSet(false, true)) {
+            return;
+        }
         this.url = url;
     }
 
@@ -86,7 +91,7 @@ public abstract class AbstractDynamicConfiguration<TargetListener> extends Abstr
     }
 
     @Override
-    public void removeListener(String key) {
+    public void removeListener(String key, ConfigurationListener listener) {
 
     }
 
