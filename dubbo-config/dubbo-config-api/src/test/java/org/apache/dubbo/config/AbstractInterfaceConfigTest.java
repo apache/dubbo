@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config;
 
-import junit.framework.TestCase;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.ConfigUtils;
@@ -28,6 +27,8 @@ import org.apache.dubbo.config.mock.GreetingMock1;
 import org.apache.dubbo.config.mock.GreetingMock2;
 import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.registry.RegistryService;
+
+import junit.framework.TestCase;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;

@@ -5,6 +5,7 @@ import org.apache.dubbo.metadata.definition.model.MethodDefinition;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 import org.apache.dubbo.metadata.definition.service.ComplexObject;
 import org.apache.dubbo.metadata.definition.service.DemoService;
+
 import org.junit.Assert;
 import org.junit.Test;
 

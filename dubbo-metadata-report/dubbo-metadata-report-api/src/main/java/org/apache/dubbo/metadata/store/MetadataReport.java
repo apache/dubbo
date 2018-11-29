@@ -32,6 +32,6 @@ public interface MetadataReport {
 
     void storeProviderMetadata(ProviderMetadataIdentifier providerMetadataIdentifier, FullServiceDefinition serviceDefinition);
 
-    void storeConsumerMetadata(ConsumerMetadataIdentifier consumerMetadataIdentifier, Map<String,String> serviceParameterMap);
+    void storeConsumerMetadata(ConsumerMetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap);
 
 }

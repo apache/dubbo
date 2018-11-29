@@ -17,7 +17,6 @@
 package org.apache.dubbo.metadata.definition.model;
 
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * 2018/10/25

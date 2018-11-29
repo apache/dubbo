@@ -65,9 +65,6 @@ public abstract class AbstractConfig implements Serializable {
     private static final Map<String, String> legacyProperties = new HashMap<String, String>();
     private static final String[] SUFFIXES = new String[]{"Config", "Bean"};
 
-    private boolean init;
-    private volatile Map<String, String> metaData;
-
     static {
         legacyProperties.put("dubbo.protocol.name", "dubbo.service.protocol");
         legacyProperties.put("dubbo.protocol.host", "dubbo.service.server.host");
@@ -83,6 +80,8 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     protected String id;
+    private boolean init;
+    private volatile Map<String, String> metaData;
 
     private static String convertLegacyValue(String key, String value) {
         if (value != null && value.length() > 0) {
@@ -353,6 +352,33 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
+    private static String extractPropertyName(Class<?> clazz, Method setter) throws Exception {
+        String propertyName = setter.getName().substring("set".length());
+        Method getter = null;
+        try {
+            getter = clazz.getMethod("get" + propertyName);
+        } catch (NoSuchMethodException e) {
+            getter = clazz.getMethod("is" + propertyName);
+        }
+        Parameter parameter = getter.getAnnotation(Parameter.class);
+        if (parameter != null && StringUtils.isNotEmpty(parameter.key()) && parameter.useKeyAsProperty()) {
+            propertyName = parameter.key();
+        } else {
+            propertyName = propertyName.toLowerCase();
+        }
+        return propertyName;
+    }
+
+    private static String calculatePropertyFromGetter(String name) {
+        int i = name.startsWith("get") ? 3 : 2;
+        return StringUtils.camelToSplitName(name.substring(i, i + 1).toLowerCase() + name.substring(i + 1), ".");
+    }
+
+    private static String calculateAttributeFromGetter(String getter) {
+        int i = getter.startsWith("get") ? 3 : 2;
+        return getter.substring(i, i + 1).toLowerCase() + getter.substring(i + 1);
+    }
+
     @Parameter(excluded = true)
     public String getId() {
         return id;
@@ -400,14 +426,14 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
-
     /**
      * Should be called after Config was fully initialized.
      * // FIXME: this method should be completely replaced by appendParameters
-     * @see AbstractConfig#appendParameters(Map, Object, String)
      *
-     * Notice! This method should include all properties in the returning map, treat @Parameter differently compared to appendParameters.
      * @return
+     * @see AbstractConfig#appendParameters(Map, Object, String)
+     * <p>
+     * Notice! This method should include all properties in the returning map, treat @Parameter differently compared to appendParameters.
      */
     public Map<String, String> getMetaData() {
         metaData = new HashMap<>();
@@ -522,33 +548,6 @@ public abstract class AbstractConfig implements Serializable {
         } catch (Exception e) {
             logger.error("Failed to override ", e);
         }
-    }
-
-    private static String extractPropertyName(Class<?> clazz, Method setter) throws Exception {
-        String propertyName = setter.getName().substring("set".length());
-        Method getter = null;
-        try {
-            getter = clazz.getMethod("get" + propertyName);
-        } catch (NoSuchMethodException e) {
-            getter = clazz.getMethod("is" + propertyName);
-        }
-        Parameter parameter = getter.getAnnotation(Parameter.class);
-        if (parameter != null && StringUtils.isNotEmpty(parameter.key()) && parameter.useKeyAsProperty()) {
-            propertyName = parameter.key();
-        } else {
-            propertyName = propertyName.toLowerCase();
-        }
-        return propertyName;
-    }
-
-    private static String calculatePropertyFromGetter(String name) {
-        int i = name.startsWith("get") ? 3 : 2;
-        return StringUtils.camelToSplitName(name.substring(i, i + 1).toLowerCase() + name.substring(i + 1), ".");
-    }
-
-    private static String calculateAttributeFromGetter(String getter) {
-        int i = getter.startsWith("get") ? 3 : 2;
-        return getter.substring(i, i + 1).toLowerCase() + getter.substring(i + 1);
     }
 
     @Override

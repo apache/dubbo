@@ -181,12 +181,12 @@ public class ApplicationConfig extends AbstractConfig {
         return monitor;
     }
 
-    public void setMonitor(MonitorConfig monitor) {
-        this.monitor = monitor;
-    }
-
     public void setMonitor(String monitor) {
         this.monitor = new MonitorConfig(monitor);
+    }
+
+    public void setMonitor(MonitorConfig monitor) {
+        this.monitor = monitor;
     }
 
     public String getCompiler() {
@@ -265,7 +265,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setShutwait(String shutwait) {
-        System.setProperty( Constants.SHUTDOWN_WAIT_KEY, shutwait);
+        System.setProperty(Constants.SHUTDOWN_WAIT_KEY, shutwait);
         this.shutwait = shutwait;
     }
 

@@ -1,7 +1,5 @@
 package org.apache.dubbo.metadata.store.zookeeper;
 
-import com.google.gson.Gson;
-import org.apache.curator.test.TestingServer;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
@@ -10,6 +8,9 @@ import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
 import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
 import org.apache.dubbo.remoting.zookeeper.curator.CuratorZookeeperTransporter;
+
+import com.google.gson.Gson;
+import org.apache.curator.test.TestingServer;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

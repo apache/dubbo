@@ -35,11 +35,6 @@ public class DubboShutdownHook extends Thread {
     private static final Logger logger = LoggerFactory.getLogger(DubboShutdownHook.class);
 
     private static final DubboShutdownHook dubboShutdownHook = new DubboShutdownHook("DubboShutdownHook");
-
-    public static DubboShutdownHook getDubboShutdownHook() {
-        return dubboShutdownHook;
-    }
-
     /**
      * Has it already been destroyed or not?
      */
@@ -48,6 +43,10 @@ public class DubboShutdownHook extends Thread {
     private DubboShutdownHook(String name) {
         super(name);
         this.destroyed = new AtomicBoolean(false);
+    }
+
+    public static DubboShutdownHook getDubboShutdownHook() {
+        return dubboShutdownHook;
     }
 
     @Override

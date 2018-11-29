@@ -1,12 +1,14 @@
 package org.apache.dubbo.metadata.support;
 
-import com.alibaba.fastjson.JSON;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
 import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
 import org.apache.dubbo.metadata.store.MetadataReport;
+
+import com.alibaba.fastjson.JSON;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -14,7 +16,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- *  2018/9/14
+ * 2018/9/14
  */
 public class AbstractMetadataReportFactoryTest {
 

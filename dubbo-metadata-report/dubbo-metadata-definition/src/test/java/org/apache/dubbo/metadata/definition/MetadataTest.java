@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.metadata.definition;
 
-import com.google.gson.Gson;
-import junit.framework.TestCase;
 import org.apache.dubbo.metadata.definition.common.ClassExtendsMap;
 import org.apache.dubbo.metadata.definition.common.ColorEnum;
 import org.apache.dubbo.metadata.definition.common.OuterClass;
@@ -25,6 +23,9 @@ import org.apache.dubbo.metadata.definition.common.ResultWithRawCollections;
 import org.apache.dubbo.metadata.definition.common.TestService;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
+
+import com.google.gson.Gson;
+import junit.framework.TestCase;
 import org.junit.Test;
 
 /**
