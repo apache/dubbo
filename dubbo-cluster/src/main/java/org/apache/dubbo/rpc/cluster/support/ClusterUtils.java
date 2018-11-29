@@ -80,8 +80,9 @@ public class ClusterUtils {
             // All providers come to here have been filtered by group, which means only those providers that have the exact same group value with the consumer could come to here.
             // So, generally, we don't need to care about the group value here.
             // But when comes to group merger, there is an exception, the consumer group may be '*' while the provider group can be empty or any other values.
-            localMap.remove(Constants.GROUP_KEY);
+            String remoteGroup = map.get(Constants.GROUP_KEY);
             map.putAll(localMap);
+            map.put(Constants.GROUP_KEY, remoteGroup);
         }
         if (remoteMap != null && remoteMap.size() > 0) {
             // Use version passed from provider side
