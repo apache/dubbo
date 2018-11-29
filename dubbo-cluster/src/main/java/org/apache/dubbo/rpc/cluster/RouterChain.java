@@ -164,6 +164,9 @@ public class RouterChain<T> {
 
     public List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         List<Invoker<T>> finalInvokers = invokers;
+        if (treeCache.getTree() != null) {
+            finalInvokers = treeCache.getInvokers(treeCache.getTree(), url, invocation);
+        }
         for (Router router : routers) {
             if (router.isRuntime()) {
                 finalInvokers = router.route(invokers, url, invocation);

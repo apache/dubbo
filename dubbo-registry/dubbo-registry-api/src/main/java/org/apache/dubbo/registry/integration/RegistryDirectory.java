@@ -378,7 +378,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 List<Invoker<T>> groupInvokers = new ArrayList<Invoker<T>>();
                 for (List<Invoker<T>> groupList : groupMap.values()) {
                     StaticDirectory<T> staticDirectory = new StaticDirectory<>(groupList);
-                    staticDirectory.setRouterChain(routerChain);
+                    Map<String, List<Invoker<T>>> methodGroupInvokers = new HashMap<>();
+                    methodGroupInvokers.put(method, groupInvokers);
+                    staticDirectory.buildRouterChain(methodGroupInvokers, dynamicConfiguration);
                     groupInvokers.add(cluster.join(staticDirectory));
                 }
                 result.put(method, groupInvokers);
