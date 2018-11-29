@@ -22,6 +22,7 @@ package org.apache.dubbo.configcenter;
 public interface ConfigurationListener {
 
     /**
+     * FIXME should it be synchronized?
      * Listener call back method. Listener gets notified by this method once there's any change happens on the config
      * the listener listens on.
      *
