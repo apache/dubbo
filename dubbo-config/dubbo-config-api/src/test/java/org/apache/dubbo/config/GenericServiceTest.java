@@ -29,6 +29,7 @@ import org.apache.dubbo.config.api.User;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.rpc.service.GenericException;
 import org.apache.dubbo.rpc.service.GenericService;
+
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -27,7 +27,7 @@ public class DelegateProviderMetaDataInvoker<T> implements Invoker {
     protected final Invoker<T> invoker;
     private ServiceConfig metadata;
 
-    public DelegateProviderMetaDataInvoker(Invoker<T> invoker,ServiceConfig metadata) {
+    public DelegateProviderMetaDataInvoker(Invoker<T> invoker, ServiceConfig metadata) {
         this.invoker = invoker;
         this.metadata = metadata;
     }

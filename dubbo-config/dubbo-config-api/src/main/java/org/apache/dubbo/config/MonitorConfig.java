@@ -126,12 +126,12 @@ public class MonitorConfig extends AbstractConfig {
         this.isDefault = isDefault;
     }
 
-    public void setInterval(String interval){
-        this.interval = interval;
+    public String getInterval() {
+        return interval;
     }
 
-    public String getInterval(){
-        return interval;
+    public void setInterval(String interval) {
+        this.interval = interval;
     }
 
     @Override

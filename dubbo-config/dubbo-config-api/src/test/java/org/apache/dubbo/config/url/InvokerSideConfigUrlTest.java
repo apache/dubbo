@@ -26,6 +26,7 @@ import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.mock.MockRegistry;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;

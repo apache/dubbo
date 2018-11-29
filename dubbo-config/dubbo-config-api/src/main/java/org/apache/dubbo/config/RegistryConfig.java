@@ -91,12 +91,14 @@ public class RegistryConfig extends AbstractConfig {
 
     /**
      * simple the registry.
+     *
      * @since 2.7.0
      */
     private Boolean simple;
     /**
      * After simplify the registry, should add some paramter individually.
      * addionalParameterKeys = addParamKeys
+     *
      * @since 2.7.0
      */
     private String addParamKeys;

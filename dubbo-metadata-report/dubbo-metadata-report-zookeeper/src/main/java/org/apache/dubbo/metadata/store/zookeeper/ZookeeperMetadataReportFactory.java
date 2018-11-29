@@ -23,7 +23,6 @@ import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
 /**
  * ZookeeperRegistryFactory.
- *
  */
 public class ZookeeperMetadataReportFactory extends AbstractMetadataReportFactory {
 

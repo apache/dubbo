@@ -99,16 +99,12 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     // disconnection events
     protected String ondisconnect;
-
+    protected MetadataReportConfig metadataReportConfig;
+    protected RegistryDataConfig registryDataConfig;
     // callback limits
     private Integer callbacks;
-
     // the scope for referring/exporting a service, if it's local, it means searching in current JVM only.
     private String scope;
-
-    protected MetadataReportConfig metadataReportConfig;
-
-    protected RegistryDataConfig registryDataConfig;
 
     protected void checkRegistry() {
         // for backward compatibility
@@ -433,6 +429,16 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     /**
      * @param local
+     * @deprecated Replace to <code>setStub(String)</code>
+     */
+    @Deprecated
+    public void setLocal(String local) {
+        checkName("local", local);
+        this.local = local;
+    }
+
+    /**
+     * @param local
      * @deprecated Replace to <code>setStub(Boolean)</code>
      */
     @Deprecated
@@ -444,18 +450,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
     }
 
-    /**
-     * @param local
-     * @deprecated Replace to <code>setStub(String)</code>
-     */
-    @Deprecated
-    public void setLocal(String local) {
-        checkName("local", local);
-        this.local = local;
-    }
-
     public String getStub() {
         return stub;
+    }
+
+    public void setStub(String stub) {
+        checkName("stub", stub);
+        this.stub = stub;
     }
 
     public void setStub(Boolean stub) {
@@ -464,11 +465,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         } else {
             setStub(String.valueOf(stub));
         }
-    }
-
-    public void setStub(String stub) {
-        checkName("stub", stub);
-        this.stub = stub;
     }
 
     public String getCluster() {
@@ -565,12 +561,12 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         return monitor;
     }
 
-    public void setMonitor(String monitor) {
-        this.monitor = new MonitorConfig(monitor);
-    }
-
     public void setMonitor(MonitorConfig monitor) {
         this.monitor = monitor;
+    }
+
+    public void setMonitor(String monitor) {
+        this.monitor = new MonitorConfig(monitor);
     }
 
     public String getOwner() {

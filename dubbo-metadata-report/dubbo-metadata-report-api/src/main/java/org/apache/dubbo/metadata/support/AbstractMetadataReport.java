@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metadata.support;
 
-import com.google.gson.Gson;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
@@ -28,6 +27,8 @@ import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
 import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
 import org.apache.dubbo.metadata.store.MetadataReport;
+
+import com.google.gson.Gson;
 
 import java.io.File;
 import java.io.FileInputStream;

@@ -4,6 +4,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.store.test.JTestMetadataReport4Test;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
