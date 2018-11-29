@@ -125,15 +125,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         this.serviceMethods = methods == null ? null : Constants.COMMA_SPLIT_PATTERN.split(methods);
     }
 
-    private URL turnRegistryUrlToConsumerUrl(URL url) {
-        // save any parameter in registry that will be useful to the new url.
-        String isDefault = url.getParameter(Constants.DEFAULT_KEY);
-        if (StringUtils.isNotEmpty(isDefault)) {
-            queryMap.put(Constants.REGISTRY_KEY + "." + Constants.DEFAULT_KEY, isDefault);
-        }
-        return url.setPath(url.getServiceInterface()).clearParameters().addParameters(queryMap).removeParameter(Constants.MONITOR_KEY);
-    }
-
     /**
      * Convert override urls to map for use when re-refer.
      * Send all rules every time, the urls will be reassembled and calculated
@@ -180,6 +171,15 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             logger.error("Failed to parse raw dynamic config and it will not take effect, the raw config is: " + rawConfig, e);
         }
         return new LinkedList<>();
+    }
+
+    private URL turnRegistryUrlToConsumerUrl(URL url) {
+        // save any parameter in registry that will be useful to the new url.
+        String isDefault = url.getParameter(Constants.DEFAULT_KEY);
+        if (StringUtils.isNotEmpty(isDefault)) {
+            queryMap.put(Constants.REGISTRY_KEY + "." + Constants.DEFAULT_KEY, isDefault);
+        }
+        return url.setPath(url.getServiceInterface()).clearParameters().addParameters(queryMap).removeParameter(Constants.MONITOR_KEY);
     }
 
     public void setProtocol(Protocol protocol) {

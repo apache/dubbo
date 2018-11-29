@@ -75,6 +75,13 @@ public class ZookeeperDynamicConfigurationTest {
         zkServer.stop();
     }
 
+    private static void setData(String path, String data) throws Exception {
+        if (client.checkExists().forPath(path) == null) {
+            client.create().creatingParentsIfNeeded().forPath(path);
+        }
+        client.setData().forPath(path, data.getBytes());
+    }
+
     @Test
     public void testGetConfig() throws Exception {
         Assert.assertEquals("The content from dubbo.properties", configuration.getConfig("dubbo.dubbo.properties"));
@@ -111,13 +118,6 @@ public class ZookeeperDynamicConfigurationTest {
         Assert.assertEquals("new value1", listener2.getValue());
         Assert.assertEquals("new value2", listener3.getValue());
         Assert.assertEquals("new value2", listener4.getValue());
-    }
-
-    private static void setData(String path, String data) throws Exception {
-        if (client.checkExists().forPath(path) == null) {
-            client.create().creatingParentsIfNeeded().forPath(path);
-        }
-        client.setData().forPath(path, data.getBytes());
     }
 
     private class TestListener implements ConfigurationListener {
