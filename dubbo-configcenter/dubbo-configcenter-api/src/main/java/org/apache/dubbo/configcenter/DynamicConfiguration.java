@@ -35,13 +35,14 @@ public interface DynamicConfiguration extends Configuration {
 
     /**
      * Register a configuration listener for a specified key
+     * The listener only works for service governance purpose, so the group would always be 'dubbo'
      *
      * @param key      the key to represent a configuration
      * @param listener configuration listener
      */
     void addListener(String key, ConfigurationListener listener);
 
-    void removeListener(String key);
+    void removeListener(String key, ConfigurationListener listener);
 
     /**
      * Get the configuration mapped to the given key
