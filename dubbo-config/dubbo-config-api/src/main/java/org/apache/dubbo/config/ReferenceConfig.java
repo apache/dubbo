@@ -363,9 +363,10 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 List<Invoker<?>> invokers = new ArrayList<Invoker<?>>();
                 URL registryURL = null;
                 for (URL url : urls) {
-                    invokers.add(refprotocol.refer(interfaceClass, url));
+                    Invoker tmpInvoker = refprotocol.refer(interfaceClass, url);
+                    invokers.add(tmpInvoker);
                     if (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) {
-                        registryURL = url; // use last registry url
+                        registryURL = tmpInvoker.getUrl(); // use last registry url
                     }
                 }
                 if (registryURL != null) { // registry url is available
