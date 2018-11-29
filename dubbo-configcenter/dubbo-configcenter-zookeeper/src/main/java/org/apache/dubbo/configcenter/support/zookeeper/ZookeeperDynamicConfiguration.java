@@ -57,7 +57,7 @@ public class ZookeeperDynamicConfiguration extends AbstractDynamicConfiguration<
     public void initWith(URL url) {
         super.initWith(url);
 
-        rootPath =  "/" + url.getParameter(CONFIG_NAMESPACE_KEY, Constants.DUBBO) + "/config";
+        rootPath = "/" + url.getParameter(CONFIG_NAMESPACE_KEY, Constants.DUBBO) + "/config";
 
         RetryPolicy policy = new ExponentialBackoffRetry(1000, 3);
         int sessionTimeout = 60 * 1000;
@@ -111,7 +111,6 @@ public class ZookeeperDynamicConfiguration extends AbstractDynamicConfiguration<
     }
 
     /**
-     *
      * @param key e.g., {service}.configurators, {service}.tagrouters, {group}.dubbo.properties
      * @return
      */
