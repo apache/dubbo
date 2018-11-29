@@ -194,9 +194,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                                         logger.warn("Recommended replace <dubbo:provider protocol=\"" + value + "\" ... /> to <dubbo:protocol name=\"" + value + "\" ... />");
                                     }
                                     // backward compatibility
-                                    ProtocolConfig protocol = new ProtocolConfig();
-                                    protocol.setName(value);
-                                    reference = protocol;
+                                    reference = new RuntimeBeanReference(value);
                                 } else if ("onreturn".equals(property)) {
                                     int index = value.lastIndexOf(".");
                                     String returnRef = value.substring(0, index);
