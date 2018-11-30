@@ -320,7 +320,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-bootstrap</artifactId>
+            <artifactId>dubbo-serialization-protostuff</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
             <optional>true</optional>
@@ -431,7 +431,7 @@
                                     <include>org.apache.dubbo:dubbo-serialization-fst</include>
                                     <include>org.apache.dubbo:dubbo-serialization-kryo</include>
                                     <include>org.apache.dubbo:dubbo-serialization-jdk</include>
-                                    <include>org.apache.dubbo:dubbo-bootstrap</include>
+                                    <include>org.apache.dubbo:dubbo-serialization-protostuff</include>
                                 </includes>
                             </artifactSet>
                             <transformers>

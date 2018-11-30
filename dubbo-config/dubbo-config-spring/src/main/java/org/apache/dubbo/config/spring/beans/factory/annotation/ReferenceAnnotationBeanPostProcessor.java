@@ -16,12 +16,13 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.ReferenceBean;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.PropertyValues;
@@ -581,7 +582,9 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
     }
 
     private String toPlainString(String[] array) {
-        if (array == null || array.length == 0) return "";
+        if (array == null || array.length == 0) {
+            return "";
+        }
         StringBuilder buffer = new StringBuilder();
         for (int i = 0; i < array.length; i++) {
             if (i > 0) {

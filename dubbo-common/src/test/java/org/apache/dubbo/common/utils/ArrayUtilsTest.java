@@ -14,32 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc;
 
-/**
- * TODO this is just a workaround for rest protocol, and now we just ensure it works in the most common dubbo usages
- *
- */
-public class ServiceClassHolder {
+package org.apache.dubbo.common.utils;
 
-    private static final ServiceClassHolder INSTANCE = new ServiceClassHolder();
+import static junit.framework.TestCase.assertFalse;
+import static junit.framework.TestCase.assertTrue;
 
-    private final ThreadLocal<Class> holder  = new ThreadLocal<Class>();
+import org.junit.Test;
 
-    public static ServiceClassHolder getInstance() {
-        return INSTANCE;
+public class ArrayUtilsTest {
+
+    @Test
+    public void isEmpty() throws Exception {
+        assertTrue(ArrayUtils.isEmpty(null));
+        assertTrue(ArrayUtils.isEmpty(new Object[0]));
+        assertFalse(ArrayUtils.isEmpty(new Object[]{"abc"}));
     }
 
-    private ServiceClassHolder() {
+    @Test
+    public void isNotEmpty() throws Exception {
+        assertFalse(ArrayUtils.isNotEmpty(null));
+        assertFalse(ArrayUtils.isNotEmpty(new Object[0]));
+        assertTrue(ArrayUtils.isNotEmpty(new Object[]{"abc"}));
     }
 
-    public Class popServiceClass() {
-        Class clazz = holder.get();
-        holder.remove();
-        return clazz;
-    }
-
-    public void pushServiceClass(Class clazz) {
-        holder.set(clazz);
-    }
 }

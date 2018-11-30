@@ -280,7 +280,7 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-bootstrap</artifactId>
+                <artifactId>dubbo-serialization-protostuff</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
