@@ -594,12 +594,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             if (invokers == null) {
                 invokers = localMethodInvokerMap.get(Constants.ANY_VALUE);
             }
-            if (invokers == null) {
-                Iterator<List<Invoker<T>>> iterator = localMethodInvokerMap.values().iterator();
-                if (iterator.hasNext()) {
-                    invokers = iterator.next();
-                }
-            }
         }
         return invokers == null ? new ArrayList<Invoker<T>>(0) : invokers;
     }
