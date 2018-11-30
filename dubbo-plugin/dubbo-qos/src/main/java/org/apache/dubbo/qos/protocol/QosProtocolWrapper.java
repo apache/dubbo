@@ -75,19 +75,20 @@ public class QosProtocolWrapper implements Protocol {
     @Override
     public void destroy() {
         protocol.destroy();
+        stopServer();
     }
 
     private void startQosServer(URL url) {
-        if (!hasStarted.compareAndSet(false, true)) {
-            return;
-        }
-
         try {
             boolean qosEnable = url.getParameter(QOS_ENABLE,true);
             if (!qosEnable) {
                 logger.info("qos won't be started because it is disabled. " +
                         "Please check dubbo.application.qos.enable is configured either in system property, " +
                         "dubbo.properties or XML/spring-boot configuration.");
+                return;
+            }
+
+            if (!hasStarted.compareAndSet(false, true)) {
                 return;
             }
 

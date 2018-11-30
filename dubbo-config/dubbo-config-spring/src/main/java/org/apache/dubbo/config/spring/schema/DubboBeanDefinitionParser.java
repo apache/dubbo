@@ -135,7 +135,8 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                     && Modifier.isPublic(setter.getModifiers())
                     && setter.getParameterTypes().length == 1) {
                 Class<?> type = setter.getParameterTypes()[0];
-                String property = StringUtils.camelToSplitName(name.substring(3, 4).toLowerCase() + name.substring(4), "-");
+                String propertyName = name.substring(3, 4).toLowerCase() + name.substring(4);
+                String property = StringUtils.camelToSplitName(propertyName, "-");
                 props.add(property);
                 Method getter = null;
                 try {
@@ -223,7 +224,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                                     }
                                     reference = new RuntimeBeanReference(value);
                                 }
-                                beanDefinition.getPropertyValues().addPropertyValue(property, reference);
+                                beanDefinition.getPropertyValues().addPropertyValue(propertyName, reference);
                             }
                         }
                     }

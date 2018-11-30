@@ -13,6 +13,8 @@ Apache Dubbo (incubating) is a high-performance, Java based open source RPC fram
 
 We are now collecting dubbo user info in order to help us to improve Dubbo better, pls. kindly help us by providing yours on [issue#1012: Wanted: who's using dubbo](https://github.com/apache/incubator-dubbo/issues/1012), thanks :)
 
+各位 Dubboer，开源中国正在举办 [2018 年度最受欢迎中国开源软件评比活动](https://www.oschina.net/project/top_cn_2018)，请投 Dubbo 一票。
+
 ## Architecture
 
 ![Architecture](http://dubbo.apache.org/img/architecture.png)
@@ -43,7 +45,7 @@ There's a [README](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samp
 <dependency>
     <groupId>com.alibaba</groupId>
     <artifactId>dubbo</artifactId>
-    <version>2.6.4</version>
+    <version>2.6.5</version>
 </dependency>
 ```
 
