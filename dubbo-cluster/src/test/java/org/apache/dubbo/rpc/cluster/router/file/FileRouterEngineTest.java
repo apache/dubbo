@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc.cluster.router.file;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
+import org.apache.dubbo.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -31,6 +31,7 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.RouterFactory;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -165,7 +166,7 @@ public class FileRouterEngineTest {
         Map<String, List<Invoker<FileRouterEngineTest>>> methodInvokers = new HashMap<>();
         methodInvokers.put("method1", invokers);
         methodInvokers.put("method2", invokers);
-        dic.buildRouterChain(methodInvokers, ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getDefaultExtension());
+        dic.buildRouterChain(methodInvokers, ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getDefaultExtension().getDynamicConfiguration(null));
         dic.getRouterChain().setResidentRouters(Arrays.asList(routerFactory.getRouter(url)));
     }
 

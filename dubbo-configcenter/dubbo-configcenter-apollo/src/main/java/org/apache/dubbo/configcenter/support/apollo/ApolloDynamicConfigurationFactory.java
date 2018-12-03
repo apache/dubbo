@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.configcenter;
+package org.apache.dubbo.configcenter.support.apollo;
+
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.configcenter.AbstractDynamicConfigurationFactory;
+import org.apache.dubbo.configcenter.DynamicConfiguration;
 
 /**
- * Config listener, will get notified when the config it listens on changes.
+ *
  */
-public interface ConfigurationListener {
-
-    /**
-     * Listener call back method. Listener gets notified by this method once there's any change happens on the config
-     * the listener listens on.
-     *
-     * @param event config change event
-     */
-    void process(ConfigChangeEvent event);
+public class ApolloDynamicConfigurationFactory extends AbstractDynamicConfigurationFactory {
+    @Override
+    protected DynamicConfiguration createDynamicConfiguration(URL url) {
+        return new ApolloDynamicConfiguration(url);
+    }
 }
