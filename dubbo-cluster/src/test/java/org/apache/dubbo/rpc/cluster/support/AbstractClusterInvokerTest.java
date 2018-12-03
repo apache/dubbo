@@ -20,7 +20,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
+import org.apache.dubbo.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.cluster.filter.DemoService;
 import org.apache.dubbo.rpc.cluster.loadbalance.LeastActiveLoadBalance;
 import org.apache.dubbo.rpc.cluster.loadbalance.RandomLoadBalance;
 import org.apache.dubbo.rpc.cluster.loadbalance.RoundRobinLoadBalance;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -458,7 +459,7 @@ public class AbstractClusterInvokerTest {
     private void initDic() {
         Map<String, List<Invoker<IHelloService>>> map = new HashMap<>();
         map.put("sayHello", invokers);
-        dic.buildRouterChain(map, ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getDefaultExtension());
+        dic.buildRouterChain(map, ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getDefaultExtension().getDynamicConfiguration(null));
     }
 
     @Test()

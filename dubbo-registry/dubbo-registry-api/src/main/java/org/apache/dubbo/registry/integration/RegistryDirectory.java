@@ -192,27 +192,22 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     public void subscribe(URL url) {
         setConsumerUrl(url);
-        String rawConfig = null;
-        try {
-            rawConfig = dynamicConfiguration.getConfig(url.getEncodedServiceKey() + Constants.CONFIGURATORS_SUFFIX, this);
-            if (StringUtils.isNotEmpty(rawConfig)) {
-                this.dynamicConfigurators = configToConfiguratiors(rawConfig);
-            }
-        } catch (Exception e) {
-            logger.error("Failed to load or parse dynamic config (service level), the raw config is: " + rawConfig, e);
-        }
-
-        String rawConfigApp = null;
-        try {
-            rawConfigApp = dynamicConfiguration.getConfig(url.getParameter(Constants.APPLICATION_KEY) + Constants.CONFIGURATORS_SUFFIX, this);
-            if (StringUtils.isNotEmpty(rawConfigApp)) {
-                this.appDynamicConfigurators = configToConfiguratiors(rawConfigApp);
-            }
-        } catch (Exception e) {
-            logger.error("Failed to load or parse dynamic config (application level), the raw config is: " + rawConfigApp, e);
-        }
-
         registry.subscribe(url, this);
+
+        synchronized (this) {
+            String key = url.getEncodedServiceKey() + Constants.CONFIGURATORS_SUFFIX;
+            dynamicConfiguration.addListener(key, this);
+            String rawConfig = dynamicConfiguration.getConfig(key);
+            if (rawConfig != null) {
+                this.process(new ConfigChangeEvent(key, rawConfig));
+            }
+
+            String appKey = url.getParameter(Constants.APPLICATION_KEY) + Constants.CONFIGURATORS_SUFFIX;
+            String appRawConfig = dynamicConfiguration.getConfig(appKey);
+            if (appRawConfig != null) {
+                this.process(new ConfigChangeEvent(appKey, appRawConfig));
+            }
+        }
     }
 
     @Override
@@ -279,6 +274,14 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             List<Router> routers = toRouters(routerUrls);
             addRouters(routers);
         }
+
+        overrideDirectoryUrl();
+
+        // providers
+        refreshInvoker(invokerUrls);
+    }
+
+    private void overrideDirectoryUrl() {
         // merge override parameters
         this.overrideDirectoryUrl = directoryUrl;
         List<Configurator> localConfigurators = this.configurators; // local reference
@@ -299,8 +302,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 this.overrideDirectoryUrl = configurator.configure(overrideDirectoryUrl);
             });
         }
-        // providers
-        refreshInvoker(invokerUrls);
     }
 
 /*    private List<URL> compositeDynamicConfiguration(List<URL> urls) {
@@ -708,7 +709,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
 
     @Override
-    public void process(ConfigChangeEvent event) {
+    public synchronized void process(ConfigChangeEvent event) {
         List<URL> urls = new ArrayList<>();
         if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
             URL url = getConsumerUrl().clearParameters().setProtocol(Constants.EMPTY_PROTOCOL);
