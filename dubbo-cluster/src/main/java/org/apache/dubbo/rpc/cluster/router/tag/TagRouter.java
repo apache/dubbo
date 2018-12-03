@@ -27,6 +27,7 @@ import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.ConfigChangeType;
 import org.apache.dubbo.configcenter.ConfigurationListener;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
+import org.apache.dubbo.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
@@ -56,7 +57,7 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
     private TagRouterRule tagRouterRule;
     private String application;
 
-    private AtomicBoolean isInited = new AtomicBoolean(false);
+    private AtomicBoolean inited = new AtomicBoolean(false);
 
     /**
      * compatible constructor, it should never be called to create TagRouter.
@@ -64,7 +65,7 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
      * @param url
      */
     public TagRouter(URL url) {
-        this(ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getDefaultExtension(), url);
+        this(ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getDefaultExtension().getDynamicConfiguration(url), url);
     }
 
     public TagRouter(DynamicConfiguration configuration, URL url) {
@@ -80,24 +81,25 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
     }
 
     private void init() {
-        if (!isInited.compareAndSet(false, true)) {
+        if (!inited.compareAndSet(false, true)) {
             return;
         }
         if (StringUtils.isEmpty(application)) {
             logger.error("TagRouter must getConfig from or subscribe to a specific application, but the application in this TagRouter is not specified.");
         }
-        try {
-            String rawRule = this.configuration.getConfig(application + TAGROUTERRULES_DATAID, this);
-            if (StringUtils.isNotEmpty(rawRule)) {
-                this.tagRouterRule = TagRuleParser.parse(rawRule);
+
+        synchronized (this) {
+            String key = application + TAGROUTERRULES_DATAID;
+            configuration.addListener(key, this);
+            String rawRule = configuration.getConfig(key);
+            if (rawRule != null) {
+                this.process(new ConfigChangeEvent(key, rawRule));
             }
-        } catch (Exception e) {
-            logger.error("Failed to parse the raw tag router rule and it will not take effect, please check if the rule matches with the template, the raw rule is:\n ", e);
         }
     }
 
     @Override
-    public void process(ConfigChangeEvent event) {
+    public synchronized void process(ConfigChangeEvent event) {
         try {
             if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
                 this.tagRouterRule = null;
