@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.integration.parser.model;
+package org.apache.dubbo.rpc.cluster.configurator.parser.model;
 
 import java.util.List;
 import java.util.Map;
