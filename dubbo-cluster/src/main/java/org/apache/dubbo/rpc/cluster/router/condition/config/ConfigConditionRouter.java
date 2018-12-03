@@ -76,6 +76,10 @@ public class ConfigConditionRouter extends AbstractRouter implements Configurati
 
     @Override
     public synchronized void process(ConfigChangeEvent event) {
+        if (logger.isInfoEnabled()) {
+            logger.info("Notification of tag rule, change type is: " + event.getChangeType() + ", raw rule is:\n " + event.getNewValue());
+        }
+
         if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
             // Now, we can only recognize if it's a app level or service level change by try to match event key.
             if (event.getKey().endsWith(this.url.getParameter(Constants.APPLICATION_KEY) + Constants.ROUTERS_SUFFIX)) {

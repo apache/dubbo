@@ -711,7 +711,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     @Override
     public synchronized void process(ConfigChangeEvent event) {
-        logger.info("Notification of overriding rule, change type is: " + event.getChangeType() + ", raw config content is:\n " + event.getNewValue());
+        if (logger.isInfoEnabled()) {
+            logger.info("Notification of overriding rule, change type is: " + event.getChangeType() + ", raw config content is:\n " + event.getNewValue());
+        }
 
         List<URL> urls = new ArrayList<>();
         if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
@@ -730,7 +732,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }
         }
 
-        logger.debug("");
+        if (logger.isDebugEnabled()) {
+            logger.debug("Successfully transformed override rule to urls, will do override now, the urls are: " + urls);
+        }
 
         notify(urls);
     }
