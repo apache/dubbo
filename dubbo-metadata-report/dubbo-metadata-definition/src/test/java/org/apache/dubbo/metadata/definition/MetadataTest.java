@@ -45,7 +45,7 @@ public class MetadataTest {
         TypeDefinition td = builder.build(OuterClass.InnerClass.class, OuterClass.InnerClass.class);
         System.out.println(">> testInnerClassType: " + new Gson().toJson(td));
 
-        TestCase.assertEquals("com.taobao.jaket.common.OuterClass$InnerClass", td.getType());
+        TestCase.assertEquals("org.apache.dubbo.metadata.definition.common.OuterClass$InnerClass", td.getType());
         TestCase.assertEquals(1, td.getProperties().size());
         TestCase.assertNotNull(td.getProperties().get("name"));
 
@@ -57,7 +57,7 @@ public class MetadataTest {
         TestCase.assertEquals(TestService.class.getMethods().length, sd.getMethods().size());
         boolean containsType = false;
         for (TypeDefinition type : sd.getTypes()) {
-            if (type.getType().equals("com.taobao.jaket.common.OuterClass$InnerClass")) {
+            if (type.getType().equals("org.apache.dubbo.metadata.definition.common.OuterClass$InnerClass")) {
                 containsType = true;
                 break;
             }
@@ -75,7 +75,7 @@ public class MetadataTest {
         TypeDefinition td = builder.build(ResultWithRawCollections.class, ResultWithRawCollections.class);
         System.out.println(">> testRawMap: " + new Gson().toJson(td));
 
-        TestCase.assertEquals("com.taobao.jaket.common.ResultWithRawCollections", td.getType());
+        TestCase.assertEquals("org.apache.dubbo.metadata.definition.common.ResultWithRawCollections", td.getType());
         TestCase.assertEquals(2, td.getProperties().size());
         TestCase.assertEquals("java.util.Map", td.getProperties().get("map").getType());
         TestCase.assertEquals("java.util.List", td.getProperties().get("list").getType());
@@ -88,7 +88,7 @@ public class MetadataTest {
         TestCase.assertEquals(TestService.class.getMethods().length, sd.getMethods().size());
         boolean containsType = false;
         for (TypeDefinition type : sd.getTypes()) {
-            if (type.getType().equals("com.taobao.jaket.common.ResultWithRawCollections")) {
+            if (type.getType().equals("org.apache.dubbo.metadata.definition.common.ResultWithRawCollections")) {
                 containsType = true;
                 break;
             }
@@ -103,7 +103,7 @@ public class MetadataTest {
         TypeDefinition td = builder.build(ColorEnum.class, ColorEnum.class);
         System.out.println(">> testEnum: " + new Gson().toJson(td));
 
-        TestCase.assertEquals("com.taobao.jaket.common.ColorEnum", td.getType());
+        TestCase.assertEquals("org.apache.dubbo.metadata.definition.common.ColorEnum", td.getType());
         TestCase.assertEquals(3, td.getEnums().size());
         TestCase.assertTrue(td.getEnums().contains("RED"));
         TestCase.assertTrue(td.getEnums().contains("YELLOW"));
@@ -117,7 +117,7 @@ public class MetadataTest {
         TestCase.assertEquals(TestService.class.getMethods().length, sd.getMethods().size());
         boolean containsType = false;
         for (TypeDefinition type : sd.getTypes()) {
-            if (type.getType().equals("com.taobao.jaket.common.ColorEnum")) {
+            if (type.getType().equals("org.apache.dubbo.metadata.definition.common.ColorEnum")) {
                 containsType = true;
                 break;
             }
@@ -132,7 +132,7 @@ public class MetadataTest {
         TypeDefinition td = builder.build(ClassExtendsMap.class, ClassExtendsMap.class);
         System.out.println(">> testExtendsMap: " + new Gson().toJson(td));
 
-        TestCase.assertEquals("com.taobao.jaket.common.ClassExtendsMap", td.getType());
+        TestCase.assertEquals("org.apache.dubbo.metadata.definition.common.ClassExtendsMap", td.getType());
         TestCase.assertEquals(0, td.getProperties().size());
 
         // 使用 MetadataUtils 生成 ServiceDefinition
@@ -143,7 +143,7 @@ public class MetadataTest {
         TestCase.assertEquals(TestService.class.getMethods().length, sd.getMethods().size());
         boolean containsType = false;
         for (TypeDefinition type : sd.getTypes()) {
-            if (type.getType().equals("com.taobao.jaket.common.ClassExtendsMap")) {
+            if (type.getType().equals("org.apache.dubbo.metadata.definition.common.ClassExtendsMap")) {
                 containsType = true;
                 break;
             }
