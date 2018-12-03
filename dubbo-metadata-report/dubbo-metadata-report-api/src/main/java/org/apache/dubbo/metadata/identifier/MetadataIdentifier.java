@@ -25,15 +25,22 @@ public class MetadataIdentifier {
         this.side = side;
     }
 
+    public MetadataIdentifier(URL url) {
+        this.serviceInterface = url.getServiceInterface();
+        this.version = url.getParameter(Constants.VERSION_KEY);
+        this.group = url.getParameter(Constants.GROUP_KEY);
+        this.side = url.getParameter(Constants.SIDE_KEY);
+    }
+
     public String getUniqueKey(KeyTypeEnum keyType) {
-        if (keyType == KeyTypeEnum.UNIQUE_KEY) {
+        if (keyType == KeyTypeEnum.PATH) {
             return getFilePathKey();
         }
         return getIdentifierKey();
     }
 
     public String getIdentifierKey() {
-        return serviceInterface + SEPARATOR + version + SEPARATOR + group + SEPARATOR + side;
+        return serviceInterface + SEPARATOR + (version == null ? "" : version + SEPARATOR) + (group == null ? "" : group + SEPARATOR) + side;
     }
 
     private String getFilePathKey() {
