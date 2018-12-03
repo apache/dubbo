@@ -16,31 +16,23 @@
  */
 package org.apache.dubbo.configcenter;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
-import org.apache.dubbo.common.extension.SPI;
 
 /**
  * Dynamic configuration
  */
-@SPI("nop")
 public interface DynamicConfiguration extends Configuration {
 
     /**
-     * Init dynamic configuration from URL
-     *
-     * @param url the url in which info for initializing dynamic configuration is contained.
-     */
-    void initWith(URL url);
-
-    /**
      * Register a configuration listener for a specified key
-     * The listener only works for service governance purpose, so the group would always be 'dubbo'
+     * The listener only works for service governance purpose, so the target group would always be the value user specifies at startup or 'dubbo' by default.
+     * This method will only register listener, which means it will not trigger a notification that contains the current value.
      *
      * @param key      the key to represent a configuration
      * @param listener configuration listener
      */
     void addListener(String key, ConfigurationListener listener);
+
 
     void removeListener(String key, ConfigurationListener listener);
 
@@ -62,34 +54,14 @@ public interface DynamicConfiguration extends Configuration {
     String getConfig(String key, String group);
 
     /**
-     * Get the configuration mapped to the given key, and notify the passed-in listener
-     *
-     * @param key      property key
-     * @param listener configuration listener
-     * @return
-     */
-    String getConfig(String key, ConfigurationListener listener);
-
-    /**
-     * Get the configuration mapped to the given key and the given group, and notify the passed-in listener
-     *
-     * @param key      property key
-     * @param group    group
-     * @param listener configuration listener
-     * @return target configuration mapped to the given key and the given group
-     */
-    String getConfig(String key, String group, ConfigurationListener listener);
-
-    /**
-     * Get the configuration mapped to the given key and the given group, and notify the passed-in listener. If the
+     * Get the configuration mapped to the given key and the given group. If the
      * configuration fails to fetch after timeout exceeds, IllegalStateException will be thrown.
      *
      * @param key      property key
      * @param group    group
-     * @param listener configuration listener
      * @param timeout  timeout value for fetching the target config
      * @return target configuration mapped to the given key and the given group, IllegalStateException will be thrown
      * if timeout exceeds.
      */
-    String getConfig(String key, String group, ConfigurationListener listener, long timeout);
+    String getConfig(String key, String group, long timeout) throws IllegalStateException;
 }
