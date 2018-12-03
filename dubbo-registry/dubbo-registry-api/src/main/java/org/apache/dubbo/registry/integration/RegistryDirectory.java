@@ -31,7 +31,6 @@ import org.apache.dubbo.configcenter.ConfigurationListener;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
-import org.apache.dubbo.registry.integration.parser.ConfigParser;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -42,6 +41,7 @@ import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
 import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.RouterFactory;
+import org.apache.dubbo.rpc.cluster.configurator.parser.ConfigParser;
 import org.apache.dubbo.rpc.cluster.directory.AbstractDirectory;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
@@ -160,12 +160,12 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         return configurators;
     }
 
-    public static List<Configurator> configToConfiguratiors(String rawConfig) {
+    public static List<Configurator> configToConfiguratiors(String rawConfig, String serviceKey) {
         if (StringUtils.isEmpty(rawConfig)) {
             return new LinkedList<>();
         }
         try {
-            List<URL> urls = ConfigParser.parseConfigurators(rawConfig);
+            List<URL> urls = ConfigParser.parseConfigurators(rawConfig, serviceKey);
             return urls.stream().map(configuratorFactory::getConfigurator).collect(Collectors.toList());
         } catch (Exception e) {
             logger.error("Failed to parse raw dynamic config and it will not take effect, the raw config is: " + rawConfig, e);
@@ -203,6 +203,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }
 
             String appKey = url.getParameter(Constants.APPLICATION_KEY) + Constants.CONFIGURATORS_SUFFIX;
+            dynamicConfiguration.addListener(appKey, this);
             String appRawConfig = dynamicConfiguration.getConfig(appKey);
             if (appRawConfig != null) {
                 this.process(new ConfigChangeEvent(appKey, appRawConfig));
@@ -710,6 +711,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     @Override
     public synchronized void process(ConfigChangeEvent event) {
+        logger.info("Notification of overriding rule, change type is: " + event.getChangeType() + ", raw config content is:\n " + event.getNewValue());
+
         List<URL> urls = new ArrayList<>();
         if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
             URL url = getConsumerUrl().clearParameters().setProtocol(Constants.EMPTY_PROTOCOL);
@@ -721,11 +724,14 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             urls.add(url);
         } else {
             try {
-                urls = ConfigParser.parseConfigurators(event.getNewValue());
+                urls = ConfigParser.parseConfigurators(event.getNewValue(), overrideDirectoryUrl.getServiceKey());
             } catch (Exception e) {
                 logger.error("Failed to parse raw dynamic config and it will not take effect, the raw config is: " + event.getNewValue(), e);
             }
         }
+
+        logger.debug("");
+
         notify(urls);
     }
 
