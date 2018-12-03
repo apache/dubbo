@@ -100,6 +100,10 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
 
     @Override
     public synchronized void process(ConfigChangeEvent event) {
+        if (logger.isInfoEnabled()) {
+            logger.info("Notification of tag rule, change type is: " + event.getChangeType() + ", raw rule is:\n " + event.getNewValue());
+        }
+
         try {
             if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
                 this.tagRouterRule = null;
