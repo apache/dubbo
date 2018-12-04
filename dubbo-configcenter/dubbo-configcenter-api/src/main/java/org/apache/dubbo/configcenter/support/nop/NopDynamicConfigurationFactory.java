@@ -14,19 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.configcenter;
+package org.apache.dubbo.configcenter.support.nop;
+
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.configcenter.AbstractDynamicConfigurationFactory;
+import org.apache.dubbo.configcenter.DynamicConfiguration;
 
 /**
- * Config type
+ *
  */
-public enum ConfigType {
-    /**
-     * For Dubbo dynamic config other than routing rules.
-     */
-    CONFIGURATORS,
+public class NopDynamicConfigurationFactory extends AbstractDynamicConfigurationFactory {
 
-    /**
-     * For Dubbo routing rules
-     */
-    ROUTERS
+    @Override
+    protected DynamicConfiguration createDynamicConfiguration(URL url) {
+        return new NopDynamicConfiguration(url);
+    }
 }

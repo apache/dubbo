@@ -14,14 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.integration.parser;
+package org.apache.dubbo.rpc.cluster.configurator.parser;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.registry.integration.parser.model.ConfigItem;
-import org.apache.dubbo.registry.integration.parser.model.ConfiguratorConfig;
+import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfigItem;
+import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfiguratorConfig;
+
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -36,7 +37,7 @@ import java.util.stream.Collectors;
  */
 public class ConfigParser {
 
-    public static List<URL> parseConfigurators(String rawConfig) {
+    public static List<URL> parseConfigurators(String rawConfig, String serviceKey) {
         List<URL> urls = new ArrayList<>();
         ConfiguratorConfig configuratorConfig = parseObject(rawConfig, ConfiguratorConfig.class);
 
@@ -45,7 +46,7 @@ public class ConfigParser {
 
         if (ConfiguratorConfig.SCOPE_APPLICATION.equals(scope)) {
             items.forEach(item -> urls.addAll(
-                    appItemToUrls(item, configuratorConfig.getKey())
+                    appItemToUrls(item, configuratorConfig.getKey(), serviceKey)
                             .stream()
                             .map(u -> u.addParameter(Constants.CATEGORY_KEY, Constants.APP_DYNAMIC_CONFIGURATORS_CATEGORY))
                             .map(u -> u.addParameter(Constants.ENABLED_KEY, configuratorConfig.isEnabled()))
@@ -99,7 +100,7 @@ public class ConfigParser {
         return urls;
     }
 
-    private static List<URL> appItemToUrls(ConfigItem item, String appKey) {
+    private static List<URL> appItemToUrls(ConfigItem item, String appKey, String serviceKey) {
         List<URL> urls = new ArrayList<>();
         List<String> addresses = item.getAddresses();
         if (addresses == null) {
@@ -111,15 +112,13 @@ public class ConfigParser {
         for (String addr : addresses) {
             String urlStr = "override://" + addr + "/";
             List<String> services = item.getServices();
-            if (services == null) {
-                services = new ArrayList<>();
+            String targetService = serviceKey;
+            if (CollectionUtils.isEmpty(services) || services.contains("*")) {
+                targetService = "*";
+            } else if (!services.contains(serviceKey)) {
+                return urls;
             }
-            if (services.size() == 0) {
-                services.add("*");
-            }
-            for (String s : services) {
-                urls.add(URL.valueOf(urlStr + appendService(s) + toParameterString(item) + "&application=" + appKey));
-            }
+            urls.add(URL.valueOf(urlStr + appendService(targetService) + toParameterString(item) + "&application=" + appKey));
         }
         return urls;
     }

@@ -718,9 +718,9 @@ public class Constants {
 
     public static final String MULTICAST = "multicast";
 
-    public static final String TAG_KEY = "tag";
+    public static final String TAG_KEY = "dubbo.tag";
 
-    public static final String FORCE_USE_TAG = "force.tag";
+    public static final String FORCE_USE_TAG = "dubbo.force.tag";
 
     public static final String HOST_KEY = "host";
 

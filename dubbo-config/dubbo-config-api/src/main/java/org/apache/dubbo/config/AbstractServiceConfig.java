@@ -240,6 +240,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
         this.serialization = serialization;
     }
 
+    @Parameter(key = "dubbo.tag", useKeyAsProperty = false)
     public String getTag() {
         return tag;
     }

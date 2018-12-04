@@ -21,13 +21,12 @@ import org.apache.dubbo.common.config.AbstractConfiguration;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Dynamic configuration template class. The concrete implementation needs to provide implementation for three methods.
  *
  * @see AbstractDynamicConfiguration#getTargetConfig(String, String, long)
- * @see AbstractDynamicConfiguration#addConfigurationListener(TargetListener, ConfigurationListener)
+ * @see AbstractDynamicConfiguration#addConfigurationListener(String key, TargetListener, ConfigurationListener)
  * @see AbstractDynamicConfiguration#createTargetListener(String)
  */
 public abstract class AbstractDynamicConfiguration<TargetListener> extends AbstractConfiguration
@@ -35,7 +34,6 @@ public abstract class AbstractDynamicConfiguration<TargetListener> extends Abstr
     protected static final String DEFAULT_GROUP = "dubbo";
 
     protected URL url;
-    private AtomicBoolean inited = new AtomicBoolean(false);
 
     // One key can register multiple target listeners, but one target listener only maps to one configuration listener
     protected ConcurrentMap<String, TargetListener> targetListeners =
@@ -44,12 +42,9 @@ public abstract class AbstractDynamicConfiguration<TargetListener> extends Abstr
     public AbstractDynamicConfiguration() {
     }
 
-    @Override
-    public void initWith(URL url) {
-        if (!inited.compareAndSet(false, true)) {
-            return;
-        }
+    public AbstractDynamicConfiguration(URL url) {
         this.url = url;
+        initWith(url);
     }
 
     @Override
@@ -60,30 +55,18 @@ public abstract class AbstractDynamicConfiguration<TargetListener> extends Abstr
 
     @Override
     public String getConfig(String key) {
-        return getConfig(key, null, null);
+        return getConfig(key, null, 0L);
     }
 
     @Override
     public String getConfig(String key, String group) {
-        return getConfig(key, group, null);
+        return getConfig(key, group, 0L);
     }
 
-    @Override
-    public String getConfig(String key, ConfigurationListener listener) {
-        return getConfig(key, null, listener);
-    }
 
     @Override
-    public String getConfig(String key, String group, ConfigurationListener listener) {
-        return getConfig(key, group, listener, 0L);
-    }
-
-    @Override
-    public String getConfig(String key, String group, ConfigurationListener listener, long timeout) {
+    public String getConfig(String key, String group, long timeout) {
         try {
-            if (listener != null) {
-                this.addListener(key, listener);
-            }
             return getTargetConfig(key, group, timeout);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -95,6 +78,9 @@ public abstract class AbstractDynamicConfiguration<TargetListener> extends Abstr
 
     }
 
+    protected abstract void initWith(URL url);
+
+    // FIXME do wo need this?
     protected abstract void recover();
 
     /**

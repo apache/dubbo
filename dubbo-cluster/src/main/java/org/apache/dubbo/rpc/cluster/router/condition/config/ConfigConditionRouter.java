@@ -21,7 +21,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.ConfigChangeType;
 import org.apache.dubbo.configcenter.ConfigurationListener;
@@ -58,33 +57,29 @@ public class ConfigConditionRouter extends AbstractRouter implements Configurati
         this.configuration = configuration;
         this.force = false;
         this.url = url;
-        try {
-            String rawRule = this.configuration.getConfig(url.getEncodedServiceKey() + Constants.ROUTERS_SUFFIX, this);
-            String appRawRule = this.configuration.getConfig(url.getParameter(Constants.APPLICATION_KEY) + Constants.ROUTERS_SUFFIX, this);
-            if (!StringUtils.isEmpty(rawRule)) {
-                try {
-                    routerRule = ConditionRuleParser.parse(rawRule);
-                    generateConditions();
-                } catch (Exception e) {
-                    logger.error("Failed to parse the raw condition rule and it will not take effect, please check if the condition rule matches with the template, the raw rule is: \n" + rawRule, e);
-                }
-            }
-            if (!StringUtils.isEmpty(appRawRule)) {
-                try {
-                    appRouterRule = ConditionRuleParser.parse(appRawRule);
-                    generateAppConditions();
-                } catch (Exception e) {
-                    logger.error("Failed to parse the raw condition rule and it will not take effect, please check if the condition rule matches with the template, the raw rule is: \n" + appRawRule, e);
-                }
-            }
 
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to init the condition router for service " + url.getServiceKey() + ", application " + url.getParameter(Constants.APPLICATION_KEY), e);
+        synchronized (this) {
+            String appKey = url.getParameter(Constants.APPLICATION_KEY) + Constants.ROUTERS_SUFFIX;
+            configuration.addListener(appKey, this);
+            String appRawRule = configuration.getConfig(appKey);
+            if (appRawRule != null) {
+                this.process(new ConfigChangeEvent(appKey, appRawRule));
+            }
+            String key = url.getEncodedServiceKey() + Constants.ROUTERS_SUFFIX;
+            configuration.addListener(key, this);
+            String rawRule = configuration.getConfig(key);
+            if (rawRule != null) {
+                this.process(new ConfigChangeEvent(key, rawRule));
+            }
         }
     }
 
     @Override
-    public void process(ConfigChangeEvent event) {
+    public synchronized void process(ConfigChangeEvent event) {
+        if (logger.isInfoEnabled()) {
+            logger.info("Notification of tag rule, change type is: " + event.getChangeType() + ", raw rule is:\n " + event.getNewValue());
+        }
+
         if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
             // Now, we can only recognize if it's a app level or service level change by try to match event key.
             if (event.getKey().endsWith(this.url.getParameter(Constants.APPLICATION_KEY) + Constants.ROUTERS_SUFFIX)) {
