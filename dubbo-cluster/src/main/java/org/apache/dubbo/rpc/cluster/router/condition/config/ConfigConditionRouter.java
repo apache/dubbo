@@ -77,7 +77,7 @@ public class ConfigConditionRouter extends AbstractRouter implements Configurati
     @Override
     public synchronized void process(ConfigChangeEvent event) {
         if (logger.isInfoEnabled()) {
-            logger.info("Notification of tag rule, change type is: " + event.getChangeType() + ", raw rule is:\n " + event.getNewValue());
+            logger.info("Notification of condition rule, change type is: " + event.getChangeType() + ", raw rule is:\n " + event.getNewValue());
         }
 
         if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
@@ -102,7 +102,10 @@ public class ConfigConditionRouter extends AbstractRouter implements Configurati
                 logger.error("Failed to parse the raw condition rule and it will not take effect, please check if the condition rule matches with the template, the raw rule is:\n " + event.getNewValue(), e);
             }
         }
-        routerChain.notifyRuleChanged();
+
+        if (routerChain != null) {
+            routerChain.notifyRuleChanged();
+        }
     }
 
     @Override

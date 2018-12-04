@@ -140,6 +140,7 @@ public class RouterChain<T> {
             parentNode.addChild(node);
             // Only when we have more routers and the sub-lis is not empty.
             if (i < routers.size() && CollectionUtils.isNotEmpty(list)) {
+                node.setInvokers(null); // only store invoker list in leaf nodes.
                 Router nextRouter = routers.get(i);
                 doRoute(nextRouter, i + 1, node, nextRouter.preRoute(list, url, invocation), url, invocation);
             }
