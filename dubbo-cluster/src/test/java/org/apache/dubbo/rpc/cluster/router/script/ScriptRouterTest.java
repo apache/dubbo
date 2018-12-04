@@ -113,7 +113,7 @@ public class ScriptRouterTest {
     }
     
     @Test
-    public void testRoute_throwExcetion() {
+    public void testRoute_throwException() {
     	List<Invoker<String>> invokers = new ArrayList<Invoker<String>>();
     	MockInvoker<String> invoker1 = new MockInvoker<String>(URL.valueOf("dubbo://10.134.108.1:20880/com.dubbo.HelloService"));
     	MockInvoker<String> invoker2 = new MockInvoker<String>(URL.valueOf("dubbo://10.134.108.2:20880/com.dubbo.HelloService"));
