@@ -16,16 +16,17 @@
  */
 package org.apache.dubbo.configcenter.support.zookeeper;
 
-import org.apache.curator.RetryPolicy;
-import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.recipes.cache.ChildData;
-import org.apache.curator.framework.recipes.cache.TreeCache;
-import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.configcenter.AbstractDynamicConfiguration;
 import org.apache.dubbo.configcenter.ConfigurationListener;
+
+import org.apache.curator.RetryPolicy;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.recipes.cache.ChildData;
+import org.apache.curator.framework.recipes.cache.TreeCache;
+import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,25 +44,29 @@ import static org.apache.dubbo.common.Constants.CONFIG_NAMESPACE_KEY;
  */
 public class ZookeeperDynamicConfiguration extends AbstractDynamicConfiguration<CacheListener> {
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperDynamicConfiguration.class);
-    private Executor executor = Executors.newFixedThreadPool(1);
+    private Executor executor;
     private CuratorFramework client;
 
     // The final root path would be: /configRootPath/"config"
     private String rootPath;
     private TreeCache treeCache;
-    private CountDownLatch initializedLatch = new CountDownLatch(1);
+    private CountDownLatch initializedLatch;
 
     private CacheListener cacheListener;
 
-    @Override
-    public void initWith(URL url) {
-        super.initWith(url);
+    ZookeeperDynamicConfiguration() {
+    }
 
+    ZookeeperDynamicConfiguration(URL url) {
+        super(url);
+    }
+
+    protected void initWith(URL url) {
         rootPath = "/" + url.getParameter(CONFIG_NAMESPACE_KEY, Constants.DUBBO) + "/config";
 
         RetryPolicy policy = new ExponentialBackoffRetry(1000, 3);
-        int sessionTimeout = 60 * 1000;
-        int connectTimeout = 10 * 1000;
+        int sessionTimeout = url.getParameter("config.session.timeout", 60 * 1000);
+        int connectTimeout = url.getParameter("config.connect.timeout", 10 * 1000);
         String connectString = url.getBackupAddress();
         client = newClient(connectString, sessionTimeout, connectTimeout, policy);
         client.start();
@@ -69,7 +74,7 @@ public class ZookeeperDynamicConfiguration extends AbstractDynamicConfiguration<
         try {
             boolean connected = client.blockUntilConnected(3 * connectTimeout, TimeUnit.MILLISECONDS);
             if (!connected) {
-                if (url.getParameter(Constants.CONFIG_CHECK_KEY, false)) {
+                if (url.getParameter(Constants.CONFIG_CHECK_KEY, true)) {
                     throw new IllegalStateException("Failed to connect to config center (zookeeper): "
                             + connectString + " in " + 3 * connectTimeout + "ms.");
                 } else {
@@ -81,8 +86,9 @@ public class ZookeeperDynamicConfiguration extends AbstractDynamicConfiguration<
                     + connectString + " config center, ", e);
         }
 
+        initializedLatch = new CountDownLatch(1);
         this.cacheListener = new CacheListener(rootPath, initializedLatch);
-
+        this.executor = Executors.newFixedThreadPool(1);
         // build local cache
         try {
             this.buildCache();
@@ -97,7 +103,7 @@ public class ZookeeperDynamicConfiguration extends AbstractDynamicConfiguration<
             key = group + "." + key;
         }
 
-        return (String) getInternalProperty(key);
+        return (String) getInternalProperty(rootPath + "/" + key.replaceFirst("\\.", "/"));
     }
 
     @Override
@@ -116,7 +122,7 @@ public class ZookeeperDynamicConfiguration extends AbstractDynamicConfiguration<
      */
     @Override
     protected Object getInternalProperty(String key) {
-        ChildData childData = treeCache.getCurrentData(rootPath + "/" + key.replaceFirst("\\.", "/"));
+        ChildData childData = treeCache.getCurrentData(key);
         if (childData != null) {
             return new String(childData.getData(), StandardCharsets.UTF_8);
         }
