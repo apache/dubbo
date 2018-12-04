@@ -110,7 +110,9 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
             } else {
                 this.tagRouterRule = TagRuleParser.parse(event.getNewValue());
             }
-            routerChain.notifyRuleChanged();
+            if (routerChain != null) {
+                routerChain.notifyRuleChanged();
+            }
         } catch (Exception e) {
             logger.error("Failed to parse the raw tag router rule and it will not take effect, please check if the rule matches with the template, the raw rule is:\n ", e);
         }
