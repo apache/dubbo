@@ -47,7 +47,8 @@ import org.apache.dubbo.common.extension.ext8_add.impl.AddExt3_ManualAdaptive;
 import org.apache.dubbo.common.extension.ext8_add.impl.AddExt4_ManualAdaptive;
 import org.apache.dubbo.common.extension.ext9_empty.Ext9Empty;
 import org.apache.dubbo.common.extension.ext9_empty.impl.Ext9EmptyImpl;
-
+import org.apache.dubbo.common.extension.injection.InjectExt;
+import org.apache.dubbo.common.extension.injection.impl.InjectExtImpl;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -423,6 +424,16 @@ public class ExtensionLoaderTest {
         Assert.assertEquals(2, list.size());
         Assert.assertTrue(list.get(0).getClass() == ActivateExt1Impl1.class);
         Assert.assertTrue(list.get(1).getClass() == OrderActivateExtImpl1.class);
+    }
+
+    @Test
+    public void testInjectExtension() {
+        // test default
+        InjectExt injectExt = ExtensionLoader.getExtensionLoader(InjectExt.class).getExtension("injection");
+        InjectExtImpl injectExtImpl = (InjectExtImpl) injectExt;
+        Assert.assertNotNull(injectExtImpl.getSimpleExt());
+        Assert.assertNull(injectExtImpl.getSimpleExt1());
+        Assert.assertNull(injectExtImpl.getGenericType());
     }
 
 }

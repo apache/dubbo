@@ -26,7 +26,9 @@ import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -50,6 +52,11 @@ public class ReferenceCountExchangeClientTest {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
+    }
+
+    @AfterClass
+    public static void tearDownAfterClass() {
+        ProtocolUtils.closeAll();
     }
 
     public static Invoker<?> referInvoker(Class<?> type, URL url) {
@@ -123,6 +130,14 @@ public class ReferenceCountExchangeClientTest {
         Assert.assertEquals("should not warning message", 0, LogUtil.findMessage(errorMsg));
         // counter is incorrect, invocation still succeeds
         client.close();
+
+        // wait close done.
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            Assert.fail();
+        }
+
         Assert.assertEquals("hello", helloService.hello());
         Assert.assertEquals("should warning message", 1, LogUtil.findMessage(errorMsg));
 

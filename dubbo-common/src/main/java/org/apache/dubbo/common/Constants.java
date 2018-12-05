@@ -19,6 +19,7 @@ package org.apache.dubbo.common;
 
 import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
+
 /**
  * Constants
  */
@@ -246,6 +247,23 @@ public class Constants {
 
     public static final String HEARTBEAT_KEY = "heartbeat";
 
+    /**
+     * Every heartbeat duration / HEATBEAT_CHECK_TICK, check if a heartbeat should be sent. Every heartbeat timeout
+     * duration / HEATBEAT_CHECK_TICK, check if a connection should be closed on server side, and if reconnect on
+     * client side
+     */
+    public static final int HEARTBEAT_CHECK_TICK = 3;
+
+    /**
+     * the least heartbeat during is 1000 ms.
+     */
+    public static final long LEAST_HEARTBEAT_DURATION = 1000;
+
+    /**
+     * ticks per wheel. Currently only contains two tasks, so 16 locations are enough
+     */
+    public static final int TICKS_PER_WHEEL = 16;
+
     public static final String HEARTBEAT_TIMEOUT_KEY = "heartbeat.timeout";
 
     public static final String CONNECT_TIMEOUT_KEY = "connect.timeout";
@@ -361,6 +379,8 @@ public class Constants {
             .compile("\\s*[,]+\\s*");
 
     public final static String PATH_SEPARATOR = "/";
+
+    public final static String PROTOCOL_SEPARATOR = "://";
 
     public static final String REGISTRY_SEPARATOR = "|";
 
@@ -640,6 +660,10 @@ public class Constants {
     public static final boolean DEFAULT_HESSIAN_OVERLOAD_METHOD = false;
 
     public static final String MULTICAST = "multicast";
+
+    public static final String TAG_KEY = "tag";
+
+    public static final String REQUEST_TAG_KEY = "request.tag";
 
     /*
      * private Constants(){ }

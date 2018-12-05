@@ -111,7 +111,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         req.setVersion(Version.getProtocolVersion());
         req.setTwoWay(true);
         req.setData(request);
-        DefaultFuture future = new DefaultFuture(channel, req, timeout);
+        DefaultFuture future = DefaultFuture.newFuture(channel, req, timeout);
         try {
             channel.send(req);
         } catch (RemotingException e) {
@@ -221,13 +221,23 @@ final class HeaderExchangeChannel implements ExchangeChannel {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
         HeaderExchangeChannel other = (HeaderExchangeChannel) obj;
         if (channel == null) {
-            if (other.channel != null) return false;
-        } else if (!channel.equals(other.channel)) return false;
+            if (other.channel != null) {
+                return false;
+            }
+        } else if (!channel.equals(other.channel)) {
+            return false;
+        }
         return true;
     }
 

@@ -22,6 +22,7 @@ import org.apache.dubbo.config.spring.context.annotation.DubboConfigBindingRegis
 import org.apache.dubbo.config.spring.context.annotation.EnableDubboConfigBinding;
 import org.apache.dubbo.config.spring.context.properties.DefaultDubboConfigBinder;
 import org.apache.dubbo.config.spring.context.properties.DubboConfigBinder;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
@@ -75,7 +76,7 @@ public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, A
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 
-        if (beanName.equals(this.beanName) && bean instanceof AbstractConfig) {
+        if (beanName != null && beanName.equals(this.beanName) && bean instanceof AbstractConfig) {
 
             AbstractConfig dubboConfig = (AbstractConfig) bean;
 

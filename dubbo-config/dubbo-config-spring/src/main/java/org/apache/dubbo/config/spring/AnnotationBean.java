@@ -28,7 +28,6 @@ import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
-import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.annotation.Reference;
@@ -76,7 +75,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
     public void setPackage(String annotationPackage) {
         this.annotationPackage = annotationPackage;
         this.annotationPackages = (annotationPackage == null || annotationPackage.length() == 0) ? null
-            : Constants.COMMA_SPLIT_PATTERN.split(annotationPackage);
+                : Constants.COMMA_SPLIT_PATTERN.split(annotationPackage);
     }
 
     @Override
@@ -86,7 +85,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
 
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory)
-        throws BeansException {
+            throws BeansException {
         if (annotationPackage == null || annotationPackage.length() == 0) {
             return;
         }
@@ -112,17 +111,16 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
 
     @Override
     public void destroy() {
-
-        //  This will only be called for singleton scope bean, and expected to be called by spring shutdown hook when BeanFactory/ApplicationContext destroys.
-        //  We will guarantee dubbo related resources being released with dubbo shutdown hook.
-
-        //  for (ServiceConfig<?> serviceConfig : serviceConfigs) {
-        //      try {
-        //          serviceConfig.unexport();
-        //      } catch (Throwable e) {
-        //          logger.error(e.getMessage(), e);
-        //      }
-        //  }
+        // no need to destroy here
+        // see org.apache.dubbo.config.spring.extension.SpringExtensionFactory.ShutdownHookListener
+        /*
+          for (ServiceConfig<?> serviceConfig : serviceConfigs) {
+              try {
+                  serviceConfig.unexport();
+              } catch (Throwable e) {
+                  logger.error(e.getMessage(), e);
+              }
+          }
 
         for (ReferenceConfig<?> referenceConfig : referenceConfigs.values()) {
             try {
@@ -131,11 +129,12 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                 logger.error(e.getMessage(), e);
             }
         }
+        */
     }
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName)
-        throws BeansException {
+            throws BeansException {
         if (!isMatchPackage(bean)) {
             return bean;
         }
@@ -144,7 +143,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
             ServiceBean<Object> serviceConfig = new ServiceBean<Object>(service);
             serviceConfig.setRef(bean);
             if (void.class.equals(service.interfaceClass())
-                && "".equals(service.interfaceName())) {
+                    && "".equals(service.interfaceName())) {
                 if (bean.getClass().getInterfaces().length > 0) {
                     serviceConfig.setInterface(bean.getClass().getInterfaces()[0]);
                 } else {
@@ -186,6 +185,9 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                     }
                     serviceConfig.setProtocols(protocolConfigs);
                 }
+                if (service.tag().length() > 0) {
+                    serviceConfig.setTag(service.tag());
+                }
                 try {
                     serviceConfig.afterPropertiesSet();
                 } catch (RuntimeException e) {
@@ -202,7 +204,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName)
-        throws BeansException {
+            throws BeansException {
         if (!isMatchPackage(bean)) {
             return bean;
         }
@@ -210,9 +212,9 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
         for (Method method : methods) {
             String name = method.getName();
             if (name.length() > 3 && name.startsWith("set")
-                && method.getParameterTypes().length == 1
-                && Modifier.isPublic(method.getModifiers())
-                && !Modifier.isStatic(method.getModifiers())) {
+                    && method.getParameterTypes().length == 1
+                    && Modifier.isPublic(method.getModifiers())
+                    && !Modifier.isStatic(method.getModifiers())) {
                 try {
                     Reference reference = method.getAnnotation(Reference.class);
                     if (reference != null) {
@@ -240,7 +242,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                     }
                 }
             } catch (Throwable e) {
-                logger.error("Failed to init remote service reference at filed " + field.getName() + " in class " + bean.getClass().getName() + ", cause: " + e.getMessage(), e);
+                logger.error("Failed to init remote service reference at field " + field.getName() + " in class " + bean.getClass().getName() + ", cause: " + e.getMessage(), e);
             }
         }
         return bean;
@@ -262,8 +264,8 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
         if (referenceConfig == null) {
             referenceConfig = new ReferenceBean<Object>(reference);
             if (void.class.equals(reference.interfaceClass())
-                && "".equals(reference.interfaceName())
-                && referenceClass.isInterface()) {
+                    && "".equals(reference.interfaceName())
+                    && referenceClass.isInterface()) {
                 referenceConfig.setInterface(referenceClass);
             }
             if (applicationContext != null) {

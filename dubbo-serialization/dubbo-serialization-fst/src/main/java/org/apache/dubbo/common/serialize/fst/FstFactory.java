@@ -37,9 +37,7 @@ public class FstFactory {
     }
 
     public FstFactory() {
-        for (Class clazz : SerializableClassRegistry.getRegisteredClasses()) {
-            conf.registerClass(clazz);
-        }
+        SerializableClassRegistry.getRegisteredClasses().keySet().forEach(conf::registerClass);
     }
 
     public FSTObjectOutput getObjectOutput(OutputStream outputStream) {

@@ -57,7 +57,9 @@ public class Request {
     }
 
     private static String safeToString(Object data) {
-        if (data == null) return null;
+        if (data == null) {
+            return null;
+        }
         String dataStr;
         try {
             dataStr = data.toString();

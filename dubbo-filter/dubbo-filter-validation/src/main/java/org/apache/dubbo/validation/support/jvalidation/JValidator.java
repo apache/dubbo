@@ -202,28 +202,29 @@ public class JValidator implements Validator {
     // Copy from javassist.bytecode.annotation.Annotation.createMemberValue(ConstPool, CtClass);
     private static MemberValue createMemberValue(ConstPool cp, CtClass type, Object value) throws NotFoundException {
         MemberValue memberValue = javassist.bytecode.annotation.Annotation.createMemberValue(cp, type);
-        if (memberValue instanceof BooleanMemberValue)
+        if (memberValue instanceof BooleanMemberValue) {
             ((BooleanMemberValue) memberValue).setValue((Boolean) value);
-        else if (memberValue instanceof ByteMemberValue)
+        } else if (memberValue instanceof ByteMemberValue) {
             ((ByteMemberValue) memberValue).setValue((Byte) value);
-        else if (memberValue instanceof CharMemberValue)
+        } else if (memberValue instanceof CharMemberValue) {
             ((CharMemberValue) memberValue).setValue((Character) value);
-        else if (memberValue instanceof ShortMemberValue)
+        } else if (memberValue instanceof ShortMemberValue) {
             ((ShortMemberValue) memberValue).setValue((Short) value);
-        else if (memberValue instanceof IntegerMemberValue)
+        } else if (memberValue instanceof IntegerMemberValue) {
             ((IntegerMemberValue) memberValue).setValue((Integer) value);
-        else if (memberValue instanceof LongMemberValue)
+        } else if (memberValue instanceof LongMemberValue) {
             ((LongMemberValue) memberValue).setValue((Long) value);
-        else if (memberValue instanceof FloatMemberValue)
+        } else if (memberValue instanceof FloatMemberValue) {
             ((FloatMemberValue) memberValue).setValue((Float) value);
-        else if (memberValue instanceof DoubleMemberValue)
+        } else if (memberValue instanceof DoubleMemberValue) {
             ((DoubleMemberValue) memberValue).setValue((Double) value);
-        else if (memberValue instanceof ClassMemberValue)
+        } else if (memberValue instanceof ClassMemberValue) {
             ((ClassMemberValue) memberValue).setValue(((Class<?>) value).getName());
-        else if (memberValue instanceof StringMemberValue)
+        } else if (memberValue instanceof StringMemberValue) {
             ((StringMemberValue) memberValue).setValue((String) value);
-        else if (memberValue instanceof EnumMemberValue)
+        } else if (memberValue instanceof EnumMemberValue) {
             ((EnumMemberValue) memberValue).setValue(((Enum<?>) value).name());
+        }
         /* else if (memberValue instanceof AnnotationMemberValue) */
         else if (memberValue instanceof ArrayMemberValue) {
             CtClass arrayType = type.getComponentType();

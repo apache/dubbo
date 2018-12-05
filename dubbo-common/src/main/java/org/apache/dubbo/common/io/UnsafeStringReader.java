@@ -36,8 +36,9 @@ public class UnsafeStringReader extends Reader {
     @Override
     public int read() throws IOException {
         ensureOpen();
-        if (mPosition >= mLimit)
+        if (mPosition >= mLimit) {
             return -1;
+        }
 
         return mString.charAt(mPosition++);
     }
@@ -46,14 +47,17 @@ public class UnsafeStringReader extends Reader {
     public int read(char[] cs, int off, int len) throws IOException {
         ensureOpen();
         if ((off < 0) || (off > cs.length) || (len < 0) ||
-                ((off + len) > cs.length) || ((off + len) < 0))
+                ((off + len) > cs.length) || ((off + len) < 0)) {
             throw new IndexOutOfBoundsException();
+        }
 
-        if (len == 0)
+        if (len == 0) {
             return 0;
+        }
 
-        if (mPosition >= mLimit)
+        if (mPosition >= mLimit) {
             return -1;
+        }
 
         int n = Math.min(mLimit - mPosition, len);
         mString.getChars(mPosition, mPosition + n, cs, off);
@@ -64,8 +68,9 @@ public class UnsafeStringReader extends Reader {
     @Override
     public long skip(long ns) throws IOException {
         ensureOpen();
-        if (mPosition >= mLimit)
+        if (mPosition >= mLimit) {
             return 0;
+        }
 
         long n = Math.min(mLimit - mPosition, ns);
         n = Math.max(-mPosition, n);
@@ -86,8 +91,9 @@ public class UnsafeStringReader extends Reader {
 
     @Override
     public void mark(int readAheadLimit) throws IOException {
-        if (readAheadLimit < 0)
+        if (readAheadLimit < 0) {
             throw new IllegalArgumentException("Read-ahead limit < 0");
+        }
 
         ensureOpen();
         mMark = mPosition;
@@ -105,7 +111,8 @@ public class UnsafeStringReader extends Reader {
     }
 
     private void ensureOpen() throws IOException {
-        if (mString == null)
+        if (mString == null) {
             throw new IOException("Stream closed");
+        }
     }
 }

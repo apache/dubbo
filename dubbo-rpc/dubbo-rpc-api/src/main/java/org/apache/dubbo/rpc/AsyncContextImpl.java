@@ -71,6 +71,7 @@ public class AsyncContextImpl implements AsyncContext {
         this.started.set(true);
     }
 
+    @Override
     public void signalContextSwitch() {
         RpcContext.restoreContext(storedContext);
         RpcContext.restoreServerContext(storedServerContext);

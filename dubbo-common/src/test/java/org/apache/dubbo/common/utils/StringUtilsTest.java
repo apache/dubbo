@@ -112,6 +112,30 @@ public class StringUtilsTest {
     }
 
     @Test
+    public void testIsNoneEmpty() throws Exception {
+        assertFalse(StringUtils.isNoneEmpty(null));
+        assertFalse(StringUtils.isNoneEmpty(""));
+        assertTrue(StringUtils.isNoneEmpty(" "));
+        assertTrue(StringUtils.isNoneEmpty("abc"));
+        assertTrue(StringUtils.isNoneEmpty("abc", "def"));
+        assertFalse(StringUtils.isNoneEmpty("abc", null));
+        assertFalse(StringUtils.isNoneEmpty("abc", ""));
+        assertTrue(StringUtils.isNoneEmpty("abc", " "));
+    }
+
+    @Test
+    public void testIsAnyEmpty() throws Exception {
+        assertTrue(StringUtils.isAnyEmpty(null));
+        assertTrue(StringUtils.isAnyEmpty(""));
+        assertFalse(StringUtils.isAnyEmpty(" "));
+        assertFalse(StringUtils.isAnyEmpty("abc"));
+        assertFalse(StringUtils.isAnyEmpty("abc", "def"));
+        assertTrue(StringUtils.isAnyEmpty("abc", null));
+        assertTrue(StringUtils.isAnyEmpty("abc", ""));
+        assertFalse(StringUtils.isAnyEmpty("abc", " "));
+    }
+
+    @Test
     public void testIsNotEmpty() throws Exception {
         assertFalse(StringUtils.isNotEmpty(null));
         assertFalse(StringUtils.isNotEmpty(""));
@@ -200,10 +224,10 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testTranslat() throws Exception {
+    public void testTranslate() throws Exception {
         String s = "16314";
-        assertEquals(StringUtils.translat(s, "123456", "abcdef"), "afcad");
-        assertEquals(StringUtils.translat(s, "123456", "abcd"), "acad");
+        assertEquals(StringUtils.translate(s, "123456", "abcdef"), "afcad");
+        assertEquals(StringUtils.translate(s, "123456", "abcd"), "acad");
     }
 
     @Test

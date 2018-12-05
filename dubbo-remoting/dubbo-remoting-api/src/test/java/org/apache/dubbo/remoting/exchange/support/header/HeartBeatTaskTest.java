@@ -19,32 +19,30 @@ package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.exchange.Request;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class HeartBeatTaskTest {
 
     private URL url = URL.valueOf("dubbo://localhost:20880");
 
     private MockChannel channel;
-    private HeartBeatTask task;
+
+    private HeartbeatTimerTask heartbeatTimerTask;
+    private HashedWheelTimer heartbeatTimer;
 
     @Before
     public void setup() throws Exception {
-        task = new HeartBeatTask(new HeartBeatTask.ChannelProvider() {
-
-            public Collection<Channel> getChannels() {
-                return Collections.<Channel>singletonList(channel);
-            }
-        }, 1000, 1000 * 3);
+        long tickDuration = 1000;
+        heartbeatTimer = new HashedWheelTimer(tickDuration / Constants.HEARTBEAT_CHECK_TICK, TimeUnit.MILLISECONDS);
 
         channel = new MockChannel() {
 
@@ -53,17 +51,24 @@ public class HeartBeatTaskTest {
                 return url;
             }
         };
+
+        AbstractTimerTask.ChannelProvider cp = () -> Collections.<Channel>singletonList(channel);
+        heartbeatTimerTask = new HeartbeatTimerTask(cp, tickDuration / Constants.HEARTBEAT_CHECK_TICK, (int) tickDuration);
     }
 
     @Test
     public void testHeartBeat() throws Exception {
+        long now = System.currentTimeMillis();
+
         url = url.addParameter(Constants.DUBBO_VERSION_KEY, "2.1.1");
         channel.setAttribute(
-                HeaderExchangeHandler.KEY_READ_TIMESTAMP, System.currentTimeMillis());
+                HeaderExchangeHandler.KEY_READ_TIMESTAMP, now);
         channel.setAttribute(
-                HeaderExchangeHandler.KEY_WRITE_TIMESTAMP, System.currentTimeMillis());
+                HeaderExchangeHandler.KEY_WRITE_TIMESTAMP, now);
+
+        heartbeatTimer.newTimeout(heartbeatTimerTask, 250, TimeUnit.MILLISECONDS);
+
         Thread.sleep(2000L);
-        task.run();
         List<Object> objects = channel.getSentObjects();
         Assert.assertTrue(objects.size() > 0);
         Object obj = objects.get(0);

@@ -24,9 +24,9 @@ import org.apache.dubbo.remoting.http.HttpServer;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
-
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
+
 import com.caucho.hessian.HessianException;
 import com.caucho.hessian.client.HessianConnectionException;
 import com.caucho.hessian.client.HessianConnectionFactory;
@@ -109,7 +109,9 @@ public class HessianProtocol extends AbstractProxyProtocol {
         hessianProxyFactory.setOverloadEnabled(isOverloadEnabled);
         String client = url.getParameter(Constants.CLIENT_KEY, Constants.DEFAULT_HTTP_CLIENT);
         if ("httpclient".equals(client)) {
-            hessianProxyFactory.setConnectionFactory(new HttpClientConnectionFactory());
+            HessianConnectionFactory factory = new HttpClientConnectionFactory();
+            factory.setHessianProxyFactory(hessianProxyFactory);
+            hessianProxyFactory.setConnectionFactory(factory);
         } else if (client != null && client.length() > 0 && !Constants.DEFAULT_HTTP_CLIENT.equals(client)) {
             throw new IllegalStateException("Unsupported http protocol client=\"" + client + "\"!");
         } else {

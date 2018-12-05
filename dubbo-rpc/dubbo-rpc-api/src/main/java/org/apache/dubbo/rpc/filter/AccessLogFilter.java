@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.Activate;
-import com.alibaba.fastjson.JSON;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
@@ -30,6 +29,8 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
+
+import com.alibaba.fastjson.JSON;
 
 import java.io.File;
 import java.io.FileWriter;
