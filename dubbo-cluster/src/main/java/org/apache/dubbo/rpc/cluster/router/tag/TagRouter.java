@@ -33,7 +33,7 @@ import java.util.List;
 /**
  * TagRouter
  */
-public class TagRouter implements Router, Comparable<Router> {
+public class TagRouter implements Router {
 
     private static final Logger logger = LoggerFactory.getLogger(TagRouter.class);
 
