@@ -730,6 +730,8 @@ public class Constants {
 
     public static final String RETRY_PERIOD_KEY = "retry-period";
 
+    public static final String SYNC_REPORT_KEY = "sync-report";
+
     public static final String CYCLE_REPORT_KEY = "cycle-report";
 
     public static final String API_VERSION_KEY = "apiVersion";

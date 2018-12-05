@@ -74,10 +74,11 @@ public class MetadataReportServiceTest {
     }
 
     @Test
-    public void testPublishProviderContainInterface() {
+    public void testPublishProviderContainInterface() throws InterruptedException {
 
         URL publishUrl = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.3&application=vicpubp&interface=org.apache.dubbo.metadata.integration.InterfaceNameTestService");
         metadataReportService1.publishProvider(publishUrl);
+        Thread.sleep(100);
 
         Assert.assertTrue(metadataReportService1.metadataReport instanceof JTestMetadataReport4Test);
 
@@ -93,10 +94,11 @@ public class MetadataReportServiceTest {
     }
 
     @Test
-    public void testPublishConsumer() {
+    public void testPublishConsumer() throws InterruptedException {
 
         URL publishUrl = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.x&application=vicpubconsumer&side=consumer");
         metadataReportService1.publishConsumer(publishUrl);
+        Thread.sleep(100);
 
         Assert.assertTrue(metadataReportService1.metadataReport instanceof JTestMetadataReport4Test);
 

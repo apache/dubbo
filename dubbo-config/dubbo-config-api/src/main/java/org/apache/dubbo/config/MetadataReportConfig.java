@@ -52,6 +52,11 @@ public class MetadataReportConfig extends AbstractConfig {
      */
     private Boolean cyclereport;
 
+    /**
+     * sync report, default async
+     */
+    private Boolean syncReport;
+
     public MetadataReportConfig() {
     }
 
@@ -133,4 +138,12 @@ public class MetadataReportConfig extends AbstractConfig {
         return StringUtils.isNotEmpty(address);
     }
 
+    @Parameter(key = "sync-report")
+    public Boolean getSyncReport() {
+        return syncReport;
+    }
+
+    public void setSyncReport(Boolean syncReport) {
+        this.syncReport = syncReport;
+    }
 }
