@@ -45,7 +45,6 @@ public class MapTypeBuilder implements TypeBuilder {
     @Override
     public TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache) {
         if (!(type instanceof ParameterizedType)) {
-            // 没有泛型信息，就直接返回class name
             return new TypeDefinition(clazz.getName());
         }
 
