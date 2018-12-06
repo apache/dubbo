@@ -31,6 +31,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -87,6 +88,7 @@ public class CompletableFutureTaskTest {
 
 
     @Test
+    @Ignore
     public void testCustomExecutor() {
         Executor mockedExecutor = mock(Executor.class);
         CompletableFuture<Integer> completableFuture = CompletableFuture.supplyAsync(() -> {
