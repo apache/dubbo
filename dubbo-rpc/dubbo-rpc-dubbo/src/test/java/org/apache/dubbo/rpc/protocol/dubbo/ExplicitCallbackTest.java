@@ -49,6 +49,7 @@ public class ExplicitCallbackTest {
     @After
     public void tearDown() {
         destroyService();
+        ProtocolUtils.closeAll();
     }
 
     public void exportService() {

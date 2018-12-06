@@ -22,14 +22,21 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
+import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 import org.apache.dubbo.rpc.service.EchoService;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class RpcFilterTest {
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
     private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+
+    @After
+    public void after() {
+        ProtocolUtils.closeAll();
+    }
 
     @Test
     public void testRpcFilter() throws Exception {

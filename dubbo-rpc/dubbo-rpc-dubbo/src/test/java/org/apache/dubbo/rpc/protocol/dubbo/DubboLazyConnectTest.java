@@ -22,6 +22,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -38,6 +39,11 @@ public class DubboLazyConnectTest {
 
     @Before
     public void setUp() throws Exception {
+    }
+
+    @AfterClass
+    public static void tearDownAfterClass() {
+        ProtocolUtils.closeAll();
     }
 
     @Test(expected = RpcException.class)
