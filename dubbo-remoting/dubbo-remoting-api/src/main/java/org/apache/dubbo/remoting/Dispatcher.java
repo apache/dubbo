@@ -25,7 +25,7 @@ import org.apache.dubbo.remoting.transport.dispatcher.all.AllDispatcher;
 /**
  * ChannelHandlerWrapper (SPI, Singleton, ThreadSafe)
  */
-@SPI(AllDispatcher.NAME)
+@SPI("all")
 public interface Dispatcher {
 
     /**
