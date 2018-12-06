@@ -45,4 +45,11 @@ public interface Timer {
      * this method
      */
     Set<Timeout> stop();
+
+    /**
+     * the timer is stop
+     *
+     * @return true for stop
+     */
+    boolean isStop();
 }

@@ -42,7 +42,7 @@ import java.util.regex.Pattern;
  * ConditionRouter
  *
  */
-public class ConditionRouter implements Router, Comparable<Router> {
+public class ConditionRouter implements Router {
 
     private static final Logger logger = LoggerFactory.getLogger(ConditionRouter.class);
     private static Pattern ROUTE_PATTERN = Pattern.compile("([&!=,]*)\\s*([^&!=,\\s]+)");

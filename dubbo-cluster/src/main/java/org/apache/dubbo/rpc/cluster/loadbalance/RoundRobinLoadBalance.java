@@ -17,68 +17,137 @@
 package org.apache.dubbo.rpc.cluster.loadbalance;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.AtomicPositiveInteger;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 
-import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Round robin load balance.
  */
 public class RoundRobinLoadBalance extends AbstractLoadBalance {
-
     public static final String NAME = "roundrobin";
+    
+    private static int RECYCLE_PERIOD = 60000;
+    
+    protected static class WeightedRoundRobin {
+        private int weight;
+        private AtomicLong current = new AtomicLong(0);
+        private long lastUpdate;
+        public int getWeight() {
+            return weight;
+        }
+        public void setWeight(int weight) {
+            this.weight = weight;
+            current.set(0);
+        }
+        public long increaseCurrent() {
+            return current.addAndGet(weight);
+        }
+        public void sel(int total) {
+            current.addAndGet(-1 * total);
+        }
+        public long getLastUpdate() {
+            return lastUpdate;
+        }
+        public void setLastUpdate(long lastUpdate) {
+            this.lastUpdate = lastUpdate;
+        }
+    }
 
-    private final ConcurrentMap<String, AtomicPositiveInteger> sequences = new ConcurrentHashMap<String, AtomicPositiveInteger>();
-
-    private final ConcurrentMap<String, AtomicPositiveInteger> indexSeqs = new ConcurrentHashMap<String, AtomicPositiveInteger>();
-
+    private ConcurrentMap<String, ConcurrentMap<String, WeightedRoundRobin>> methodWeightMap = new ConcurrentHashMap<String, ConcurrentMap<String, WeightedRoundRobin>>();
+    private AtomicBoolean updateLock = new AtomicBoolean();
+    
+    /**
+     * get invoker addr list cached for specified invocation
+     * <p>
+     * <b>for unit test only</b>
+     * 
+     * @param invokers
+     * @param invocation
+     * @return
+     */
+    protected <T> Collection<String> getInvokerAddrList(List<Invoker<T>> invokers, Invocation invocation) {
+        String key = invokers.get(0).getUrl().getServiceKey() + "." + invocation.getMethodName();
+        Map<String, WeightedRoundRobin> map = methodWeightMap.get(key);
+        if (map != null) {
+            return map.keySet();
+        }
+        return null;
+    }
+    
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         String key = invokers.get(0).getUrl().getServiceKey() + "." + invocation.getMethodName();
-        int length = invokers.size(); // Number of invokers
-        int maxWeight = 0; // The maximum weight
-        int minWeight = Integer.MAX_VALUE; // The minimum weight
-        final List<Invoker<T>> nonZeroWeightedInvokers = new ArrayList<>();
-        for (int i = 0; i < length; i++) {
-            int weight = getWeight(invokers.get(i), invocation);
-            maxWeight = Math.max(maxWeight, weight); // Choose the maximum weight
-            minWeight = Math.min(minWeight, weight); // Choose the minimum weight
-            if (weight > 0) {
-                nonZeroWeightedInvokers.add(invokers.get(i));
-            }
+        ConcurrentMap<String, WeightedRoundRobin> map = methodWeightMap.get(key);
+        if (map == null) {
+            methodWeightMap.putIfAbsent(key, new ConcurrentHashMap<String, WeightedRoundRobin>());
+            map = methodWeightMap.get(key);
         }
-        AtomicPositiveInteger sequence = sequences.get(key);
-        if (sequence == null) {
-            sequences.putIfAbsent(key, new AtomicPositiveInteger());
-            sequence = sequences.get(key);
-        }
-
-        if (maxWeight > 0 && minWeight < maxWeight) {
-            AtomicPositiveInteger indexSeq = indexSeqs.get(key);
-            if (indexSeq == null) {
-                indexSeqs.putIfAbsent(key, new AtomicPositiveInteger(-1));
-                indexSeq = indexSeqs.get(key);
+        int totalWeight = 0;
+        long maxCurrent = Long.MIN_VALUE;
+        long now = System.currentTimeMillis();
+        Invoker<T> selectedInvoker = null;
+        WeightedRoundRobin selectedWRR = null;
+        for (Invoker<T> invoker : invokers) {
+            String identifyString = invoker.getUrl().toIdentityString();
+            WeightedRoundRobin weightedRoundRobin = map.get(identifyString);
+            int weight = getWeight(invoker, invocation);
+            if (weight < 0) {
+                weight = 0;
             }
-            length = nonZeroWeightedInvokers.size();
-            while (true) {
-                int index = indexSeq.incrementAndGet() % length;
-                int currentWeight;
-                if (index == 0) {
-                    currentWeight = sequence.incrementAndGet() % maxWeight;
-                } else {
-                    currentWeight = sequence.get() % maxWeight;
+            if (weightedRoundRobin == null) {
+                weightedRoundRobin = new WeightedRoundRobin();
+                weightedRoundRobin.setWeight(weight);
+                map.putIfAbsent(identifyString, weightedRoundRobin);
+                weightedRoundRobin = map.get(identifyString);
+            }
+            if (weight != weightedRoundRobin.getWeight()) {
+                //weight changed
+                weightedRoundRobin.setWeight(weight);
+            }
+            long cur = weightedRoundRobin.increaseCurrent();
+            weightedRoundRobin.setLastUpdate(now);
+            if (cur > maxCurrent) {
+                maxCurrent = cur;
+                selectedInvoker = invoker;
+                selectedWRR = weightedRoundRobin;
+            }
+            totalWeight += weight;
+        }
+        if (!updateLock.get() && invokers.size() != map.size()) {
+            if (updateLock.compareAndSet(false, true)) {
+                try {
+                    // copy -> modify -> update reference
+                    ConcurrentMap<String, WeightedRoundRobin> newMap = new ConcurrentHashMap<String, WeightedRoundRobin>();
+                    newMap.putAll(map);
+                    Iterator<Entry<String, WeightedRoundRobin>> it = newMap.entrySet().iterator();
+                    while (it.hasNext()) {
+                        Entry<String, WeightedRoundRobin> item = it.next();
+                        if (now - item.getValue().getLastUpdate() > RECYCLE_PERIOD) {
+                            it.remove();
+                        }
+                    }
+                    methodWeightMap.put(key, newMap);
+                } finally {
+                    updateLock.set(false);
                 }
-                if (getWeight(nonZeroWeightedInvokers.get(index), invocation) > currentWeight) {
-                    return nonZeroWeightedInvokers.get(index);
-                }
             }
         }
-        // Round robin
-        return invokers.get(sequence.getAndIncrement() % length);
+        if (selectedInvoker != null) {
+            selectedWRR.sel(totalWeight);
+            return selectedInvoker;
+        }
+        // should not happen here
+        return invokers.get(0);
     }
+
 }

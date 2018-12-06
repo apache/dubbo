@@ -25,6 +25,7 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
 import org.apache.dubbo.config.support.Parameter;
+
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;

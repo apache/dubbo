@@ -30,6 +30,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcResult;
+
 import com.alibaba.fastjson.JSON;
 
 import java.lang.reflect.Constructor;
@@ -96,26 +97,21 @@ final public class MockInvoker<T> implements Invoker<T> {
         if (StringUtils.isBlank(mock)) {
             throw new RpcException(new IllegalAccessException("mock can not be null. url :" + url));
         }
-        mock = normallizeMock(URL.decode(mock));
-        if (Constants.RETURN_PREFIX.trim().equalsIgnoreCase(mock.trim())) {
-            RpcResult result = new RpcResult();
-            result.setValue(null);
-            return result;
-        } else if (mock.startsWith(Constants.RETURN_PREFIX)) {
+        mock = normalizeMock(URL.decode(mock));
+        if (mock.startsWith(Constants.RETURN_PREFIX)) {
             mock = mock.substring(Constants.RETURN_PREFIX.length()).trim();
-            mock = mock.replace('`', '"');
             try {
                 Type[] returnTypes = RpcUtils.getReturnTypes(invocation);
                 Object value = parseMockValue(mock, returnTypes);
                 return new RpcResult(value);
             } catch (Exception ew) {
-                throw new RpcException("mock return invoke error. method :" + invocation.getMethodName() + ", mock:" + mock + ", url: " + url, ew);
+                throw new RpcException("mock return invoke error. method :" + invocation.getMethodName()
+                        + ", mock:" + mock + ", url: " + url, ew);
             }
         } else if (mock.startsWith(Constants.THROW_PREFIX)) {
             mock = mock.substring(Constants.THROW_PREFIX.length()).trim();
-            mock = mock.replace('`', '"');
             if (StringUtils.isBlank(mock)) {
-                throw new RpcException(" mocked exception for Service degradation. ");
+                throw new RpcException("mocked exception for service degradation.");
             } else { // user customized class
                 Throwable t = getThrowable(mock);
                 throw new RpcException(RpcException.BIZ_EXCEPTION, t);
@@ -125,29 +121,29 @@ final public class MockInvoker<T> implements Invoker<T> {
                 Invoker<T> invoker = getInvoker(mock);
                 return invoker.invoke(invocation);
             } catch (Throwable t) {
-                throw new RpcException("Failed to create mock implemention class " + mock, t);
+                throw new RpcException("Failed to create mock implementation class " + mock, t);
             }
         }
     }
 
-    private Throwable getThrowable(String throwstr) {
-        Throwable throwable = (Throwable) throwables.get(throwstr);
+    public static Throwable getThrowable(String throwstr) {
+        Throwable throwable = throwables.get(throwstr);
         if (throwable != null) {
             return throwable;
-        } else {
-            Throwable t = null;
-            try {
-                Class<?> bizException = ReflectUtils.forName(throwstr);
-                Constructor<?> constructor;
-                constructor = ReflectUtils.findConstructor(bizException, String.class);
-                t = (Throwable) constructor.newInstance(new Object[]{" mocked exception for Service degradation. "});
-                if (throwables.size() < 1000) {
-                    throwables.put(throwstr, t);
-                }
-            } catch (Exception e) {
-                throw new RpcException("mock throw error :" + throwstr + " argument error.", e);
+        }
+
+        try {
+            Throwable t;
+            Class<?> bizException = ReflectUtils.forName(throwstr);
+            Constructor<?> constructor;
+            constructor = ReflectUtils.findConstructor(bizException, String.class);
+            t = (Throwable) constructor.newInstance(new Object[]{"mocked exception for service degradation."});
+            if (throwables.size() < 1000) {
+                throwables.put(throwstr, t);
             }
             return t;
+        } catch (Exception e) {
+            throw new RpcException("mock throw error :" + throwstr + " argument error.", e);
         }
     }
 
@@ -156,49 +152,84 @@ final public class MockInvoker<T> implements Invoker<T> {
         Invoker<T> invoker = (Invoker<T>) mocks.get(mockService);
         if (invoker != null) {
             return invoker;
-        } else {
-            Class<T> serviceType = (Class<T>) ReflectUtils.forName(url.getServiceInterface());
-            if (ConfigUtils.isDefault(mockService)) {
-                mockService = serviceType.getName() + "Mock";
-            }
+        }
 
-            Class<?> mockClass = ReflectUtils.forName(mockService);
-            if (!serviceType.isAssignableFrom(mockClass)) {
-                throw new IllegalArgumentException("The mock implemention class " + mockClass.getName() + " not implement interface " + serviceType.getName());
-            }
+        Class<T> serviceType = (Class<T>) ReflectUtils.forName(url.getServiceInterface());
+        T mockObject = (T) getMockObject(mockService, serviceType);
+        invoker = proxyFactory.getInvoker(mockObject, serviceType, url);
+        if (mocks.size() < 10000) {
+            mocks.put(mockService, invoker);
+        }
+        return invoker;
+    }
 
-            if (!serviceType.isAssignableFrom(mockClass)) {
-                throw new IllegalArgumentException("The mock implemention class " + mockClass.getName() + " not implement interface " + serviceType.getName());
-            }
-            try {
-                T mockObject = (T) mockClass.newInstance();
-                invoker = proxyFactory.getInvoker(mockObject, (Class<T>) serviceType, url);
-                if (mocks.size() < 10000) {
-                    mocks.put(mockService, invoker);
-                }
-                return invoker;
-            } catch (InstantiationException e) {
-                throw new IllegalStateException("No such empty constructor \"public " + mockClass.getSimpleName() + "()\" in mock implemention class " + mockClass.getName(), e);
-            } catch (IllegalAccessException e) {
-                throw new IllegalStateException(e);
-            }
+    @SuppressWarnings("unchecked")
+    public static Object getMockObject(String mockService, Class serviceType) {
+        if (ConfigUtils.isDefault(mockService)) {
+            mockService = serviceType.getName() + "Mock";
+        }
+
+        Class<?> mockClass = ReflectUtils.forName(mockService);
+        if (!serviceType.isAssignableFrom(mockClass)) {
+            throw new IllegalStateException("The mock class " + mockClass.getName() +
+                    " not implement interface " + serviceType.getName());
+        }
+
+        try {
+            return mockClass.newInstance();
+        } catch (InstantiationException e) {
+            throw new IllegalStateException("No default constructor from mock class " + mockClass.getName(), e);
+        } catch (IllegalAccessException e) {
+            throw new IllegalStateException(e);
         }
     }
 
-    //mock=fail:throw
-    //mock=fail:return
-    //mock=xx.Service
-    private String normallizeMock(String mock) {
-        if (mock == null || mock.trim().length() == 0) {
+
+    /**
+     * Normalize mock string:
+     *
+     * <ol>
+     * <li>return => return null</li>
+     * <li>fail => default</li>
+     * <li>force => default</li>
+     * <li>fail:throw/return foo => throw/return foo</li>
+     * <li>force:throw/return foo => throw/return foo</li>
+     * </ol>
+     *
+     * @param mock mock string
+     * @return normalized mock string
+     */
+    public static String normalizeMock(String mock) {
+        if (mock == null) {
             return mock;
-        } else if (ConfigUtils.isDefault(mock) || "fail".equalsIgnoreCase(mock.trim()) || "force".equalsIgnoreCase(mock.trim())) {
-            mock = url.getServiceInterface() + "Mock";
         }
+
+        mock = mock.trim();
+
+        if (mock.length() == 0) {
+            return mock;
+        }
+
+        if (Constants.RETURN_KEY.equalsIgnoreCase(mock)) {
+            return Constants.RETURN_PREFIX + "null";
+        }
+
+        if (ConfigUtils.isDefault(mock) || "fail".equalsIgnoreCase(mock) || "force".equalsIgnoreCase(mock)) {
+            return "default";
+        }
+
         if (mock.startsWith(Constants.FAIL_PREFIX)) {
             mock = mock.substring(Constants.FAIL_PREFIX.length()).trim();
-        } else if (mock.startsWith(Constants.FORCE_PREFIX)) {
+        }
+
+        if (mock.startsWith(Constants.FORCE_PREFIX)) {
             mock = mock.substring(Constants.FORCE_PREFIX.length()).trim();
         }
+
+        if (mock.startsWith(Constants.RETURN_PREFIX) || mock.startsWith(Constants.THROW_PREFIX)) {
+            mock = mock.replace('`', '"');
+        }
+
         return mock;
     }
 
