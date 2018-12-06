@@ -83,7 +83,7 @@ class J2oVisitor implements JSONVisitor {
                 return EMPTY_STRING_ARRAY;
             } else {
                 Object o;
-                String ss[] = new String[len];
+                String[] ss = new String[len];
                 for (int i = len - 1; i >= 0; i--) {
                     o = list.pop();
                     ss[i] = (o == null ? null : o.toString());

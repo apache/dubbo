@@ -48,7 +48,7 @@ public class LogTelnetHandler implements TelnetHandler {
         if (message == null || message.trim().length() == 0) {
             buf.append("EXAMPLE: log error / log 100");
         } else {
-            String str[] = message.split(" ");
+            String[] str = message.split(" ");
             if (!StringUtils.isInteger(str[0])) {
                 LoggerFactory.setLevel(Level.valueOf(message.toUpperCase()));
             } else {
