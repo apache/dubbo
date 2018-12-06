@@ -92,7 +92,8 @@ public class CompletableFutureTaskTest {
         CompletableFuture<Integer> completableFuture = CompletableFuture.supplyAsync(() -> {
             return 0;
         });
-        completableFuture.thenRunAsync(mock(Runnable.class), mockedExecutor);
-        verify(mockedExecutor);
+        Runnable r = mock(Runnable.class);
+        completableFuture.thenRunAsync(r, mockedExecutor);
+        verify(mockedExecutor).execute(r);
     }
 }
