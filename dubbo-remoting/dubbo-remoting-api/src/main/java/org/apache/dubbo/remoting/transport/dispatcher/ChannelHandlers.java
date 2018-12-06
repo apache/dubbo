@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.transport.dispatcher;
 
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.remoting.ChannelHandler;

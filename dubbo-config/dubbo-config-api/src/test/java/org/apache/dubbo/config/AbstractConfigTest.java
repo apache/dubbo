@@ -141,7 +141,7 @@ public class AbstractConfigTest {
 
     @Test
     public void testAppendAttributes1() throws Exception {
-        Map<Object, Object> parameters = new HashMap<Object, Object>();
+        Map<String, Object> parameters = new HashMap<String, Object>();
         AbstractConfig.appendAttributes(parameters, new AttributeConfig('l', true, (byte) 0x01), "prefix");
         TestCase.assertEquals('l', parameters.get("prefix.let"));
         TestCase.assertEquals(true, parameters.get("prefix.activate"));
@@ -150,7 +150,7 @@ public class AbstractConfigTest {
 
     @Test
     public void testAppendAttributes2() throws Exception {
-        Map<Object, Object> parameters = new HashMap<Object, Object>();
+        Map<String, Object> parameters = new HashMap<String, Object>();
         AbstractConfig.appendAttributes(parameters, new AttributeConfig('l', true, (byte) 0x01));
         TestCase.assertEquals('l', parameters.get("let"));
         TestCase.assertEquals(true, parameters.get("activate"));
@@ -198,7 +198,8 @@ public class AbstractConfigTest {
     @Test
     public void checkNameHasSymbol() throws Exception {
         try {
-            AbstractConfig.checkNameHasSymbol("hello", ":*,/-0123abcdABCD");
+            AbstractConfig.checkNameHasSymbol("hello", ":*,/ -0123\tabcdABCD");
+            AbstractConfig.checkNameHasSymbol("mock", "force:return world");
         } catch (Exception e) {
             TestCase.fail("the value should be legal.");
         }

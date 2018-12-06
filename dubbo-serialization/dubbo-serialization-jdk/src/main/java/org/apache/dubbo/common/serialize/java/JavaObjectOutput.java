@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.serialize.java;
 
-
 import org.apache.dubbo.common.serialize.nativejava.NativeJavaObjectOutput;
 
 import java.io.IOException;

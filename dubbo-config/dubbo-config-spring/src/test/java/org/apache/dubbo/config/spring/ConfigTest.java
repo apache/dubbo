@@ -33,6 +33,7 @@ import org.apache.dubbo.config.spring.action.DemoActionBySetter;
 import org.apache.dubbo.config.spring.annotation.consumer.AnnotationAction;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.api.HelloService;
+import org.apache.dubbo.config.spring.context.annotation.provider.ProviderConfiguration;
 import org.apache.dubbo.config.spring.filter.MockFilter;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
 import org.apache.dubbo.config.spring.impl.HelloServiceImpl;
@@ -50,6 +51,7 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.Collection;
@@ -96,13 +98,30 @@ public class ConfigTest {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/service-class.xml");
         ctx.start();
         try {
-            DemoService demoService = refer("dubbo://127.0.0.1:20887");
+            DemoService demoService = refer("dubbo://127.0.0.1:30887");
             String hello = demoService.sayName("hello");
             assertEquals("welcome:hello", hello);
         } finally {
             ctx.stop();
             ctx.close();
         }
+    }
+
+    @Test
+    public void testServiceAnnotation() {
+        AnnotationConfigApplicationContext providerContext = new AnnotationConfigApplicationContext();
+        providerContext.register(ProviderConfiguration.class);
+
+        providerContext.refresh();
+
+        ReferenceConfig<HelloService> reference = new ReferenceConfig<HelloService>();
+        reference.setApplication(new ApplicationConfig("consumer"));
+        reference.setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
+        reference.setInterface(HelloService.class);
+        reference.setUrl("dubbo://127.0.0.1:12345");
+        String hello = reference.get().sayHello("hello");
+        assertEquals("Hello, hello", hello);
+
     }
 
     @Test
@@ -145,6 +164,20 @@ public class ConfigTest {
         assertTrue(str.contains(" url=\"dubbo://127.0.0.1:20881\" "));
         assertTrue(str.contains(" interface=\"org.apache.dubbo.config.spring.api.DemoService\" "));
         assertTrue(str.endsWith(" />"));
+    }
+
+    @Test
+    public void testForks() {
+        ReferenceConfig<DemoService> reference = new ReferenceConfig<DemoService>();
+        reference.setApplication(new ApplicationConfig("consumer"));
+        reference.setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
+        reference.setInterface(DemoService.class);
+        reference.setUrl("dubbo://127.0.0.1:20881");
+
+        int forks = 10;
+        reference.setForks(forks);
+        String str = reference.toString();
+        assertTrue(str.contains("forks=\"" + forks + "\""));
     }
 
     @Test
@@ -244,7 +277,7 @@ public class ConfigTest {
             }
             assertNotNull(urls);
             assertEquals(1, urls.size());
-            assertEquals("dubbo://" + NetUtils.getLocalHost() + ":20883/org.apache.dubbo.config.spring.api.DemoService", urls.get(0).toIdentityString());
+            assertEquals("dubbo://" + NetUtils.getLocalHost() + ":20888/org.apache.dubbo.config.spring.api.DemoService", urls.get(0).toIdentityString());
         } finally {
             ctx.stop();
             ctx.close();
@@ -262,7 +295,7 @@ public class ConfigTest {
             List<URL> urls = registryService.getRegistered().get("org.apache.dubbo.config.spring.api.DemoService");
             assertNotNull(urls);
             assertEquals(1, urls.size());
-            assertEquals("dubbo://" + NetUtils.getLocalHost() + ":20883/org.apache.dubbo.config.spring.api.DemoService", urls.get(0).toIdentityString());
+            assertEquals("dubbo://" + NetUtils.getLocalHost() + ":20888/org.apache.dubbo.config.spring.api.DemoService", urls.get(0).toIdentityString());
         } finally {
             ctx.stop();
             ctx.close();

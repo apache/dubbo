@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.router.tag;
 
-
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
@@ -34,7 +33,7 @@ import java.util.List;
 /**
  * TagRouter
  */
-public class TagRouter implements Router, Comparable<Router> {
+public class TagRouter implements Router {
 
     private static final Logger logger = LoggerFactory.getLogger(TagRouter.class);
 

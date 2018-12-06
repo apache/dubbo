@@ -286,7 +286,36 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
     }
 
-    protected void checkStubAndMock(Class<?> interfaceClass) {
+    void checkMock(Class<?> interfaceClass) {
+        if (ConfigUtils.isEmpty(mock)) {
+            return;
+        }
+
+        String normalizedMock = MockInvoker.normalizeMock(mock);
+        if (normalizedMock.startsWith(Constants.RETURN_PREFIX)) {
+            normalizedMock = normalizedMock.substring(Constants.RETURN_PREFIX.length()).trim();
+            try {
+                MockInvoker.parseMockValue(normalizedMock);
+            } catch (Exception e) {
+                throw new IllegalStateException("Illegal mock return in <dubbo:service/reference ... " +
+                        "mock=\"" + mock + "\" />");
+            }
+        } else if (normalizedMock.startsWith(Constants.THROW_PREFIX)) {
+            normalizedMock = normalizedMock.substring(Constants.THROW_PREFIX.length()).trim();
+            if (ConfigUtils.isNotEmpty(normalizedMock)) {
+                try {
+                    MockInvoker.getThrowable(normalizedMock);
+                } catch (Exception e) {
+                    throw new IllegalStateException("Illegal mock throw in <dubbo:service/reference ... " +
+                            "mock=\"" + mock + "\" />");
+                }
+            }
+        } else {
+            MockInvoker.getMockObject(normalizedMock, interfaceClass);
+        }
+    }
+
+    void checkStub(Class<?> interfaceClass) {
         if (ConfigUtils.isNotEmpty(local)) {
             Class<?> localClass = ConfigUtils.isDefault(local) ? ReflectUtils.forName(interfaceClass.getName() + "Local") : ReflectUtils.forName(local);
             if (!interfaceClass.isAssignableFrom(localClass)) {
@@ -307,26 +336,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 ReflectUtils.findConstructor(localClass, interfaceClass);
             } catch (NoSuchMethodException e) {
                 throw new IllegalStateException("No such constructor \"public " + localClass.getSimpleName() + "(" + interfaceClass.getName() + ")\" in local implementation class " + localClass.getName());
-            }
-        }
-        if (ConfigUtils.isNotEmpty(mock)) {
-            if (mock.startsWith(Constants.RETURN_PREFIX)) {
-                String value = mock.substring(Constants.RETURN_PREFIX.length());
-                try {
-                    MockInvoker.parseMockValue(value);
-                } catch (Exception e) {
-                    throw new IllegalStateException("Illegal mock json value in <dubbo:service ... mock=\"" + mock + "\" />");
-                }
-            } else {
-                Class<?> mockClass = ConfigUtils.isDefault(mock) ? ReflectUtils.forName(interfaceClass.getName() + "Mock") : ReflectUtils.forName(mock);
-                if (!interfaceClass.isAssignableFrom(mockClass)) {
-                    throw new IllegalStateException("The mock implementation class " + mockClass.getName() + " not implement interface " + interfaceClass.getName());
-                }
-                try {
-                    mockClass.getConstructor(new Class<?>[0]);
-                } catch (NoSuchMethodException e) {
-                    throw new IllegalStateException("No such empty constructor \"public " + mockClass.getSimpleName() + "()\" in mock implementation class " + mockClass.getName());
-                }
             }
         }
     }

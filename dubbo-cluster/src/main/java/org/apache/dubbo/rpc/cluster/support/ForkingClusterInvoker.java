@@ -64,18 +64,19 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
             if (forks <= 0 || forks >= invokers.size()) {
                 selected = invokers;
             } else {
-                selected = new ArrayList<Invoker<T>>();
+                selected = new ArrayList<>();
                 for (int i = 0; i < forks; i++) {
                     // TODO. Add some comment here, refer chinese version for more details.
                     Invoker<T> invoker = select(loadbalance, invocation, invokers, selected);
-                    if (!selected.contains(invoker)) {//Avoid add the same invoker several times.
+                    if (!selected.contains(invoker)) {
+                        //Avoid add the same invoker several times.
                         selected.add(invoker);
                     }
                 }
             }
             RpcContext.getContext().setInvokers((List) selected);
             final AtomicInteger count = new AtomicInteger();
-            final BlockingQueue<Object> ref = new LinkedBlockingQueue<Object>();
+            final BlockingQueue<Object> ref = new LinkedBlockingQueue<>();
             for (final Invoker<T> invoker : selected) {
                 executor.execute(new Runnable() {
                     @Override

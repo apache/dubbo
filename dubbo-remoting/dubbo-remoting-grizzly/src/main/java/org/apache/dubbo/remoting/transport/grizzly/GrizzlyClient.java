@@ -66,7 +66,7 @@ public class GrizzlyClient extends AbstractClient {
                 .setMaxPoolSize(Integer.MAX_VALUE)
                 .setKeepAliveTime(60L, TimeUnit.SECONDS);
         builder.setTcpNoDelay(true).setKeepAlive(true)
-                .setConnectionTimeout(getTimeout())
+                .setConnectionTimeout(getConnectTimeout())
                 .setIOStrategy(SameThreadIOStrategy.getInstance());
         transport = builder.build();
         transport.setProcessor(filterChainBuilder.build());
@@ -101,8 +101,9 @@ public class GrizzlyClient extends AbstractClient {
     @Override
     protected Channel getChannel() {
         Connection<?> c = connection;
-        if (c == null || !c.isOpen())
+        if (c == null || !c.isOpen()) {
             return null;
+        }
         return GrizzlyChannel.getOrAddChannel(c, getUrl(), this);
     }
 

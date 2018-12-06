@@ -18,9 +18,10 @@ package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.io.UnsafeStringWriter;
-import com.alibaba.fastjson.JSON;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+
+import com.alibaba.fastjson.JSON;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -173,7 +174,7 @@ public final class StringUtils {
      *  {@code null} if null String input
      */
     public static String removeEnd(final String str, final String remove) {
-        if (isEmpty(str) || isEmpty(remove)) {
+        if (isAnyEmpty(str, remove)) {
             return str;
         }
         if (str.endsWith(remove)) {
@@ -313,7 +314,7 @@ public final class StringUtils {
      *  {@code null} if null String input
      */
     public static String replace(final String text, final String searchString, final String replacement, int max) {
-        if (isEmpty(text) || isEmpty(searchString) || replacement == null || max == 0) {
+        if (isAnyEmpty(text, searchString) || replacement == null || max == 0) {
             return text;
         }
         int start = 0;
@@ -339,9 +340,7 @@ public final class StringUtils {
     }
 
     public static boolean isBlank(String str) {
-        if (str == null || str.length() == 0)
-            return true;
-        return false;
+        return isEmpty(str);
     }
 
     /**
@@ -351,9 +350,57 @@ public final class StringUtils {
      * @return is empty.
      */
     public static boolean isEmpty(String str) {
-        if (str == null || str.length() == 0)
-            return true;
-        return false;
+        return str == null || str.isEmpty();
+    }
+
+    /**
+     * <p>Checks if the strings contain empty or null elements. <p/>
+     *
+     * <pre>
+     * StringUtils.isNoneEmpty(null)            = false
+     * StringUtils.isNoneEmpty("")              = false
+     * StringUtils.isNoneEmpty(" ")             = true
+     * StringUtils.isNoneEmpty("abc")           = true
+     * StringUtils.isNoneEmpty("abc", "def")    = true
+     * StringUtils.isNoneEmpty("abc", null)     = false
+     * StringUtils.isNoneEmpty("abc", "")       = false
+     * StringUtils.isNoneEmpty("abc", " ")      = true
+     * </pre>
+     *
+     * @param ss the strings to check
+     * @return {@code true} if all strings are not empty or null
+     */
+    public static boolean isNoneEmpty(final String... ss) {
+        if (ArrayUtils.isEmpty(ss)) {
+            return false;
+        }
+        for (final String s : ss){
+            if (isEmpty(s)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * <p>Checks if the strings contain at least on empty or null element. <p/>
+     *
+     * <pre>
+     * StringUtils.isAnyEmpty(null)            = true
+     * StringUtils.isAnyEmpty("")              = true
+     * StringUtils.isAnyEmpty(" ")             = false
+     * StringUtils.isAnyEmpty("abc")           = false
+     * StringUtils.isAnyEmpty("abc", "def")    = false
+     * StringUtils.isAnyEmpty("abc", null)     = true
+     * StringUtils.isAnyEmpty("abc", "")       = true
+     * StringUtils.isAnyEmpty("abc", " ")      = false
+     * </pre>
+     *
+     * @param ss the strings to check
+     * @return {@code true} if at least one in the strings is empty or null
+     */
+    public static boolean isAnyEmpty(final String... ss) {
+        return !isNoneEmpty(ss);
     }
 
     /**
@@ -363,7 +410,7 @@ public final class StringUtils {
      * @return is not empty.
      */
     public static boolean isNotEmpty(String str) {
-        return str != null && str.length() > 0;
+        return !isEmpty(str);
     }
 
     /**
@@ -372,10 +419,12 @@ public final class StringUtils {
      * @return equals
      */
     public static boolean isEquals(String s1, String s2) {
-        if (s1 == null && s2 == null)
+        if (s1 == null && s2 == null) {
             return true;
-        if (s1 == null || s2 == null)
+        }
+        if (s1 == null || s2 == null) {
             return false;
+        }
         return s1.equals(s2);
     }
 
@@ -386,15 +435,11 @@ public final class StringUtils {
      * @return is integer
      */
     public static boolean isInteger(String str) {
-        if (str == null || str.length() == 0)
-            return false;
-        return INT_PATTERN.matcher(str).matches();
+        return isNotEmpty(str) && INT_PATTERN.matcher(str).matches();
     }
 
     public static int parseInteger(String str) {
-        if (!isInteger(str))
-            return 0;
-        return Integer.parseInt(str);
+        return isInteger(str) ? Integer.parseInt(str) : 0;
     }
 
     /**
@@ -402,7 +447,7 @@ public final class StringUtils {
      * <a href="http://www.exampledepot.com/egs/java.lang/IsJavaId.html">more info.</a>
      */
     public static boolean isJavaIdentifier(String s) {
-        if (s.length() == 0 || !Character.isJavaIdentifierStart(s.charAt(0))) {
+        if (isEmpty(s) || !Character.isJavaIdentifierStart(s.charAt(0))) {
             return false;
         }
         for (int i = 1; i < s.length(); i++) {
@@ -414,10 +459,7 @@ public final class StringUtils {
     }
 
     public static boolean isContains(String values, String value) {
-        if (values == null || values.length() == 0) {
-            return false;
-        }
-        return isContains(Constants.COMMA_SPLIT_PATTERN.split(values), value);
+        return isNotEmpty(values) && isContains(Constants.COMMA_SPLIT_PATTERN.split(values), value);
     }
 
     /**
@@ -426,7 +468,7 @@ public final class StringUtils {
      * @return contains
      */
     public static boolean isContains(String[] values, String value) {
-        if (value != null && value.length() > 0 && values != null && values.length > 0) {
+        if (isNotEmpty(value) && ArrayUtils.isNotEmpty(values)) {
             for (String v : values) {
                 if (value.equals(v)) {
                     return true;
@@ -442,7 +484,7 @@ public final class StringUtils {
         }
         int sz = str.length();
         for (int i = 0; i < sz; i++) {
-            if (Character.isDigit(str.charAt(i)) == false) {
+            if (!Character.isDigit(str.charAt(i))) {
                 return false;
             }
         }
@@ -487,15 +529,17 @@ public final class StringUtils {
     }
 
     /**
-     * translat.
+     * translate.
      *
      * @param src  source string.
      * @param from src char table.
      * @param to   target char table.
      * @return String.
      */
-    public static String translat(String src, String from, String to) {
-        if (isEmpty(src)) return src;
+    public static String translate(String src, String from, String to) {
+        if (isEmpty(src)) {
+            return src;
+        }
         StringBuilder sb = null;
         int ix;
         char c;
@@ -503,15 +547,17 @@ public final class StringUtils {
             c = src.charAt(i);
             ix = from.indexOf(c);
             if (ix == -1) {
-                if (sb != null)
+                if (sb != null) {
                     sb.append(c);
+                }
             } else {
                 if (sb == null) {
                     sb = new StringBuilder(len);
                     sb.append(src, 0, i);
                 }
-                if (ix < to.length())
+                if (ix < to.length()) {
                     sb.append(to.charAt(ix));
+                }
             }
         }
         return sb == null ? src : sb.toString();
@@ -530,14 +576,16 @@ public final class StringUtils {
         for (int i = 0; i < len; i++) {
             c = str.charAt(i);
             if (c == ch) {
-                if (list == null)
+                if (list == null) {
                     list = new ArrayList<String>();
+                }
                 list.add(str.substring(ix, i));
                 ix = i + 1;
             }
         }
-        if (ix > 0)
+        if (ix > 0) {
             list.add(str.substring(ix));
+        }
         return list == null ? EMPTY_STRING_ARRAY : (String[]) list.toArray(EMPTY_STRING_ARRAY);
     }
 
@@ -548,10 +596,13 @@ public final class StringUtils {
      * @return String.
      */
     public static String join(String[] array) {
-        if (array.length == 0) return "";
+        if (ArrayUtils.isEmpty(array)) {
+            return EMPTY;
+        }
         StringBuilder sb = new StringBuilder();
-        for (String s : array)
+        for (String s : array) {
             sb.append(s);
+        }
         return sb.toString();
     }
 
@@ -563,11 +614,14 @@ public final class StringUtils {
      * @return String.
      */
     public static String join(String[] array, char split) {
-        if (array.length == 0) return "";
+        if (ArrayUtils.isEmpty(array)) {
+            return EMPTY;
+        }
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < array.length; i++) {
-            if (i > 0)
+            if (i > 0) {
                 sb.append(split);
+            }
             sb.append(array[i]);
         }
         return sb.toString();
@@ -581,24 +635,32 @@ public final class StringUtils {
      * @return String.
      */
     public static String join(String[] array, String split) {
-        if (array.length == 0) return "";
+        if (ArrayUtils.isEmpty(array)) {
+            return EMPTY;
+        }
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < array.length; i++) {
-            if (i > 0)
+            if (i > 0) {
                 sb.append(split);
+            }
             sb.append(array[i]);
         }
         return sb.toString();
     }
 
     public static String join(Collection<String> coll, String split) {
-        if (coll.isEmpty()) return "";
+        if (CollectionUtils.isEmpty(coll)) {
+            return EMPTY;
+        }
 
         StringBuilder sb = new StringBuilder();
         boolean isFirst = true;
         for (String s : coll) {
-            if (isFirst) isFirst = false;
-            else sb.append(split);
+            if (isFirst) {
+                isFirst = false;
+            } else {
+                sb.append(split);
+            }
             sb.append(s);
         }
         return sb.toString();
@@ -616,8 +678,9 @@ public final class StringUtils {
         Map<String, String> map = new HashMap<String, String>(tmp.length);
         for (int i = 0; i < tmp.length; i++) {
             Matcher matcher = KVP_PATTERN.matcher(tmp[i]);
-            if (matcher.matches() == false)
+            if (!matcher.matches()) {
                 continue;
+            }
             map.put(matcher.group(1), matcher.group(2));
         }
         return map;
@@ -635,20 +698,21 @@ public final class StringUtils {
      * @return Parameters instance.
      */
     public static Map<String, String> parseQueryString(String qs) {
-        if (qs == null || qs.length() == 0)
+        if (isEmpty(qs)) {
             return new HashMap<String, String>();
+        }
         return parseKeyValuePair(qs, "\\&");
     }
 
     public static String getServiceKey(Map<String, String> ps) {
         StringBuilder buf = new StringBuilder();
         String group = ps.get(Constants.GROUP_KEY);
-        if (group != null && group.length() > 0) {
+        if (isNotEmpty(group)) {
             buf.append(group).append("/");
         }
         buf.append(ps.get(Constants.INTERFACE_KEY));
         String version = ps.get(Constants.VERSION_KEY);
-        if (version != null && version.length() > 0) {
+        if (isNotEmpty(group)) {
             buf.append(":").append(version);
         }
         return buf.toString();
@@ -660,8 +724,7 @@ public final class StringUtils {
             for (Map.Entry<String, String> entry : new TreeMap<String, String>(ps).entrySet()) {
                 String key = entry.getKey();
                 String value = entry.getValue();
-                if (key != null && key.length() > 0
-                        && value != null && value.length() > 0) {
+                if (isNoneEmpty(key, value)) {
                     if (buf.length() > 0) {
                         buf.append("&");
                     }
@@ -675,7 +738,7 @@ public final class StringUtils {
     }
 
     public static String camelToSplitName(String camelName, String split) {
-        if (camelName == null || camelName.length() == 0) {
+        if (isEmpty(camelName)) {
             return camelName;
         }
         StringBuilder buf = null;
