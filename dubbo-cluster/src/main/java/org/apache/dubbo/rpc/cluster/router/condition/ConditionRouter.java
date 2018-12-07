@@ -26,7 +26,7 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
+import org.apache.dubbo.rpc.cluster.Router;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -41,16 +41,19 @@ import java.util.regex.Pattern;
 /**
  * ConditionRouter
  */
-public class ConditionRouter extends AbstractRouter {
+public class ConditionRouter implements Router {
 
     private static final Logger logger = LoggerFactory.getLogger(ConditionRouter.class);
     private static Pattern ROUTE_PATTERN = Pattern.compile("([&!=,]*)\\s*([^&!=,\\s]+)");
+    private final URL url;
+    private final int priority;
     private final boolean force;
     private final Map<String, MatchPair> whenCondition;
     private final Map<String, MatchPair> thenCondition;
 
     public ConditionRouter(URL url) {
-        super(url.getParameter(Constants.PRIORITY_KEY, 0), url);
+        this.url = url;
+        this.priority = url.getParameter(Constants.PRIORITY_KEY, 0);
         this.force = url.getParameter(Constants.FORCE_KEY, false);
         try {
             String rule = url.getParameterAndDecoded(Constants.RULE_KEY);
@@ -171,6 +174,16 @@ public class ConditionRouter extends AbstractRouter {
             logger.error("Failed to execute condition router rule: " + getUrl() + ", invokers: " + invokers + ", cause: " + t.getMessage(), t);
         }
         return invokers;
+    }
+
+    @Override
+    public Integer getPriority() {
+        return priority;
+    }
+
+    @Override
+    public URL getUrl() {
+        return url;
     }
 
     boolean matchWhen(URL url, Invocation invocation) {

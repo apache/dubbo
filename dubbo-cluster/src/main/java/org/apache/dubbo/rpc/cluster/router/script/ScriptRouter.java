@@ -25,7 +25,6 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Router;
-import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
 
 import javax.script.Bindings;
 import javax.script.Compilable;
@@ -42,7 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * ScriptRouter
  */
-public class ScriptRouter extends AbstractRouter {
+public class ScriptRouter implements Router {
 
     private static final Logger logger = LoggerFactory.getLogger(ScriptRouter.class);
 
@@ -50,11 +49,16 @@ public class ScriptRouter extends AbstractRouter {
 
     private final ScriptEngine engine;
 
+    private final int priority;
+
     private final String rule;
 
+    private final URL url;
+
     public ScriptRouter(URL url) {
-        super(url.getParameter(Constants.PRIORITY_KEY, 0), url);
+        this.url = url;
         String type = url.getParameter(Constants.TYPE_KEY);
+        this.priority = url.getParameter(Constants.PRIORITY_KEY, 0);
         String rule = url.getParameterAndDecoded(Constants.RULE_KEY);
         if (type == null || type.length() == 0) {
             type = Constants.DEFAULT_SCRIPT_TYPE_KEY;
@@ -72,6 +76,11 @@ public class ScriptRouter extends AbstractRouter {
         }
         this.engine = engine;
         this.rule = rule;
+    }
+
+    @Override
+    public URL getUrl() {
+        return url;
     }
 
     @Override
@@ -102,6 +111,11 @@ public class ScriptRouter extends AbstractRouter {
             logger.error("route error , rule has been ignored. rule: " + rule + ", method:" + invocation.getMethodName() + ", url: " + RpcContext.getContext().getUrl(), e);
             return invokers;
         }
+    }
+
+    @Override
+    public Integer getPriority() {
+        return priority;
     }
 
     @Override
