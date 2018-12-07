@@ -18,12 +18,16 @@ package com.alibaba.dubbo.config.spring.context.annotation;
 
 import com.alibaba.dubbo.config.AbstractConfig;
 
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.EnvironmentAware;
+import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.context.annotation.ImportSelector;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotationMetadata;
+
+import static com.alibaba.spring.util.AnnotatedBeanDefinitionRegistryUtils.registerBeans;
 
 /**
  * Dubbo {@link AbstractConfig Config} {@link ImportSelector} implementation, which order can be configured
@@ -33,7 +37,7 @@ import org.springframework.core.type.AnnotationMetadata;
  * @see Ordered
  * @since 2.5.8
  */
-public class DubboConfigConfigurationSelector implements ImportSelector, EnvironmentAware, Ordered {
+public class DubboConfigConfigurationSelector implements ImportBeanDefinitionRegistrar, EnvironmentAware, Ordered {
 
     /**
      * The property name of {@link EnableDubboConfig}'s {@link Ordered order}
@@ -43,7 +47,7 @@ public class DubboConfigConfigurationSelector implements ImportSelector, Environ
     private int order;
 
     @Override
-    public String[] selectImports(AnnotationMetadata importingClassMetadata) {
+    public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
 
         AnnotationAttributes attributes = AnnotationAttributes.fromMap(
                 importingClassMetadata.getAnnotationAttributes(EnableDubboConfig.class.getName()));
@@ -51,9 +55,9 @@ public class DubboConfigConfigurationSelector implements ImportSelector, Environ
         boolean multiple = attributes.getBoolean("multiple");
 
         if (multiple) {
-            return of(DubboConfigConfiguration.Multiple.class.getName());
+            registerBeans(registry, DubboConfigConfiguration.Multiple.class);
         } else {
-            return of(DubboConfigConfiguration.Single.class.getName());
+            registerBeans(registry, DubboConfigConfiguration.Single.class);
         }
     }
 
@@ -79,4 +83,5 @@ public class DubboConfigConfigurationSelector implements ImportSelector, Environ
     private static <T> T[] of(T... values) {
         return values;
     }
+
 }
