@@ -59,14 +59,14 @@ import java.lang.annotation.Target;
  *
  * @see EnableDubboConfigBinding
  * @see DubboConfigConfiguration
- * @see DubboConfigConfigurationSelector
+ * @see DubboConfigConfigurationRegistrar
  * @since 2.5.8
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@Import(DubboConfigConfigurationSelector.class)
+@Import(DubboConfigConfigurationRegistrar.class)
 public @interface EnableDubboConfig {
 
     /**

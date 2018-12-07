@@ -35,7 +35,7 @@ import org.springframework.core.env.StandardEnvironment;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.alibaba.dubbo.config.spring.context.annotation.DubboConfigConfigurationSelector.DUBBO_CONFIG_ORDER_PROPERTY_NAME;
+import static com.alibaba.dubbo.config.spring.context.annotation.DubboConfigConfigurationRegistrar.DUBBO_CONFIG_ORDER_PROPERTY_NAME;
 
 /**
  * {@link EnableDubboConfig} Test
@@ -53,7 +53,7 @@ public class EnableDubboConfigTest {
 
         environment.getPropertySources().addFirst(propertySource);
 
-        DubboConfigConfigurationSelector selector = new DubboConfigConfigurationSelector();
+        DubboConfigConfigurationRegistrar selector = new DubboConfigConfigurationRegistrar();
 
         selector.setEnvironment(environment);
 

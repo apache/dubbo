@@ -21,7 +21,6 @@ import com.alibaba.dubbo.config.AbstractConfig;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
-import org.springframework.context.annotation.ImportSelector;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
@@ -30,14 +29,14 @@ import org.springframework.core.type.AnnotationMetadata;
 import static com.alibaba.spring.util.AnnotatedBeanDefinitionRegistryUtils.registerBeans;
 
 /**
- * Dubbo {@link AbstractConfig Config} {@link ImportSelector} implementation, which order can be configured
+ * Dubbo {@link AbstractConfig Config} {@link ImportBeanDefinitionRegistrar register}, which order can be configured
  *
  * @see EnableDubboConfig
  * @see DubboConfigConfiguration
  * @see Ordered
  * @since 2.5.8
  */
-public class DubboConfigConfigurationSelector implements ImportBeanDefinitionRegistrar, EnvironmentAware, Ordered {
+public class DubboConfigConfigurationRegistrar implements ImportBeanDefinitionRegistrar, EnvironmentAware, Ordered {
 
     /**
      * The property name of {@link EnableDubboConfig}'s {@link Ordered order}
