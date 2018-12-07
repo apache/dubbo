@@ -55,13 +55,13 @@ public class DubboShutdownHook extends Thread {
         if (logger.isInfoEnabled()) {
             logger.info("Run shutdown hook now.");
         }
-        destroyAll();
+        doDestroy();
     }
 
     /**
      * Destroy all the resources, including registries and protocols.
      */
-    public void destroyAll() {
+    public void doDestroy() {
         if (!destroyed.compareAndSet(false, true)) {
             return;
         }
