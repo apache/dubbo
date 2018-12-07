@@ -162,6 +162,7 @@ public class AsyncRpcResult extends AbstractResult {
         return getRpcResult().getAttachment(key, defaultValue);
     }
 
+    @Override
     public void setAttachment(String key, String value) {
         getRpcResult().setAttachment(key, value);
     }

@@ -28,11 +28,11 @@ import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
-import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.annotation.Service;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
@@ -111,17 +111,16 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
 
     @Override
     public void destroy() {
-
-        //  This will only be called for singleton scope bean, and expected to be called by spring shutdown hook when BeanFactory/ApplicationContext destroys.
-        //  We will guarantee dubbo related resources being released with dubbo shutdown hook.
-
-        //  for (ServiceConfig<?> serviceConfig : serviceConfigs) {
-        //      try {
-        //          serviceConfig.unexport();
-        //      } catch (Throwable e) {
-        //          logger.error(e.getMessage(), e);
-        //      }
-        //  }
+        // no need to destroy here
+        // see org.apache.dubbo.config.spring.extension.SpringExtensionFactory.ShutdownHookListener
+        /*
+          for (ServiceConfig<?> serviceConfig : serviceConfigs) {
+              try {
+                  serviceConfig.unexport();
+              } catch (Throwable e) {
+                  logger.error(e.getMessage(), e);
+              }
+          }
 
         for (ReferenceConfig<?> referenceConfig : referenceConfigs.values()) {
             try {
@@ -130,6 +129,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                 logger.error(e.getMessage(), e);
             }
         }
+        */
     }
 
     @Override
@@ -242,7 +242,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                     }
                 }
             } catch (Throwable e) {
-                logger.error("Failed to init remote service reference at filed " + field.getName() + " in class " + bean.getClass().getName() + ", cause: " + e.getMessage(), e);
+                logger.error("Failed to init remote service reference at field " + field.getName() + " in class " + bean.getClass().getName() + ", cause: " + e.getMessage(), e);
             }
         }
         return bean;

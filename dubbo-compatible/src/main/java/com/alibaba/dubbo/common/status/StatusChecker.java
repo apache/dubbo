@@ -20,5 +20,6 @@ package com.alibaba.dubbo.common.status;
 @Deprecated
 public interface StatusChecker extends org.apache.dubbo.common.status.StatusChecker {
 
+    @Override
     Status check();
 }

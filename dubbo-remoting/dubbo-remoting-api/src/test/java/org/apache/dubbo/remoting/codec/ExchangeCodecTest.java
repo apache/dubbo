@@ -32,6 +32,7 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.codec.ExchangeCodec;
 import org.apache.dubbo.remoting.telnet.codec.TelnetCodec;
 
+import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -145,6 +146,23 @@ public class ExchangeCodecTest extends TelnetCodecTest {
 
         Response obj = (Response) decode(request);
         Assert.assertEquals(90, obj.getStatus());
+    }
+
+    @Test
+    public void testInvalidSerializaitonId() throws Exception {
+        byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, (byte)0x8F, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        Object obj =  decode(header);
+        Assert.assertTrue(obj instanceof Request);
+        Request request = (Request) obj;
+        Assert.assertTrue(request.isBroken());
+        Assert.assertTrue(request.getData() instanceof IOException);
+        header = new byte[]{MAGIC_HIGH, MAGIC_LOW, (byte)0x1F, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+        obj = decode(header);
+        Assert.assertTrue(obj instanceof Response);
+        Response response = (Response) obj;
+        Assert.assertEquals(response.getStatus(), Response.CLIENT_ERROR);
+        Assert.assertTrue(response.getErrorMessage().contains("IOException"));
     }
 
     @Test

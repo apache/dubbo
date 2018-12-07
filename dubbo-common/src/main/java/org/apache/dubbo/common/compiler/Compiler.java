@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.compiler;
 
-
 import org.apache.dubbo.common.extension.SPI;
 
 /**

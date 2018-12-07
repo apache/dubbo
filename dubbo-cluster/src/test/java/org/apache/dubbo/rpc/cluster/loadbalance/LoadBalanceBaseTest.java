@@ -29,6 +29,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.alibaba.fastjson.JSON;
+import org.mockito.Mockito;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -114,15 +117,20 @@ public class LoadBalanceBaseTest {
 
     public Map<Invoker, AtomicLong> getInvokeCounter(int runs, String loadbalanceName) {
         Map<Invoker, AtomicLong> counter = new ConcurrentHashMap<Invoker, AtomicLong>();
-        LoadBalance lb = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(loadbalanceName);
+        LoadBalance lb = getLoadBalance(loadbalanceName);
         for (Invoker invoker : invokers) {
             counter.put(invoker, new AtomicLong(0));
         }
+        URL url = invokers.get(0).getUrl();
         for (int i = 0; i < runs; i++) {
-            Invoker sinvoker = lb.select(invokers, invokers.get(0).getUrl(), invocation);
+            Invoker sinvoker = lb.select(invokers, url, invocation);
             counter.get(sinvoker).incrementAndGet();
         }
         return counter;
+    }
+    
+    protected AbstractLoadBalance getLoadBalance(String loadbalanceName) {
+        return (AbstractLoadBalance) ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(loadbalanceName);
     }
 
     @Test
@@ -153,44 +161,83 @@ public class LoadBalanceBaseTest {
     }
 
     /*------------------------------------test invokers for weight---------------------------------------*/
+    
+    protected static class InvokeResult {
+        private AtomicLong count = new AtomicLong();
+        private int weight = 0;
+        private int totalWeight = 0;
+
+        public InvokeResult(int weight) {
+            this.weight = weight;
+        }
+
+        public AtomicLong getCount() {
+            return count;
+        }
+        
+        public int getWeight() {
+            return weight;
+        }
+        
+        public int getTotalWeight() {
+            return totalWeight;
+        }
+        
+        public void setTotalWeight(int totalWeight) {
+            this.totalWeight = totalWeight;
+        }
+        
+        public int getExpected(int runCount) {
+            return getWeight() * runCount / getTotalWeight();
+        }
+        
+        public float getDeltaPercentage(int runCount) {
+            int expected = getExpected(runCount);
+            return Math.abs((expected - getCount().get()) * 100.0f / expected);
+        }
+        
+        @Override
+        public String toString() {
+            return JSON.toJSONString(this);
+        }
+    }
 
     protected List<Invoker<LoadBalanceBaseTest>> weightInvokers = new ArrayList<Invoker<LoadBalanceBaseTest>>();
     protected Invoker<LoadBalanceBaseTest> weightInvoker1;
     protected Invoker<LoadBalanceBaseTest> weightInvoker2;
     protected Invoker<LoadBalanceBaseTest> weightInvoker3;
+    protected Invoker<LoadBalanceBaseTest> weightInvokerTmp;
 
     @Before
     public void before() throws Exception {
-        weightInvoker1 = mock(Invoker.class);
-        weightInvoker2 = mock(Invoker.class);
-        weightInvoker3 = mock(Invoker.class);
+        weightInvoker1 = mock(Invoker.class, Mockito.withSettings().stubOnly());
+        weightInvoker2 = mock(Invoker.class, Mockito.withSettings().stubOnly());
+        weightInvoker3 = mock(Invoker.class, Mockito.withSettings().stubOnly());
+        weightInvokerTmp = mock(Invoker.class, Mockito.withSettings().stubOnly());
 
         weightTestInvocation = new RpcInvocation();
         weightTestInvocation.setMethodName("test");
 
-        URL url1 = URL.valueOf("test1://0:1/DemoService");
-        url1 = url1.addParameter(Constants.WEIGHT_KEY, 1);
-        url1 = url1.addParameter(weightTestInvocation.getMethodName() + "." + Constants.WEIGHT_KEY, 1);
-        url1 = url1.addParameter("active", 0);
-
-        URL url2 = URL.valueOf("test2://0:9/DemoService");
-        url2 = url2.addParameter(Constants.WEIGHT_KEY, 9);
-        url2 = url2.addParameter(weightTestInvocation.getMethodName() + "." + Constants.WEIGHT_KEY, 9);
-        url2 = url2.addParameter("active", 0);
-
-        URL url3 = URL.valueOf("test3://1:6/DemoService");
-        url3 = url3.addParameter(Constants.WEIGHT_KEY, 6);
-        url3 = url3.addParameter(weightTestInvocation.getMethodName() + "." + Constants.WEIGHT_KEY, 6);
-        url3 = url3.addParameter("active", 1);
+        URL url1 = URL.valueOf("test1://127.0.0.1:11/DemoService?weight=1&active=0");
+        URL url2 = URL.valueOf("test2://127.0.0.1:12/DemoService?weight=9&active=0");
+        URL url3 = URL.valueOf("test3://127.0.0.1:13/DemoService?weight=6&active=1");
+        URL urlTmp = URL.valueOf("test4://127.0.0.1:9999/DemoService?weight=11&active=0");
 
         given(weightInvoker1.isAvailable()).willReturn(true);
+        given(weightInvoker1.getInterface()).willReturn(LoadBalanceBaseTest.class);
         given(weightInvoker1.getUrl()).willReturn(url1);
-
+        
         given(weightInvoker2.isAvailable()).willReturn(true);
+        given(weightInvoker2.getInterface()).willReturn(LoadBalanceBaseTest.class);
         given(weightInvoker2.getUrl()).willReturn(url2);
-
+        
         given(weightInvoker3.isAvailable()).willReturn(true);
+        given(weightInvoker3.getInterface()).willReturn(LoadBalanceBaseTest.class);
         given(weightInvoker3.getUrl()).willReturn(url3);
+        
+        given(weightInvokerTmp.isAvailable()).willReturn(true);
+        given(weightInvokerTmp.getInterface()).willReturn(LoadBalanceBaseTest.class);
+        given(weightInvokerTmp.getUrl()).willReturn(urlTmp);
 
         weightInvokers.add(weightInvoker1);
         weightInvokers.add(weightInvoker2);
@@ -203,4 +250,25 @@ public class LoadBalanceBaseTest {
         // weightTestRpcStatus3 active is 1
         RpcStatus.beginCount(weightInvoker3.getUrl(), weightTestInvocation.getMethodName());
     }
+    
+    protected Map<Invoker, InvokeResult> getWeightedInvokeResult(int runs, String loadbalanceName) {
+        Map<Invoker, InvokeResult> counter = new ConcurrentHashMap<Invoker, InvokeResult>();
+        AbstractLoadBalance lb = getLoadBalance(loadbalanceName);
+        int totalWeight = 0;
+        for (int i = 0; i < weightInvokers.size(); i ++) {
+            InvokeResult invokeResult = new InvokeResult(lb.getWeight(weightInvokers.get(i), weightTestInvocation));
+            counter.put(weightInvokers.get(i), invokeResult);
+            totalWeight += invokeResult.getWeight();
+        }
+        for (InvokeResult invokeResult : counter.values()) {
+            invokeResult.setTotalWeight(totalWeight);
+        }
+        URL url = weightInvokers.get(0).getUrl();
+        for (int i = 0; i < runs; i++) {
+            Invoker sinvoker = lb.select(weightInvokers, url, weightTestInvocation);
+            counter.get(sinvoker).getCount().incrementAndGet();
+        }
+        return counter;
+    }
+    
 }

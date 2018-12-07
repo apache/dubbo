@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
@@ -29,11 +30,17 @@ import org.apache.dubbo.remoting.exchange.support.Replier;
 public class NettyClientToServerTest extends ClientToServerTest {
 
     protected ExchangeServer newServer(int port, Replier<?> receiver) throws RemotingException {
-        return Exchangers.bind(URL.valueOf("exchange://localhost:" + port + "?server=netty4"), receiver);
+        // add heartbeat cycle to avoid unstable ut.
+        URL url = URL.valueOf("exchange://localhost:" + port + "?server=netty4");
+        url = url.addParameter(Constants.HEARTBEAT_KEY, 600 * 1000);
+        return Exchangers.bind(url, receiver);
     }
 
     protected ExchangeChannel newClient(int port) throws RemotingException {
-        return Exchangers.connect(URL.valueOf("exchange://localhost:" + port + "?client=netty4&timeout=3000"));
+        // add heartbeat cycle to avoid unstable ut.
+        URL url = URL.valueOf("exchange://localhost:" + port + "?client=netty4&timeout=3000");
+        url = url.addParameter(Constants.HEARTBEAT_KEY, 600 * 1000);
+        return Exchangers.connect(url);
     }
 
 }

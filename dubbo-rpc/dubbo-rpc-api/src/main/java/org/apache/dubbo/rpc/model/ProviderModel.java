@@ -23,6 +23,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * ProviderModel which is about published services
+ */
 public class ProviderModel {
     private final String serviceName;
     private final Object serviceInstance;
@@ -44,6 +47,10 @@ public class ProviderModel {
 
     public String getServiceName() {
         return serviceName;
+    }
+
+    public Class<?> getServiceInterfaceClass() {
+        return serviceInterfaceClass;
     }
 
     public Object getServiceInstance() {

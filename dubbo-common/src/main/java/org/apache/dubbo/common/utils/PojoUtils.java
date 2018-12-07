@@ -82,8 +82,9 @@ public class PojoUtils {
     }
 
     public static Object[] realize(Object[] objs, Class<?>[] types, Type[] gtypes) {
-        if (objs.length != types.length || objs.length != gtypes.length)
+        if (objs.length != types.length || objs.length != gtypes.length) {
             throw new IllegalArgumentException("args.length != types.length");
+        }
         Object[] dests = new Object[objs.length];
         for (int i = 0; i < objs.length; i++) {
             dests[i] = realize(objs[i], types[i], gtypes[i]);
@@ -448,8 +449,9 @@ public class PojoUtils {
                             Method method = getSetterMethod(dest.getClass(), name, value.getClass());
                             Field field = getField(dest.getClass(), name);
                             if (method != null) {
-                                if (!method.isAccessible())
+                                if (!method.isAccessible()) {
                                     method.setAccessible(true);
+                                }
                                 Type ptype = method.getGenericParameterTypes()[0];
                                 value = realize0(value, method.getParameterTypes()[0], ptype, history);
                                 try {
@@ -464,7 +466,7 @@ public class PojoUtils {
                                 try {
                                     field.set(dest, value);
                                 } catch (IllegalAccessException e) {
-                                    throw new RuntimeException("Failed to set filed " + name + " of pojo " + dest.getClass().getName() + " : " + e.getMessage(), e);
+                                    throw new RuntimeException("Failed to set field " + name + " of pojo " + dest.getClass().getName() + " : " + e.getMessage(), e);
                                 }
                             }
                         }
@@ -474,11 +476,11 @@ public class PojoUtils {
                     Object message = map.get("message");
                     if (message instanceof String) {
                         try {
-                            Field filed = Throwable.class.getDeclaredField("detailMessage");
-                            if (!filed.isAccessible()) {
-                                filed.setAccessible(true);
+                            Field field = Throwable.class.getDeclaredField("detailMessage");
+                            if (!field.isAccessible()) {
+                                field.setAccessible(true);
                             }
-                            filed.set(dest, message);
+                            field.set(dest, message);
                         } catch (Exception e) {
                         }
                     }
