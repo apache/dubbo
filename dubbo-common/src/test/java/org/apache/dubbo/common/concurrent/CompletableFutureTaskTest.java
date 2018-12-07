@@ -90,13 +90,12 @@ public class CompletableFutureTaskTest {
 
 
     @Test
-    @Ignore
     public void testCustomExecutor() {
         Executor mockedExecutor = mock(Executor.class);
         CompletableFuture<Integer> completableFuture = CompletableFuture.supplyAsync(() -> {
             return 0;
         });
-        completableFuture.thenRunAsync(mock(Runnable.class), mockedExecutor);
-        verify(mockedExecutor, times(1)).execute(any());
+        completableFuture.thenRunAsync(mock(Runnable.class), mockedExecutor).whenComplete((s, e) ->
+                verify(mockedExecutor, times(1)).execute(any(Runnable.class)));
     }
 }
