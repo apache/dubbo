@@ -33,9 +33,9 @@
     <appender name="FILE" class="org.apache.log4j.FileAppender">
         <param name="File" value="dubbo.log"/>
         <layout class="org.apache.log4j.PatternLayout">
-            <!-- <param name="ConversionPattern" value="[%t %d{dd/MM/yy hh:mm:ss:sss
+            <!-- <param name="ConversionPattern" value="[%t %d{dd/MM/yy HH:mm:ss:SSS
                 z}] %5p %c{2}: %L %m%n" /> -->
-            <param name="ConversionPattern" value="[%t %l %d{dd/MM/yy hh:mm:ss:sss z}] %5p %m %n"/>
+            <param name="ConversionPattern" value="[%t %l %d{dd/MM/yy HH:mm:ss:SSS z}] %5p %m %n"/>
         </layout>
     </appender>
     <root>
