@@ -16,10 +16,11 @@
  */
 package org.apache.dubbo.cache.support.jcache;
 
-import javax.cache.spi.CachingProvider;
 import org.apache.dubbo.cache.Cache;
 import org.apache.dubbo.cache.support.AbstractCacheFactory;
 import org.apache.dubbo.common.URL;
+
+import javax.cache.spi.CachingProvider;
 
 /**
  * JCacheFactory is factory class to provide instance of javax spi cache.Implement {@link org.apache.dubbo.cache.CacheFactory} by

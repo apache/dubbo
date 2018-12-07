@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.cache.filter;
 
-import java.io.Serializable;
 import org.apache.dubbo.cache.Cache;
 import org.apache.dubbo.cache.CacheFactory;
 import org.apache.dubbo.common.Constants;
@@ -29,6 +28,8 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcResult;
+
+import java.io.Serializable;
 
 /**
  * CacheFilter is a core component of dubbo.Enabling <b>cache</b> key of service,method,consumer or provider dubbo will cache method return value.
