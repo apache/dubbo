@@ -26,6 +26,7 @@ import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -49,6 +50,11 @@ public class DubboInvokerAvilableTest {
 
     @Before
     public void setUp() throws Exception {
+    }
+
+    @AfterClass
+    public static void tearDownAfterClass() {
+        ProtocolUtils.closeAll();
     }
 
     @Test
