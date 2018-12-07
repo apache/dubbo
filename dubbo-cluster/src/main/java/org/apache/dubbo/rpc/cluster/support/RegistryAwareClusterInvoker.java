@@ -44,7 +44,7 @@ public class RegistryAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
     public Result doInvoke(Invocation invocation, final List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
         // First, pick the invoker (XXXClusterInvoker) that comes from the local registry, distinguish by a 'default' key.
         for (Invoker<T> invoker : invokers) {
-            if (invoker.getUrl().getParameter(Constants.REGISTRY_KEY + "." + Constants.DEFAULT_KEY, false)) {
+            if (invoker.isAvailable() && invoker.getUrl().getParameter(Constants.REGISTRY_KEY + "." + Constants.DEFAULT_KEY, false)) {
                 return invoker.invoke(invocation);
             }
         }

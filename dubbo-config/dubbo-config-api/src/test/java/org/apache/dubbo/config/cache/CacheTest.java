@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.cache;
 
-import junit.framework.TestCase;
 import org.apache.dubbo.cache.Cache;
 import org.apache.dubbo.cache.CacheFactory;
 import org.apache.dubbo.cache.support.threadlocal.ThreadLocalCache;
@@ -30,6 +29,8 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.RpcInvocation;
+
+import junit.framework.TestCase;
 import org.junit.Test;
 
 import java.util.Arrays;

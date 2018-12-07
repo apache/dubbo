@@ -14,31 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.configcenter;
+package org.apache.dubbo.common.config;
 
 import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.common.config.Configuration;
-import org.apache.dubbo.common.config.Environment;
-
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
 /**
  * Utilities for manipulating configurations from different sources
  */
 public class ConfigurationUtils {
-    /**
-     * If user opens DynamicConfig, the extension instance must has been created during the initialization of
-     * ConfigCenterConfig with the right extension type user specifies. If no DynamicConfig presents,
-     * NopDynamicConfiguration will be used.
-     */
-    public static DynamicConfiguration getDynamicConfiguration() {
-        DynamicConfiguration dynamicConfiguration = (DynamicConfiguration) Environment.getInstance().getDynamicConfiguration();
-        if (dynamicConfiguration == null) {
-            dynamicConfiguration = getExtensionLoader(DynamicConfiguration.class).getDefaultExtension();
-        }
-        return dynamicConfiguration;
-    }
-
+    // FIXME
     @SuppressWarnings("deprecation")
     public static int getServerShutdownTimeout() {
         int timeout = Constants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
@@ -62,5 +46,13 @@ public class ConfigurationUtils {
             }
         }
         return timeout;
+    }
+
+    public static String getProperty(String property) {
+        return getProperty(property, null);
+    }
+
+    public static String getProperty(String property, String defaultValue) {
+        return Environment.getInstance().getConfiguration().getString(property, defaultValue);
     }
 }

@@ -41,9 +41,9 @@ public abstract class AbstractDynamicConfiguration<TargetListener> extends Abstr
     public AbstractDynamicConfiguration() {
     }
 
-    @Override
-    public void initWith(URL url) {
+    public AbstractDynamicConfiguration(URL url) {
         this.url = url;
+        initWith(url);
     }
 
     @Override
@@ -54,30 +54,18 @@ public abstract class AbstractDynamicConfiguration<TargetListener> extends Abstr
 
     @Override
     public String getConfig(String key) {
-        return getConfig(key, null, null);
+        return getConfig(key, null, 0L);
     }
 
     @Override
     public String getConfig(String key, String group) {
-        return getConfig(key, group, null);
+        return getConfig(key, group, 0L);
     }
 
-    @Override
-    public String getConfig(String key, ConfigurationListener listener) {
-        return getConfig(key, null, listener);
-    }
 
     @Override
-    public String getConfig(String key, String group, ConfigurationListener listener) {
-        return getConfig(key, group, listener, 0L);
-    }
-
-    @Override
-    public String getConfig(String key, String group, ConfigurationListener listener, long timeout) {
+    public String getConfig(String key, String group, long timeout) {
         try {
-            if (listener != null) {
-                this.addListener(key, listener);
-            }
             return getTargetConfig(key, group, timeout);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -85,10 +73,13 @@ public abstract class AbstractDynamicConfiguration<TargetListener> extends Abstr
     }
 
     @Override
-    public void removeListener(String key) {
+    public void removeListener(String key, ConfigurationListener listener) {
 
     }
 
+    protected abstract void initWith(URL url);
+
+    // FIXME do wo need this?
     protected abstract void recover();
 
     /**

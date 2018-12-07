@@ -65,5 +65,10 @@
             <artifactId>curator-recipes</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

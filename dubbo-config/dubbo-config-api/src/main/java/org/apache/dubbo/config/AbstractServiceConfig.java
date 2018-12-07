@@ -62,19 +62,16 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     // access log
     protected String accesslog;
     protected List<ProtocolConfig> protocols;
+    // provider tag
+    protected String tag;
     // max allowed execute times
     private Integer executes;
     // whether to register
     private Boolean register;
-
     // warm up period
     private Integer warmup;
-
     // serialization
     private String serialization;
-
-    // provider tag
-    protected String tag;
 
     public String getVersion() {
         return version;
@@ -131,17 +128,17 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
         return token;
     }
 
-    public void setToken(String token) {
-        checkName("token", token);
-        this.token = token;
-    }
-
     public void setToken(Boolean token) {
         if (token == null) {
             setToken((String) null);
         } else {
             setToken(String.valueOf(token));
         }
+    }
+
+    public void setToken(String token) {
+        checkName("token", token);
+        this.token = token;
     }
 
     public Boolean isDeprecated() {
@@ -181,16 +178,16 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
         return accesslog;
     }
 
-    public void setAccesslog(String accesslog) {
-        this.accesslog = accesslog;
-    }
-
     public void setAccesslog(Boolean accesslog) {
         if (accesslog == null) {
             setAccesslog((String) null);
         } else {
             setAccesslog(String.valueOf(accesslog));
         }
+    }
+
+    public void setAccesslog(String accesslog) {
+        this.accesslog = accesslog;
     }
 
     public Integer getExecutes() {
@@ -243,6 +240,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
         this.serialization = serialization;
     }
 
+    @Parameter(key = "dubbo.tag", useKeyAsProperty = false)
     public String getTag() {
         return tag;
     }

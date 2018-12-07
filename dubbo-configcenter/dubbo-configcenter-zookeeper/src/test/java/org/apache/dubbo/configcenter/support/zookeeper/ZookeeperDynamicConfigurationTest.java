@@ -16,16 +16,18 @@
  */
 package org.apache.dubbo.configcenter.support.zookeeper;
 
-import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.curator.test.TestingServer;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.ConfigurationListener;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
+import org.apache.dubbo.configcenter.DynamicConfigurationFactory;
+
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.curator.test.TestingServer;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -66,13 +68,19 @@ public class ZookeeperDynamicConfigurationTest {
 
         configUrl = URL.valueOf("zookeeper://localhost:" + zkServerPort);
 
-        configuration = ExtensionLoader.getExtensionLoader(DynamicConfiguration.class).getExtension(configUrl.getProtocol());
-        configuration.initWith(configUrl);
+        configuration = ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getExtension(configUrl.getProtocol()).getDynamicConfiguration(configUrl);
     }
 
     @AfterClass
     public static void tearDown() throws Exception {
         zkServer.stop();
+    }
+
+    private static void setData(String path, String data) throws Exception {
+        if (client.checkExists().forPath(path) == null) {
+            client.create().creatingParentsIfNeeded().forPath(path);
+        }
+        client.setData().forPath(path, data.getBytes());
     }
 
     @Test
@@ -111,13 +119,6 @@ public class ZookeeperDynamicConfigurationTest {
         Assert.assertEquals("new value1", listener2.getValue());
         Assert.assertEquals("new value2", listener3.getValue());
         Assert.assertEquals("new value2", listener4.getValue());
-    }
-
-    private static void setData(String path, String data) throws Exception {
-        if (client.checkExists().forPath(path) == null) {
-            client.create().creatingParentsIfNeeded().forPath(path);
-        }
-        client.setData().forPath(path, data.getBytes());
     }
 
     private class TestListener implements ConfigurationListener {

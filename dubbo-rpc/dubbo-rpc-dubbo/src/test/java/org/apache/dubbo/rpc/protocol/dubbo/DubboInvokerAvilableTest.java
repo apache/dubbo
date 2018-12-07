@@ -19,13 +19,14 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.configcenter.ConfigurationUtils;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;

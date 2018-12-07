@@ -19,6 +19,7 @@ package org.apache.dubbo.config.url;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;

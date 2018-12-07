@@ -16,8 +16,49 @@
  */
 package org.apache.dubbo.configcenter.mock;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.configcenter.AbstractDynamicConfiguration;
+import org.apache.dubbo.configcenter.ConfigurationListener;
+
 /**
  *
  */
-public class MockDynamicConfiguration {
+public class MockDynamicConfiguration extends AbstractDynamicConfiguration {
+
+    MockDynamicConfiguration() {
+    }
+
+    MockDynamicConfiguration(URL url) {
+        super(url);
+    }
+
+    @Override
+    protected void initWith(URL url) {
+
+    }
+
+    @Override
+    protected void recover() {
+
+    }
+
+    @Override
+    protected String getTargetConfig(String key, String group, long timeout) {
+        return null;
+    }
+
+    @Override
+    protected void addConfigurationListener(String key, Object o, ConfigurationListener configurationListener) {
+
+    }
+
+    @Override
+    protected Object createTargetListener(String key) {
+        return null;
+    }
+
+    @Override
+    protected Object getInternalProperty(String key) {
+        return null;
+    }
 }

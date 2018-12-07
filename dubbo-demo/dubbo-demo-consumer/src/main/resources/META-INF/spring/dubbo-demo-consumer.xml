@@ -33,6 +33,6 @@
     <!-- generate proxy for the remote service, then demoService can be used in the same way as the
     local regular interface -->
     <dubbo:reference id="demoService" check="false"
-                     interface="org.apache.dubbo.demo.DemoService" version="1.0.4" group="dd-test"/>
+                     interface="org.apache.dubbo.demo.DemoService" version="1.0.4" group="dd-test,dd-test1"/>
 
 </beans>

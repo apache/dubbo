@@ -16,10 +16,11 @@
  */
 package org.apache.dubbo.config;
 
-import junit.framework.TestCase;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.support.Parameter;
+
+import junit.framework.TestCase;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -453,6 +454,20 @@ public class AbstractConfigTest {
         Assert.assertNull(metaData.get("key2"));
     }
 
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE})
+    public @interface Config {
+        Class<?> interfaceClass() default void.class;
+
+        String interfaceName() default "";
+
+        String[] filter() default {};
+
+        String[] listener() default {};
+
+        String[] parameters() default {};
+    }
+
     private static class OverrideConfig extends AbstractConfig {
         public String address;
         public String protocol;
@@ -700,20 +715,6 @@ public class AbstractConfigTest {
         public void setFlag(byte flag) {
             this.flag = flag;
         }
-    }
-
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE})
-    public @interface Config {
-        Class<?> interfaceClass() default void.class;
-
-        String interfaceName() default "";
-
-        String[] filter() default {};
-
-        String[] listener() default {};
-
-        String[] parameters() default {};
     }
 
     private static class AnnotationConfig extends AbstractConfig {

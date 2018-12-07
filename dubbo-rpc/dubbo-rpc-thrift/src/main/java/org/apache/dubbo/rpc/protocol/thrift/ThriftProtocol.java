@@ -18,8 +18,8 @@ package org.apache.dubbo.rpc.protocol.thrift;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.configcenter.ConfigurationUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.Transporter;

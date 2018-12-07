@@ -22,7 +22,6 @@ import org.apache.dubbo.metadata.support.AbstractMetadataReportFactory;
 
 /**
  * ZookeeperRegistryFactory.
- *
  */
 public class RedisMetadataReportFactory extends AbstractMetadataReportFactory {
 

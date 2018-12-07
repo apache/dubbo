@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.configcenter.support.nop;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.configcenter.AbstractDynamicConfiguration;
 import org.apache.dubbo.configcenter.ConfigurationListener;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
@@ -25,6 +26,18 @@ import org.apache.dubbo.configcenter.DynamicConfiguration;
  * that is not a valid extension, it will default to this one.
  */
 public class NopDynamicConfiguration extends AbstractDynamicConfiguration {
+
+    NopDynamicConfiguration() {
+    }
+
+    public NopDynamicConfiguration(URL url) {
+        super(url);
+    }
+
+    @Override
+    protected void initWith(URL url) {
+
+    }
 
     @Override
     protected String getTargetConfig(String key, String group, long timeout) {

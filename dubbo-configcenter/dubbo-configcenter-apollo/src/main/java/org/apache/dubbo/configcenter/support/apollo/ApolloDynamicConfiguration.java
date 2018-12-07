@@ -16,12 +16,6 @@
  */
 package org.apache.dubbo.configcenter.support.apollo;
 
-import com.ctrip.framework.apollo.Config;
-import com.ctrip.framework.apollo.ConfigChangeListener;
-import com.ctrip.framework.apollo.ConfigService;
-import com.ctrip.framework.apollo.enums.ConfigSourceType;
-import com.ctrip.framework.apollo.enums.PropertyChangeType;
-import com.ctrip.framework.apollo.model.ConfigChange;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
@@ -31,6 +25,13 @@ import org.apache.dubbo.configcenter.AbstractDynamicConfiguration;
 import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.ConfigChangeType;
 import org.apache.dubbo.configcenter.ConfigurationListener;
+
+import com.ctrip.framework.apollo.Config;
+import com.ctrip.framework.apollo.ConfigChangeListener;
+import com.ctrip.framework.apollo.ConfigService;
+import com.ctrip.framework.apollo.enums.ConfigSourceType;
+import com.ctrip.framework.apollo.enums.PropertyChangeType;
+import com.ctrip.framework.apollo.model.ConfigChange;
 
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -46,14 +47,15 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Apo
 
     private Config dubboConfig;
 
-    public ApolloDynamicConfiguration() {
+    ApolloDynamicConfiguration() {
+    }
 
+    ApolloDynamicConfiguration(URL url) {
+        super(url);
     }
 
     @Override
     public void initWith(URL url) {
-        super.initWith(url);
-
         // Instead of using Dubbo's configuration, I would suggest use the original configuration method Apollo provides.
         String configEnv = url.getParameter(Constants.CONFIG_ENV_KEY);
         String configAddr = url.getBackupAddress();
@@ -70,7 +72,7 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Apo
 
         dubboConfig = ConfigService.getConfig(url.getParameter(Constants.CONFIG_GROUP_KEY, DEFAULT_GROUP));
         // Decide to fail or to continue when failed to connect to remote server.
-        boolean check = url.getParameter(Constants.CONFIG_CHECK_KEY, false);
+        boolean check = url.getParameter(Constants.CONFIG_CHECK_KEY, true);
         if (dubboConfig.getSourceType() != ConfigSourceType.REMOTE) {
             if (check) {
                 throw new IllegalStateException("Failed to connect to config center, the config center is Apollo, " +
@@ -113,13 +115,12 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Apo
     @Override
     protected void addConfigurationListener(String key, ApolloListener listener, ConfigurationListener configurationListener) {
         listener.addListener(configurationListener);
+        this.dubboConfig.addChangeListener(listener);
     }
 
     @Override
     protected ApolloListener createTargetListener(String key) {
-        ApolloListener listener = new ApolloListener();
-        this.dubboConfig.addChangeListener(listener);
-        return listener;
+        return new ApolloListener();
     }
 
     @Override
@@ -142,7 +143,7 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Apo
         public void onChange(com.ctrip.framework.apollo.model.ConfigChangeEvent changeEvent) {
             for (String key : changeEvent.changedKeys()) {
                 ConfigChange change = changeEvent.getChange(key);
-                if (StringUtils.isEmpty(change.getNewValue())) {
+                if ("".equals(change.getNewValue())) {
                     logger.warn("an empty rule is received for " + key + ", the current working rule is " +
                             change.getOldValue() + ", the empty rule will not take effect.");
                     return;

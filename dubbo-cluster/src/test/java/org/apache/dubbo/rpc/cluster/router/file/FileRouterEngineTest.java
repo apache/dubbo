@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.cluster.router.file;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -27,10 +28,10 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
-import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.RouterFactory;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -38,7 +39,10 @@ import org.junit.Test;
 
 import javax.script.ScriptEngineManager;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -50,7 +54,7 @@ public class FileRouterEngineTest {
     Invoker<FileRouterEngineTest> invoker1 = mock(Invoker.class);
     Invoker<FileRouterEngineTest> invoker2 = mock(Invoker.class);
     Invocation invocation;
-    Directory<FileRouterEngineTest> dic;
+    StaticDirectory<FileRouterEngineTest> dic;
     Result result = new RpcResult();
     private RouterFactory routerFactory = ExtensionLoader.getExtensionLoader(RouterFactory.class).getAdaptiveExtension();
 
@@ -69,8 +73,8 @@ public class FileRouterEngineTest {
         if (isScriptUnsupported) return;
         URL url = initUrl("notAvailablerule.javascript");
         initInvocation("method1");
-        initDic(url);
         initInvokers(url, true, false);
+        initDic(url);
 
         MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(
                 dic, url);
@@ -86,8 +90,8 @@ public class FileRouterEngineTest {
         if (isScriptUnsupported) return;
         URL url = initUrl("availablerule.javascript");
         initInvocation("method1");
-        initDic(url);
         initInvokers(url);
+        initDic(url);
 
         MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(
                 dic, url);
@@ -104,8 +108,8 @@ public class FileRouterEngineTest {
         URL url = initUrl("methodrule.javascript");
         {
             initInvocation("method1");
-            initDic(url);
             initInvokers(url, true, true);
+            initDic(url);
 
             MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(
                     dic, url);
@@ -117,8 +121,8 @@ public class FileRouterEngineTest {
         }
         {
             initInvocation("method2");
-            initDic(url);
             initInvokers(url, true, true);
+            initDic(url);
             MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(
                     dic, url);
             for (int i = 0; i < 100; i++) {
@@ -158,9 +162,12 @@ public class FileRouterEngineTest {
     }
 
     private void initDic(URL url) {
-        // FIXME dynamicConfiguration should not be null
-        RouterChain chain = RouterChain.buildChain(null, null);
-        dic = new StaticDirectory<FileRouterEngineTest>(url, invokers, chain);
+        dic = new StaticDirectory<FileRouterEngineTest>(url, invokers);
+        Map<String, List<Invoker<FileRouterEngineTest>>> methodInvokers = new HashMap<>();
+        methodInvokers.put("method1", invokers);
+        methodInvokers.put("method2", invokers);
+        dic.buildRouterChain(methodInvokers, ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getDefaultExtension().getDynamicConfiguration(null));
+        dic.getRouterChain().setResidentRouters(Arrays.asList(routerFactory.getRouter(url)));
     }
 
     static class MockClusterInvoker<T> extends AbstractClusterInvoker<T> {

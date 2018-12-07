@@ -60,8 +60,12 @@ public class JTestMetadataReport4Test extends AbstractMetadataReport {
         store.put(consumerMetadataIdentifier.getIdentifierKey(), serviceParameterString);
     }
 
-    public static String getKey(URL url) {
-        return getProtocol(url) + url.getServiceKey();
+    public static String getProviderKey(URL url) {
+        return new ProviderMetadataIdentifier(url).getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY);
+    }
+
+    public static String getConsumerKey(URL url) {
+        return new ConsumerMetadataIdentifier(url).getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY);
     }
 
 }

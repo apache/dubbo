@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.cluster.support.wrapper;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -26,7 +27,6 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
@@ -36,9 +36,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MockClusterInvokerTest {
 
@@ -85,13 +88,12 @@ public class MockClusterInvokerTest {
         URL url = URL.valueOf("remote://1.2.3.4/" + IHelloService.class.getName())
                 .addParameter(Constants.MOCK_KEY, "fail:return null")
                 .addParameter("invoke_return_error", "true");
-        Invoker<IHelloService> cluster = getClusterInvoker(url);
         URL mockUrl = URL.valueOf("mock://localhost/" + IHelloService.class.getName()
                 + "?getSomething.mock=return aa").addParameters(url.getParameters());
 
         Protocol protocol = new MockProtocol();
         Invoker<IHelloService> mInvoker1 = protocol.refer(IHelloService.class, mockUrl);
-        invokers.add(mInvoker1);
+        Invoker<IHelloService> cluster = getClusterInvokerMock(url, mInvoker1);
 
         //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
@@ -120,14 +122,14 @@ public class MockClusterInvokerTest {
     public void testMockInvokerInvoke_forcemock() {
         URL url = URL.valueOf("remote://1.2.3.4/" + IHelloService.class.getName());
         url = url.addParameter(Constants.MOCK_KEY, "force:return null");
-        Invoker<IHelloService> cluster = getClusterInvoker(url);
+
         URL mockUrl = URL.valueOf("mock://localhost/" + IHelloService.class.getName()
                 + "?getSomething.mock=return aa&getSomething3xx.mock=return xx")
                 .addParameters(url.getParameters());
 
         Protocol protocol = new MockProtocol();
         Invoker<IHelloService> mInvoker1 = protocol.refer(IHelloService.class, mockUrl);
-        invokers.add(mInvoker1);
+        Invoker<IHelloService> cluster = getClusterInvokerMock(url, mInvoker1);
 
         //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
@@ -642,16 +644,24 @@ public class MockClusterInvokerTest {
         }
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private Invoker<IHelloService> getClusterInvoker(URL url) {
+    private Invoker<IHelloService> getClusterInvokerMock(URL url, Invoker<IHelloService> mockInvoker) {
         // As `javassist` have a strict restriction of argument types, request will fail if Invocation do not contains complete parameter type information
         final URL durl = url.addParameter("proxy", "jdk");
         invokers.clear();
         ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getExtension("jdk");
         Invoker<IHelloService> invoker1 = proxy.getInvoker(new HelloService(), IHelloService.class, durl);
         invokers.add(invoker1);
+        if (mockInvoker != null) {
+            invokers.add(mockInvoker);
+        }
 
-        Directory<IHelloService> dic = new StaticDirectory<IHelloService>(durl, invokers, null);
+        StaticDirectory<IHelloService> dic = new StaticDirectory<IHelloService>(durl, invokers, null);
+        Map<String, List<Invoker<IHelloService>>> methodInvokers = new HashMap<>();
+        Method[] methods = IHelloService.class.getMethods();
+        Arrays.stream(methods).forEach(m -> {
+            methodInvokers.put(m.getName(), invokers);
+        });
+        dic.buildRouterChain(methodInvokers, ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getDefaultExtension().getDynamicConfiguration(null));
         AbstractClusterInvoker<IHelloService> cluster = new AbstractClusterInvoker(dic) {
             @Override
             protected Result doInvoke(Invocation invocation, List invokers, LoadBalance loadbalance)
@@ -664,6 +674,11 @@ public class MockClusterInvokerTest {
             }
         };
         return new MockClusterInvoker<IHelloService>(dic, cluster);
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private Invoker<IHelloService> getClusterInvoker(URL url) {
+        return getClusterInvokerMock(url, null);
     }
 
     public static interface IHelloService {

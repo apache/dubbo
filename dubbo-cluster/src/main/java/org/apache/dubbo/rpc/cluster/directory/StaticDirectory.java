@@ -19,12 +19,14 @@ package org.apache.dubbo.rpc.cluster.directory;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * StaticDirectory
@@ -84,6 +86,13 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
             invoker.destroy();
         }
         invokers.clear();
+    }
+
+    public void buildRouterChain(Map<String, List<Invoker<T>>> methodGroupInvokers, DynamicConfiguration dynamicConfiguration) {
+        ;
+        RouterChain<T> routerChain = RouterChain.buildChain(dynamicConfiguration, getUrl());
+        routerChain.notifyFullInvokers(methodGroupInvokers, getUrl());
+        this.setRouterChain(routerChain);
     }
 
     @Override
