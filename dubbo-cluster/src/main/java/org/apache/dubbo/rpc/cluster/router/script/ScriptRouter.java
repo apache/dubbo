@@ -114,7 +114,7 @@ public class ScriptRouter implements Router {
     }
 
     @Override
-    public Integer getPriority() {
+    public int getPriority() {
         return priority;
     }
 

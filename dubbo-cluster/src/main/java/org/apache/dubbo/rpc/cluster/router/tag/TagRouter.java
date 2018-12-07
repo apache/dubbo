@@ -98,7 +98,7 @@ public class TagRouter implements Router {
     }
 
     @Override
-    public Integer getPriority() {
+    public int getPriority() {
         return priority;
     }
 }

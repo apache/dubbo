@@ -56,7 +56,7 @@ public interface Router extends Comparable<Router> {
      *
      * @return
      */
-    Integer getPriority();
+    int getPriority();
 
     /**
      * compare Router
@@ -69,7 +69,7 @@ public interface Router extends Comparable<Router> {
         if (o == null) {
             throw new IllegalArgumentException();
         }
-        if (this.getPriority().equals(o.getPriority())) {
+        if (this.getPriority() == o.getPriority()) {
             if (o.getUrl() == null) {
                 return -1;
             }

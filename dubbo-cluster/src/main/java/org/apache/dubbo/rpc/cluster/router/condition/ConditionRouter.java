@@ -177,7 +177,7 @@ public class ConditionRouter implements Router {
     }
 
     @Override
-    public Integer getPriority() {
+    public int getPriority() {
         return priority;
     }
 
