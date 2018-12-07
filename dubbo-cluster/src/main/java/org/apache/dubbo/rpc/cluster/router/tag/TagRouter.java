@@ -25,7 +25,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.Router;
+import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,28 +33,18 @@ import java.util.List;
 /**
  * TagRouter
  */
-public class TagRouter implements Router {
+public class TagRouter extends AbstractRouter {
 
     private static final Logger logger = LoggerFactory.getLogger(TagRouter.class);
-
-    private final int priority;
-    private final URL url;
 
     public static final URL ROUTER_URL = new URL("tag", Constants.ANYHOST_VALUE, 0, Constants.ANY_VALUE).addParameters(Constants.RUNTIME_KEY, "true");
 
     public TagRouter(URL url) {
-        this.url = url;
-        this.priority = url.getParameter(Constants.PRIORITY_KEY, 0);
+        super(url.getParameter(Constants.PRIORITY_KEY, 0), url);
     }
 
     public TagRouter() {
-        this.url = ROUTER_URL;
-        this.priority = url.getParameter(Constants.PRIORITY_KEY, 0);
-    }
-
-    @Override
-    public URL getUrl() {
-        return url;
+        super(ROUTER_URL.getParameter(Constants.PRIORITY_KEY, 0), ROUTER_URL);
     }
 
     @Override

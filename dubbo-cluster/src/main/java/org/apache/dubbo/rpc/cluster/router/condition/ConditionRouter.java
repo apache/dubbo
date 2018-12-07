@@ -41,19 +41,16 @@ import java.util.regex.Pattern;
 /**
  * ConditionRouter
  */
-public class ConditionRouter implements Router {
+public class ConditionRouter extends AbstractRouter {
 
     private static final Logger logger = LoggerFactory.getLogger(ConditionRouter.class);
     private static Pattern ROUTE_PATTERN = Pattern.compile("([&!=,]*)\\s*([^&!=,\\s]+)");
-    private final URL url;
-    private final int priority;
     private final boolean force;
     private final Map<String, MatchPair> whenCondition;
     private final Map<String, MatchPair> thenCondition;
 
     public ConditionRouter(URL url) {
-        this.url = url;
-        this.priority = url.getParameter(Constants.PRIORITY_KEY, 0);
+        super(url.getParameter(Constants.PRIORITY_KEY, 0), url);
         this.force = url.getParameter(Constants.FORCE_KEY, false);
         try {
             String rule = url.getParameterAndDecoded(Constants.RULE_KEY);
