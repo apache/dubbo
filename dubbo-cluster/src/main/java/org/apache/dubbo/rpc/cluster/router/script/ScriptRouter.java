@@ -40,7 +40,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * ScriptRouter
- *
  */
 public class ScriptRouter implements Router {
 
@@ -115,12 +114,23 @@ public class ScriptRouter implements Router {
     }
 
     @Override
-    public int compareTo(Router o) {
-        if (o == null || o.getClass() != ScriptRouter.class) {
-            return 1;
-        }
-        ScriptRouter c = (ScriptRouter) o;
-        return this.priority == c.priority ? rule.compareTo(c.rule) : (this.priority > c.priority ? 1 : -1);
+    public int getPriority() {
+        return priority;
     }
 
+    @Override
+    public int compareTo(Router o) {
+        if (o == null) {
+            throw new IllegalArgumentException();
+        }
+        if (this.priority == o.getPriority()) {
+            if (o instanceof ScriptRouter) {
+                ScriptRouter c = (ScriptRouter) o;
+                return rule.compareTo(c.rule);
+            }
+            return 0;
+        } else {
+            return this.priority > o.getPriority() ? 1 : -1;
+        }
+    }
 }
