@@ -19,6 +19,7 @@ package com.alibaba.dubbo.config.spring.beans.factory.annotation;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.dubbo.config.spring.api.DemoService;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -31,9 +32,8 @@ import static com.alibaba.dubbo.config.spring.beans.factory.annotation.ServiceBe
 /**
  * {@link ServiceBeanNameBuilder} Test
  *
- * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @see ServiceBeanNameBuilder
- * @since 2.6.4
+ * @since 2.6.5
  */
 @Service(interfaceClass = DemoService.class, group = GROUP, version = VERSION,
         application = "application", module = "module", registry = {"1", "2", "3"})

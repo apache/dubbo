@@ -276,7 +276,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
             if (!isConnected()) {
                 throw new RemotingException(this, "Failed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
                         + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
-                        + ", cause: Connect wait timeout: " + getTimeout() + "ms.");
+                        + ", cause: Connect wait timeout: " + getConnectTimeout() + "ms.");
             } else {
                 if (logger.isInfoEnabled()) {
                     logger.info("Successed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "

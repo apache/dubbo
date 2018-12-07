@@ -14,32 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc;
+package com.alibaba.dubbo.common.extensionloader.injection;
+
+import com.alibaba.dubbo.common.extension.SPI;
 
 /**
- * TODO this is just a workaround for rest protocol, and now we just ensure it works in the most common dubbo usages
  *
  */
-public class ServiceClassHolder {
-
-    private static final ServiceClassHolder INSTANCE = new ServiceClassHolder();
-
-    private final ThreadLocal<Class> holder  = new ThreadLocal<Class>();
-
-    public static ServiceClassHolder getInstance() {
-        return INSTANCE;
-    }
-
-    private ServiceClassHolder() {
-    }
-
-    public Class popServiceClass() {
-        Class clazz = holder.get();
-        holder.remove();
-        return clazz;
-    }
-
-    public void pushServiceClass(Class clazz) {
-        holder.set(clazz);
-    }
+@SPI("injection")
+public interface InjectExt {
+    String echo(String msg);
 }

@@ -21,6 +21,7 @@ import com.alibaba.dubbo.common.utils.CollectionUtils;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.spring.ReferenceBean;
 import com.alibaba.dubbo.config.spring.api.DemoService;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -113,7 +114,7 @@ public class AnnotationPropertyValuesAdapterTest {
         Assert.assertEquals("ondisconnect", referenceBean.getOndisconnect());
         Assert.assertEquals("owner", referenceBean.getOwner());
         Assert.assertEquals("layer", referenceBean.getLayer());
-        Assert.assertEquals(Integer.valueOf(2), referenceBean.getRetries());
+        Assert.assertEquals(Integer.valueOf(1), referenceBean.getRetries());
         Assert.assertEquals("random", referenceBean.getLoadbalance());
         Assert.assertEquals(true, referenceBean.isAsync());
         Assert.assertEquals(Integer.valueOf(1), referenceBean.getActives());
@@ -146,7 +147,7 @@ public class AnnotationPropertyValuesAdapterTest {
                 check = false, init = true, lazy = true, stubevent = true,
                 reconnect = "reconnect", sticky = true, proxy = "javassist", stub = "stub",
                 cluster = "failover", connections = 1, callbacks = 1, onconnect = "onconnect",
-                ondisconnect = "ondisconnect", owner = "owner", layer = "layer", retries = 2,
+                ondisconnect = "ondisconnect", owner = "owner", layer = "layer", retries = 1,
                 loadbalance = "random", async = true, actives = 1, sent = true,
                 mock = "mock", validation = "validation", timeout = 2, cache = "cache",
                 filter = {"default", "default"}, listener = {"default", "default"}, parameters = {"key1", "value1"}, application = "application",

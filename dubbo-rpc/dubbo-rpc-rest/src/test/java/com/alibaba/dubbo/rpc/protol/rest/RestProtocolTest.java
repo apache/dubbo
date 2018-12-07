@@ -16,9 +16,15 @@
  */
 package com.alibaba.dubbo.rpc.protol.rest;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
-import com.alibaba.dubbo.rpc.*;
+import com.alibaba.dubbo.rpc.Exporter;
+import com.alibaba.dubbo.rpc.Invoker;
+import com.alibaba.dubbo.rpc.Protocol;
+import com.alibaba.dubbo.rpc.ProxyFactory;
+import com.alibaba.dubbo.rpc.StaticContext;
+
 import junit.framework.Assert;
 import org.junit.Test;
 
@@ -32,10 +38,11 @@ public class RestProtocolTest {
 
     @Test
     public void testRestProtocol() {
-        ServiceClassHolder.getInstance().pushServiceClass(RestServiceImpl.class);
+        URL url = URL.valueOf("rest://127.0.0.1:5342/rest/say1?version=1.0.0");
+        StaticContext.getContext(Constants.SERVICE_IMPL_CLASS).put(url.getServiceKey(), RestServiceImpl.class);
         RestServiceImpl server = new RestServiceImpl();
         Assert.assertFalse(server.isCalled());
-        URL url = URL.valueOf("rest://127.0.0.1:5342/rest/say1?version=1.0.0");
+
         Exporter<RestService> exporter = protocol.export(proxyFactory.getInvoker(server, RestService.class, url));
         Invoker<RestService> invoker = protocol.refer(RestService.class, url);
         RestService client = proxyFactory.getProxy(invoker);

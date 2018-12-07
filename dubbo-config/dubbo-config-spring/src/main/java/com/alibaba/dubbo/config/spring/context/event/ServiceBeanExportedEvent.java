@@ -17,17 +17,17 @@
 package com.alibaba.dubbo.config.spring.context.event;
 
 import com.alibaba.dubbo.config.spring.ServiceBean;
+
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 
 /**
  * A {@link ApplicationEvent} after {@link ServiceBean} {@link ServiceBean#export() export} invocation
  *
- * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @see ApplicationEvent
  * @see ApplicationListener
  * @see ServiceBean
- * @since 2.6.4
+ * @since 2.6.5
  */
 public class ServiceBeanExportedEvent extends ApplicationEvent {
 

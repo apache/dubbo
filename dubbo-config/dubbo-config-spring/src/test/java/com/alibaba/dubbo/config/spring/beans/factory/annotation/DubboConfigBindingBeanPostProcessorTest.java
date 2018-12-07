@@ -19,6 +19,7 @@ package com.alibaba.dubbo.config.spring.beans.factory.annotation;
 import com.alibaba.dubbo.config.ApplicationConfig;
 import com.alibaba.dubbo.config.spring.context.properties.DefaultDubboConfigBinder;
 import com.alibaba.dubbo.config.spring.context.properties.DubboConfigBinder;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;

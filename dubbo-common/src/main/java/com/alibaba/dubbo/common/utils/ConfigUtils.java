@@ -21,6 +21,7 @@ import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
@@ -217,7 +218,7 @@ public class ConfigUtils {
      */
     public static Properties loadProperties(String fileName, boolean allowMultiFile, boolean optional) {
         Properties properties = new Properties();
-        if (fileName.startsWith("/")) {
+        if (checkFileNameExist(fileName)) {
             try {
                 FileInputStream input = new FileInputStream(fileName);
                 try {
@@ -289,6 +290,16 @@ public class ConfigUtils {
         }
 
         return properties;
+    }
+
+    /**
+     * check if the fileName can be found in filesystem
+     * @param fileName
+     * @return
+     */
+    private static boolean checkFileNameExist(String fileName) {
+        File file = new File(fileName);
+        return file != null && file.exists() ? true : false;
     }
 
     public static int getPid() {

@@ -20,6 +20,7 @@ import com.alibaba.dubbo.common.utils.CollectionUtils;
 import com.alibaba.dubbo.config.ConsumerConfig;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.spring.ReferenceBean;
+
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
@@ -30,8 +31,8 @@ import org.springframework.validation.DataBinder;
 import java.beans.PropertyEditorSupport;
 import java.util.Map;
 
-import static com.alibaba.dubbo.config.spring.util.BeanFactoryUtils.getOptionalBean;
-import static com.alibaba.dubbo.config.spring.util.ObjectUtils.of;
+import static com.alibaba.spring.util.BeanFactoryUtils.getOptionalBean;
+import static com.alibaba.spring.util.ObjectUtils.of;
 import static org.springframework.util.StringUtils.commaDelimitedListToStringArray;
 
 /**

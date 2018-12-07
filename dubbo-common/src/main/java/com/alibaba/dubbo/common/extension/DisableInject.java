@@ -14,24 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.config.spring.util;
+package com.alibaba.dubbo.common.extension;
 
-/**
- * Object Utilities Class
- *
- * @since 2.5.11
- */
-public class ObjectUtils {
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-    /**
-     * of factory method
-     *
-     * @param values
-     * @param <T>
-     * @return
-     */
-    public static <T> T[] of(T... values) {
-        return values;
-    }
-
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.METHOD})
+public @interface DisableInject {
 }

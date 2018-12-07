@@ -19,16 +19,17 @@
     <parent>
         <groupId>com.alibaba</groupId>
         <artifactId>dubbo-parent</artifactId>
-        <version>2.6.3-SNAPSHOT</version>
+        <version>2.6.6-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>dubbo</artifactId>
-    <version>2.6.3-SNAPSHOT</version>
+    <version>2.6.6-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>dubbo-all</name>
     <description>The all in one project of dubbo</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
+        <hessian_lite_version>3.2.4</hessian_lite_version>
     </properties>
     <dependencies>
         <dependency>
@@ -320,13 +321,6 @@
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
-            <artifactId>dubbo-bootstrap</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>com.alibaba</groupId>
             <artifactId>hessian-lite</artifactId>
             <scope>compile</scope>
             <optional>true</optional>
@@ -423,7 +417,6 @@
                                     <include>com.alibaba:dubbo-serialization-fst</include>
                                     <include>com.alibaba:dubbo-serialization-kryo</include>
                                     <include>com.alibaba:dubbo-serialization-jdk</include>
-                                    <include>com.alibaba:dubbo-bootstrap</include>
                                 </includes>
                             </artifactSet>
                             <transformers>
@@ -546,35 +539,45 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>${maven_javadoc_version}</version>
-                <executions>
-                    <execution>
-                        <id>attach-javadoc</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <doclint>none</doclint>
-                        </configuration>
-                    </execution>
-                </executions>
-                <configuration>
-                    <includeDependencySources>true</includeDependencySources>
-                    <dependencySourceIncludes>
-                        <dependencySourceInclude>com.alibaba:dubbo-*</dependencySourceInclude>
-                        <dependencySourceExclude>com.alibaba:hessian-*</dependencySourceExclude>
-                    </dependencySourceIncludes>
-                    <show>public</show>
-                    <charset>UTF-8</charset>
-                    <encoding>UTF-8</encoding>
-                    <docencoding>UTF-8</docencoding>
-                    <links>
-                        <link>http://docs.oracle.com/javase/7/docs/api</link>
-                    </links>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>${maven_javadoc_version}</version>
+                        <executions>
+                            <execution>
+                                <id>attach-javadoc</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <configuration>
+                                    <doclint>none</doclint>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <includeDependencySources>true</includeDependencySources>
+                            <dependencySourceIncludes>
+                                <dependencySourceInclude>com.alibaba:dubbo-*</dependencySourceInclude>
+                                <dependencySourceExclude>com.alibaba:hessian-*</dependencySourceExclude>
+                            </dependencySourceIncludes>
+                            <show>public</show>
+                            <charset>UTF-8</charset>
+                            <encoding>UTF-8</encoding>
+                            <docencoding>UTF-8</docencoding>
+                            <links>
+                                <link>http://docs.oracle.com/javase/7/docs/api</link>
+                            </links>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

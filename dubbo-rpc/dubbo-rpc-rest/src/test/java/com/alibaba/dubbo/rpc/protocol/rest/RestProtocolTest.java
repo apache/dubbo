@@ -27,7 +27,8 @@ import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
-import com.alibaba.dubbo.rpc.ServiceClassHolder;
+import com.alibaba.dubbo.rpc.StaticContext;
+
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Test;
@@ -48,7 +49,7 @@ public class RestProtocolTest {
 
     @Test
     public void testExport() {
-        ServiceClassHolder.getInstance().pushServiceClass(DemoService.class);
+        StaticContext.getContext(Constants.SERVICE_IMPL_CLASS).put(exportUrl.getServiceKey(), DemoService.class);
 
 
         RpcContext.getContext().setAttachment("timeout", "200");
@@ -64,7 +65,7 @@ public class RestProtocolTest {
 
     @Test
     public void testNettyServer() {
-        ServiceClassHolder.getInstance().pushServiceClass(DemoService.class);
+        StaticContext.getContext(Constants.SERVICE_IMPL_CLASS).put(exportUrl.getServiceKey(), DemoService.class);
 
         URL nettyUrl = exportUrl.addParameter(Constants.SERVER_KEY, "netty");
         Exporter<IDemoService> exporter = protocol.export(proxy.getInvoker(new DemoService(), IDemoService.class, nettyUrl));
@@ -79,7 +80,7 @@ public class RestProtocolTest {
 
     @Test(expected = RpcException.class)
     public void testServletWithoutWebConfig() {
-        ServiceClassHolder.getInstance().pushServiceClass(DemoService.class);
+        StaticContext.getContext(Constants.SERVICE_IMPL_CLASS).put(exportUrl.getServiceKey(), DemoService.class);
 
         URL servletUrl = exportUrl.addParameter(Constants.SERVER_KEY, "servlet");
 
@@ -88,7 +89,7 @@ public class RestProtocolTest {
 
     @Test(expected = RpcException.class)
     public void testErrorHandler() {
-        ServiceClassHolder.getInstance().pushServiceClass(DemoService.class);
+        StaticContext.getContext(Constants.SERVICE_IMPL_CLASS).put(exportUrl.getServiceKey(), DemoService.class);
 
         URL nettyUrl = exportUrl.addParameter(Constants.SERVER_KEY, "netty");
         Exporter<IDemoService> exporter = protocol.export(proxy.getInvoker(new DemoService(), IDemoService.class, nettyUrl));
@@ -100,7 +101,7 @@ public class RestProtocolTest {
 
     @Test
     public void testInvoke() {
-        ServiceClassHolder.getInstance().pushServiceClass(DemoService.class);
+        StaticContext.getContext(Constants.SERVICE_IMPL_CLASS).put(exportUrl.getServiceKey(), DemoService.class);
 
 
         Exporter<IDemoService> exporter = protocol.export(proxy.getInvoker(new DemoService(), IDemoService.class, exportUrl));
@@ -113,7 +114,7 @@ public class RestProtocolTest {
 
     @Test
     public void testFilter() {
-        ServiceClassHolder.getInstance().pushServiceClass(DemoService.class);
+        StaticContext.getContext(Constants.SERVICE_IMPL_CLASS).put(exportUrl.getServiceKey(), DemoService.class);
 
         URL nettyUrl = exportUrl.addParameter(Constants.SERVER_KEY, "netty")
                 .addParameter(Constants.EXTENSION_KEY, "com.alibaba.dubbo.rpc.protocol.rest.support.LoggingFilter");
@@ -130,7 +131,7 @@ public class RestProtocolTest {
 
     @Test(expected = RuntimeException.class)
     public void testRegFail() {
-        ServiceClassHolder.getInstance().pushServiceClass(DemoService.class);
+        StaticContext.getContext(Constants.SERVICE_IMPL_CLASS).put(exportUrl.getServiceKey(), DemoService.class);
 
         URL nettyUrl = exportUrl.addParameter(Constants.EXTENSION_KEY, "com.not.existing.Filter");
         protocol.export(proxy.getInvoker(new DemoService(), IDemoService.class, nettyUrl));

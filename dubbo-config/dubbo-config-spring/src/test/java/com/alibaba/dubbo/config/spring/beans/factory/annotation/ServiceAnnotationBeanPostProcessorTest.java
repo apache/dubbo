@@ -18,6 +18,7 @@ package com.alibaba.dubbo.config.spring.beans.factory.annotation;
 
 import com.alibaba.dubbo.config.spring.ServiceBean;
 import com.alibaba.dubbo.config.spring.api.HelloService;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

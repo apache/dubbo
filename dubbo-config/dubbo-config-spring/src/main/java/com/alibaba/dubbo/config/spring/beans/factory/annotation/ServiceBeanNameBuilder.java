@@ -20,20 +20,21 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.dubbo.config.spring.ReferenceBean;
 import com.alibaba.dubbo.config.spring.ServiceBean;
+
 import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
 
 import static com.alibaba.dubbo.config.spring.util.AnnotationUtils.resolveInterfaceName;
 
+
 /**
  * Dubbo {@link Service @Service} Bean Builder
  *
- * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @see Service
  * @see Reference
  * @see ServiceBean
  * @see ReferenceBean
- * @since 2.6.4
+ * @since 2.6.5
  */
 class ServiceBeanNameBuilder {
 

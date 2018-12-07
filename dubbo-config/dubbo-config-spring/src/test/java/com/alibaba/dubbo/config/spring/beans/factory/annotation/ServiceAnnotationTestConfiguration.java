@@ -20,6 +20,7 @@ import com.alibaba.dubbo.config.ApplicationConfig;
 import com.alibaba.dubbo.config.ProtocolConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.annotation.Service;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -32,8 +33,7 @@ import org.springframework.transaction.TransactionStatus;
 /**
  * {@link Service} Bean
  *
- * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
- * @since 2.6.4
+ * @since 2.6.5
  */
 @PropertySource("META-INF/default.properties")
 public class ServiceAnnotationTestConfiguration {

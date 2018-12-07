@@ -21,8 +21,6 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.Adaptive;
 import com.alibaba.dubbo.common.extension.SPI;
 
-import javax.sound.midi.Receiver;
-
 /**
  * Transporter. (SPI, Singleton, ThreadSafe)
  * <p>
@@ -41,7 +39,7 @@ public interface Transporter {
      * @param handler
      * @return server
      * @throws RemotingException
-     * @see com.alibaba.dubbo.remoting.Transporters#bind(URL, Receiver, ChannelHandler)
+     * @see com.alibaba.dubbo.remoting.Transporters#bind(URL, ChannelHandler...)
      */
     @Adaptive({Constants.SERVER_KEY, Constants.TRANSPORTER_KEY})
     Server bind(URL url, ChannelHandler handler) throws RemotingException;
@@ -53,7 +51,7 @@ public interface Transporter {
      * @param handler
      * @return client
      * @throws RemotingException
-     * @see com.alibaba.dubbo.remoting.Transporters#connect(URL, Receiver, ChannelListener)
+     * @see com.alibaba.dubbo.remoting.Transporters#connect(URL, ChannelHandler...)
      */
     @Adaptive({Constants.CLIENT_KEY, Constants.TRANSPORTER_KEY})
     Client connect(URL url, ChannelHandler handler) throws RemotingException;

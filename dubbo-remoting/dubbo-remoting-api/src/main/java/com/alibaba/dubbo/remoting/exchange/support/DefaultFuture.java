@@ -90,6 +90,29 @@ public class DefaultFuture implements ResponseFuture {
         }
     }
 
+    /**
+     * close a channel when a channel is inactive
+     * directly return the unfinished requests.
+     *
+     * @param channel channel to close
+     */
+    public static void closeChannel(Channel channel) {
+        for (long id : CHANNELS.keySet()) {
+            if (channel.equals(CHANNELS.get(id))) {
+                DefaultFuture future = getFuture(id);
+                if (future != null && !future.isDone()) {
+                    Response disconnectResponse = new Response(future.getId());
+                    disconnectResponse.setStatus(Response.CHANNEL_INACTIVE);
+                    disconnectResponse.setErrorMessage("Channel " +
+                            channel +
+                            " is inactive. Directly return the unFinished request : " +
+                            future.getRequest());
+                    DefaultFuture.received(channel, disconnectResponse);
+                }
+            }
+        }
+    }
+
     public static void received(Channel channel, Response response) {
         try {
             DefaultFuture future = FUTURES.remove(response.getId());
