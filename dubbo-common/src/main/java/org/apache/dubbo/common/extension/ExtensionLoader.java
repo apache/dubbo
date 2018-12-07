@@ -346,12 +346,8 @@ public class ExtensionLoader<T> {
         if (name == null || name.length() == 0) {
             throw new IllegalArgumentException("Extension name == null");
         }
-        try {
-            this.getExtensionClass(name);
-            return true;
-        } catch (Throwable t) {
-            return false;
-        }
+        Class<?> c = this.getExtensionClass(name);
+        return c != null;
     }
 
     public Set<String> getSupportedExtensions() {
@@ -565,11 +561,7 @@ public class ExtensionLoader<T> {
         if (name == null) {
             throw new IllegalArgumentException("Extension name == null");
         }
-        Class<?> clazz = getExtensionClasses().get(name);
-        if (clazz == null) {
-            throw new IllegalStateException("No such extension \"" + name + "\" for " + type.getName() + "!");
-        }
-        return clazz;
+        return getExtensionClasses().get(name);
     }
 
     private Map<String, Class<?>> getExtensionClasses() {
