@@ -18,19 +18,29 @@ package com.alibaba.dubbo.config.spring.context.annotation;
 
 import com.alibaba.dubbo.config.AbstractConfig;
 
+import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.ImportSelector;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotationMetadata;
 
 /**
- * Dubbo {@link AbstractConfig Config} Registrar
+ * Dubbo {@link AbstractConfig Config} {@link ImportSelector} implementation, which order can be configured
  *
  * @see EnableDubboConfig
  * @see DubboConfigConfiguration
+ * @see Ordered
  * @since 2.5.8
  */
-public class DubboConfigConfigurationSelector implements ImportSelector, Ordered {
+public class DubboConfigConfigurationSelector implements ImportSelector, EnvironmentAware, Ordered {
+
+    /**
+     * The property name of {@link EnableDubboConfig}'s {@link Ordered order}
+     */
+    public static final String DUBBO_CONFIG_ORDER_PROPERTY_NAME = "dubbo.config.order";
+
+    private int order;
 
     @Override
     public String[] selectImports(AnnotationMetadata importingClassMetadata) {
@@ -47,14 +57,26 @@ public class DubboConfigConfigurationSelector implements ImportSelector, Ordered
         }
     }
 
-    private static <T> T[] of(T... values) {
-        return values;
+    /**
+     * Set {@link Ordered order}, it may be changed in in the future.
+     *
+     * @param order {@link Ordered order}
+     */
+    public void setOrder(int order) {
+        this.order = order;
     }
 
     @Override
     public int getOrder() {
-        return HIGHEST_PRECEDENCE;
+        return order;
     }
 
+    @Override
+    public void setEnvironment(Environment environment) {
+        this.order = environment.getProperty(DUBBO_CONFIG_ORDER_PROPERTY_NAME, int.class, LOWEST_PRECEDENCE);
+    }
 
+    private static <T> T[] of(T... values) {
+        return values;
+    }
 }
