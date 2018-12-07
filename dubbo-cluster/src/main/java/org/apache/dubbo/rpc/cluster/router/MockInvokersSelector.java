@@ -50,7 +50,7 @@ public class MockInvokersSelector implements Router {
     }
 
     @Override
-    public Integer getPriority() {
+    public int getPriority() {
         return Integer.MAX_VALUE;
     }
 
