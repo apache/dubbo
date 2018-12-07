@@ -16,15 +16,29 @@
  */
 package org.apache.dubbo.cache.support.jcache;
 
+import javax.cache.spi.CachingProvider;
 import org.apache.dubbo.cache.Cache;
 import org.apache.dubbo.cache.support.AbstractCacheFactory;
 import org.apache.dubbo.common.URL;
 
 /**
- * JCacheFactory
+ * JCacheFactory is factory class to provide instance of javax spi cache.Implement {@link org.apache.dubbo.cache.CacheFactory} by
+ * extending {@link AbstractCacheFactory} and provide
+ * @see AbstractCacheFactory
+ * @see JCache
+ * @see org.apache.dubbo.cache.filter.CacheFilter
+ * @see Cache
+ * @see CachingProvider
+ * @see javax.cache.Cache
+ * @see javax.cache.CacheManager
  */
 public class JCacheFactory extends AbstractCacheFactory {
 
+    /**
+     * Takes url as an method argument and return new instance of cache store implemented by JCache.
+     * @param url url of the method
+     * @return JCache instance of cache
+     */
     @Override
     protected Cache createCache(URL url) {
         return new JCache(url);
