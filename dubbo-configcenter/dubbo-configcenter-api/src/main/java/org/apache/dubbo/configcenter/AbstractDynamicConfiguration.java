@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentMap;
  * Dynamic configuration template class. The concrete implementation needs to provide implementation for three methods.
  *
  * @see AbstractDynamicConfiguration#getTargetConfig(String, String, long)
- * @see AbstractDynamicConfiguration#addConfigurationListener(String key, TargetListener, ConfigurationListener)
+ * @see AbstractDynamicConfiguration#addConfigurationListener(String, TargetListener, ConfigurationListener)
  * @see AbstractDynamicConfiguration#createTargetListener(String)
  */
 public abstract class AbstractDynamicConfiguration<TargetListener> extends AbstractConfiguration
@@ -36,8 +36,7 @@ public abstract class AbstractDynamicConfiguration<TargetListener> extends Abstr
     protected URL url;
 
     // One key can register multiple target listeners, but one target listener only maps to one configuration listener
-    protected ConcurrentMap<String, TargetListener> targetListeners =
-            new ConcurrentHashMap<>();
+    protected ConcurrentMap<String, TargetListener> targetListeners = new ConcurrentHashMap<>();
 
     public AbstractDynamicConfiguration() {
     }
@@ -96,8 +95,9 @@ public abstract class AbstractDynamicConfiguration<TargetListener> extends Abstr
     /**
      * Register a native listener to the backend config storage so that Dubbo has chance to get notified when the
      * value changes.
-     * @param key
-     * @param targetListener Implementation dependent listener, such as, zookeeper watcher, Apollo listener, ...
+     *
+     * @param key                   property key
+     * @param targetListener        Implementation dependent listener, such as, zookeeper watcher, Apollo listener, ...
      * @param configurationListener Listener in Dubbo that will handle notification.
      */
     protected abstract void addConfigurationListener(String key, TargetListener targetListener, ConfigurationListener configurationListener);
@@ -106,7 +106,7 @@ public abstract class AbstractDynamicConfiguration<TargetListener> extends Abstr
      * Create a native listener for the backend config storage, eventually ConfigurationListener will get notified once
      * the value changes.
      *
-     * @param key      property key the native listener will listen on
+     * @param key property key the native listener will listen on
      * @return native listener for the backend config storage
      */
     protected abstract TargetListener createTargetListener(String key);
