@@ -26,7 +26,7 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.Router;
+import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -171,31 +171,6 @@ public class ConditionRouter extends AbstractRouter {
             logger.error("Failed to execute condition router rule: " + getUrl() + ", invokers: " + invokers + ", cause: " + t.getMessage(), t);
         }
         return invokers;
-    }
-
-    @Override
-    public Integer getPriority() {
-        return priority;
-    }
-
-    @Override
-    public URL getUrl() {
-        return url;
-    }
-
-    @Override
-    public int compareTo(Router o) {
-        if (o == null) {
-            throw new IllegalArgumentException();
-        }
-        if (this.priority == o.getPriority()) {
-            if (o.getUrl() == null) {
-                return -1;
-            }
-            return url.toFullString().compareTo(o.getUrl().toFullString());
-        } else {
-            return this.priority > o.getPriority() ? 1 : -1;
-        }
     }
 
     boolean matchWhen(URL url, Invocation invocation) {
