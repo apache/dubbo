@@ -30,6 +30,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.alibaba.fastjson.JSON;
+import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -209,10 +210,10 @@ public class LoadBalanceBaseTest {
 
     @Before
     public void before() throws Exception {
-        weightInvoker1 = mock(Invoker.class);
-        weightInvoker2 = mock(Invoker.class);
-        weightInvoker3 = mock(Invoker.class);
-        weightInvokerTmp = mock(Invoker.class);
+        weightInvoker1 = mock(Invoker.class, Mockito.withSettings().stubOnly());
+        weightInvoker2 = mock(Invoker.class, Mockito.withSettings().stubOnly());
+        weightInvoker3 = mock(Invoker.class, Mockito.withSettings().stubOnly());
+        weightInvokerTmp = mock(Invoker.class, Mockito.withSettings().stubOnly());
 
         weightTestInvocation = new RpcInvocation();
         weightTestInvocation.setMethodName("test");
