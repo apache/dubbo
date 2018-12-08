@@ -215,7 +215,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
                         if (echo != null && echo.length() > 0) {
                             channel.send(echo);
                         }
-                    }else{
+                    } else {
                         channel.send("telnet disabled\r\n");
                     }
 
