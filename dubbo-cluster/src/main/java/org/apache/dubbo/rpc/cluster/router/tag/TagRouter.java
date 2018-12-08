@@ -33,7 +33,7 @@ import java.util.List;
 /**
  * TagRouter
  */
-public class TagRouter implements Router, Comparable<Router> {
+public class TagRouter implements Router {
 
     private static final Logger logger = LoggerFactory.getLogger(TagRouter.class);
 
@@ -80,7 +80,7 @@ public class TagRouter implements Router, Comparable<Router> {
                         }
                     }
                 }
-            // Normal request
+                // Normal request
             } else {
                 for (Invoker<T> invoker : invokers) {
                     // Can't access tag invoker,only normal invoker should be selected
@@ -98,11 +98,7 @@ public class TagRouter implements Router, Comparable<Router> {
     }
 
     @Override
-    public int compareTo(Router o) {
-        if (o == null || o.getClass() != TagRouter.class) {
-            return 1;
-        }
-        TagRouter c = (TagRouter) o;
-        return this.priority == c.priority ? url.toFullString().compareTo(c.url.toFullString()) : (this.priority > c.priority ? 1 : -1);
+    public int getPriority() {
+        return priority;
     }
 }
