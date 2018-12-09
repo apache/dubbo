@@ -57,7 +57,7 @@ public interface GreetingService {
 }
 ```
 
-*See [api/GreetingService.java](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/com/alibaba/dubbo/samples/api/GreetingsService.java) on GitHub.*
+*See [api/GreetingService.java](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/api/GreetingsService.java) on GitHub.*
 
 ### Implement service interface for the provider
 
@@ -73,7 +73,7 @@ public class GreetingServiceImpl implements GreetingService {
 }
 ```
 
-*See [provider/GreetingServiceImpl.java](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/com/alibaba/dubbo/samples/server/GreetingsServiceImpl.java) on GitHub.*
+*See [provider/GreetingServiceImpl.java](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/provider/GreetingsServiceImpl.java) on GitHub.*
 
 ### Start service provider
 
@@ -101,7 +101,7 @@ public class Application {
 }
 ```
 
-*See [provider/Application.java](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/com/alibaba/dubbo/samples/provider/Application.java) on GitHub.*
+*See [provider/Application.java](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/provider/Application.java) on GitHub.*
 
 ### Build and run the provider
 
@@ -141,7 +141,7 @@ public class Application {
 
 The consumer will print out `Hello world` on the screen.
 
-*See [consumer/Application.java](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/com/alibaba/dubbo/samples/consumer/Application.java) on GitHub.*
+*See [consumer/Application.java](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/consumer/Application.java) on GitHub.*
 
 ### Next steps
 
