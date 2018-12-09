@@ -665,7 +665,7 @@ public class Constants {
 
     public static final String REQUEST_TAG_KEY = "request.tag";
 
-    public static final String TELNET = "enable.telnet";
+    public static final String TELNET_ENABLED = "telnet.enabled";
 
     /*
      * private Constants(){ }

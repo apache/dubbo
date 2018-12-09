@@ -137,7 +137,7 @@ public class ProtocolConfig extends AbstractConfig {
     private Boolean isDefault;
 
     // whether enable telnet or not
-    private Boolean enableTelnet;
+    private Boolean telnetEnabled;
 
     public ProtocolConfig() {
     }
@@ -468,12 +468,12 @@ public class ProtocolConfig extends AbstractConfig {
         this.extension = extension;
     }
 
-    public Boolean getEnableTelnet() {
-        return enableTelnet;
+    public Boolean isTelnetEnabled() {
+        return telnetEnabled;
     }
 
-    public void setEnableTelnet(Boolean enableTelnet) {
-        this.enableTelnet = enableTelnet;
+    public void setTelnetEnabled(Boolean telnetEnabled) {
+        this.telnetEnabled = telnetEnabled;
     }
 
     public void destroy() {

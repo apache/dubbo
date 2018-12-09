@@ -209,10 +209,10 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
                     Exception e = new Exception("Dubbo client can not supported string message: " + message + " in channel: " + channel + ", url: " + channel.getUrl());
                     logger.error(e.getMessage(), e);
                 } else {
-                    boolean enableTelnet = channel.getUrl().getParameter(Constants.TELNET, true);
-                    if (enableTelnet){
+                    boolean enableTelnet = channel.getUrl().getParameter(Constants.TELNET_ENABLED, true);
+                    if (enableTelnet) {
                         String echo = handler.telnet(channel, (String) message);
-                        if (echo != null && echo.length() > 0) {
+                        if (StringUtils.isNotEmpty(echo)) {
                             channel.send(echo);
                         }
                     } else {
