@@ -653,8 +653,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 if (portToBind == null || portToBind < 0) {
                     portToBind = getAvailablePort(defaultPort);
                     putRandomPort(name, portToBind);
+                    logger.warn("Use random available port(" + portToBind + ") for protocol " + name);
                 }
-                logger.warn("Use random available port(" + portToBind + ") for protocol " + name);
             }
         }
 
