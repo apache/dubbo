@@ -79,12 +79,7 @@ public class CompletableFutureTaskTest {
 
         },executor);
         final CountDownLatch countDownLatch = new CountDownLatch(1);
-        completableFuture.thenRunAsync(new Runnable() {
-            @Override
-            public void run() {
-                countDownLatch.countDown();
-            }
-        });
+        completableFuture.thenRunAsync(countDownLatch::countDown);
         countDownLatch.await();
     }
 
