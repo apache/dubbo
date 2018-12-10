@@ -72,18 +72,10 @@ public class TagRouter implements Router {
                         result.add(invoker);
                     }
                 }
-                // If no invoker be selected, downgrade to normal invokers
-                if (result.isEmpty()) {
-                    for (Invoker<T> invoker : invokers) {
-                        if (StringUtils.isEmpty(invoker.getUrl().getParameter(Constants.TAG_KEY))) {
-                            result.add(invoker);
-                        }
-                    }
-                }
-                // Normal request
-            } else {
+            }
+            // If Constants.REQUEST_TAG_KEY unspecified or no invoker be selected, downgrade to normal invokers
+            if (result.isEmpty()) {
                 for (Invoker<T> invoker : invokers) {
-                    // Can't access tag invoker,only normal invoker should be selected
                     if (StringUtils.isEmpty(invoker.getUrl().getParameter(Constants.TAG_KEY))) {
                         result.add(invoker);
                     }
