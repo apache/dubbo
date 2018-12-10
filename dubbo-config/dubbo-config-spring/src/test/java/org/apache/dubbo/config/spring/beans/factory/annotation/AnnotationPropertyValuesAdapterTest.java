@@ -28,12 +28,13 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.mock.env.MockEnvironment;
 import org.springframework.util.ReflectionUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.validation.DataBinder;
 
 import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import static org.springframework.util.StringUtils.arrayToCommaDelimitedString;
 
 /**
  * {@link AnnotationPropertyValuesAdapter} Test
@@ -65,9 +66,19 @@ public class AnnotationPropertyValuesAdapterTest {
 
         DefaultConversionService conversionService = new DefaultConversionService();
 
-        conversionService.addConverter((Converter<String[], String>) StringUtils::arrayToCommaDelimitedString);
+        conversionService.addConverter(new Converter<String[], String>() {
+            @Override
+            public String convert(String[] source) {
+                return arrayToCommaDelimitedString(source);
+            }
+        });
 
-        conversionService.addConverter((Converter<String[], Map<String, String>>) CollectionUtils::toStringMap);
+        conversionService.addConverter(new Converter<String[], Map<String, String>>() {
+            @Override
+            public Map<String, String> convert(String[] source) {
+                return CollectionUtils.toStringMap(source);
+            }
+        });
 
 
         dataBinder.setConversionService(conversionService);
