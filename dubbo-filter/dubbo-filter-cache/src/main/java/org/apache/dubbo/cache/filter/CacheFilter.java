@@ -32,17 +32,60 @@ import org.apache.dubbo.rpc.RpcResult;
 import java.io.Serializable;
 
 /**
- * CacheFilter
+ * CacheFilter is a core component of dubbo.Enabling <b>cache</b> key of service,method,consumer or provider dubbo will cache method return value.
+ * Along with cache key we need to configure cache type. Dubbo default implemented cache types are
+ * <li>lur</li>
+ * <li>threadlocal</li>
+ * <li>jcache</li>
+ * <li>expiring</li>
+ *
+ * <pre>
+ *   e.g. 1)&lt;dubbo:service cache="lru" /&gt;
+ *        2)&lt;dubbo:service /&gt; &lt;dubbo:method name="method2" cache="threadlocal" /&gt; &lt;dubbo:service/&gt;
+ *        3)&lt;dubbo:provider cache="expiring" /&gt;
+ *        4)&lt;dubbo:consumer cache="jcache" /&gt;
+ *
+ *If cache type is defined in method level then method level type will get precedence. According to above provided
+ *example, if service has two method, method1 and method2, method2 will have cache type as <b>threadlocal</b> where others will
+ *be backed by <b>lru</b>
+ *</pre>
+ *
+ * @see org.apache.dubbo.rpc.Filter
+ * @see org.apache.dubbo.cache.support.lru.LruCacheFactory
+ * @see org.apache.dubbo.cache.support.lru.LruCache
+ * @see org.apache.dubbo.cache.support.jcache.JCacheFactory
+ * @see org.apache.dubbo.cache.support.jcache.JCache
+ * @see org.apache.dubbo.cache.support.threadlocal.ThreadLocalCacheFactory
+ * @see org.apache.dubbo.cache.support.threadlocal.ThreadLocalCache
+ * @see org.apache.dubbo.cache.support.expiring.ExpiringCacheFactory
+ * @see org.apache.dubbo.cache.support.expiring.ExpiringCache
+ *
  */
 @Activate(group = {Constants.CONSUMER, Constants.PROVIDER}, value = Constants.CACHE_KEY)
 public class CacheFilter implements Filter {
 
     private CacheFactory cacheFactory;
 
+    /**
+     * Dubbo will populate and set the cache factory instance based on service/method/consumer/provider configured
+     * cache attribute value. Dubbo will search for the class name implementing configured <b>cache</b> in file org.apache.dubbo.cache.CacheFactory
+     * under META-INF sub folders.
+     *
+     * @param cacheFactory instance of CacheFactory based on <b>cache</b> type
+     */
     public void setCacheFactory(CacheFactory cacheFactory) {
         this.cacheFactory = cacheFactory;
     }
 
+    /**
+     * If cache is configured, dubbo will invoke method on each method call. If cache value is returned by cache store
+     * then it will return otherwise call the remote method and return value. If remote method's return valeu has error
+     * then it will not cache the value.
+     * @param invoker    service
+     * @param invocation invocation.
+     * @return Cache returned value if found by the underlying cache store. If cache miss it will call target method.
+     * @throws RpcException
+     */
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         if (cacheFactory != null && ConfigUtils.isNotEmpty(invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.CACHE_KEY))) {
@@ -66,7 +109,10 @@ public class CacheFilter implements Filter {
         }
         return invoker.invoke(invocation);
     }
-    
+
+    /**
+     * Cache value wrapper.
+     */
     static class ValueWrapper implements Serializable{
 
         private static final long serialVersionUID = -1777337318019193256L;
