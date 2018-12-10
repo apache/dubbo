@@ -86,12 +86,12 @@ public class MockClusterInvoker<T> implements Invoker<T> {
             } catch (RpcException e) {
                 if (e.isBiz()) {
                     throw e;
-                } else {
-                    if (logger.isWarnEnabled()) {
-                        logger.warn("fail-mock: " + invocation.getMethodName() + " fail-mock enabled , url : " + directory.getUrl(), e);
-                    }
-                    result = doMockInvoke(invocation, e);
                 }
+                
+                if (logger.isWarnEnabled()) {
+                    logger.warn("fail-mock: " + invocation.getMethodName() + " fail-mock enabled , url : " + directory.getUrl(), e);
+                }
+                result = doMockInvoke(invocation, e);
             }
         }
         return result;
