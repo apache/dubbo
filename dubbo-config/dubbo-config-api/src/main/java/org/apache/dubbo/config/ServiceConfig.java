@@ -170,6 +170,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         protocol = protocol.toLowerCase();
         if (!RANDOM_PORT_MAP.containsKey(protocol)) {
             RANDOM_PORT_MAP.put(protocol, port);
+            logger.warn("Use random available port(" + port + ") for protocol " + protocol);
         }
     }
 
@@ -653,7 +654,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 if (portToBind == null || portToBind < 0) {
                     portToBind = getAvailablePort(defaultPort);
                     putRandomPort(name, portToBind);
-                    logger.warn("Use random available port(" + portToBind + ") for protocol " + name);
                 }
             }
         }
