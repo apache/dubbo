@@ -17,21 +17,19 @@
 package org.apache.dubbo.rpc.cluster.router.script;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.router.MockInvoker;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import javax.script.ScriptException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ScriptRouterTest {
 
@@ -85,5 +83,48 @@ public class ScriptRouterTest {
         Assert.assertEquals(invoker3, filteredInvokers.get(1));
     }
 
-    //TODO Add tests for abnormal scene
+    @Test
+    public void testRouteHostFilter() {
+    	List<Invoker<String>> invokers = new ArrayList<Invoker<String>>();
+    	MockInvoker<String> invoker1 = new MockInvoker<String>(URL.valueOf("dubbo://10.134.108.1:20880/com.dubbo.HelloService"));
+    	MockInvoker<String> invoker2 = new MockInvoker<String>(URL.valueOf("dubbo://10.134.108.2:20880/com.dubbo.HelloService"));
+    	MockInvoker<String> invoker3 = new MockInvoker<String>(URL.valueOf("dubbo://10.134.108.3:20880/com.dubbo.HelloService"));
+        invokers.add(invoker1);
+        invokers.add(invoker2);
+        invokers.add(invoker3);
+        
+        String script = "function route(invokers, invocation, context){ " + 
+        		"	var result = new java.util.ArrayList(invokers.size()); " + 
+        		"	var targetHost = new java.util.ArrayList(); " + 
+        		"	targetHost.add(\"10.134.108.2\"); " + 
+        		"	for (var i = 0; i < invokers.length; i++) { " + 
+        		"		if(targetHost.contains(invokers[i].getUrl().getHost())){ " + 
+        		"			result.add(invokers[i]); " + 
+        		"		} " + 
+        		"	} " + 
+        		"	return result; " + 
+        		"} " + 
+        		"route(invokers, invocation, context) ";
+        
+        Router router = new ScriptRouterFactory().getRouter(getRouteUrl(script));
+        List<Invoker<String>> routeResult = router.route(invokers, invokers.get(0).getUrl(), new RpcInvocation());
+        Assert.assertEquals(1, routeResult.size());
+        Assert.assertEquals(invoker2,routeResult.get(0));
+    }
+    
+    @Test
+    public void testRoute_throwException() {
+    	List<Invoker<String>> invokers = new ArrayList<Invoker<String>>();
+    	MockInvoker<String> invoker1 = new MockInvoker<String>(URL.valueOf("dubbo://10.134.108.1:20880/com.dubbo.HelloService"));
+    	MockInvoker<String> invoker2 = new MockInvoker<String>(URL.valueOf("dubbo://10.134.108.2:20880/com.dubbo.HelloService"));
+    	MockInvoker<String> invoker3 = new MockInvoker<String>(URL.valueOf("dubbo://10.134.108.3:20880/com.dubbo.HelloService"));
+        invokers.add(invoker1);
+        invokers.add(invoker2);
+        invokers.add(invoker3);
+        
+        String script = "/";
+        Router router = new ScriptRouterFactory().getRouter(getRouteUrl(script));
+        List<Invoker<String>> routeResult = router.route(invokers, invokers.get(0).getUrl(), new RpcInvocation());
+        Assert.assertEquals(3, routeResult.size());
+    }
 }

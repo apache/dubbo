@@ -667,6 +667,7 @@ public class Constants {
 
     public static final String TELNET_ENABLED = "telnet.enabled";
 
+    public static final String TELNET = "telnet";
     /*
      * private Constants(){ }
      */
