@@ -24,9 +24,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
-import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
 import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
-import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
 import org.apache.dubbo.metadata.store.MetadataReport;
 
 import java.io.File;
@@ -64,7 +62,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
     // Local disk cache, where the special key value.registies records the list of registry centers, and the others are the list of notified service providers
     final Properties properties = new Properties();
-    private final ExecutorService reportCacheExecutor = Executors.newFixedThreadPool(2, new NamedThreadFactory("DubboSaveMetadataReport", true));
+    private final ExecutorService reportCacheExecutor = Executors.newFixedThreadPool(1, new NamedThreadFactory("DubboSaveMetadataReport", true));
     final Map<MetadataIdentifier, Object> allMetadataReports = new ConcurrentHashMap<MetadataIdentifier, Object>(4);
 
     private final AtomicLong lastCacheChanged = new AtomicLong();
@@ -230,7 +228,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
-    public void storeProviderMetadata(ProviderMetadataIdentifier providerMetadataIdentifier, FullServiceDefinition serviceDefinition) {
+    public void storeProviderMetadata(MetadataIdentifier providerMetadataIdentifier, FullServiceDefinition serviceDefinition) {
         if (syncReport) {
             storeProviderMetadataTask(providerMetadataIdentifier, serviceDefinition);
         } else {
@@ -243,7 +241,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
-    private void storeProviderMetadataTask(ProviderMetadataIdentifier providerMetadataIdentifier, FullServiceDefinition serviceDefinition) {
+    private void storeProviderMetadataTask(MetadataIdentifier providerMetadataIdentifier, FullServiceDefinition serviceDefinition) {
         try {
             if (logger.isInfoEnabled()) {
                 logger.info("store provider metadata. Identifier : " + providerMetadataIdentifier + "; definition: " + serviceDefinition);
@@ -262,7 +260,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
-    public void storeConsumerMetadata(ConsumerMetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap) {
+    public void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap) {
         if (syncReport) {
             storeConsumerMetadataTask(consumerMetadataIdentifier, serviceParameterMap);
         } else {
@@ -275,7 +273,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
-    public void storeConsumerMetadataTask(ConsumerMetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap) {
+    public void storeConsumerMetadataTask(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap) {
         try {
             if (logger.isInfoEnabled()) {
                 logger.info("store consumer metadata. Identifier : " + consumerMetadataIdentifier + "; definition: " + serviceParameterMap);
@@ -316,10 +314,10 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         Iterator<Map.Entry<MetadataIdentifier, Object>> iterable = metadataMap.entrySet().iterator();
         while (iterable.hasNext()) {
             Map.Entry<MetadataIdentifier, Object> item = iterable.next();
-            if (item.getKey() instanceof ProviderMetadataIdentifier) {
-                this.storeProviderMetadata((ProviderMetadataIdentifier) item.getKey(), (FullServiceDefinition) item.getValue());
-            } else if (item.getKey() instanceof ConsumerMetadataIdentifier) {
-                this.storeConsumerMetadata((ConsumerMetadataIdentifier) item.getKey(), (Map) item.getValue());
+            if (Constants.PROVIDER_SIDE.equals(item.getKey().getSide())) {
+                this.storeProviderMetadata(item.getKey(), (FullServiceDefinition) item.getValue());
+            } else if (Constants.CONSUMER_SIDE.equals(item.getKey().getSide())) {
+                this.storeConsumerMetadata(item.getKey(), (Map) item.getValue());
             }
 
         }
@@ -401,8 +399,8 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
-    protected abstract void doStoreProviderMetadata(ProviderMetadataIdentifier providerMetadataIdentifier, String serviceDefinitions);
+    protected abstract void doStoreProviderMetadata(MetadataIdentifier providerMetadataIdentifier, String serviceDefinitions);
 
-    protected abstract void doStoreConsumerMetadata(ConsumerMetadataIdentifier consumerMetadataIdentifier, String serviceParameterString);
+    protected abstract void doStoreConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, String serviceParameterString);
 
 }

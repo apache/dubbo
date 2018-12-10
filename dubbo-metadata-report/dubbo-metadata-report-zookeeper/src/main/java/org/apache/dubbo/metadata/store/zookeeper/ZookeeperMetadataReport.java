@@ -21,9 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
 import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
-import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
 import org.apache.dubbo.metadata.support.AbstractMetadataReport;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
@@ -75,12 +73,12 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
     }
 
     @Override
-    protected void doStoreProviderMetadata(ProviderMetadataIdentifier providerMetadataIdentifier, String serviceDefinitions) {
+    protected void doStoreProviderMetadata(MetadataIdentifier providerMetadataIdentifier, String serviceDefinitions) {
         storeMetadata(providerMetadataIdentifier, serviceDefinitions);
     }
 
     @Override
-    protected void doStoreConsumerMetadata(ConsumerMetadataIdentifier consumerMetadataIdentifier, String value) {
+    protected void doStoreConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, String value) {
         storeMetadata(consumerMetadataIdentifier, value);
     }
 
