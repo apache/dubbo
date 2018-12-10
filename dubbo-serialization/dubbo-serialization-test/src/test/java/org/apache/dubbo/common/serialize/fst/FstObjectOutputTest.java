@@ -18,6 +18,7 @@ package org.apache.dubbo.common.serialize.fst;
 
 import org.apache.dubbo.common.serialize.model.AnimalEnum;
 import org.apache.dubbo.common.serialize.model.person.FullAddress;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -39,6 +40,11 @@ public class FstObjectOutputTest {
     public void setUp() {
         this.byteArrayOutputStream = new ByteArrayOutputStream();
         this.fstObjectOutput = new FstObjectOutput(byteArrayOutputStream);
+    }
+
+    @After
+    public void tearDown() throws IOException {
+        new FstObjectInput(new ByteArrayInputStream(new byte[]{0}));
     }
 
 
