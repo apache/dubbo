@@ -19,8 +19,7 @@ package org.apache.dubbo.metadata.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
-import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
-import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
+import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.store.MetadataReport;
 
 import com.alibaba.fastjson.JSON;
@@ -42,12 +41,12 @@ public class AbstractMetadataReportFactoryTest {
             return new MetadataReport() {
 
                 @Override
-                public void storeProviderMetadata(ProviderMetadataIdentifier providerMetadataIdentifier, FullServiceDefinition serviceDefinition) {
+                public void storeProviderMetadata(MetadataIdentifier providerMetadataIdentifier, FullServiceDefinition serviceDefinition) {
                     store.put(providerMetadataIdentifier.getIdentifierKey(), JSON.toJSONString(serviceDefinition));
                 }
 
                 @Override
-                public void storeConsumerMetadata(ConsumerMetadataIdentifier consumerMetadataIdentifier, Map serviceParameterMap) {
+                public void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map serviceParameterMap) {
                     store.put(consumerMetadataIdentifier.getIdentifierKey(), JSON.toJSONString(serviceParameterMap));
                 }
 
