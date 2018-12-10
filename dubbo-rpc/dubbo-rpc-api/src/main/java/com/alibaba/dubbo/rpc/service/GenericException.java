@@ -14,52 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.alibaba.dubbo.rpc.service;
 
-import com.alibaba.dubbo.common.utils.StringUtils;
-
-/**
- * GenericException
- *
- * @export
- */
-public class GenericException extends RuntimeException {
-
-    private static final long serialVersionUID = -1182299763306599962L;
-
-    private String exceptionClass;
-
-    private String exceptionMessage;
+@Deprecated
+public class GenericException extends org.apache.dubbo.rpc.service.GenericException {
 
     public GenericException() {
     }
 
     public GenericException(String exceptionClass, String exceptionMessage) {
-        super(exceptionMessage);
-        this.exceptionClass = exceptionClass;
-        this.exceptionMessage = exceptionMessage;
+        super(exceptionClass, exceptionMessage);
     }
 
     public GenericException(Throwable cause) {
-        super(StringUtils.toString(cause));
-        this.exceptionClass = cause.getClass().getName();
-        this.exceptionMessage = cause.getMessage();
+        super(cause);
     }
-
-    public String getExceptionClass() {
-        return exceptionClass;
-    }
-
-    public void setExceptionClass(String exceptionClass) {
-        this.exceptionClass = exceptionClass;
-    }
-
-    public String getExceptionMessage() {
-        return exceptionMessage;
-    }
-
-    public void setExceptionMessage(String exceptionMessage) {
-        this.exceptionMessage = exceptionMessage;
-    }
-
 }

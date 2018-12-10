@@ -1,0 +1,2 @@
+impl1=org.apache.dubbo.common.extension.ext4.impl.Ext4Impl1
+impl2=org.apache.dubbo.common.extension.ext4.impl.Ext4Impl2

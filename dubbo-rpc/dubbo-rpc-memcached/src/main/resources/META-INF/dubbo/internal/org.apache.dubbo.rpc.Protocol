@@ -1,0 +1,1 @@
+memcached=org.apache.dubbo.rpc.protocol.memcached.MemcachedProtocol
