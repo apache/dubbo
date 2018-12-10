@@ -44,7 +44,7 @@ public class SpringExtensionFactory implements ExtensionFactory {
 
     public static void addApplicationContext(ApplicationContext context) {
         contexts.add(context);
-        Runtime.getRuntime().removeShutdownHook(DubboShutdownHook.getDubboShutdownHook());
+        DubboShutdownHook.getDubboShutdownHook().unregister();
         BeanFactoryUtils.addApplicationListener(context, shutdownHookListener);
     }
 
