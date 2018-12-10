@@ -633,6 +633,25 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
      * @return
      */
     private Integer findConfigedPorts(ProtocolConfig protocolConfig, String name, Map<String, String> map) {
+        Integer portToBind = getPortFromProtocol(protocolConfig, name);
+
+        // save bind port, used as url's key later
+        map.put(Constants.BIND_PORT_KEY, String.valueOf(portToBind));
+
+        // registry port, not used as bind port by default
+        String portToRegistryStr = getValueFromConfig(protocolConfig, Constants.DUBBO_PORT_TO_REGISTRY);
+        Integer portToRegistry = parsePort(portToRegistryStr);
+        if (portToRegistry == null) {
+            portToRegistry = portToBind;
+        }
+
+        return portToRegistry;
+    }
+
+    private Integer getPortFromProtocol(ProtocolConfig protocolConfig, String name) {
+        if (protocolConfig.getPort() != null && protocolConfig.getPort() > 0) {
+            return protocolConfig.getPort();
+        }
         Integer portToBind = null;
 
         // parse bind port from environment
@@ -657,18 +676,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 }
             }
         }
-
-        // save bind port, used as url's key later
-        map.put(Constants.BIND_PORT_KEY, String.valueOf(portToBind));
-
-        // registry port, not used as bind port by default
-        String portToRegistryStr = getValueFromConfig(protocolConfig, Constants.DUBBO_PORT_TO_REGISTRY);
-        Integer portToRegistry = parsePort(portToRegistryStr);
-        if (portToRegistry == null) {
-            portToRegistry = portToBind;
-        }
-
-        return portToRegistry;
+        protocolConfig.setPort(portToBind);
+        return portToBind;
     }
 
     private Integer parsePort(String configPort) {
