@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context.xsd"
+       default-lazy-init="true" default-autowire="byName">
+    <!-- 启用注解 -->
+    <context:annotation-config />
+    <!-- 开启注解 -->
+    <context:annotation-config />
+    <!-- 使用annotation 自动注册bean -->
+    <context:component-scan base-package="org.apache.dubbo">
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+    </context:component-scan>
+
+    <!-- 配置dubbo 
+    <bean id="rpcBeanFactory" class="org.apache.dubbo.config.spring.DubboBeanFactory">
+        <property name="configXml">
+            <list>
+                <value>classpath*:META-INF/spring/dubbo-demo-provider.xml</value>
+            </list>
+        </property>
+    </bean>
+-->
+    <import resource="dubbo-demo-provider.xml"/>
+</beans>
