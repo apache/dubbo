@@ -54,6 +54,7 @@ public class Consumer {
         while (true) {
             try {
                 Thread.sleep(1000);
+                //从调用方的角度,区分Bean和BeanWrapper,类职责单一,使用上太方便
                 String hello = ((DemoService)referenceConfig.get()).sayHello("world"); // call remote method
                 System.out.println(hello); // get result
             } catch (Throwable throwable) {
