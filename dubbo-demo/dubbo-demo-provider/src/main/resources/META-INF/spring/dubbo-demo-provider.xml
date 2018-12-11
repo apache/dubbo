@@ -16,24 +16,54 @@
   limitations under the License.
   -->
 <beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:dubbo="http://dubbo.apache.org/schema/dubbo"
        xmlns="http://www.springframework.org/schema/beans"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
-       http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd">
+    <!-- 处理rpc Bean-->
+    <bean id="rpcBeanProcessor" class="org.apache.dubbo.config.spring.DubboBeanProcessor"/>
 
     <!-- provider's application name, used for tracing dependency relationship -->
-    <dubbo:application name="demo-provider"/>
+    <bean id ="dubbo" class="org.apache.dubbo.config.ApplicationConfig">
+        <property name="name" value="demo-provider"></property>
+        <property name="shutwait" value="2000"></property>
+        <property name="monitor" ref="monitor" />
+        <property name="providerConfig" ref="provider" />
+        <property name="registries">
+            <list>
+                <ref bean="registry" />
+            </list>
+        </property>
+    </bean>
+    <bean id="monitor" class="org.apache.dubbo.config.MonitorConfig">
+    </bean>
+    <bean id="registry" class="org.apache.dubbo.config.RegistryConfig">
+        <property name="address" value="multicast://224.5.6.7:1234"></property>
+        <property name="protocol" value="dubbo"></property>
+        <property name="protocolConfig" ref="protocol"></property>
+    </bean>
+    <bean id="protocol" class="org.apache.dubbo.config.ProtocolConfig">
+        <property name="name" value="dubbo"></property>
+        <property name="port" value="20880"></property>
+    </bean>
+    <bean id="provider" class="org.apache.dubbo.config.ProviderConfig">
+        <property name="port" value="20880"></property>
+    </bean>
 
-    <!-- use multicast registry center to export service -->
-    <dubbo:registry address="multicast://224.5.6.7:1234"/>
-
-    <!-- use dubbo protocol to export service on port 20880 -->
-    <dubbo:protocol name="dubbo" port="20880"/>
-
+    <bean id="module" class="org.apache.dubbo.config.ModuleConfig">
+        <property name="monitor" ref="monitor" />
+        <property name="registries">
+            <list>
+                <ref bean="registry" />
+            </list>
+        </property>
+    </bean>
     <!-- service implementation, as same as regular local bean -->
-    <bean id="demoService" class="com.alibaba.dubbo.demo.provider.DemoServiceImpl"/>
+    <bean id="demoService" class="org.apache.dubbo.demo.provider.DemoServiceImpl"/>
 
     <!-- declare the service interface to be exported -->
-    <dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoService"/>
+    <bean id="demoServiceApi" class="org.apache.dubbo.config.ServiceConfig">
+        <property name="interface" value="org.apache.dubbo.demo.DemoService"></property>
+        <property name="ref" ref="demoService"></property>
+        <property name="application" ref="dubbo"></property>
 
+    </bean>
 </beans>
