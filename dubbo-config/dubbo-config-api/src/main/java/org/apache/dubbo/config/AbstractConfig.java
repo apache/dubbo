@@ -74,7 +74,7 @@ public abstract class AbstractConfig implements Serializable {
         legacyProperties.put("dubbo.service.url", "dubbo.service.address");
 
         // this is only for compatibility
-        Runtime.getRuntime().addShutdownHook(DubboShutdownHook.getDubboShutdownHook());
+        DubboShutdownHook.getDubboShutdownHook().register();
     }
 
     protected String id;

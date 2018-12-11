@@ -49,6 +49,11 @@ public class MockInvokersSelector implements Router {
         return invokers;
     }
 
+    @Override
+    public int getPriority() {
+        return Integer.MAX_VALUE;
+    }
+
     private <T> List<Invoker<T>> getMockedInvokers(final List<Invoker<T>> invokers) {
         if (!hasMockProviders(invokers)) {
             return null;
