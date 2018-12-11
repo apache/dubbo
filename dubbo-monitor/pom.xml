@@ -31,5 +31,6 @@
     <modules>
         <module>dubbo-monitor-api</module>
         <module>dubbo-monitor-default</module>
+        <module>dubbo-monitor-logstash</module>
     </modules>
 </project>

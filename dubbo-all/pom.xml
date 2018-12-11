@@ -250,6 +250,13 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-monitor-logstash</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-container-spring</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
@@ -418,6 +425,7 @@
                                     <include>org.apache.dubbo:dubbo-registry-redis</include>
                                     <include>org.apache.dubbo:dubbo-monitor-api</include>
                                     <include>org.apache.dubbo:dubbo-monitor-default</include>
+                                    <include>org.apache.dubbo:dubbo-monitor-logstash</include>
                                     <include>org.apache.dubbo:dubbo-config-api</include>
                                     <include>org.apache.dubbo:dubbo-config-spring</include>
                                     <include>org.apache.dubbo:dubbo-container-api</include>
