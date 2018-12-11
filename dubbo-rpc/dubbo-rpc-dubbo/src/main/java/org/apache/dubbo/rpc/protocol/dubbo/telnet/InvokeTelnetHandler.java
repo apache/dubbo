@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.dubbo.telnet;
 
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.utils.CompatibleTypeUtils;
 import org.apache.dubbo.common.utils.PojoUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -75,6 +76,14 @@ public class InvokeTelnetHandler implements TelnetHandler {
             }
 
             if (ReflectUtils.isPrimitive(arg.getClass())) {
+                if (arg instanceof String && type.isEnum()) {
+                    try {
+                        CompatibleTypeUtils.compatibleTypeConvert(arg, type);
+                    } catch (RuntimeException e) {
+                        return false;
+                    }
+                    continue;
+                }
                 if (!ReflectUtils.isPrimitive(type)) {
                     return false;
                 }

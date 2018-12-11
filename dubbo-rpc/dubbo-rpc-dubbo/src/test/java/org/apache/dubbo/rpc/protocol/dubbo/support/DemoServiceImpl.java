@@ -71,8 +71,8 @@ public class DemoServiceImpl implements DemoService {
             return Type.Lower;
         return types[0];
     }
-
-    public Type enumlength(Type type) {
+    
+    public Type getType(Type type) {
         return type;
     }
 
