@@ -51,4 +51,31 @@ public interface Router extends Comparable<Router> {
      */
     <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException;
 
+    /**
+     * priority
+     *
+     * @return
+     */
+    int getPriority();
+
+    /**
+     * compare Router
+     *
+     * @param o
+     * @return
+     */
+    @Override
+    default int compareTo(Router o) {
+        if (o == null) {
+            throw new IllegalArgumentException();
+        }
+        if (this.getPriority() == o.getPriority()) {
+            if (o.getUrl() == null) {
+                return -1;
+            }
+            return getUrl().toFullString().compareTo(o.getUrl().toFullString());
+        } else {
+            return getPriority() > o.getPriority() ? 1 : -1;
+        }
+    }
 }

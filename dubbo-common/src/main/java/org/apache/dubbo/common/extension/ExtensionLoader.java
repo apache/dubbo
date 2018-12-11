@@ -124,6 +124,20 @@ public class ExtensionLoader<T> {
         return loader;
     }
 
+    // For testing purposes only
+    public static void resetExtensionLoader(Class type) {
+        ExtensionLoader loader = EXTENSION_LOADERS.get(type);
+        if (loader != null) {
+            // Remove all instances associated with this loader as well
+            Map<String, Class<?>> classes = loader.getExtensionClasses();
+            for (Map.Entry<String, Class<?>> entry : classes.entrySet()) {
+                EXTENSION_INSTANCES.remove(entry.getValue());
+            }
+            classes.clear();
+            EXTENSION_LOADERS.remove(type);
+        }
+    }
+
     private static ClassLoader findClassLoader() {
         return ClassHelper.getClassLoader(ExtensionLoader.class);
     }
@@ -346,12 +360,8 @@ public class ExtensionLoader<T> {
         if (name == null || name.length() == 0) {
             throw new IllegalArgumentException("Extension name == null");
         }
-        try {
-            this.getExtensionClass(name);
-            return true;
-        } catch (Throwable t) {
-            return false;
-        }
+        Class<?> c = this.getExtensionClass(name);
+        return c != null;
     }
 
     public Set<String> getSupportedExtensions() {
@@ -565,11 +575,7 @@ public class ExtensionLoader<T> {
         if (name == null) {
             throw new IllegalArgumentException("Extension name == null");
         }
-        Class<?> clazz = getExtensionClasses().get(name);
-        if (clazz == null) {
-            throw new IllegalStateException("No such extension \"" + name + "\" for " + type.getName() + "!");
-        }
-        return clazz;
+        return getExtensionClasses().get(name);
     }
 
     private Map<String, Class<?>> getExtensionClasses() {

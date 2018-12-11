@@ -63,50 +63,54 @@ public class InvokeTelnetHandler implements TelnetHandler {
         for (int i = 0; i < types.length; i++) {
             Class<?> type = types[i];
             Object arg = args.get(i);
-            if (paramClasses != null) {
-                if (type != paramClasses[i]) {
-                    return false;
-                }
-            } else {
-                if (arg == null) {
-                    // if the type is primitive, the method to invoke will cause NullPointerException definitely
-                    // so we can offer a specified error message to the invoker in advance and avoid unnecessary invoking
-                    if (type.isPrimitive()) {
-                        throw new NullPointerException(String.format(
-                                "The type of No.%d parameter is primitive(%s), but the value passed is null.", i + 1, type.getName()));
-                    }
 
-                    // if the type is not primitive, we choose to believe what the invoker want is a null value
+            if (paramClasses != null && type != paramClasses[i]) {
+                return false;
+            }
+
+            if (arg == null) {
+                // if the type is primitive, the method to invoke will cause NullPointerException definitely
+                // so we can offer a specified error message to the invoker in advance and avoid unnecessary invoking
+                if (type.isPrimitive()) {
+                    throw new NullPointerException(String.format(
+                            "The type of No.%d parameter is primitive(%s), but the value passed is null.", i + 1, type.getName()));
+                }
+
+                // if the type is not primitive, we choose to believe what the invoker want is a null value
+                continue;
+            }
+
+            if (ReflectUtils.isPrimitive(arg.getClass())) {
+                // allow string arg to enum type, @see PojoUtils.realize0()
+                if (arg instanceof String && type.isEnum()) {
                     continue;
                 }
 
-                if (ReflectUtils.isPrimitive(arg.getClass())) {
-                    if (!ReflectUtils.isPrimitive(type)) {
-                        return false;
-                    }
-                    if (!ReflectUtils.isCompatible(type, arg)) {
-                        return false;
-                    }
-                } else if (arg instanceof Map) {
-                    String name = (String) ((Map<?, ?>) arg).get("class");
-                    Class<?> cls = arg.getClass();
-                    if (name != null && name.length() > 0) {
-                        cls = ReflectUtils.forName(name);
-                    }
-                    if (!type.isAssignableFrom(cls)) {
-                        return false;
-                    }
-                } else if (arg instanceof Collection) {
-                    if (!type.isArray() && !type.isAssignableFrom(arg.getClass())) {
-                        return false;
-                    }
-                } else {
-                    if (!type.isAssignableFrom(arg.getClass())) {
-                        return false;
-                    }
+                if (!ReflectUtils.isPrimitive(type)) {
+                    return false;
+                }
+
+                if (!ReflectUtils.isCompatible(type, arg)) {
+                    return false;
+                }
+            } else if (arg instanceof Map) {
+                String name = (String) ((Map<?, ?>) arg).get("class");
+                Class<?> cls = arg.getClass();
+                if (name != null && name.length() > 0) {
+                    cls = ReflectUtils.forName(name);
+                }
+                if (!type.isAssignableFrom(cls)) {
+                    return false;
+                }
+            } else if (arg instanceof Collection) {
+                if (!type.isArray() && !type.isAssignableFrom(arg.getClass())) {
+                    return false;
+                }
+            } else {
+                if (!type.isAssignableFrom(arg.getClass())) {
+                    return false;
                 }
             }
-
         }
         return true;
     }
@@ -216,5 +220,4 @@ public class InvokeTelnetHandler implements TelnetHandler {
         }
         return buf.toString();
     }
-
 }

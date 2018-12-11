@@ -20,6 +20,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -45,7 +47,7 @@ public class CompletableFutureTaskTest {
         CompletableFuture<Boolean> completableFuture = CompletableFuture.supplyAsync(() -> {
             countDownLatch.countDown();
             return true;
-        },executor);
+        }, executor);
         countDownLatch.await();
     }
 
@@ -74,7 +76,7 @@ public class CompletableFutureTaskTest {
             }
             return "hello";
 
-        },executor);
+        }, executor);
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         completableFuture.thenRunAsync(new Runnable() {
             @Override
@@ -86,12 +88,13 @@ public class CompletableFutureTaskTest {
     }
 
 
-    @Test
+@Test
     public void testCustomExecutor() {
         Executor mockedExecutor = mock(Executor.class);
         CompletableFuture<Integer> completableFuture = CompletableFuture.supplyAsync(() -> {
             return 0;
         });
-        completableFuture.thenRunAsync(mock(Runnable.class), verify(mockedExecutor));
+        completableFuture.thenRunAsync(mock(Runnable.class), mockedExecutor).whenComplete((s, e) ->
+                verify(mockedExecutor, times(1)).execute(any(Runnable.class)));
     }
 }

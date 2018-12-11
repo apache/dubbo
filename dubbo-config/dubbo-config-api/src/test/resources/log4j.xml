@@ -18,7 +18,7 @@
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
     <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="[%d{dd/MM/yy hh:mm:ss:sss z}] %t %5p %c{2}: %m%n"/>
+            <param name="ConversionPattern" value="[%d{dd/MM/yy HH:mm:ss:SSS z}] %t %5p %c{2}: %m%n"/>
         </layout>
     </appender>
     <root>

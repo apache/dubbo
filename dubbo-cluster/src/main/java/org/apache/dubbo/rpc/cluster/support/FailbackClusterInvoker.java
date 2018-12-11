@@ -65,7 +65,7 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
         super(directory);
     }
 
-    private void addFailed(Invocation invocation, AbstractClusterInvoker<?> router) {
+    private void addFailed(Invocation invocation, AbstractClusterInvoker<?> invoker) {
         if (retryFuture == null) {
             synchronized (this) {
                 if (retryFuture == null) {
@@ -84,11 +84,11 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 }
             }
         }
-        failed.put(invocation, router);
+        failed.put(invocation, invoker);
     }
 
     void retryFailed() {
-        if (failed.size() == 0) {
+        if (failed.isEmpty()) {
             return;
         }
         for (Map.Entry<Invocation, AbstractClusterInvoker<?>> entry : new HashMap<>(failed).entrySet()) {
