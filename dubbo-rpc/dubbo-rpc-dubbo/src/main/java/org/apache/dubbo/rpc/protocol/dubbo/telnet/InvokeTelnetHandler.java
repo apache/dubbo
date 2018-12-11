@@ -87,6 +87,10 @@ public class InvokeTelnetHandler implements TelnetHandler {
                 if (!ReflectUtils.isPrimitive(type)) {
                     return false;
                 }
+                Class<?> boxedType = ReflectUtils.getBoxedClass(type);
+                if (boxedType != arg.getClass()) {
+                    return false;
+                }
             } else if (arg instanceof Map) {
                 String name = (String) ((Map<?, ?>) arg).get("class");
                 Class<?> cls = arg.getClass();
