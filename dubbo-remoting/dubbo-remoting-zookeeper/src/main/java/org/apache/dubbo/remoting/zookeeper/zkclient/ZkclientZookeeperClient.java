@@ -114,13 +114,7 @@ public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildLis
 
     @Override
     public IZkChildListener createTargetChildListener(String path, final ChildListener listener) {
-        return new IZkChildListener() {
-            @Override
-            public void handleChildChange(String parentPath, List<String> currentChilds)
-                    throws Exception {
-                listener.childChanged(parentPath, currentChilds);
-            }
-        };
+        return listener::childChanged;
     }
 
     @Override
