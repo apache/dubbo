@@ -206,12 +206,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
 
         if (delay != null && delay > 0) {
-            delayExportExecutor.schedule(new Runnable() {
-                @Override
-                public void run() {
-                    doExport();
-                }
-            }, delay, TimeUnit.MILLISECONDS);
+            delayExportExecutor.schedule(this::doExport, delay, TimeUnit.MILLISECONDS);
         } else {
             doExport();
         }
