@@ -49,12 +49,7 @@ public class InternalThreadLocalTest {
         };
 
         for (int i = 0; i < THREADS; i++) {
-            Thread t = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    internalThreadLocal.get();
-                }
-            });
+            Thread t = new Thread(internalThreadLocal::get);
             t.start();
         }
 
