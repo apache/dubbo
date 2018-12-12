@@ -35,6 +35,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Map;
 
 public class TelnetCodecTest {
     protected Codec2 codec;
@@ -235,8 +236,8 @@ public class TelnetCodecTest {
         exitbytes.put(new byte[]{1, -1, -12, -1, -3, 6}, false); //must equal the bytes
         exitbytes.put(new byte[]{-1, -19, -1, -3, 6}, true);  /* Linux Pause */
 
-        for (byte[] exit : exitbytes.keySet()) {
-            testDecode_WithExitByte(exit, exitbytes.get(exit));
+        for (Map.Entry<byte[], Boolean> entry : exitbytes.entrySet()) {
+            testDecode_WithExitByte(entry.getKey(), entry.getValue());
         }
     }
 
