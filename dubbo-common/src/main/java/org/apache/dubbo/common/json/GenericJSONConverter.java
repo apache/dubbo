@@ -130,12 +130,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalEncoderMap.put(Date.class, e);
 
         // init decoder map.
-        Decoder d = new Decoder() {
-            @Override
-            public Object decode(Object jv) {
-                return jv.toString();
-            }
-        };
+        Decoder d = Object::toString;
         GlobalDecoderMap.put(String.class, d);
 
         d = new Decoder() {

@@ -59,4 +59,8 @@ public interface DemoService {
 
     long add(int a, long b);
 
+    int getPerson(Person person);
+
+    int getPerson(Person person1, Person perso2);
+
 }
