@@ -68,7 +68,10 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * JValidator
+ * Implementation of JValidation. JValidation is invoked if configuration validation attribute value is 'jvalidation'.
+ * <pre>
+ *     e.g. &lt;dubbo:method name="save" validation="jvalidation" /&gt;
+ * </pre>
  */
 public class JValidator implements Validator {
 
