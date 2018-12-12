@@ -34,7 +34,6 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * When fails, record failure requests and schedule for retry on a regular interval.
@@ -118,7 +117,7 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
         private final AbstractClusterInvoker<?> router;
         private final int retries;
         private final long tick;
-        private final AtomicInteger retryTimes = new AtomicInteger(0);
+        private int retryTimes = 0;
 
         RetryTimerTask(Invocation invocation, AbstractClusterInvoker<?> router, int retries, long tick) {
             this.invocation = invocation;
@@ -133,7 +132,7 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 router.invoke(invocation);
             } catch (Throwable e) {
                 logger.error("Failed retry to invoke method " + invocation.getMethodName() + ", waiting again.", e);
-                if (retryTimes.incrementAndGet() >= retries) {
+                if ((++retryTimes) >= retries) {
                     logger.error("Failed retry times exceed threshold (" + retries + "), We have to abandon, invocation->" + invocation);
                 } else {
                     rePut(timeout);
