@@ -31,22 +31,22 @@ public class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
     @Test
     public void testConsistentHashLoadBalance() {
     	int runs = 10000;
-		long invokerCount0 = 0;
-		Map<Invoker, Long> invokerHited = new HashMap<>();
+		long unHitedInvokerCount = 0;
+		Map<Invoker, Long> hitedInvokers = new HashMap<>();
 		Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, ConsistentHashLoadBalance.NAME);
 		for (Invoker minvoker : counter.keySet()) {
 			Long count = counter.get(minvoker).get();
 
 			if (count == 0) {
-				invokerCount0 ++;
+				unHitedInvokerCount ++;
 			} else {
-				invokerHited.put(minvoker, count);
+				hitedInvokers.put(minvoker, count);
 			}
 		}
 
-		Assert.assertEquals(counter.size() - 1, invokerCount0);
-		Assert.assertEquals(1, invokerHited.size());
-		Assert.assertEquals(runs, invokerHited.values().iterator().next().intValue());
+		Assert.assertEquals("the number of unHitedInvoker should be counter.size() - 1",counter.size() - 1, unHitedInvokerCount);
+		Assert.assertEquals("the number of hitedInvoker should be 1",1, hitedInvokers.size());
+		Assert.assertEquals("the number of hited count should be the number of runs",runs, hitedInvokers.values().iterator().next().intValue());
     }
 
 }
