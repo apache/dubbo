@@ -147,7 +147,7 @@ The consumer will print out `Hello world` on the screen.
 
 * [Your first Dubbo application](http://dubbo.apache.org/en-us/blog/dubbo-101.html) - A 101 tutorial to reveal more details, with the same code above.
 * [Dubbo user manual](http://dubbo.apache.org/en-us/docs/user/preface/background.html) - How to use Dubbo and all its features.
-* [Dubbo developer guide](http://dubbo.apache.org/en-us/docs/dev/build.html) - How to invovle in Dubbo development.
+* [Dubbo developer guide](http://dubbo.apache.org/en-us/docs/dev/build.html) - How to involve in Dubbo development.
 * [Dubbo admin manual](http://dubbo.apache.org/en-us/docs/admin/install/provider-demo.html) - How to admin and manage Dubbo services.
 
 ## Contact
