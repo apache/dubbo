@@ -371,6 +371,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         appendParameters(map, application);
         appendParameters(map, module);
         appendParameters(map, provider, Constants.DEFAULT_KEY);
+        if (Constants.LOCAL_PROTOCOL.equals(protocolConfig.getName())) {
+            protocolConfig.setRegister(false);
+            map.put("notify", "false");
+        }
         appendParameters(map, protocolConfig);
         appendParameters(map, this);
         if (methods != null && !methods.isEmpty()) {
@@ -452,10 +456,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             } else {
                 map.put(Constants.TOKEN_KEY, token);
             }
-        }
-        if (Constants.LOCAL_PROTOCOL.equals(protocolConfig.getName())) {
-            protocolConfig.setRegister(false);
-            map.put("notify", "false");
         }
         // export service
         String contextPath = protocolConfig.getContextpath();
