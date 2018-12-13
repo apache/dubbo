@@ -49,12 +49,23 @@ public abstract class AbstractRetryTask implements TimerTask {
     /**
      * retry period
      */
-    protected final long retryPeriod;
+    final long retryPeriod;
+
+    /**
+     * define the most retry times
+     */
+    private final int retryTimes;
 
     /**
      * task name for this task
      */
-    protected final String taskName;
+    private final String taskName;
+
+    /**
+     * times of retry.
+     * retry task is execute in single thread so that the times is not need volatile.
+     */
+    private int times = 1;
 
     private volatile boolean cancel;
 
@@ -67,6 +78,7 @@ public abstract class AbstractRetryTask implements TimerTask {
         this.taskName = taskName;
         cancel = false;
         this.retryPeriod = url.getParameter(Constants.REGISTRY_RETRY_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RETRY_PERIOD);
+        this.retryTimes = url.getParameter(Constants.REGISTRY_RETRY_TIMES_KEY, Constants.DEFAULT_REGISTRY_RETRY_TIMES);
     }
 
     public void cancel() {
@@ -86,7 +98,7 @@ public abstract class AbstractRetryTask implements TimerTask {
         if (timer.isStop() || timeout.isCancelled() || isCancel()) {
             return;
         }
-
+        times++;
         timer.newTimeout(timeout.task(), tick, TimeUnit.MILLISECONDS);
     }
 
@@ -94,6 +106,11 @@ public abstract class AbstractRetryTask implements TimerTask {
     public void run(Timeout timeout) throws Exception {
         if (timeout.isCancelled() || timeout.timer().isStop() || isCancel()) {
             // other thread cancel this timeout or stop the timer.
+            return;
+        }
+        if (times > retryTimes) {
+            // reach the most times of retry.
+            logger.warn("Final failed to execute task " + taskName + ", url: " + url + ", retry " + retryTimes + " times.");
             return;
         }
         if (logger.isInfoEnabled()) {
