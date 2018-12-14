@@ -25,8 +25,6 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcStatus;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 
 /**
  * LimitInvokerFilter
@@ -39,46 +37,48 @@ public class ActiveLimitFilter implements Filter {
         URL url = invoker.getUrl();
         String methodName = invocation.getMethodName();
         int max = invoker.getUrl().getMethodParameter(methodName, Constants.ACTIVES_KEY, 0);
-        Semaphore activesLimit = null;
-        boolean acquireResult = false;
         RpcStatus count = RpcStatus.getStatus(invoker.getUrl(), invocation.getMethodName());
         if (max > 0) {
             long timeout = invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.TIMEOUT_KEY, 0);
             long start = System.currentTimeMillis();
-            activesLimit = count.getActivesSemaphore(max);
-            try {
-                if(!(acquireResult = activesLimit.tryAcquire(timeout,TimeUnit.MILLISECONDS))) {
-                    long elapsed = System.currentTimeMillis() - start;
-                    int active=count.getActive();
-                    throw new RpcException("Waiting concurrent invoke timeout in client-side for service:  "
-                            + invoker.getInterface().getName() + ", method: "
-                            + invocation.getMethodName() + ", elapsed: " + elapsed
-                            + ", timeout: " + timeout + ". concurrent invokes: " + active
-                            + ". max concurrent invoke limit: " + max);
-
+            long remain = timeout;
+            if (!count.tryActive(max)) {
+                synchronized (count) {
+                    while (!count.tryActive(max)) {
+                        try {
+                            count.wait(remain);
+                        } catch (InterruptedException e) {
+                            // ignore
+                        }
+                        long elapsed = System.currentTimeMillis() - start;
+                        remain = timeout - elapsed;
+                        if (remain <= 0) {
+                            throw new RpcException("Waiting concurrent invoke timeout in client-side for service:  "
+                                    + invoker.getInterface().getName() + ", method: "
+                                    + invocation.getMethodName() + ", elapsed: " + elapsed
+                                    + ", timeout: " + timeout + ". concurrent invokes: " + count.getActive()
+                                    + ". max concurrent invoke limit: " + max);
+                        }
+                    }
                 }
-            } catch (InterruptedException e) {
-                throw new RpcException("Waiting concurrent invoke fail in client-side for service:  "
-                        + invoker.getInterface().getName() + ", method: "
-                        + invocation.getMethodName());
             }
         }
+
+        boolean isSuccess = true;
+        long begin = System.currentTimeMillis();
+        RpcStatus.beginCount(url, methodName);
         try {
-            long begin = System.currentTimeMillis();
-            RpcStatus.beginCount(url, methodName);
-            try {
-                Result result = invoker.invoke(invocation);
-                RpcStatus.endCount(url, methodName, System.currentTimeMillis() - begin, true);
-                return result;
-            } catch (RuntimeException t) {
-                RpcStatus.endCount(url, methodName, System.currentTimeMillis() - begin, false);
-                throw t;
-            }
+            return invoker.invoke(invocation);
+        } catch (RuntimeException t) {
+            isSuccess = false;
+            throw t;
         } finally {
-            if(acquireResult){
-                activesLimit.release();
+            RpcStatus.endCount(url, methodName, System.currentTimeMillis() - begin, isSuccess);
+            if (max > 0) {
+                synchronized (count) {
+                    count.notify();
+                }
             }
         }
     }
-
 }

@@ -26,8 +26,6 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcStatus;
 
-import java.util.concurrent.Semaphore;
-
 /**
  * ThreadLimitInvokerFilter
  */
@@ -38,19 +36,13 @@ public class ExecuteLimitFilter implements Filter {
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         URL url = invoker.getUrl();
         String methodName = invocation.getMethodName();
-        Semaphore executesLimit = null;
-        boolean acquireResult = false;
         int max = url.getMethodParameter(methodName, Constants.EXECUTES_KEY, 0);
         if (max > 0) {
             RpcStatus count = RpcStatus.getStatus(url, invocation.getMethodName());
-//            if (count.getActive() >= max) {
-            /**
-             * http://manzhizhen.iteye.com/blog/2386408
-             * use semaphore for concurrency control (to limit thread number)
-             */
-            executesLimit = count.getSemaphore(max);
-            if(executesLimit != null && !(acquireResult = executesLimit.tryAcquire())) {
-                throw new RpcException("Failed to invoke method " + invocation.getMethodName() + " in provider " + url + ", cause: The service using threads greater than <dubbo:service executes=\"" + max + "\" /> limited.");
+            if(!count.tryActive(max)) {
+                throw new RpcException("Failed to invoke method " + invocation.getMethodName() + " in provider " +
+                        url + ", cause: The service using threads greater than <dubbo:service executes=\"" + max +
+                        "\" /> limited.");
             }
         }
         long begin = System.currentTimeMillis();
@@ -68,9 +60,6 @@ public class ExecuteLimitFilter implements Filter {
             }
         } finally {
             RpcStatus.endCount(url, methodName, System.currentTimeMillis() - begin, isSuccess);
-            if(acquireResult) {
-                executesLimit.release();
-            }
         }
     }
 
