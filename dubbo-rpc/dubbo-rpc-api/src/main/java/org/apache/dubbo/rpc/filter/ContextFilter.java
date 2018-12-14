@@ -33,7 +33,6 @@ import java.util.Map;
  * ContextFilter set the provider RpcContext with invoker, invocation, local port it is using and host for
  * current execution thread.
  *
- * @see java.io.File
  * @see RpcContext
  * @see org.apache.dubbo.rpc.PostProcessFilter
  */
