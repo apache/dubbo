@@ -101,6 +101,10 @@ public class RpcStatus {
         }
     }
 
+    public static void beginCount(URL url, String methodName) {
+        beginCount(url, methodName, Integer.MAX_VALUE);
+    }
+
     /**
      * @param url
      */
