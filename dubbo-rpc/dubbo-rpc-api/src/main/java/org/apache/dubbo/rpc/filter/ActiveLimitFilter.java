@@ -38,27 +38,25 @@ public class ActiveLimitFilter implements Filter {
         String methodName = invocation.getMethodName();
         int max = invoker.getUrl().getMethodParameter(methodName, Constants.ACTIVES_KEY, 0);
         RpcStatus count = RpcStatus.getStatus(invoker.getUrl(), invocation.getMethodName());
-        if (max > 0) {
+        if (max > 0 && !RpcStatus.beginCount(url, methodName, max)) {
             long timeout = invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.TIMEOUT_KEY, 0);
             long start = System.currentTimeMillis();
             long remain = timeout;
-            if (!count.tryActive(max)) {
-                synchronized (count) {
-                    while (!count.tryActive(max)) {
-                        try {
-                            count.wait(remain);
-                        } catch (InterruptedException e) {
-                            // ignore
-                        }
-                        long elapsed = System.currentTimeMillis() - start;
-                        remain = timeout - elapsed;
-                        if (remain <= 0) {
-                            throw new RpcException("Waiting concurrent invoke timeout in client-side for service:  "
-                                    + invoker.getInterface().getName() + ", method: "
-                                    + invocation.getMethodName() + ", elapsed: " + elapsed
-                                    + ", timeout: " + timeout + ". concurrent invokes: " + count.getActive()
-                                    + ". max concurrent invoke limit: " + max);
-                        }
+            synchronized (count) {
+                while (!RpcStatus.beginCount(url, methodName, max)) {
+                    try {
+                        count.wait(remain);
+                    } catch (InterruptedException e) {
+                        // ignore
+                    }
+                    long elapsed = System.currentTimeMillis() - start;
+                    remain = timeout - elapsed;
+                    if (remain <= 0) {
+                        throw new RpcException("Waiting concurrent invoke timeout in client-side for service:  "
+                                + invoker.getInterface().getName() + ", method: "
+                                + invocation.getMethodName() + ", elapsed: " + elapsed
+                                + ", timeout: " + timeout + ". concurrent invokes: " + count.getActive()
+                                + ". max concurrent invoke limit: " + max);
                     }
                 }
             }
@@ -66,7 +64,6 @@ public class ActiveLimitFilter implements Filter {
 
         boolean isSuccess = true;
         long begin = System.currentTimeMillis();
-        RpcStatus.beginCount(url, methodName);
         try {
             return invoker.invoke(invocation);
         } catch (RuntimeException t) {
@@ -76,7 +73,7 @@ public class ActiveLimitFilter implements Filter {
             RpcStatus.endCount(url, methodName, System.currentTimeMillis() - begin, isSuccess);
             if (max > 0) {
                 synchronized (count) {
-                    count.notify();
+                    count.notifyAll();
                 }
             }
         }

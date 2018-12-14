@@ -37,20 +37,16 @@ public class ExecuteLimitFilter implements Filter {
         URL url = invoker.getUrl();
         String methodName = invocation.getMethodName();
         int max = url.getMethodParameter(methodName, Constants.EXECUTES_KEY, 0);
-        if (max > 0) {
-            RpcStatus count = RpcStatus.getStatus(url, invocation.getMethodName());
-            if(!count.tryActive(max)) {
-                throw new RpcException("Failed to invoke method " + invocation.getMethodName() + " in provider " +
-                        url + ", cause: The service using threads greater than <dubbo:service executes=\"" + max +
-                        "\" /> limited.");
-            }
+        if (max > 0 && !RpcStatus.beginCount(url, methodName, max)) {
+            throw new RpcException("Failed to invoke method " + invocation.getMethodName() + " in provider " +
+                    url + ", cause: The service using threads greater than <dubbo:service executes=\"" + max +
+                    "\" /> limited.");
         }
+
         long begin = System.currentTimeMillis();
         boolean isSuccess = true;
-        RpcStatus.beginCount(url, methodName);
         try {
-            Result result = invoker.invoke(invocation);
-            return result;
+            return invoker.invoke(invocation);
         } catch (Throwable t) {
             isSuccess = false;
             if (t instanceof RuntimeException) {

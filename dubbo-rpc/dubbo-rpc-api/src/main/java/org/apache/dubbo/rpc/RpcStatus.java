@@ -104,13 +104,16 @@ public class RpcStatus {
     /**
      * @param url
      */
-    public static void beginCount(URL url, String methodName) {
-        beginCount(getStatus(url));
-        beginCount(getStatus(url, methodName));
-    }
-
-    private static void beginCount(RpcStatus status) {
-        status.active.incrementAndGet();
+    public static boolean beginCount(URL url, String methodName, int max) {
+        RpcStatus appStatus = getStatus(url);
+        RpcStatus methodStatus = getStatus(url, methodName);
+        if (methodStatus.active.incrementAndGet() > max) {
+            methodStatus.active.decrementAndGet();
+            return false;
+        } else {
+            appStatus.active.incrementAndGet();
+            return true;
+        }
     }
 
     /**
@@ -304,9 +307,5 @@ public class RpcStatus {
         return getTotal();
     }
 
-    public boolean tryActive(int max) {
-        int result = active.incrementAndGet();
-        active.decrementAndGet();
-        return result <= max;
-    }
+
 }
