@@ -363,6 +363,8 @@ public class Constants {
 
     public static final String DUBBO_VERSION_KEY = "dubbo";
 
+    public static final String DEFAULT_VERSION = "0.0.0";
+
     public static final String HESSIAN_VERSION_KEY = "hessian.version";
 
     public static final String DISPATCHER_KEY = "dispatcher";
