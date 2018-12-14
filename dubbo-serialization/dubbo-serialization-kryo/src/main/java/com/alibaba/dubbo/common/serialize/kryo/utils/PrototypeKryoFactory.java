@@ -31,7 +31,7 @@ public class PrototypeKryoFactory extends AbstractKryoFactory {
     }
 
     @Override
-    public Kryo getKryo(String group) {
-        return create(group);
+    public Kryo getKryo(String interfaceName) {
+        return create(interfaceName);
     }
 }

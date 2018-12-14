@@ -16,7 +16,6 @@
  */
 package com.alibaba.dubbo.common.serialize.kryo;
 
-import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.serialize.Cleanable;
 import com.alibaba.dubbo.common.serialize.ObjectInput;
