@@ -637,6 +637,8 @@ public class Constants {
 
     public static final String SERVICE_IMPL_CLASS = "service.classimpl";
 
+    public static final String SERIALIZATION_OPTIMIZER_SWITCH = "serialization.optimizer.switch";
+
     /*
      * private Constants(){ }
      */

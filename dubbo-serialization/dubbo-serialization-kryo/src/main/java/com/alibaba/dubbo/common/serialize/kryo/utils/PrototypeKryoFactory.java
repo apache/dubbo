@@ -29,4 +29,9 @@ public class PrototypeKryoFactory extends AbstractKryoFactory {
     public Kryo getKryo() {
         return create();
     }
+
+    @Override
+    public Kryo getKryo(String group) {
+        return create(group);
+    }
 }

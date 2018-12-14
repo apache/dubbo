@@ -16,10 +16,11 @@
  */
 package com.alibaba.dubbo.common.serialize.kryo;
 
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.serialize.Cleanable;
 import com.alibaba.dubbo.common.serialize.ObjectInput;
 import com.alibaba.dubbo.common.serialize.kryo.utils.KryoUtils;
-
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.KryoException;
 import com.esotericsoftware.kryo.io.Input;
@@ -33,9 +34,9 @@ public class KryoObjectInput implements ObjectInput, Cleanable {
     private Kryo kryo;
     private Input input;
 
-    public KryoObjectInput(InputStream inputStream) {
+    public KryoObjectInput(URL url, InputStream inputStream) {
         input = new Input(inputStream);
-        this.kryo = KryoUtils.get();
+        this.kryo = KryoUtils.get(url.getServiceInterface());
     }
 
     @Override

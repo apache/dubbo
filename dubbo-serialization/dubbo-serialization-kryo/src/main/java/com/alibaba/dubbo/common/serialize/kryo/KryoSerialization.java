@@ -27,7 +27,6 @@ import java.io.OutputStream;
 
 /**
  * TODO for now kryo serialization doesn't deny classes that don't implement the serializable interface
- *
  */
 public class KryoSerialization implements Serialization {
 
@@ -43,11 +42,11 @@ public class KryoSerialization implements Serialization {
 
     @Override
     public ObjectOutput serialize(URL url, OutputStream out) throws IOException {
-        return new KryoObjectOutput(out);
+        return new KryoObjectOutput(url, out);
     }
 
     @Override
     public ObjectInput deserialize(URL url, InputStream is) throws IOException {
-        return new KryoObjectInput(is);
+        return new KryoObjectInput(url, is);
     }
 }

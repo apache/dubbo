@@ -19,6 +19,7 @@ package com.alibaba.dubbo.rpc.protocol.dubbo;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
+import com.alibaba.dubbo.common.serialize.support.GroupSerializationOptimizer;
 import com.alibaba.dubbo.common.serialize.support.SerializableClassRegistry;
 import com.alibaba.dubbo.common.serialize.support.SerializationOptimizer;
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
@@ -47,10 +48,13 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.regex.Pattern;
 
 /**
  * dubbo protocol support.
@@ -66,7 +70,10 @@ public class DubboProtocol extends AbstractProtocol {
     private final Map<String, ReferenceCountExchangeClient> referenceClientMap = new ConcurrentHashMap<String, ReferenceCountExchangeClient>(); // <host:port,Exchanger>
     private final ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap = new ConcurrentHashMap<String, LazyConnectExchangeClient>();
     private final ConcurrentMap<String, Object> locks = new ConcurrentHashMap<String, Object>();
-    private final Set<String> optimizers = new ConcurrentHashSet<String>();
+    private final Map<String, SerializationOptimizer> optimizers = new ConcurrentHashMap<String, SerializationOptimizer>();
+    // just for optimize the cache usage
+    private final Map<String, Set<Class>> optimizerMap = new HashMap<String, Set<Class>>();
+
     //consumer side export a stub service for dispatching event
     //servicekey-stubmethods
     private final ConcurrentMap<String, String> stubServiceMethodsMap = new ConcurrentHashMap<String, String>();
@@ -298,7 +305,7 @@ public class DubboProtocol extends AbstractProtocol {
 
     private void optimizeSerialization(URL url) throws RpcException {
         String className = url.getParameter(Constants.OPTIMIZER_KEY, "");
-        if (StringUtils.isEmpty(className) || optimizers.contains(className)) {
+        if (StringUtils.isEmpty(className)) {
             return;
         }
 
@@ -306,21 +313,45 @@ public class DubboProtocol extends AbstractProtocol {
 
         try {
             Class clazz = Thread.currentThread().getContextClassLoader().loadClass(className);
-            if (!SerializationOptimizer.class.isAssignableFrom(clazz)) {
+            if (GroupSerializationOptimizer.class.isAssignableFrom(clazz)) {
+                String interfaceName = url.getServiceInterface();
+                GroupSerializationOptimizer optimizer = (GroupSerializationOptimizer) optimizers.get(className);
+                if (optimizer == null) {
+                    optimizers.put(className, (GroupSerializationOptimizer) clazz.newInstance());
+                    optimizer = (GroupSerializationOptimizer) optimizers.get(className);
+                }
+
+                if (optimizer.getSerializableClasses() == null) {
+                    return;
+                }
+                if (interfaceName == null) {
+                    return;
+                }
+                if (optimizer.interfaces() != null && optimizer.interfaces().contains(interfaceName)) {
+                    registerClass(optimizer, interfaceName, className);
+                } else if (optimizer.interfaceExps() != null && !optimizer.interfaceExps().isEmpty()) {
+                    for (Pattern p : optimizer.interfaceExps()) {
+                        if (p.matcher(interfaceName).matches()) {
+                            registerClass(optimizer, interfaceName, className);
+                        }
+                    }
+                }
+
+            } else if (SerializationOptimizer.class.isAssignableFrom(clazz)) {
+                if (optimizers.containsKey(className)) {
+                    return;
+                }
+                SerializationOptimizer optimizer = (SerializationOptimizer) clazz.newInstance();
+                if (optimizer.getSerializableClasses() == null) {
+                    return;
+                }
+                for (Class c : optimizer.getSerializableClasses()) {
+                    SerializableClassRegistry.registerClass(c);
+                }
+                optimizers.put(className, optimizer);
+            } else {
                 throw new RpcException("The serialization optimizer " + className + " isn't an instance of " + SerializationOptimizer.class.getName());
             }
-
-            SerializationOptimizer optimizer = (SerializationOptimizer) clazz.newInstance();
-
-            if (optimizer.getSerializableClasses() == null) {
-                return;
-            }
-
-            for (Class c : optimizer.getSerializableClasses()) {
-                SerializableClassRegistry.registerClass(c);
-            }
-
-            optimizers.add(className);
         } catch (ClassNotFoundException e) {
             throw new RpcException("Cannot find the serialization optimizer class: " + className, e);
         } catch (InstantiationException e) {
@@ -328,6 +359,15 @@ public class DubboProtocol extends AbstractProtocol {
         } catch (IllegalAccessException e) {
             throw new RpcException("Cannot instantiate the serialization optimizer class: " + className, e);
         }
+    }
+
+    private void registerClass(GroupSerializationOptimizer optimizer, String interfaceName, String className) {
+        Set<Class> r = optimizerMap.get(className);
+        if (r == null) {
+            optimizerMap.put(className, new LinkedHashSet<Class>(optimizer.getSerializableClasses()));
+            r = optimizerMap.get(className);
+        }
+        SerializableClassRegistry.registerClassByInterface(interfaceName, r);
     }
 
     @Override

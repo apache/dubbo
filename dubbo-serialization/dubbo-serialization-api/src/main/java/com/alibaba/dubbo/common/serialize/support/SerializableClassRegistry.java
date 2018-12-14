@@ -16,12 +16,16 @@
  */
 package com.alibaba.dubbo.common.serialize.support;
 
+import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 public abstract class SerializableClassRegistry {
 
     private static final Set<Class> registrations = new LinkedHashSet<Class>();
+    private static final Map<String, Set<Class>> registrationsMap = new HashMap<String, Set<Class>>();
+    private static final Map<String, String> interfaceMap = new HashMap<String, String>();
 
     /**
      * only supposed to be called at startup time
@@ -32,5 +36,13 @@ public abstract class SerializableClassRegistry {
 
     public static Set<Class> getRegisteredClasses() {
         return registrations;
+    }
+
+    public static void registerClassByInterface(String interfaceName,  Set<Class> clazzs) {
+        registrationsMap.put(interfaceName, clazzs);
+    }
+
+    public static Set<Class> getRegisteredClasses(String interfaceName) {
+        return registrationsMap.get(interfaceName);
     }
 }

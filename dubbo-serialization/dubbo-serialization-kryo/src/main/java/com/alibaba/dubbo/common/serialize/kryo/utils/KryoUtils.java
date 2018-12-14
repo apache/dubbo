@@ -24,10 +24,14 @@ import com.esotericsoftware.kryo.Kryo;
  * @since 2.6.0
  */
 public class KryoUtils {
-    private static AbstractKryoFactory kryoFactory = new ThreadLocalKryoFactory();
+    private static AbstractKryoFactory kryoFactory = new MultiThreadLocalKryoFactory();
+    private static AbstractKryoFactory threadLocalKryoFactory = new ThreadLocalKryoFactory();
 
-    public static Kryo get() {
-        return kryoFactory.getKryo();
+    public static Kryo get(String interfaceName) {
+        if (kryoFactory.needNewKyro(interfaceName)) {
+            return kryoFactory.getKryo(interfaceName);
+        }
+        return threadLocalKryoFactory.getKryo(interfaceName);
     }
 
     public static void release(Kryo kryo) {

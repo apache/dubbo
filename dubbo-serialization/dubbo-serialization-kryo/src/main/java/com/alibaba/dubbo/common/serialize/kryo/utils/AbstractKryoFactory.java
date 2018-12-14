@@ -16,9 +16,11 @@
  */
 package com.alibaba.dubbo.common.serialize.kryo.utils;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.serialize.kryo.CompatibleKryo;
 import com.alibaba.dubbo.common.serialize.support.SerializableClassRegistry;
 
+import com.alibaba.dubbo.common.utils.StringUtils;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.pool.KryoFactory;
 import com.esotericsoftware.kryo.serializers.DefaultSerializers;
@@ -69,8 +71,8 @@ public abstract class AbstractKryoFactory implements KryoFactory {
 
     /**
      * only supposed to be called at startup time
-     *
-     *  later may consider adding support for custom serializer, custom id, etc
+     * <p>
+     * later may consider adding support for custom serializer, custom id, etc
      */
     public void registerClass(Class clazz) {
 
@@ -81,7 +83,11 @@ public abstract class AbstractKryoFactory implements KryoFactory {
     }
 
     @Override
-    public Kryo create() {
+    public Kryo create(){
+        return create(null);
+    }
+
+    public Kryo create(String interfaceName) {
         if (!kryoCreated) {
             kryoCreated = true;
         }
@@ -90,7 +96,12 @@ public abstract class AbstractKryoFactory implements KryoFactory {
 
         // TODO
 //        kryo.setReferences(false);
-        kryo.setRegistrationRequired(registrationRequired);
+        String registrationRequired = System.getProperty(Constants.SERIALIZATION_OPTIMIZER_SWITCH, Boolean.TRUE.toString());
+        if (!Boolean.valueOf(registrationRequired)) {
+            kryo.setRegistrationRequired(false);
+            return kryo;
+        }
+//        kryo.setRegistrationRequired(true);
 
         kryo.register(Arrays.asList("").getClass(), new ArraysAsListSerializer());
         kryo.register(GregorianCalendar.class, new GregorianCalendarSerializer());
@@ -138,7 +149,21 @@ public abstract class AbstractKryoFactory implements KryoFactory {
             kryo.register(clazz);
         }
 
+        if (StringUtils.isNotEmpty(interfaceName)) {
+            Set<Class> registeredClasses = SerializableClassRegistry.getRegisteredClasses(interfaceName);
+            if (registeredClasses == null || registeredClasses.isEmpty()) {
+                return kryo;
+            }
+            for (Class clazz : registeredClasses) {
+                kryo.register(clazz);
+            }
+        }
+
         return kryo;
+    }
+
+    protected boolean needNewKyro(String interfaceName){
+        return SerializableClassRegistry.getRegisteredClasses(interfaceName) != null;
     }
 
     public void setRegistrationRequired(boolean registrationRequired) {
@@ -148,4 +173,8 @@ public abstract class AbstractKryoFactory implements KryoFactory {
     public abstract void returnKryo(Kryo kryo);
 
     public abstract Kryo getKryo();
+
+    public Kryo getKryo(String interfaceName) {
+        return getKryo();
+    }
 }

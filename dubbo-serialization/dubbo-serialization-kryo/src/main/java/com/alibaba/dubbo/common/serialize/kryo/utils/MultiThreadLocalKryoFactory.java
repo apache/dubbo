@@ -18,14 +18,12 @@ package com.alibaba.dubbo.common.serialize.kryo.utils;
 
 import com.esotericsoftware.kryo.Kryo;
 
-public class ThreadLocalKryoFactory extends AbstractKryoFactory {
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-    private final ThreadLocal<Kryo> holder = new ThreadLocal<Kryo>() {
-        @Override
-        protected Kryo initialValue() {
-            return create();
-        }
-    };
+public class MultiThreadLocalKryoFactory extends ThreadLocalKryoFactory {
+
+    private final Map<String, ThreadLocal<Kryo>> kryoHolderMap = new ConcurrentHashMap<String, ThreadLocal<Kryo>>();
 
     @Override
     public void returnKryo(Kryo kryo) {
@@ -33,8 +31,18 @@ public class ThreadLocalKryoFactory extends AbstractKryoFactory {
     }
 
     @Override
-    public Kryo getKryo() {
-        return holder.get();
+    public Kryo getKryo(final String interfaceName) {
+        ThreadLocal<Kryo> holderTmp;
+        if ((holderTmp = kryoHolderMap.get(interfaceName)) == null) {
+            kryoHolderMap.put(interfaceName, new ThreadLocal<Kryo>() {
+                @Override
+                protected Kryo initialValue() {
+                    return create(interfaceName);
+                }
+            });
+            holderTmp = kryoHolderMap.get(interfaceName);
+        }
+        return holderTmp.get();
     }
 
 }
