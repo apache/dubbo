@@ -48,7 +48,7 @@ public class NettyClient extends AbstractClient {
 
     private volatile Channel channel; // volatile, please copy reference to use
 
-    private NettySupport nettySupport;
+    private NativeTransport nativeTransport;
 
     /**
      * Epoll and nio may exist at the same time,
@@ -63,7 +63,7 @@ public class NettyClient extends AbstractClient {
     @Override
     protected void doOpen() throws Throwable {
         final NettyClientHandler nettyClientHandler = new NettyClientHandler(getUrl(), this);
-        nettySupport = new NettySupport(getUrl());
+        nativeTransport = NativeTransportFactory.createNativeTransport(getUrl());
 
         bootstrap = new Bootstrap();
         bootstrap.group(eventLoopGroup())
@@ -71,7 +71,7 @@ public class NettyClient extends AbstractClient {
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 //.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getTimeout())
-                .channel(nettySupport.clientChannel());
+                .channel(nativeTransport.clientChannel());
 
         if (getConnectTimeout() < 3000) {
             bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 3000);
@@ -90,26 +90,6 @@ public class NettyClient extends AbstractClient {
                         .addLast("handler", nettyClientHandler);
             }
         });
-    }
-
-    private EventLoopGroup eventLoopGroup() {
-
-        EventLoopGroup group = eventLoopGroups.get(nettySupport.clientChannel());
-        if (group != null) return group;
-
-        synchronized (eventLoopGroups) {
-
-            // double check
-            group = eventLoopGroups.get(nettySupport.clientChannel());
-            if (group != null) {
-                return group;
-            }
-
-            group = nettySupport.eventLoopGroup(Constants.DEFAULT_IO_THREADS,
-                    new DefaultThreadFactory("NettyClientWorker", true));
-            eventLoopGroups.put(nettySupport.clientChannel(), group);
-            return group;
-        }
     }
 
     @Override
@@ -187,6 +167,23 @@ public class NettyClient extends AbstractClient {
             return null;
         }
         return NettyChannel.getOrAddChannel(c, getUrl(), this);
+    }
+
+    private EventLoopGroup eventLoopGroup() {
+
+        EventLoopGroup group = eventLoopGroups.get(nativeTransport.clientChannel());
+        if (group != null) return group;
+
+        synchronized (eventLoopGroups) {
+            // double check
+            group = eventLoopGroups.get(nativeTransport.clientChannel());
+            if (group != null) return group;
+
+            group = nativeTransport.eventLoopGroup(Constants.DEFAULT_IO_THREADS,
+                    new DefaultThreadFactory("NettyClientWorker", true));
+            eventLoopGroups.put(nativeTransport.clientChannel(), group);
+            return group;
+        }
     }
 
 }

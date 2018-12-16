@@ -57,7 +57,7 @@ public class NettyServer extends AbstractServer implements Server {
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
 
-    private NettySupport nettySupport;
+    private NativeTransport nativeTransport;
 
     public NettyServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, ChannelHandlers.wrap(handler, ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME)));
@@ -65,17 +65,17 @@ public class NettyServer extends AbstractServer implements Server {
 
     @Override
     protected void doOpen() throws Throwable {
-        nettySupport = new NettySupport(getUrl());
+        nativeTransport = NativeTransportFactory.createNativeTransport(getUrl());
         bootstrap = new ServerBootstrap();
 
-        bossGroup = nettySupport.eventLoopGroup(1, new DefaultThreadFactory("NettyServerBoss", true));
-        workerGroup = nettySupport.eventLoopGroup(new DefaultThreadFactory("NettyServerWorker", true));
+        bossGroup = nativeTransport.eventLoopGroup(1, new DefaultThreadFactory("NettyServerBoss", true));
+        workerGroup = nativeTransport.eventLoopGroup(new DefaultThreadFactory("NettyServerWorker", true));
 
         final NettyServerHandler nettyServerHandler = new NettyServerHandler(getUrl(), this);
         channels = nettyServerHandler.getChannels();
 
         bootstrap.group(bossGroup, workerGroup)
-                .channel(nettySupport.serverChannel())
+                .channel(nativeTransport.serverChannel())
                 .childOption(ChannelOption.TCP_NODELAY, Boolean.TRUE)
                 .childOption(ChannelOption.SO_REUSEADDR, Boolean.TRUE)
                 .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)

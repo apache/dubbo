@@ -30,25 +30,26 @@ import java.util.concurrent.ThreadFactory;
  *
  * @since 2.7.0
  */
-public class NettySupport extends AbstractSupport {
+public class NativeTransport extends AbstractTransport {
 
-    public NettySupport(URL url) {
+    public NativeTransport(URL url) {
         super(url);
     }
 
     public EventLoopGroup eventLoopGroup(ThreadFactory threadFactory) {
-        return epoll ? epollEventLoopGroup(threadFactory) : nioEventLoopGroup(threadFactory);
+        return supportEpoll() ? epollEventLoopGroup(threadFactory) : nioEventLoopGroup(threadFactory);
     }
 
     public EventLoopGroup eventLoopGroup(int nThreads, ThreadFactory threadFactory) {
-        return epoll ? epollEventLoopGroup(nThreads, threadFactory) : nioEventLoopGroup(nThreads, threadFactory);
+        return supportEpoll() ? epollEventLoopGroup(nThreads, threadFactory) : nioEventLoopGroup(nThreads, threadFactory);
     }
 
     public Class serverChannel() {
-        return epoll ? EpollServerSocketChannel.class : NioServerSocketChannel.class;
+        return supportEpoll() ? EpollServerSocketChannel.class : NioServerSocketChannel.class;
     }
 
     public Class clientChannel() {
-        return epoll ? EpollSocketChannel.class : NioSocketChannel.class;
+        return supportEpoll() ? EpollSocketChannel.class : NioSocketChannel.class;
     }
+
 }

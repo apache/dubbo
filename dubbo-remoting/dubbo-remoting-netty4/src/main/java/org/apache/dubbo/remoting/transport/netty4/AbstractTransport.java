@@ -28,28 +28,35 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import java.util.Locale;
 import java.util.concurrent.ThreadFactory;
 
-/**
- * netty feature support
- */
-public abstract class AbstractSupport {
+public class AbstractTransport {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractSupport.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractTransport.class);
 
     protected URL url;
-    protected int nThreads;
-    protected boolean epoll;
+    protected ConfigOption<Integer> nThreads;
+    protected ConfigOption<Boolean> epoll;
 
-    public AbstractSupport(URL url) {
+    protected TransporterConfig config;
+
+    public AbstractTransport(URL url) {
         if (url == null) {
             throw new IllegalArgumentException("url == null");
         }
         this.url = url;
-        this.nThreads = url.getPositiveParameter(Constants.IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS);
-        this.epoll = epollAvailable() && url.getParameter(Constants.EPOLL_ENABLE, false);
+        this.config = new TransporterConfig();
+
+        this.epoll = ConfigOption.valueOf(Constants.EPOLL_ENABLE);
+        this.nThreads = ConfigOption.valueOf(Constants.IO_THREADS_KEY);
+
+        /**
+         * Record default attribute values
+         */
+        this.config.option(epoll, url.getParameter(Constants.EPOLL_ENABLE, false) && epollAvailable())
+                .option(nThreads, url.getPositiveParameter(Constants.IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS));
     }
 
     public NioEventLoopGroup nioEventLoopGroup(ThreadFactory threadFactory) {
-        return new NioEventLoopGroup(nThreads, threadFactory);
+        return new NioEventLoopGroup(config.option(nThreads), threadFactory);
     }
 
     public NioEventLoopGroup nioEventLoopGroup(int nThreads, ThreadFactory threadFactory) {
@@ -57,7 +64,7 @@ public abstract class AbstractSupport {
     }
 
     public EpollEventLoopGroup epollEventLoopGroup(ThreadFactory threadFactory) {
-        return new EpollEventLoopGroup(nThreads, threadFactory);
+        return new EpollEventLoopGroup(config.option(nThreads), threadFactory);
     }
 
     public EpollEventLoopGroup epollEventLoopGroup(int nThreads, ThreadFactory threadFactory) {
@@ -69,7 +76,7 @@ public abstract class AbstractSupport {
     }
 
     protected boolean supportEpoll() {
-        return epoll;
+        return config.option(epoll);
     }
 
     private boolean epollAvailable() {
