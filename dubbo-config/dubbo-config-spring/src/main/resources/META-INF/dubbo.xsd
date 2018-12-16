@@ -961,11 +961,6 @@
                 <xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="epoll" type="xsd:string">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[ use epoll feature ? eg: epoll = true, should be used in linux. ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
         <xsd:anyAttribute namespace="##other" processContents="lax"/>
     </xsd:complexType>
 
