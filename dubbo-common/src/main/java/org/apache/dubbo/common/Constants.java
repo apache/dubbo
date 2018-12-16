@@ -488,6 +488,12 @@ public class Constants {
     public static final String REGISTRY_RETRY_PERIOD_KEY = "retry.period";
 
     /**
+     * Period of checkZk for providers retry interval
+     */
+    public static final String  REGISTRY_CHECK_ZK_PERIOD_KEY  = "checkzk.period";
+
+
+    /**
      * Most retry times
      */
     public static final String REGISTRY_RETRY_TIMES_KEY = "retry.times";

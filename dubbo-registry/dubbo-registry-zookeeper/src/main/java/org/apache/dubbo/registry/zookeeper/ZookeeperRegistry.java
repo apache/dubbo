@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.support.FailbackRegistry;
@@ -31,10 +32,15 @@ import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * ZookeeperRegistry
@@ -43,6 +49,10 @@ import java.util.concurrent.ConcurrentMap;
 public class ZookeeperRegistry extends FailbackRegistry {
 
     private final static Logger logger = LoggerFactory.getLogger(ZookeeperRegistry.class);
+
+    private final ScheduledExecutorService retryExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("DubboRegistryCheckZkRetryTimer", true));
+
+    private final ScheduledFuture<?> checkZkFuture;
 
     private final static int DEFAULT_ZOOKEEPER_PORT = 2181;
 
@@ -66,6 +76,20 @@ public class ZookeeperRegistry extends FailbackRegistry {
             group = Constants.PATH_SEPARATOR + group;
         }
         this.root = group;
+
+        int checkZkPeriod = url.getParameter(Constants.REGISTRY_CHECK_ZK_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RETRY_PERIOD);
+
+        this.checkZkFuture = retryExecutor.scheduleWithFixedDelay(new Runnable() {
+            public void run() {
+                try {
+                    checkZkProvider();
+                } catch (Exception e) {
+                    logger.error(e.getMessage(), e);
+                }
+            }
+        }, 60 * 10 , checkZkPeriod, TimeUnit.SECONDS);
+
+
         zkClient = zookeeperTransporter.connect(url);
         zkClient.addStateListener(new StateListener() {
             @Override
@@ -102,6 +126,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     public void destroy() {
         super.destroy();
         try {
+            checkZkFuture.cancel(true);
             zkClient.close();
         } catch (Exception e) {
             logger.warn("Failed to close zookeeper client " + getUrl() + ", cause: " + e.getMessage(), e);
@@ -125,6 +150,41 @@ public class ZookeeperRegistry extends FailbackRegistry {
             throw new RpcException("Failed to unregister " + url + " to zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
         }
     }
+
+    private void checkZkProvider(){
+        Set<URL> registeredURLSet = new HashSet<URL>(getRegistered());
+        for (URL registeredURL: registeredURLSet){
+            if(registeredURL.getProtocol().equalsIgnoreCase(Constants.CONSUMER))
+                continue;
+
+            String host = registeredURL.getHost();
+            int port = registeredURL.getPort();
+            String interfaceName = registeredURL.getServiceInterface();
+            List<String> childPath = zkClient.getChildren(Constants.PATH_SEPARATOR + DEFAULT_ROOT + Constants.PATH_SEPARATOR
+                    + interfaceName + Constants.PATH_SEPARATOR + Constants.PROVIDERS_CATEGORY);
+
+            boolean serviceExist = false;
+            for(String child : childPath) {
+                URL providerURL = URL.valueOf(URL.decode(child));
+                if(providerURL != null && providerURL.getHost().equalsIgnoreCase(host) && providerURL.getPort() == port){
+                    serviceExist = true;
+                    break;
+                }
+            }
+
+            if(!serviceExist){
+                try {
+                    logger.error("found some interface" + interfaceName + " does not exists in zk provider path, do recover");
+                    recover();
+                } catch (Exception t) {
+                    logger.error("Unexpected error occur at failed checkZk, cause: " + t.getMessage(), t);
+                }
+                return;
+            }
+
+        }
+    }
+
 
     @Override
     public void doSubscribe(final URL url, final NotifyListener listener) {
