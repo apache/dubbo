@@ -150,7 +150,7 @@ class CallbackServiceCodec {
                     increaseInstanceCount(channel, countkey);
 
                     //convert error fail fast .
-                    //ignore concurrent problem.
+                    //ignore concurrent problem. 
                     Set<Invoker<?>> callbackInvokers = (Set<Invoker<?>>) channel.getAttribute(Constants.CHANNEL_CALLBACK_KEY);
                     if (callbackInvokers == null) {
                         callbackInvokers = new ConcurrentHashSet<Invoker<?>>(1);
