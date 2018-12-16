@@ -249,17 +249,17 @@ public class MulticastRegistry extends FailbackRegistry {
     }
 
     @Override
-    protected void doRegister(URL url) {
+    public void doRegister(URL url) {
         multicast(Constants.REGISTER + " " + url.toFullString());
     }
 
     @Override
-    protected void doUnregister(URL url) {
+    public void doUnregister(URL url) {
         multicast(Constants.UNREGISTER + " " + url.toFullString());
     }
 
     @Override
-    protected void doSubscribe(URL url, NotifyListener listener) {
+    public void doSubscribe(URL url, NotifyListener listener) {
         if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
             admin = true;
         }
@@ -273,7 +273,7 @@ public class MulticastRegistry extends FailbackRegistry {
     }
 
     @Override
-    protected void doUnsubscribe(URL url, NotifyListener listener) {
+    public void doUnsubscribe(URL url, NotifyListener listener) {
         if (!Constants.ANY_VALUE.equals(url.getServiceInterface())
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
             unregister(url);

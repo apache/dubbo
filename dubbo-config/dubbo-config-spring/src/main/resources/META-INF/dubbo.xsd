@@ -101,6 +101,11 @@
                         <xsd:documentation><![CDATA[ Use cluster strategy. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="forks" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ ForkingCluster forks. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
                 <xsd:attribute name="filter" type="xsd:string">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[ The filter. ]]></xsd:documentation>
@@ -484,6 +489,11 @@
         <xsd:attribute name="cluster" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The registry cluster type. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="forks" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ ForkingCluster forks. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="group" type="xsd:string">

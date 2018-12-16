@@ -161,11 +161,11 @@ public class MergeableClusterInvokerTest {
         merge(expected, firstMenuMap);
         merge(expected, secondMenuMap);
         assertEquals(expected.keySet(), menu.getMenus().keySet());
-        for (String key : expected.keySet()) {
+        for (Map.Entry<String, List<String>> entry : expected.entrySet()) {
             // FIXME: cannot guarantee the sequence of the merge result, check implementation in
             // MergeableClusterInvoker#invoke
-            List<String> values1 = new ArrayList<String>(expected.get(key));
-            List<String> values2 = new ArrayList<String>(menu.getMenus().get(key));
+            List<String> values1 = new ArrayList<String>(entry.getValue());
+            List<String> values2 = new ArrayList<String>(menu.getMenus().get(entry.getKey()));
             Collections.sort(values1);
             Collections.sort(values2);
             assertEquals(values1, values2);

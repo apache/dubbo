@@ -108,6 +108,95 @@ public class InvokerTelnetHandlerTest {
         }
     }
 
+    @Test
+    public void testInvokeByPassingEnumValue() throws RemotingException {
+        mockInvoker = mock(Invoker.class);
+        given(mockInvoker.getInterface()).willReturn(DemoService.class);
+        given(mockInvoker.getUrl()).willReturn(URL.valueOf("dubbo://127.0.0.1:20886/demo"));
+        given(mockInvoker.invoke(any(Invocation.class))).willReturn(new RpcResult("ok"));
+        mockChannel = mock(Channel.class);
+        given(mockChannel.getAttribute("telnet.service")).willReturn(null);
+        given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
+        given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
+
+        DubboProtocol.getDubboProtocol().export(mockInvoker);
+        String result = invoke.telnet(mockChannel, "getType(\"High\")");
+        assertTrue(result.contains("ok"));
+    }
+
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testComplexParamWithoutSpecifyParamType() throws RemotingException {
+        mockInvoker = mock(Invoker.class);
+        given(mockInvoker.getInterface()).willReturn(DemoService.class);
+        given(mockInvoker.getUrl()).willReturn(URL.valueOf("dubbo://127.0.0.1:20886/demo"));
+        given(mockInvoker.invoke(any(Invocation.class))).willReturn(new RpcResult("ok"));
+        mockChannel = mock(Channel.class);
+        given(mockChannel.getAttribute("telnet.service")).willReturn("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService");
+        given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
+        given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
+
+        DubboProtocol.getDubboProtocol().export(mockInvoker);
+
+        // pass json value to parameter of Person type
+
+        String result = invoke.telnet(mockChannel, "DemoService.getPerson({\"name\":\"zhangsan\",\"age\":12})");
+        assertTrue(result.contains("No such method getPerson in service DemoService"));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testComplexParamSpecifyParamType() throws RemotingException {
+        mockInvoker = mock(Invoker.class);
+        given(mockInvoker.getInterface()).willReturn(DemoService.class);
+        given(mockInvoker.getUrl()).willReturn(URL.valueOf("dubbo://127.0.0.1:20886/demo"));
+        given(mockInvoker.invoke(any(Invocation.class))).willReturn(new RpcResult("ok"));
+        mockChannel = mock(Channel.class);
+        given(mockChannel.getAttribute("telnet.service")).willReturn("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService");
+        given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
+        given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
+
+        DubboProtocol.getDubboProtocol().export(mockInvoker);
+
+        // pass json value to parameter of Person type and specify it's type
+        // one parameter with type of Person
+        String result = invoke.telnet(mockChannel, "DemoService.getPerson({\"name\":\"zhangsan\",\"age\":12}) -p org.apache.dubbo.rpc.protocol.dubbo.support.Person");
+        assertTrue(result.contains("Use default service org.apache.dubbo.rpc.protocol.dubbo.support.DemoService.\r\n\"ok\"\r\n"));
+
+        // two parameter with type of Person
+        result = invoke.telnet(mockChannel, "DemoService.getPerson({\"name\":\"zhangsan\",\"age\":12},{\"name\":\"lisi\",\"age\":12}) " +
+                "-p org.apache.dubbo.rpc.protocol.dubbo.support.Person " +
+                "org.apache.dubbo.rpc.protocol.dubbo.support.Person");
+        assertTrue(result.contains("Use default service org.apache.dubbo.rpc.protocol.dubbo.support.DemoService.\r\n\"ok\"\r\n"));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testComplexParamSpecifyWrongParamType() throws RemotingException {
+        mockInvoker = mock(Invoker.class);
+        given(mockInvoker.getInterface()).willReturn(DemoService.class);
+        given(mockInvoker.getUrl()).willReturn(URL.valueOf("dubbo://127.0.0.1:20886/demo"));
+        given(mockInvoker.invoke(any(Invocation.class))).willReturn(new RpcResult("ok"));
+        mockChannel = mock(Channel.class);
+        given(mockChannel.getAttribute("telnet.service")).willReturn("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService");
+        given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
+        given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
+
+        DubboProtocol.getDubboProtocol().export(mockInvoker);
+
+        // pass json value to parameter of Person type
+        // wrong name of parameter class
+        String result = invoke.telnet(mockChannel, "DemoService.getPerson({\"name\":\"zhangsan\",\"age\":12}) -p wrongType");
+        assertEquals("Unknown parameter class for name wrongType", result);
+
+        // wrong number of parameter class
+        result = invoke.telnet(mockChannel, "DemoService.getPerson({\"name\":\"zhangsan\",\"age\":12},{\"name\":\"lisi\",\"age\":12}) " +
+                "-p org.apache.dubbo.rpc.protocol.dubbo.support.Person");
+        assertEquals("Parameter's number does not match the number of parameter class", result);
+    }
+
+
     @SuppressWarnings("unchecked")
     @Test
     public void testInvokeAutoFindMethod() throws RemotingException {

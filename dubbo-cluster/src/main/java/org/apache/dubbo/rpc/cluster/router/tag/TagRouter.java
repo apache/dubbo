@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.router.tag;
 
-
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
@@ -34,7 +33,7 @@ import java.util.List;
 /**
  * TagRouter
  */
-public class TagRouter implements Router, Comparable<Router> {
+public class TagRouter implements Router {
 
     private static final Logger logger = LoggerFactory.getLogger(TagRouter.class);
 
@@ -73,18 +72,10 @@ public class TagRouter implements Router, Comparable<Router> {
                         result.add(invoker);
                     }
                 }
-                // If no invoker be selected, downgrade to normal invokers
-                if (result.isEmpty()) {
-                    for (Invoker<T> invoker : invokers) {
-                        if (StringUtils.isEmpty(invoker.getUrl().getParameter(Constants.TAG_KEY))) {
-                            result.add(invoker);
-                        }
-                    }
-                }
-            // Normal request
-            } else {
+            }
+            // If Constants.REQUEST_TAG_KEY unspecified or no invoker be selected, downgrade to normal invokers
+            if (result.isEmpty()) {
                 for (Invoker<T> invoker : invokers) {
-                    // Can't access tag invoker,only normal invoker should be selected
                     if (StringUtils.isEmpty(invoker.getUrl().getParameter(Constants.TAG_KEY))) {
                         result.add(invoker);
                     }
@@ -99,11 +90,7 @@ public class TagRouter implements Router, Comparable<Router> {
     }
 
     @Override
-    public int compareTo(Router o) {
-        if (o == null || o.getClass() != TagRouter.class) {
-            return 1;
-        }
-        TagRouter c = (TagRouter) o;
-        return this.priority == c.priority ? url.toFullString().compareTo(c.url.toFullString()) : (this.priority > c.priority ? 1 : -1);
+    public int getPriority() {
+        return priority;
     }
 }

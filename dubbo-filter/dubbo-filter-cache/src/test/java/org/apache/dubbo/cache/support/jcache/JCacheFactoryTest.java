@@ -38,7 +38,7 @@ public class JCacheFactoryTest extends AbstractCacheFactoryTest {
 
     @Test
     public void testJCacheGetExpired() throws Exception {
-        URL url = URL.valueOf("test://test:11/test?cache=jacache&.cache.write.expire=1");
+        URL url = URL.valueOf("test://test:12/test?cache=jacache&.cache.write.expire=1");
         AbstractCacheFactory cacheFactory = getCacheFactory();
         Invocation invocation = new RpcInvocation();
         Cache cache = cacheFactory.getCache(url, invocation);
