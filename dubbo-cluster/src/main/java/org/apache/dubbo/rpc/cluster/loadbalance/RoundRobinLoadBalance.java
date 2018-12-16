@@ -108,7 +108,6 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
                 weightedRoundRobin = new WeightedRoundRobin();
                 weightedRoundRobin.setWeight(weight);
                 map.putIfAbsent(identifyString, weightedRoundRobin);
-                weightedRoundRobin = map.get(identifyString);
             }
             if (weight != weightedRoundRobin.getWeight()) {
                 //weight changed

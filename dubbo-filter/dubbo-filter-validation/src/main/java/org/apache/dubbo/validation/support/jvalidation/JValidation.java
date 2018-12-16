@@ -21,10 +21,17 @@ import org.apache.dubbo.validation.Validator;
 import org.apache.dubbo.validation.support.AbstractValidation;
 
 /**
- * JValidation
+ * Creates a new instance of {@link Validator} using input argument url.
+ * @see AbstractValidation
+ * @see Validator
  */
 public class JValidation extends AbstractValidation {
 
+    /**
+     * Return new instance of {@link JValidator}
+     * @param url Valid URL instance
+     * @return Instance of JValidator
+     */
     @Override
     protected Validator createValidator(URL url) {
         return new JValidator(url);

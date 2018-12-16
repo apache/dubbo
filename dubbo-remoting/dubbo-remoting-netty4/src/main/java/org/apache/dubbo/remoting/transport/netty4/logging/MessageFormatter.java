@@ -175,8 +175,8 @@ final class MessageFormatter {
         int j;
         StringBuffer sbuf = new StringBuffer(messagePattern.length() + 50);
 
-        int L;
-        for (L = 0; L < argArray.length; L++) {
+        int l;
+        for (l = 0; l < argArray.length; l++) {
 
             j = messagePattern.indexOf(DELIM_STR, i);
 
@@ -194,7 +194,7 @@ final class MessageFormatter {
             } else {
                 if (isEscapedDelimeter(messagePattern, j)) {
                     if (!isDoubleEscaped(messagePattern, j)) {
-                        L--; // DELIM_START was escaped, thus should not be incremented
+                        l--; // DELIM_START was escaped, thus should not be incremented
                         sbuf.append(messagePattern.substring(i, j - 1));
                         sbuf.append(DELIM_START);
                         i = j + 1;
@@ -203,20 +203,20 @@ final class MessageFormatter {
                         // itself escaped: "abc x:\\{}"
                         // we have to consume one backward slash
                         sbuf.append(messagePattern.substring(i, j - 1));
-                        deeplyAppendParameter(sbuf, argArray[L], new HashMap<Object[], Void>());
+                        deeplyAppendParameter(sbuf, argArray[l], new HashMap<Object[], Void>());
                         i = j + 2;
                     }
                 } else {
                     // normal case
                     sbuf.append(messagePattern.substring(i, j));
-                    deeplyAppendParameter(sbuf, argArray[L], new HashMap<Object[], Void>());
+                    deeplyAppendParameter(sbuf, argArray[l], new HashMap<Object[], Void>());
                     i = j + 2;
                 }
             }
         }
         // append the characters following the last {} pair.
         sbuf.append(messagePattern.substring(i, messagePattern.length()));
-        if (L < argArray.length - 1) {
+        if (l < argArray.length - 1) {
             return new FormattingTuple(sbuf.toString(), argArray, throwableCandidate);
         } else {
             return new FormattingTuple(sbuf.toString(), argArray, null);

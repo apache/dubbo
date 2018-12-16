@@ -54,12 +54,12 @@ public class StaticDirectoryTest {
         invokers.add(invoker2);
         invokers.add(invoker3);
         List<Invoker<String>> filteredInvokers = router.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
-        StaticDirectory staticDirectory = new StaticDirectory(filteredInvokers);
-        Boolean isAvailable = staticDirectory.isAvailable();
+        StaticDirectory<String> staticDirectory = new StaticDirectory<>(filteredInvokers);
+        boolean isAvailable = staticDirectory.isAvailable();
         Assert.assertTrue(!isAvailable);
-        List<Invoker> newInvokers = staticDirectory.list(new MockDirInvocation());
+        List<Invoker<String>> newInvokers = staticDirectory.list(new MockDirInvocation());
         Assert.assertTrue(newInvokers.size() > 0);
         staticDirectory.destroy();
-        Assert.assertTrue(newInvokers.size() == 0);
+        Assert.assertEquals(0, newInvokers.size());
     }
 }

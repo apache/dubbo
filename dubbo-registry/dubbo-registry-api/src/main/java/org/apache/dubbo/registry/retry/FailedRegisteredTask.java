@@ -15,34 +15,26 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.cluster.merger;
+package org.apache.dubbo.registry.retry;
 
-import org.apache.dubbo.common.utils.ArrayUtils;
-import org.apache.dubbo.rpc.cluster.Merger;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.timer.Timeout;
+import org.apache.dubbo.registry.support.FailbackRegistry;
 
-public class BooleanArrayMerger implements Merger<boolean[]> {
+/**
+ * FailedRegisteredTask
+ */
+public final class FailedRegisteredTask extends AbstractRetryTask {
 
-    @Override
-    public boolean[] merge(boolean[]... items) {
-        if (ArrayUtils.isEmpty(items)) {
-            return new boolean[0];
-        }
-        int totalLen = 0;
-        for (boolean[] array : items) {
-            if (array != null) {
-                totalLen += array.length;
-            }
-        }
-        boolean[] result = new boolean[totalLen];
-        int index = 0;
-        for (boolean[] array : items) {
-            if (array != null) {
-                for (boolean item : array) {
-                    result[index++] = item;
-                }
-            }
-        }
-        return result;
+    private static final String NAME = "retry register";
+
+    public FailedRegisteredTask(URL url, FailbackRegistry registry) {
+        super(url, registry, NAME);
     }
 
+    @Override
+    protected void doRetry(URL url, FailbackRegistry registry, Timeout timeout) {
+        registry.doRegister(url);
+        registry.removeFailedRegisteredTask(url);
+    }
 }
