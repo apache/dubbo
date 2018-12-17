@@ -14,22 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.mock;
+package org.apache.dubbo.rpc.cluster.router.condition.config;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.cluster.Router;
-import org.apache.dubbo.rpc.cluster.RouterFactory;
+import org.apache.dubbo.configcenter.ConfigChangeEvent;
+import org.apache.dubbo.configcenter.DynamicConfiguration;
 
 /**
  *
  */
-@Activate
-public class MockRouterFactory implements RouterFactory {
+public class ServiceConfigConditionRouter extends AbstractConfigConditionRouter {
 
-    @Override
-    public Router getRouter(URL url) {
-        return new MockInvokersSelector();
+    public ServiceConfigConditionRouter(DynamicConfiguration configuration, URL url) {
+        super(configuration, url);
+    }
+
+    protected synchronized void init() {
+        String key = url.getEncodedServiceKey() + Constants.ROUTERS_SUFFIX;
+        String rawRule = configuration.getConfig(key);
+        if (rawRule != null) {
+            this.process(new ConfigChangeEvent(key, rawRule));
+        }
+
+        configuration.addListener(key, this);
     }
 
 }

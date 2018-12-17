@@ -25,19 +25,19 @@ public class ConfiguratorConfig {
     public static final String SCOPE_SERVICE = "service";
     public static final String SCOPE_APPLICATION = "application";
 
-    private String apiVersion;
+    private String configVersion;
     private String scope;
     private String key;
-    private boolean enabled = true;
+    private Boolean enabled = true;
     private List<ConfigItem> configs;
 
 
-    public String getApiVersion() {
-        return apiVersion;
+    public String getConfigVersion() {
+        return configVersion;
     }
 
-    public void setApiVersion(String apiVersion) {
-        this.apiVersion = apiVersion;
+    public void setConfigVersion(String configVersion) {
+        this.configVersion = configVersion;
     }
 
     public String getScope() {
@@ -56,11 +56,11 @@ public class ConfiguratorConfig {
         this.key = key;
     }
 
-    public boolean isEnabled() {
+    public Boolean getEnabled() {
         return enabled;
     }
 
-    public void setEnabled(boolean enabled) {
+    public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
     }
 

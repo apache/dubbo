@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.registry.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.registry.integration.RegistryDirectory;
@@ -52,7 +51,7 @@ public class ProviderConsumerRegTable {
         if (invokers == null) {
             return null;
         }
-        return invokers.remove(new ProviderInvokerWrapper(invoker, null, null));
+        return invokers.remove(new ProviderIndvokerWrapper(invoker, null, null));
     }*/
 
     public static Set<ProviderInvokerWrapper> getProviderInvoker(String serviceUniqueName) {
@@ -63,12 +62,8 @@ public class ProviderConsumerRegTable {
         return new HashSet<>(invokers.values());
     }
 
-    public static ProviderInvokerWrapper getProviderWrapper(Invoker invoker) {
-        URL providerUrl = invoker.getUrl();
-        if (Constants.REGISTRY_PROTOCOL.equals(providerUrl.getProtocol())) {
-            providerUrl = URL.valueOf(providerUrl.getParameterAndDecoded(Constants.EXPORT_KEY));
-        }
-        String serviceUniqueName = providerUrl.getServiceKey();
+    public static ProviderInvokerWrapper getProviderWrapper(URL registeredProviderUrl, Invoker invoker) {
+        String serviceUniqueName = registeredProviderUrl.getServiceKey();
         ConcurrentMap<Invoker, ProviderInvokerWrapper> invokers = providerInvokers.get(serviceUniqueName);
         if (invokers == null) {
             return null;

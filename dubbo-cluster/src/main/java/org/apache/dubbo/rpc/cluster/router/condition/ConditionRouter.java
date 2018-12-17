@@ -154,6 +154,10 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
     @Override
     public <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation)
             throws RpcException {
+        if (!isEnabled()) {
+            return invokers;
+        }
+
         if (invokers == null || invokers.isEmpty()) {
             return invokers;
         }
@@ -184,11 +188,6 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
     }
 
     @Override
-    public String getName() {
-        return NAME;
-    }
-
-    @Override
     public boolean isRuntime() {
         // We always return true for previously defined Router, that is, old Router doesn't support cache anymore.
 //        return true;
@@ -197,7 +196,7 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
 
     @Override
     public boolean isEnabled() {
-        return url.getParameter(Constants.ENABLED_KEY, false);
+        return url == null ? enabled : url.getParameter(Constants.ENABLED_KEY, false);
     }
 
     @Override

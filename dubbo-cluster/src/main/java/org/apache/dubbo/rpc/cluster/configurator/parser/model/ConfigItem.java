@@ -23,12 +23,35 @@ import java.util.Map;
  *
  */
 public class ConfigItem {
+    public static final String GENERAL_TYPE = "general";
+    public static final String WEIGHT_TYPE = "weight";
+    public static final String BALANCING_TYPE = "balancing";
+    public static final String DISABLED_TYPE = "disabled";
+
+    private String type;
+    private Boolean enabled;
     private List<String> addresses;
     private List<String> providerAddresses;
     private List<String> services;
     private List<String> applications;
     private Map<String, String> parameters;
     private String side;
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
 
     public List<String> getAddresses() {
         return addresses;

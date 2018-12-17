@@ -63,7 +63,7 @@ public class ConfigParserTest {
     @Test
     public void parseConfiguratorsServiceNoAppTest() throws Exception {
         InputStream yamlStream = this.getClass().getResourceAsStream("/ServiceNoApp.yml");
-        List<URL> urls = ConfigParser.parseConfigurators(streamToString(yamlStream), "serviceKey");
+        List<URL> urls = ConfigParser.parseConfigurators(streamToString(yamlStream));
         Assert.assertNotNull(urls);
         Assert.assertEquals(2, urls.size());
         URL url = urls.get(0);
@@ -74,7 +74,7 @@ public class ConfigParserTest {
     @Test
     public void parseConfiguratorsServiceGroupVersionTest() throws Exception {
         InputStream yamlStream = this.getClass().getResourceAsStream("/ServiceGroupVersion.yml");
-        List<URL> urls = ConfigParser.parseConfigurators(streamToString(yamlStream), "testgroup/servicekey:1.0.0");
+        List<URL> urls = ConfigParser.parseConfigurators(streamToString(yamlStream));
         Assert.assertNotNull(urls);
         Assert.assertEquals(1, urls.size());
         URL url = urls.get(0);
@@ -85,7 +85,7 @@ public class ConfigParserTest {
     @Test
     public void parseConfiguratorsServiceMultiAppsTest() {
         InputStream yamlStream = this.getClass().getResourceAsStream("/ServiceMultiApps.yml");
-        List<URL> urls = ConfigParser.parseConfigurators(streamToString(yamlStream), "serviceKey");
+        List<URL> urls = ConfigParser.parseConfigurators(streamToString(yamlStream));
         Assert.assertNotNull(urls);
         Assert.assertEquals(4, urls.size());
         URL url = urls.get(0);
@@ -97,7 +97,7 @@ public class ConfigParserTest {
     @Test(expected = IllegalStateException.class)
     public void parseConfiguratorsServiceNoRuleTest() {
         InputStream yamlStream = this.getClass().getResourceAsStream("/ServiceNoRule.yml");
-        ConfigParser.parseConfigurators(streamToString(yamlStream), "serviceKey");
+        ConfigParser.parseConfigurators(streamToString(yamlStream));
         Assert.fail();
     }
 
@@ -105,7 +105,7 @@ public class ConfigParserTest {
     public void parseConfiguratorsAppMultiServicesTest() {
         InputStream yamlStream = this.getClass().getResourceAsStream("/AppMultiServices.yml");
         String yamlFile = streamToString(yamlStream);
-        List<URL> urls = ConfigParser.parseConfigurators(yamlFile, "service1");
+        List<URL> urls = ConfigParser.parseConfigurators(yamlFile);
         Assert.assertNotNull(urls);
         Assert.assertEquals(2, urls.size());
         URL url = urls.get(0);
@@ -115,7 +115,7 @@ public class ConfigParserTest {
         Assert.assertEquals("random", url.getParameter(Constants.LOADBALANCE_KEY));
         Assert.assertEquals(url.getParameter(Constants.APPLICATION_KEY), "demo-consumer");
 
-        List<URL> urls2 = ConfigParser.parseConfigurators(yamlFile, "service-not-exist");
+        List<URL> urls2 = ConfigParser.parseConfigurators(yamlFile);
         Assert.assertNotNull(urls2);
         Assert.assertEquals(0, urls2.size());
     }
@@ -124,7 +124,7 @@ public class ConfigParserTest {
     @Test
     public void parseConfiguratorsAppAnyServicesTest() {
         InputStream yamlStream = this.getClass().getResourceAsStream("/AppAnyServices.yml");
-        List<URL> urls = ConfigParser.parseConfigurators(streamToString(yamlStream), "service1");
+        List<URL> urls = ConfigParser.parseConfigurators(streamToString(yamlStream));
         Assert.assertNotNull(urls);
         Assert.assertEquals(2, urls.size());
         URL url = urls.get(0);
@@ -138,7 +138,7 @@ public class ConfigParserTest {
     @Test
     public void parseConfiguratorsAppNoServiceTest() {
         InputStream yamlStream = this.getClass().getResourceAsStream("/AppNoService.yml");
-        List<URL> urls = ConfigParser.parseConfigurators(streamToString(yamlStream), "service1");
+        List<URL> urls = ConfigParser.parseConfigurators(streamToString(yamlStream));
         Assert.assertNotNull(urls);
         Assert.assertEquals(1, urls.size());
         URL url = urls.get(0);
@@ -152,7 +152,7 @@ public class ConfigParserTest {
     @Test
     public void parseConsumerSpecificProvidersTest() {
         InputStream yamlStream = this.getClass().getResourceAsStream("/ConsumerSpecificProviders.yml");
-        List<URL> urls = ConfigParser.parseConfigurators(streamToString(yamlStream), "service1");
+        List<URL> urls = ConfigParser.parseConfigurators(streamToString(yamlStream));
         Assert.assertNotNull(urls);
         Assert.assertEquals(1, urls.size());
         URL url = urls.get(0);

@@ -19,16 +19,12 @@ package org.apache.dubbo.registry.integration;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
-import org.apache.dubbo.configcenter.ConfigChangeEvent;
-import org.apache.dubbo.configcenter.ConfigChangeType;
 import org.apache.dubbo.configcenter.ConfigurationListener;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.registry.NotifyListener;
@@ -44,7 +40,7 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.Configurator;
-import org.apache.dubbo.rpc.cluster.configurator.parser.ConfigParser;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.InvokerWrapper;
 
 import java.util.ArrayList;
@@ -55,11 +51,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.Constants.ACCEPT_FOREIGN_IP;
-import static org.apache.dubbo.common.Constants.APPLICATION_KEY;
+import static org.apache.dubbo.common.Constants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.Constants.CATEGORY_KEY;
+import static org.apache.dubbo.common.Constants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.Constants.CONFIGURATORS_SUFFIX;
+import static org.apache.dubbo.common.Constants.DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.Constants.EXPORT_KEY;
 import static org.apache.dubbo.common.Constants.INTERFACES;
 import static org.apache.dubbo.common.Constants.METHODS_KEY;
@@ -67,6 +65,7 @@ import static org.apache.dubbo.common.Constants.QOS_ENABLE;
 import static org.apache.dubbo.common.Constants.QOS_PORT;
 import static org.apache.dubbo.common.Constants.REFER_KEY;
 import static org.apache.dubbo.common.Constants.VALIDATION_KEY;
+import static org.apache.dubbo.common.utils.UrlUtils.classifyUrls;
 
 /**
  * RegistryProtocol
@@ -75,7 +74,9 @@ public class RegistryProtocol implements Protocol {
 
     private final static Logger logger = LoggerFactory.getLogger(RegistryProtocol.class);
     private static RegistryProtocol INSTANCE;
-    private final Map<URL, NotifyListener> overrideListeners = new ConcurrentHashMap<URL, NotifyListener>();
+    private final Map<URL, NotifyListener> overrideListeners = new ConcurrentHashMap<>();
+    private final Map<String, ConfigurationListener> serviceConfigurationListeners = new ConcurrentHashMap<>();
+    private final ProviderConfigurationListener providerConfigurationListener = new ProviderConfigurationListener();
     //To solve the problem of RMI repeated exposure port conflicts, the services that have been exposed are no longer exposed.
     //providerurl <--> exporter
     private final Map<String, ExporterChangeableWrapper<?>> bounds = new ConcurrentHashMap<String, ExporterChangeableWrapper<?>>();
@@ -83,11 +84,9 @@ public class RegistryProtocol implements Protocol {
     private Protocol protocol;
     private RegistryFactory registryFactory;
     private ProxyFactory proxyFactory;
-    private DynamicConfiguration dynamicConfiguration;
 
     public RegistryProtocol() {
         INSTANCE = this;
-        dynamicConfiguration = (DynamicConfiguration) Environment.getInstance().getDynamicConfiguration();
     }
 
     public static RegistryProtocol getRegistryProtocol() {
@@ -160,62 +159,35 @@ public class RegistryProtocol implements Protocol {
         final OverrideListener overrideSubscribeListener = new OverrideListener(overrideSubscribeUrl, originInvoker);
         overrideListeners.put(overrideSubscribeUrl, overrideSubscribeListener);
 
-        /**
-         * synchronized is used to make sure override notifications come after export and register finished.
-         * we will eagerly call dynamicConfiguration.getConfig() to let existing overrides take effect before export or register.
-         */
-        synchronized (overrideSubscribeListener) {
-            providerUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
-            //export invoker
-            final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker, providerUrl);
+        providerUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
+        //export invoker
+        final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker, providerUrl);
 
-            // url to registry
-            final Registry registry = getRegistry(originInvoker);
-            final URL registeredProviderUrl = getRegistedProviderUrl(providerUrl, registryUrl);
-            ProviderConsumerRegTable.registerProvider(originInvoker, registryUrl, registeredProviderUrl);
-            //to judge if we need to delay publish
-            boolean register = registeredProviderUrl.getParameter("register", true);
-            if (register) {
-                register(registryUrl, registeredProviderUrl);
-                ProviderConsumerRegTable.getProviderWrapper(originInvoker).setReg(true);
-            }
-
-            // Deprecated! Subscribe to override rules in 2.6.x or before.
-            registry.subscribe(overrideSubscribeUrl, overrideSubscribeListener);
-
-            exporter.setRegisterUrl(registeredProviderUrl);
-            exporter.setSubscribeUrl(overrideSubscribeUrl);
-            //Ensure that a new exporter instance is returned every time export
-            return new DestroyableExporter<>(exporter);
+        // url to registry
+        final Registry registry = getRegistry(originInvoker);
+        final URL registeredProviderUrl = getRegistedProviderUrl(providerUrl, registryUrl);
+        ProviderConsumerRegTable.registerProvider(originInvoker, registryUrl, registeredProviderUrl);
+        //to judge if we need to delay publish
+        boolean register = registeredProviderUrl.getParameter("register", true);
+        if (register) {
+            register(registryUrl, registeredProviderUrl);
+            ProviderConsumerRegTable.getProviderWrapper(registeredProviderUrl, originInvoker).setReg(true);
         }
+
+        // Deprecated! Subscribe to override rules in 2.6.x or before.
+        registry.subscribe(overrideSubscribeUrl, overrideSubscribeListener);
+
+        exporter.setRegisterUrl(registeredProviderUrl);
+        exporter.setSubscribeUrl(overrideSubscribeUrl);
+        //Ensure that a new exporter instance is returned every time export
+        return new DestroyableExporter<>(exporter);
     }
 
-    /**
-     * Get existing configuration rule and override provider url before exporting.
-     *
-     * @param providerUrl
-     * @param <T>
-     * @return
-     */
-    private <T> URL overrideUrlWithConfig(URL providerUrl, OverrideListener listener) {
-        List<Configurator> configurators = new LinkedList<>();
-        String appKey = providerUrl.getParameter(Constants.APPLICATION_KEY) + Constants.CONFIGURATORS_SUFFIX;
-        dynamicConfiguration.addListener(appKey, listener);
-        String appRawConfig = dynamicConfiguration.getConfig(appKey);
-        if (!StringUtils.isEmpty(appRawConfig)) {
-            List<Configurator> appDynamicConfigurators = RegistryDirectory.configToConfiguratiors(appRawConfig, providerUrl.getServiceKey());
-            configurators.addAll(appDynamicConfigurators);
-        }
-
-        String serviceKey = providerUrl.getEncodedServiceKey() + Constants.CONFIGURATORS_SUFFIX;
-        dynamicConfiguration.addListener(serviceKey, listener);
-        String rawConfig = dynamicConfiguration.getConfig(serviceKey);
-        if (!StringUtils.isEmpty(rawConfig)) {
-            List<Configurator> dynamicConfigurators = RegistryDirectory.configToConfiguratiors(rawConfig, providerUrl.getServiceKey());
-            configurators.addAll(dynamicConfigurators);
-        }
-        providerUrl = getConfigedInvokerUrl(configurators, providerUrl);
-        return providerUrl;
+    private URL overrideUrlWithConfig(URL providerUrl, NotifyListener listener) {
+        providerUrl = providerConfigurationListener.overrideUrl(providerUrl);
+        ServiceConfigurationListener serviceConfigurationListener = new ServiceConfigurationListener(providerUrl, listener);
+        serviceConfigurationListeners.put(providerUrl.getServiceKey(), serviceConfigurationListener);
+        return serviceConfigurationListener.overrideUrl(providerUrl);
     }
 
     @SuppressWarnings("unchecked")
@@ -244,7 +216,7 @@ public class RegistryProtocol implements Protocol {
         final URL registeredProviderUrl = getRegistedProviderUrl(newInvokerUrl, registryUrl);
 
         //decide if we need to re-publish
-        ProviderInvokerWrapper<T> providerInvokerWrapper = ProviderConsumerRegTable.getProviderWrapper(originInvoker);
+        ProviderInvokerWrapper<T> providerInvokerWrapper = ProviderConsumerRegTable.getProviderWrapper(registeredProviderUrl, originInvoker);
         ProviderConsumerRegTable.registerProvider(originInvoker, registryUrl, registeredProviderUrl);
         /**
          * Only if the new url going to Registry is different with the previous one should we do unregister and register.
@@ -376,8 +348,6 @@ public class RegistryProtocol implements Protocol {
         RegistryDirectory<T> directory = new RegistryDirectory<T>(type, url);
         directory.setRegistry(registry);
         directory.setProtocol(protocol);
-        directory.setDynamicConfiguration(dynamicConfiguration);
-        directory.buildRouterChain(dynamicConfiguration);
         // all attributes of REFER_KEY
         Map<String, String> parameters = new HashMap<String, String>(directory.getUrl().getParameters());
         URL subscribeUrl = new URL(Constants.CONSUMER_PROTOCOL, parameters.remove(Constants.REGISTER_IP_KEY), 0, type.getName(), parameters);
@@ -385,6 +355,7 @@ public class RegistryProtocol implements Protocol {
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
             registry.register(getRegistedConsumerUrl(subscribeUrl, url));
         }
+        directory.buildRouterChain(subscribeUrl);
         directory.subscribe(subscribeUrl.addParameter(Constants.CATEGORY_KEY,
                 Constants.PROVIDERS_CATEGORY
                         + "," + Constants.CONFIGURATORS_CATEGORY
@@ -421,6 +392,9 @@ public class RegistryProtocol implements Protocol {
             exporter.unexport();
         }
         bounds.clear();
+
+        DynamicConfiguration.getDynamicConfiguration()
+                .removeListener(ApplicationModel.getApplication() + CONFIGURATORS_SUFFIX, providerConfigurationListener);
     }
 
     //Merge the urls of configurators
@@ -479,10 +453,11 @@ public class RegistryProtocol implements Protocol {
      * 2.No need to re-register to the registry after notify
      * 3.The invoker passed by the export method , would better to be the invoker of exporter
      */
-    private class OverrideListener implements NotifyListener, ConfigurationListener {
+    private class OverrideListener implements NotifyListener {
 
         private final URL subscribeUrl;
         private final Invoker originInvoker;
+
         private List<Configurator> configurators;
         private List<Configurator> dynamicConfigurators;
         private List<Configurator> appDynamicConfigurators;
@@ -494,32 +469,25 @@ public class RegistryProtocol implements Protocol {
 
         /**
          * @param urls The list of registered information , is always not empty, The meaning is the same as the return value of {@link org.apache.dubbo.registry.RegistryService#lookup(URL)}.
+         *             configurators
          */
         @Override
         public synchronized void notify(List<URL> urls) {
             logger.debug("original override urls: " + urls);
-            List<URL> matchedUrls = getMatchedUrls(urls, subscribeUrl.addParameter(Constants.CATEGORY_KEY,
-                    Constants.CONFIGURATORS_CATEGORY
-                            + "," + Constants.DYNAMIC_CONFIGURATORS_CATEGORY
-                            + "," + Constants.APP_DYNAMIC_CONFIGURATORS_CATEGORY));
+            List<URL> matchedUrls = getMatchedUrls(urls, subscribeUrl.addParameter(Constants.CATEGORY_KEY, Constants.CONFIGURATORS_CATEGORY + "," + Constants.DYNAMIC_CONFIGURATORS_CATEGORY + "," + Constants.APP_DYNAMIC_CONFIGURATORS_CATEGORY));
             logger.debug("subscribe url: " + subscribeUrl + ", override urls: " + matchedUrls);
             // No matching results
             if (matchedUrls.isEmpty()) {
                 return;
             }
-            List<URL> configuratorUrls = matchedUrls.stream().filter(u -> u.getParameter(Constants.CATEGORY_KEY).equals(Constants.CONFIGURATORS_CATEGORY)).collect(Collectors.toList());
-            List<URL> dynamicConfiguratorUrls = matchedUrls.stream().filter(u -> u.getParameter(Constants.CATEGORY_KEY).equals(Constants.DYNAMIC_CONFIGURATORS_CATEGORY)).collect(Collectors.toList());
-            List<URL> appDynamicConfiguratorUrls = matchedUrls.stream().filter(u -> u.getParameter(Constants.CATEGORY_KEY).equals(Constants.APP_DYNAMIC_CONFIGURATORS_CATEGORY)).collect(Collectors.toList());
 
-            if (CollectionUtils.isNotEmpty(configuratorUrls)) {
-                configurators = RegistryDirectory.toConfigurators(configuratorUrls);
-            }
-            if (CollectionUtils.isNotEmpty(dynamicConfiguratorUrls)) {
-                dynamicConfigurators = RegistryDirectory.toConfigurators(dynamicConfiguratorUrls);
-            }
-            if (CollectionUtils.isNotEmpty(appDynamicConfiguratorUrls)) {
-                appDynamicConfigurators = RegistryDirectory.toConfigurators(appDynamicConfiguratorUrls);
-            }
+            // configurators dynamic-configurators, app-dynamic-configurators
+            this.configurators = RegistryDirectory.toConfigurators(classifyUrls(matchedUrls, u -> u.getParameter(CATEGORY_KEY)
+                    .equals(CONFIGURATORS_CATEGORY))).orElse(configurators);
+            this.dynamicConfigurators = RegistryDirectory.toConfigurators(classifyUrls(matchedUrls, u -> u.getParameter(CATEGORY_KEY)
+                    .equals(DYNAMIC_CONFIGURATORS_CATEGORY))).orElse(dynamicConfigurators);
+            this.appDynamicConfigurators = RegistryDirectory.toConfigurators(classifyUrls(matchedUrls, u -> u.getParameter(CATEGORY_KEY)
+                    .equals(APP_DYNAMIC_CONFIGURATORS_CATEGORY))).orElse(appDynamicConfigurators);
 
             final Invoker<?> invoker;
             if (originInvoker instanceof InvokerDelegete) {
@@ -552,8 +520,7 @@ public class RegistryProtocol implements Protocol {
             for (URL url : configuratorUrls) {
                 URL overrideUrl = url;
                 // Compatible with the old version
-                if (url.getParameter(Constants.CATEGORY_KEY) == null
-                        && Constants.OVERRIDE_PROTOCOL.equals(url.getProtocol())) {
+                if (url.getParameter(Constants.CATEGORY_KEY) == null && Constants.OVERRIDE_PROTOCOL.equals(url.getProtocol())) {
                     overrideUrl = url.addParameter(Constants.CATEGORY_KEY, Constants.CONFIGURATORS_CATEGORY);
                 }
 
@@ -564,41 +531,77 @@ public class RegistryProtocol implements Protocol {
             }
             return result;
         }
+    }
+
+    private class ServiceConfigurationListener extends AbstractConfiguratorListener {
+        private URL providerUrl;
+        private NotifyListener notifyListener;
+        private List<Configurator> configurators = new LinkedList<>();
+
+        public ServiceConfigurationListener(URL providerUrl, NotifyListener notifyListener) {
+            this.providerUrl = providerUrl;
+            this.notifyListener = notifyListener;
+            this.init();
+        }
+
+        private synchronized void init() {
+            DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
+            String key = providerUrl.getEncodedServiceKey() + Constants.CONFIGURATORS_SUFFIX;
+            String rawConfig = dynamicConfiguration.getConfig(key);
+            if (!StringUtils.isEmpty(rawConfig)) {
+                List<Configurator> appDynamicConfigurators = RegistryDirectory.configToConfiguratiors(rawConfig);
+                configurators.addAll(appDynamicConfigurators);
+            }
+
+            dynamicConfiguration.addListener(key, this);
+        }
+
+        private <T> URL overrideUrl(URL providerUrl) {
+            return RegistryProtocol.this.getConfigedInvokerUrl(configurators, providerUrl);
+        }
 
         @Override
-        public synchronized void process(ConfigChangeEvent event) {
-            if (logger.isInfoEnabled()) {
-                logger.info("Notification of overriding rule, change type is: " + event.getChangeType() + ", raw config content is:\n " + event.getNewValue());
-            }
-
-            List<URL> urls;
-            if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
-                URL originUrl = RegistryProtocol.this.getProviderUrl(originInvoker);
-                originUrl = originUrl.clearParameters().setProtocol(Constants.EMPTY_PROTOCOL);
-                // determine it's a app level or service level change.
-                if (event.getKey().endsWith(originUrl.getParameter(APPLICATION_KEY) + CONFIGURATORS_SUFFIX)) {
-                    originUrl = originUrl.addParameter(Constants.CATEGORY_KEY, Constants.APP_DYNAMIC_CONFIGURATORS_CATEGORY);
-                } else {
-                    originUrl = originUrl.addParameter(Constants.CATEGORY_KEY, Constants.DYNAMIC_CONFIGURATORS_CATEGORY);
-                }
-                urls = new ArrayList<>();
-                urls.add(originUrl);
-            } else {
-                try {
-                    // parseConfigurators will recognize app/service config automatically.
-                    urls = ConfigParser.parseConfigurators(event.getNewValue(), subscribeUrl.getServiceKey());
-                } catch (Exception e) {
-                    logger.error("Failed to parse raw dynamic config and it will not take effect, the raw config is: " + event.getNewValue(), e);
-                    return;
-                }
-            }
-
-            logger.debug("Successfully transformed override rule to urls, will do override now, the urls are: " + urls);
-
-            notify(urls);
+        protected void notifyOverrides(List<URL> urls) {
+            urls.forEach(u -> u.addParameter(CATEGORY_KEY, DYNAMIC_CONFIGURATORS_CATEGORY));
+            notifyListener.notify(urls);
         }
     }
 
+    private class ProviderConfigurationListener extends AbstractConfiguratorListener {
+        private final List<Configurator> configurators = new LinkedList<>();
+
+        public ProviderConfigurationListener() {
+            this.init();
+        }
+
+        private synchronized void init() {
+            DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
+            String appKey = ApplicationModel.getApplication() + Constants.CONFIGURATORS_SUFFIX;
+            dynamicConfiguration.addListener(appKey, this);
+            String appRawConfig = dynamicConfiguration.getConfig(appKey);
+            if (!StringUtils.isEmpty(appRawConfig)) {
+                List<Configurator> appDynamicConfigurators = RegistryDirectory.configToConfiguratiors(appRawConfig);
+                configurators.addAll(appDynamicConfigurators);
+            }
+        }
+
+        /**
+         * Get existing configuration rule and override provider url before exporting.
+         *
+         * @param providerUrl
+         * @param <T>
+         * @return
+         */
+        private <T> URL overrideUrl(URL providerUrl) {
+            return RegistryProtocol.this.getConfigedInvokerUrl(configurators, providerUrl);
+        }
+
+        @Override
+        protected void notifyOverrides(List<URL> urls) {
+            urls.forEach(u -> u.addParameter(CATEGORY_KEY, APP_DYNAMIC_CONFIGURATORS_CATEGORY));
+            overrideListeners.values().forEach(listener -> listener.notify(urls));
+        }
+    }
     /**
      * exporter proxy, establish the corresponding relationship between the returned exporter and the exporter exported by the protocol, and can modify the relationship at the time of override.
      *
@@ -645,6 +648,9 @@ public class RegistryProtocol implements Protocol {
             try {
                 NotifyListener listener = RegistryProtocol.INSTANCE.overrideListeners.remove(subscribeUrl);
                 registry.unsubscribe(subscribeUrl, listener);
+                DynamicConfiguration.getDynamicConfiguration()
+                        .removeListener(subscribeUrl.getServiceKey() + CONFIGURATORS_SUFFIX, serviceConfigurationListeners
+                                .get(subscribeUrl.getServiceKey()));
             } catch (Throwable t) {
                 logger.warn(t.getMessage(), t);
             }

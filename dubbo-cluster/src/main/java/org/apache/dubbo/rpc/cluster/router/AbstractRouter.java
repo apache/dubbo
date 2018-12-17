@@ -17,16 +17,12 @@
 package org.apache.dubbo.rpc.cluster.router;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * TODO Extract more code to here if necessary
@@ -35,8 +31,18 @@ public abstract class AbstractRouter implements Router {
     protected int priority;
     protected boolean force;
     protected boolean enabled;
-    protected RouterChain routerChain;
+    protected List<RouterChain> routerChains = new CopyOnWriteArrayList<>();
     protected URL url;
+
+    protected DynamicConfiguration configuration;
+
+    public AbstractRouter(DynamicConfiguration configuration, URL url) {
+        this.configuration = configuration;
+        this.url = url;
+    }
+
+    public AbstractRouter() {
+    }
 
     @Override
     public URL getUrl() {
@@ -48,24 +54,13 @@ public abstract class AbstractRouter implements Router {
     }
 
     @Override
-    public <T> Map<String, List<Invoker<T>>> preRoute(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
-        Map<String, List<Invoker<T>>> map = new HashMap<>();
-
-        if (CollectionUtils.isEmpty(invokers)) {
-            return map;
-        }
-
-        if (isRuntime() || !isEnabled()) {
-            map.put(TreeNode.FAILOVER_KEY, invokers);
-        } else {
-            map.put(TreeNode.FAILOVER_KEY, route(invokers, url, invocation));
-        }
-        return map;
+    public void addRouterChain(RouterChain routerChain) {
+        this.routerChains.add(routerChain);
     }
 
-    @Override
-    public void setRouterChain(RouterChain routerChain) {
-        this.routerChain = routerChain;
+
+    public void setConfiguration(DynamicConfiguration configuration) {
+        this.configuration = configuration;
     }
 
     @Override
@@ -80,6 +75,11 @@ public abstract class AbstractRouter implements Router {
 
     public void setForce(boolean force) {
         this.force = force;
+    }
+
+    @Override
+    public int compareTo(Router o) {
+        return (this.getPriority() >= o.getPriority()) ? 1 : -1;
     }
 
     public boolean isEnabled() {
@@ -98,8 +98,4 @@ public abstract class AbstractRouter implements Router {
         this.priority = priority;
     }
 
-    @Override
-    public int compareTo(Router o) {
-        return (this.getPriority() >= o.getPriority()) ? 1 : -1;
-    }
 }

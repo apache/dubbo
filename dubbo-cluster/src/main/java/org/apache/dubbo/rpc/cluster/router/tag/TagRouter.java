@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.cluster.router.tag;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -27,21 +26,17 @@ import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.ConfigChangeType;
 import org.apache.dubbo.configcenter.ConfigurationListener;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
-import org.apache.dubbo.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Router;
+import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
-import org.apache.dubbo.rpc.cluster.router.TreeNode;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRouterRule;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRuleParser;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -53,66 +48,34 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
     private static final int DEFAULT_PRIORITY = 100;
     private static final Logger logger = LoggerFactory.getLogger(TagRouter.class);
     private static final String TAGROUTERRULES_DATAID = ".tagrouters"; // acts
-    private DynamicConfiguration configuration;
     private TagRouterRule tagRouterRule;
     private String application;
 
-    private AtomicBoolean inited = new AtomicBoolean(false);
-
-    /**
-     * compatible constructor, it should never be called to create TagRouter.
-     *
-     * @param url
-     */
-    public TagRouter(URL url) {
-        this(ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getDefaultExtension().getDynamicConfiguration(url), url);
-    }
+    private boolean inited = false;
 
     public TagRouter(DynamicConfiguration configuration, URL url) {
-        setConfiguration(configuration);
-        this.url = url;
+        super(configuration, url);
     }
 
     protected TagRouter() {
     }
 
-    public void setConfiguration(DynamicConfiguration configuration) {
-        this.configuration = configuration;
-    }
-
-    private void init() {
-        if (!inited.compareAndSet(false, true)) {
-            return;
-        }
-        if (StringUtils.isEmpty(application)) {
-            logger.error("TagRouter must getConfig from or subscribe to a specific application, but the application in this TagRouter is not specified.");
-        }
-
-        synchronized (this) {
-            String key = application + TAGROUTERRULES_DATAID;
-            configuration.addListener(key, this);
-            String rawRule = configuration.getConfig(key);
-            if (rawRule != null) {
-                this.process(new ConfigChangeEvent(key, rawRule));
-            }
-        }
-    }
-
     @Override
     public synchronized void process(ConfigChangeEvent event) {
-        if (logger.isInfoEnabled()) {
-            logger.info("Notification of tag rule, change type is: " + event.getChangeType() + ", raw rule is:\n " + event.getNewValue());
+        if (logger.isDebugEnabled()) {
+            logger.debug("Notification of tag rule, change type is: " + event.getChangeType() + ", raw rule is:\n " + event
+                    .getValue());
         }
 
         try {
             if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
                 this.tagRouterRule = null;
             } else {
-                this.tagRouterRule = TagRuleParser.parse(event.getNewValue());
+                this.tagRouterRule = TagRuleParser.parse(event.getValue());
             }
-            if (routerChain != null) {
-                routerChain.notifyRuleChanged();
-            }
+
+            routerChains.forEach(RouterChain::notifyRuleChanged);
+
         } catch (Exception e) {
             logger.error("Failed to parse the raw tag router rule and it will not take effect, please check if the rule matches with the template, the raw rule is:\n ", e);
         }
@@ -124,8 +87,6 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
     }
 
     /**
-     * TODO It seems that this router does not need to run at runtime at all, because preRoute already classified each invoker into the right tag.
-     * preRoute will always be executed ignoring the runtime status in rule.
      *
      * @param invokers
      * @param url
@@ -139,8 +100,6 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
         if (CollectionUtils.isEmpty(invokers)) {
             return invokers;
         }
-
-        checkAndInit(invokers.get(0).getUrl());
 
         if (tagRouterRule == null || !tagRouterRule.isValid() || !tagRouterRule.isEnabled()) {
             // the invokers must have been preRouted by static tag configuration, so this invoker list is just what we want.
@@ -159,17 +118,22 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
                 if (CollectionUtils.isNotEmpty(result) || tagRouterRule.isForce()) {
                     return result;
                 }
+            } else {
+                // dynamic tag group doesn't have any item about the requested app OR it's null after filtered by dynamic tag group but force=false.
+                // check static tag
+                result = filterInvoker(invokers, invoker -> tag.equals(invoker.getUrl()
+                        .getParameter(Constants.TAG_KEY)));
             }
-            // dynamic tag group doesn't have any item about the requested app OR it's null after filtered by dynamic tag group but force=false.
-            // check static tag
-            result = filterInvoker(invokers, invoker -> tag.equals(invoker.getUrl().getParameter(Constants.TAG_KEY)));
-            // If there's no tagged providers that can match the value in this tag. force.tag is set by default to true, which means it will not invoker any providers without a tag unless it's explicitly allowed.
+            // If there's no tagged providers that can match the current tagged request. force.tag is set by default to false, which means it will invoke any providers without a tag unless it's explicitly disallowed.
             if (CollectionUtils.isNotEmpty(result) || Boolean.valueOf(invocation.getAttachment(Constants.FORCE_USE_TAG, url.getParameter(Constants.FORCE_USE_TAG, "false")))) {
                 return result;
             }
             // FAILOVER: return all Providers without any tags.
             else {
-                return filterInvoker(invokers, invoker -> StringUtils.isEmpty(invoker.getUrl().getParameter(Constants.TAG_KEY)));
+                List<Invoker<T>> tmp = filterInvoker(invokers, invoker -> addressNotMatches(invoker.getUrl(), tagRouterRule
+                        .getAddresses()));
+                return filterInvoker(tmp, invoker -> StringUtils.isEmpty(invoker.getUrl()
+                        .getParameter(Constants.TAG_KEY)));
             }
         } else {
             // List<String> addresses = tagRouterRule.filter(providerApp);
@@ -193,72 +157,23 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
         }
     }
 
+    /**
+     * This method is reserved for building router cache.
+     * Currently, we rely on this method to do the init task since it will get triggered before route() really happens.
+     *
+     * @param invokers
+     * @param url
+     * @param invocation
+     * @param <T>
+     * @return
+     * @throws RpcException
+     */
     @Override
     public <T> Map<String, List<Invoker<T>>> preRoute(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
-        Map<String, List<Invoker<T>>> map = new HashMap<>();
-
-        if (CollectionUtils.isEmpty(invokers)) {
-            return map;
+        if (CollectionUtils.isNotEmpty(invokers)) {
+            checkAndInit(invokers.get(0).getUrl());
         }
-
-        checkAndInit(invokers.get(0).getUrl());
-
-        // Notice! we don't check runtime status here, because we will always need preRoute to run for the dynamic tag configuration.
-        // So, only default to the static tag configuration when the dynamic configuration is empty.
-        if (tagRouterRule == null || !tagRouterRule.isValid() || !tagRouterRule.isEnabled()) {
-            // We still need to group invokers by static tag configuration
-            invokers.forEach(invoker -> {
-                String tag = invoker.getUrl().getParameter(Constants.TAG_KEY);
-                if (StringUtils.isEmpty(tag)) {
-                    tag = TreeNode.FAILOVER_KEY;
-                }
-                List<Invoker<T>> subInvokers = map.computeIfAbsent(tag, t -> new ArrayList<>());
-                subInvokers.add(invoker);
-            });
-            return map;
-        }
-
-        /**
-         * If tag rule can work, then group invokers by,
-         * 1. dynamic tag group
-         * 2. static tag group
-         */
-        invokers.forEach(invoker -> {
-            String address = invoker.getUrl().getAddress();
-            List<String> tags = tagRouterRule.getAddressToTagnames().get(address);
-            if (CollectionUtils.isEmpty(tags)) {
-                String tag = invoker.getUrl().getParameter(Constants.TAG_KEY);
-                // we have checked that this address is not included in any of the tag listed in dynamic tag group.
-                // so if found this address were grouped into one tag in dynamic tag group, we think it's invalid, which means, dynamic tag group will override static tag group (the dynamic config may have explicitly removed this address from one or another group).
-                if (tagRouterRule.getTagNames().contains(tag) || StringUtils.isEmpty(tag)) {
-                    tag = TreeNode.FAILOVER_KEY;
-                }
-                tags = new ArrayList<>();
-                tags.add(tag);
-            }
-
-            tags.forEach(tag -> {
-                List<Invoker<T>> subInvokers = map.computeIfAbsent(tag, k -> new ArrayList<>());
-                subInvokers.add(invoker);
-            });
-        });
-
-        // Now, FAILOVER key is required here.
-//        map.putIfAbsent(TreeNode.FAILOVER_KEY, Collections.emptyList());
-
-        return map;
-    }
-
-    public void checkAndInit(URL providerUrl) {
-        if (StringUtils.isEmpty(application)) {
-            setApplication(providerUrl.getParameter(Constants.REMOTE_APPLICATION_KEY));
-        }
-        this.init();
-    }
-
-    @Override
-    public String getName() {
-        return NAME;
+        return super.preRoute(invokers, url, invocation);
     }
 
     @Override
@@ -270,14 +185,6 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
     public boolean isRuntime() {
         return tagRouterRule != null && tagRouterRule.isRuntime();
 //        return false;
-    }
-
-    @Override
-    public String getKey() {
-        /*if (isRuntime()) {
-            return super.getKey();
-        }*/
-        return Constants.TAG_KEY;
     }
 
     @Override
@@ -293,14 +200,38 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
     }
 
     private boolean addressMatches(URL url, List<String> addresses) {
-        return addresses.contains(url.getAddress());
+        return addresses != null && addresses.contains(url.getAddress());
     }
 
     private boolean addressNotMatches(URL url, List<String> addresses) {
-        return !addresses.contains(url.getAddress());
+        return addresses == null || !addresses.contains(url.getAddress());
     }
 
     public void setApplication(String app) {
         this.application = app;
     }
+
+    private synchronized void checkAndInit(URL url) {
+        String providerApplication = url.getParameter(Constants.REMOTE_APPLICATION_KEY);
+        if (StringUtils.isEmpty(application) || !providerApplication.equals(application)) {
+            setApplication(providerApplication);
+            inited = false;
+        }
+
+        if (StringUtils.isEmpty(application)) {
+            logger.error("TagRouter must getConfig from or subscribe to a specific application, but the application in this TagRouter is not specified.");
+            return;
+        }
+
+        if (!inited) {
+            inited = true;
+            String key = application + TAGROUTERRULES_DATAID;
+            configuration.addListener(key, this);
+            String rawRule = configuration.getConfig(key);
+            if (rawRule != null) {
+                this.process(new ConfigChangeEvent(key, rawRule));
+            }
+        }
+    }
+
 }

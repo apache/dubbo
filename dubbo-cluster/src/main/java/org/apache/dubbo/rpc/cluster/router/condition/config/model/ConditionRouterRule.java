@@ -27,6 +27,7 @@ public class ConditionRouterRule extends AbstractRouterRule {
     public ConditionRouterRule() {
     }
 
+    private BlackWhiteListRule blackWhiteListRule;
     private List<String> conditions;
 
     public List<String> getConditions() {
@@ -35,5 +36,13 @@ public class ConditionRouterRule extends AbstractRouterRule {
 
     public void setConditions(List<String> conditions) {
         this.conditions = conditions;
+    }
+
+    public BlackWhiteListRule getBlackWhiteListRule() {
+        return blackWhiteListRule;
+    }
+
+    public void setBlackWhiteListRule(BlackWhiteListRule blackWhiteListRule) {
+        this.blackWhiteListRule = blackWhiteListRule;
     }
 }

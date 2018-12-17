@@ -30,14 +30,13 @@ import org.yaml.snakeyaml.constructor.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  *
  */
 public class ConfigParser {
 
-    public static List<URL> parseConfigurators(String rawConfig, String serviceKey) {
+    public static List<URL> parseConfigurators(String rawConfig) {
         List<URL> urls = new ArrayList<>();
         ConfiguratorConfig configuratorConfig = parseObject(rawConfig, ConfiguratorConfig.class);
 
@@ -45,22 +44,9 @@ public class ConfigParser {
         List<ConfigItem> items = configuratorConfig.getConfigs();
 
         if (ConfiguratorConfig.SCOPE_APPLICATION.equals(scope)) {
-            items.forEach(item -> urls.addAll(
-                    appItemToUrls(item, configuratorConfig.getKey(), serviceKey)
-                            .stream()
-                            .map(u -> u.addParameter(Constants.CATEGORY_KEY, Constants.APP_DYNAMIC_CONFIGURATORS_CATEGORY))
-                            .map(u -> u.addParameter(Constants.ENABLED_KEY, configuratorConfig.isEnabled()))
-                            .map(u -> u.addParameter(Constants.API_VERSION_KEY, configuratorConfig.getApiVersion()))
-                            .collect(Collectors.toList())
-            ));
+            items.forEach(item -> urls.addAll(appItemToUrls(item, configuratorConfig)));
         } else { // servcie scope by default.
-            items.forEach(item -> urls.addAll(
-                    serviceItemToUrls(item, configuratorConfig.getKey())
-                            .stream()
-                            .map(u -> u.addParameter(Constants.ENABLED_KEY, configuratorConfig.isEnabled()))
-                            .map(u -> u.addParameter(Constants.API_VERSION_KEY, configuratorConfig.getApiVersion()))
-                            .collect(Collectors.toList()))
-            );
+            items.forEach(item -> urls.addAll(serviceItemToUrls(item, configuratorConfig)));
         }
         return urls;
     }
@@ -75,7 +61,7 @@ public class ConfigParser {
         return yaml.load(rawConfig);
     }
 
-    private static List<URL> serviceItemToUrls(ConfigItem item, String serviceKey) {
+    private static List<URL> serviceItemToUrls(ConfigItem item, ConfiguratorConfig config) {
         List<URL> urls = new ArrayList<>();
         List<String> addresses = item.getAddresses();
         if (addresses == null) {
@@ -86,21 +72,36 @@ public class ConfigParser {
         }
 
         addresses.forEach(addr -> {
-            String urlStr = "override://" + addr + "/";
+            StringBuilder urlBuilder = new StringBuilder();
+            urlBuilder.append("override://").append(addr).append("/");
+
+            urlBuilder.append(appendService(config.getKey()));
+            urlBuilder.append(toParameterString(item));
+
+            urlBuilder.append("&enabled=");
+            if (item.getType() == null || ConfigItem.GENERAL_TYPE.equals(item.getType())) {
+                urlBuilder.append(config.getEnabled());
+            } else {
+                urlBuilder.append(item.getEnabled());
+            }
+
+            urlBuilder.append("&category=").append(Constants.DYNAMIC_CONFIGURATORS_CATEGORY);
+            urlBuilder.append("&configVersion=").append(config.getConfigVersion());
+
             List<String> apps = item.getApplications();
             if (apps != null && apps.size() > 0) {
                 apps.forEach(app -> {
-                    urls.add(URL.valueOf(urlStr + appendService(serviceKey) + toParameterString(item) + "&application=" + app));
+                    urls.add(URL.valueOf(urlBuilder.append("&application=" + app).toString()));
                 });
             } else {
-                urls.add(URL.valueOf(urlStr + appendService(serviceKey) + toParameterString(item)));
+                urls.add(URL.valueOf(urlBuilder.toString()));
             }
         });
 
         return urls;
     }
 
-    private static List<URL> appItemToUrls(ConfigItem item, String appKey, String serviceKey) {
+    private static List<URL> appItemToUrls(ConfigItem item, ConfiguratorConfig config) {
         List<URL> urls = new ArrayList<>();
         List<String> addresses = item.getAddresses();
         if (addresses == null) {
@@ -110,15 +111,33 @@ public class ConfigParser {
             addresses.add(Constants.ANYHOST_VALUE);
         }
         for (String addr : addresses) {
-            String urlStr = "override://" + addr + "/";
+            StringBuilder urlBuilder = new StringBuilder();
+            urlBuilder.append("override://").append(addr).append("/");
             List<String> services = item.getServices();
-            String targetService = serviceKey;
-            if (CollectionUtils.isEmpty(services) || services.contains("*")) {
-                targetService = "*";
-            } else if (!services.contains(serviceKey)) {
-                return urls;
+            if (services == null) {
+                services = new ArrayList<>();
             }
-            urls.add(URL.valueOf(urlStr + appendService(targetService) + toParameterString(item) + "&application=" + appKey));
+            if (services.size() == 0) {
+                services.add("*");
+            }
+            for (String s : services) {
+                urlBuilder.append(appendService(s));
+                urlBuilder.append(toParameterString(item));
+
+                urlBuilder.append("&application=").append(config.getKey());
+
+                urlBuilder.append("&enabled=");
+                if (item.getType() == null || ConfigItem.GENERAL_TYPE.equals(item.getType())) {
+                    urlBuilder.append(config.getEnabled());
+                } else {
+                    urlBuilder.append(item.getEnabled());
+                }
+
+                urlBuilder.append("&category=").append(Constants.APP_DYNAMIC_CONFIGURATORS_CATEGORY);
+                urlBuilder.append("&configVersion=").append(config.getConfigVersion());
+
+                urls.add(URL.valueOf(urlBuilder.toString()));
+            }
         }
         return urls;
     }
