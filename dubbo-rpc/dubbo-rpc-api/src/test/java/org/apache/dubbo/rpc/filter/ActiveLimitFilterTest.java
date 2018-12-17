@@ -21,6 +21,7 @@ import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.RpcStatus;
 import org.apache.dubbo.rpc.support.BlockMyInvoker;
 import org.apache.dubbo.rpc.support.MockInvocation;
 import org.apache.dubbo.rpc.support.MyInvoker;
@@ -105,6 +106,8 @@ public class ActiveLimitFilterTest {
         URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives="+maxActives+"&timeout="+timeout);
         final Invoker<ActiveLimitFilterTest> invoker = new BlockMyInvoker<ActiveLimitFilterTest>(url, blockTime);
         final Invocation invocation = new MockInvocation();
+        RpcStatus.removeStatus(url);
+        RpcStatus.removeStatus(url, invocation.getMethodName());
         for (int i = 0; i < totalThread; i++) {
             Thread thread = new Thread(new Runnable() {
                 public void run() {
