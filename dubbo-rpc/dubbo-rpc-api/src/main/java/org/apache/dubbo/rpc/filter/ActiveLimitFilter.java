@@ -30,7 +30,16 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 /**
- * LimitInvokerFilter
+ * ActiveLimitFilter restrict the concurrent client invocation for a service or service's method from client side.
+ * To use active limit filter, configured url with <b>actives</b> and provide valid >0 integer value.
+ * <pre>
+ *     e.g. <dubbo:reference id="demoService" check="false" interface="org.apache.dubbo.demo.DemoService" "actives"="2"/>
+ *      In the above example maximum 2 concurrent invocation is allowed.
+ *      If there are more than configured (in this example 2) is trying to invoke remote method, then rest of invocation
+ *      will wait for configured timeout(default is 0 second) before invocation gets kill by dubbo.
+ * </pre>
+ *
+ * @see Filter
  */
 @Activate(group = Constants.CONSUMER, value = Constants.ACTIVES_KEY)
 public class ActiveLimitFilter implements Filter {
