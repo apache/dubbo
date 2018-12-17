@@ -18,6 +18,10 @@ package org.apache.dubbo.rpc.filter.tps;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Judge whether a particular invocation of service provider method should be allowed within a configured time interval.
+ * As a state it contain name of key ( e.g. method), last invocation time, interval and rate count.
+ */
 class StatItem {
 
     private String name;

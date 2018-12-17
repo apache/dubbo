@@ -28,7 +28,12 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 
 /**
- * ConsumerContextInvokerFilter
+ * ConsumerContextFilter set current RpcContext with invoker,invocation, local host, remote host and port
+ * for consumer invoker.It does it to make the requires info available to execution thread's RpcContext.
+ *
+ * @see org.apache.dubbo.rpc.Filter
+ * @see org.apache.dubbo.rpc.PostProcessFilter
+ * @see RpcContext
  */
 @Activate(group = Constants.CONSUMER, order = -10000)
 public class ConsumerContextFilter extends AbstractPostProcessFilter {
