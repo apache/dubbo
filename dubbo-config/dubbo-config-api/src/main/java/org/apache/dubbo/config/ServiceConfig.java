@@ -170,6 +170,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         protocol = protocol.toLowerCase();
         if (!RANDOM_PORT_MAP.containsKey(protocol)) {
             RANDOM_PORT_MAP.put(protocol, port);
+            logger.warn("Use random available port(" + port + ") for protocol " + protocol);
         }
     }
 
@@ -205,12 +206,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
 
         if (delay != null && delay > 0) {
-            delayExportExecutor.schedule(new Runnable() {
-                @Override
-                public void run() {
-                    doExport();
-                }
-            }, delay, TimeUnit.MILLISECONDS);
+            delayExportExecutor.schedule(this::doExport, delay, TimeUnit.MILLISECONDS);
         } else {
             doExport();
         }
@@ -309,13 +305,14 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         checkRegistry();
         checkProtocol();
         appendProperties(this);
-        checkStubAndMock(interfaceClass);
+        checkStub(interfaceClass);
+        checkMock(interfaceClass);
         if (path == null || path.length() == 0) {
             path = interfaceName;
         }
-        doExportUrls();
         ProviderModel providerModel = new ProviderModel(getUniqueServiceName(), ref, interfaceClass);
         ApplicationModel.initProviderModel(getUniqueServiceName(), providerModel);
+        doExportUrls();
     }
 
     private void checkRef() {
@@ -653,7 +650,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     portToBind = getAvailablePort(defaultPort);
                     putRandomPort(name, portToBind);
                 }
-                logger.warn("Use random available port(" + portToBind + ") for protocol " + name);
             }
         }
 
@@ -815,6 +811,16 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         } else {
             throw new IllegalArgumentException("Unsupported generic type " + generic);
         }
+    }
+
+    @Override
+    public void setMock(Boolean mock) {
+        throw new IllegalArgumentException("mock doesn't support on provider side");
+    }
+
+    @Override
+    public void setMock(String mock) {
+        throw new IllegalArgumentException("mock doesn't support on provider side");
     }
 
     public List<URL> getExportedUrls() {

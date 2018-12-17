@@ -41,6 +41,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.fail;
 
@@ -114,8 +115,8 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         inputBytes.put(new byte[]{MAGIC_HIGH, 0}, TelnetCodec.DecodeResult.NEED_MORE_INPUT);
         inputBytes.put(new byte[]{0, MAGIC_LOW}, TelnetCodec.DecodeResult.NEED_MORE_INPUT);
 
-        for (byte[] input : inputBytes.keySet()) {
-            testDecode_assertEquals(assemblyDataProtocol(input), inputBytes.get(input));
+        for (Map.Entry<byte[], Object> entry: inputBytes.entrySet()) {
+            testDecode_assertEquals(assemblyDataProtocol(entry.getKey()), entry.getValue());
         }
     }
 

@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 @Deprecated
 public interface Router extends org.apache.dubbo.rpc.cluster.Router {
 
+    @Override
     com.alibaba.dubbo.common.URL getUrl();
 
     <T> List<com.alibaba.dubbo.rpc.Invoker<T>> route(List<com.alibaba.dubbo.rpc.Invoker<T>> invokers,

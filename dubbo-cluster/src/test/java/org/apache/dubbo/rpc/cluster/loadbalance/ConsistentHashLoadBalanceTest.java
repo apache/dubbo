@@ -31,8 +31,8 @@ public class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
     public void testConsistentHashLoadBalance() {
         int runs = 10000;
         Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, ConsistentHashLoadBalance.NAME);
-        for (Invoker minvoker : counter.keySet()) {
-            Long count = counter.get(minvoker).get();
+        for (Map.Entry<Invoker, AtomicLong> entry : counter.entrySet()) {
+            Long count = entry.getValue().get();
             Assert.assertTrue("abs diff should < avg", Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()));
         }
     }

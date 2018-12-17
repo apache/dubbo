@@ -17,11 +17,12 @@
 
 package org.apache.dubbo.common.serialize.protostuff;
 
+import org.apache.dubbo.common.serialize.ObjectInput;
+import org.apache.dubbo.common.serialize.protostuff.utils.WrapperUtils;
+
 import io.protostuff.ProtobufIOUtil;
 import io.protostuff.Schema;
 import io.protostuff.runtime.RuntimeSchema;
-import org.apache.dubbo.common.serialize.ObjectInput;
-import org.apache.dubbo.common.serialize.protostuff.utils.WrapperUtils;
 
 import java.io.DataInputStream;
 import java.io.IOException;

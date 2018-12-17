@@ -138,22 +138,22 @@ public class DubboRegistry extends FailbackRegistry {
     }
 
     @Override
-    protected void doRegister(URL url) {
+    public void doRegister(URL url) {
         registryService.register(url);
     }
 
     @Override
-    protected void doUnregister(URL url) {
+    public void doUnregister(URL url) {
         registryService.unregister(url);
     }
 
     @Override
-    protected void doSubscribe(URL url, NotifyListener listener) {
+    public void doSubscribe(URL url, NotifyListener listener) {
         registryService.subscribe(url, listener);
     }
 
     @Override
-    protected void doUnsubscribe(URL url, NotifyListener listener) {
+    public void doUnsubscribe(URL url, NotifyListener listener) {
         registryService.unsubscribe(url, listener);
     }
 
