@@ -37,8 +37,7 @@ public abstract class AbstractDynamicConfiguration<TargetListener> extends Abstr
     protected URL url;
 
     // One key can register multiple target listeners, but one target listener only maps to one configuration listener
-    protected ConcurrentMap<String, TargetListener> targetListeners =
-            new ConcurrentHashMap<>();
+    protected ConcurrentMap<String, TargetListener> targetListeners = new ConcurrentHashMap<>();
 
     public AbstractDynamicConfiguration() {
     }

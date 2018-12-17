@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata.support;
 
+import com.google.gson.Gson;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
@@ -23,12 +24,8 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
-import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
 import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
-import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
 import org.apache.dubbo.metadata.store.MetadataReport;
-
-import com.google.gson.Gson;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -65,13 +62,13 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
     // Local disk cache, where the special key value.registies records the list of registry centers, and the others are the list of notified service providers
     final Properties properties = new Properties();
-    // File cache timing writing
-    private final ExecutorService reportCacheExecutor = Executors.newFixedThreadPool(1, new NamedThreadFactory("DubboSaveMetadataReportCache", true));
+    private final ExecutorService reportCacheExecutor = Executors.newFixedThreadPool(1, new NamedThreadFactory("DubboSaveMetadataReport", true));
     final Map<MetadataIdentifier, Object> allMetadataReports = new ConcurrentHashMap<MetadataIdentifier, Object>(4);
 
     private final AtomicLong lastCacheChanged = new AtomicLong();
     final Map<MetadataIdentifier, Object> failedReports = new ConcurrentHashMap<MetadataIdentifier, Object>(4);
     private URL reportURL;
+    boolean syncReport;
     // Local disk cache file
     File file;
     private AtomicBoolean INIT = new AtomicBoolean(false);
@@ -96,6 +93,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
         this.file = file;
         loadProperties();
+        syncReport = reportServerURL.getParameter(Constants.SYNC_REPORT_KEY, false);
         metadataReportRetry = new MetadataReportRetry(reportServerURL.getParameter(Constants.RETRY_TIMES_KEY, Constants.DEFAULT_METADATA_REPORT_RETRY_TIMES),
                 reportServerURL.getParameter(Constants.RETRY_PERIOD_KEY, Constants.DEFAULT_METADATA_REPORT_RETRY_PERIOD));
         // cycle report the data switch
@@ -189,7 +187,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
-    private void saveProperties(MetadataIdentifier metadataIdentifier, String value, boolean add) {
+    private void saveProperties(MetadataIdentifier metadataIdentifier, String value, boolean add, boolean sync) {
         if (file == null) {
             return;
         }
@@ -201,7 +199,12 @@ public abstract class AbstractMetadataReport implements MetadataReport {
                 properties.remove(metadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY));
             }
             long version = lastCacheChanged.incrementAndGet();
-            reportCacheExecutor.execute(new SaveProperties(version));
+            if (sync) {
+                new SaveProperties(version).run();
+            } else {
+                reportCacheExecutor.execute(new SaveProperties(version));
+            }
+
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
         }
@@ -225,7 +228,20 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
-    public void storeProviderMetadata(ProviderMetadataIdentifier providerMetadataIdentifier, FullServiceDefinition serviceDefinition) {
+    public void storeProviderMetadata(MetadataIdentifier providerMetadataIdentifier, FullServiceDefinition serviceDefinition) {
+        if (syncReport) {
+            storeProviderMetadataTask(providerMetadataIdentifier, serviceDefinition);
+        } else {
+            reportCacheExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    storeProviderMetadataTask(providerMetadataIdentifier, serviceDefinition);
+                }
+            });
+        }
+    }
+
+    private void storeProviderMetadataTask(MetadataIdentifier providerMetadataIdentifier, FullServiceDefinition serviceDefinition) {
         try {
             if (logger.isInfoEnabled()) {
                 logger.info("store provider metadata. Identifier : " + providerMetadataIdentifier + "; definition: " + serviceDefinition);
@@ -235,7 +251,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             Gson gson = new Gson();
             String data = gson.toJson(serviceDefinition);
             doStoreProviderMetadata(providerMetadataIdentifier, data);
-            saveProperties(providerMetadataIdentifier, data, true);
+            saveProperties(providerMetadataIdentifier, data, true, !syncReport);
         } catch (Exception e) {
             // retry again. If failed again, throw exception.
             failedReports.put(providerMetadataIdentifier, serviceDefinition);
@@ -244,7 +260,20 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
-    public void storeConsumerMetadata(ConsumerMetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap) {
+    public void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap) {
+        if (syncReport) {
+            storeConsumerMetadataTask(consumerMetadataIdentifier, serviceParameterMap);
+        } else {
+            reportCacheExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    storeConsumerMetadataTask(consumerMetadataIdentifier, serviceParameterMap);
+                }
+            });
+        }
+    }
+
+    public void storeConsumerMetadataTask(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap) {
         try {
             if (logger.isInfoEnabled()) {
                 logger.info("store consumer metadata. Identifier : " + consumerMetadataIdentifier + "; definition: " + serviceParameterMap);
@@ -255,7 +284,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             Gson gson = new Gson();
             String data = gson.toJson(serviceParameterMap);
             doStoreConsumerMetadata(consumerMetadataIdentifier, data);
-            saveProperties(consumerMetadataIdentifier, data, true);
+            saveProperties(consumerMetadataIdentifier, data, true, !syncReport);
         } catch (Exception e) {
             // retry again. If failed again, throw exception.
             failedReports.put(consumerMetadataIdentifier, serviceParameterMap);
@@ -285,10 +314,10 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         Iterator<Map.Entry<MetadataIdentifier, Object>> iterable = metadataMap.entrySet().iterator();
         while (iterable.hasNext()) {
             Map.Entry<MetadataIdentifier, Object> item = iterable.next();
-            if (item.getKey() instanceof ProviderMetadataIdentifier) {
-                this.storeProviderMetadata((ProviderMetadataIdentifier) item.getKey(), (FullServiceDefinition) item.getValue());
-            } else if (item.getKey() instanceof ConsumerMetadataIdentifier) {
-                this.storeConsumerMetadata((ConsumerMetadataIdentifier) item.getKey(), (Map) item.getValue());
+            if (Constants.PROVIDER_SIDE.equals(item.getKey().getSide())) {
+                this.storeProviderMetadata(item.getKey(), (FullServiceDefinition) item.getValue());
+            } else if (Constants.CONSUMER_SIDE.equals(item.getKey().getSide())) {
+                this.storeConsumerMetadata(item.getKey(), (Map) item.getValue());
             }
 
         }
@@ -347,7 +376,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
                                 // Check and connect to the registry
                                 try {
                                     int times = retryCounter.incrementAndGet();
-                                    System.out.println("---" + times + ";" + System.currentTimeMillis());
+                                    logger.info("start to retry task for metadata report. retry times:" + times);
                                     if (retry() && times > retryTimesIfNonFail) {
                                         cancelRetryTask();
                                     }
@@ -370,8 +399,8 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
-    protected abstract void doStoreProviderMetadata(ProviderMetadataIdentifier providerMetadataIdentifier, String serviceDefinitions);
+    protected abstract void doStoreProviderMetadata(MetadataIdentifier providerMetadataIdentifier, String serviceDefinitions);
 
-    protected abstract void doStoreConsumerMetadata(ConsumerMetadataIdentifier consumerMetadataIdentifier, String serviceParameterString);
+    protected abstract void doStoreConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, String serviceParameterString);
 
 }

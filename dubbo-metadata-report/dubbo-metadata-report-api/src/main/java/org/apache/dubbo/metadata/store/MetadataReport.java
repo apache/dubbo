@@ -18,8 +18,7 @@ package org.apache.dubbo.metadata.store;
 
 
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
-import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
-import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
+import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
 
 import java.util.Map;
 
@@ -30,8 +29,8 @@ public interface MetadataReport {
     public static final String META_DATA_SOTRE_TAG = ".metaData";
 
 
-    void storeProviderMetadata(ProviderMetadataIdentifier providerMetadataIdentifier, FullServiceDefinition serviceDefinition);
+    void storeProviderMetadata(MetadataIdentifier providerMetadataIdentifier, FullServiceDefinition serviceDefinition);
 
-    void storeConsumerMetadata(ConsumerMetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap);
+    void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap);
 
 }

@@ -19,12 +19,9 @@ package org.apache.dubbo.metadata.store.redis;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
 import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
-import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
 import org.apache.dubbo.metadata.support.AbstractMetadataReport;
 import org.apache.dubbo.rpc.RpcException;
-
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
@@ -44,12 +41,12 @@ public class RedisMetadataReport extends AbstractMetadataReport {
     }
 
     @Override
-    protected void doStoreProviderMetadata(ProviderMetadataIdentifier providerMetadataIdentifier, String serviceDefinitions) {
+    protected void doStoreProviderMetadata(MetadataIdentifier providerMetadataIdentifier, String serviceDefinitions) {
         this.storeMetadata(providerMetadataIdentifier, serviceDefinitions);
     }
 
     @Override
-    protected void doStoreConsumerMetadata(ConsumerMetadataIdentifier consumerMetadataIdentifier, String value) {
+    protected void doStoreConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, String value) {
         this.storeMetadata(consumerMetadataIdentifier, value);
     }
 
