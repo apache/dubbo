@@ -439,7 +439,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         this.asyncInterfaceClass = interfaceClass;
         this.interfaceClass = target;
         setInterface(this.interfaceClass.getName());
-        map.put(Constants.INTERFACES, interfaceClass.getName());
+        map.put(Constants.INTERFACES, asyncInterfaceClass.getName());
     }
 
 
