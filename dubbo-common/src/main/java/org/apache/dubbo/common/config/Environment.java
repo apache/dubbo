@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -82,12 +83,20 @@ public class Environment {
         return appConfigs.get(toKey(prefix, id));
     }
 
-    public void setExternalConfig(Map<String, String> externalConfiguration) {
+    public void setExternalConfigMap(Map<String, String> externalConfiguration) {
         this.externalConfigurationMap = externalConfiguration;
     }
 
-    public void setAppExternalConfig(Map<String, String> appExternalConfiguration) {
+    public void setAppExternalConfigMap(Map<String, String> appExternalConfiguration) {
         this.appExternalConfigurationMap = appExternalConfiguration;
+    }
+
+    public Map<String, String> getExternalConfigurationMap() {
+        return externalConfigurationMap;
+    }
+
+    public Map<String, String> getAppExternalConfigurationMap() {
+        return appExternalConfigurationMap;
     }
 
     public void addAppConfig(String prefix, String id, Map<String, String> properties) {
@@ -117,15 +126,24 @@ public class Environment {
      */
     public Configuration getConfiguration(String prefix, String id) {
         CompositeConfiguration compositeConfiguration = new CompositeConfiguration();
-        compositeConfiguration.addConfiguration(this.getSystemConfig(prefix, id));
-        compositeConfiguration.addConfiguration(this.getAppExternalConfig(prefix, id));
-        compositeConfiguration.addConfiguration(this.getExternalConfig(prefix, id));
-        compositeConfiguration.addConfiguration(this.getPropertiesConfig(prefix, id));
-
         InmemoryConfiguration appConfig = this.getAppConfig(prefix, id);
-        if (appConfig != null) {
-            int index = configCenterFirst ? 3 : 1;
-            compositeConfiguration.addConfiguration(index, appConfig);
+        // Config center has the highest priority
+        if (!configCenterFirst) {
+            if (appConfig != null) {
+                compositeConfiguration.addConfiguration(appConfig);
+            }
+            compositeConfiguration.addConfiguration(this.getSystemConfig(prefix, id));
+            compositeConfiguration.addConfiguration(this.getAppExternalConfig(prefix, id));
+            compositeConfiguration.addConfiguration(this.getExternalConfig(prefix, id));
+            compositeConfiguration.addConfiguration(this.getPropertiesConfig(prefix, id));
+        } else {
+            compositeConfiguration.addConfiguration(this.getSystemConfig(prefix, id));
+            compositeConfiguration.addConfiguration(this.getAppExternalConfig(prefix, id));
+            compositeConfiguration.addConfiguration(this.getExternalConfig(prefix, id));
+            if (appConfig != null) {
+                compositeConfiguration.addConfiguration(appConfig);
+            }
+            compositeConfiguration.addConfiguration(this.getPropertiesConfig(prefix, id));
         }
         return compositeConfiguration;
     }
@@ -161,8 +179,8 @@ public class Environment {
         this.configCenterFirst = configCenterFirst;
     }
 
-    public Configuration getDynamicConfiguration() {
-        return dynamicConfiguration;
+    public Optional<Configuration> getDynamicConfiguration() {
+        return Optional.ofNullable(dynamicConfiguration);
     }
 
     public void setDynamicConfiguration(Configuration dynamicConfiguration) {

@@ -555,7 +555,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     @Override
     @Parameter(excluded = true)
     public String getPrefix() {
-        return Constants.DUBBO + ".reference";
+        return Constants.DUBBO + ".reference." + interfaceName;
     }
 
 }

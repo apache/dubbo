@@ -62,6 +62,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     // access log
     protected String accesslog;
     protected List<ProtocolConfig> protocols;
+    protected String protocolLiteral;
     // provider tag
     protected String tag;
     // max allowed execute times
@@ -172,6 +173,15 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
     public void setProtocol(ProtocolConfig protocol) {
         this.protocols = Arrays.asList(protocol);
+    }
+
+    @Parameter(excluded = true)
+    public String getProtocolLiteral() {
+        return protocolLiteral;
+    }
+
+    public void setProtocol(String protocolLiteral) {
+        this.protocolLiteral = protocolLiteral;
     }
 
     public String getAccesslog() {

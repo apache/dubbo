@@ -659,7 +659,7 @@
                 <xsd:documentation><![CDATA[ The request timeout. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="priority" type="xsd:boolean" use="optional">
+        <xsd:attribute name="enable" type="xsd:boolean" use="optional">
             <xsd:annotation>
                 <xsd:documentation>
                     <![CDATA[ Whether the configs from config center has the highest priority. ]]></xsd:documentation>
@@ -1343,7 +1343,7 @@
         </xsd:annotation>
     </xsd:element>
 
-    <xsd:element name="configcenter" type="configCenterType">
+    <xsd:element name="config-center" type="configCenterType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ The config center config ]]></xsd:documentation>
         </xsd:annotation>

@@ -91,6 +91,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     // method configuration
     private List<MethodConfig> methods;
     private ProviderConfig provider;
+    private String providerLiteral;
     private transient volatile boolean exported;
 
     private transient volatile boolean unexported;
@@ -726,31 +727,56 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     private void checkProtocol() {
-        if ((protocols == null || protocols.isEmpty())
-                && provider != null) {
+        if ((protocols == null || protocols.isEmpty()) && provider != null) {
             setProtocols(provider.getProtocols());
         }
-        // backward compatibility
-        if (protocols == null || protocols.isEmpty()) {
-            //check 'dubbo.protocols=dubboProtocolId,hessianProtocolId' and decide if we need multiple protocols
-            String protocolIds = Environment.getInstance().getConfiguration(null, null).getString("dubbo.protocols");
-            if (StringUtils.isNotEmpty(protocolIds)) {
-                Arrays.stream(Constants.COMMA_SPLIT_PATTERN.split(protocolIds))
-                        .map(pId -> {
-                            ProtocolConfig protocolConfig = new ProtocolConfig();
-                            protocolConfig.setId(pId);
-                            return protocolConfig;
-                        })
-                        .forEach(protocols::add);
-            } else {
-                setProtocol(new ProtocolConfig());
-            }
-        }
+
+        convertProtocolLiteralToProtocols();
+
         for (ProtocolConfig protocolConfig : protocols) {
             if (StringUtils.isEmpty(protocolConfig.getName())) {
                 protocolConfig.setName(Constants.DUBBO_VERSION_KEY);
             }
             protocolConfig.refresh();
+            if (StringUtils.isNotEmpty(protocolConfig.getId())) {
+                protocolConfig.setPrefix("dubbo.protocols.");
+                protocolConfig.refresh();
+            }
+        }
+    }
+
+    private void convertProtocolLiteralToProtocols() {
+        if (StringUtils.isEmpty(protocolLiteral) && (protocols == null || protocols.isEmpty())) {
+            List<String> configedProtocols = new ArrayList<>();
+            configedProtocols.addAll(getSubProperties(Environment.getInstance()
+                    .getExternalConfigurationMap(), Constants.PROTOCOLS_SUFFIX));
+            configedProtocols.addAll(getSubProperties(Environment.getInstance()
+                    .getAppExternalConfigurationMap(), Constants.PROTOCOLS_SUFFIX));
+
+            protocolLiteral = String.join(",", configedProtocols);
+        }
+
+        if (StringUtils.isEmpty(protocolLiteral)) {
+            if (protocols == null || protocols.isEmpty()) {
+                protocols = new ArrayList<>();
+                protocols.add(new ProtocolConfig());
+            }
+        } else {
+            String[] arr = Constants.COMMA_SPLIT_PATTERN.split(protocolLiteral);
+            if (protocols == null || protocols.isEmpty()) {
+                protocols = new ArrayList<>();
+            }
+            Arrays.stream(arr).forEach(id -> {
+                if (protocols.stream().noneMatch(prot -> prot.getId().equals(id))) {
+                    ProtocolConfig protocolConfig = new ProtocolConfig();
+                    protocolConfig.setId(id);
+                    protocols.add(protocolConfig);
+                }
+            });
+            if (protocols.size() > arr.length) {
+                throw new IllegalStateException("Too much protocols found, the protocols comply to this service are :" + protocolLiteral + " but got " + protocols
+                        .size() + " registries!");
+            }
         }
     }
 
@@ -837,6 +863,15 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         this.provider = provider;
     }
 
+    @Parameter(excluded = true)
+    public String getProviderLiteral() {
+        return providerLiteral;
+    }
+
+    public void setProvider(String providerLiteral) {
+        this.providerLiteral = providerLiteral;
+    }
+
     public String getGeneric() {
         return generic;
     }
@@ -888,7 +923,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (group != null && group.length() > 0) {
             buf.append(group).append("/");
         }
-        buf.append(interfaceName);
+        buf.append(StringUtils.isNotEmpty(path) ? path : interfaceName);
         if (version != null && version.length() > 0) {
             buf.append(":").append(version);
         }
@@ -898,6 +933,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     @Override
     @Parameter(excluded = true)
     public String getPrefix() {
-        return Constants.DUBBO + ".service";
+        return Constants.DUBBO + ".service." + interfaceName;
     }
 }

@@ -34,13 +34,16 @@ import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.InvokerListener;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.Cluster;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.support.MockInvoker;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.apache.dubbo.common.Constants.APPLICATION_KEY;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
@@ -94,6 +97,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     // registry centers
     protected List<RegistryConfig> registries;
 
+    protected String registryLiteral;
+
     // connection events
     protected String onconnect;
 
@@ -107,65 +112,25 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     private String scope;
 
     protected void checkRegistry() {
-        // for backward compatibility
-        // -Ddubbo.registry.address is now deprecated.
-        if (registries == null || registries.isEmpty()) {
-            String address = ConfigUtils.getProperty("dubbo.registry.address");
-            if (address != null && address.length() > 0) {
-                registries = new ArrayList<RegistryConfig>();
-                String[] as = address.split("\\s*[|]+\\s*");
-                for (String a : as) {
-                    RegistryConfig registryConfig = new RegistryConfig();
-                    registryConfig.setAddress(a);
-                    registries.add(registryConfig);
-                }
-            }
-        }
+        loadRegistriesFromBackwardConfig();
 
-        if (registries == null || registries.isEmpty()) {
-            registries = new ArrayList<>();
-            String registryIds = Environment.getInstance().getConfiguration(null, null).getString("dubbo.registries");
-            if (StringUtils.isNotEmpty(registryIds)) {
-                Arrays.stream(Constants.COMMA_SPLIT_PATTERN.split(registryIds))
-                        .map(regId -> {
-                            RegistryConfig registryConfig = new RegistryConfig();
-                            registryConfig.setId(regId);
-                            return registryConfig;
-                        })
-                        .forEach(registries::add);
-            } else {
-                registries.add(new RegistryConfig());
-            }
-        }
+        convertRegistryLiteralToRegistries();
 
         for (RegistryConfig registryConfig : registries) {
             registryConfig.refresh();
+            if (StringUtils.isNotEmpty(registryConfig.getId())) {
+                registryConfig.setPrefix(Constants.REGISTRIES_SUFFIX);
+                registryConfig.refresh();
+            }
         }
 
         for (RegistryConfig registryConfig : registries) {
             if (!registryConfig.isValid()) {
-                throw new IllegalStateException("No registry config found or it's not a valid config!");
+                throw new IllegalStateException("No registry config found or it's not a valid config! The registry config is: " + registryConfig);
             }
         }
 
         useRegistryForConfigIfNecessary();
-    }
-
-    /**
-     * For compatibility purpose, use registry as the default config center if the registry protocol is zookeeper and
-     * there's no config center specified explicitly.
-     */
-    private void useRegistryForConfigIfNecessary() {
-        RegistryConfig registry = registries.get(0);
-        if (registry.isZookeeperProtocol()) {
-            // we use the loading status of DynamicConfiguration to decide whether ConfigCenter has been initiated.
-            if (Environment.getInstance().getDynamicConfiguration() == null) {
-                ConfigCenterConfig configCenterConfig = new ConfigCenterConfig();
-                configCenterConfig.setProtocol(registry.getProtocol());
-                configCenterConfig.setAddress(registry.getAddress());
-                configCenterConfig.init();
-            }
-        }
     }
 
     @SuppressWarnings("deprecation")
@@ -182,6 +147,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                     "No application config found or it's not a valid config! Please add <dubbo:application name=\"...\" /> to your spring config.");
         }
 
+        ApplicationModel.setApplication(application.getName());
+
+        // backward compatibility
         String wait = ConfigUtils.getProperty(Constants.SHUTDOWN_WAIT_KEY);
         if (wait != null && wait.trim().length() > 0) {
             System.setProperty(Constants.SHUTDOWN_WAIT_KEY, wait.trim());
@@ -418,6 +386,77 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
     }
 
+    private void convertRegistryLiteralToRegistries() {
+        if (StringUtils.isEmpty(registryLiteral) && (registries == null || registries.isEmpty())) {
+            Set<String> configedRegistries = new HashSet<>();
+            configedRegistries.addAll(getSubProperties(Environment.getInstance()
+                    .getExternalConfigurationMap(), Constants.REGISTRIES_SUFFIX));
+            configedRegistries.addAll(getSubProperties(Environment.getInstance()
+                    .getAppExternalConfigurationMap(), Constants.REGISTRIES_SUFFIX));
+
+            registryLiteral = String.join(",", configedRegistries);
+        }
+
+        if (StringUtils.isEmpty(registryLiteral)) {
+            if (registries == null || registries.isEmpty()) {
+                registries = new ArrayList<>();
+                registries.add(new RegistryConfig());
+            }
+        } else {
+            String[] arr = Constants.COMMA_SPLIT_PATTERN.split(registryLiteral);
+            if (registries == null || registries.isEmpty()) {
+                registries = new ArrayList<>();
+            }
+            Arrays.stream(arr).forEach(id -> {
+                if (registries.stream().noneMatch(reg -> reg.getId().equals(id))) {
+                    RegistryConfig registryConfig = new RegistryConfig();
+                    registryConfig.setId(id);
+                    registries.add(registryConfig);
+                }
+            });
+            if (registries.size() > arr.length) {
+                throw new IllegalStateException("Too much registries found, the registries assigned to this service are :" + registryLiteral + ", but got " + registries
+                        .size() + " registries!");
+            }
+        }
+
+    }
+
+    private void loadRegistriesFromBackwardConfig() {
+        // for backward compatibility
+        // -Ddubbo.registry.address is now deprecated.
+        if (registries == null || registries.isEmpty()) {
+            String address = ConfigUtils.getProperty("dubbo.registry.address");
+            if (address != null && address.length() > 0) {
+                registries = new ArrayList<RegistryConfig>();
+                String[] as = address.split("\\s*[|]+\\s*");
+                for (String a : as) {
+                    RegistryConfig registryConfig = new RegistryConfig();
+                    registryConfig.setAddress(a);
+                    registries.add(registryConfig);
+                }
+            }
+        }
+    }
+
+    /**
+     * For compatibility purpose, use registry as the default config center if the registry protocol is zookeeper and
+     * there's no config center specified explicitly.
+     */
+    private void useRegistryForConfigIfNecessary() {
+        registries.stream().filter(RegistryConfig::isZookeeperProtocol).findFirst().ifPresent(rc -> {
+            // we use the loading status of DynamicConfiguration to decide whether ConfigCenter has been initiated.
+            Environment.getInstance().getDynamicConfiguration().orElseGet(() -> {
+                ConfigCenterConfig configCenterConfig = new ConfigCenterConfig();
+                configCenterConfig.setProtocol(rc.getProtocol());
+                configCenterConfig.setAddress(rc.getAddress());
+                configCenterConfig.setEnable(false);
+                configCenterConfig.init();
+                return null;
+            });
+        });
+    }
+
     /**
      * @return local
      * @deprecated Replace to <code>getStub()</code>
@@ -555,6 +594,15 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     @SuppressWarnings({"unchecked"})
     public void setRegistries(List<? extends RegistryConfig> registries) {
         this.registries = (List<RegistryConfig>) registries;
+    }
+
+    @Parameter(excluded = true)
+    public String getRegistryLiteral() {
+        return registryLiteral;
+    }
+
+    public void setRegistry(String registryLiteral) {
+        this.registryLiteral = registryLiteral;
     }
 
     public MonitorConfig getMonitor() {
