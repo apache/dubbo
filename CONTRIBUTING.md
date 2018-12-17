@@ -64,3 +64,13 @@ Thanks for contributing!
 
 We provide a template file [dubbo_codestyle_for_idea.xml](https://github.com/apache/incubator-dubbo/tree/master/codestyle/dubbo_codestyle_for_idea.xml) for IntelliJ idea, you can import it to you IDE. 
 If you use Eclipse you can config manually by referencing the same file.
+
+**NOTICE**
+
+It is very important to set the dubbo_codestyle_for_idea.xml, otherwise you will fail to pass the Travis CI. Steps to set the code style are as below:
+
+1. Enter `Editor > Code Style`
+2. To manage a code style scheme, in the Code Style page, select the desired scheme from the drop-down list, and click ![manage profiles](codestyle/manage_profiles.png).
+From the drop-down list, select `Import Scheme`, then select this option `IntelliJ IDEA code style XML` to import scheme
+3. In the Scheme field, type the name of the new scheme and press ⏎ to save the changes.
+
