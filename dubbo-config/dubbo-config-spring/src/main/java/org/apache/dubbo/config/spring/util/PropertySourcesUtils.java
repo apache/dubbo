@@ -55,7 +55,7 @@ public abstract class PropertySourcesUtils {
                     if (name.startsWith(normalizedPrefix)) {
                         String subName = name.substring(normalizedPrefix.length());
                         String value = propertyResolver.getProperty(name);
-                        subProperties.put(subName, value);
+                        subProperties.putIfAbsent(subName, value);
                     }
                 }
             }
