@@ -135,8 +135,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         this.multiGroup = group != null && ("*".equals(group) || group.contains(","));
         String methods = queryMap.get(Constants.METHODS_KEY);
         this.serviceMethods = methods == null ? null : Constants.COMMA_SPLIT_PATTERN.split(methods);
-
-        consumerConfigurationListener.addNotifyListener(this);
     }
 
     /**
@@ -828,7 +826,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
         @Override
         protected void notifyOverrides(List<URL> urls) {
-            urls.forEach(u -> u.addParameter(CATEGORY_KEY, DYNAMIC_CONFIGURATORS_CATEGORY));
             RegistryDirectory.this.notify(urls);
         }
     }
@@ -863,7 +860,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
         @Override
         protected void notifyOverrides(List<URL> urls) {
-            urls.forEach(u -> u.addParameter(CATEGORY_KEY, APP_DYNAMIC_CONFIGURATORS_CATEGORY));
             listeners.forEach(listener -> listener.notify(urls));
         }
     }

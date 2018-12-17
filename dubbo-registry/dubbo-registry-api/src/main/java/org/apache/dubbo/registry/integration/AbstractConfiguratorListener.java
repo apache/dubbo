@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.registry.integration;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -24,9 +23,19 @@ import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.ConfigChangeType;
 import org.apache.dubbo.configcenter.ConfigurationListener;
 import org.apache.dubbo.rpc.cluster.configurator.parser.ConfigParser;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static org.apache.dubbo.common.Constants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.Constants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.Constants.CATEGORY_KEY;
+import static org.apache.dubbo.common.Constants.CONFIGURATORS_SUFFIX;
+import static org.apache.dubbo.common.Constants.DYNAMIC_CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.Constants.EMPTY_PROTOCOL;
 
 /**
  *
@@ -44,7 +53,13 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
         List<URL> urls;
         if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
             urls = new ArrayList<>();
-            urls.add(new URL(Constants.EMPTY_PROTOCOL, Constants.ANYHOST_VALUE, 0));
+            Map<String, String> map = new HashMap<>(1);
+            if (event.getKey().endsWith(ApplicationModel.getApplication() + CONFIGURATORS_SUFFIX)) {
+                map.put(CATEGORY_KEY, APP_DYNAMIC_CONFIGURATORS_CATEGORY);
+            } else {
+                map.put(CATEGORY_KEY, DYNAMIC_CONFIGURATORS_CATEGORY);
+            }
+            urls.add(new URL(EMPTY_PROTOCOL, ANYHOST_VALUE, 0, map));
         } else {
             try {
                 // parseConfigurators will recognize app/service config automatically.

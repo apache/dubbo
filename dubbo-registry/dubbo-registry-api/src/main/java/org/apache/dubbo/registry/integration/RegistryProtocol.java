@@ -562,7 +562,6 @@ public class RegistryProtocol implements Protocol {
 
         @Override
         protected void notifyOverrides(List<URL> urls) {
-            urls.forEach(u -> u.addParameter(CATEGORY_KEY, DYNAMIC_CONFIGURATORS_CATEGORY));
             notifyListener.notify(urls);
         }
     }
@@ -598,7 +597,6 @@ public class RegistryProtocol implements Protocol {
 
         @Override
         protected void notifyOverrides(List<URL> urls) {
-            urls.forEach(u -> u.addParameter(CATEGORY_KEY, APP_DYNAMIC_CONFIGURATORS_CATEGORY));
             overrideListeners.values().forEach(listener -> listener.notify(urls));
         }
     }
