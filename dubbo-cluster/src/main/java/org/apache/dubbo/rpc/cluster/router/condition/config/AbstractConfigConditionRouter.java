@@ -79,15 +79,15 @@ public abstract class AbstractConfigConditionRouter extends AbstractRouter imple
 
     @Override
     public <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
-        if (CollectionUtils.isEmpty(invokers) || conditionRouters.size() == 0 || !isEnabled()) {
+        if (CollectionUtils.isEmpty(invokers) || conditionRouters.size() == 0) {
             return invokers;
         }
 
-        if (isRuleEnabled()) {
-            for (Router router : conditionRouters) {
-                invokers = router.route(invokers, url, invocation);
-            }
+        // We will check enabled status inside each router.
+        for (Router router : conditionRouters) {
+            invokers = router.route(invokers, url, invocation);
         }
+
         return invokers;
     }
 
@@ -129,7 +129,7 @@ public abstract class AbstractConfigConditionRouter extends AbstractRouter imple
                 routers.add(subRouter);
             });
 
-            BlackWhiteListRule blackWhiteList = rule.getBlackWhiteListRule();
+            BlackWhiteListRule blackWhiteList = rule.getBlackWhiteList();
             if (blackWhiteList != null && blackWhiteList.isValid()) {
                 blackWhiteList.getConditions().forEach(condition -> {
                     // All sub rules have the same force, runtime value.

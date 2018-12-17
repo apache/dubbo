@@ -47,7 +47,7 @@ public class ConditionRuleParser {
             rule.setValid(false);
         }
 
-        BlackWhiteListRule blackWhiteList = rule.getBlackWhiteListRule();
+        BlackWhiteListRule blackWhiteList = rule.getBlackWhiteList();
         if (blackWhiteList != null && CollectionUtils.isEmpty(blackWhiteList.getConditions())) {
             blackWhiteList.setValid(false);
         }
