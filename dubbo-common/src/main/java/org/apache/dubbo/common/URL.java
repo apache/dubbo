@@ -1285,6 +1285,11 @@ public /**final**/ class URL implements Serializable {
         return new InetSocketAddress(host, port);
     }
 
+    /**
+     * The format is '{group}/{interfaceName/path}*{version}'
+     *
+     * @return
+     */
     public String getEncodedServiceKey() {
         String serviceKey = this.getServiceKey();
         serviceKey = serviceKey.replaceFirst("/", "*");

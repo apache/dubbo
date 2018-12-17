@@ -14,22 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.mock;
+package org.apache.dubbo.rpc.cluster;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.cluster.Router;
-import org.apache.dubbo.rpc.cluster.RouterFactory;
 
 /**
  *
  */
-@Activate
-public class MockRouterFactory implements RouterFactory {
+public abstract class AbstractAppRouterFactory implements RouterFactory {
+    private Router router;
 
     @Override
     public Router getRouter(URL url) {
-        return new MockInvokersSelector();
+        if (router != null) {
+            return router;
+        }
+        synchronized (this) {
+            if (router == null) {
+                router = createRouter(url);
+            }
+        }
+        return router;
     }
 
+    protected abstract Router createRouter(URL url);
 }

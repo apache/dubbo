@@ -113,11 +113,6 @@ public class ScriptRouter extends AbstractRouter {
     }
 
     @Override
-    public String getName() {
-        return NAME;
-    }
-
-    @Override
     public boolean isRuntime() {
         return this.url.getParameter(Constants.RUNTIME_KEY, false);
     }

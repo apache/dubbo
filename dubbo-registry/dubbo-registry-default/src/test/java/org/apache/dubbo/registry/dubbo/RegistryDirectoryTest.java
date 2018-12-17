@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.loadbalance.LeastActiveLoadBalance;
 import org.apache.dubbo.rpc.cluster.loadbalance.RoundRobinLoadBalance;
 import org.apache.dubbo.rpc.cluster.router.script.ScriptRouterFactory;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -409,10 +410,10 @@ public class RegistryDirectoryTest {
         Assert.assertEquals(false, invokers.get(0).isAvailable());
         registryDirectory.destroy();
 
-        Map<String, List<Invoker<RegistryDirectoryTest>>> methodInvokerMap = registryDirectory.getMethodInvokerMap();
+        List<Invoker<RegistryDirectoryTest>> cachedInvokers = registryDirectory.getInvokers();
         Map<String, Invoker<RegistryDirectoryTest>> urlInvokerMap = registryDirectory.getUrlInvokerMap();
 
-        Assert.assertTrue(methodInvokerMap == null);
+        Assert.assertTrue(cachedInvokers == null);
         Assert.assertEquals(0, urlInvokerMap.size());
         // List<U> urls = mockRegistry.getSubscribedUrls();
 

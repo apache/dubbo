@@ -16,20 +16,25 @@
  */
 package org.apache.dubbo.registry;
 
+import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.common.utils.StringUtils;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.api.CuratorEvent;
+import org.apache.curator.framework.api.CuratorListener;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.framework.recipes.cache.TreeCache;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
 import org.apache.curator.framework.recipes.cache.TreeCacheListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
@@ -37,18 +42,29 @@ import java.util.concurrent.Executors;
  */
 public class ZKTools {
     private static CuratorFramework client;
+    private static ExecutorService executor = Executors.newFixedThreadPool(1, new NamedThreadFactory("ZKTools-test", true));
 
     public static void main(String[] args) throws Exception {
         client = CuratorFrameworkFactory.newClient("127.0.0.1:2181", 60 * 1000, 60 * 1000,
                 new ExponentialBackoffRetry(1000, 3));
         client.start();
 
+        client.getCuratorListenable().addListener(new CuratorListener() {
+            @Override
+            public void eventReceived(CuratorFramework client, CuratorEvent event) throws Exception {
+                System.out.println("event notification: " + event.getPath());
+                System.out.println(event);
+            }
+        }, executor);
+
+        tesConditionRule();
+
 //        testStartupConfig();
-        testProviderConfig();
+//        testProviderConfig();
 //        testPathCache();
 //        testTreeCache();
 //        testCuratorListener();
-        System.in.read();
+//       Thread.sleep(100000);
     }
 
     public static void testStartupConfig() {
@@ -58,7 +74,7 @@ public class ZKTools {
                 "dubbo.protocol.port=20990\n" +
                 "dubbo.service.org.apache.dubbo.demo.DemoService.timeout=9999\n";
 
-        System.out.println(str);
+//        System.out.println(str);
 
         try {
             String path = "/dubboregistrygroup1/config/dubbo/dubbo.properties";
@@ -84,14 +100,26 @@ public class ZKTools {
                 "    timeout: 6000\n" +
                 "...";
 
-        System.out.println(str);
+//        System.out.println(str);
 
         try {
             String path = "/dubbo/config/dd-test*org.apache.dubbo.demo.DemoService:1.0.4/configurators";
             if (client.checkExists().forPath(path) == null) {
-                client.create().creatingParentsIfNeeded().forPath(path);
+                client.create().creatingParentsIfNeeded().inBackground().forPath(path);
             }
             setData(path, str);
+
+            String pathaa = "/dubboregistrygroup1/config/aaa/dubbo.properties";
+            if (client.checkExists().forPath(pathaa) == null) {
+                client.create().creatingParentsIfNeeded().forPath(pathaa);
+            }
+            setData(pathaa, "aaaa");
+
+            String pathaaa = "/dubboregistrygroup1/config/aaa";
+            if (client.checkExists().forPath(pathaaa) == null) {
+                client.create().creatingParentsIfNeeded().inBackground().forPath(pathaaa);
+            }
+            setData(pathaaa, "aaaa");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -154,7 +182,7 @@ public class ZKTools {
                 "  - method=routeMethod1 => 30.5.121.156:20880\n" +
                 "...";
         try {
-            String servicePath = "/dubbo/config/globalrule/";
+            String servicePath = "/dubbo/config/demo-consumer/routers";
             if (client.checkExists().forPath(servicePath) == null) {
                 client.create().creatingParentsIfNeeded().forPath(servicePath);
             }
@@ -165,7 +193,7 @@ public class ZKTools {
     }
 
     public static void setData(String path, String data) throws Exception {
-        client.setData().forPath(path, data.getBytes());
+        client.setData().inBackground().forPath(path, data.getBytes());
     }
 
     public static void testPathCache() throws Exception {

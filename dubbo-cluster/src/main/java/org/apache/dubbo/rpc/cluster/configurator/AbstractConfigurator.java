@@ -55,7 +55,7 @@ public abstract class AbstractConfigurator implements Configurator {
         /**
          * This if branch is created since 2.7.0.
          */
-        String apiVersion = configuratorUrl.getParameter(Constants.API_VERSION_KEY);
+        String apiVersion = configuratorUrl.getParameter(Constants.CONFIG_VERSION_KEY);
         if (StringUtils.isNotEmpty(apiVersion)) {
             String currentSide = url.getParameter(Constants.SIDE_KEY);
             String configuratorSide = configuratorUrl.getParameter(Constants.SIDE_KEY);
@@ -112,7 +112,7 @@ public abstract class AbstractConfigurator implements Configurator {
                     conditionKeys.add(Constants.VERSION_KEY);
                     conditionKeys.add(Constants.APPLICATION_KEY);
                     conditionKeys.add(Constants.SIDE_KEY);
-                    conditionKeys.add(Constants.API_VERSION_KEY);
+                    conditionKeys.add(Constants.CONFIG_VERSION_KEY);
                     for (Map.Entry<String, String> entry : configuratorUrl.getParameters().entrySet()) {
                         String key = entry.getKey();
                         String value = entry.getValue();

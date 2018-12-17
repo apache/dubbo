@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.cluster.support.wrapper;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -36,12 +35,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class MockClusterInvokerTest {
 
@@ -656,12 +652,7 @@ public class MockClusterInvokerTest {
         }
 
         StaticDirectory<IHelloService> dic = new StaticDirectory<IHelloService>(durl, invokers, null);
-        Map<String, List<Invoker<IHelloService>>> methodInvokers = new HashMap<>();
-        Method[] methods = IHelloService.class.getMethods();
-        Arrays.stream(methods).forEach(m -> {
-            methodInvokers.put(m.getName(), invokers);
-        });
-        dic.buildRouterChain(methodInvokers, ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getDefaultExtension().getDynamicConfiguration(null));
+        dic.buildRouterChain(invokers);
         AbstractClusterInvoker<IHelloService> cluster = new AbstractClusterInvoker(dic) {
             @Override
             protected Result doInvoke(Invocation invocation, List invokers, LoadBalance loadbalance)

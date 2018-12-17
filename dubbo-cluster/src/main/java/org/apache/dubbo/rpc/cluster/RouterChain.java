@@ -19,16 +19,11 @@ package org.apache.dubbo.rpc.cluster;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.cluster.router.InvokerTreeCache;
-import org.apache.dubbo.rpc.cluster.router.TreeNode;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
@@ -38,24 +33,21 @@ import java.util.stream.Collectors;
 public class RouterChain<T> {
 
     // full list of addresses from registry, classified by method name.
-    private Map<String, List<Invoker<T>>> fullMethodInvokers;
+    private List<Invoker<T>> fullInvokers;
     private URL url;
 
-    // a tree-structured cache generated from the full address list after being filtered by all routers.
-    // it's aimed to improve performance, only routers explicitly specifies 'runtime=true' will be executed when an RPC comes.
-    private InvokerTreeCache<T> treeCache;
     // containing all routers, reconstruct every time 'route://' urls change.
     private List<Router> routers = new CopyOnWriteArrayList<>();
     // Fixed router instances: ConfigConditionRouter, TagRouter, e.g., the rule for each instance may change but the instance will never delete or recreate.
     private List<Router> residentRouters;
 
-    public static <T> RouterChain<T> buildChain(DynamicConfiguration dynamicConfiguration, URL url) {
+    public static <T> RouterChain<T> buildChain(URL url) {
         RouterChain<T> routerChain = new RouterChain<>(url);
         List<RouterFactory> extensionFactories = ExtensionLoader.getExtensionLoader(RouterFactory.class).getActivateExtension(url, (String[]) null);
         List<Router> routers = extensionFactories.stream()
                 .map(factory -> {
-                    Router router = factory.getRouter(dynamicConfiguration, url);
-                    router.setRouterChain(routerChain);
+                    Router router = factory.getRouter(url);
+                    router.addRouterChain(routerChain);
                     return router;
                 }).collect(Collectors.toList());
         routerChain.setResidentRouters(routers);
@@ -64,16 +56,14 @@ public class RouterChain<T> {
 
     protected RouterChain(List<Router> routers) {
         this.routers.addAll(routers);
-        treeCache = new InvokerTreeCache<>();
     }
 
     protected RouterChain(URL url) {
-        treeCache = new InvokerTreeCache<>();
         this.url = url;
     }
 
     /**
-     * the resident routers must have already been generated before notification of provider addresses.
+     * the resident routers must being initialized before address notification.
      *
      * @param residentRouters
      */
@@ -88,7 +78,7 @@ public class RouterChain<T> {
      * so we should keep the routers up to date, that is, each time router URLs changes, we should update the routers list,
      * only keep the residentRouters which are available all the time and the latest notified routers which are generated from URLs.
      *
-     * @param generatedRouters
+     * @param generatedRouters routers from 'router://' rules in 2.6.x or before.
      */
     public void setGeneratedRouters(List<Router> generatedRouters) {
         List<Router> newRouters = new CopyOnWriteArrayList<>();
@@ -97,14 +87,9 @@ public class RouterChain<T> {
         this.routers = newRouters;
         // FIXME will sort cause concurrent problem? since it's kind of a write operation.
         this.sort();
-        if (fullMethodInvokers != null) {
-            this.preRoute(fullMethodInvokers, url, null);
-        }
-    }
-
-    public void addRouter(Router router) {
-        this.routers.add(router);
-        this.sort();
+       /* if (fullInvokers != null) {
+            this.preRoute(fullInvokers, url, null);
+        }*/
     }
 
     public void sort() {
@@ -112,39 +97,18 @@ public class RouterChain<T> {
     }
 
     /**
-     * Route cache building can be triggered in different threads, for example, registry notification and governance notification.
+     * TODO
+     *
+     * Building of router cache can be triggered from within different threads, for example, registry notification and governance notification.
      * So this operation should be synchronized.
-     * @param methodInvokers
+     * @param invokers
      * @param url
-     * @param invocation     TODO has not been used yet
+     * @param invocation
      */
-    public void preRoute(Map<String, List<Invoker<T>>> methodInvokers, URL url, Invocation invocation) {
-        if (CollectionUtils.isEmpty(routers) || methodInvokers == null) {
-            treeCache.refreshTree(null);
-            return;
+    public void preRoute(List<Invoker<T>> invokers, URL url, Invocation invocation) {
+        for (Router router : routers) {
+            router.preRoute(invokers, url, invocation);
         }
-        TreeNode<T> root = treeCache.buildRootNode();
-        Router router = routers.get(0);
-        methodInvokers.forEach((method, invokers) -> {
-            TreeNode<T> node = new TreeNode<>("METHOD_ROUTER", "method", method, invokers, true);
-            root.addChild(node);
-            Invocation invocation1 = new RpcInvocation(method, new Class<?>[0], new Object[0]);
-            doRoute(router, 1, node, router.preRoute(invokers, url, invocation1), url, invocation1);
-        });
-        treeCache.refreshTree(root);
-    }
-
-    private void doRoute(Router router, int i, TreeNode parentNode, Map<String, List<Invoker<T>>> invokers, URL url, Invocation invocation) {
-        invokers.forEach((routerValue, list) -> {
-            TreeNode<T> node = new TreeNode<>(router.getName(), router.getKey(), routerValue, list, router.isForce());
-            parentNode.addChild(node);
-            // Only when we have more routers and the sub-lis is not empty.
-            if (i < routers.size() && CollectionUtils.isNotEmpty(list)) {
-                node.setInvokers(null); // only store invoker list in leaf nodes.
-                Router nextRouter = routers.get(i);
-                doRoute(nextRouter, i + 1, node, nextRouter.preRoute(list, url, invocation), url, invocation);
-            }
-        });
     }
 
     /**
@@ -154,38 +118,39 @@ public class RouterChain<T> {
      * @return
      */
     public List<Invoker<T>> route(URL url, Invocation invocation) {
-        List<Invoker<T>> finalInvokers = treeCache.getInvokers(treeCache.getTree(), url, invocation);
+        List<Invoker<T>> finalInvokers = fullInvokers;
         for (Router router : routers) {
-            if (router.isRuntime()) {
-                finalInvokers = router.route(finalInvokers, url, invocation);
-            }
+//            if (router.isRuntime()) {
+//                finalInvokers = router.route(finalInvokers, url, invocation);
+//            }
+            finalInvokers = router.route(finalInvokers, url, invocation);
         }
         return finalInvokers;
     }
 
-    public List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) {
-        List<Invoker<T>> finalInvokers = invokers;
-        if (treeCache.getTree() != null) {
-            finalInvokers = treeCache.getInvokers(treeCache.getTree(), url, invocation);
-        }
-        for (Router router : routers) {
-            if (router.isRuntime()) {
-                finalInvokers = router.route(invokers, url, invocation);
-            }
-        }
-        return finalInvokers;
-    }
-
+    /**
+     * When any of the router's rule changed, notify the router chain to rebuild cache from scratch.
+     */
     public void notifyRuleChanged() {
-        preRoute(this.fullMethodInvokers, url, null);
+        if (CollectionUtils.isEmpty(this.fullInvokers)) {
+            return;
+        }
+        preRoute(this.fullInvokers, url, null);
     }
 
-    public void notifyFullInvokers(Map<String, List<Invoker<T>>> invokers, URL url) {
+    /**
+     * Notify router chain of the initial addresses from registry at the first time.
+     * Notify whenever addresses in registry change.
+     *
+     * @param invokers
+     * @param url
+     */
+    public void notifyFullInvokers(List<Invoker<T>> invokers, URL url) {
         setFullMethodInvokers(invokers);
         preRoute(invokers, url, null);
     }
 
-    public void setFullMethodInvokers(Map<String, List<Invoker<T>>> fullMethodInvokers) {
-        this.fullMethodInvokers = fullMethodInvokers;
+    public void setFullMethodInvokers(List<Invoker<T>> fullInvokers) {
+        this.fullInvokers = fullInvokers;
     }
 }

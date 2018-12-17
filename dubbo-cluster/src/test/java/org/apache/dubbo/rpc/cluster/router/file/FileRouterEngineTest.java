@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.cluster.router.file;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -40,9 +39,7 @@ import org.junit.Test;
 import javax.script.ScriptEngineManager;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -162,11 +159,8 @@ public class FileRouterEngineTest {
     }
 
     private void initDic(URL url) {
-        dic = new StaticDirectory<FileRouterEngineTest>(url, invokers);
-        Map<String, List<Invoker<FileRouterEngineTest>>> methodInvokers = new HashMap<>();
-        methodInvokers.put("method1", invokers);
-        methodInvokers.put("method2", invokers);
-        dic.buildRouterChain(methodInvokers, ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getDefaultExtension().getDynamicConfiguration(null));
+        dic = new StaticDirectory<>(url, invokers);
+        dic.buildRouterChain(invokers);
         dic.getRouterChain().setResidentRouters(Arrays.asList(routerFactory.getRouter(url)));
     }
 

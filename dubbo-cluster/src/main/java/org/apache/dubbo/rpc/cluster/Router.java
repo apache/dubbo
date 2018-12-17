@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.router.TreeNode;
 
 import java.util.List;
 import java.util.Map;
@@ -42,7 +41,7 @@ public interface Router extends Comparable<Router> {
     URL getUrl();
 
     /**
-     * route.
+     * Filter invokers with current routing rule and only return the invokers that comply with the rule.
      *
      * @param invokers
      * @param url        refer url
@@ -56,25 +55,32 @@ public interface Router extends Comparable<Router> {
         return null;
     }
 
-    default void setRouterChain(RouterChain routerChain) {
-    }
+    /**
+     * Each router has a reference of the router chain.
+     *
+     * @param routerChain
+     */
+    void addRouterChain(RouterChain routerChain);
 
-    default String getName() {
-        return "";
-    }
-
+    /**
+     * To decide whether this router need to execute every time an RPC comes or should only execute when addresses or rule change.
+     *
+     * @return
+     */
     boolean isRuntime();
 
-    default String getKey() {
-        return TreeNode.FAILOVER_KEY;
-    }
+    /**
+     * To decide whether this router should take effect when none of the invoker can match the router rule, which means the {@link #route(List, URL, Invocation)} would be empty.
+     * Most of time, most router implementation would default this value to false.
+     *
+     * @return
+     */
+    boolean isForce();
 
-    default boolean isForce() {
-        return false;
-    }
-
-    default int getPriority() {
-        return 0;
-    }
-
+    /**
+     * used to sort routers.
+     *
+     * @return
+     */
+    int getPriority();
 }

@@ -90,11 +90,6 @@ public class MockInvokersSelector extends AbstractRouter {
         return hasMockProvider;
     }
 
-    @Override
-    public String getName() {
-        return NAME;
-    }
-
     /**
      * Always stay on the top of the list
      *

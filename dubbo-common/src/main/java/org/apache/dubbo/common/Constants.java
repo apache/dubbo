@@ -66,7 +66,7 @@ public class Constants {
     public static final String CONFIG_GROUP_KEY = "config.group";
     public static final String CONFIG_CHECK_KEY = "config.check";
     public static final String CONFIG_CONFIGFILE_KEY = "config.configfile";
-    public static final String CONFIG_PRIORITY_KEY = "config.priority";
+    public static final String CONFIG_ENABLE_KEY = "config.enable";
     public static final String CONFIG_TIMEOUT_KEY = "config.timeout";
     public static final String CONFIG_APPNAME_KEY = "config.appname";
 
@@ -732,11 +732,19 @@ public class Constants {
 
     public static final String CYCLE_REPORT_KEY = "cycle-report";
 
-    public static final String API_VERSION_KEY = "apiVersion";
+    public static final String CONFIG_VERSION_KEY = "configVersion";
+
+    public static final String COMPATIBLE_CONFIG_KEY = "compatible_config";
     // package version in the manifest
     public static final String SPECIFICATION_VERSION_KEY = "specVersion";
 
     public static final String OVERRIDE_PROVIDERS_KEY = "providerAddreses";
+
+    public static final String PROTOCOLS_SUFFIX = "dubbo.protocols.";
+
+    public static final String PROTOCOL_SUFFIX = "dubbo.protocol.";
+
+    public static final String REGISTRIES_SUFFIX = "dubbo.registries.";
 
     public static final String[] DEFAULT_REGISTER_PROVIDER_KEYS = {APPLICATION_KEY, CODEC_KEY, EXCHANGER_KEY, SERIALIZATION_KEY, CLUSTER_KEY, CONNECTIONS_KEY, DEPRECATED_KEY,
             GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY, WEIGHT_KEY, TIMESTAMP_KEY, DUBBO_VERSION_KEY, SPECIFICATION_VERSION_KEY};

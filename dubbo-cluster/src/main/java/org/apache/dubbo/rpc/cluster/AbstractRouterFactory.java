@@ -14,26 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.condition.config;
+package org.apache.dubbo.rpc.cluster;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
-import org.apache.dubbo.rpc.cluster.Router;
-import org.apache.dubbo.rpc.cluster.RouterFactory;
+
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
- *
+ * If you want to provide a Router implementation based on design of v2.7.0, please extend from this abstract class.
+ * For 2.6.x style Router, please implement and use RouterFactory directly.
  */
-@Activate(order = 200)
-public class ConfigConditionRouterFactory implements RouterFactory {
-    @Override
-    public Router getRouter(URL url) {
-        return null;
-    }
+public abstract class AbstractRouterFactory implements RouterFactory {
+    private ConcurrentMap<String, Router> routerMap = new ConcurrentHashMap<>();
 
     @Override
-    public Router getRouter(DynamicConfiguration dynamicConfiguration, URL url) {
-        return new ConfigConditionRouter(dynamicConfiguration, url);
+    public Router getRouter(URL url) {
+        routerMap.computeIfAbsent(url.getServiceKey(), k -> createRouter(url));
+        return routerMap.get(url.getServiceKey());
     }
+
+    protected abstract Router createRouter(URL url);
 }
