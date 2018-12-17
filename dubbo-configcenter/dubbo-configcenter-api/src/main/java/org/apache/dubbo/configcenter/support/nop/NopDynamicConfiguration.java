@@ -45,22 +45,22 @@ public class NopDynamicConfiguration extends AbstractDynamicConfiguration {
     }
 
     @Override
-    protected void addConfigurationListener(String key, Object targetListener, ConfigurationListener configurationListener) {
+    protected void addConfigurationListener(String key, String group, Object targetListener, ConfigurationListener configurationListener) {
         // no-op
     }
 
     @Override
-    protected Object createTargetListener(String key) {
+    protected void removeConfigurationListener(String key, String group, Object o, ConfigurationListener configurationListener) {
+
+    }
+
+    @Override
+    protected Object createTargetListener(String key, String group) {
         return null;
     }
 
     @Override
     protected Object getInternalProperty(String key) {
         return null;
-    }
-
-    @Override
-    protected void recover() {
-
     }
 }

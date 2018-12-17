@@ -17,6 +17,10 @@
 package org.apache.dubbo.configcenter;
 
 import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+
+import java.util.Optional;
 
 /**
  * Dynamic configuration
@@ -24,17 +28,40 @@ import org.apache.dubbo.common.config.Configuration;
 public interface DynamicConfiguration extends Configuration {
 
     /**
-     * Register a configuration listener for a specified key
-     * The listener only works for service governance purpose, so the target group would always be the value user specifies at startup or 'dubbo' by default.
-     * This method will only register listener, which means it will not trigger a notification that contains the current value.
-     *
+     * {@link #addListener(String, String, ConfigurationListener)}
      * @param key      the key to represent a configuration
      * @param listener configuration listener
      */
     void addListener(String key, ConfigurationListener listener);
 
 
+    /**
+     * {@link #removeListener(String, String, ConfigurationListener)}
+     *
+     * @param key
+     * @param listener
+     */
     void removeListener(String key, ConfigurationListener listener);
+
+    /**
+     * Register a configuration listener for a specified key
+     * The listener only works for service governance purpose, so the target group would always be the value user specifies at startup or 'dubbo' by default.
+     * This method will only register listener, which means it will not trigger a notification that contains the current value.
+     *
+     * @param key
+     * @param group
+     * @param listener
+     */
+    void addListener(String key, String group, ConfigurationListener listener);
+
+    /**
+     * Stops one listener from listening to value changes in the specified key.
+     *
+     * @param key
+     * @param group
+     * @param listener
+     */
+    void removeListener(String key, String group, ConfigurationListener listener);
 
     /**
      * Get the configuration mapped to the given key
@@ -64,4 +91,16 @@ public interface DynamicConfiguration extends Configuration {
      * if timeout exceeds.
      */
     String getConfig(String key, String group, long timeout) throws IllegalStateException;
+
+    /**
+     * I think this method is strongly related to DynamicConfiguration, so we should put it directly in the definition of this interface instead of a separated utility class.
+     *
+     * @return
+     */
+    static DynamicConfiguration getDynamicConfiguration() {
+        Optional<Configuration> optional = Environment.getInstance().getDynamicConfiguration();
+        return (DynamicConfiguration) optional.orElseGet(() -> ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class)
+                .getDefaultExtension()
+                .getDynamicConfiguration(null));
+    }
 }

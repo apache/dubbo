@@ -92,8 +92,15 @@ public class CacheListener implements TreeCacheListener {
     }
 
     public void addListener(String key, ConfigurationListener configurationListener) {
-        Set<ConfigurationListener> set = this.keyListeners.computeIfAbsent(key, k -> new CopyOnWriteArraySet<>());
-        set.add(configurationListener);
+        Set<ConfigurationListener> listeners = this.keyListeners.computeIfAbsent(key, k -> new CopyOnWriteArraySet<>());
+        listeners.add(configurationListener);
+    }
+
+    public void removeListener(String key, ConfigurationListener configurationListener) {
+        Set<ConfigurationListener> listeners = this.keyListeners.get(key);
+        if (listeners != null) {
+            listeners.remove(configurationListener);
+        }
     }
 
     /**

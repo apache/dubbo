@@ -135,7 +135,7 @@ public class ZookeeperDynamicConfigurationTest {
             Integer count = countMap.computeIfAbsent(event.getKey(), k -> new Integer(0));
             countMap.put(event.getKey(), ++count);
 
-            value = event.getNewValue();
+            value = event.getValue();
             latch.countDown();
         }
 

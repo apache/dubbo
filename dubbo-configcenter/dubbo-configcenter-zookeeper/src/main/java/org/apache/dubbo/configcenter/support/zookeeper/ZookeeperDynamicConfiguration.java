@@ -18,6 +18,7 @@ package org.apache.dubbo.configcenter.support.zookeeper;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.configcenter.AbstractDynamicConfiguration;
 import org.apache.dubbo.configcenter.ConfigurationListener;
@@ -88,7 +89,7 @@ public class ZookeeperDynamicConfiguration extends AbstractDynamicConfiguration<
 
         initializedLatch = new CountDownLatch(1);
         this.cacheListener = new CacheListener(rootPath, initializedLatch);
-        this.executor = Executors.newFixedThreadPool(1);
+        this.executor = Executors.newFixedThreadPool(1, new NamedThreadFactory(this.getClass().getSimpleName(), true));
         // build local cache
         try {
             this.buildCache();
@@ -100,19 +101,35 @@ public class ZookeeperDynamicConfiguration extends AbstractDynamicConfiguration<
     @Override
     protected String getTargetConfig(String key, String group, long timeout) {
         if (StringUtils.isNotEmpty(group)) {
-            key = group + "." + key;
+            key = group + "/" + key;
+        } else {
+            int i = key.lastIndexOf(".");
+            key = key.substring(0, i) + "/" + key.substring(i + 1);
         }
 
-        return (String) getInternalProperty(rootPath + "/" + key.replaceFirst("\\.", "/"));
+        return (String) getInternalProperty(rootPath + "/" + key);
     }
 
+    /**
+     * For service governance, multi group is not supported by this implementation. So group is not used at present.
+     *
+     * @param key
+     * @param group
+     * @param cacheListener
+     * @param listener
+     */
     @Override
-    protected void addConfigurationListener(String key, CacheListener cacheListener, ConfigurationListener listener) {
+    protected void addConfigurationListener(String key, String group, CacheListener cacheListener, ConfigurationListener listener) {
         cacheListener.addListener(key, listener);
     }
 
     @Override
-    protected CacheListener createTargetListener(String key) {
+    protected void removeConfigurationListener(String key, String group, CacheListener cacheListener, ConfigurationListener configurationListener) {
+        cacheListener.removeListener(key, configurationListener);
+    }
+
+    @Override
+    protected CacheListener createTargetListener(String key, String group) {
         return cacheListener;
     }
 
@@ -127,10 +144,6 @@ public class ZookeeperDynamicConfiguration extends AbstractDynamicConfiguration<
             return new String(childData.getData(), StandardCharsets.UTF_8);
         }
         return null;
-    }
-
-    protected void recover() {
-
     }
 
     /**
