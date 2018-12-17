@@ -16,12 +16,13 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
+import org.apache.dubbo.common.URL;
+
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import org.apache.dubbo.common.URL;
 
 import java.util.concurrent.ThreadFactory;
 

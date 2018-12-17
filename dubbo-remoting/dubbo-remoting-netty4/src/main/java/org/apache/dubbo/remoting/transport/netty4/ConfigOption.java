@@ -16,9 +16,10 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
+import org.apache.dubbo.common.Constants;
+
 import io.netty.util.AbstractConstant;
 import io.netty.util.ConstantPool;
-import org.apache.dubbo.common.Constants;
 
 public class ConfigOption<T> extends AbstractConstant<ConfigOption<T>> {
 
