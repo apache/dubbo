@@ -112,20 +112,37 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Apo
         return dubboConfig.getProperty(key, null);
     }
 
+    /**
+     * Since all governance rules will lay under dubbo group, this method now always uses the default dubboConfig and ignores the group parameter.
+     *
+     * @param key                   property key the native listener will listen on
+     * @param group                 to distinguish different set of properties
+     * @param listener
+     * @param configurationListener Listener in Dubbo that will handle notification.
+     */
     @Override
-    protected void addConfigurationListener(String key, ApolloListener listener, ConfigurationListener configurationListener) {
+    protected void addConfigurationListener(String key, String group, ApolloListener listener, ConfigurationListener configurationListener) {
         listener.addListener(configurationListener);
         this.dubboConfig.addChangeListener(listener);
     }
 
     @Override
-    protected ApolloListener createTargetListener(String key) {
-        return new ApolloListener();
+    protected void removeConfigurationListener(String key, String group, ApolloListener listener, ConfigurationListener configurationListener) {
+        listener.removeListener(configurationListener);
+        if (!listener.hasInternalListener()) {
+            dubboConfig.removeChangeListener(listener);
+        }
     }
 
+    /**
+     * Ignores the group parameter.
+     * @param key      property key the native listener will listen on
+     * @param group    to distinguish different set of properties
+     * @return
+     */
     @Override
-    protected void recover() {
-        // Apollo will handle things well.
+    protected ApolloListener createTargetListener(String key, String group) {
+        return new ApolloListener();
     }
 
     public class ApolloListener implements ConfigChangeListener {
@@ -133,10 +150,6 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Apo
         private Set<ConfigurationListener> listeners = new CopyOnWriteArraySet<>();
 
         ApolloListener() {
-        }
-
-        public void addListener(ConfigurationListener configurationListener) {
-            this.listeners.add(configurationListener);
         }
 
         @Override
@@ -160,6 +173,18 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Apo
                 return ConfigChangeType.DELETED;
             }
             return ConfigChangeType.MODIFIED;
+        }
+
+        public void addListener(ConfigurationListener configurationListener) {
+            this.listeners.add(configurationListener);
+        }
+
+        public void removeListener(ConfigurationListener configurationListener) {
+            this.listeners.remove(configurationListener);
+        }
+
+        public boolean hasInternalListener() {
+            return listeners != null && listeners.size() > 0;
         }
     }
 

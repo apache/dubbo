@@ -38,22 +38,22 @@ public class MockDynamicConfiguration extends AbstractDynamicConfiguration {
     }
 
     @Override
-    protected void recover() {
-
-    }
-
-    @Override
     protected String getTargetConfig(String key, String group, long timeout) {
         return null;
     }
 
     @Override
-    protected void addConfigurationListener(String key, Object o, ConfigurationListener configurationListener) {
+    protected void addConfigurationListener(String key, String group, Object o, ConfigurationListener configurationListener) {
 
     }
 
     @Override
-    protected Object createTargetListener(String key) {
+    protected void removeConfigurationListener(String key, String group, Object o, ConfigurationListener configurationListener) {
+
+    }
+
+    @Override
+    protected Object createTargetListener(String key, String group) {
         return null;
     }
 
