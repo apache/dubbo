@@ -31,11 +31,14 @@ import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  *
  */
 public class ConfigCenterConfig extends AbstractConfig {
+    private AtomicBoolean inited = new AtomicBoolean(false);
+
     private String protocol;
     private String address;
     private String env;
@@ -45,7 +48,7 @@ public class ConfigCenterConfig extends AbstractConfig {
     private String username;
     private String password;
     private Long timeout = 3000L;
-    private Boolean priority = true;
+    private Boolean enable = true;
     private Boolean check = true;
 
     private String appname;
@@ -62,6 +65,10 @@ public class ConfigCenterConfig extends AbstractConfig {
     }
 
     public void init() {
+        if (!inited.compareAndSet(false, true)) {
+            return;
+        }
+
         // give jvm properties the chance to override local configs, e.g., -Ddubbo.configcenter.config.priority
         refresh();
         // try to use registryConfig as the default configcenter, only applies to zookeeper.
@@ -85,7 +92,7 @@ public class ConfigCenterConfig extends AbstractConfig {
                         );
             }
             try {
-                Environment.getInstance().setConfigCenterFirst(priority);
+                Environment.getInstance().setConfigCenterFirst(enable);
                 Environment.getInstance().updateExternalConfigurationMap(parseProperties(configContent));
                 Environment.getInstance().updateAppExternalConfigurationMap(parseProperties(appConfigContent));
             } catch (IOException e) {
@@ -137,6 +144,16 @@ public class ConfigCenterConfig extends AbstractConfig {
             );
         }
         return map;
+    }
+
+    public void setExternalConfig(Map<String, String> externalConfiguration) {
+        Environment.getInstance().setExternalConfigMap(externalConfiguration);
+        inited.set(true);
+    }
+
+    public void setAppExternalConfig(Map<String, String> appExternalConfiguration) {
+        Environment.getInstance().setAppExternalConfigMap(appExternalConfiguration);
+        inited.set(true);
     }
 
     public String getProtocol() {
@@ -201,13 +218,13 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.check = check;
     }
 
-    @Parameter(key = Constants.CONFIG_PRIORITY_KEY)
-    public Boolean isPriority() {
-        return priority;
+    @Parameter(key = Constants.CONFIG_ENABLE_KEY)
+    public Boolean getEnable() {
+        return enable;
     }
 
-    public void setPriority(Boolean priority) {
-        this.priority = priority;
+    public void setEnable(Boolean enable) {
+        this.enable = enable;
     }
 
     public String getUsername() {

@@ -16,11 +16,13 @@
  */
 package org.apache.dubbo.config.spring;
 
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
 import org.apache.dubbo.config.support.Parameter;
+
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -46,7 +48,7 @@ public class ConfigCenterBean extends ConfigCenterConfig implements Initializing
 
     private transient ApplicationContext applicationContext;
 
-    private Boolean auto = false;
+    private Boolean fromSpring = false;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
@@ -92,7 +94,7 @@ public class ConfigCenterBean extends ConfigCenterConfig implements Initializing
             }
         }
 
-        if (!auto) {
+        if (!fromSpring) {
             this.init();
         }
     }
@@ -104,11 +106,11 @@ public class ConfigCenterBean extends ConfigCenterConfig implements Initializing
 
     @Override
     public void setEnvironment(Environment environment) {
-        if (auto) {
+        if (fromSpring) {
             Map<String, String> externalProperties = getConfigurations(getConfigfile(), environment);
-            Map<String, String> appExternalProperties = getConfigurations("application." + getConfigfile(), environment);
-            org.apache.dubbo.common.config.Environment.getInstance().setExternalConfig(externalProperties);
-            org.apache.dubbo.common.config.Environment.getInstance().setAppExternalConfig(appExternalProperties);
+            Map<String, String> appExternalProperties = getConfigurations(StringUtils.isNotEmpty(getLocalconfigfile()) ? getLocalconfigfile() : ("application." + getConfigfile()), environment);
+            org.apache.dubbo.common.config.Environment.getInstance().setExternalConfigMap(externalProperties);
+            org.apache.dubbo.common.config.Environment.getInstance().setAppExternalConfigMap(appExternalProperties);
             this.init();
         }
     }
@@ -142,11 +144,11 @@ public class ConfigCenterBean extends ConfigCenterConfig implements Initializing
     }
 
     @Parameter(excluded = true)
-    public boolean isAuto() {
-        return auto;
+    public Boolean getFromSpring() {
+        return fromSpring;
     }
 
-    public void setAuto(boolean auto) {
-        this.auto = auto;
+    public void setFromSpring(Boolean fromSpring) {
+        this.fromSpring = fromSpring;
     }
 }

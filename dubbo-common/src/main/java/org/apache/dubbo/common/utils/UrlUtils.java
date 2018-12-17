@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class UrlUtils {
 
@@ -437,6 +439,10 @@ public class UrlUtils {
                 value.getParameter(Constants.GROUP_KEY))
                 && isItemMatch(pattern.getParameter(Constants.VERSION_KEY),
                 value.getParameter(Constants.VERSION_KEY));
+    }
+
+    public static List<URL> classifyUrls(List<URL> urls, Predicate<URL> predicate) {
+        return urls.stream().filter(predicate).collect(Collectors.toList());
     }
 
     /**

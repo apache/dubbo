@@ -27,6 +27,7 @@ import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.RegistryDataConfig;
 import org.apache.dubbo.config.spring.ConfigCenterBean;
+
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -57,8 +58,7 @@ public class DubboConfigConfiguration {
             @EnableDubboConfigBinding(prefix = "dubbo.protocol", type = ProtocolConfig.class),
             @EnableDubboConfigBinding(prefix = "dubbo.monitor", type = MonitorConfig.class),
             @EnableDubboConfigBinding(prefix = "dubbo.provider", type = ProviderConfig.class),
-            @EnableDubboConfigBinding(prefix = "dubbo.consumer", type = ConsumerConfig.class),
-            @EnableDubboConfigBinding(prefix = "dubbo.configcenter", type = ConfigCenterBean.class),
+            @EnableDubboConfigBinding(prefix = "dubbo.consumer", type = ConsumerConfig.class), @EnableDubboConfigBinding(prefix = "dubbo.config-center", type = ConfigCenterBean.class),
             @EnableDubboConfigBinding(prefix = "dubbo.registrydata", type = RegistryDataConfig.class),
             @EnableDubboConfigBinding(prefix = "dubbo.metadatareport", type = MetadataReportConfig.class)
     })

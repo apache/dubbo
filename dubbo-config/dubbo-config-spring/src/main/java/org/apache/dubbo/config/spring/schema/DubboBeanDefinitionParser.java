@@ -17,7 +17,6 @@
 package org.apache.dubbo.config.spring.schema;
 
 import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -30,7 +29,6 @@ import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
-import org.apache.dubbo.rpc.Protocol;
 
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -166,12 +164,8 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                                 RegistryConfig registryConfig = new RegistryConfig();
                                 registryConfig.setAddress(RegistryConfig.NO_AVAILABLE);
                                 beanDefinition.getPropertyValues().addPropertyValue(property, registryConfig);
-                            } else if ("registry".equals(property) && value.indexOf(',') != -1) {
-                                parseMultiRef("registries", value, beanDefinition, parserContext);
-                            } else if ("provider".equals(property) && value.indexOf(',') != -1) {
-                                parseMultiRef("providers", value, beanDefinition, parserContext);
-                            } else if ("protocol".equals(property) && value.indexOf(',') != -1) {
-                                parseMultiRef("protocols", value, beanDefinition, parserContext);
+                            } else if ("provider".equals(property) || "protocol".equals(property) || "registry".equals(property)) {
+                                beanDefinition.getPropertyValues().addPropertyValue(property, value);
                             } else {
                                 Object reference;
                                 if (isPrimitive(type)) {
@@ -185,17 +179,6 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                                         value = null;
                                     }
                                     reference = value;
-                                } else if ("protocol".equals(property)
-                                        && ExtensionLoader.getExtensionLoader(Protocol.class).hasExtension(value)
-                                        && (!parserContext.getRegistry().containsBeanDefinition(value)
-                                        || !ProtocolConfig.class.getName().equals(parserContext.getRegistry().getBeanDefinition(value).getBeanClassName()))) {
-                                    if ("dubbo:provider".equals(element.getTagName())) {
-                                        logger.warn("Recommended replace <dubbo:provider protocol=\"" + value + "\" ... /> to <dubbo:protocol name=\"" + value + "\" ... />");
-                                    }
-                                    // backward compatibility
-                                    ProtocolConfig protocol = new ProtocolConfig();
-                                    protocol.setName(value);
-                                    reference = protocol;
                                 } else if ("onreturn".equals(property)) {
                                     int index = value.lastIndexOf(".");
                                     String returnRef = value.substring(0, index);
@@ -254,23 +237,6 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                 || cls == Character.class || cls == Short.class || cls == Integer.class
                 || cls == Long.class || cls == Float.class || cls == Double.class
                 || cls == String.class || cls == Date.class || cls == Class.class;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static void parseMultiRef(String property, String value, RootBeanDefinition beanDefinition,
-                                      ParserContext parserContext) {
-        String[] values = value.split("\\s*[,]+\\s*");
-        ManagedList list = null;
-        for (int i = 0; i < values.length; i++) {
-            String v = values[i];
-            if (v != null && v.length() > 0) {
-                if (list == null) {
-                    list = new ManagedList();
-                }
-                list.add(new RuntimeBeanReference(v));
-            }
-        }
-        beanDefinition.getPropertyValues().addPropertyValue(property, list);
     }
 
     private static void parseNested(Element element, ParserContext parserContext, Class<?> beanClass, boolean required, String tag, String property, String ref, BeanDefinition beanDefinition) {

@@ -19,7 +19,6 @@ package org.apache.dubbo.common.config;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -78,9 +77,6 @@ public class CompositeConfiguration extends AbstractConfiguration {
 
     @Override
     public boolean containsKey(String key) {
-        List<Configuration> subConfigList = configList.stream()
-                .filter(config -> config.containsKey(key))
-                .collect(Collectors.toList());
-        return subConfigList.size() > 0;
+        return configList.stream().anyMatch(c -> c.containsKey(key));
     }
 }

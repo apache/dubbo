@@ -35,8 +35,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Utility methods and public methods for parsing configuration
@@ -80,8 +82,7 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     protected String id;
-    private boolean init;
-    private volatile Map<String, String> metaData;
+    protected String prefix;
 
     private static String convertLegacyValue(String key, String value) {
         if (value != null && value.length() > 0) {
@@ -352,6 +353,13 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
+    protected static Set<String> getSubProperties(Map<String, String> properties, String prefix) {
+        return properties.keySet().stream().filter(k -> k.contains(prefix)).map(k -> {
+            k = k.substring(prefix.length());
+            return k.substring(0, k.indexOf("."));
+        }).collect(Collectors.toSet());
+    }
+
     private static String extractPropertyName(Class<?> clazz, Method setter) throws Exception {
         String propertyName = setter.getName().substring("set".length());
         Method getter = null;
@@ -436,7 +444,7 @@ public abstract class AbstractConfig implements Serializable {
      * Notice! This method should include all properties in the returning map, treat @Parameter differently compared to appendParameters.
      */
     public Map<String, String> getMetaData() {
-        metaData = new HashMap<>();
+        Map<String, String> metaData = new HashMap<>();
         Method[] methods = this.getClass().getMethods();
         for (Method method : methods) {
             try {
@@ -510,7 +518,11 @@ public abstract class AbstractConfig implements Serializable {
 
     @Parameter(excluded = true)
     public String getPrefix() {
-        return Constants.DUBBO + "." + getTagName(this.getClass());
+        return StringUtils.isNotEmpty(prefix) ? prefix : (Constants.DUBBO + "." + getTagName(this.getClass()));
+    }
+
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
     }
 
     /**
@@ -518,11 +530,6 @@ public abstract class AbstractConfig implements Serializable {
      * overriding of customized parameters stored in 'parameters'.
      */
     public void refresh() {
-        if (init) {
-            return;
-        }
-        init = true;
-
         try {
             Environment env = Environment.getInstance();
             env.addAppConfig(getPrefix(), getId(), getMetaData());

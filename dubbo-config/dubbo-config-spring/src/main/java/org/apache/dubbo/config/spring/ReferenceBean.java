@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.config.spring;
 
+import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
@@ -36,6 +38,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -138,15 +141,35 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
                 }
             }
         }
+
+        if (StringUtils.isEmpty(getRegistryLiteral())) {
+            if (getApplication() != null && StringUtils.isNotEmpty(getApplication().getRegistryLiteral())) {
+                setRegistry(getApplication().getRegistryLiteral());
+            }
+            if (getConsumer() != null && StringUtils.isNotEmpty(getConsumer().getRegistryLiteral())) {
+                setRegistry(getConsumer().getRegistryLiteral());
+            }
+        }
+
         if ((getRegistries() == null || getRegistries().isEmpty())
                 && (getConsumer() == null || getConsumer().getRegistries() == null || getConsumer().getRegistries().isEmpty())
                 && (getApplication() == null || getApplication().getRegistries() == null || getApplication().getRegistries().isEmpty())) {
             Map<String, RegistryConfig> registryConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, RegistryConfig.class, false, false);
             if (registryConfigMap != null && registryConfigMap.size() > 0) {
                 List<RegistryConfig> registryConfigs = new ArrayList<>();
-                for (RegistryConfig config : registryConfigMap.values()) {
-                    if (config.isDefault() == null || config.isDefault()) {
-                        registryConfigs.add(config);
+                if (StringUtils.isNotEmpty(registryLiteral)) {
+                    Arrays.stream(Constants.COMMA_SPLIT_PATTERN.split(registryLiteral)).forEach(registryLiteral -> {
+                        if (registryConfigMap.containsKey(registryLiteral)) {
+                            registryConfigs.add(registryConfigMap.get(registryLiteral));
+                        }
+                    });
+                }
+
+                if (registryConfigs.isEmpty()) {
+                    for (RegistryConfig config : registryConfigMap.values()) {
+                        if (StringUtils.isEmpty(registryLiteral)) {
+                            registryConfigs.add(config);
+                        }
                     }
                 }
                 if (!registryConfigs.isEmpty()) {
@@ -154,6 +177,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
                 }
             }
         }
+
         if (getMetadataReportConfig() == null) {
             Map<String, MetadataReportConfig> metadataReportConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, MetadataReportConfig.class, false, false);
             if (metadataReportConfigMap != null && metadataReportConfigMap.size() == 1) {

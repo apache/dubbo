@@ -62,6 +62,7 @@ public class ApplicationConfig extends AbstractConfig {
 
     // registry centers
     private List<RegistryConfig> registries;
+    private String registryLiteral;
 
     // monitor center
     private MonitorConfig monitor;
@@ -175,6 +176,15 @@ public class ApplicationConfig extends AbstractConfig {
     @SuppressWarnings({"unchecked"})
     public void setRegistries(List<? extends RegistryConfig> registries) {
         this.registries = (List<RegistryConfig>) registries;
+    }
+
+    @Parameter(excluded = true)
+    public String getRegistryLiteral() {
+        return registryLiteral;
+    }
+
+    public void setRegistry(String registryLiteral) {
+        this.registryLiteral = registryLiteral;
     }
 
     public MonitorConfig getMonitor() {

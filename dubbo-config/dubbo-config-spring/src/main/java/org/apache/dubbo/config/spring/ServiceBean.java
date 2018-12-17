@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.config.spring;
 
+import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.ModuleConfig;
@@ -39,6 +41,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -172,15 +175,35 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                 }
             }
         }
+
+        if (StringUtils.isEmpty(getRegistryLiteral())) {
+            if (getApplication() != null && StringUtils.isNotEmpty(getApplication().getRegistryLiteral())) {
+                setRegistry(getApplication().getRegistryLiteral());
+            }
+            if (getProvider() != null && StringUtils.isNotEmpty(getProvider().getRegistryLiteral())) {
+                setRegistry(getProvider().getRegistryLiteral());
+            }
+        }
+
         if ((getRegistries() == null || getRegistries().isEmpty())
                 && (getProvider() == null || getProvider().getRegistries() == null || getProvider().getRegistries().isEmpty())
                 && (getApplication() == null || getApplication().getRegistries() == null || getApplication().getRegistries().isEmpty())) {
             Map<String, RegistryConfig> registryConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, RegistryConfig.class, false, false);
             if (registryConfigMap != null && registryConfigMap.size() > 0) {
-                List<RegistryConfig> registryConfigs = new ArrayList<RegistryConfig>();
-                for (RegistryConfig config : registryConfigMap.values()) {
-                    if (config.isDefault() == null || config.isDefault()) {
-                        registryConfigs.add(config);
+                List<RegistryConfig> registryConfigs = new ArrayList<>();
+                if (StringUtils.isNotEmpty(registryLiteral)) {
+                    Arrays.stream(Constants.COMMA_SPLIT_PATTERN.split(registryLiteral)).forEach(registryLiteral -> {
+                        if (registryConfigMap.containsKey(registryLiteral)) {
+                            registryConfigs.add(registryConfigMap.get(registryLiteral));
+                        }
+                    });
+                }
+
+                if (registryConfigs.isEmpty()) {
+                    for (RegistryConfig config : registryConfigMap.values()) {
+                        if (StringUtils.isEmpty(registryLiteral)) {
+                            registryConfigs.add(config);
+                        }
                     }
                 }
                 if (!registryConfigs.isEmpty()) {
@@ -225,16 +248,35 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                 }
             }
         }
+
+        if (StringUtils.isEmpty(getProtocolLiteral())) {
+            if (getProvider() != null && StringUtils.isNotEmpty(getProvider().getProtocolLiteral())) {
+                setProtocol(getProvider().getProtocolLiteral());
+            }
+        }
+
         if ((getProtocols() == null || getProtocols().isEmpty())
                 && (getProvider() == null || getProvider().getProtocols() == null || getProvider().getProtocols().isEmpty())) {
             Map<String, ProtocolConfig> protocolConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProtocolConfig.class, false, false);
             if (protocolConfigMap != null && protocolConfigMap.size() > 0) {
                 List<ProtocolConfig> protocolConfigs = new ArrayList<ProtocolConfig>();
-                for (ProtocolConfig config : protocolConfigMap.values()) {
-                    if (config.isDefault() == null || config.isDefault()) {
-                        protocolConfigs.add(config);
+                if (StringUtils.isNotEmpty(getProtocolLiteral())) {
+                    Arrays.stream(Constants.COMMA_SPLIT_PATTERN.split(getProtocolLiteral()))
+                            .forEach(protocolLiteral -> {
+                                if (protocolConfigMap.containsKey(protocolLiteral)) {
+                                    protocolConfigs.add(protocolConfigMap.get(protocolLiteral));
+                                }
+                            });
+                }
+
+                if (protocolConfigs.isEmpty()) {
+                    for (ProtocolConfig config : protocolConfigMap.values()) {
+                        if (StringUtils.isEmpty(protocolLiteral)) {
+                            protocolConfigs.add(config);
+                        }
                     }
                 }
+
                 if (!protocolConfigs.isEmpty()) {
                     super.setProtocols(protocolConfigs);
                 }

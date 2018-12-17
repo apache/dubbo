@@ -55,4 +55,5 @@ public class ConfigurationUtils {
     public static String getProperty(String property, String defaultValue) {
         return Environment.getInstance().getConfiguration().getString(property, defaultValue);
     }
+
 }
