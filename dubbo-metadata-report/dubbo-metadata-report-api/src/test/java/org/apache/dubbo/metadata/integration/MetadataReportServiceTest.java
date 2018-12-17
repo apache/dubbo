@@ -1,10 +1,27 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.dubbo.metadata.integration;
 
+import com.google.gson.Gson;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.store.test.JTestMetadataReport4Test;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,88 +66,72 @@ public class MetadataReportServiceTest {
     public void testPublishProviderNoInterfaceName() {
 
 
-        URL publishUrl = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vicpubprovder");
+        URL publishUrl = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vicpubprovder&side=provider");
         metadataReportService1.publishProvider(publishUrl);
 
         Assert.assertTrue(metadataReportService1.metadataReport instanceof JTestMetadataReport4Test);
 
         JTestMetadataReport4Test jTestMetadataReport4Test = (JTestMetadataReport4Test) metadataReportService1.metadataReport;
-        Assert.assertTrue(jTestMetadataReport4Test.store.containsKey(JTestMetadataReport4Test.getKey(publishUrl)));
-
-        String value = jTestMetadataReport4Test.store.get(JTestMetadataReport4Test.getKey(publishUrl));
-        Map<String, String> map = queryUrlToMap(value);
-        Assert.assertEquals(map.get("application"), "vicpubprovder");
-        Assert.assertEquals(map.get("version"), "1.0.0");
+        Assert.assertTrue(!jTestMetadataReport4Test.store.containsKey(JTestMetadataReport4Test.getProviderKey(publishUrl)));
 
     }
 
     @Test
     public void testPublishProviderWrongInterface() {
 
-        URL publishUrl = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vicpu&interface=ccc");
+        URL publishUrl = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vicpu&interface=ccc&side=provider");
         metadataReportService1.publishProvider(publishUrl);
 
         Assert.assertTrue(metadataReportService1.metadataReport instanceof JTestMetadataReport4Test);
 
         JTestMetadataReport4Test jTestMetadataReport4Test = (JTestMetadataReport4Test) metadataReportService1.metadataReport;
-        Assert.assertTrue(jTestMetadataReport4Test.store.containsKey(JTestMetadataReport4Test.getKey(publishUrl)));
+        Assert.assertTrue(!jTestMetadataReport4Test.store.containsKey(JTestMetadataReport4Test.getProviderKey(publishUrl)));
 
-        String value = jTestMetadataReport4Test.store.get(JTestMetadataReport4Test.getKey(publishUrl));
-        Map<String, String> map = queryUrlToMap(value);
-        Assert.assertEquals(map.get("application"), "vicpu");
-        Assert.assertEquals(map.get("version"), "1.0.0");
-        Assert.assertEquals(map.get("interface"), "ccc");
-        Assert.assertNull(map.get(Constants.SERVICE_DESCIPTOR_KEY));
     }
 
     @Test
-    public void testPublishProviderContainInterface() {
+    public void testPublishProviderContainInterface() throws InterruptedException {
 
-        URL publishUrl = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.3&application=vicpubp&interface=org.apache.dubbo.metadata.integration.InterfaceNameTestService");
+        URL publishUrl = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.3&application=vicpubp&interface=org.apache.dubbo.metadata.integration.InterfaceNameTestService&side=provider");
         metadataReportService1.publishProvider(publishUrl);
+        Thread.sleep(300);
 
         Assert.assertTrue(metadataReportService1.metadataReport instanceof JTestMetadataReport4Test);
 
         JTestMetadataReport4Test jTestMetadataReport4Test = (JTestMetadataReport4Test) metadataReportService1.metadataReport;
-        Assert.assertTrue(jTestMetadataReport4Test.store.containsKey(JTestMetadataReport4Test.getKey(publishUrl)));
+        Assert.assertTrue(jTestMetadataReport4Test.store.containsKey(JTestMetadataReport4Test.getProviderKey(publishUrl)));
 
-        String value = jTestMetadataReport4Test.store.get(JTestMetadataReport4Test.getKey(publishUrl));
-        Map<String, String> map = queryUrlToMap(value);
+        String value = jTestMetadataReport4Test.store.get(JTestMetadataReport4Test.getProviderKey(publishUrl));
+        FullServiceDefinition fullServiceDefinition = toServiceDefinition(value);
+        Map<String,String> map = fullServiceDefinition.getParameters();
         Assert.assertEquals(map.get("application"), "vicpubp");
         Assert.assertEquals(map.get("version"), "1.0.3");
         Assert.assertEquals(map.get("interface"), "org.apache.dubbo.metadata.integration.InterfaceNameTestService");
-        Assert.assertNotNull(map.get(Constants.SERVICE_DESCIPTOR_KEY));
     }
 
     @Test
-    public void testPublishConsumer() {
+    public void testPublishConsumer() throws InterruptedException {
 
         URL publishUrl = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.x&application=vicpubconsumer&side=consumer");
         metadataReportService1.publishConsumer(publishUrl);
+        Thread.sleep(300);
 
         Assert.assertTrue(metadataReportService1.metadataReport instanceof JTestMetadataReport4Test);
 
         JTestMetadataReport4Test jTestMetadataReport4Test = (JTestMetadataReport4Test) metadataReportService1.metadataReport;
-        Assert.assertTrue(jTestMetadataReport4Test.store.containsKey(JTestMetadataReport4Test.getKey(publishUrl)));
+        Assert.assertTrue(jTestMetadataReport4Test.store.containsKey(JTestMetadataReport4Test.getConsumerKey(publishUrl)));
 
-        String value = jTestMetadataReport4Test.store.get(JTestMetadataReport4Test.getKey(publishUrl));
-        Map<String, String> map = queryUrlToMap(value);
+        String value = jTestMetadataReport4Test.store.get(JTestMetadataReport4Test.getConsumerKey(publishUrl));
+        Gson gson = new Gson();
+        Map<String, String> map = gson.fromJson(value, Map.class);
         Assert.assertEquals(map.get("application"), "vicpubconsumer");
         Assert.assertEquals(map.get("version"), "1.0.x");
 
     }
 
-    private Map<String, String> queryUrlToMap(String urlQuery) {
-        if (urlQuery == null) {
-            return Collections.emptyMap();
-        }
-        String[] pairs = urlQuery.split("&");
-        Map<String, String> map = new HashMap<>();
-        for (String pairStr : pairs) {
-            String[] pair = pairStr.split("=");
-            map.put(pair[0], pair[1]);
-        }
-        return map;
+    private FullServiceDefinition toServiceDefinition(String urlQuery) {
+        Gson gson = new Gson();
+        return gson.fromJson(urlQuery, FullServiceDefinition.class);
     }
 
 }

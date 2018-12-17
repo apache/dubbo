@@ -1,12 +1,11 @@
 package org.apache.dubbo.metadata.store.redis;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
-import org.apache.dubbo.metadata.identifier.ConsumerMetadataIdentifier;
 import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
-import org.apache.dubbo.metadata.identifier.ProviderMetadataIdentifier;
 import org.apache.dubbo.rpc.RpcException;
 
 import com.google.gson.Gson;
@@ -51,7 +50,7 @@ public class RedisMetadataReportTest {
         String version = "1.0.0.redis.md";
         String group = null;
         String application = "vic.redis.md";
-        ProviderMetadataIdentifier providerMetadataIdentifier = storePrivider(redisMetadataReport, interfaceName, version, group, application);
+        MetadataIdentifier providerMetadataIdentifier = storePrivider(redisMetadataReport, interfaceName, version, group, application);
         Jedis jedis = null;
         try {
             jedis = redisMetadataReport.pool.getResource();
@@ -77,7 +76,7 @@ public class RedisMetadataReportTest {
         String version = "1.0.0.redis.md";
         String group = null;
         String application = "vic.redis.md";
-        ConsumerMetadataIdentifier consumerMetadataIdentifier = storeConsumer(redisMetadataReport, interfaceName, version, group, application);
+        MetadataIdentifier consumerMetadataIdentifier = storeConsumer(redisMetadataReport, interfaceName, version, group, application);
         Jedis jedis = null;
         try {
             jedis = redisMetadataReport.pool.getResource();
@@ -93,30 +92,38 @@ public class RedisMetadataReportTest {
         }
     }
 
-    private ProviderMetadataIdentifier storePrivider(RedisMetadataReport redisMetadataReport, String interfaceName, String version, String group, String application) throws ClassNotFoundException {
+    private MetadataIdentifier storePrivider(RedisMetadataReport redisMetadataReport, String interfaceName, String version, String group, String application) throws ClassNotFoundException {
         URL url = URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":4444/" + interfaceName + "?paramTest=redisTest&version=" + version + "&application="
                 + application + (group == null ? "" : "&group=" + group));
 
-        ProviderMetadataIdentifier providerMetadataIdentifier = new ProviderMetadataIdentifier(interfaceName, version, group);
+        MetadataIdentifier providerMetadataIdentifier = new MetadataIdentifier(interfaceName, version, group, Constants.PROVIDER_SIDE, application);
         Class interfaceClass = Class.forName(interfaceName);
         FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass, url.getParameters());
 
         redisMetadataReport.storeProviderMetadata(providerMetadataIdentifier, fullServiceDefinition);
-
+        try {
+            Thread.sleep(300);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return providerMetadataIdentifier;
     }
 
-    private ConsumerMetadataIdentifier storeConsumer(RedisMetadataReport redisMetadataReport, String interfaceName, String version, String group, String application) throws ClassNotFoundException {
+    private MetadataIdentifier storeConsumer(RedisMetadataReport redisMetadataReport, String interfaceName, String version, String group, String application) throws ClassNotFoundException {
         URL url = URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":4444/" + interfaceName + "?version=" + version + "&application="
                 + application + (group == null ? "" : "&group=" + group));
 
-        ConsumerMetadataIdentifier consumerMetadataIdentifier = new ConsumerMetadataIdentifier(interfaceName, version, group, application);
+        MetadataIdentifier consumerMetadataIdentifier = new MetadataIdentifier(interfaceName, version, group, Constants.CONSUMER_SIDE, application);
         Class interfaceClass = Class.forName(interfaceName);
 
         Map<String, String> tmp = new HashMap<>();
         tmp.put("paramConsumerTest", "redisCm");
         redisMetadataReport.storeConsumerMetadata(consumerMetadataIdentifier, tmp);
-
+        try {
+            Thread.sleep(300);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return consumerMetadataIdentifier;
     }
 

@@ -21,7 +21,6 @@ package org.apache.dubbo.metadata.definition.common;
  */
 public interface TestService {
     /**
-     * 入参为内部类
      *
      * @param innerClass
      * @return
@@ -29,14 +28,12 @@ public interface TestService {
     void m1(OuterClass.InnerClass innerClass);
 
     /**
-     * 入参为 int 数组
      *
      * @param a
      */
     void m2(int[] a);
 
     /**
-     * 返回值自定义类型包含无泛型的 map
      *
      * @param s1
      * @return
@@ -44,14 +41,12 @@ public interface TestService {
     ResultWithRawCollections m3(String s1);
 
     /**
-     * 入参为枚举类型
      *
      * @param color
      */
     void m4(ColorEnum color);
 
     /**
-     * 返回值自定义类型继承自Map
      *
      * @param s1
      * @return
