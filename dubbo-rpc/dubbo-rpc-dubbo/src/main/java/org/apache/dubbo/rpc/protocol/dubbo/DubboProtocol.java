@@ -364,17 +364,17 @@ public class DubboProtocol extends AbstractProtocol {
 
     private ExchangeClient[] getClients(URL url) {
         // whether to share connection
-        boolean service_share_connect = false;
+        boolean serviceShareConnect = false;
         int connections = url.getParameter(Constants.CONNECTIONS_KEY, 0);
         // if not configured, connection is shared, otherwise, one connection for one service
         if (connections == 0) {
-            service_share_connect = true;
+            serviceShareConnect = true;
             connections = 1;
         }
 
         ExchangeClient[] clients = new ExchangeClient[connections];
         for (int i = 0; i < clients.length; i++) {
-            if (service_share_connect) {
+            if (serviceShareConnect) {
                 clients[i] = getSharedClient(url);
             } else {
                 clients[i] = initClient(url);
