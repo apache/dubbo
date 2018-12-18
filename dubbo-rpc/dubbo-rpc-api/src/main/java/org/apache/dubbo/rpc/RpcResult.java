@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc;
 
+import java.lang.reflect.Field;
+
 /**
  * RPC Result.
  *
@@ -39,6 +41,23 @@ public class RpcResult extends AbstractResult {
     @Override
     public Object recreate() throws Throwable {
         if (exception != null) {
+            // fix issue#619
+            try {
+                // get Throwable class
+                Class clazz = exception.getClass();
+                while (!clazz.getName().equals(Throwable.class.getName())) {
+                    clazz = clazz.getSuperclass();
+                }
+                // get stackTrace value
+                Field stackTraceField = clazz.getDeclaredField("stackTrace");
+                stackTraceField.setAccessible(true);
+                Object stackTrace = stackTraceField.get(exception);
+                if (stackTrace == null) {
+                    exception.setStackTrace(new StackTraceElement[0]);
+                }
+            } catch (Exception e) {
+                // ignore
+            }
             throw exception;
         }
         return result;

@@ -26,10 +26,17 @@ import java.util.List;
 
 /**
  * AbstractLoadBalance
- *
  */
 public abstract class AbstractLoadBalance implements LoadBalance {
-
+    /**
+     * Calculate the weight according to the uptime proportion of warmup time
+     * the new weight will be within 1(inclusive) to weight(inclusive)
+     *
+     * @param uptime the uptime in milliseconds
+     * @param warmup the warmup time in milliseconds
+     * @param weight the weight of an invoker
+     * @return weight which takes warmup into account
+     */
     static int calculateWarmupWeight(int uptime, int warmup, int weight) {
         int ww = (int) ((float) uptime / ((float) warmup / (float) weight));
         return ww < 1 ? 1 : (ww > weight ? weight : ww);
@@ -48,6 +55,15 @@ public abstract class AbstractLoadBalance implements LoadBalance {
 
     protected abstract <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation);
 
+
+    /**
+     * Get the weight of the invoker's invocation which takes warmup time into account
+     * if the uptime is within the warmup time, the weight will be reduce proportionally
+     *
+     * @param invoker    the invoker
+     * @param invocation the invocation of this invoker
+     * @return weight
+     */
     protected int getWeight(Invoker<?> invoker, Invocation invocation) {
         int weight = invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.WEIGHT_KEY, Constants.DEFAULT_WEIGHT);
         if (weight > 0) {
@@ -60,7 +76,7 @@ public abstract class AbstractLoadBalance implements LoadBalance {
                 }
             }
         }
-        return weight;
+        return weight >= 0 ? weight : 0;
     }
 
 }
