@@ -22,7 +22,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Provide a unified serialization registry
+ * Provide a unified serialization registry, this class used for {@code dubbo-serialization-fst}
+ * and {@code dubbo-serialization-kryo}, it will register some classes at startup time (for example {@link AbstractKryoFactory#create})
  */
 public abstract class SerializableClassRegistry {
 
