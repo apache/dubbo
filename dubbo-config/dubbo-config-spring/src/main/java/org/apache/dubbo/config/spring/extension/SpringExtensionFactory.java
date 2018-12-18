@@ -29,6 +29,7 @@ import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ContextClosedEvent;
 
 import java.util.Set;
@@ -44,7 +45,10 @@ public class SpringExtensionFactory implements ExtensionFactory {
 
     public static void addApplicationContext(ApplicationContext context) {
         contexts.add(context);
-        DubboShutdownHook.getDubboShutdownHook().unregister();
+        if (context instanceof ConfigurableApplicationContext) {
+            ((ConfigurableApplicationContext) context).registerShutdownHook();
+            DubboShutdownHook.getDubboShutdownHook().unregister();
+        }
         BeanFactoryUtils.addApplicationListener(context, shutdownHookListener);
     }
 
