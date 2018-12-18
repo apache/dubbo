@@ -25,27 +25,32 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
- * Serialization. (SPI, Singleton, ThreadSafe)
+ * Serialization strategy interface that specifies a serializer. (SPI, Singleton, ThreadSafe)
+ *
+ * The default extension is hessian2 and the default serialization implementation of the dubbo protocol.
+ * <pre>
+ *     e.g. &lt;dubbo:protocol serialization="xxx" /&gt;
+ * </pre>
  */
 @SPI("hessian2")
 public interface Serialization {
 
     /**
-     * get content type id
+     * Get content type unique id, recommended that custom implementations use values greater than 20.
      *
      * @return content type id
      */
     byte getContentTypeId();
 
     /**
-     * get content type
+     * Get content type
      *
      * @return content type
      */
     String getContentType();
 
     /**
-     * create serializer
+     * Get a serialization implementation instance
      *
      * @param url
      * @param output
@@ -56,7 +61,7 @@ public interface Serialization {
     ObjectOutput serialize(URL url, OutputStream output) throws IOException;
 
     /**
-     * create deserializer
+     * Get a deserialization implementation instance
      *
      * @param url
      * @param input
