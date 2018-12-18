@@ -39,7 +39,6 @@ import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
 import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.RouterFactory;
-import org.apache.dubbo.rpc.cluster.configurator.parser.ConfigParser;
 import org.apache.dubbo.rpc.cluster.directory.AbstractDirectory;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
@@ -52,7 +51,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -103,8 +101,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * Rule two: for all providers <* ,timeout=5000>
      */
     private volatile List<Configurator> configurators; // The initial value is null and the midway may be assigned to null, please use the local variable reference
-    private volatile List<Configurator> dynamicConfigurators;
-    private volatile List<Configurator> appDynamicConfigurators;
 
     // Map<url, Invoker> cache service url to invoker mapping.
     private volatile Map<String, Invoker<T>> urlInvokerMap; // The initial value is null and the midway may be assigned to null, please use the local variable reference
@@ -117,6 +113,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     private volatile Set<URL> cachedInvokerUrls; // The initial value is null and the midway may be assigned to null, please use the local variable reference
 
     private static final ConsumerConfigurationListener consumerConfigurationListener = new ConsumerConfigurationListener();
+    private ServiceConfigurationListener serviceConfigurationListener;
 
 
     public RegistryDirectory(Class<T> serviceType, URL url) {
@@ -135,54 +132,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         this.multiGroup = group != null && ("*".equals(group) || group.contains(","));
         String methods = queryMap.get(Constants.METHODS_KEY);
         this.serviceMethods = methods == null ? null : Constants.COMMA_SPLIT_PATTERN.split(methods);
-    }
-
-    /**
-     * Convert override urls to map for use when re-refer.
-     * Send all rules every time, the urls will be reassembled and calculated
-     *
-     * @param urls Contract:
-     *             </br>1.override://0.0.0.0/...( or override://ip:port...?anyhost=true)&para1=value1... means global rules (all of the providers take effect)
-     *             </br>2.override://ip:port...?anyhost=false Special rules (only for a certain provider)
-     *             </br>3.override:// rule is not supported... ,needs to be calculated by registry itself.
-     *             </br>4.override://0.0.0.0/ without parameters means clearing the override
-     * @return
-     */
-    public static Optional<List<Configurator>> toConfigurators(List<URL> urls) {
-        if (CollectionUtils.isEmpty(urls)) {
-            return Optional.empty();
-        }
-
-        List<Configurator> configurators = new ArrayList<Configurator>(urls.size());
-        for (URL url : urls) {
-            if (Constants.EMPTY_PROTOCOL.equals(url.getProtocol())) {
-                configurators.clear();
-                break;
-            }
-            Map<String, String> override = new HashMap<String, String>(url.getParameters());
-            //The anyhost parameter of override may be added automatically, it can't change the judgement of changing url
-            override.remove(Constants.ANYHOST_KEY);
-            if (override.size() == 0) {
-                configurators.clear();
-                continue;
-            }
-            configurators.add(configuratorFactory.getConfigurator(url));
-        }
-        Collections.sort(configurators);
-        return Optional.of(configurators);
-    }
-
-    public static List<Configurator> configToConfiguratiors(String rawConfig) {
-        if (StringUtils.isEmpty(rawConfig)) {
-            return new LinkedList<>();
-        }
-        try {
-            List<URL> urls = ConfigParser.parseConfigurators(rawConfig);
-            return urls.stream().map(configuratorFactory::getConfigurator).collect(Collectors.toList());
-        } catch (Exception e) {
-            logger.error("Failed to parse raw dynamic config and it will not take effect, the raw config is: " + rawConfig, e);
-        }
-        return new LinkedList<>();
     }
 
     private URL turnRegistryUrlToConsumerUrl(URL url) {
@@ -207,12 +156,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     public void subscribe(URL url) {
         setConsumerUrl(url);
+        consumerConfigurationListener.addNotifyListener(this);
+        serviceConfigurationListener = new ServiceConfigurationListener(url);
         registry.subscribe(url, this);
-
-        consumerConfigurationListener.overrideUrl();
-
-        ServiceConfigurationListener serviceConfigurationListener = new ServiceConfigurationListener(url);
-        serviceConfigurationListener.overrideUrl();
     }
 
 
@@ -241,36 +187,26 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     @Override
     public synchronized void notify(List<URL> urls) {
-        List<URL> categoryUrls = urls.stream()
-                .filter(this::isValidCategory)
-                .filter(this::isNotCompatibleFor26x)
-                .collect(Collectors.toList());
+        List<URL> categoryUrls = urls.stream().filter(this::isValidCategory).filter(this::isNotCompatibleFor26x).collect(Collectors.toList());
 
-        this.configurators = toConfigurators(classifyUrls(categoryUrls, url -> url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY)
+        this.configurators = Configurator.toConfigurators(classifyUrls(categoryUrls, url -> url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY)
                 .equals(CONFIGURATORS_CATEGORY))).orElse(configurators);
-        this.dynamicConfigurators = toConfigurators(classifyUrls(categoryUrls, url -> url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY)
-                .equals(DYNAMIC_CONFIGURATORS_CATEGORY))).orElse(dynamicConfigurators);
-        this.appDynamicConfigurators = toConfigurators(classifyUrls(categoryUrls, url -> url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY)
-                .equals(APP_DYNAMIC_CONFIGURATORS_CATEGORY))).orElse(appDynamicConfigurators);
-
 
         toRouters(classifyUrls(categoryUrls, url -> {
-            return url.getProtocol()
-                    .equals(ROUTE_PROTOCOL) || url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY)
+            return url.getProtocol().equals(ROUTE_PROTOCOL) || url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY)
                     .equals(ROUTERS_CATEGORY);
         })).ifPresent(this::addRouters);
 
-        // mock zookeeper://xxx?mock=return null
-        overrideDirectoryUrl();
-
         // providers
-        refreshInvoker(classifyUrls(categoryUrls, url -> url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY)
+        refreshOverrideAndInvoker(classifyUrls(categoryUrls, url -> url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY)
                 .equals(PROVIDERS_CATEGORY)));
     }
 
-/*    private List<URL> compositeDynamicConfiguration(List<URL> urls) {
-        return urls.stream().map(u -> dynamicConfiguration.instrument(u)).collect(Collectors.toList());
-    }*/
+    public void refreshOverrideAndInvoker(List<URL> urls) {
+        // mock zookeeper://xxx?mock=return null
+        overrideDirectoryUrl();
+        refreshInvoker(urls);
+    }
 
     /**
      * Convert the invokerURL list to the Invoker Map. The rules of the conversion are as follows:
@@ -292,13 +228,13 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         } else {
             this.forbidden = false; // Allow to access
             Map<String, Invoker<T>> oldUrlInvokerMap = this.urlInvokerMap; // local reference
-            if (invokerUrls.isEmpty() && this.cachedInvokerUrls != null) {
+            if (invokerUrls != null && invokerUrls.isEmpty() && this.cachedInvokerUrls != null) {
                 invokerUrls.addAll(this.cachedInvokerUrls);
-            } else {
-                this.cachedInvokerUrls = new HashSet<URL>();
+            } else if (invokerUrls != null) {
+                this.cachedInvokerUrls = new HashSet<>();
                 this.cachedInvokerUrls.addAll(invokerUrls);//Cached invoker urls, convenient for comparison
             }
-            if (invokerUrls.isEmpty()) {
+            if (CollectionUtils.isEmpty(invokerUrls)) {
                 return;
             }
             Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls);// Translate url list to Invoker map
@@ -534,14 +470,14 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }
         }
 
-        List<Configurator> localAppDynamicConfigurators = this.appDynamicConfigurators; // local reference
+        List<Configurator> localAppDynamicConfigurators = consumerConfigurationListener.getConfigurators(); // local reference
         if (localAppDynamicConfigurators != null && !localAppDynamicConfigurators.isEmpty()) {
             for (Configurator configurator : localAppDynamicConfigurators) {
                 providerUrl = configurator.configure(providerUrl);
             }
         }
 
-        List<Configurator> localDynamicConfigurators = this.dynamicConfigurators; // local reference
+        List<Configurator> localDynamicConfigurators = serviceConfigurationListener.getConfigurators(); // local reference
         if (localDynamicConfigurators != null && !localDynamicConfigurators.isEmpty()) {
             for (Configurator configurator : localDynamicConfigurators) {
                 providerUrl = configurator.configure(providerUrl);
@@ -774,9 +710,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         this.overrideDirectoryUrl = directoryUrl;
         List<Configurator> localConfigurators = this.configurators; // local reference
         doOverrideUrl(localConfigurators);
-        List<Configurator> localAppDynamicConfigurators = this.appDynamicConfigurators; // local reference
+        List<Configurator> localAppDynamicConfigurators = consumerConfigurationListener.getConfigurators(); // local reference
         doOverrideUrl(localAppDynamicConfigurators);
-        List<Configurator> localDynamicConfigurators = this.dynamicConfigurators; // local reference
+        List<Configurator> localDynamicConfigurators = serviceConfigurationListener.getConfigurators(); // local reference
         doOverrideUrl(localDynamicConfigurators);
     }
 
@@ -811,30 +747,30 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
         ServiceConfigurationListener(URL url) {
             this.url = url;
+            this.init();
         }
 
-        synchronized void overrideUrl() {
-            DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
+        private synchronized void init() {
             String key = url.getEncodedServiceKey() + Constants.CONFIGURATORS_SUFFIX;
-            String rawConfig = dynamicConfiguration.getConfig(key);
+            DynamicConfiguration.getDynamicConfiguration().addListener(key, this);
+            String rawConfig = DynamicConfiguration.getDynamicConfiguration().getConfig(key);
             if (rawConfig != null) {
                 this.process(new ConfigChangeEvent(key, rawConfig));
             }
-
-            dynamicConfiguration.addListener(key, this);
         }
 
         @Override
-        protected void notifyOverrides(List<URL> urls) {
-            RegistryDirectory.this.notify(urls);
+        protected void notifyOverrides() {
+            // 'null' means notification of configurators or routers.
+            RegistryDirectory.this.refreshInvoker(null);
         }
     }
 
     private static class ConsumerConfigurationListener extends AbstractConfiguratorListener {
-        List<NotifyListener> listeners = new ArrayList<>();
-        ConfigChangeEvent initRule;
+        List<RegistryDirectory> listeners = new ArrayList<>();
 
-        void addNotifyListener(NotifyListener listener) {
+
+        void addNotifyListener(RegistryDirectory listener) {
             this.listeners.add(listener);
         }
 
@@ -844,23 +780,16 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
         private synchronized void init() {
             String appKey = ApplicationModel.getApplication() + Constants.CONFIGURATORS_SUFFIX;
+            DynamicConfiguration.getDynamicConfiguration().addListener(appKey, this);
             String appRawConfig = DynamicConfiguration.getDynamicConfiguration().getConfig(appKey);
             if (appRawConfig != null) {
-                initRule = new ConfigChangeEvent(appKey, appRawConfig);
-            }
-
-            DynamicConfiguration.getDynamicConfiguration().addListener(appKey, this);
-        }
-
-        synchronized void overrideUrl() {
-            if (initRule != null) {
-                process(initRule);
+                process(new ConfigChangeEvent(appKey, appRawConfig));
             }
         }
 
         @Override
-        protected void notifyOverrides(List<URL> urls) {
-            listeners.forEach(listener -> listener.notify(urls));
+        protected void notifyOverrides() {
+            listeners.forEach(listener -> listener.refreshInvoker(null));
         }
     }
 
