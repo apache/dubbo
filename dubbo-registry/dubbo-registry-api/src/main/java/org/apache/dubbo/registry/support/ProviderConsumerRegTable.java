@@ -34,8 +34,8 @@ public class ProviderConsumerRegTable {
     public static ConcurrentHashMap<String, ConcurrentMap<Invoker, ProviderInvokerWrapper>> providerInvokers = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<String, Set<ConsumerInvokerWrapper>> consumerInvokers = new ConcurrentHashMap<>();
 
-    public static void registerProvider(Invoker invoker, URL registryUrl, URL providerUrl) {
-        ProviderInvokerWrapper wrapperInvoker = new ProviderInvokerWrapper(invoker, registryUrl, providerUrl);
+    public static <T> ProviderInvokerWrapper<T> registerProvider(Invoker<T> invoker, URL registryUrl, URL providerUrl) {
+        ProviderInvokerWrapper<T> wrapperInvoker = new ProviderInvokerWrapper<>(invoker, registryUrl, providerUrl);
         String serviceUniqueName = providerUrl.getServiceKey();
         ConcurrentMap<Invoker, ProviderInvokerWrapper> invokers = providerInvokers.get(serviceUniqueName);
         if (invokers == null) {
@@ -43,6 +43,7 @@ public class ProviderConsumerRegTable {
             invokers = providerInvokers.get(serviceUniqueName);
         }
         invokers.put(invoker, wrapperInvoker);
+        return wrapperInvoker;
     }
 
     /*public static ProviderInvokerWrapper removeProviderWrapper(Invoker invoker, URL providerUrl) {
@@ -62,7 +63,7 @@ public class ProviderConsumerRegTable {
         return new HashSet<>(invokers.values());
     }
 
-    public static ProviderInvokerWrapper getProviderWrapper(URL registeredProviderUrl, Invoker invoker) {
+    public static <T> ProviderInvokerWrapper<T> getProviderWrapper(URL registeredProviderUrl, Invoker<T> invoker) {
         String serviceUniqueName = registeredProviderUrl.getServiceKey();
         ConcurrentMap<Invoker, ProviderInvokerWrapper> invokers = providerInvokers.get(serviceUniqueName);
         if (invokers == null) {

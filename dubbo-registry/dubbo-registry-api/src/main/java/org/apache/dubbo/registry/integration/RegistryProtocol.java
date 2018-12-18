@@ -163,12 +163,12 @@ public class RegistryProtocol implements Protocol {
         // url to registry
         final Registry registry = getRegistry(originInvoker);
         final URL registeredProviderUrl = getRegistedProviderUrl(providerUrl, registryUrl);
-        ProviderConsumerRegTable.registerProvider(originInvoker, registryUrl, registeredProviderUrl);
+        ProviderInvokerWrapper<T> providerInvokerWrapper = ProviderConsumerRegTable.registerProvider(originInvoker, registryUrl, registeredProviderUrl);
         //to judge if we need to delay publish
         boolean register = registeredProviderUrl.getParameter("register", true);
         if (register) {
             register(registryUrl, registeredProviderUrl);
-            ProviderConsumerRegTable.getProviderWrapper(registeredProviderUrl, originInvoker).setReg(true);
+            providerInvokerWrapper.setReg(true);
         }
 
         // Deprecated! Subscribe to override rules in 2.6.x or before.
@@ -214,13 +214,14 @@ public class RegistryProtocol implements Protocol {
 
         //decide if we need to re-publish
         ProviderInvokerWrapper<T> providerInvokerWrapper = ProviderConsumerRegTable.getProviderWrapper(registeredProviderUrl, originInvoker);
-        ProviderConsumerRegTable.registerProvider(originInvoker, registryUrl, registeredProviderUrl);
+        ProviderInvokerWrapper<T> newProviderInvokerWrapper = ProviderConsumerRegTable.registerProvider(originInvoker, registryUrl, registeredProviderUrl);
         /**
          * Only if the new url going to Registry is different with the previous one should we do unregister and register.
          */
         if (providerInvokerWrapper.isReg() && !registeredProviderUrl.equals(providerInvokerWrapper.getProviderUrl())) {
             unregister(registryUrl, providerInvokerWrapper.getProviderUrl());
             register(registryUrl, registeredProviderUrl);
+            newProviderInvokerWrapper.setReg(true);
         }
 
         exporter.setRegisterUrl(registeredProviderUrl);
