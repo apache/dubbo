@@ -52,8 +52,8 @@ public interface Serialization {
     /**
      * Get a serialization implementation instance
      *
-     * @param url
-     * @param output
+     * @param url URL address for the remote service
+     * @param output the underlying output stream
      * @return serializer
      * @throws IOException
      */
@@ -63,8 +63,8 @@ public interface Serialization {
     /**
      * Get a deserialization implementation instance
      *
-     * @param url
-     * @param input
+     * @param url URL address for the remote service
+     * @param input the underlying input stream
      * @return deserializer
      * @throws IOException
      */
