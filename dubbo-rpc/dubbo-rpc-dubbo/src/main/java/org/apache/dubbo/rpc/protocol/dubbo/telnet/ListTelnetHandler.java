@@ -23,6 +23,7 @@ import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.telnet.support.Help;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.protocol.dubbo.DubboExporter;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 import java.lang.reflect.Method;
@@ -62,7 +63,7 @@ public class ListTelnetHandler implements TelnetHandler {
                 if (buf.length() > 0) {
                     buf.append("\r\n");
                 }
-                buf.append(exporter.getInvoker().getInterface().getName());
+                buf.append(((DubboExporter) exporter).getKey());
                 if (detail) {
                     buf.append(" -> ");
                     buf.append(exporter.getInvoker().getUrl());
@@ -71,9 +72,7 @@ public class ListTelnetHandler implements TelnetHandler {
         } else {
             Invoker<?> invoker = null;
             for (Exporter<?> exporter : DubboProtocol.getDubboProtocol().getExporters()) {
-                if (service.equals(exporter.getInvoker().getInterface().getSimpleName())
-                        || service.equals(exporter.getInvoker().getInterface().getName())
-                        || service.equals(exporter.getInvoker().getUrl().getPath())) {
+                if (service.equals(((DubboExporter) exporter).getKey())) {
                     invoker = exporter.getInvoker();
                     break;
                 }

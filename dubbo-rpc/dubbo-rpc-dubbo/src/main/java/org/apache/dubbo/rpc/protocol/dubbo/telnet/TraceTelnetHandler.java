@@ -23,6 +23,7 @@ import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.telnet.support.Help;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.protocol.dubbo.DubboExporter;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 import org.apache.dubbo.rpc.protocol.dubbo.filter.TraceFilter;
 
@@ -62,9 +63,7 @@ public class TraceTelnetHandler implements TelnetHandler {
         }
         Invoker<?> invoker = null;
         for (Exporter<?> exporter : DubboProtocol.getDubboProtocol().getExporters()) {
-            if (service.equals(exporter.getInvoker().getInterface().getSimpleName())
-                    || service.equals(exporter.getInvoker().getInterface().getName())
-                    || service.equals(exporter.getInvoker().getUrl().getPath())) {
+            if (service.equals(((DubboExporter) exporter).getKey())) {
                 invoker = exporter.getInvoker();
                 break;
             }

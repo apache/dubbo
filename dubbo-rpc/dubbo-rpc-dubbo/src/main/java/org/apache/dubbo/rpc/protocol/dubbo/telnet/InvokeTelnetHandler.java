@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.protocol.dubbo.DubboExporter;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 import com.alibaba.fastjson.JSON;
@@ -188,9 +189,7 @@ public class InvokeTelnetHandler implements TelnetHandler {
                     break;
                 }
             } else {
-                if (service.equals(exporter.getInvoker().getInterface().getSimpleName())
-                        || service.equals(exporter.getInvoker().getInterface().getName())
-                        || service.equals(exporter.getInvoker().getUrl().getPath())) {
+                if (service.equals(((DubboExporter) exporter).getKey())) {
                     invokeMethod = findMethod(exporter, method, list, paramClasses);
                     invoker = exporter.getInvoker();
                     break;

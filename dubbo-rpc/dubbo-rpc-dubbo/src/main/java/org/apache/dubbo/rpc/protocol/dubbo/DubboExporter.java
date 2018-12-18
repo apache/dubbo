@@ -43,4 +43,7 @@ public class DubboExporter<T> extends AbstractExporter<T> {
         exporterMap.remove(key);
     }
 
+    public String getKey() {
+        return key;
+    }
 }

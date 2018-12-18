@@ -21,6 +21,7 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.telnet.support.Help;
 import org.apache.dubbo.rpc.Exporter;
+import org.apache.dubbo.rpc.protocol.dubbo.DubboExporter;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 /**
@@ -45,9 +46,7 @@ public class ChangeTelnetHandler implements TelnetHandler {
         } else {
             boolean found = false;
             for (Exporter<?> exporter : DubboProtocol.getDubboProtocol().getExporters()) {
-                if (message.equals(exporter.getInvoker().getInterface().getSimpleName())
-                        || message.equals(exporter.getInvoker().getInterface().getName())
-                        || message.equals(exporter.getInvoker().getUrl().getPath())) {
+                if (message.equals(((DubboExporter) exporter).getKey())) {
                     found = true;
                     break;
                 }
