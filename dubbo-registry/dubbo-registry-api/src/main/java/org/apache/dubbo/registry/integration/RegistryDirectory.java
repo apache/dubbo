@@ -280,7 +280,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         } else if (groupMap.size() > 1) {
             for (List<Invoker<T>> groupList : groupMap.values()) {
                 StaticDirectory<T> staticDirectory = new StaticDirectory<>(groupList);
-                staticDirectory.buildRouterChain(invokers);
+                staticDirectory.buildRouterChain();
                 mergedInvokers.add(cluster.join(staticDirectory));
             }
         } else {
