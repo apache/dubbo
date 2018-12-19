@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import static junit.framework.TestCase.assertEquals;
@@ -42,6 +43,11 @@ public class InvokerTelnetHandlerTest {
 
     private static TelnetHandler invoke = new InvokeTelnetHandler();
     private Channel mockChannel;
+
+    @Before
+    public void setup() {
+        ApplicationModel.reset();
+    }
 
     @After
     public void after() {

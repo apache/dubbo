@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -48,6 +49,11 @@ public class ListTelnetHandlerTest {
     @BeforeClass
     public static void setUp() {
         ProtocolUtils.closeAll();
+    }
+
+    @Before
+    public void init() {
+        ApplicationModel.reset();
     }
 
     @After

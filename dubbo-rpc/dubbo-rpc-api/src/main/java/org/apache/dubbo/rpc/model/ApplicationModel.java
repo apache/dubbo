@@ -72,4 +72,12 @@ public class ApplicationModel {
             LOGGER.warn("Already register the same:" + serviceName);
         }
     }
+
+    /**
+     * For unit test
+     */
+    public static void reset() {
+        providedServices.clear();
+        consumedServices.clear();
+    }
 }
