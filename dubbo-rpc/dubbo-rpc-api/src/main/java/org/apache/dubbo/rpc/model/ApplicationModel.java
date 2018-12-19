@@ -16,20 +16,23 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.util.Collection;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Represent a application which is using Dubbo and store basic metadata info for using
  * during the processing of RPC invoking.
- *
+ * <p>
  * ApplicationModel includes many ProviderModel which is about published services
  * and many Consumer Model which is about subscribed services.
- *
+ * <p>
  * adjust project structure in order to fully utilize the methods introduced here.
  */
 public class ApplicationModel {
@@ -47,6 +50,8 @@ public class ApplicationModel {
 
     private static String application;
 
+    private static AtomicBoolean INIT_FLAG = new AtomicBoolean(false);
+
     public static Collection<ConsumerModel> allConsumerModels() {
         return consumedServices.values();
     }
@@ -61,6 +66,16 @@ public class ApplicationModel {
 
     public static ConsumerModel getConsumerModel(String serviceName) {
         return consumedServices.get(serviceName);
+    }
+
+    public static void init() {
+        if (INIT_FLAG.compareAndSet(false, true)) {
+            ExtensionLoader<ApplicationInitListener> extensionLoader = ExtensionLoader.getExtensionLoader(ApplicationInitListener.class);
+            Set<String> listenerNames = extensionLoader.getSupportedExtensions();
+            for (String listenerName : listenerNames) {
+                extensionLoader.getExtension(listenerName).init();
+            }
+        }
     }
 
     public static void initConsumerModel(String serviceName, ConsumerModel consumerModel) {
