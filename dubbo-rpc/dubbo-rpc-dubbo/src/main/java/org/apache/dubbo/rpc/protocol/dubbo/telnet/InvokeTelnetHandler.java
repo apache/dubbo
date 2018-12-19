@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo.telnet;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -34,7 +33,6 @@ import com.alibaba.fastjson.JSONObject;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
