@@ -88,7 +88,7 @@ public class LogstashMonitorTest {
         monitor.collect(statistics);
         monitor.send();
 
-        String received = messageReceived.poll(3, TimeUnit.SECONDS);
+        String received = messageReceived.poll(10, TimeUnit.SECONDS);
         assertNotNull("monitor data not received", received);
         MonitorData data = JSON.parseObject(received, MonitorData.class);
 
