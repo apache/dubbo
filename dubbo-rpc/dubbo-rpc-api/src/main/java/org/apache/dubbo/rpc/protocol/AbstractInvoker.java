@@ -134,9 +134,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         }
         RpcInvocation invocation = (RpcInvocation) inv;
         invocation.setInvoker(this);
-        if (attachment != null && attachment.size() > 0) {
-            invocation.addAttachmentsIfAbsent(attachment);
-        }
+
         Map<String, String> contextAttachments = RpcContext.getContext().getAttachments();
         if (contextAttachments != null && contextAttachments.size() != 0) {
             /**
@@ -152,6 +150,14 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         }
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
 
+        // If we have attachment, refresh the attachment to ensure that the last invoke's attach does not affect this call.
+        // In most cases, attachments contains interface, timeout, group, and token.
+        // These info should be refreshed in each invoke.
+        //
+        // See https://github.com/apache/incubator-dubbo/issues/2981
+        if (attachment != null && attachment.size() > 0) {
+            invocation.addAttachments(attachment);
+        }
 
         try {
             return doInvoke(invocation);
