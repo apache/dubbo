@@ -23,6 +23,8 @@ import org.apache.dubbo.registry.integration.RegistryDirectory;
 import org.apache.dubbo.rpc.Invoker;
 
 import java.util.Collections;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -86,35 +88,19 @@ public class ProviderConsumerRegTable {
 
     public static Set<ConsumerInvokerWrapper> getConsumerInvoker(String serviceUniqueName) {
         Set<ConsumerInvokerWrapper> invokers = consumerInvokers.get(serviceUniqueName);
-        if (invokers == null) {
-            return Collections.emptySet();
-        }
-        return invokers;
+        return invokers == null ? Collections.emptySet() : invokers;
     }
 
     public static boolean isRegistered(String serviceUniqueName) {
         Set<ProviderInvokerWrapper> providerInvokerWrapperSet = ProviderConsumerRegTable.getProviderInvoker(serviceUniqueName);
-        for (ProviderInvokerWrapper providerInvokerWrapper : providerInvokerWrapperSet) {
-            if (providerInvokerWrapper.isReg()) {
-                return true;
-            }
-        }
-
-        return false;
+        return providerInvokerWrapperSet.stream().anyMatch(ProviderInvokerWrapper::isReg);
     }
 
     public static int getConsumerAddressNum(String serviceUniqueName) {
-        int count = 0;
         Set<ConsumerInvokerWrapper> providerInvokerWrapperSet = ProviderConsumerRegTable.getConsumerInvoker(serviceUniqueName);
-        for (ConsumerInvokerWrapper consumerInvokerWrapper : providerInvokerWrapperSet) {
-            //TODO not thread safe,fixme
-            int addNum = 0;
-            if (consumerInvokerWrapper.getRegistryDirectory().getUrlInvokerMap() != null) {
-                addNum = consumerInvokerWrapper.getRegistryDirectory().getUrlInvokerMap().size();
-            }
-            count += addNum;
-        }
-        return count;
+        return providerInvokerWrapperSet.stream()
+                .map(w -> w.getRegistryDirectory().getUrlInvokerMap())
+                .filter(Objects::nonNull)
+                .mapToInt(Map::size).sum();
     }
-
 }
