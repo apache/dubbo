@@ -17,19 +17,16 @@
 package org.apache.dubbo.rpc.protocol.dubbo.telnet;
 
 import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.telnet.support.Help;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ProviderMethodModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
-import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -197,7 +194,8 @@ public class InvokeTelnetHandler implements TelnetHandler {
         for (ProviderModel provider : ApplicationModel.allProviderModels()) {
             if (provider.getServiceName().equalsIgnoreCase(service)
                     || provider.getServiceInterfaceClass().getSimpleName().equalsIgnoreCase(service)
-                    || provider.getServiceInterfaceClass().getName().equalsIgnoreCase(service)) {
+                    || provider.getServiceInterfaceClass().getName().equalsIgnoreCase(service)
+                    || StringUtils.isEmpty(service)) {
                 invokeMethod = findMethod(provider.getAllMethods(), method, list, paramTypes);
                 selectedProvider = provider;
                 break;
@@ -205,18 +203,21 @@ public class InvokeTelnetHandler implements TelnetHandler {
         }
 
         if (selectedProvider != null) {
-            URL url = URL.valueOf(InjvmProtocol.NAME + "://" + Constants.ANYHOST_VALUE + ":0" + "/" +
-                    serviceKeyToPath(selectedProvider.getServiceName()));
-            Invoker invoker = InjvmProtocol.getInjvmProtocol().refer(selectedProvider.getServiceInterfaceClass(), url);
             if (invokeMethod != null) {
                 try {
                     Object[] array = realize(list.toArray(), invokeMethod.getParameterTypes(),
                             invokeMethod.getGenericParameterTypes());
                     getContext().setLocalAddress(channel.getLocalAddress()).setRemoteAddress(channel.getRemoteAddress());
                     long start = System.currentTimeMillis();
-                    Object result = invoker.invoke(new RpcInvocation(invokeMethod, array)).recreate();
+                    RpcResult result = new RpcResult();
+                    try {
+                        Object o = invokeMethod.invoke(selectedProvider.getServiceInstance(), array);
+                        result.setValue(o);
+                    } catch (Throwable t) {
+                        result.setException(t);
+                    }
                     long end = System.currentTimeMillis();
-                    buf.append(JSON.toJSONString(result));
+                    buf.append(JSON.toJSONString(result.recreate()));
                     buf.append("\r\nelapsed: ");
                     buf.append(end - start);
                     buf.append(" ms.");
@@ -229,37 +230,6 @@ public class InvokeTelnetHandler implements TelnetHandler {
         } else {
             buf.append("No such service ").append(service);
         }
-        return buf.toString();
-    }
-
-    private String serviceKeyToPath(String service) {
-        Map<String, String> map = new HashMap<>();
-        String group = null;
-        String version = null;
-
-        String interfaceName = service;
-        if (interfaceName.contains("/")) {
-            group = interfaceName.substring(0, interfaceName.indexOf("/"));
-            interfaceName = interfaceName.substring(interfaceName.indexOf("/"));
-        }
-
-        if (interfaceName.contains(":")) {
-            version = interfaceName.substring(interfaceName.indexOf(":"));
-            interfaceName = interfaceName.substring(0, interfaceName.indexOf(":"));
-        }
-
-        StringBuilder buf = new StringBuilder();
-        buf.append(interfaceName);
-        if (StringUtils.isNotEmpty(group) || StringUtils.isNotEmpty(version)) {
-            buf.append("?");
-            if (StringUtils.isNotEmpty(group)) {
-                buf.append(Constants.GROUP_KEY).append("=").append(group);
-            }
-            if (StringUtils.isNotEmpty(version)) {
-                buf.append(Constants.VERSION_KEY).append("=").append(version);
-            }
-        }
-
         return buf.toString();
     }
 }
