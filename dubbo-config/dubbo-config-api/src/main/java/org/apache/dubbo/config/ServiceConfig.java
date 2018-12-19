@@ -71,28 +71,29 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private static final long serialVersionUID = 3033787999037024738L;
 
     /**
-     * A {@link Protocol} implementation with adaptive functionality,it will be different in different scenarios.
+     * The {@link Protocol} implementation with adaptive functionality,it will be different in different scenarios.
      * A particular {@link Protocol} implementation is determined by the protocol attribute in the {@link URL}.
      * For example:
      *
-     * <li>when the url is registry://224.5.6.7:1234/org.apache.dubbo.registry.RegistryService?application=dubbo-sample
+     * <li>when the url is registry://224.5.6.7:1234/org.apache.dubbo.registry.RegistryService?application=dubbo-sample,
      * then the protocol is <b>RegistryProtocol</b></li>
      *
-     * <li>when the url is dubbo://224.5.6.7:1234/org.apache.dubbo.config.api.DemoService?application=dubbo-sample
-     * the the protocol is <b>DubboProtocol</b></li>
+     * <li>when the url is dubbo://224.5.6.7:1234/org.apache.dubbo.config.api.DemoService?application=dubbo-sample, then
+     * the protocol is <b>DubboProtocol</b></li>
      *
      * Actually，when the {@link ExtensionLoader} init the {@link Protocol} instants,it will automatically wraps two
-     * layers, and eventually it actually gets to <b>ProtocolFilterWrapper</b> or <b>ProtocolListenerWrapper</b>
+     * layers, and eventually will get a <b>ProtocolFilterWrapper</b> or <b>ProtocolListenerWrapper</b>
      */
     private static final Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
     /**
-     * A {@link ProxyFactory} implementation that generates a proxy,the JavassistProxyFactory is its default implementation
+     * A {@link ProxyFactory} implementation that generates a exported service proxy,the JavassistProxyFactory is its
+     * default implementation
      */
     private static final ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
     /**
-     * A random port cache,different protocols who value no port specified have different random ports
+     * A random port cache, the different protocols who has no port specified have different random port
      */
     private static final Map<String, Integer> RANDOM_PORT_MAP = new HashMap<String, Integer>();
 
@@ -142,12 +143,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private ProviderConfig provider;
 
     /**
-     * The flag of a exported,if it is true,it explains that the service has been successfully exposed
+     * The flag if a service has exported, if it is true, it explains that the service has been successfully exposed
      */
     private transient volatile boolean exported;
 
     /**
-     * The flag of unexported ,if it has invoked the method unexported,the value is true
+     * The flag if a service has unexported ,if the method unexported is invoked, the value is true
      */
     private transient volatile boolean unexported;
 
