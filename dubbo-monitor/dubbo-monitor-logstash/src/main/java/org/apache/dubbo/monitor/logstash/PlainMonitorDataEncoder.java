@@ -16,13 +16,14 @@
  */
 package org.apache.dubbo.monitor.logstash;
 
+import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.monitor.MonitorService;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
-import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.monitor.MonitorService;
 
 @ChannelHandler.Sharable
 public class PlainMonitorDataEncoder extends MessageToByteEncoder<MonitorData> {

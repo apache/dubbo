@@ -16,8 +16,9 @@
  */
 package org.apache.dubbo.monitor.logstash;
 
-import com.alibaba.fastjson.annotation.JSONField;
 import org.apache.dubbo.common.URL;
+
+import com.alibaba.fastjson.annotation.JSONField;
 
 import java.util.Date;
 
