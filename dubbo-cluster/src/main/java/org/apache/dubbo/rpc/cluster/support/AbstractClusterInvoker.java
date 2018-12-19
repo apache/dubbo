@@ -234,7 +234,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         Map<String, String> contextAttachments = RpcContext.getContext().getAttachments();
         if (contextAttachments != null && contextAttachments.size() != 0) {
             ((RpcInvocation) invocation).addAttachments(contextAttachments);
-            // We need to remove the interface because the interface here may not come from last invoke.
+            // We need to remove the interface because the interface here may come from last invoke.
             //
             // See https://github.com/apache/incubator-dubbo/issues/2981
             if (invocation.getAttachments() != null) {
