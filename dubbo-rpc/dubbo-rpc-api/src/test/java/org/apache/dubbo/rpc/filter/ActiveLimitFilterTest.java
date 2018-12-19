@@ -25,6 +25,7 @@ import org.apache.dubbo.rpc.RpcStatus;
 import org.apache.dubbo.rpc.support.BlockMyInvoker;
 import org.apache.dubbo.rpc.support.MockInvocation;
 import org.apache.dubbo.rpc.support.MyInvoker;
+import org.apache.dubbo.rpc.support.RuntimeExceptionInvoker;
 
 import org.junit.Test;
 
@@ -180,5 +181,18 @@ public class ActiveLimitFilterTest {
             e.printStackTrace();
         }
         assertEquals(0, count.intValue());
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testInvokeRuntimeException() {
+        URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives=0");
+        Invoker<ActiveLimitFilterTest> invoker = new RuntimeExceptionInvoker(url);
+        Invocation invocation = new MockInvocation();
+        RpcStatus count = RpcStatus.getStatus(invoker.getUrl(), invocation.getMethodName());
+        int beforeExceptionActiveCount = count.getActive();
+        activeLimitFilter.invoke(invoker, invocation);
+        int afterExceptionActiveCount = count.getActive();
+        assertEquals("After exception active count should be same"
+                , beforeExceptionActiveCount, afterExceptionActiveCount);
     }
 }
