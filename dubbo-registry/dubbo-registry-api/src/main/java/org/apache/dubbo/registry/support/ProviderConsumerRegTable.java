@@ -92,4 +92,29 @@ public class ProviderConsumerRegTable {
         return invokers;
     }
 
+    public static boolean isRegistered(String serviceUniqueName) {
+        Set<ProviderInvokerWrapper> providerInvokerWrapperSet = ProviderConsumerRegTable.getProviderInvoker(serviceUniqueName);
+        for (ProviderInvokerWrapper providerInvokerWrapper : providerInvokerWrapperSet) {
+            if (providerInvokerWrapper.isReg()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static int getConsumerAddressNum(String serviceUniqueName) {
+        int count = 0;
+        Set<ConsumerInvokerWrapper> providerInvokerWrapperSet = ProviderConsumerRegTable.getConsumerInvoker(serviceUniqueName);
+        for (ConsumerInvokerWrapper consumerInvokerWrapper : providerInvokerWrapperSet) {
+            //TODO not thread safe,fixme
+            int addNum = 0;
+            if (consumerInvokerWrapper.getRegistryDirectory().getUrlInvokerMap() != null) {
+                addNum = consumerInvokerWrapper.getRegistryDirectory().getUrlInvokerMap().size();
+            }
+            count += addNum;
+        }
+        return count;
+    }
+
 }
