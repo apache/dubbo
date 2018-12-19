@@ -837,6 +837,7 @@ public class Yylex {
                         return null;
                     } else {
                         zzScanError(ZZ_NO_MATCH);
+                        break;
                     }
             }
         }
