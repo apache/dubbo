@@ -40,8 +40,10 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 public class LogstashMonitorTest {
 
@@ -86,6 +88,10 @@ public class LogstashMonitorTest {
                 .addParameter(MonitorService.CONCURRENT, 1)
                 .addParameter(MonitorService.MAX_CONCURRENT, 1);
         monitor.collect(statistics);
+        for (int i = 0; !monitor.isAvailable(); i++) {
+            Thread.sleep(1000);
+            assertThat(i, lessThan(10));
+        }
         monitor.send();
 
         String received = messageReceived.poll(10, TimeUnit.SECONDS);
