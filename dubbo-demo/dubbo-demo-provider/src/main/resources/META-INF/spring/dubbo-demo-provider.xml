@@ -31,13 +31,9 @@
     <dubbo:protocol name="dubbo" port="20880"/>
 
     <!-- service implementation, as same as regular local bean -->
-    <!--<bean id="demoService" class="org.apache.dubbo.demo.provider.DemoServiceImpl"/>-->
-    <bean id="serviceA" class="org.apache.dubbo.demo.provider.ServiceA"/>
-    <bean id="serviceB" class="org.apache.dubbo.demo.provider.ServiceB"/>
+    <bean id="demoService" class="org.apache.dubbo.demo.provider.DemoServiceImpl"/>
 
     <!-- declare the service interface to be exported -->
-    <!--<dubbo:service interface="org.apache.dubbo.demo.DemoService" ref="demoService"/>-->
-    <dubbo:service interface="org.apache.dubbo.demo.DemoService" ref="serviceA" group="A"/>
-    <dubbo:service interface="org.apache.dubbo.demo.DemoService" ref="serviceB" group="B"/>
+    <dubbo:service interface="org.apache.dubbo.demo.DemoService" ref="demoService"/>
 
 </beans>
