@@ -112,7 +112,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     private volatile Set<URL> cachedInvokerUrls; // The initial value is null and the midway may be assigned to null, please use the local variable reference
 
     private static final ConsumerConfigurationListener consumerConfigurationListener = new ConsumerConfigurationListener();
-    private ServiceConfigurationListener serviceConfigurationListener;
+    private ReferenceConfigurationListener serviceConfigurationListener;
 
 
     public RegistryDirectory(Class<T> serviceType, URL url) {
@@ -156,7 +156,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     public void subscribe(URL url) {
         setConsumerUrl(url);
         consumerConfigurationListener.addNotifyListener(this);
-        serviceConfigurationListener = new ServiceConfigurationListener(url);
+        serviceConfigurationListener = new ReferenceConfigurationListener(url);
         registry.subscribe(url, this);
     }
 
@@ -222,8 +222,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 .getProtocol())) {
             this.forbidden = true; // Forbid to access
             this.invokers = null;
-            destroyAllInvokers(); // Close all invokers
             routerChain.notifyFullInvokers(this.invokers, getConsumerUrl());
+            destroyAllInvokers(); // Close all invokers
         } else {
             this.forbidden = false; // Allow to access
             Map<String, Invoker<T>> oldUrlInvokerMap = this.urlInvokerMap; // local reference
@@ -744,10 +744,10 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         }
     }
 
-    private class ServiceConfigurationListener extends AbstractConfiguratorListener {
+    private class ReferenceConfigurationListener extends AbstractConfiguratorListener {
         private URL url;
 
-        ServiceConfigurationListener(URL url) {
+        ReferenceConfigurationListener(URL url) {
             this.url = url;
             this.init();
         }

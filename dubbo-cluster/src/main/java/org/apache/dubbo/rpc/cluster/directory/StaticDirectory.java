@@ -24,6 +24,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -101,7 +102,7 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
                 logger.error("Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
             }
         }
-        return finalInvokers;
+        return finalInvokers == null ? Collections.emptyList() : finalInvokers;
     }
 
 }

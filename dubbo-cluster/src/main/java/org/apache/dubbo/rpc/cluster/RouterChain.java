@@ -151,6 +151,6 @@ public class RouterChain<T> {
     }
 
     public void setFullMethodInvokers(List<Invoker<T>> fullInvokers) {
-        this.fullInvokers = fullInvokers;
+        this.fullInvokers = (fullInvokers == null ? Collections.emptyList() : fullInvokers);
     }
 }

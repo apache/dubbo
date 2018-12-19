@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.cluster.router.mock;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
@@ -39,6 +40,10 @@ public class MockInvokersSelector extends AbstractRouter {
     @Override
     public <T> List<Invoker<T>> route(final List<Invoker<T>> invokers,
                                       URL url, final Invocation invocation) throws RpcException {
+        if (CollectionUtils.isEmpty(invokers)) {
+            return invokers;
+        }
+
         if (invocation.getAttachments() == null) {
             return getNormalInvokers(invokers);
         } else {
