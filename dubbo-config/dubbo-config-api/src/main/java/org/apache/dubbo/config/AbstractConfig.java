@@ -45,20 +45,45 @@ public abstract class AbstractConfig implements Serializable {
 
     protected static final Logger logger = LoggerFactory.getLogger(AbstractConfig.class);
     private static final long serialVersionUID = 4267533505537413570L;
+    
+    /**
+     * the maximum length of a parameter's value
+     */
     private static final int MAX_LENGTH = 200;
 
+    /**
+     * the maximum length of a path
+     */
     private static final int MAX_PATH_LENGTH = 200;
 
+    /**
+     * the pattern matches a value
+     */
     private static final Pattern PATTERN_NAME = Pattern.compile("[\\-._0-9a-zA-Z]+");
 
+    /**
+     * the pattern matches the multiply value
+     */
     private static final Pattern PATTERN_MULTI_NAME = Pattern.compile("[,\\-._0-9a-zA-Z]+");
 
+    /**
+     * the pattern matches a method name
+     */
     private static final Pattern PATTERN_METHOD_NAME = Pattern.compile("[a-zA-Z][0-9a-zA-Z]*");
 
+    /**
+     * the pattern matches a path
+     */
     private static final Pattern PATTERN_PATH = Pattern.compile("[/\\-$._0-9a-zA-Z]+");
 
+    /**
+     * the pattern matches a value who has a symbol
+     */
     private static final Pattern PATTERN_NAME_HAS_SYMBOL = Pattern.compile("[:*,\\s/\\-._0-9a-zA-Z]+");
 
+    /**
+     * the pattern matches a property key
+     */
     private static final Pattern PATTERN_KEY = Pattern.compile("[*,\\-._0-9a-zA-Z]+");
     private static final Map<String, String> legacyProperties = new HashMap<String, String>();
     private static final String[] SUFFIXES = new String[]{"Config", "Bean"};
@@ -77,6 +102,9 @@ public abstract class AbstractConfig implements Serializable {
         DubboShutdownHook.getDubboShutdownHook().register();
     }
 
+    /**
+     * the id of a config
+     */
     protected String id;
 
     private static String convertLegacyValue(String key, String value) {
@@ -90,6 +118,11 @@ public abstract class AbstractConfig implements Serializable {
         return value;
     }
 
+    /**
+     * parse the parameters of the config
+     *
+     * @param config
+     */
     protected static void appendProperties(AbstractConfig config) {
         if (config == null) {
             return;
