@@ -455,7 +455,7 @@ public class AbstractClusterInvokerTest {
     }
 
     private void initDic() {
-        dic.buildRouterChain(invokers);
+        dic.buildRouterChain();
     }
 
     @Test()

@@ -160,7 +160,7 @@ public class FileRouterEngineTest {
 
     private void initDic(URL url) {
         dic = new StaticDirectory<>(url, invokers);
-        dic.buildRouterChain(invokers);
+        dic.buildRouterChain();
         dic.getRouterChain().setResidentRouters(Arrays.asList(routerFactory.getRouter(url)));
     }
 
