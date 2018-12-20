@@ -652,7 +652,7 @@ public class MockClusterInvokerTest {
         }
 
         StaticDirectory<IHelloService> dic = new StaticDirectory<IHelloService>(durl, invokers, null);
-        dic.buildRouterChain(invokers);
+        dic.buildRouterChain();
         AbstractClusterInvoker<IHelloService> cluster = new AbstractClusterInvoker(dic) {
             @Override
             protected Result doInvoke(Invocation invocation, List invokers, LoadBalance loadbalance)
