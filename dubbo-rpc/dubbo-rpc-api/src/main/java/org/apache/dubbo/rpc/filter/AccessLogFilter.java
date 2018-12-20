@@ -75,6 +75,20 @@ public class AccessLogFilter implements Filter {
 
     private static final long LOG_OUTPUT_INTERVAL = 5000;
 
+    static ThreadLocal<SimpleDateFormat> FILE_DATE_FORMATTER= new ThreadLocal<SimpleDateFormat>() {
+        @Override
+        protected SimpleDateFormat initialValue() {
+            return new SimpleDateFormat(FILE_DATE_FORMAT);
+        }
+    };
+
+    static ThreadLocal<SimpleDateFormat> MESSAGE_DATE_FORMATTER= new ThreadLocal<SimpleDateFormat>() {
+        @Override
+        protected SimpleDateFormat initialValue() {
+            return new SimpleDateFormat(MESSAGE_DATE_FORMAT);
+        }
+    };
+
     private final ConcurrentMap<String, Set<String>> logQueue = new ConcurrentHashMap<String, Set<String>>();
 
     private final ScheduledExecutorService logScheduled = Executors.newScheduledThreadPool(2, new NamedThreadFactory("Dubbo-Access-Log", true));
@@ -113,7 +127,7 @@ public class AccessLogFilter implements Filter {
                 String version = invoker.getUrl().getParameter(Constants.VERSION_KEY);
                 String group = invoker.getUrl().getParameter(Constants.GROUP_KEY);
                 StringBuilder sn = new StringBuilder();
-                sn.append("[").append(new SimpleDateFormat(MESSAGE_DATE_FORMAT).format(new Date())).append("] ").append(context.getRemoteHost()).append(":").append(context.getRemotePort())
+                sn.append("[").append(MESSAGE_DATE_FORMATTER.get().format(new Date())).append("] ").append(context.getRemoteHost()).append(":").append(context.getRemotePort())
                         .append(" -> ").append(context.getLocalHost()).append(":").append(context.getLocalPort())
                         .append(" - ");
                 if (null != group && group.length() > 0) {
@@ -174,8 +188,8 @@ public class AccessLogFilter implements Filter {
                                 logger.debug("Append log to " + accesslog);
                             }
                             if (file.exists()) {
-                                String now = new SimpleDateFormat(FILE_DATE_FORMAT).format(new Date());
-                                String last = new SimpleDateFormat(FILE_DATE_FORMAT).format(new Date(file.lastModified()));
+                                String now = FILE_DATE_FORMATTER.get().format(new Date());
+                                String last = FILE_DATE_FORMATTER.get().format(new Date(file.lastModified()));
                                 if (!now.equals(last)) {
                                     File archive = new File(file.getAbsolutePath() + "." + last);
                                     file.renameTo(archive);
