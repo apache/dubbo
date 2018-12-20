@@ -127,7 +127,7 @@ public class ConditionRouter implements Router {
                 values.add(content);
             }
             // The Value in the KV part, if Value have more than one items.
-            else if (",".equals(separator)) { // Should be seperateed by ','
+            else if (",".equals(separator)) { // Should be separated by ','
                 if (values == null || values.isEmpty()) {
                     throw new ParseException("Illegal route rule \""
                             + rule + "\", The error char '" + separator
