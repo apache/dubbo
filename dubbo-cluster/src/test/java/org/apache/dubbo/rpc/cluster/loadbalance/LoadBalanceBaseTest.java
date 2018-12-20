@@ -75,6 +75,7 @@ public class LoadBalanceBaseTest {
 
         invocation = mock(Invocation.class);
         given(invocation.getMethodName()).willReturn("method1");
+        given(invocation.getArguments()).willReturn(new Object[] {"arg1","arg2","arg3"});
 
         invoker1 = mock(Invoker.class);
         invoker2 = mock(Invoker.class);

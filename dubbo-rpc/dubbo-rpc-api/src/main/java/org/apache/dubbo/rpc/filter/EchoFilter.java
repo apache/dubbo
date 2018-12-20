@@ -26,7 +26,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcResult;
 
 /**
- * EchoInvokerFilter
+ * Dubbo provided default Echo echo service, which is available for all dubbo provider service interface.
  */
 @Activate(group = Constants.PROVIDER, order = -110000)
 public class EchoFilter implements Filter {

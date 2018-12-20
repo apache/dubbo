@@ -488,9 +488,19 @@ public class Constants {
     public static final String REGISTRY_RETRY_PERIOD_KEY = "retry.period";
 
     /**
+     * Most retry times
+     */
+    public static final String REGISTRY_RETRY_TIMES_KEY = "retry.times";
+
+    /**
      * Default value for the period of retry interval in milliseconds: 5000
      */
     public static final int DEFAULT_REGISTRY_RETRY_PERIOD = 5 * 1000;
+
+    /**
+     * Default value for the times of retry: 3
+     */
+    public static final int DEFAULT_REGISTRY_RETRY_TIMES = 3;
 
     /**
      * Reconnection period in milliseconds for register center
@@ -665,6 +675,7 @@ public class Constants {
 
     public static final String REQUEST_TAG_KEY = "request.tag";
 
+    public static final String TELNET = "telnet";
     /*
      * private Constants(){ }
      */

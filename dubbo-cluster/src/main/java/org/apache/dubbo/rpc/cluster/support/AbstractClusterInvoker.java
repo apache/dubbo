@@ -121,18 +121,18 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
         boolean sticky = invokers.get(0).getUrl()
             .getMethodParameter(methodName, Constants.CLUSTER_STICKY_KEY, Constants.DEFAULT_CLUSTER_STICKY);
-        {
-            //ignore overloaded method
-            if (stickyInvoker != null && !invokers.contains(stickyInvoker)) {
-                stickyInvoker = null;
-            }
-            //ignore concurrency problem
-            if (sticky && stickyInvoker != null && (selected == null || !selected.contains(stickyInvoker))) {
-                if (availablecheck && stickyInvoker.isAvailable()) {
-                    return stickyInvoker;
-                }
+
+        //ignore overloaded method
+        if (stickyInvoker != null && !invokers.contains(stickyInvoker)) {
+            stickyInvoker = null;
+        }
+        //ignore concurrency problem
+        if (sticky && stickyInvoker != null && (selected == null || !selected.contains(stickyInvoker))) {
+            if (availablecheck && stickyInvoker.isAvailable()) {
+                return stickyInvoker;
             }
         }
+
         Invoker<T> invoker = doSelect(loadbalance, invocation, invokers, selected);
 
         if (sticky) {
@@ -210,19 +210,18 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         }
 
         // Just pick an available invoker using loadbalance policy
-        {
-            if (selected != null) {
-                for (Invoker<T> invoker : selected) {
-                    if ((invoker.isAvailable()) // available first
-                            && !reselectInvokers.contains(invoker)) {
-                        reselectInvokers.add(invoker);
-                    }
+        if (selected != null) {
+            for (Invoker<T> invoker : selected) {
+                if ((invoker.isAvailable()) // available first
+                        && !reselectInvokers.contains(invoker)) {
+                    reselectInvokers.add(invoker);
                 }
             }
-            if (!reselectInvokers.isEmpty()) {
-                return loadbalance.select(reselectInvokers, getUrl(), invocation);
-            }
         }
+        if (!reselectInvokers.isEmpty()) {
+            return loadbalance.select(reselectInvokers, getUrl(), invocation);
+        }
+
         return null;
     }
 

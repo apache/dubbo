@@ -30,7 +30,19 @@ public class MergerFactory {
     private static final ConcurrentMap<Class<?>, Merger<?>> mergerCache =
             new ConcurrentHashMap<Class<?>, Merger<?>>();
 
+    /**
+     * Find the merger according to the returnType class, the merger will
+     * merge an array of returnType into one
+     *
+     * @param returnType the merger will return this type
+     * @return the merger which merges an array of returnType into one, return null if not exist
+     * @throws IllegalArgumentException if returnType is null
+     */
     public static <T> Merger<T> getMerger(Class<T> returnType) {
+        if (returnType == null) {
+            throw new IllegalArgumentException("returnType is null");
+        }
+
         Merger result;
         if (returnType.isArray()) {
             Class type = returnType.getComponentType();

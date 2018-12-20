@@ -33,7 +33,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.dubbo.common.utils.NamedThreadFactory;
-import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -48,7 +47,7 @@ public class CompletableFutureTaskTest {
         CompletableFuture<Boolean> completableFuture = CompletableFuture.supplyAsync(() -> {
             countDownLatch.countDown();
             return true;
-        },executor);
+        }, executor);
         countDownLatch.await();
     }
 
@@ -77,26 +76,20 @@ public class CompletableFutureTaskTest {
             }
             return "hello";
 
-        },executor);
+        }, executor);
         final CountDownLatch countDownLatch = new CountDownLatch(1);
-        completableFuture.thenRunAsync(new Runnable() {
-            @Override
-            public void run() {
-                countDownLatch.countDown();
-            }
-        });
+        completableFuture.thenRunAsync(countDownLatch::countDown);
         countDownLatch.await();
     }
 
 
-    @Test
-    @Ignore
+@Test
     public void testCustomExecutor() {
         Executor mockedExecutor = mock(Executor.class);
         CompletableFuture<Integer> completableFuture = CompletableFuture.supplyAsync(() -> {
             return 0;
         });
-        completableFuture.thenRunAsync(mock(Runnable.class), mockedExecutor);
-        verify(mockedExecutor, times(1)).execute(any());
+        completableFuture.thenRunAsync(mock(Runnable.class), mockedExecutor).whenComplete((s, e) ->
+                verify(mockedExecutor, times(1)).execute(any(Runnable.class)));
     }
 }

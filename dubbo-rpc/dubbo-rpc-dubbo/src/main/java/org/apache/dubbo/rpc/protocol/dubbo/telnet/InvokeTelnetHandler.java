@@ -30,8 +30,10 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -40,27 +42,31 @@ import java.util.Map;
  * InvokeTelnetHandler
  */
 @Activate
-@Help(parameter = "[service.]method(args)", summary = "Invoke the service method.", detail = "Invoke the service method.")
+@Help(parameter = "[service.]method(args) [-p parameter classes]", summary = "Invoke the service method.", detail = "Invoke the service method.")
 public class InvokeTelnetHandler implements TelnetHandler {
 
-    private static Method findMethod(Exporter<?> exporter, String method, List<Object> args) {
+    private static Method findMethod(Exporter<?> exporter, String method, List<Object> args, Class<?>[] paramClases) {
         Invoker<?> invoker = exporter.getInvoker();
         Method[] methods = invoker.getInterface().getMethods();
         for (Method m : methods) {
-            if (m.getName().equals(method) && isMatch(m.getParameterTypes(), args)) {
+            if (m.getName().equals(method) && isMatch(m.getParameterTypes(), args, paramClases)) {
                 return m;
             }
         }
         return null;
     }
 
-    private static boolean isMatch(Class<?>[] types, List<Object> args) {
+    private static boolean isMatch(Class<?>[] types, List<Object> args, Class<?>[] paramClasses) {
         if (types.length != args.size()) {
             return false;
         }
         for (int i = 0; i < types.length; i++) {
             Class<?> type = types[i];
             Object arg = args.get(i);
+
+            if (paramClasses != null && type != paramClasses[i]) {
+                return false;
+            }
 
             if (arg == null) {
                 // if the type is primitive, the method to invoke will cause NullPointerException definitely
@@ -75,7 +81,16 @@ public class InvokeTelnetHandler implements TelnetHandler {
             }
 
             if (ReflectUtils.isPrimitive(arg.getClass())) {
+                // allow string arg to enum type, @see PojoUtils.realize0()
+                if (arg instanceof String && type.isEnum()) {
+                    continue;
+                }
+
                 if (!ReflectUtils.isPrimitive(type)) {
+                    return false;
+                }
+
+                if (!ReflectUtils.isCompatible(type, arg)) {
                     return false;
                 }
             } else if (arg instanceof Map) {
@@ -112,6 +127,26 @@ public class InvokeTelnetHandler implements TelnetHandler {
             buf.append("Use default service " + service + ".\r\n");
         }
         int i = message.indexOf("(");
+        String originalMessage = message;
+        Class<?>[] paramClasses = null;
+        if (message.contains("-p")) {
+            message = originalMessage.substring(0, originalMessage.indexOf("-p")).trim();
+            String paramClassesString = originalMessage.substring(originalMessage.indexOf("-p") + 2).trim();
+            if (paramClassesString.length() > 0) {
+                String[] split = paramClassesString.split("\\s+");
+                if (split.length > 0) {
+                    paramClasses = new Class[split.length];
+                    for (int j = 0; j < split.length; j++) {
+                        try {
+                            paramClasses[j] = Class.forName(split[j]);
+                        } catch (ClassNotFoundException e) {
+                            return "Unknown parameter class for name " + split[j];
+                        }
+                    }
+
+                }
+            }
+        }
         if (i < 0 || !message.endsWith(")")) {
             return "Invalid parameters, format: service.method(args)";
         }
@@ -128,11 +163,26 @@ public class InvokeTelnetHandler implements TelnetHandler {
         } catch (Throwable t) {
             return "Invalid json argument, cause: " + t.getMessage();
         }
+        if (paramClasses != null) {
+            if (paramClasses.length != list.size()) {
+                return "Parameter's number does not match the number of parameter class";
+            }
+            List<Object> listOfActualClass = new ArrayList<>(list.size());
+            for (int ii = 0; ii < list.size(); ii++) {
+                if (list.get(ii) instanceof JSONObject) {
+                    JSONObject jsonObject = (JSONObject) list.get(ii);
+                    listOfActualClass.add(jsonObject.toJavaObject(paramClasses[ii]));
+                } else {
+                    listOfActualClass.add(list.get(ii));
+                }
+            }
+            list = listOfActualClass;
+        }
         Invoker<?> invoker = null;
         Method invokeMethod = null;
         for (Exporter<?> exporter : DubboProtocol.getDubboProtocol().getExporters()) {
             if (service == null || service.length() == 0) {
-                invokeMethod = findMethod(exporter, method, list);
+                invokeMethod = findMethod(exporter, method, list, paramClasses);
                 if (invokeMethod != null) {
                     invoker = exporter.getInvoker();
                     break;
@@ -141,7 +191,7 @@ public class InvokeTelnetHandler implements TelnetHandler {
                 if (service.equals(exporter.getInvoker().getInterface().getSimpleName())
                         || service.equals(exporter.getInvoker().getInterface().getName())
                         || service.equals(exporter.getInvoker().getUrl().getPath())) {
-                    invokeMethod = findMethod(exporter, method, list);
+                    invokeMethod = findMethod(exporter, method, list, paramClasses);
                     invoker = exporter.getInvoker();
                     break;
                 }
@@ -170,5 +220,4 @@ public class InvokeTelnetHandler implements TelnetHandler {
         }
         return buf.toString();
     }
-
 }
