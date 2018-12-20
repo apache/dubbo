@@ -146,12 +146,12 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     private transient volatile Invoker<?> invoker;
 
     /**
-     * The flag if the ReferenceConfig has been initialized
+     * The flag whether the ReferenceConfig has been initialized
      */
     private transient volatile boolean initialized;
 
     /**
-     * If this ReferenceConfig has been destroyed
+     * whether this ReferenceConfig has been destroyed
      */
     private transient volatile boolean destroyed;
 

@@ -143,17 +143,17 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private ProviderConfig provider;
 
     /**
-     * The flag if a service has exported, if it is true, it explains that the service has been successfully exposed
+     * The flag whether a service has exported, if it is true, it explains that the service has been successfully exposed
      */
     private transient volatile boolean exported;
 
     /**
-     * The flag if a service has unexported ,if the method unexported is invoked, the value is true
+     * The flag whether a service has unexported ,if the method unexported is invoked, the value is true
      */
     private transient volatile boolean unexported;
 
     /**
-     * If it is a GenericService
+     * whether it is a GenericService
      */
     private volatile String generic;
 
