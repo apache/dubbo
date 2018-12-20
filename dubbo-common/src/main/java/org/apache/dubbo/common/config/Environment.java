@@ -129,10 +129,10 @@ public class Environment {
         InmemoryConfiguration appConfig = this.getAppConfig(prefix, id);
         // Config center has the highest priority
         if (!configCenterFirst) {
+            compositeConfiguration.addConfiguration(this.getSystemConfig(prefix, id));
             if (appConfig != null) {
                 compositeConfiguration.addConfiguration(appConfig);
             }
-            compositeConfiguration.addConfiguration(this.getSystemConfig(prefix, id));
             compositeConfiguration.addConfiguration(this.getAppExternalConfig(prefix, id));
             compositeConfiguration.addConfiguration(this.getExternalConfig(prefix, id));
             compositeConfiguration.addConfiguration(this.getPropertiesConfig(prefix, id));

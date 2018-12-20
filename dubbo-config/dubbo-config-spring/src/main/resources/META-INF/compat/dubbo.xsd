@@ -607,7 +607,7 @@
         <xsd:sequence minOccurs="0" maxOccurs="unbounded">
             <xsd:element ref="parameter" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
-        <xsd:attribute name="protocol" type="xsd:string" use="optional">
+        <xsd:attribute name="protocol" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The config center protocol. ]]></xsd:documentation>
             </xsd:annotation>
@@ -615,12 +615,6 @@
         <xsd:attribute name="address" type="xsd:string" use="optional">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The config center address. ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="env" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    <![CDATA[ The config center env, an simplify alternative for address. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="cluster" type="xsd:string" use="optional">
@@ -634,12 +628,17 @@
                     <![CDATA[ The group of the config center, an isolated space for config items in the same config center. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="appname" type="xsd:string" use="optional">
+        <xsd:attribute name="app-name" type="xsd:string" use="optional">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The group of the config center. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="configfile" type="xsd:string" use="optional">
+        <xsd:attribute name="config-file" type="xsd:string" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The key used to get the configs at startup. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="app-config-file" type="xsd:string" use="optional">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The key used to get the configs at startup. ]]></xsd:documentation>
             </xsd:annotation>
@@ -659,10 +658,16 @@
                 <xsd:documentation><![CDATA[ The request timeout. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="enable" type="xsd:boolean" use="optional">
+        <xsd:attribute name="highest-priority" type="xsd:boolean" use="optional">
             <xsd:annotation>
                 <xsd:documentation>
                     <![CDATA[ Whether the configs from config center has the highest priority. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="from-spring" type="xsd:boolean" use="optional">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Load the config items by Dubbo itself or Spring. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="check" type="xsd:boolean" use="optional">

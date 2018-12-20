@@ -103,8 +103,7 @@ public abstract class AbstractConfig implements Serializable {
                 break;
             }
         }
-        tag = tag.toLowerCase();
-        return tag;
+        return tag.substring(0, 1).toLowerCase() + tag.substring(1);
     }
 
     protected static void appendParameters(Map<String, String> parameters, Object config) {
@@ -365,14 +364,14 @@ public abstract class AbstractConfig implements Serializable {
         Method getter = null;
         try {
             getter = clazz.getMethod("get" + propertyName);
+            propertyName = propertyName.substring(3, 4).toLowerCase() + propertyName.substring(4);
         } catch (NoSuchMethodException e) {
             getter = clazz.getMethod("is" + propertyName);
+            propertyName = propertyName.substring(2, 3).toLowerCase() + propertyName.substring(3);
         }
         Parameter parameter = getter.getAnnotation(Parameter.class);
         if (parameter != null && StringUtils.isNotEmpty(parameter.key()) && parameter.useKeyAsProperty()) {
             propertyName = parameter.key();
-        } else {
-            propertyName = propertyName.toLowerCase();
         }
         return propertyName;
     }
@@ -394,6 +393,12 @@ public abstract class AbstractConfig implements Serializable {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public void updateIdIfAbsent(String value) {
+        if (StringUtils.isNotEmpty(value) && StringUtils.isEmpty(id)) {
+            this.id = value;
+        }
     }
 
     protected void appendAnnotation(Class<?> annotationClass, Object annotation) {

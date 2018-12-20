@@ -157,9 +157,7 @@ public class ProtocolConfig extends AbstractConfig {
     public void setName(String name) {
         checkName("name", name);
         this.name = name;
-        if (id == null || id.length() == 0) {
-            id = name;
-        }
+        this.updateIdIfAbsent(name);
     }
 
     @Parameter(excluded = true)

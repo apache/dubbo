@@ -133,7 +133,8 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                     && Modifier.isPublic(setter.getModifiers())
                     && setter.getParameterTypes().length == 1) {
                 Class<?> type = setter.getParameterTypes()[0];
-                String property = StringUtils.camelToSplitName(name.substring(3, 4).toLowerCase() + name.substring(4), "-");
+                String beanProperty = name.substring(3, 4).toLowerCase() + name.substring(4);
+                String property = StringUtils.camelToSplitName(beanProperty, "-");
                 props.add(property);
                 Method getter = null;
                 try {
@@ -163,9 +164,9 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                             if ("registry".equals(property) && RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(value)) {
                                 RegistryConfig registryConfig = new RegistryConfig();
                                 registryConfig.setAddress(RegistryConfig.NO_AVAILABLE);
-                                beanDefinition.getPropertyValues().addPropertyValue(property, registryConfig);
+                                beanDefinition.getPropertyValues().addPropertyValue(beanProperty, registryConfig);
                             } else if ("provider".equals(property) || "protocol".equals(property) || "registry".equals(property)) {
-                                beanDefinition.getPropertyValues().addPropertyValue(property, value);
+                                beanDefinition.getPropertyValues().addPropertyValue(beanProperty, value);
                             } else {
                                 Object reference;
                                 if (isPrimitive(type)) {
@@ -206,7 +207,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                                     }
                                     reference = new RuntimeBeanReference(value);
                                 }
-                                beanDefinition.getPropertyValues().addPropertyValue(property, reference);
+                                beanDefinition.getPropertyValues().addPropertyValue(beanProperty, reference);
                             }
                         }
                     }
