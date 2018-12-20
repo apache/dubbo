@@ -150,9 +150,9 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         }
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
 
-        // If we have attachment, refresh the attachment to ensure that the last invoke's attach does not affect this call.
+        // If we have attachment, override the attachment to ensure that the last invoke's attach does not affect this call.
         // In most cases, attachments contains interface, timeout, group, and token.
-        // These info should be refreshed in each invoke.
+        // These info should be override in each invoke.
         //
         // See https://github.com/apache/incubator-dubbo/issues/2981
         if (attachment != null && attachment.size() > 0) {
