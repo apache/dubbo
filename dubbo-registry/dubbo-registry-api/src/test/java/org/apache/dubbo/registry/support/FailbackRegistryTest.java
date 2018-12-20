@@ -20,7 +20,6 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.registry.NotifyListener;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,8 +52,7 @@ public class FailbackRegistryTest {
     }
 
     /**
-     * Test method for
-     * {@link org.apache.dubbo.registry.support.FailbackRegistry#retry()}.
+     * Test method for retry
      *
      * @throws Exception
      */
@@ -62,7 +60,9 @@ public class FailbackRegistryTest {
     public void testDoRetry() throws Exception {
 
         final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
-        final CountDownLatch latch = new CountDownLatch(3);//All of them are called 3 times. Successful attempts to reduce the failure of 1. subscribe register will not be done again
+
+        // the latest latch just for 3. Because retry method has been removed.
+        final CountDownLatch latch = new CountDownLatch(2);
 
         NotifyListener listner = new NotifyListener() {
             @Override
@@ -79,7 +79,7 @@ public class FailbackRegistryTest {
 
         //Failure can not be called to listener.
         assertEquals(false, notified.get());
-        assertEquals(3, latch.getCount());
+        assertEquals(2, latch.getCount());
 
         registry.setBad(false);
 
@@ -191,7 +191,7 @@ public class FailbackRegistryTest {
                 notified.set(Boolean.TRUE);
             }
         };
-        
+
         MockRegistry mockRegistry = new MockRegistry(registryUrl, countDownLatch);
         mockRegistry.register(serviceUrl);
         mockRegistry.subscribe(serviceUrl, listener);
@@ -200,7 +200,8 @@ public class FailbackRegistryTest {
         mockRegistry.recover();
         countDownLatch.await();
         Assert.assertEquals(0, mockRegistry.getFailedRegistered().size());
-        Assert.assertEquals(null, mockRegistry.getFailedSubscribed().get(registryUrl));
+        FailbackRegistry.Holder h = new FailbackRegistry.Holder(registryUrl, listener);
+        Assert.assertEquals(null, mockRegistry.getFailedSubscribed().get(h));
         Assert.assertEquals(countDownLatch.getCount(), 0);
     }
 
@@ -224,7 +225,7 @@ public class FailbackRegistryTest {
         }
 
         @Override
-        protected void doRegister(URL url) {
+        public void doRegister(URL url) {
             if (bad) {
                 throw new RuntimeException("can not invoke!");
             }
@@ -234,7 +235,7 @@ public class FailbackRegistryTest {
         }
 
         @Override
-        protected void doUnregister(URL url) {
+        public void doUnregister(URL url) {
             if (bad) {
                 throw new RuntimeException("can not invoke!");
             }
@@ -244,7 +245,7 @@ public class FailbackRegistryTest {
         }
 
         @Override
-        protected void doSubscribe(URL url, NotifyListener listener) {
+        public void doSubscribe(URL url, NotifyListener listener) {
             if (bad) {
                 throw new RuntimeException("can not invoke!");
             }
@@ -254,21 +255,11 @@ public class FailbackRegistryTest {
         }
 
         @Override
-        protected void doUnsubscribe(URL url, NotifyListener listener) {
+        public void doUnsubscribe(URL url, NotifyListener listener) {
             if (bad) {
                 throw new RuntimeException("can not invoke!");
             }
             //System.out.println("do doUnsubscribe");
-            latch.countDown();
-        }
-
-        @Override
-        protected void retry() {
-            super.retry();
-            if (bad) {
-                throw new RuntimeException("can not invoke!");
-            }
-            //System.out.println("do retry");
             latch.countDown();
         }
 

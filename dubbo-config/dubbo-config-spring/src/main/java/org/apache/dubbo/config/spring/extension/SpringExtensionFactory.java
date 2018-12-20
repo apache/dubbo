@@ -29,6 +29,7 @@ import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ContextClosedEvent;
 
 import java.util.Set;
@@ -44,6 +45,10 @@ public class SpringExtensionFactory implements ExtensionFactory {
 
     public static void addApplicationContext(ApplicationContext context) {
         contexts.add(context);
+        if (context instanceof ConfigurableApplicationContext) {
+            ((ConfigurableApplicationContext) context).registerShutdownHook();
+            DubboShutdownHook.getDubboShutdownHook().unregister();
+        }
         BeanFactoryUtils.addApplicationListener(context, shutdownHookListener);
     }
 
@@ -105,11 +110,8 @@ public class SpringExtensionFactory implements ExtensionFactory {
         @Override
         public void onApplicationEvent(ApplicationEvent event) {
             if (event instanceof ContextClosedEvent) {
-                // we call it anyway since dubbo shutdown hook make sure its destroyAll() is re-entrant.
-                // pls. note we should not remove dubbo shutdown hook when spring framework is present, this is because
-                // its shutdown hook may not be installed.
                 DubboShutdownHook shutdownHook = DubboShutdownHook.getDubboShutdownHook();
-                shutdownHook.destroyAll();
+                shutdownHook.doDestroy();
             }
         }
     }

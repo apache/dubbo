@@ -13,8 +13,6 @@ Apache Dubbo (incubating) is a high-performance, Java based open source RPC fram
 
 We are now collecting dubbo user info in order to help us to improve Dubbo better, pls. kindly help us by providing yours on [issue#1012: Wanted: who's using dubbo](https://github.com/apache/incubator-dubbo/issues/1012), thanks :)
 
-各位 Dubboer，开源中国正在举办 [2018 年度最受欢迎中国开源软件评比活动](https://www.oschina.net/project/top_cn_2018)，请投 Dubbo 一票。
-
 ## Architecture
 
 ![Architecture](http://dubbo.apache.org/img/architecture.png)
@@ -42,11 +40,33 @@ There's a [README](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samp
 ### Maven dependency
 
 ```xml
-<dependency>
-    <groupId>com.alibaba</groupId>
-    <artifactId>dubbo</artifactId>
-    <version>2.6.4</version>
-</dependency>
+<properties>
+    <dubbo.version>2.6.5</dubbo.version>
+</properties>
+    
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-dependencies-bom</artifactId>
+            <version>${dubbo.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+
+<dependencies>
+    <dependency>
+        <groupId>com.alibaba</groupId>
+        <artifactId>dubbo</artifactId>
+        <version>${dubbo.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-all</artifactId>
+    </dependency>
+</dependencies>
 ```
 
 ### Define service interfaces
@@ -59,7 +79,7 @@ public interface GreetingService {
 }
 ```
 
-*See [api/GreetingService.java](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/com/alibaba/dubbo/samples/api/GreetingsService.java) on GitHub.*
+*See [api/GreetingService.java](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/api/GreetingsService.java) on GitHub.*
 
 ### Implement service interface for the provider
 
@@ -75,7 +95,7 @@ public class GreetingServiceImpl implements GreetingService {
 }
 ```
 
-*See [provider/GreetingServiceImpl.java](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/com/alibaba/dubbo/samples/server/GreetingsServiceImpl.java) on GitHub.*
+*See [provider/GreetingServiceImpl.java](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/provider/GreetingsServiceImpl.java) on GitHub.*
 
 ### Start service provider
 
@@ -103,7 +123,7 @@ public class Application {
 }
 ```
 
-*See [provider/Application.java](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/com/alibaba/dubbo/samples/provider/Application.java) on GitHub.*
+*See [provider/Application.java](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/provider/Application.java) on GitHub.*
 
 ### Build and run the provider
 
@@ -143,13 +163,13 @@ public class Application {
 
 The consumer will print out `Hello world` on the screen.
 
-*See [consumer/Application.java](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/com/alibaba/dubbo/samples/consumer/Application.java) on GitHub.*
+*See [consumer/Application.java](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/consumer/Application.java) on GitHub.*
 
 ### Next steps
 
 * [Your first Dubbo application](http://dubbo.apache.org/en-us/blog/dubbo-101.html) - A 101 tutorial to reveal more details, with the same code above.
 * [Dubbo user manual](http://dubbo.apache.org/en-us/docs/user/preface/background.html) - How to use Dubbo and all its features.
-* [Dubbo developer guide](http://dubbo.apache.org/en-us/docs/dev/build.html) - How to invovle in Dubbo development.
+* [Dubbo developer guide](http://dubbo.apache.org/en-us/docs/dev/build.html) - How to involve in Dubbo development.
 * [Dubbo admin manual](http://dubbo.apache.org/en-us/docs/admin/install/provider-demo.html) - How to admin and manage Dubbo services.
 
 ## Contact

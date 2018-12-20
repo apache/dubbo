@@ -30,7 +30,14 @@ import javax.cache.spi.CachingProvider;
 import java.util.concurrent.TimeUnit;
 
 /**
- * JCache
+ * This class store the cache value per thread. If a service,method,consumer or provided is configured with key <b>cache</b>
+ * with value <b>jcache</b>, dubbo initialize the instance of this class using {@link JCacheFactory} to store method's returns value
+ * to server from store without making method call.
+ *
+ * @see Cache
+ * @see JCacheFactory
+ * @see org.apache.dubbo.cache.support.AbstractCacheFactory
+ * @see org.apache.dubbo.cache.filter.CacheFilter
  */
 public class JCache implements org.apache.dubbo.cache.Cache {
 
