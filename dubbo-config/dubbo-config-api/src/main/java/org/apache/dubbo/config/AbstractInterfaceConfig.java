@@ -50,56 +50,90 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     private static final long serialVersionUID = -1559314110797223229L;
 
-    // local impl class name for the service interface
+    /**
+     * local impl class name for the service interface
+     */
     protected String local;
 
-    // local stub class name for the service interface
+    /**
+     * local stub class name for the service interface
+     */
     protected String stub;
 
-    // service monitor
+    /**
+     * service monitor
+     */
     protected MonitorConfig monitor;
 
-    // proxy type
+    /**
+     * proxy type
+     */
     protected String proxy;
 
-    // cluster type
+    /**
+     * cluster type
+     */
     protected String cluster;
 
-    // filter
+    /**
+     * filter
+     */
     protected String filter;
 
-    // listener
+    /**
+     * listener
+     */
     protected String listener;
 
-    // owner
+    /**
+     * owner
+     */
     protected String owner;
 
-    // connection limits, 0 means shared connection, otherwise it defines the connections delegated to the
-    // current service
+    /**
+     * connection limits, 0 means shared connection, otherwise it defines the connections delegated to the
+     * current service
+     */
     protected Integer connections;
 
-    // layer
+    /**
+     * layer
+     */
     protected String layer;
 
-    // application info
+    /**
+     * application info
+     */
     protected ApplicationConfig application;
 
-    // module info
+    /**
+     * module info
+     */
     protected ModuleConfig module;
 
-    // registry centers
+    /**
+     * registry centers
+     */
     protected List<RegistryConfig> registries;
 
-    // connection events
+    /**
+     * connection events
+     */
     protected String onconnect;
 
-    // disconnection events
+    /**
+     * disconnection events
+     */
     protected String ondisconnect;
 
-    // callback limits
+    /**
+     * callback limits
+     */
     private Integer callbacks;
 
-    // the scope for referring/exporting a service, if it's local, it means searching in current JVM only.
+    /**
+     * the scope for referring/exporting a service, if it's local, it means searching in current JVM only.
+     */
     private String scope;
 
     protected void checkRegistry() {
