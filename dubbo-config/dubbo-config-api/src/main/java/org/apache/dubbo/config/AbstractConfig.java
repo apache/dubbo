@@ -364,14 +364,14 @@ public abstract class AbstractConfig implements Serializable {
         Method getter = null;
         try {
             getter = clazz.getMethod("get" + propertyName);
-            propertyName = propertyName.substring(3, 4).toLowerCase() + propertyName.substring(4);
         } catch (NoSuchMethodException e) {
             getter = clazz.getMethod("is" + propertyName);
-            propertyName = propertyName.substring(2, 3).toLowerCase() + propertyName.substring(3);
         }
         Parameter parameter = getter.getAnnotation(Parameter.class);
         if (parameter != null && StringUtils.isNotEmpty(parameter.key()) && parameter.useKeyAsProperty()) {
             propertyName = parameter.key();
+        } else {
+            propertyName = propertyName.substring(0, 1).toLowerCase() + propertyName.substring(1);
         }
         return propertyName;
     }
