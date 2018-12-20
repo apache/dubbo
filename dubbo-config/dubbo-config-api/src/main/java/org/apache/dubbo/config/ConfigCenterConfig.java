@@ -41,19 +41,18 @@ public class ConfigCenterConfig extends AbstractConfig {
 
     private String protocol;
     private String address;
-    private String env;
     private String cluster;
     private String namespace = "dubbo";
     private String group = "dubbo";
     private String username;
     private String password;
     private Long timeout = 3000L;
-    private Boolean enable = true;
+    private Boolean highestPriority = true;
     private Boolean check = true;
 
-    private String appname;
-    private String configfile = "dubbo.properties";
-    private String localconfigfile;
+    private String appName;
+    private String configFile = "dubbo.properties";
+    private String appConfigFile;
 
     private ApplicationConfig application;
     private RegistryConfig registry;
@@ -69,8 +68,14 @@ public class ConfigCenterConfig extends AbstractConfig {
             return;
         }
 
-        // give jvm properties the chance to override local configs, e.g., -Ddubbo.configcenter.config.priority
+        // give jvm properties the chance to override local configs, e.g., -Ddubbo.configcenter.highestPriority
         refresh();
+        if (StringUtils.isNotEmpty(getId())) {
+            // read 'dubbo.configCenters.zookeeper.'
+            setPrefix(Constants.CONFIGCENTERS_SUFFIX);
+            refresh();
+        }
+
         // try to use registryConfig as the default configcenter, only applies to zookeeper.
         if (!isValid() && registry != null && registry.isZookeeperProtocol()) {
             setAddress(registry.getAddress());
@@ -80,19 +85,18 @@ public class ConfigCenterConfig extends AbstractConfig {
 
         if (isValid()) {
             DynamicConfiguration dynamicConfiguration = startDynamicConfiguration(toConfigUrl());
-            String configContent = dynamicConfiguration.getConfig(configfile, group);
+            String configContent = dynamicConfiguration.getConfig(configFile, group);
 
             String appGroup = getApplicationName();
             String appConfigContent = null;
             if (StringUtils.isNotEmpty(appGroup)) {
                 appConfigContent = dynamicConfiguration.getConfig
-                        (
-                                StringUtils.isNotEmpty(localconfigfile) ? localconfigfile : configfile,
-                                appGroup
+                        (StringUtils.isNotEmpty(appConfigFile) ? appConfigFile : configFile,
+                         appGroup
                         );
             }
             try {
-                Environment.getInstance().setConfigCenterFirst(enable);
+                Environment.getInstance().setConfigCenterFirst(highestPriority);
                 Environment.getInstance().updateExternalConfigurationMap(parseProperties(configContent));
                 Environment.getInstance().updateAppExternalConfigurationMap(parseProperties(appConfigContent));
             } catch (IOException e) {
@@ -110,7 +114,7 @@ public class ConfigCenterConfig extends AbstractConfig {
 
     private URL toConfigUrl() {
         Map<String, String> map = this.getMetaData();
-        if (StringUtils.isNotEmpty(env) && StringUtils.isEmpty(address)) {
+        if (StringUtils.isEmpty(address)) {
             address = Constants.ANYHOST_VALUE;
         }
         map.put(Constants.PATH_KEY, ConfigCenterConfig.class.getSimpleName());
@@ -129,7 +133,7 @@ public class ConfigCenterConfig extends AbstractConfig {
             }
             return application.getName();
         }
-        return appname;
+        return appName;
     }
 
     protected Map<String, String> parseProperties(String content) throws IOException {
@@ -162,6 +166,7 @@ public class ConfigCenterConfig extends AbstractConfig {
 
     public void setProtocol(String protocol) {
         this.protocol = protocol;
+        this.updateIdIfAbsent(protocol);
     }
 
     @Parameter(excluded = true)
@@ -171,18 +176,15 @@ public class ConfigCenterConfig extends AbstractConfig {
 
     public void setAddress(String address) {
         this.address = address;
+        if (address != null) {
+            int i = address.indexOf("://");
+            if (i > 0) {
+                this.updateIdIfAbsent(address.substring(0, i));
+            }
+        }
     }
 
-    @Parameter(key = Constants.CONFIG_ENV_KEY)
-    public String getEnv() {
-        return env;
-    }
-
-    public void setEnv(String env) {
-        this.env = env;
-    }
-
-    @Parameter(key = Constants.CONFIG_CLUSTER_KEY)
+    @Parameter(key = Constants.CONFIG_CLUSTER_KEY, useKeyAsProperty = false)
     public String getCluster() {
         return cluster;
     }
@@ -191,7 +193,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.cluster = cluster;
     }
 
-    @Parameter(key = Constants.CONFIG_NAMESPACE_KEY)
+    @Parameter(key = Constants.CONFIG_NAMESPACE_KEY, useKeyAsProperty = false)
     public String getNamespace() {
         return namespace;
     }
@@ -200,7 +202,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.namespace = namespace;
     }
 
-    @Parameter(key = Constants.CONFIG_GROUP_KEY)
+    @Parameter(key = Constants.CONFIG_GROUP_KEY, useKeyAsProperty = false)
     public String getGroup() {
         return group;
     }
@@ -209,7 +211,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.group = group;
     }
 
-    @Parameter(key = Constants.CONFIG_CHECK_KEY)
+    @Parameter(key = Constants.CONFIG_CHECK_KEY, useKeyAsProperty = false)
     public Boolean isCheck() {
         return check;
     }
@@ -218,13 +220,13 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.check = check;
     }
 
-    @Parameter(key = Constants.CONFIG_ENABLE_KEY)
-    public Boolean getEnable() {
-        return enable;
+    @Parameter(key = Constants.CONFIG_ENABLE_KEY, useKeyAsProperty = false)
+    public Boolean getHighestPriority() {
+        return highestPriority;
     }
 
-    public void setEnable(Boolean enable) {
-        this.enable = enable;
+    public void setHighestPriority(Boolean highestPriority) {
+        this.highestPriority = highestPriority;
     }
 
     public String getUsername() {
@@ -243,7 +245,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.password = password;
     }
 
-    @Parameter(key = Constants.CONFIG_TIMEOUT_KEY)
+    @Parameter(key = Constants.CONFIG_TIMEOUT_KEY, useKeyAsProperty = false)
     public Long getTimeout() {
         return timeout;
     }
@@ -252,31 +254,31 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.timeout = timeout;
     }
 
-    @Parameter(key = Constants.CONFIG_CONFIGFILE_KEY)
-    public String getConfigfile() {
-        return configfile;
+    @Parameter(key = Constants.CONFIG_CONFIGFILE_KEY, useKeyAsProperty = false)
+    public String getConfigFile() {
+        return configFile;
     }
 
-    public void setConfigfile(String configfile) {
-        this.configfile = configfile;
+    public void setConfigFile(String configFile) {
+        this.configFile = configFile;
     }
 
     @Parameter(excluded = true)
-    public String getLocalconfigfile() {
-        return localconfigfile;
+    public String getAppConfigFile() {
+        return appConfigFile;
     }
 
-    public void setLocalconfigfile(String localconfigfile) {
-        this.localconfigfile = localconfigfile;
+    public void setAppConfigFile(String appConfigFile) {
+        this.appConfigFile = appConfigFile;
     }
 
-    @Parameter(key = Constants.CONFIG_APPNAME_KEY)
-    public String getAppname() {
-        return appname;
+    @Parameter(key = Constants.CONFIG_APPNAME_KEY, useKeyAsProperty = false)
+    public String getAppName() {
+        return appName;
     }
 
-    public void setAppname(String appname) {
-        this.appname = appname;
+    public void setAppName(String appName) {
+        this.appName = appName;
     }
 
     public Map<String, String> getParameters() {
@@ -305,7 +307,7 @@ public class ConfigCenterConfig extends AbstractConfig {
     }
 
     private void checkConfigCenter() {
-        if ((StringUtils.isEmpty(env) && StringUtils.isEmpty(address))
+        if (StringUtils.isEmpty(address)
                 || (StringUtils.isEmpty(protocol) && (StringUtils.isEmpty(address) || !address.contains("://")))) {
             throw new IllegalStateException("You must specify the right parameter for configcenter.");
         }
@@ -314,16 +316,10 @@ public class ConfigCenterConfig extends AbstractConfig {
     @Override
     @Parameter(excluded = true)
     public boolean isValid() {
-        if (StringUtils.isEmpty(address) && StringUtils.isEmpty(env)) {
+        if (StringUtils.isEmpty(address)) {
             return false;
         }
-        if (StringUtils.isNotEmpty(address)) {
-            if (!address.contains("://") && StringUtils.isEmpty(protocol)) {
-                return false;
-            }
-        } else if (StringUtils.isNotEmpty(env) && StringUtils.isEmpty(protocol)) {
-            return false;
-        }
-        return true;
+
+        return address.contains("://") || StringUtils.isNotEmpty(protocol);
     }
 }

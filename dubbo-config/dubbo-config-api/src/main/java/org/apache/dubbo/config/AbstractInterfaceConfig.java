@@ -450,7 +450,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 ConfigCenterConfig configCenterConfig = new ConfigCenterConfig();
                 configCenterConfig.setProtocol(rc.getProtocol());
                 configCenterConfig.setAddress(rc.getAddress());
-                configCenterConfig.setEnable(false);
+                configCenterConfig.setHighestPriority(false);
                 configCenterConfig.init();
                 return null;
             });

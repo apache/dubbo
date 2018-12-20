@@ -63,7 +63,7 @@ public class ZookeeperDynamicConfiguration extends AbstractDynamicConfiguration<
     }
 
     protected void initWith(URL url) {
-        rootPath = "/" + url.getParameter(CONFIG_NAMESPACE_KEY, Constants.DUBBO) + "/config";
+        rootPath = "/" + url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP) + "/config";
 
         RetryPolicy policy = new ExponentialBackoffRetry(1000, 3);
         int sessionTimeout = url.getParameter("config.session.timeout", 60 * 1000);

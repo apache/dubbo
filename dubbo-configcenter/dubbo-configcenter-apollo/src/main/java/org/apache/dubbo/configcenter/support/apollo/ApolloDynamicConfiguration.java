@@ -57,7 +57,7 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Apo
     @Override
     public void initWith(URL url) {
         // Instead of using Dubbo's configuration, I would suggest use the original configuration method Apollo provides.
-        String configEnv = url.getParameter(Constants.CONFIG_ENV_KEY);
+        String configEnv = url.getParameter(APOLLO_ENV_KEY);
         String configAddr = url.getBackupAddress();
         String configCluster = url.getParameter(Constants.CONFIG_CLUSTER_KEY);
         if (configEnv != null) {
@@ -70,7 +70,7 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Apo
             System.setProperty(APOLLO_CLUSTER_KEY, configCluster);
         }
 
-        dubboConfig = ConfigService.getConfig(url.getParameter(Constants.CONFIG_GROUP_KEY, DEFAULT_GROUP));
+        dubboConfig = ConfigService.getConfig(url.getParameter(Constants.CONFIG_NAMESPACE_KEY, DEFAULT_GROUP));
         // Decide to fail or to continue when failed to connect to remote server.
         boolean check = url.getParameter(Constants.CONFIG_CHECK_KEY, true);
         if (dubboConfig.getSourceType() != ConfigSourceType.REMOTE) {

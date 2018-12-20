@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.configcenter;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.AbstractConfiguration;
 
@@ -49,7 +48,7 @@ public abstract class AbstractDynamicConfiguration<TargetListener> extends Abstr
 
     @Override
     public void addListener(String key, ConfigurationListener listener) {
-        addListener(key, Constants.DUBBO, listener);
+        addListener(key, DEFAULT_GROUP, listener);
     }
 
     @Override
@@ -80,7 +79,7 @@ public abstract class AbstractDynamicConfiguration<TargetListener> extends Abstr
 
     @Override
     public void removeListener(String key, ConfigurationListener listener) {
-        removeListener(key, Constants.DUBBO, listener);
+        removeListener(key, DEFAULT_GROUP, listener);
     }
 
     @Override

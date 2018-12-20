@@ -122,6 +122,7 @@ public class RegistryConfig extends AbstractConfig {
     public void setProtocol(String protocol) {
         checkName("protocol", protocol);
         this.protocol = protocol;
+        this.updateIdIfAbsent(protocol);
     }
 
     @Parameter(excluded = true)
@@ -131,6 +132,12 @@ public class RegistryConfig extends AbstractConfig {
 
     public void setAddress(String address) {
         this.address = address;
+        if (address != null) {
+            int i = address.indexOf("://");
+            if (i > 0) {
+                this.updateIdIfAbsent(address.substring(0, i));
+            }
+        }
     }
 
     public Integer getPort() {
