@@ -127,7 +127,7 @@ public class InvokeTelnetHandler implements TelnetHandler {
 
         StringBuilder buf = new StringBuilder();
         String service = (String) channel.getAttribute(ChangeTelnetHandler.SERVICE_KEY);
-        if (service != null && service.length() > 0) {
+        if (!StringUtils.isEmpty(service)) {
             buf.append("Use default service ").append(service).append(".\r\n");
         }
 
@@ -190,10 +190,7 @@ public class InvokeTelnetHandler implements TelnetHandler {
         Method invokeMethod = null;
         ProviderModel selectedProvider = null;
         for (ProviderModel provider : ApplicationModel.allProviderModels()) {
-            if (provider.getServiceName().equalsIgnoreCase(service)
-                    || provider.getServiceInterfaceClass().getSimpleName().equalsIgnoreCase(service)
-                    || provider.getServiceInterfaceClass().getName().equalsIgnoreCase(service)
-                    || StringUtils.isEmpty(service)) {
+            if (isServiceMatch(service, provider)) {
                 invokeMethod = findMethod(provider.getAllMethods(), method, list, paramTypes);
                 selectedProvider = provider;
                 break;
@@ -229,5 +226,12 @@ public class InvokeTelnetHandler implements TelnetHandler {
             buf.append("No such service ").append(service);
         }
         return buf.toString();
+    }
+
+    private boolean isServiceMatch(String service, ProviderModel provider) {
+        return provider.getServiceName().equalsIgnoreCase(service)
+                || provider.getServiceInterfaceClass().getSimpleName().equalsIgnoreCase(service)
+                || provider.getServiceInterfaceClass().getName().equalsIgnoreCase(service)
+                || StringUtils.isEmpty(service);
     }
 }
