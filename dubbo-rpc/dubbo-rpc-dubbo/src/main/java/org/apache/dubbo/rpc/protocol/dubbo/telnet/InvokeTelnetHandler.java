@@ -119,7 +119,7 @@ public class InvokeTelnetHandler implements TelnetHandler {
     @Override
     @SuppressWarnings("unchecked")
     public String telnet(Channel channel, String message) {
-        if (message == null || message.length() == 0) {
+        if (StringUtils.isEmpty(message)) {
             return "Please input method name, eg: \r\ninvoke xxxMethod(1234, \"abcd\", {\"prop\" : \"value\"})\r\n" +
                     "invoke XxxService.xxxMethod(1234, \"abcd\", {\"prop\" : \"value\"})\r\n" +
                     "invoke com.xxx.XxxService.xxxMethod(1234, \"abcd\", {\"prop\" : \"value\"})";

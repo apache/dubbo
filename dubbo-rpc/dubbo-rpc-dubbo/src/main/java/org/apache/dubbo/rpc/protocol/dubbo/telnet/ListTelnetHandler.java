@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.dubbo.telnet;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.ReflectUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.telnet.support.Help;
@@ -50,7 +51,7 @@ public class ListTelnetHandler implements TelnetHandler {
                 if ("-l".equals(part)) {
                     detail = true;
                 } else {
-                    if (service != null && service.length() > 0) {
+                    if (!StringUtils.isEmpty(service)) {
                         return "Invalid parameter " + part;
                     }
                     service = part;
@@ -63,7 +64,7 @@ public class ListTelnetHandler implements TelnetHandler {
             }
         }
 
-        if (service == null || service.length() == 0) {
+        if (StringUtils.isEmpty(service)) {
             printAllServices(buf, detail);
         } else {
             printSpecifiedService(service, buf, detail);
@@ -81,13 +82,11 @@ public class ListTelnetHandler implements TelnetHandler {
     }
 
     private void printAllProvidedServices(StringBuilder buf, boolean detail) {
-        boolean printHeader = true;
-        for (ProviderModel provider : ApplicationModel.allProviderModels()) {
-            if (printHeader) {
-                buf.append("PROVIDER:\r\n");
-                printHeader = false;
-            }
+        if (!ApplicationModel.allProviderModels().isEmpty()) {
+            buf.append("PROVIDER:\r\n");
+        }
 
+        for (ProviderModel provider : ApplicationModel.allProviderModels()) {
             buf.append(provider.getServiceName());
             if (detail) {
                 buf.append(" -> ");
@@ -99,13 +98,11 @@ public class ListTelnetHandler implements TelnetHandler {
     }
 
     private void printAllReferredServices(StringBuilder buf, boolean detail) {
-        boolean printHeader = true;
-        for (ConsumerModel consumer : ApplicationModel.allConsumerModels()) {
-            if (printHeader) {
-                buf.append("CONSUMER:\r\n");
-                printHeader = false;
-            }
+        if (!ApplicationModel.allConsumerModels().isEmpty()) {
+            buf.append("CONSUMER:\r\n");
+        }
 
+        for (ConsumerModel consumer : ApplicationModel.allConsumerModels()) {
             buf.append(consumer.getServiceName());
             if (detail) {
                 buf.append(" -> ");
