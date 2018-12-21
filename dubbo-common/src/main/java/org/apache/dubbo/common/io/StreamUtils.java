@@ -189,7 +189,7 @@ public class StreamUtils {
             @Override
             public synchronized void reset() throws IOException {
                 if (!mInMarked) {
-                    throw new IOException("should mark befor reset!");
+                    throw new IOException("should mark before reset!");
                 }
 
                 mInReset = true;

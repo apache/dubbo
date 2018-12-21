@@ -28,9 +28,9 @@ public abstract class Assert {
         }
     }
 
-    public static void notNull(Object obj, RuntimeException exeception) {
+    public static void notNull(Object obj, RuntimeException exception) {
         if (obj == null) {
-            throw exeception;
+            throw exception;
         }
     }
 
