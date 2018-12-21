@@ -46,7 +46,7 @@ public class ListTelnetHandler implements TelnetHandler {
                     detail = true;
                 } else {
                     if (service != null && service.length() > 0) {
-                        return "Invaild parameter " + part;
+                        return "Invalid parameter " + part;
                     }
                     service = part;
                 }
