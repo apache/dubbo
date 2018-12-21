@@ -109,9 +109,10 @@ public class RpcStatus {
      * @param url
      */
     public static boolean beginCount(URL url, String methodName, int max) {
+        max = (max <= 0) ? Integer.MAX_VALUE : max;
         RpcStatus appStatus = getStatus(url);
         RpcStatus methodStatus = getStatus(url, methodName);
-        if (max > 0 && methodStatus.active.incrementAndGet() > max) {
+        if (methodStatus.active.incrementAndGet() > max) {
             methodStatus.active.decrementAndGet();
             return false;
         } else {
