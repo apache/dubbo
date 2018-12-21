@@ -137,7 +137,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     private String scope;
 
     /**
-     * Check if the registry config is exists
+     * Check whether the registry config is exists
      */
     protected void checkRegistry() {
         // for backward compatibility
@@ -195,7 +195,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     /**
      *
-     * load the registry and conversion it to {@link URL}, the loading priority is: system property > dubbo registry config
+     * load the registry and conversion it to {@link URL}, the priority order is: system property > dubbo registry config
      *
      * @param provider whether it is the provider side
      * @return
@@ -245,6 +245,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         return registryList;
     }
 
+    /**
+
+     * Load the monitor config from the system properties and conversation it to {@link URL}
+     *
+     * @param registryURL
+     * @return
+     */
     protected URL loadMonitor(URL registryURL) {
         if (monitor == null) {
             String monitorAddress = ConfigUtils.getProperty("dubbo.monitor.address");
@@ -299,6 +306,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         return null;
     }
 
+    /**
+     * Check whether the interface of the remote service and the methods meet with Dubbo's requirements.it mainly check
+     * if the methods configured in the configuration file are included in the interface of remote service
+     *
+     * @param interfaceClass the interface of remote service
+     * @param methods the methods configured
+     */
     protected void checkInterfaceAndMethods(Class<?> interfaceClass, List<MethodConfig> methods) {
         // interface cannot be null
         if (interfaceClass == null) {
@@ -330,6 +344,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
     }
 
+    /**
+     * Legitimacy check and setup of local simulated operations. The operations can be a string with Simple operation or
+     * a classname whose {@link Class} implements a particular function
+     *
+     * @param interfaceClass for provider side, it is the {@link Class} of the service that will be exported; for consumer
+     *                       side, it is the {@link Class} of the remote service interface
+     */
     void checkMock(Class<?> interfaceClass) {
         if (ConfigUtils.isEmpty(mock)) {
             return;
@@ -359,6 +380,12 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
     }
 
+    /**
+     * Legitimacy check of stub,
+     *
+     * @param interfaceClass for provider side, it is the {@link Class} of the service that will be exported; for consumer
+     *                       side, it is the {@link Class} of the remote service interface
+     */
     void checkStub(Class<?> interfaceClass) {
         if (ConfigUtils.isNotEmpty(local)) {
             Class<?> localClass = ConfigUtils.isDefault(local) ? ReflectUtils.forName(interfaceClass.getName() + "Local") : ReflectUtils.forName(local);
