@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
@@ -75,14 +76,7 @@ public class AccessLogFilter implements Filter {
 
     private static final long LOG_OUTPUT_INTERVAL = 5000;
 
-    static ThreadLocal<SimpleDateFormat> FILE_DATE_FORMATTER= new ThreadLocal<SimpleDateFormat>() {
-        @Override
-        protected SimpleDateFormat initialValue() {
-            return new SimpleDateFormat(FILE_DATE_FORMAT);
-        }
-    };
-
-    static ThreadLocal<SimpleDateFormat> MESSAGE_DATE_FORMATTER= new ThreadLocal<SimpleDateFormat>() {
+    static InternalThreadLocal<SimpleDateFormat> MESSAGE_DATE_FORMATTER = new InternalThreadLocal<SimpleDateFormat>() {
         @Override
         protected SimpleDateFormat initialValue() {
             return new SimpleDateFormat(MESSAGE_DATE_FORMAT);
@@ -173,8 +167,9 @@ public class AccessLogFilter implements Filter {
     private class LogTask implements Runnable {
         @Override
         public void run() {
+            final SimpleDateFormat sdf = new SimpleDateFormat(FILE_DATE_FORMAT);
             try {
-                if (logQueue != null && logQueue.size() > 0) {
+                if (!logQueue.isEmpty()) {
                     for (Map.Entry<String, Set<String>> entry : logQueue.entrySet()) {
                         try {
                             String accesslog = entry.getKey();
@@ -188,8 +183,8 @@ public class AccessLogFilter implements Filter {
                                 logger.debug("Append log to " + accesslog);
                             }
                             if (file.exists()) {
-                                String now = FILE_DATE_FORMATTER.get().format(new Date());
-                                String last = FILE_DATE_FORMATTER.get().format(new Date(file.lastModified()));
+                                String now = sdf.format(new Date());
+                                String last = sdf.format(new Date(file.lastModified()));
                                 if (!now.equals(last)) {
                                     File archive = new File(file.getAbsolutePath() + "." + last);
                                     file.renameTo(archive);
