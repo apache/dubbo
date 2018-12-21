@@ -15,23 +15,20 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.utils;
+package org.apache.dubbo.rpc.support;
 
-public abstract class Assert {
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcException;
 
-    protected Assert() {
+public class RuntimeExceptionInvoker extends MyInvoker {
+
+    public RuntimeExceptionInvoker(URL url) {
+        super(url);
     }
 
-    public static void notNull(Object obj, String message) {
-        if (obj == null) {
-            throw new IllegalArgumentException(message);
-        }
+    public Result invoke(Invocation invocation) throws RpcException {
+        throw new RuntimeException("Runtime exception");
     }
-
-    public static void notNull(Object obj, RuntimeException exception) {
-        if (obj == null) {
-            throw exception;
-        }
-    }
-
 }
