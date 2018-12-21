@@ -30,48 +30,79 @@ public class MethodConfig extends AbstractMethodConfig {
 
     private static final long serialVersionUID = 884908855422675941L;
 
-    // method name
+    /**
+     * method name
+     */
     private String name;
 
-    // stat
+    /**
+     * stat
+     */
     private Integer stat;
 
-    // whether to retry
+    /**
+     * whether to retry
+     */
     private Boolean retry;
 
-    // if it's reliable
+    /**
+     * if it's reliable
+     */
     private Boolean reliable;
 
-    // thread limits for method invocations
+    /**
+     * thread limits for method invocations
+     */
     private Integer executes;
 
-    // if it's deprecated
+    /**
+     * if it's deprecated
+     */
     private Boolean deprecated;
 
-    // whether to enable sticky
+    /**
+     * whether to enable sticky
+     */
     private Boolean sticky;
 
-    // whether need to return
+    /**
+     * whether need to return
+     */
     private Boolean isReturn;
 
-    // callback instance when async-call is invoked
+    /**
+     * callback instance when async-call is invoked
+     */
     private Object oninvoke;
 
-    // callback method when async-call is invoked
+    /**
+     * callback method when async-call is invoked
+     */
     private String oninvokeMethod;
 
-    // callback instance when async-call is returned
+    /**
+     * callback instance when async-call is returned
+     */
     private Object onreturn;
 
-    // callback method when async-call is returned
+    /**
+     * callback method when async-call is returned
+     */
     private String onreturnMethod;
 
-    // callback instance when async-call has exception thrown
+    /**
+     * callback instance when async-call has exception thrown
+     */
     private Object onthrow;
 
-    // callback method when async-call has exception thrown
+    /**
+     * callback method when async-call has exception thrown
+     */
     private String onthrowMethod;
 
+    /**
+     * the method arguments
+     */
     private List<ArgumentConfig> arguments;
 
     @Parameter(excluded = true)

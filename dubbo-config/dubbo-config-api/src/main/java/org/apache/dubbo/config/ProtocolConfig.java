@@ -39,90 +39,146 @@ public class ProtocolConfig extends AbstractConfig {
 
     private static final long serialVersionUID = 6913423882496634749L;
 
-    // protocol name
+    /**
+     * protocol name
+     */
     private String name;
 
-    // service IP address (when there are multiple network cards available)
+    /**
+     * service IP address (when there are multiple network cards available)
+     */
     private String host;
 
-    // service port
+    /**
+     * service port
+     */
     private Integer port;
 
-    // context path
+    /**
+     * context path
+     */
     private String contextpath;
 
-    // thread pool
+    /**
+     * thread pool
+     */
     private String threadpool;
 
-    // thread pool core thread size
+    /**
+     * thread pool core thread size
+     */
     private Integer corethreads;
 
-    // thread pool size (fixed size)
+    /**
+     * thread pool size (fixed size)
+     */
     private Integer threads;
 
-    // IO thread pool size (fixed size)
+    /**
+     * IO thread pool size (fixed size)
+     */
     private Integer iothreads;
 
-    // thread pool's queue length
+    /**
+     * thread pool's queue length
+     */
     private Integer queues;
 
-    // max acceptable connections
+    /**
+     * max acceptable connections
+     */
     private Integer accepts;
 
-    // protocol codec
+    /**
+     * protocol codec
+     */
     private String codec;
 
-    // serialization
+    /**
+     * serialization
+     */
     private String serialization;
 
-    // charset
+    /**
+     * charset
+     */
     private String charset;
 
-    // payload max length
+    /**
+     * payload max length
+     */
     private Integer payload;
 
-    // buffer size
+    /**
+     * buffer size
+     */
     private Integer buffer;
 
-    // heartbeat interval
+    /**
+     * heartbeat interval
+     */
     private Integer heartbeat;
 
-    // access log
+    /**
+     * access log
+     */
     private String accesslog;
 
-    // transfort
+    /**
+     * transfort
+     */
     private String transporter;
 
-    // how information is exchanged
+    /**
+     * how information is exchanged
+     */
     private String exchanger;
 
-    // thread dispatch mode
+    /**
+     * thread dispatch mode
+     */
     private String dispatcher;
 
-    // networker
+    /**
+     * networker
+     */
     private String networker;
 
-    // sever impl
+    /**
+     * sever impl
+     */
     private String server;
 
-    // client impl
+    /**
+     * client impl
+     */
     private String client;
 
-    // supported telnet commands, separated with comma.
+    /**
+     * supported telnet commands, separated with comma.
+     */
     private String telnet;
 
-    // command line prompt
+    /**
+     * command line prompt
+     */
     private String prompt;
 
-    // status check
+    /**
+     * status check
+     */
     private String status;
 
-    // whether to register
+    /**
+     * whether to register
+     */
     private Boolean register;
 
-    // parameters
-    // 是否长连接
-    // TODO add this to provider config
+    /**
+     * parameters
+     * whether it is a persistent connection
+     *  TODO add this to provider config
+     */
     private Boolean keepAlive;
 
     // TODO add this to provider config
@@ -130,10 +186,14 @@ public class ProtocolConfig extends AbstractConfig {
 
     private String extension;
 
-    // parameters
+    /**
+     * parameters
+     */
     private Map<String, String> parameters;
 
-    // if it's default
+    /**
+     * if it's default
+     */
     private Boolean isDefault;
 
     public ProtocolConfig() {

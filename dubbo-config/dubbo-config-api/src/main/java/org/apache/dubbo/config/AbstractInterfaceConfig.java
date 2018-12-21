@@ -136,6 +136,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      */
     private String scope;
 
+    /**
+     * Check if the registry config is exists
+     */
     protected void checkRegistry() {
         // for backward compatibility
         if (registries == null || registries.isEmpty()) {
@@ -190,6 +193,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
     }
 
+    /**
+     *
+     * load the registry and conversion it to {@link URL}, the loading priority is: system property > dubbo registry config
+     *
+     * @param provider whether it is the provider side
+     * @return
+     */
     protected List<URL> loadRegistries(boolean provider) {
         checkRegistry();
         List<URL> registryList = new ArrayList<URL>();

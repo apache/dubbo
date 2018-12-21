@@ -30,22 +30,35 @@ public class RegistryConfig extends AbstractConfig {
 
     public static final String NO_AVAILABLE = "N/A";
     private static final long serialVersionUID = 5508512956753757169L;
-    // register center address
+
+    /**
+     * register center address
+     */
     private String address;
 
-    // username to login register center
+    /**
+     * username to login register center
+     */
     private String username;
 
-    // password to login register center
+    /**
+     * password to login register center
+     */
     private String password;
 
-    // default port for register center
+    /**
+     * default port for register center
+     */
     private Integer port;
 
-    // protocol for register center
+    /**
+     * protocol for register center
+     */
     private String protocol;
 
-    // client impl
+    /**
+     * client impl
+     */
     private String transporter;
 
     private String server;
@@ -58,34 +71,54 @@ public class RegistryConfig extends AbstractConfig {
 
     private String version;
 
-    // request timeout in milliseconds for register center
+    /**
+     * request timeout in milliseconds for register center
+     */
     private Integer timeout;
 
-    // session timeout in milliseconds for register center
+    /**
+     * session timeout in milliseconds for register center
+     */
     private Integer session;
 
-    // file for saving register center dynamic list
+    /**
+     * file for saving register center dynamic list
+     */
     private String file;
 
-    // wait time before stop
+    /**
+     * wait time before stop
+     */
     private Integer wait;
 
-    // whether to check if register center is available when boot up
+    /**
+     * whether to check if register center is available when boot up
+     */
     private Boolean check;
 
-    // whether to allow dynamic service to register on the register center
+    /**
+     * whether to allow dynamic service to register on the register center
+     */
     private Boolean dynamic;
 
-    // whether to export service on the register center
+    /**
+     * whether to export service on the register center
+     */
     private Boolean register;
 
-    // whether allow to subscribe service on the register center
+    /**
+     * whether allow to subscribe service on the register center
+     */
     private Boolean subscribe;
 
-    // customized parameters
+    /**
+     * whether allow to subscribe service on the register center
+     */
     private Map<String, String> parameters;
 
-    // if it's default
+    /**
+     * if it's default
+     */
     private Boolean isDefault;
 
     public RegistryConfig() {

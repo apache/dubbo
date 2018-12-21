@@ -29,12 +29,24 @@ public class MonitorConfig extends AbstractConfig {
 
     private static final long serialVersionUID = -1184681514659198203L;
 
+    /**
+     * The protocol
+     */
     private String protocol;
 
+    /**
+     * The monitor address
+     */
     private String address;
 
+    /**
+     * The monitor user name
+     */
     private String username;
 
+    /**
+     * The password
+     */
     private String password;
 
     private String group;

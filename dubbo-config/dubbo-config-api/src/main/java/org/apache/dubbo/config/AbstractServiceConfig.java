@@ -32,48 +32,84 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
     private static final long serialVersionUID = 1L;
 
-    // version
+    /**
+     * The service version
+     */
     protected String version;
 
-    // group
+    /**
+     * The service group
+     */
     protected String group;
 
-    // whether the service is deprecated
+    /**
+     * whether the service is deprecated
+     */
     protected Boolean deprecated;
 
-    // delay service exporting
+    /**
+     * The time delay service exporting
+     */
     protected Integer delay;
 
-    // whether to export the service
+    /**
+     * whether to export the service
+     */
     protected Boolean export;
 
-    // weight
+    /**
+     * The service weight
+     */
     protected Integer weight;
 
-    // document center
+    /**
+     * document center
+     */
     protected String document;
 
-    // whether to register as a dynamic service or not on register center
+    /**
+     * whether to register as a dynamic service or not on register center
+     */
     protected Boolean dynamic;
 
-    // whether to use token
+    /**
+     * whether to use token
+     */
     protected String token;
 
-    // access log
+    /**
+     * The access log
+     */
     protected String accesslog;
+
+    /**
+     * The protocol list the service will export with
+     */
     protected List<ProtocolConfig> protocols;
-    // max allowed execute times
+
+    /**
+     * max allowed execute times
+     */
     private Integer executes;
-    // whether to register
+
+    /**
+     * whether to register
+     */
     private Boolean register;
 
-    // warm up period
+    /**
+     * warm up period
+     */
     private Integer warmup;
 
-    // serialization
+    /**
+     * The serialization type
+     */
     private String serialization;
 
-    // provider tag
+    /**
+     * provider tag
+     */
     protected String tag;
 
     public String getVersion() {

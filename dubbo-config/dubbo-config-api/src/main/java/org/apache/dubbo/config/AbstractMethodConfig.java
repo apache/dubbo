@@ -31,37 +31,59 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
 
     private static final long serialVersionUID = 1L;
 
-    // timeout for remote invocation in milliseconds
+    /**
+     * The timeout for remote invocation in milliseconds
+     */
     protected Integer timeout;
 
-    // retry times
+    /**
+     * The retry times
+     */
     protected Integer retries;
 
-    // max concurrent invocations
+    /**
+     * max concurrent invocations
+     */
     protected Integer actives;
 
-    // load balance
+    /**
+     * The load balance
+     */
     protected String loadbalance;
 
-    // whether to async
+    /**
+     * Whether to async
+     */
     protected Boolean async;
 
-    // whether to ack async-sent
+    /**
+     * Whether to ack async-sent
+     */
     protected Boolean sent;
 
-    // the name of mock class which gets called when a service fails to execute
+    /**
+     * The name of mock class which gets called when a service fails to execute
+     */
     protected String mock;
 
-    // merger
+    /**
+     * merger
+     */
     protected String merger;
 
-    // cache
+    /**
+     * cache
+     */
     protected String cache;
 
-    // validation
+    /**
+     * validation
+     */
     protected String validation;
 
-    // customized parameters
+    /**
+     * The customized parameters
+     */
     protected Map<String, String> parameters;
 
     /**

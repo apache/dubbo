@@ -35,55 +35,89 @@ public class ApplicationConfig extends AbstractConfig {
 
     private static final long serialVersionUID = 5508512956753757169L;
 
-    // application name
+    /**
+     * application name
+     */
     private String name;
 
-    // module version
+    /**
+     * module version
+     */
     private String version;
 
-    // application owner
+    /**
+     * application owner
+     */
     private String owner;
 
-    // application's organization (BU)
+    /**
+     * application's organization (BU)
+     */
     private String organization;
 
-    // architecture layer
+    /**
+     * architecture layer
+     */
     private String architecture;
 
-    // environment, e.g. dev, test or production
+    /**
+     * environment, e.g. dev, test or production
+     */
     private String environment;
 
-    // Java compiler
+    /**
+     * Java compiler
+     */
     private String compiler;
 
-    // logger
+    /**
+     * logger
+     */
     private String logger;
 
-    // registry centers
+    /**
+     * registry centers
+     */
     private List<RegistryConfig> registries;
 
-    // monitor center
+    /**
+     * monitor center
+     */
     private MonitorConfig monitor;
 
-    // is default or not
+    /**
+     * is default or not
+     */
     private Boolean isDefault;
 
-    // directory for saving thread dump
+    /**
+     * directory for saving thread dump
+     */
     private String dumpDirectory;
 
-    // whether to enable qos or not
+    /**
+     * whether to enable qos or not
+     */
     private Boolean qosEnable;
 
-    // the qos port to listen
+    /**
+     * the qos port to listen
+     */
     private Integer qosPort;
 
-    // should we accept foreign ip or not?
+    /**
+     * should we accept foreign ip or not?
+     */
     private Boolean qosAcceptForeignIp;
 
-    // customized parameters
+    /**
+     * customized parameters
+     */
     private Map<String, String> parameters;
 
-    //config the shutdown.wait
+    /**
+     * config the shutdown.wait
+     */
     private String shutwait;
 
 

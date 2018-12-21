@@ -30,25 +30,39 @@ public class ModuleConfig extends AbstractConfig {
 
     private static final long serialVersionUID = 5508512956753757169L;
 
-    // module name
+    /**
+     * module name
+     */
     private String name;
 
-    // module version
+    /**
+     * module version
+     */
     private String version;
 
-    // module owner
+    /**
+     * module owner
+     */
     private String owner;
 
-    // module's organization
+    /**
+     * module's organization
+     */
     private String organization;
 
-    // registry centers
+    /**
+     * registry centers
+     */
     private List<RegistryConfig> registries;
 
-    // monitor center
+    /**
+     * monitor center
+     */
     private MonitorConfig monitor;
 
-    // if it's default
+    /**
+     * if it's default
+     */
     private Boolean isDefault;
 
     public ModuleConfig() {

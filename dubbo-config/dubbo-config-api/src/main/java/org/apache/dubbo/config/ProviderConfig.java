@@ -40,73 +40,119 @@ public class ProviderConfig extends AbstractServiceConfig {
 
     // ======== protocol default values, it'll take effect when protocol's attributes are not set ========
 
-    // service IP addresses (used when there are multiple network cards available)
+    /**
+     * service IP addresses (used when there are multiple network cards available)
+     */
     private String host;
 
-    // service port
+    /**
+     * service port
+     */
     private Integer port;
 
-    // context path
+    /**
+     * context path
+     */
     private String contextpath;
 
-    // thread pool
+    /**
+     * thread pool
+     */
     private String threadpool;
 
-    // thread pool size (fixed size)
+    /**
+     * thread pool size (fixed size)
+     */
     private Integer threads;
 
-    // IO thread pool size (fixed size)
+    /**
+     * IO thread pool size (fixed size)
+     */
     private Integer iothreads;
 
-    // thread pool queue length
+    /**
+     * thread pool queue length
+     */
     private Integer queues;
 
-    // max acceptable connections
+    /**
+     * max acceptable connections
+     */
     private Integer accepts;
 
-    // protocol codec
+    /**
+     * protocol codec
+     */
     private String codec;
 
-    // charset
+    /**
+     * charset
+     */
     private String charset;
 
-    // payload max length
+    /**
+     * payload max length
+     */
     private Integer payload;
 
-    // buffer size
+    /**
+     * buffer size
+     */
     private Integer buffer;
 
-    // transporter
+    /**
+     * transporter
+     */
     private String transporter;
 
-    // how information gets exchanged
+    /**
+     * how information gets exchanged
+     */
     private String exchanger;
 
-    // thread dispatching mode
+    /**
+     * thread dispatching mode
+     */
     private String dispatcher;
 
-    // networker
+    /**
+     * networker
+     */
     private String networker;
 
-    // server impl
+    /**
+     * server impl
+     */
     private String server;
 
-    // client impl
+    /**
+     * client impl
+     */
     private String client;
 
-    // supported telnet commands, separated with comma.
+    /**
+     * supported telnet commands, separated with comma.
+     */
     private String telnet;
 
-    // command line prompt
+    /**
+     * command line prompt
+     */
     private String prompt;
 
-    // status check
+    /**
+     * status check
+     */
     private String status;
 
-    // wait time when stop
+    /**
+     * wait time when stop
+     */
     private Integer wait;
 
-    // if it's default
+    /**
+     * if it's default
+     */
     private Boolean isDefault;
 
     @Deprecated
