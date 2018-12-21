@@ -31,6 +31,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.given;
@@ -131,7 +132,8 @@ public class FailbackClusterInvokerTest {
         Assert.assertNull(RpcContext.getContext().getInvoker());
 //        invoker.retryFailed();// when retry the invoker which get from failed map already is not the mocked invoker,so
         //Ensure that the main thread is online
-        Thread.sleep(60000L);
+        CountDownLatch countDown = new CountDownLatch(1);
+        countDown.await();
         // it can be invoke successfully
     }
 }
