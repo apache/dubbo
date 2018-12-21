@@ -53,12 +53,6 @@ public abstract class AbstractRouter implements Router {
         this.url = url;
     }
 
-    @Override
-    public void addRouterChain(RouterChain routerChain) {
-        this.routerChains.add(routerChain);
-    }
-
-
     public void setConfiguration(DynamicConfiguration configuration) {
         this.configuration = configuration;
     }

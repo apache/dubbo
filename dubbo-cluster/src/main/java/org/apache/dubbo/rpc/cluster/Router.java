@@ -56,13 +56,6 @@ public interface Router extends Comparable<Router> {
     }
 
     /**
-     * Each router has a reference of the router chain.
-     *
-     * @param routerChain
-     */
-    void addRouterChain(RouterChain routerChain);
-
-    /**
      * To decide whether this router need to execute every time an RPC comes or should only execute when addresses or rule change.
      *
      * @return

@@ -159,9 +159,10 @@ public class FileRouterEngineTest {
     }
 
     private void initDic(URL url) {
+        // FIXME: this exposes the design flaw in RouterChain
         dic = new StaticDirectory<>(url, invokers);
         dic.buildRouterChain();
-        dic.getRouterChain().setResidentRouters(Arrays.asList(routerFactory.getRouter(url)));
+        dic.getRouterChain().initWithRouters(Arrays.asList(routerFactory.getRouter(url)));
     }
 
     static class MockClusterInvoker<T> extends AbstractClusterInvoker<T> {

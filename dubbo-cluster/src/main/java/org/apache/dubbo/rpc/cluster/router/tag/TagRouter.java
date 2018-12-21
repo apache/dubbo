@@ -74,7 +74,7 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
                 this.tagRouterRule = TagRuleParser.parse(event.getValue());
             }
 
-            routerChains.forEach(RouterChain::notifyRuleChanged);
+            routerChains.forEach(RouterChain::rebuild);
 
         } catch (Exception e) {
             logger.error("Failed to parse the raw tag router rule and it will not take effect, please check if the rule matches with the template, the raw rule is:\n ", e);

@@ -74,7 +74,7 @@ public abstract class AbstractConfigConditionRouter extends AbstractRouter imple
             }
         }
 
-        routerChains.forEach(RouterChain::notifyRuleChanged);
+        routerChains.forEach(RouterChain::rebuild);
     }
 
     @Override

@@ -88,7 +88,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     protected void addRouters(List<Router> routers) {
         // copy list
         routers = routers == null ? new ArrayList<>() : new ArrayList<>(routers);
-        routerChain.setGeneratedRouters(routers);
+        routerChain.addRouters(routers);
     }
 
     public URL getConsumerUrl() {
