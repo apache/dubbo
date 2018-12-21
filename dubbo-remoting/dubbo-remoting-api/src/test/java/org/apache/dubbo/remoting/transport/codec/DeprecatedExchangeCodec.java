@@ -166,12 +166,9 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
             Request req = new Request(id);
             req.setVersion(Version.getProtocolVersion());
             req.setTwoWay((flag & FLAG_TWOWAY) != 0);
-            if ((flag & FLAG_EVENT) != 0) {
-                req.setEvent(Request.HEARTBEAT_EVENT);
-            }
+            Object data = null;
             try {
                 ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
-                Object data;
                 if (req.isHeartbeat()) {
                     data = decodeHeartbeatData(channel, in);
                 } else if (req.isEvent()) {
@@ -179,11 +176,20 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
                 } else {
                     data = decodeRequestData(channel, in);
                 }
-                req.setData(data);
             } catch (Throwable t) {
                 // bad request
                 req.setBroken(true);
                 req.setData(t);
+            }
+            if ((flag & FLAG_EVENT) != 0) {
+                if (data != null && data.equals(Request.READONLY_EVENT)) {
+                    req.setEvent(Request.READONLY_EVENT);
+                } else {
+                    req.setEvent(Request.HEARTBEAT_EVENT);
+                }
+            }
+            if (!req.isBroken()) {
+                req.setData(data);
             }
             return req;
         }
