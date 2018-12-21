@@ -47,7 +47,7 @@ public class ActiveLimitFilter implements Filter {
         String methodName = invocation.getMethodName();
         int max = invoker.getUrl().getMethodParameter(methodName, Constants.ACTIVES_KEY, 0);
         RpcStatus count = RpcStatus.getStatus(invoker.getUrl(), invocation.getMethodName());
-        if (max > 0 && !RpcStatus.beginCount(url, methodName, max)) {
+        if (!RpcStatus.beginCount(url, methodName, max)) {
             long timeout = invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.TIMEOUT_KEY, 0);
             long start = System.currentTimeMillis();
             long remain = timeout;
