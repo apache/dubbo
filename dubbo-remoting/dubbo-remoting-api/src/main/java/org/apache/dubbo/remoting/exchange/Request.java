@@ -99,6 +99,10 @@ public class Request {
         mData = event;
     }
 
+    public void setEvent(boolean mEvent) {
+        this.mEvent = mEvent;
+    }
+
     public boolean isBroken() {
         return mBroken;
     }
