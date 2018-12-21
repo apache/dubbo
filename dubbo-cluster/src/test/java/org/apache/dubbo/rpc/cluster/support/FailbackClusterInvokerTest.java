@@ -40,7 +40,7 @@ import static org.mockito.Mockito.mock;
 public class FailbackClusterInvokerTest {
 
     List<Invoker<FailbackClusterInvokerTest>> invokers = new ArrayList<Invoker<FailbackClusterInvokerTest>>();
-    URL url = URL.valueOf("test://test:11/test");
+    URL url = URL.valueOf("test://test:11/test?retries=2&failbacktasks=2");
     Invoker<FailbackClusterInvokerTest> invoker = mock(Invoker.class);
     RpcInvocation invocation = new RpcInvocation();
     Directory<FailbackClusterInvokerTest> dic;
@@ -76,7 +76,7 @@ public class FailbackClusterInvokerTest {
     }
 
     @Test
-    public void testInvokeExceptoin() {
+    public void testInvokeException() {
         resetInvokerToException();
         FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<FailbackClusterInvokerTest>(
                 dic);
@@ -85,7 +85,7 @@ public class FailbackClusterInvokerTest {
     }
 
     @Test()
-    public void testInvokeNoExceptoin() {
+    public void testInvokeNoException() {
 
         resetInvokerToNoException();
 
@@ -118,15 +118,20 @@ public class FailbackClusterInvokerTest {
     }
 
     @Test()
-    public void testRetryFailed() {
+    public void testRetryFailed() throws Exception{
+        //Test retries and
 
         resetInvokerToException();
 
         FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<FailbackClusterInvokerTest>(
                 dic);
         invoker.invoke(invocation);
+        invoker.invoke(invocation);
+        invoker.invoke(invocation);
         Assert.assertNull(RpcContext.getContext().getInvoker());
 //        invoker.retryFailed();// when retry the invoker which get from failed map already is not the mocked invoker,so
+        //Ensure that the main thread is online
+        Thread.sleep(60000L);
         // it can be invoke successfully
     }
 }
