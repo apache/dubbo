@@ -255,7 +255,6 @@ public class DefaultFuture implements ResponseFuture {
         if (callbackCopy == null) {
             throw new NullPointerException("callback cannot be null.");
         }
-        c = null;
         Response res = response;
         if (res == null) {
             throw new IllegalStateException("response cannot be null. url:" + channel.getUrl());
