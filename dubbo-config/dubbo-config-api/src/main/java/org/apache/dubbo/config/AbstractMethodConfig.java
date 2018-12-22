@@ -63,6 +63,8 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
 
     /**
      * The name of mock class which gets called when a service fails to execute
+     *
+     * note that: the mock doesn't support on the provider side
      */
     protected String mock;
 
