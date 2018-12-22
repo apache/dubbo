@@ -18,7 +18,6 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.support.Parameter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -52,7 +51,6 @@ public class RegistryDataConfig extends AbstractConfig {
         return map;
     }
 
-    @Parameter(key = "simple-provider-config")
     public Boolean getSimpleProviderConfig() {
         return simpleProviderConfig;
     }
@@ -61,7 +59,6 @@ public class RegistryDataConfig extends AbstractConfig {
         this.simpleProviderConfig = simpleProviderConfig;
     }
 
-    @Parameter(key = "simple-consumer-config")
     public Boolean getSimpleConsumerConfig() {
         return simpleConsumerConfig;
     }
@@ -70,7 +67,6 @@ public class RegistryDataConfig extends AbstractConfig {
         this.simpleConsumerConfig = simpleConsumerConfig;
     }
 
-    @Parameter(key = "extra-provider-keys")
     public String getExtraProviderKeys() {
         return extraProviderKeys;
     }
@@ -80,7 +76,6 @@ public class RegistryDataConfig extends AbstractConfig {
     }
 
 
-    @Parameter(key = "extra-consumer-keys")
     public String getExtraConsumerKeys() {
         return extraConsumerKeys;
     }

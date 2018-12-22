@@ -57,9 +57,11 @@ public class DubboConfigConfiguration {
             @EnableDubboConfigBinding(prefix = "dubbo.registry", type = RegistryConfig.class),
             @EnableDubboConfigBinding(prefix = "dubbo.protocol", type = ProtocolConfig.class),
             @EnableDubboConfigBinding(prefix = "dubbo.monitor", type = MonitorConfig.class),
-            @EnableDubboConfigBinding(prefix = "dubbo.provider", type = ProviderConfig.class), @EnableDubboConfigBinding(prefix = "dubbo.consumer", type = ConsumerConfig.class), @EnableDubboConfigBinding(prefix = "dubbo.configCenter", type = ConfigCenterBean.class),
-            @EnableDubboConfigBinding(prefix = "dubbo.registrydata", type = RegistryDataConfig.class),
-            @EnableDubboConfigBinding(prefix = "dubbo.metadatareport", type = MetadataReportConfig.class)
+            @EnableDubboConfigBinding(prefix = "dubbo.provider", type = ProviderConfig.class),
+            @EnableDubboConfigBinding(prefix = "dubbo.consumer", type = ConsumerConfig.class),
+            @EnableDubboConfigBinding(prefix = "dubbo.configCenter", type = ConfigCenterBean.class),
+            @EnableDubboConfigBinding(prefix = "dubbo.registryData", type = RegistryDataConfig.class),
+            @EnableDubboConfigBinding(prefix = "dubbo.metadataReport", type = MetadataReportConfig.class)
     })
     public static class Single {
 
@@ -75,7 +77,8 @@ public class DubboConfigConfiguration {
             @EnableDubboConfigBinding(prefix = "dubbo.protocols", type = ProtocolConfig.class, multiple = true),
             @EnableDubboConfigBinding(prefix = "dubbo.monitors", type = MonitorConfig.class, multiple = true),
             @EnableDubboConfigBinding(prefix = "dubbo.providers", type = ProviderConfig.class, multiple = true),
-            @EnableDubboConfigBinding(prefix = "dubbo.consumers", type = ConsumerConfig.class, multiple = true)
+            @EnableDubboConfigBinding(prefix = "dubbo.consumers", type = ConsumerConfig.class, multiple = true),
+            @EnableDubboConfigBinding(prefix = "dubbo.configCenters", type = ConfigCenterBean.class, multiple = true)
     })
     public static class Multiple {
 
