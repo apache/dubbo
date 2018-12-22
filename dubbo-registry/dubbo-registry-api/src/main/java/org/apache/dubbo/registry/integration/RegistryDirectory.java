@@ -562,7 +562,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                                 logger.debug("destroy invoker[" + invoker.getUrl() + "] success. ");
                             }
                         } catch (Exception e) {
-                            logger.warn("destroy invoker[" + invoker.getUrl() + "] faild. " + e.getMessage(), e);
+                            logger.warn("destroy invoker[" + invoker.getUrl() + "] failed. " + e.getMessage(), e);
                         }
                     }
                 }

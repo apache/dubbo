@@ -272,7 +272,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
                 }
                 throw new IllegalStateException("Failed to unregister " + url + " to registry " + getUrl().getAddress() + ", cause: " + t.getMessage(), t);
             } else {
-                logger.error("Failed to uregister " + url + ", waiting for retry, cause: " + t.getMessage(), t);
+                logger.error("Failed to unregister " + url + ", waiting for retry, cause: " + t.getMessage(), t);
             }
 
             // Record a failed registration request to a failed list, retry regularly
