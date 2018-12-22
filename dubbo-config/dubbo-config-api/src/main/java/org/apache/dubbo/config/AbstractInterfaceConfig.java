@@ -51,88 +51,89 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     private static final long serialVersionUID = -1559314110797223229L;
 
     /**
-     * local impl class name for the service interface
+     * Local impl class name for the service interface
      */
     protected String local;
 
     /**
-     * local stub class name for the service interface
+     * Local stub class name for the service interface
      */
     protected String stub;
 
     /**
-     * service monitor
+     * Service monitor
      */
     protected MonitorConfig monitor;
 
     /**
-     * proxy type
+     * Strategies for generating dynamic agents，there are two strategies can be choosed: jdk and javassist
      */
     protected String proxy;
 
     /**
-     * cluster type
+     * Cluster type
      */
     protected String cluster;
 
     /**
-     * filter
+     * The {@link Filter} when the provicer side exposed a service or the customer side references a remote service used,
+     * if there are more than one, you can use commas to separate them
      */
     protected String filter;
 
     /**
-     * listener
+     * The Listener when the provider side exposes a service or the customer side references a remote service used
+     * if there are more than one, you can use commas to separate them
      */
     protected String listener;
 
     /**
-     * owner
+     * The owner of zhe service providers
      */
     protected String owner;
 
     /**
-     * connection limits, 0 means shared connection, otherwise it defines the connections delegated to the
-     * current service
+     * Connection limits, 0 means shared connection, otherwise it defines the connections delegated to the current service
      */
     protected Integer connections;
 
     /**
-     * layer
+     * The layer of service providers
      */
     protected String layer;
 
     /**
-     * application info
+     * The application info
      */
     protected ApplicationConfig application;
 
     /**
-     * module info
+     * The module info
      */
     protected ModuleConfig module;
 
     /**
-     * registry centers
+     * Registry centers
      */
     protected List<RegistryConfig> registries;
 
     /**
-     * connection events
+     * Connection events
      */
     protected String onconnect;
 
     /**
-     * disconnection events
+     * Disconnection events
      */
     protected String ondisconnect;
 
     /**
-     * callback limits
+     * Callback limits
      */
     private Integer callbacks;
 
     /**
-     * the scope for referring/exporting a service, if it's local, it means searching in current JVM only.
+     * The scope for referring/exporting a service, if it's local, it means searching in current JVM only.
      */
     private String scope;
 
@@ -195,7 +196,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     /**
      *
-     * load the registry and conversion it to {@link URL}, the priority order is: system property > dubbo registry config
+     * Load the registry and conversion it to {@link URL}, the priority order is: system property > dubbo registry config
      *
      * @param provider whether it is the provider side
      * @return

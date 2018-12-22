@@ -28,7 +28,7 @@ import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import java.util.Arrays;
 
 /**
- * ProviderConfig
+ * The service provider default configuration
  *
  * @export
  * @see org.apache.dubbo.config.ProtocolConfig
@@ -41,7 +41,7 @@ public class ProviderConfig extends AbstractServiceConfig {
     // ======== protocol default values, it'll take effect when protocol's attributes are not set ========
 
     /**
-     * service IP addresses (used when there are multiple network cards available)
+     * service ip addresses (used when there are multiple network cards available)
      */
     private String host;
 
@@ -86,7 +86,7 @@ public class ProviderConfig extends AbstractServiceConfig {
     private String codec;
 
     /**
-     * charset
+     * The serialization charset
      */
     private String charset;
 
@@ -96,7 +96,7 @@ public class ProviderConfig extends AbstractServiceConfig {
     private Integer payload;
 
     /**
-     * buffer size
+     * The network io buffer size
      */
     private Integer buffer;
 
@@ -121,12 +121,12 @@ public class ProviderConfig extends AbstractServiceConfig {
     private String networker;
 
     /**
-     * server impl
+     * The server-side implementation model of the protocol
      */
     private String server;
 
     /**
-     * client impl
+     * The client-side implementation model of the protocol
      */
     private String client;
 
@@ -151,7 +151,7 @@ public class ProviderConfig extends AbstractServiceConfig {
     private Integer wait;
 
     /**
-     * if it's default
+     * whether to use the default protocol
      */
     private Boolean isDefault;
 

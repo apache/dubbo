@@ -17,7 +17,7 @@
 package org.apache.dubbo.config;
 
 /**
- * ConsumerConfig
+ * The service consumer default confuguration
  *
  * @export
  */
@@ -26,7 +26,7 @@ public class ConsumerConfig extends AbstractReferenceConfig {
     private static final long serialVersionUID = 2827274711143680600L;
 
     /**
-     * is default or not
+     * whether to use the default protocol
      */
     private Boolean isDefault;
 

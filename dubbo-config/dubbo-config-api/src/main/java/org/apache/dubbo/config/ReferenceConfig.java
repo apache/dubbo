@@ -131,7 +131,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     private ConsumerConfig consumer;
 
     /**
-     * The protocol name
+     * Only the service provider of the specified protocol is invoked, and other protocols are ignored.
      */
     private String protocol;
 

@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * ModuleConfig
+ * The module info
  *
  * @export
  */

@@ -48,12 +48,12 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     protected Boolean deprecated;
 
     /**
-     * The time delay service exporting
+     * The time delay register service (milliseconds)
      */
     protected Integer delay;
 
     /**
-     * whether to export the service
+     * Whether to export the service
      */
     protected Boolean export;
 
@@ -63,22 +63,24 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     protected Integer weight;
 
     /**
-     * document center
+     * Document center
      */
     protected String document;
 
     /**
-     * whether to register as a dynamic service or not on register center
+     * Whether to register as a dynamic service or not on register center, it the value is false, the status will be disabled
+     * after the service registered,and it needs to be enabled manually; if you want to disable the service, you also need
+     * manual processing
      */
     protected Boolean dynamic;
 
     /**
-     * whether to use token
+     * Whether to use token
      */
     protected String token;
 
     /**
-     * The access log
+     * Whether to export access logs to logs
      */
     protected String accesslog;
 
@@ -88,17 +90,17 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     protected List<ProtocolConfig> protocols;
 
     /**
-     * max allowed execute times
+     * Maximum number of parallel executable requests
      */
     private Integer executes;
 
     /**
-     * whether to register
+     * Whether to register
      */
     private Boolean register;
 
     /**
-     * warm up period
+     * Warm up period
      */
     private Integer warmup;
 
@@ -108,7 +110,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     private String serialization;
 
     /**
-     * provider tag
+     * Provider tag
      */
     protected String tag;
 

@@ -27,7 +27,7 @@ import java.util.Map;
 
 
 /**
- * ApplicationConfig
+ * The application info
  *
  * @export
  */
@@ -36,32 +36,32 @@ public class ApplicationConfig extends AbstractConfig {
     private static final long serialVersionUID = 5508512956753757169L;
 
     /**
-     * application name
+     * Application name
      */
     private String name;
 
     /**
-     * module version
+     * The application version
      */
     private String version;
 
     /**
-     * application owner
+     * Application owner
      */
     private String owner;
 
     /**
-     * application's organization (BU)
+     * Application's organization (BU)
      */
     private String organization;
 
     /**
-     * architecture layer
+     * Architecture layer
      */
     private String architecture;
 
     /**
-     * environment, e.g. dev, test or production
+     * Environment, e.g. dev, test or production
      */
     private String environment;
 
@@ -71,52 +71,52 @@ public class ApplicationConfig extends AbstractConfig {
     private String compiler;
 
     /**
-     * logger
+     * The type of the log access
      */
     private String logger;
 
     /**
-     * registry centers
+     * Registry centers
      */
     private List<RegistryConfig> registries;
 
     /**
-     * monitor center
+     * Monitor center
      */
     private MonitorConfig monitor;
 
     /**
-     * is default or not
+     * Is default or not
      */
     private Boolean isDefault;
 
     /**
-     * directory for saving thread dump
+     * Directory for saving thread dump
      */
     private String dumpDirectory;
 
     /**
-     * whether to enable qos or not
+     * Whether to enable qos or not
      */
     private Boolean qosEnable;
 
     /**
-     * the qos port to listen
+     * The qos port to listen
      */
     private Integer qosPort;
 
     /**
-     * should we accept foreign ip or not?
+     * Should we accept foreign ip or not?
      */
     private Boolean qosAcceptForeignIp;
 
     /**
-     * customized parameters
+     * Customized parameters
      */
     private Map<String, String> parameters;
 
     /**
-     * config the shutdown.wait
+     * Config the shutdown.wait
      */
     private String shutwait;
 
