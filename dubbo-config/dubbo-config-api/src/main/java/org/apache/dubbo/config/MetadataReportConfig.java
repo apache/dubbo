@@ -44,13 +44,13 @@ public class MetadataReportConfig extends AbstractConfig {
     // customized parameters
     private Map<String, String> parameters;
 
-    private Integer retrytimes;
+    private Integer retryTimes;
 
-    private Integer retryperiod;
+    private Integer retryPeriod;
     /**
      * by default the metadatastore will store full metadata repeatly every day .
      */
-    private Boolean cyclereport;
+    private Boolean cycleReport;
 
     /**
      * sync report, default async
@@ -104,33 +104,29 @@ public class MetadataReportConfig extends AbstractConfig {
         this.parameters = parameters;
     }
 
-    @Parameter(key = "retry-times")
-    public Integer getRetrytimes() {
-        return retrytimes;
+    public Integer getRetryTimes() {
+        return retryTimes;
     }
 
-    public void setRetrytimes(Integer retrytimes) {
-        this.retrytimes = retrytimes;
+    public void setRetryTimes(Integer retryTimes) {
+        this.retryTimes = retryTimes;
     }
 
-    @Parameter(key = "retry-period")
-    public Integer getRetryperiod() {
-        return retryperiod;
+    public Integer getRetryPeriod() {
+        return retryPeriod;
     }
 
-    public void setRetryperiod(Integer retryperiod) {
-        this.retryperiod = retryperiod;
+    public void setRetryPeriod(Integer retryPeriod) {
+        this.retryPeriod = retryPeriod;
     }
 
-    @Parameter(key = "cycle-report")
-    public Boolean getCyclereport() {
-        return cyclereport;
+    public Boolean getCycleReport() {
+        return cycleReport;
     }
 
-    public void setCyclereport(Boolean cyclereport) {
-        this.cyclereport = cyclereport;
+    public void setCycleReport(Boolean cycleReport) {
+        this.cycleReport = cycleReport;
     }
-
 
     @Override
     @Parameter(excluded = true)
@@ -138,7 +134,6 @@ public class MetadataReportConfig extends AbstractConfig {
         return StringUtils.isNotEmpty(address);
     }
 
-    @Parameter(key = "sync-report")
     public Boolean getSyncReport() {
         return syncReport;
     }
