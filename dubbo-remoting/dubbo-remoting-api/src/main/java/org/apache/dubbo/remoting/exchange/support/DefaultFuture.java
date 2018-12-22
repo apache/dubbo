@@ -126,9 +126,9 @@ public class DefaultFuture implements ResponseFuture {
      * @param channel channel to close
      */
     public static void closeChannel(Channel channel) {
-        for (long id : CHANNELS.keySet()) {
-            if (channel.equals(CHANNELS.get(id))) {
-                DefaultFuture future = getFuture(id);
+        for (Map.Entry<Long, Channel> entry: CHANNELS.entrySet()) {
+            if (channel.equals(entry.getValue())) {
+                DefaultFuture future = getFuture(entry.getKey());
                 if (future != null && !future.isDone()) {
                     Response disconnectResponse = new Response(future.getId());
                     disconnectResponse.setStatus(Response.CHANNEL_INACTIVE);
@@ -265,7 +265,7 @@ public class DefaultFuture implements ResponseFuture {
             try {
                 callbackCopy.done(res.getResult());
             } catch (Exception e) {
-                logger.error("callback invoke error .reasult:" + res.getResult() + ",url:" + channel.getUrl(), e);
+                logger.error("callback invoke error .result:" + res.getResult() + ",url:" + channel.getUrl(), e);
             }
         } else if (res.getStatus() == Response.CLIENT_TIMEOUT || res.getStatus() == Response.SERVER_TIMEOUT) {
             try {

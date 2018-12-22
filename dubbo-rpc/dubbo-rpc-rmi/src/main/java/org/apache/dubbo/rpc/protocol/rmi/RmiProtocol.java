@@ -22,12 +22,9 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
 
-import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.remoting.RemoteAccessException;
 import org.springframework.remoting.rmi.RmiProxyFactoryBean;
 import org.springframework.remoting.rmi.RmiServiceExporter;
-import org.springframework.remoting.support.RemoteInvocation;
-import org.springframework.remoting.support.RemoteInvocationFactory;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
@@ -80,12 +77,7 @@ public class RmiProtocol extends AbstractProxyProtocol {
         // RMI needs extra parameter since it uses customized remote invocation object
         if (url.getParameter(Constants.DUBBO_VERSION_KEY, Version.getProtocolVersion()).equals(Version.getProtocolVersion())) {
             // Check dubbo version on provider, this feature only support
-            rmiProxyFactoryBean.setRemoteInvocationFactory(new RemoteInvocationFactory() {
-                @Override
-                public RemoteInvocation createRemoteInvocation(MethodInvocation methodInvocation) {
-                    return new RmiRemoteInvocation(methodInvocation);
-                }
-            });
+            rmiProxyFactoryBean.setRemoteInvocationFactory(RmiRemoteInvocation::new);
         }
         rmiProxyFactoryBean.setServiceUrl(url.toIdentityString());
         rmiProxyFactoryBean.setServiceInterface(serviceType);

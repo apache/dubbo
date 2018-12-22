@@ -245,12 +245,7 @@ public abstract class AbstractRegistry implements Registry {
             }
         } else {
             final AtomicReference<List<URL>> reference = new AtomicReference<List<URL>>();
-            NotifyListener listener = new NotifyListener() {
-                @Override
-                public void notify(List<URL> urls) {
-                    reference.set(urls);
-                }
-            };
+            NotifyListener listener = reference::set;
             subscribe(url, listener); // Subscribe logic guarantees the first notify to return
             List<URL> urls = reference.get();
             if (urls != null && !urls.isEmpty()) {

@@ -44,7 +44,7 @@ public class ThreadPoolStatusChecker implements StatusChecker {
             String port = entry.getKey();
             ExecutorService executor = (ExecutorService) entry.getValue();
 
-            if (executor != null && executor instanceof ThreadPoolExecutor) {
+            if (executor instanceof ThreadPoolExecutor) {
                 ThreadPoolExecutor tp = (ThreadPoolExecutor) executor;
                 boolean ok = tp.getActiveCount() < tp.getMaximumPoolSize() - 1;
                 Status.Level lvl = Status.Level.OK;

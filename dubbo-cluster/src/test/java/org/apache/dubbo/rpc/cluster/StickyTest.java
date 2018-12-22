@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.cluster;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -68,6 +69,8 @@ public class StickyTest {
         invokers.add(invoker2);
 
         clusterinvoker = new StickyClusterInvoker<StickyTest>(dic);
+
+        ExtensionLoader.resetExtensionLoader(LoadBalance.class);
     }
 
     @Test

@@ -71,8 +71,8 @@ public class DemoServiceImpl implements DemoService {
             return Type.Lower;
         return types[0];
     }
-
-    public Type enumlength(Type type) {
+    
+    public Type getType(Type type) {
         return type;
     }
 
@@ -105,6 +105,16 @@ public class DemoServiceImpl implements DemoService {
 
     public long add(int a, long b) {
         return a + b;
+    }
+
+    @Override
+    public int getPerson(Person person) {
+        return 1;
+    }
+
+    @Override
+    public int getPerson(Person person1, Person perso2) {
+        return 2;
     }
 
 }

@@ -30,8 +30,8 @@ public class LeastActiveBalanceTest extends LoadBalanceBaseTest {
     public void testLeastActiveLoadBalance_select() {
         int runs = 10000;
         Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, LeastActiveLoadBalance.NAME);
-        for (Invoker minvoker : counter.keySet()) {
-            Long count = counter.get(minvoker).get();
+        for (Map.Entry<Invoker, AtomicLong> entry : counter.entrySet()) {
+            Long count = entry.getValue().get();
             //            System.out.println(count);
             Assert.assertTrue("abs diff shoud < avg",
                     Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()));

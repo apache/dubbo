@@ -45,7 +45,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
     private InetSocketAddress localAddress;
     private InetSocketAddress bindAddress;
     private int accepts;
-    private int idleTimeout = 600; //600 seconds
+    private int idleTimeout;
 
     public AbstractServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
@@ -202,7 +202,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
     public void disconnected(Channel ch) throws RemotingException {
         Collection<Channel> channels = getChannels();
         if (channels.isEmpty()) {
-            logger.warn("All clients has discontected from " + ch.getLocalAddress() + ". You can graceful shutdown now.");
+            logger.warn("All clients has disconnected from " + ch.getLocalAddress() + ". You can graceful shutdown now.");
         }
         super.disconnected(ch);
     }

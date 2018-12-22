@@ -23,6 +23,12 @@ import org.apache.dubbo.rpc.Invocation;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+/**
+ * DefaultTPSLimiter is a default implementation for tps filter. It is an in memory based implementation for storing
+ * tps information. It internally use
+ *
+ * @see org.apache.dubbo.rpc.filter.TpsLimitFilter
+ */
 public class DefaultTPSLimiter implements TPSLimiter {
 
     private final ConcurrentMap<String, StatItem> stats

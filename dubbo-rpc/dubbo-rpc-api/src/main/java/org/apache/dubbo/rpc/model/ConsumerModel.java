@@ -29,11 +29,13 @@ import java.util.Optional;
 public class ConsumerModel {
     private final Object proxyObject;
     private final String serviceName;
+    private final Class<?> serviceInterfaceClass;
 
     private final Map<Method, ConsumerMethodModel> methodModels = new IdentityHashMap<Method, ConsumerMethodModel>();
 
-    public ConsumerModel(String serviceName, Object proxyObject, Method[] methods, Map<String, Object> attributes) {
+    public ConsumerModel(String serviceName, Class<?> serviceInterfaceClass, Object proxyObject, Method[] methods, Map<String, Object> attributes) {
         this.serviceName = serviceName;
+        this.serviceInterfaceClass = serviceInterfaceClass;
         this.proxyObject = proxyObject;
 
         if (proxyObject != null) {
@@ -75,6 +77,10 @@ public class ConsumerModel {
      */
     public List<ConsumerMethodModel> getAllMethods() {
         return new ArrayList<ConsumerMethodModel>(methodModels.values());
+    }
+
+    public Class<?> getServiceInterfaceClass() {
+        return serviceInterfaceClass;
     }
 
     public String getServiceName() {

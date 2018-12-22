@@ -41,13 +41,16 @@ public class DubboShutdownHook extends Thread {
     }
 
     /**
+     * Has it already been registered or not?
+     */
+    private final AtomicBoolean registered = new AtomicBoolean(false);
+    /**
      * Has it already been destroyed or not?
      */
-    private final AtomicBoolean destroyed;
+    private final AtomicBoolean destroyed= new AtomicBoolean(false);
 
     private DubboShutdownHook(String name) {
         super(name);
-        this.destroyed = new AtomicBoolean(false);
     }
 
     @Override
@@ -55,13 +58,31 @@ public class DubboShutdownHook extends Thread {
         if (logger.isInfoEnabled()) {
             logger.info("Run shutdown hook now.");
         }
-        destroyAll();
+        doDestroy();
+    }
+
+    /**
+     * Register the ShutdownHook
+     */
+    public void register() {
+        if (!registered.get() && registered.compareAndSet(false, true)) {
+            Runtime.getRuntime().addShutdownHook(getDubboShutdownHook());
+        }
+    }
+
+    /**
+     * Unregister the ShutdownHook
+     */
+    public void unregister() {
+        if (registered.get() && registered.compareAndSet(true, false)) {
+            Runtime.getRuntime().removeShutdownHook(getDubboShutdownHook());
+        }
     }
 
     /**
      * Destroy all the resources, including registries and protocols.
      */
-    public void destroyAll() {
+    public void doDestroy() {
         if (!destroyed.compareAndSet(false, true)) {
             return;
         }
@@ -87,5 +108,6 @@ public class DubboShutdownHook extends Thread {
             }
         }
     }
+
 
 }

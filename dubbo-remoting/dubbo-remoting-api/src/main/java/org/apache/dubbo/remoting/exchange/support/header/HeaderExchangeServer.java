@@ -22,6 +22,7 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
+import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
@@ -260,7 +261,8 @@ public class HeaderExchangeServer implements ExchangeServer {
 
     private void startHeartbeatTimer() {
         long tickDuration = calculateLeastDuration(heartbeat);
-        heartbeatTimer = new HashedWheelTimer(tickDuration, TimeUnit.MILLISECONDS, Constants.TICKS_PER_WHEEL);
+        heartbeatTimer = new HashedWheelTimer(new NamedThreadFactory("dubbo-server-heartbeat", true), tickDuration,
+                TimeUnit.MILLISECONDS, Constants.TICKS_PER_WHEEL);
 
         AbstractTimerTask.ChannelProvider cp = () -> unmodifiableCollection(HeaderExchangeServer.this.getChannels());
 

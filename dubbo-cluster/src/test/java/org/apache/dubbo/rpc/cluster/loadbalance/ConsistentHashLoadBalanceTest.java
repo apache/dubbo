@@ -19,22 +19,36 @@ package org.apache.dubbo.rpc.cluster.loadbalance;
 import org.apache.dubbo.rpc.Invoker;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
+@SuppressWarnings("rawtypes")
 public class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
-    @Ignore
-    @Test
-    public void testConsistentHashLoadBalance() {
-        int runs = 10000;
-        Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, ConsistentHashLoadBalance.NAME);
-        for (Invoker minvoker : counter.keySet()) {
-            Long count = counter.get(minvoker).get();
-            Assert.assertTrue("abs diff should < avg", Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()));
-        }
-    }
+
+	@Test
+	public void testConsistentHashLoadBalance() {
+		int runs = 10000;
+		long unHitedInvokerCount = 0;
+		Map<Invoker, Long> hitedInvokers = new HashMap<>();
+		Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, ConsistentHashLoadBalance.NAME);
+		for (Invoker minvoker : counter.keySet()) {
+			Long count = counter.get(minvoker).get();
+
+			if (count == 0) {
+				unHitedInvokerCount++;
+			} else {
+				hitedInvokers.put(minvoker, count);
+			}
+		}
+
+		Assert.assertEquals("the number of unHitedInvoker should be counter.size() - 1", counter.size() - 1,
+				unHitedInvokerCount);
+		Assert.assertEquals("the number of hitedInvoker should be 1", 1, hitedInvokers.size());
+		Assert.assertEquals("the number of hited count should be the number of runs", runs,
+				hitedInvokers.values().iterator().next().intValue());
+	}
 
 }
