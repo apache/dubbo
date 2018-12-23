@@ -422,8 +422,8 @@ public class ClassUtils {
     public static <K, V> Map<K, V> toMap(Map.Entry<K, V>[] entries) {
         Map<K, V> map = new HashMap<K, V>();
         if (entries != null && entries.length > 0) {
-            for (Map.Entry<K, V> enrty : entries) {
-                map.put(enrty.getKey(), enrty.getValue());
+            for (Map.Entry<K, V> entry : entries) {
+                map.put(entry.getKey(), entry.getValue());
             }
         }
         return map;

@@ -173,46 +173,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
             checkInterfaceAndMethods(interfaceClass, methods);
         }
-        String resolve = System.getProperty(interfaceName);
-        String resolveFile = null;
-        if (resolve == null || resolve.length() == 0) {
-            resolveFile = System.getProperty("dubbo.resolve.file");
-            if (resolveFile == null || resolveFile.length() == 0) {
-                File userResolveFile = new File(new File(System.getProperty("user.home")), "dubbo-resolve.properties");
-                if (userResolveFile.exists()) {
-                    resolveFile = userResolveFile.getAbsolutePath();
-                }
-            }
-            if (resolveFile != null && resolveFile.length() > 0) {
-                Properties properties = new Properties();
-                FileInputStream fis = null;
-                try {
-                    fis = new FileInputStream(new File(resolveFile));
-                    properties.load(fis);
-                } catch (IOException e) {
-                    throw new IllegalStateException("Unload " + resolveFile + ", cause: " + e.getMessage(), e);
-                } finally {
-                    try {
-                        if (null != fis) {
-                            fis.close();
-                        }
-                    } catch (IOException e) {
-                        logger.warn(e.getMessage(), e);
-                    }
-                }
-                resolve = properties.getProperty(interfaceName);
-            }
-        }
-        if (resolve != null && resolve.length() > 0) {
-            url = resolve;
-            if (logger.isWarnEnabled()) {
-                if (resolveFile != null) {
-                    logger.warn("Using default dubbo resolve file " + resolveFile + " replace " + interfaceName + "" + resolve + " to p2p invoke remote service.");
-                } else {
-                    logger.warn("Using -D" + interfaceName + "=" + resolve + " to p2p invoke remote service.");
-                }
-            }
-        }
+        resolveFile();
         if (consumer != null) {
             if (application == null) {
                 application = consumer.getApplication();
@@ -300,7 +261,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
         ref = createProxy(map);
 
-        ConsumerModel consumerModel = new ConsumerModel(getUniqueServiceName(), ref, interfaceClass.getMethods(), attributes);
+        ConsumerModel consumerModel = new ConsumerModel(getUniqueServiceName(), interfaceClass, ref, interfaceClass.getMethods(), attributes);
         ApplicationModel.initConsumerModel(getUniqueServiceName(), consumerModel);
     }
 
@@ -529,4 +490,46 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         return buf.toString();
     }
 
+    private void resolveFile() {
+        String resolve = System.getProperty(interfaceName);
+        String resolveFile = null;
+        if (resolve == null || resolve.length() == 0) {
+            resolveFile = System.getProperty("dubbo.resolve.file");
+            if (resolveFile == null || resolveFile.length() == 0) {
+                File userResolveFile = new File(new File(System.getProperty("user.home")), "dubbo-resolve.properties");
+                if (userResolveFile.exists()) {
+                    resolveFile = userResolveFile.getAbsolutePath();
+                }
+            }
+            if (resolveFile != null && resolveFile.length() > 0) {
+                Properties properties = new Properties();
+                FileInputStream fis = null;
+                try {
+                    fis = new FileInputStream(new File(resolveFile));
+                    properties.load(fis);
+                } catch (IOException e) {
+                    throw new IllegalStateException("Unload " + resolveFile + ", cause: " + e.getMessage(), e);
+                } finally {
+                    try {
+                        if (null != fis) {
+                            fis.close();
+                        }
+                    } catch (IOException e) {
+                        logger.warn(e.getMessage(), e);
+                    }
+                }
+                resolve = properties.getProperty(interfaceName);
+            }
+        }
+        if (resolve != null && resolve.length() > 0) {
+            url = resolve;
+            if (logger.isWarnEnabled()) {
+                if (resolveFile != null) {
+                    logger.warn("Using default dubbo resolve file " + resolveFile + " replace " + interfaceName + "" + resolve + " to p2p invoke remote service.");
+                } else {
+                    logger.warn("Using -D" + interfaceName + "=" + resolve + " to p2p invoke remote service.");
+                }
+            }
+        }
+    }
 }
