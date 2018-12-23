@@ -19,7 +19,7 @@
 
 # Application scope, apply to all services.
 ---
-apiVersion: v2.7
+configVersion: v2.7
 scope: application
 key: demo-consumer
 configs:

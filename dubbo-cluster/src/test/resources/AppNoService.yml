@@ -19,7 +19,7 @@
 
 # Application scope, no service means apply to all
 ---
-apiVersion: v2.7
+configVersion: v2.7
 scope: application
 key: demo-consumer
 configs:
