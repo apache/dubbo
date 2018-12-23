@@ -36,7 +36,6 @@ public class ClusterUtils {
         Map<String, String> map = new HashMap<String, String>();
         Map<String, String> remoteMap = remoteUrl.getParameters();
 
-
         if (remoteMap != null && remoteMap.size() > 0) {
             map.putAll(remoteMap);
 
@@ -78,7 +77,12 @@ public class ClusterUtils {
         }
 
         if (localMap != null && localMap.size() > 0) {
+            // All providers come to here have been filtered by group, which means only those providers that have the exact same group value with the consumer could come to here.
+            // So, generally, we don't need to care about the group value here.
+            // But when comes to group merger, there is an exception, the consumer group may be '*' while the provider group can be empty or any other values.
+            String remoteGroup = map.get(Constants.GROUP_KEY);
             map.putAll(localMap);
+            map.put(Constants.GROUP_KEY, remoteGroup);
         }
         if (remoteMap != null && remoteMap.size() > 0) {
             // Use version passed from provider side
@@ -90,10 +94,6 @@ public class ClusterUtils {
             if (version != null && version.length() > 0) {
                 map.put(Constants.VERSION_KEY, version);
             }
-            String group = remoteMap.get(Constants.GROUP_KEY);
-            if (group != null && group.length() > 0) {
-                map.put(Constants.GROUP_KEY, group);
-            }
             String methods = remoteMap.get(Constants.METHODS_KEY);
             if (methods != null && methods.length() > 0) {
                 map.put(Constants.METHODS_KEY, methods);
@@ -103,6 +103,11 @@ public class ClusterUtils {
             if (remoteTimestamp != null && remoteTimestamp.length() > 0) {
                 map.put(Constants.REMOTE_TIMESTAMP_KEY, remoteMap.get(Constants.TIMESTAMP_KEY));
             }
+
+            // TODO, for compatibility consideration, we cannot simply change the value behind APPLICATION_KEY from Consumer to Provider. So just add an extra key here.
+            // Reserve application name from provider.
+            map.put(Constants.REMOTE_APPLICATION_KEY, remoteMap.get(Constants.APPLICATION_KEY));
+
             // Combine filters and listeners on Provider and Consumer
             String remoteFilter = remoteMap.get(Constants.REFERENCE_FILTER_KEY);
             String localFilter = localMap.get(Constants.REFERENCE_FILTER_KEY);

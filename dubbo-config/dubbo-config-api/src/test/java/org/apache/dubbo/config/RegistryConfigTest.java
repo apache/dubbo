@@ -18,6 +18,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
+
 import org.junit.Test;
 
 import java.util.Collections;
@@ -175,4 +176,5 @@ public class RegistryConfigTest {
         registry.setDefault(true);
         assertThat(registry.isDefault(), is(true));
     }
+
 }

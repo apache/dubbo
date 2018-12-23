@@ -45,6 +45,8 @@ public class ApplicationModel {
      */
     private static final ConcurrentMap<String, ConsumerModel> consumedServices = new ConcurrentHashMap<>();
 
+    private static String application;
+
     public static Collection<ConsumerModel> allConsumerModels() {
         return consumedServices.values();
     }
@@ -71,6 +73,14 @@ public class ApplicationModel {
         if (providedServices.putIfAbsent(serviceName, providerModel) != null) {
             LOGGER.warn("Already register the same:" + serviceName);
         }
+    }
+
+    public static String getApplication() {
+        return application;
+    }
+
+    public static void setApplication(String application) {
+        ApplicationModel.application = application;
     }
 
     /**

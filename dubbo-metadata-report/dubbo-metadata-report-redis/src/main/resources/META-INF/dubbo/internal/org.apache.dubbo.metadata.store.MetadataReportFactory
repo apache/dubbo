@@ -1,0 +1,1 @@
+redis=org.apache.dubbo.metadata.store.redis.RedisMetadataReportFactory
