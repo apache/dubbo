@@ -107,17 +107,13 @@ public class ConfigParserTest {
         String yamlFile = streamToString(yamlStream);
         List<URL> urls = ConfigParser.parseConfigurators(yamlFile);
         Assert.assertNotNull(urls);
-        Assert.assertEquals(2, urls.size());
+        Assert.assertEquals(4, urls.size());
         URL url = urls.get(0);
         Assert.assertEquals("127.0.0.1", url.getAddress());
         Assert.assertEquals("service1", url.getServiceInterface());
         Assert.assertEquals(6666, url.getParameter(Constants.TIMEOUT_KEY, 0));
         Assert.assertEquals("random", url.getParameter(Constants.LOADBALANCE_KEY));
         Assert.assertEquals(url.getParameter(Constants.APPLICATION_KEY), "demo-consumer");
-
-        List<URL> urls2 = ConfigParser.parseConfigurators(yamlFile);
-        Assert.assertNotNull(urls2);
-        Assert.assertEquals(0, urls2.size());
     }
 
 
