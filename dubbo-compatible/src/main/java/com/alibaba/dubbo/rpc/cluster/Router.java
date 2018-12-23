@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.RouterChain;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,15 +37,40 @@ public interface Router extends org.apache.dubbo.rpc.cluster.Router {
                                                      com.alibaba.dubbo.rpc.Invocation invocation)
             throws com.alibaba.dubbo.rpc.RpcException;
 
+    int compareTo(com.alibaba.dubbo.rpc.cluster.Router o);
+
+    // Add since 2.7.0
     @Override
     default <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
-        List<com.alibaba.dubbo.rpc.Invoker<T>> invs = invokers.stream().map(invoker ->
-                new com.alibaba.dubbo.rpc.Invoker.CompatibleInvoker<T>(invoker)).
+        List<com.alibaba.dubbo.rpc.Invoker<T>> invs = invokers.stream().map(invoker -> new com.alibaba.dubbo.rpc.Invoker.CompatibleInvoker<T>(invoker)).
                 collect(Collectors.toList());
 
-        List<com.alibaba.dubbo.rpc.Invoker<T>> res = this.route(invs, new com.alibaba.dubbo.common.URL(url),
-                new com.alibaba.dubbo.rpc.Invocation.CompatibleInvocation(invocation));
+        List<com.alibaba.dubbo.rpc.Invoker<T>> res = this.route(invs, new com.alibaba.dubbo.common.URL(url), new com.alibaba.dubbo.rpc.Invocation.CompatibleInvocation(invocation));
 
         return res.stream().map(inv -> inv.getOriginal()).collect(Collectors.toList());
+    }
+
+    @Override
+    default void addRouterChain(RouterChain routerChain) {
+    }
+
+    @Override
+    default boolean isRuntime() {
+        return true;
+    }
+
+    @Override
+    default boolean isForce() {
+        return false;
+    }
+
+    @Override
+    default int getPriority() {
+        return 1;
+    }
+
+    @Override
+    default int compareTo(org.apache.dubbo.rpc.cluster.Router o) {
+        return compareTo((Router) o);
     }
 }
