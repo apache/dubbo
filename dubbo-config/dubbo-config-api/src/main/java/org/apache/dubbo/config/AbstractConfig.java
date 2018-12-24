@@ -18,8 +18,9 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.config.CompositeConfiguration;
 import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -536,9 +537,16 @@ public abstract class AbstractConfig implements Serializable {
      */
     public void refresh() {
         try {
-            Environment env = Environment.getInstance();
-            env.addAppConfig(getPrefix(), getId(), getMetaData());
-            Configuration configuration = env.getConfiguration(getPrefix(), getId());
+            CompositeConfiguration compositeConfiguration = Environment.getInstance().getConfiguration(getPrefix(), getId());
+            InmemoryConfiguration configuration = new InmemoryConfiguration(getPrefix(), getId());
+            configuration.addProperties(getMetaData());
+            if (Environment.getInstance().isConfigCenterFirst()) {
+                // The sequence would be: SystemConfiguration -> ExternalConfiguration -> AppExternalConfiguration -> AbstractConfig -> PropertiesConfiguration
+                compositeConfiguration.addConfiguration(3,configuration);
+            } else {
+                // The sequence would be: SystemConfiguration -> AbstractConfig -> ExternalConfiguration -> AppExternalConfiguration -> PropertiesConfiguration
+                compositeConfiguration.addConfiguration(1, configuration);
+            }
 
             // loop methods, get override value and set the new value back to method
             Method[] methods = getClass().getMethods();
