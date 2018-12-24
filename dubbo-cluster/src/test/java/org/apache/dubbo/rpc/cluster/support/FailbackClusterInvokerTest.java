@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.cluster.support;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.DubboAppender;
 import org.apache.dubbo.common.utils.LogUtil;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -25,6 +26,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.cluster.Directory;
 
+import org.apache.log4j.Level;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -120,13 +122,15 @@ public class FailbackClusterInvokerTest {
     }
 
     @Test()
-    public void testRetryFailed() throws Exception{
+    public void testRetryFailed() throws Exception {
         //Test retries and
 
         resetInvokerToException();
 
         FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<FailbackClusterInvokerTest>(
                 dic);
+        DubboAppender.doStart();
+        DubboAppender.clear();
         invoker.invoke(invocation);
         invoker.invoke(invocation);
         invoker.invoke(invocation);
@@ -135,6 +139,11 @@ public class FailbackClusterInvokerTest {
         //Ensure that the main thread is online
         CountDownLatch countDown = new CountDownLatch(1);
         countDown.await(30000L, TimeUnit.MILLISECONDS);
+        Assert.assertEquals("must have one error message ", 4, LogUtil.findMessage(Level.ERROR, "Failed retry to invoke method"));
+        Assert.assertEquals("must have one error message ", 2, LogUtil.findMessage(Level.ERROR, "Failed retry times exceed threshold"));
+        Assert.assertEquals("must have one error message ", 1, LogUtil.findMessage(Level.ERROR, "Failback background works error"));
+        LogUtil.checkNoError();
+        DubboAppender.doStop();
         // it can be invoke successfully
     }
 }
