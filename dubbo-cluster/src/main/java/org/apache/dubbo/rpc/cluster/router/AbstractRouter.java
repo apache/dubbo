@@ -29,8 +29,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public abstract class AbstractRouter implements Router {
     protected int priority;
-    protected boolean force;
-    protected boolean enabled;
+    protected boolean force = false;
+    protected boolean enabled = true;
     protected List<RouterChain> routerChains = new CopyOnWriteArrayList<>();
     protected URL url;
 
