@@ -196,7 +196,7 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
 
     @Override
     public boolean isEnabled() {
-        return url == null ? enabled : url.getParameter(Constants.ENABLED_KEY, false);
+        return url == null ? enabled : url.getParameter(Constants.ENABLED_KEY, true);
     }
 
     @Override
