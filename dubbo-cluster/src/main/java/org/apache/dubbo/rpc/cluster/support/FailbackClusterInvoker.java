@@ -118,7 +118,7 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
         private final Invocation invocation;
         private final LoadBalance loadbalance;
         private final List<Invoker<T>> invokers;
-        private final List<Invoker<T>> selectedInvokers = new ArrayList<>();
+        private final List<Invoker<T>> lastInvokers = new ArrayList<>();
         private final int retries;
         private final long tick;
         private int retryTimes = 0;
@@ -129,15 +129,15 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
             this.invokers = invokers;
             this.retries = retries;
             this.tick = tick;
-            selectedInvokers.add(lastInvoker);
+            lastInvokers.add(lastInvoker);
         }
 
         @Override
         public void run(Timeout timeout) {
             try {
-                Invoker<T> retryInvoker = select(loadbalance, invocation, invokers, selectedInvokers);
-                selectedInvokers.clear();
-                selectedInvokers.add(retryInvoker);
+                Invoker<T> retryInvoker = select(loadbalance, invocation, invokers, lastInvokers);
+                lastInvokers.clear();
+                lastInvokers.add(retryInvoker);
                 retryInvoker.invoke(invocation);
             } catch (Throwable e) {
                 logger.error("Failed retry to invoke method " + invocation.getMethodName() + ", waiting again.", e);

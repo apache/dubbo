@@ -29,6 +29,7 @@ import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.log4j.Level;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -41,6 +42,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
 @SuppressWarnings("unchecked")
+@FixMethodOrder(org.junit.runners.MethodSorters.NAME_ASCENDING)
 public class FailbackClusterInvokerTest {
 
     List<Invoker<FailbackClusterInvokerTest>> invokers = new ArrayList<Invoker<FailbackClusterInvokerTest>>();
@@ -116,20 +118,21 @@ public class FailbackClusterInvokerTest {
         FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<FailbackClusterInvokerTest>(
                 dic);
         LogUtil.start();
+        DubboAppender.clear();
         invoker.invoke(invocation);
         assertEquals(1, LogUtil.findMessage("Failback to invoke"));
         LogUtil.stop();
     }
 
     @Test()
-    public void testRetryFailed() throws Exception {
+    public void testARetryFailed() throws Exception {
         //Test retries and
 
         resetInvokerToException();
 
         FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<FailbackClusterInvokerTest>(
                 dic);
-        DubboAppender.doStart();
+        LogUtil.start();
         DubboAppender.clear();
         invoker.invoke(invocation);
         invoker.invoke(invocation);
@@ -138,12 +141,11 @@ public class FailbackClusterInvokerTest {
 //        invoker.retryFailed();// when retry the invoker which get from failed map already is not the mocked invoker,so
         //Ensure that the main thread is online
         CountDownLatch countDown = new CountDownLatch(1);
-        countDown.await(30000L, TimeUnit.MILLISECONDS);
+        countDown.await(15000L, TimeUnit.MILLISECONDS);
+        LogUtil.stop();
         Assert.assertEquals("must have four error message ", 4, LogUtil.findMessage(Level.ERROR, "Failed retry to invoke method"));
         Assert.assertEquals("must have two error message ", 2, LogUtil.findMessage(Level.ERROR, "Failed retry times exceed threshold"));
         Assert.assertEquals("must have one error message ", 1, LogUtil.findMessage(Level.ERROR, "Failback background works error"));
-        LogUtil.checkNoError();
-        DubboAppender.doStop();
         // it can be invoke successfully
     }
 }
