@@ -22,6 +22,7 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.NotifyListener;
@@ -123,17 +124,17 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * @return
      */
     public static List<Configurator> toConfigurators(List<URL> urls) {
-        if (urls == null || urls.isEmpty()) {
+        if (CollectionUtils.isEmpty(urls)) {
             return Collections.emptyList();
         }
 
-        List<Configurator> configurators = new ArrayList<Configurator>(urls.size());
+        List<Configurator> configurators = new ArrayList<>(urls.size());
         for (URL url : urls) {
             if (Constants.EMPTY_PROTOCOL.equals(url.getProtocol())) {
                 configurators.clear();
                 break;
             }
-            Map<String, String> override = new HashMap<String, String>(url.getParameters());
+            Map<String, String> override = new HashMap<>(url.getParameters());
             //The anyhost parameter of override may be added automatically, it can't change the judgement of changing url
             override.remove(Constants.ANYHOST_KEY);
             if (override.size() == 0) {
@@ -182,9 +183,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     @Override
     public synchronized void notify(List<URL> urls) {
-        List<URL> invokerUrls = new ArrayList<URL>();
-        List<URL> routerUrls = new ArrayList<URL>();
-        List<URL> configuratorUrls = new ArrayList<URL>();
+        List<URL> invokerUrls = new ArrayList<>();
+        List<URL> routerUrls = new ArrayList<>();
+        List<URL> configuratorUrls = new ArrayList<>();
         for (URL url : urls) {
             String protocol = url.getProtocol();
             String category = url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY);
@@ -201,11 +202,11 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }
         }
         // configurators
-        if (configuratorUrls != null && !configuratorUrls.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(configuratorUrls)) {
             this.configurators = toConfigurators(configuratorUrls);
         }
         // routers
-        if (routerUrls != null && !routerUrls.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(routerUrls)) {
             List<Router> routers = toRouters(routerUrls);
             if (routers != null) { // null - do nothing
                 setRouters(routers);
@@ -214,7 +215,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         List<Configurator> localConfigurators = this.configurators; // local reference
         // merge override parameters
         this.overrideDirectoryUrl = directoryUrl;
-        if (localConfigurators != null && !localConfigurators.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(localConfigurators)) {
             for (Configurator configurator : localConfigurators) {
                 this.overrideDirectoryUrl = configurator.configure(overrideDirectoryUrl);
             }
@@ -244,7 +245,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             if (invokerUrls.isEmpty() && this.cachedInvokerUrls != null) {
                 invokerUrls.addAll(this.cachedInvokerUrls);
             } else {
-                this.cachedInvokerUrls = new HashSet<URL>();
+                this.cachedInvokerUrls = new HashSet<>();
                 this.cachedInvokerUrls.addAll(invokerUrls);//Cached invoker urls, convenient for comparison
             }
             if (invokerUrls.isEmpty()) {
@@ -269,26 +270,22 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
 
     private Map<String, List<Invoker<T>>> toMergeMethodInvokerMap(Map<String, List<Invoker<T>>> methodMap) {
-        Map<String, List<Invoker<T>>> result = new HashMap<String, List<Invoker<T>>>();
+        Map<String, List<Invoker<T>>> result = new HashMap<>();
         for (Map.Entry<String, List<Invoker<T>>> entry : methodMap.entrySet()) {
             String method = entry.getKey();
             List<Invoker<T>> invokers = entry.getValue();
-            Map<String, List<Invoker<T>>> groupMap = new HashMap<String, List<Invoker<T>>>();
+            Map<String, List<Invoker<T>>> groupMap = new HashMap<>();
             for (Invoker<T> invoker : invokers) {
                 String group = invoker.getUrl().getParameter(Constants.GROUP_KEY, "");
-                List<Invoker<T>> groupInvokers = groupMap.get(group);
-                if (groupInvokers == null) {
-                    groupInvokers = new ArrayList<Invoker<T>>();
-                    groupMap.put(group, groupInvokers);
-                }
+                List<Invoker<T>> groupInvokers = groupMap.computeIfAbsent(group, k -> new ArrayList<>());
                 groupInvokers.add(invoker);
             }
             if (groupMap.size() == 1) {
                 result.put(method, groupMap.values().iterator().next());
             } else if (groupMap.size() > 1) {
-                List<Invoker<T>> groupInvokers = new ArrayList<Invoker<T>>();
+                List<Invoker<T>> groupInvokers = new ArrayList<>();
                 for (List<Invoker<T>> groupList : groupMap.values()) {
-                    groupInvokers.add(cluster.join(new StaticDirectory<T>(groupList)));
+                    groupInvokers.add(cluster.join(new StaticDirectory<>(groupList)));
                 }
                 result.put(method, groupInvokers);
             } else {
@@ -304,27 +301,25 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * else :routers list
      */
     private List<Router> toRouters(List<URL> urls) {
-        List<Router> routers = new ArrayList<Router>();
-        if (urls == null || urls.isEmpty()) {
+        List<Router> routers = new ArrayList<>();
+        if (CollectionUtils.isEmpty(urls)) {
             return routers;
         }
-        if (urls != null && !urls.isEmpty()) {
-            for (URL url : urls) {
-                if (Constants.EMPTY_PROTOCOL.equals(url.getProtocol())) {
-                    continue;
+        for (URL url : urls) {
+            if (Constants.EMPTY_PROTOCOL.equals(url.getProtocol())) {
+                continue;
+            }
+            String routerType = url.getParameter(Constants.ROUTER_KEY);
+            if (routerType != null && routerType.length() > 0) {
+                url = url.setProtocol(routerType);
+            }
+            try {
+                Router router = routerFactory.getRouter(url);
+                if (!routers.contains(router)) {
+                    routers.add(router);
                 }
-                String routerType = url.getParameter(Constants.ROUTER_KEY);
-                if (routerType != null && routerType.length() > 0) {
-                    url = url.setProtocol(routerType);
-                }
-                try {
-                    Router router = routerFactory.getRouter(url);
-                    if (!routers.contains(router)) {
-                        routers.add(router);
-                    }
-                } catch (Throwable t) {
-                    logger.error("convert router url to router error, url: " + url, t);
-                }
+            } catch (Throwable t) {
+                logger.error("convert router url to router error, url: " + url, t);
             }
         }
         return routers;
@@ -337,11 +332,11 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * @return invokers
      */
     private Map<String, Invoker<T>> toInvokers(List<URL> urls) {
-        Map<String, Invoker<T>> newUrlInvokerMap = new HashMap<String, Invoker<T>>();
-        if (urls == null || urls.isEmpty()) {
+        Map<String, Invoker<T>> newUrlInvokerMap = new HashMap<>();
+        if (CollectionUtils.isEmpty(urls)) {
             return newUrlInvokerMap;
         }
-        Set<String> keys = new HashSet<String>();
+        Set<String> keys = new HashSet<>();
         String queryProtocols = this.queryMap.get(Constants.PROTOCOL_KEY);
         for (URL providerUrl : urls) {
             // If protocol is configured at the reference side, only the matching protocol is selected
@@ -378,14 +373,14 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             Invoker<T> invoker = localUrlInvokerMap == null ? null : localUrlInvokerMap.get(key);
             if (invoker == null) { // Not in the cache, refer again
                 try {
-                    boolean enabled = true;
+                    boolean enabled;
                     if (url.hasParameter(Constants.DISABLED_KEY)) {
                         enabled = !url.getParameter(Constants.DISABLED_KEY, false);
                     } else {
                         enabled = url.getParameter(Constants.ENABLED_KEY, true);
                     }
                     if (enabled) {
-                        invoker = new InvokerDelegate<T>(protocol.refer(serviceType, url), url, providerUrl);
+                        invoker = new InvokerDelegate<>(protocol.refer(serviceType, url), url, providerUrl);
                     }
                 } catch (Throwable t) {
                     logger.error("Failed to refer invoker for interface:" + serviceType + ",url:(" + url + ")" + t.getMessage(), t);
@@ -411,7 +406,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         providerUrl = ClusterUtils.mergeUrl(providerUrl, queryMap); // Merge the consumer side parameters
 
         List<Configurator> localConfigurators = this.configurators; // local reference
-        if (localConfigurators != null && !localConfigurators.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(localConfigurators)) {
             for (Configurator configurator : localConfigurators) {
                 providerUrl = configurator.configure(providerUrl);
             }
@@ -462,9 +457,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * @return Mapping relation between Invoker and method
      */
     private Map<String, List<Invoker<T>>> toMethodInvokers(Map<String, Invoker<T>> invokersMap) {
-        Map<String, List<Invoker<T>>> newMethodInvokerMap = new HashMap<String, List<Invoker<T>>>();
+        Map<String, List<Invoker<T>>> newMethodInvokerMap = new HashMap<>();
         // According to the methods classification declared by the provider URL, the methods is compatible with the registry to execute the filtered methods
-        List<Invoker<T>> invokersList = new ArrayList<Invoker<T>>();
+        List<Invoker<T>> invokersList = new ArrayList<>();
         if (invokersMap != null && invokersMap.size() > 0) {
             for (Invoker<T> invoker : invokersMap.values()) {
                 String parameter = invoker.getUrl().getParameter(Constants.METHODS_KEY);
@@ -474,11 +469,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                         for (String method : methods) {
                             if (method != null && method.length() > 0
                                     && !Constants.ANY_VALUE.equals(method)) {
-                                List<Invoker<T>> methodInvokers = newMethodInvokerMap.get(method);
-                                if (methodInvokers == null) {
-                                    methodInvokers = new ArrayList<Invoker<T>>();
-                                    newMethodInvokerMap.put(method, methodInvokers);
-                                }
+                                List<Invoker<T>> methodInvokers = newMethodInvokerMap.computeIfAbsent(method, k -> new ArrayList<>());
                                 methodInvokers.add(invoker);
                             }
                         }
@@ -492,16 +483,16 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         if (serviceMethods != null && serviceMethods.length > 0) {
             for (String method : serviceMethods) {
                 List<Invoker<T>> methodInvokers = newMethodInvokerMap.get(method);
-                if (methodInvokers == null || methodInvokers.isEmpty()) {
+                if (CollectionUtils.isEmpty(methodInvokers)) {
                     methodInvokers = newInvokersList;
                 }
                 newMethodInvokerMap.put(method, route(methodInvokers, method));
             }
         }
         // sort and unmodifiable
-        for (String method : new HashSet<String>(newMethodInvokerMap.keySet())) {
+        for (String method : new HashSet<>(newMethodInvokerMap.keySet())) {
             List<Invoker<T>> methodInvokers = newMethodInvokerMap.get(method);
-            Collections.sort(methodInvokers, InvokerComparator.getComparator());
+            methodInvokers.sort(InvokerComparator.getComparator());
             newMethodInvokerMap.put(method, Collections.unmodifiableList(methodInvokers));
         }
         return Collections.unmodifiableMap(newMethodInvokerMap);
@@ -513,7 +504,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     private void destroyAllInvokers() {
         Map<String, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap; // local reference
         if (localUrlInvokerMap != null) {
-            for (Invoker<T> invoker : new ArrayList<Invoker<T>>(localUrlInvokerMap.values())) {
+            for (Invoker<T> invoker : new ArrayList<>(localUrlInvokerMap.values())) {
                 try {
                     invoker.destroy();
                 } catch (Throwable t) {
@@ -544,7 +535,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             for (Map.Entry<String, Invoker<T>> entry : oldUrlInvokerMap.entrySet()) {
                 if (!newInvokers.contains(entry.getValue())) {
                     if (deleted == null) {
-                        deleted = new ArrayList<String>();
+                        deleted = new ArrayList<>();
                     }
                     deleted.add(entry.getKey());
                 }
@@ -594,7 +585,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 invokers = localMethodInvokerMap.get(Constants.ANY_VALUE);
             }
         }
-        return invokers == null ? new ArrayList<Invoker<T>>(0) : invokers;
+        return invokers == null ? new ArrayList<>(0) : invokers;
     }
 
     @Override
@@ -614,7 +605,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         }
         Map<String, Invoker<T>> localUrlInvokerMap = urlInvokerMap;
         if (localUrlInvokerMap != null && localUrlInvokerMap.size() > 0) {
-            for (Invoker<T> invoker : new ArrayList<Invoker<T>>(localUrlInvokerMap.values())) {
+            for (Invoker<T> invoker : new ArrayList<>(localUrlInvokerMap.values())) {
                 if (invoker.isAvailable()) {
                     return true;
                 }
