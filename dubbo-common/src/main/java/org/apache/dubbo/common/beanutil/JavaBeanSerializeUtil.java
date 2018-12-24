@@ -144,12 +144,11 @@ public final class JavaBeanSerializeUtil {
             }
         } else if (obj instanceof Map) {
             Map map = (Map) obj;
-            for (Object key : map.keySet()) {
-                Object value = map.get(key);
+            map.forEach((key, value) -> {
                 Object keyDescriptor = key == null ? null : createDescriptorIfAbsent(key, accessor, cache);
                 Object valueDescriptor = value == null ? null : createDescriptorIfAbsent(value, accessor, cache);
                 descriptor.setProperty(keyDescriptor, valueDescriptor);
-            } // ~ end of loop map
+            });// ~ end of loop map
         } else {
             if (JavaBeanAccessor.isAccessByMethod(accessor)) {
                 Map<String, Method> methods = ReflectUtils.getBeanPropertyReadMethods(obj.getClass());

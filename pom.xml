@@ -276,6 +276,9 @@
         </profile>
         <profile>
             <id>release</id>
+            <properties>
+                <log4j2_version>2.11.1</log4j2_version>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -289,6 +292,18 @@
                                 </goals>
                                 <configuration>
                                     <doclint>none</doclint>
+                                    <additionalDependencies>
+                                        <additionalDependency>
+                                            <groupId>org.apache.logging.log4j</groupId>
+                                            <artifactId>log4j-api</artifactId>
+                                            <version>${log4j2_version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.apache.logging.log4j</groupId>
+                                            <artifactId>log4j-core</artifactId>
+                                            <version>${log4j2_version}</version>
+                                        </additionalDependency>
+                                    </additionalDependencies>
                                 </configuration>
                             </execution>
                         </executions>

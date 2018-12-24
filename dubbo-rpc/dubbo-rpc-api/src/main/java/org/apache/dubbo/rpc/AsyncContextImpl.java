@@ -26,7 +26,7 @@ public class AsyncContextImpl implements AsyncContext {
     private static final Logger logger = LoggerFactory.getLogger(AsyncContextImpl.class);
 
     private final AtomicBoolean started = new AtomicBoolean(false);
-    private final AtomicBoolean stoped = new AtomicBoolean(false);
+    private final AtomicBoolean stopped = new AtomicBoolean(false);
 
     private CompletableFuture<Object> future;
 
@@ -63,7 +63,7 @@ public class AsyncContextImpl implements AsyncContext {
 
     @Override
     public boolean stop() {
-        return stoped.compareAndSet(false, true);
+        return stopped.compareAndSet(false, true);
     }
 
     @Override
