@@ -20,4 +20,8 @@ public interface DemoService {
 
     String sayHello(String name);
 
+    String routeMethod1();
+
+    String routeMethod2();
+
 }

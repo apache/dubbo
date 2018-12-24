@@ -18,6 +18,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
+
 import org.hamcrest.Matchers;
 import org.junit.Test;
 

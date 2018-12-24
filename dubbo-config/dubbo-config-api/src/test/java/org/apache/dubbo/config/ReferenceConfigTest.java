@@ -51,14 +51,17 @@ public class ReferenceConfigTest {
         rc.setInjvm(false);
 
         try {
+            System.setProperty("java.net.preferIPv4Stack", "true");
             demoService.export();
             rc.get();
             Assert.assertTrue(!Constants.LOCAL_PROTOCOL.equalsIgnoreCase(
                     rc.getInvoker().getUrl().getProtocol()));
         } finally {
+            System.clearProperty("java.net.preferIPv4Stack");
             demoService.unexport();
         }
     }
+
     /**
      * unit test for dubbo-1765
      */
@@ -95,11 +98,14 @@ public class ReferenceConfigTest {
         sc.setProtocol(protocol);
 
         try {
+            System.setProperty("java.net.preferIPv4Stack", "true");
             sc.export();
             demoService = rc.get();
             success = true;
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            System.clearProperty("java.net.preferIPv4Stack");
         }
         Assert.assertTrue(success);
         Assert.assertNotNull(demoService);

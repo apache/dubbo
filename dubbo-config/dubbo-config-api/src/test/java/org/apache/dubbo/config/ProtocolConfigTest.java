@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.config.mock.MockProtocol2;
 import org.apache.dubbo.rpc.Protocol;
+
 import org.junit.Test;
 import org.mockito.Mockito;
 

@@ -59,9 +59,9 @@ public class AbstractClusterInvokerTest {
     List<Invoker<IHelloService>> selectedInvokers = new ArrayList<Invoker<IHelloService>>();
     AbstractClusterInvoker<IHelloService> cluster;
     AbstractClusterInvoker<IHelloService> cluster_nocheck;
-    Directory<IHelloService> dic;
+    StaticDirectory<IHelloService> dic;
     RpcInvocation invocation = new RpcInvocation();
-    URL url = URL.valueOf("registry://localhost:9090");
+    URL url = URL.valueOf("registry://localhost:9090/org.apache.dubbo.rpc.cluster.support.AbstractClusterInvokerTest.IHelloService");
 
     Invoker<IHelloService> invoker1;
     Invoker<IHelloService> invoker2;
@@ -454,6 +454,10 @@ public class AbstractClusterInvokerTest {
         invokers.add(invoker5);
     }
 
+    private void initDic() {
+        dic.buildRouterChain();
+    }
+
     @Test()
     public void testTimeoutExceptionCode() {
         List<Invoker<DemoService>> invokers = new ArrayList<Invoker<DemoService>>();
@@ -512,6 +516,8 @@ public class AbstractClusterInvokerTest {
     public void testMockedInvokerSelect() {
         initlistsize5();
         invokers.add(mockedInvoker1);
+
+        initDic();
 
         RpcInvocation mockedInvocation = new RpcInvocation();
         mockedInvocation.setMethodName("sayHello");
