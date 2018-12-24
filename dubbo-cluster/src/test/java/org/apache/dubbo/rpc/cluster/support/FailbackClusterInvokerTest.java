@@ -139,8 +139,8 @@ public class FailbackClusterInvokerTest {
         //Ensure that the main thread is online
         CountDownLatch countDown = new CountDownLatch(1);
         countDown.await(30000L, TimeUnit.MILLISECONDS);
-        Assert.assertEquals("must have one error message ", 4, LogUtil.findMessage(Level.ERROR, "Failed retry to invoke method"));
-        Assert.assertEquals("must have one error message ", 2, LogUtil.findMessage(Level.ERROR, "Failed retry times exceed threshold"));
+        Assert.assertEquals("must have four error message ", 4, LogUtil.findMessage(Level.ERROR, "Failed retry to invoke method"));
+        Assert.assertEquals("must have two error message ", 2, LogUtil.findMessage(Level.ERROR, "Failed retry times exceed threshold"));
         Assert.assertEquals("must have one error message ", 1, LogUtil.findMessage(Level.ERROR, "Failback background works error"));
         LogUtil.checkNoError();
         DubboAppender.doStop();
