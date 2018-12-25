@@ -44,7 +44,7 @@ public class Ls implements BaseCommand {
 
     public String listProvider() {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("As Provider side:\n");
+        stringBuilder.append("As Provider side:" + System.lineSeparator());
         Collection<ProviderModel> ProviderModelList = ApplicationModel.allProviderModels();
 
         TTable tTable = new TTable(new TTable.ColumnDefine[]{
@@ -66,7 +66,7 @@ public class Ls implements BaseCommand {
 
     public String listConsumer() {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("As Consumer side:\n");
+        stringBuilder.append("As Consumer side:" + System.lineSeparator());
         Collection<ConsumerModel> consumerModelList = ApplicationModel.allConsumerModels();
 
         TTable tTable = new TTable(new TTable.ColumnDefine[]{
