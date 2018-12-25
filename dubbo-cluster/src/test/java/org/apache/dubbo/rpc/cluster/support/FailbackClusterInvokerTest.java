@@ -41,6 +41,11 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
+ /**
+  * FailbackClusterInvokerTest
+  *
+  * add annotation @FixMethodOrder, the testARetryFailed Method must to first execution
+ */
 @SuppressWarnings("unchecked")
 @FixMethodOrder(org.junit.runners.MethodSorters.NAME_ASCENDING)
 public class FailbackClusterInvokerTest {
