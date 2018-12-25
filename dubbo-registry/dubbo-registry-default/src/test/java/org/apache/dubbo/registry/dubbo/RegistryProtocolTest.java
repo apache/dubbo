@@ -35,12 +35,14 @@ import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboInvoker;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.apache.dubbo.common.Constants.DEFAULT_REGISTER_PROVIDER_KEYS;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -158,6 +160,15 @@ public class RegistryProtocolTest {
         }
         assertEquals(false, exporter.getInvoker().isAvailable());
 
+    }
+
+    @Test
+    public void testGetParamsToRegistry() {
+        RegistryProtocol registryProtocol = new RegistryProtocol();
+        String[] additionalParams = new String[]{"key1", "key2"};
+        String[] registryParams = registryProtocol.getParamsToRegistry(DEFAULT_REGISTER_PROVIDER_KEYS, additionalParams);
+        String[] expectParams = ArrayUtils.addAll(DEFAULT_REGISTER_PROVIDER_KEYS, additionalParams);
+        Assert.assertArrayEquals(expectParams, registryParams);
     }
 
     private void destroyRegistryProtocol() {
