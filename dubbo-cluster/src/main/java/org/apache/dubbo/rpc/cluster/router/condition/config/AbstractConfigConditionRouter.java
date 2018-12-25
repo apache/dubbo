@@ -28,7 +28,6 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Router;
-import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
 import org.apache.dubbo.rpc.cluster.router.condition.ConditionRouter;
 import org.apache.dubbo.rpc.cluster.router.condition.config.model.BlackWhiteListRule;
@@ -73,8 +72,6 @@ public abstract class AbstractConfigConditionRouter extends AbstractRouter imple
                         .getValue(), e);
             }
         }
-
-        routerChains.forEach(RouterChain::rebuild);
     }
 
     @Override

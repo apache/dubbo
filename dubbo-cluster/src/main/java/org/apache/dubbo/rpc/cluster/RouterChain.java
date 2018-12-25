@@ -97,22 +97,6 @@ public class RouterChain<T> {
     }
 
     /**
-     * TODO
-     *
-     * Building of router cache can be triggered from within different threads, for example, registry notification and
-     * governance notification. So this operation should be synchronized.
-     */
-    public void rebuild() {
-        if (invokers.isEmpty()) {
-            return;
-        }
-
-        for (Router router : routers) {
-            router.preRoute(invokers, url, null);
-        }
-    }
-
-    /**
      *
      * @param url
      * @param invocation
@@ -137,6 +121,5 @@ public class RouterChain<T> {
         if (invokers != null) {
             this.invokers = invokers;
         }
-        rebuild();
     }
 }

@@ -51,10 +51,6 @@ public interface Router extends Comparable<Router> {
      */
     <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException;
 
-    default <T> Map<String, List<Invoker<T>>> preRoute(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
-        return null;
-    }
-
     /**
      * To decide whether this router need to execute every time an RPC comes or should only execute when addresses or rule change.
      *

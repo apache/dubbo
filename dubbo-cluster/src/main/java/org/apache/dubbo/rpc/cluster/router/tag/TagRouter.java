@@ -30,13 +30,11 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Router;
-import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRouterRule;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRuleParser;
 
 import java.util.List;
-import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -55,9 +53,7 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
 
     public TagRouter(DynamicConfiguration configuration, URL url) {
         super(configuration, url);
-    }
-
-    protected TagRouter() {
+        checkAndInit(url);
     }
 
     @Override
@@ -73,9 +69,6 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
             } else {
                 this.tagRouterRule = TagRuleParser.parse(event.getValue());
             }
-
-            routerChains.forEach(RouterChain::rebuild);
-
         } catch (Exception e) {
             logger.error("Failed to parse the raw tag router rule and it will not take effect, please check if the rule matches with the template, the raw rule is:\n ", e);
         }
@@ -155,25 +148,6 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
                 return false;
             });
         }
-    }
-
-    /**
-     * This method is reserved for building router cache.
-     * Currently, we rely on this method to do the init task since it will get triggered before route() really happens.
-     *
-     * @param invokers
-     * @param url
-     * @param invocation
-     * @param <T>
-     * @return
-     * @throws RpcException
-     */
-    @Override
-    public <T> Map<String, List<Invoker<T>>> preRoute(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
-        if (CollectionUtils.isNotEmpty(invokers)) {
-            checkAndInit(invokers.get(0).getUrl());
-        }
-        return super.preRoute(invokers, url, invocation);
     }
 
     @Override
