@@ -18,18 +18,20 @@ package org.apache.dubbo.registry.integration;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.registry.support.ProviderConsumerRegTable;
+import org.apache.dubbo.registry.support.ProviderInvokerWrapper;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -37,6 +39,8 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.Configurator;
+import org.apache.dubbo.rpc.cluster.configurator.parser.ConfigParser;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.InvokerWrapper;
 
 import java.util.ArrayList;
@@ -48,20 +52,29 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static org.apache.dubbo.common.Constants.ACCEPT_FOREIGN_IP;
+import static org.apache.dubbo.common.Constants.CATEGORY_KEY;
+import static org.apache.dubbo.common.Constants.CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.Constants.CONFIGURATORS_SUFFIX;
+import static org.apache.dubbo.common.Constants.EXPORT_KEY;
 import static org.apache.dubbo.common.Constants.INTERFACES;
+import static org.apache.dubbo.common.Constants.METHODS_KEY;
+import static org.apache.dubbo.common.Constants.OVERRIDE_PROTOCOL;
 import static org.apache.dubbo.common.Constants.QOS_ENABLE;
 import static org.apache.dubbo.common.Constants.QOS_PORT;
+import static org.apache.dubbo.common.Constants.REFER_KEY;
 import static org.apache.dubbo.common.Constants.VALIDATION_KEY;
+import static org.apache.dubbo.common.utils.UrlUtils.classifyUrls;
 
 /**
  * RegistryProtocol
- *
  */
 public class RegistryProtocol implements Protocol {
 
     private final static Logger logger = LoggerFactory.getLogger(RegistryProtocol.class);
     private static RegistryProtocol INSTANCE;
-    private final Map<URL, NotifyListener> overrideListeners = new ConcurrentHashMap<URL, NotifyListener>();
+    private final Map<URL, NotifyListener> overrideListeners = new ConcurrentHashMap<>();
+    private final Map<String, ServiceConfigurationListener> serviceConfigurationListeners = new ConcurrentHashMap<>();
+    private final ProviderConfigurationListener providerConfigurationListener = new ProviderConfigurationListener();
     //To solve the problem of RMI repeated exposure port conflicts, the services that have been exposed are no longer exposed.
     //providerurl <--> exporter
     private final Map<String, ExporterChangeableWrapper<?>> bounds = new ConcurrentHashMap<String, ExporterChangeableWrapper<?>>();
@@ -127,52 +140,92 @@ public class RegistryProtocol implements Protocol {
         registry.register(registedProviderUrl);
     }
 
+    public void unregister(URL registryUrl, URL registedProviderUrl) {
+        Registry registry = registryFactory.getRegistry(registryUrl);
+        registry.unregister(registedProviderUrl);
+    }
+
     @Override
     public <T> Exporter<T> export(final Invoker<T> originInvoker) throws RpcException {
-        //export invoker
-        final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker);
-
         URL registryUrl = getRegistryUrl(originInvoker);
-
-        //registry provider
-        final Registry registry = getRegistry(originInvoker);
-        final URL registeredProviderUrl = getRegisteredProviderUrl(originInvoker);
-
-        //to judge to delay publish whether or not
-        boolean register = registeredProviderUrl.getParameter("register", true);
-
-        ProviderConsumerRegTable.registerProvider(originInvoker, registryUrl, registeredProviderUrl);
-
-        if (register) {
-            register(registryUrl, registeredProviderUrl);
-            ProviderConsumerRegTable.getProviderWrapper(originInvoker).setReg(true);
-        }
+        // url to export locally
+        URL providerUrl = getProviderUrl(originInvoker);
 
         // Subscribe the override data
         // FIXME When the provider subscribes, it will affect the scene : a certain JVM exposes the service and call the same service. Because the subscribed is cached key with the name of the service, it causes the subscription information to cover.
-        final URL overrideSubscribeUrl = getSubscribedOverrideUrl(registeredProviderUrl);
+        final URL overrideSubscribeUrl = getSubscribedOverrideUrl(providerUrl);
         final OverrideListener overrideSubscribeListener = new OverrideListener(overrideSubscribeUrl, originInvoker);
         overrideListeners.put(overrideSubscribeUrl, overrideSubscribeListener);
+
+        providerUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
+        //export invoker
+        final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker, providerUrl);
+
+        // url to registry
+        final Registry registry = getRegistry(originInvoker);
+        final URL registeredProviderUrl = getRegistedProviderUrl(providerUrl, registryUrl);
+        ProviderInvokerWrapper<T> providerInvokerWrapper = ProviderConsumerRegTable.registerProvider(originInvoker, registryUrl, registeredProviderUrl);
+        //to judge if we need to delay publish
+        boolean register = registeredProviderUrl.getParameter("register", true);
+        if (register) {
+            register(registryUrl, registeredProviderUrl);
+            providerInvokerWrapper.setReg(true);
+        }
+
+        // Deprecated! Subscribe to override rules in 2.6.x or before.
         registry.subscribe(overrideSubscribeUrl, overrideSubscribeListener);
+
+        exporter.setRegisterUrl(registeredProviderUrl);
+        exporter.setSubscribeUrl(overrideSubscribeUrl);
         //Ensure that a new exporter instance is returned every time export
-        return new DestroyableExporter<T>(exporter, originInvoker, overrideSubscribeUrl, registeredProviderUrl);
+        return new DestroyableExporter<>(exporter);
+    }
+
+    private URL overrideUrlWithConfig(URL providerUrl, OverrideListener listener) {
+        providerUrl = providerConfigurationListener.overrideUrl(providerUrl);
+        ServiceConfigurationListener serviceConfigurationListener = new ServiceConfigurationListener(providerUrl, listener);
+        serviceConfigurationListeners.put(providerUrl.getServiceKey(), serviceConfigurationListener);
+        return serviceConfigurationListener.overrideUrl(providerUrl);
     }
 
     @SuppressWarnings("unchecked")
-    private <T> ExporterChangeableWrapper<T> doLocalExport(final Invoker<T> originInvoker) {
+    private <T> ExporterChangeableWrapper<T> doLocalExport(final Invoker<T> originInvoker, URL providerUrl) {
         String key = getCacheKey(originInvoker);
         ExporterChangeableWrapper<T> exporter = (ExporterChangeableWrapper<T>) bounds.get(key);
         if (exporter == null) {
             synchronized (bounds) {
                 exporter = (ExporterChangeableWrapper<T>) bounds.get(key);
                 if (exporter == null) {
-                    final Invoker<?> invokerDelegete = new InvokerDelegete<T>(originInvoker, getProviderUrl(originInvoker));
+
+                    final Invoker<?> invokerDelegete = new InvokerDelegete<T>(originInvoker, providerUrl);
                     exporter = new ExporterChangeableWrapper<T>((Exporter<T>) protocol.export(invokerDelegete), originInvoker);
                     bounds.put(key, exporter);
                 }
             }
         }
         return exporter;
+    }
+
+    public <T> void reExport(final Invoker<T> originInvoker, URL newInvokerUrl) {
+        // update local exporter
+        ExporterChangeableWrapper exporter = doChangeLocalExport(originInvoker, newInvokerUrl);
+        // update registry
+        URL registryUrl = getRegistryUrl(originInvoker);
+        final URL registeredProviderUrl = getRegistedProviderUrl(newInvokerUrl, registryUrl);
+
+        //decide if we need to re-publish
+        ProviderInvokerWrapper<T> providerInvokerWrapper = ProviderConsumerRegTable.getProviderWrapper(registeredProviderUrl, originInvoker);
+        ProviderInvokerWrapper<T> newProviderInvokerWrapper = ProviderConsumerRegTable.registerProvider(originInvoker, registryUrl, registeredProviderUrl);
+        /**
+         * Only if the new url going to Registry is different with the previous one should we do unregister and register.
+         */
+        if (providerInvokerWrapper.isReg() && !registeredProviderUrl.equals(providerInvokerWrapper.getProviderUrl())) {
+            unregister(registryUrl, providerInvokerWrapper.getProviderUrl());
+            register(registryUrl, registeredProviderUrl);
+            newProviderInvokerWrapper.setReg(true);
+        }
+
+        exporter.setRegisterUrl(registeredProviderUrl);
     }
 
     /**
@@ -182,7 +235,7 @@ public class RegistryProtocol implements Protocol {
      * @param newInvokerUrl
      */
     @SuppressWarnings("unchecked")
-    private <T> void doChangeLocalExport(final Invoker<T> originInvoker, URL newInvokerUrl) {
+    private <T> ExporterChangeableWrapper doChangeLocalExport(final Invoker<T> originInvoker, URL newInvokerUrl) {
         String key = getCacheKey(originInvoker);
         final ExporterChangeableWrapper<T> exporter = (ExporterChangeableWrapper<T>) bounds.get(key);
         if (exporter == null) {
@@ -191,6 +244,7 @@ public class RegistryProtocol implements Protocol {
             final Invoker<T> invokerDelegete = new InvokerDelegete<T>(originInvoker, newInvokerUrl);
             exporter.setExporter(protocol.export(invokerDelegete));
         }
+        return exporter;
     }
 
     /**
@@ -217,21 +271,19 @@ public class RegistryProtocol implements Protocol {
     /**
      * Return the url that is registered to the registry and filter the url parameter once
      *
-     * @param originInvoker
-     * @return
+     * @param providerUrl
+     * @return url to registry.
      */
-    private URL getRegisteredProviderUrl(final Invoker<?> originInvoker) {
-        URL providerUrl = getProviderUrl(originInvoker);
+    private URL getRegistedProviderUrl(final URL providerUrl, final URL registryUrl) {
         //The address you see at the registry
-        return providerUrl.removeParameters(getFilteredKeys(providerUrl))
-                .removeParameter(Constants.MONITOR_KEY)
-                .removeParameter(Constants.BIND_IP_KEY)
-                .removeParameter(Constants.BIND_PORT_KEY)
-                .removeParameter(QOS_ENABLE)
-                .removeParameter(QOS_PORT)
-                .removeParameter(ACCEPT_FOREIGN_IP)
-                .removeParameter(VALIDATION_KEY)
-                .removeParameter(INTERFACES);
+        if (!registryUrl.getParameter(Constants.SIMPLE_PROVIDER_CONFIG_KEY, false)) {
+            final URL registedProviderUrl = providerUrl.removeParameters(getFilteredKeys(providerUrl))
+                    .removeParameters(Constants.MONITOR_KEY, Constants.BIND_IP_KEY, Constants.BIND_PORT_KEY, QOS_ENABLE, QOS_PORT, ACCEPT_FOREIGN_IP, VALIDATION_KEY, INTERFACES);
+            return registedProviderUrl;
+        } else {
+            return URL.valueOf(providerUrl, getParamsToRegistry(Constants.DEFAULT_REGISTER_PROVIDER_KEYS, registryUrl.getParameter(Constants.EXTRA_PROVIDER_CONFIG_KEYS_KEY, new String[0])), providerUrl.getParameter(METHODS_KEY, (String[]) null));
+        }
+
     }
 
     private URL getSubscribedOverrideUrl(URL registedProviderUrl) {
@@ -247,13 +299,11 @@ public class RegistryProtocol implements Protocol {
      * @return
      */
     private URL getProviderUrl(final Invoker<?> origininvoker) {
-        String export = origininvoker.getUrl().getParameterAndDecoded(Constants.EXPORT_KEY);
+        String export = origininvoker.getUrl().getParameterAndDecoded(EXPORT_KEY);
         if (export == null || export.length() == 0) {
             throw new IllegalArgumentException("The registry export url is null! registry: " + origininvoker.getUrl());
         }
-
-        URL providerUrl = URL.valueOf(export);
-        return providerUrl;
+        return URL.valueOf(export);
     }
 
     /**
@@ -278,7 +328,7 @@ public class RegistryProtocol implements Protocol {
         }
 
         // group="a,b" or group="*"
-        Map<String, String> qs = StringUtils.parseQueryString(url.getParameterAndDecoded(Constants.REFER_KEY));
+        Map<String, String> qs = StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY));
         String group = qs.get(Constants.GROUP_KEY);
         if (group != null && group.length() > 0) {
             if ((Constants.COMMA_SPLIT_PATTERN.split(group)).length > 1
@@ -302,9 +352,9 @@ public class RegistryProtocol implements Protocol {
         URL subscribeUrl = new URL(Constants.CONSUMER_PROTOCOL, parameters.remove(Constants.REGISTER_IP_KEY), 0, type.getName(), parameters);
         if (!Constants.ANY_VALUE.equals(url.getServiceInterface())
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
-            registry.register(subscribeUrl.addParameters(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY,
-                    Constants.CHECK_KEY, String.valueOf(false)));
+            registry.register(getRegistedConsumerUrl(subscribeUrl, url));
         }
+        directory.buildRouterChain(subscribeUrl);
         directory.subscribe(subscribeUrl.addParameter(Constants.CATEGORY_KEY,
                 Constants.PROVIDERS_CATEGORY
                         + "," + Constants.CONFIGURATORS_CATEGORY
@@ -315,6 +365,25 @@ public class RegistryProtocol implements Protocol {
         return invoker;
     }
 
+    private URL getRegistedConsumerUrl(final URL consumerUrl, URL registryUrl) {
+        if (!registryUrl.getParameter(Constants.SIMPLE_CONSUMER_CONFIG_KEY, false)) {
+            return consumerUrl.addParameters(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY,
+                    Constants.CHECK_KEY, String.valueOf(false));
+        } else {
+            return URL.valueOf(consumerUrl, getParamsToRegistry(Constants.DEFAULT_REGISTER_CONSUMER_KEYS, registryUrl.getParameter(Constants.EXTRA_CONSUMER_CONFIG_KEYS_KEY, new String[0])), null)
+                    .addParameters(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY, Constants.CHECK_KEY, String.valueOf(false));
+        }
+    }
+
+    // available to test
+    public String[] getParamsToRegistry(String[] defaultKeys, String[] addionalParameterKeys) {
+        int additionalLen = addionalParameterKeys.length;
+        String[] registryParams = new String[defaultKeys.length + additionalLen];
+        System.arraycopy(defaultKeys, 0, registryParams, 0, defaultKeys.length);
+        System.arraycopy(addionalParameterKeys, 0, registryParams, defaultKeys.length, additionalLen);
+        return registryParams;
+    }
+
     @Override
     public void destroy() {
         List<Exporter<?>> exporters = new ArrayList<Exporter<?>>(bounds.values());
@@ -322,6 +391,19 @@ public class RegistryProtocol implements Protocol {
             exporter.unexport();
         }
         bounds.clear();
+
+        DynamicConfiguration.getDynamicConfiguration()
+                .removeListener(ApplicationModel.getApplication() + CONFIGURATORS_SUFFIX, providerConfigurationListener);
+    }
+
+    //Merge the urls of configurators
+    private static URL getConfigedInvokerUrl(List<Configurator> configurators, URL url) {
+        if (configurators != null && configurators.size() > 0) {
+            for (Configurator configurator : configurators) {
+                url = configurator.configure(url);
+            }
+        }
+        return url;
     }
 
     public static class InvokerDelegete<T> extends InvokerWrapper<T> {
@@ -345,6 +427,25 @@ public class RegistryProtocol implements Protocol {
         }
     }
 
+    static private class DestroyableExporter<T> implements Exporter<T> {
+
+        private Exporter<T> exporter;
+
+        public DestroyableExporter(Exporter<T> exporter) {
+            this.exporter = exporter;
+        }
+
+        @Override
+        public Invoker<T> getInvoker() {
+            return exporter.getInvoker();
+        }
+
+        @Override
+        public void unexport() {
+            exporter.unexport();
+        }
+    }
+
     /**
      * Reexport: the exporter destroy problem in protocol
      * 1.Ensure that the exporter returned by registryprotocol can be normal destroyed
@@ -352,9 +453,11 @@ public class RegistryProtocol implements Protocol {
      * 3.The invoker passed by the export method , would better to be the invoker of exporter
      */
     private class OverrideListener implements NotifyListener {
-
         private final URL subscribeUrl;
         private final Invoker originInvoker;
+
+
+        private List<Configurator> configurators;
 
         public OverrideListener(URL subscribeUrl, Invoker originalInvoker) {
             this.subscribeUrl = subscribeUrl;
@@ -363,19 +466,25 @@ public class RegistryProtocol implements Protocol {
 
         /**
          * @param urls The list of registered information , is always not empty, The meaning is the same as the return value of {@link org.apache.dubbo.registry.RegistryService#lookup(URL)}.
+         *             configurators
          */
         @Override
         public synchronized void notify(List<URL> urls) {
             logger.debug("original override urls: " + urls);
-            List<URL> matchedUrls = getMatchedUrls(urls, subscribeUrl);
+            List<URL> matchedUrls = getMatchedUrls(urls, subscribeUrl.addParameter(Constants.CATEGORY_KEY, Constants.CONFIGURATORS_CATEGORY));
             logger.debug("subscribe url: " + subscribeUrl + ", override urls: " + matchedUrls);
             // No matching results
             if (matchedUrls.isEmpty()) {
                 return;
             }
 
-            List<Configurator> configurators = RegistryDirectory.toConfigurators(matchedUrls);
+            this.configurators = Configurator.toConfigurators(classifyUrls(matchedUrls, u -> CONFIGURATORS_CATEGORY.equals(u.getParameter(CATEGORY_KEY))
+                    || OVERRIDE_PROTOCOL.equals(u.getProtocol()))).orElse(configurators);
 
+            doOverrideIfNecessary();
+        }
+
+        public synchronized void doOverrideIfNecessary() {
             final Invoker<?> invoker;
             if (originInvoker instanceof InvokerDelegete) {
                 invoker = ((InvokerDelegete<?>) originInvoker).getInvoker();
@@ -394,8 +503,11 @@ public class RegistryProtocol implements Protocol {
             URL currentUrl = exporter.getInvoker().getUrl();
             //Merged with this configuration
             URL newUrl = getConfigedInvokerUrl(configurators, originUrl);
+            newUrl = getConfigedInvokerUrl(serviceConfigurationListeners.get(originUrl.getServiceKey())
+                    .getConfigurators(), newUrl);
+            newUrl = getConfigedInvokerUrl(providerConfigurationListener.getConfigurators(), newUrl);
             if (!currentUrl.equals(newUrl)) {
-                RegistryProtocol.this.doChangeLocalExport(originInvoker, newUrl);
+                RegistryProtocol.this.reExport(originInvoker, newUrl);
                 logger.info("exported provider url changed, origin url: " + originUrl + ", old export url: " + currentUrl + ", new export url: " + newUrl);
             }
         }
@@ -405,8 +517,7 @@ public class RegistryProtocol implements Protocol {
             for (URL url : configuratorUrls) {
                 URL overrideUrl = url;
                 // Compatible with the old version
-                if (url.getParameter(Constants.CATEGORY_KEY) == null
-                        && Constants.OVERRIDE_PROTOCOL.equals(url.getProtocol())) {
+                if (url.getParameter(Constants.CATEGORY_KEY) == null && Constants.OVERRIDE_PROTOCOL.equals(url.getProtocol())) {
                     overrideUrl = url.addParameter(Constants.CATEGORY_KEY, Constants.CONFIGURATORS_CATEGORY);
                 }
 
@@ -417,16 +528,72 @@ public class RegistryProtocol implements Protocol {
             }
             return result;
         }
+    }
 
-        //Merge the urls of configurators
-        private URL getConfigedInvokerUrl(List<Configurator> configurators, URL url) {
-            for (Configurator configurator : configurators) {
-                url = configurator.configure(url);
+    private class ServiceConfigurationListener extends AbstractConfiguratorListener {
+        private URL providerUrl;
+        private OverrideListener notifyListener;
+
+        public ServiceConfigurationListener(URL providerUrl, OverrideListener notifyListener) {
+            this.providerUrl = providerUrl;
+            this.notifyListener = notifyListener;
+            this.init();
+        }
+
+        private synchronized void init() {
+            DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
+            String key = providerUrl.getEncodedServiceKey() + Constants.CONFIGURATORS_SUFFIX;
+            dynamicConfiguration.addListener(key, this);
+            String rawConfig = dynamicConfiguration.getConfig(key);
+            if (!StringUtils.isEmpty(rawConfig)) {
+                configurators = Configurator.toConfigurators(ConfigParser.parseConfigurators(rawConfig))
+                        .orElse(configurators);
             }
-            return url;
+        }
+
+        private <T> URL overrideUrl(URL providerUrl) {
+            return RegistryProtocol.getConfigedInvokerUrl(configurators, providerUrl);
+        }
+
+        @Override
+        protected void notifyOverrides() {
+            notifyListener.doOverrideIfNecessary();
         }
     }
 
+    private class ProviderConfigurationListener extends AbstractConfiguratorListener {
+
+        public ProviderConfigurationListener() {
+            this.init();
+        }
+
+        private synchronized void init() {
+            DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
+            String appKey = ApplicationModel.getApplication() + Constants.CONFIGURATORS_SUFFIX;
+            dynamicConfiguration.addListener(appKey, this);
+            String appRawConfig = dynamicConfiguration.getConfig(appKey);
+            if (!StringUtils.isEmpty(appRawConfig)) {
+                configurators = Configurator.toConfigurators(ConfigParser.parseConfigurators(appRawConfig))
+                        .orElse(configurators);
+            }
+        }
+
+        /**
+         * Get existing configuration rule and override provider url before exporting.
+         *
+         * @param providerUrl
+         * @param <T>
+         * @return
+         */
+        private <T> URL overrideUrl(URL providerUrl) {
+            return RegistryProtocol.getConfigedInvokerUrl(configurators, providerUrl);
+        }
+
+        @Override
+        protected void notifyOverrides() {
+            overrideListeners.values().forEach(listener -> ((OverrideListener) listener).doOverrideIfNecessary());
+        }
+    }
     /**
      * exporter proxy, establish the corresponding relationship between the returned exporter and the exporter exported by the protocol, and can modify the relationship at the time of override.
      *
@@ -434,8 +601,12 @@ public class RegistryProtocol implements Protocol {
      */
     private class ExporterChangeableWrapper<T> implements Exporter<T> {
 
+        private final ExecutorService executor = Executors.newSingleThreadExecutor(new NamedThreadFactory("Exporter-Unexport", true));
+
         private final Invoker<T> originInvoker;
         private Exporter<T> exporter;
+        private URL subscribeUrl;
+        private URL registerUrl;
 
         public ExporterChangeableWrapper(Exporter<T> exporter, Invoker<T> originInvoker) {
             this.exporter = exporter;
@@ -459,33 +630,7 @@ public class RegistryProtocol implements Protocol {
         public void unexport() {
             String key = getCacheKey(this.originInvoker);
             bounds.remove(key);
-            exporter.unexport();
-        }
-    }
 
-    static private class DestroyableExporter<T> implements Exporter<T> {
-
-        public static final ExecutorService executor = Executors.newSingleThreadExecutor(new NamedThreadFactory("Exporter-Unexport", true));
-
-        private Exporter<T> exporter;
-        private Invoker<T> originInvoker;
-        private URL subscribeUrl;
-        private URL registerUrl;
-
-        public DestroyableExporter(Exporter<T> exporter, Invoker<T> originInvoker, URL subscribeUrl, URL registerUrl) {
-            this.exporter = exporter;
-            this.originInvoker = originInvoker;
-            this.subscribeUrl = subscribeUrl;
-            this.registerUrl = registerUrl;
-        }
-
-        @Override
-        public Invoker<T> getInvoker() {
-            return exporter.getInvoker();
-        }
-
-        @Override
-        public void unexport() {
             Registry registry = RegistryProtocol.INSTANCE.getRegistry(originInvoker);
             try {
                 registry.unregister(registerUrl);
@@ -495,6 +640,9 @@ public class RegistryProtocol implements Protocol {
             try {
                 NotifyListener listener = RegistryProtocol.INSTANCE.overrideListeners.remove(subscribeUrl);
                 registry.unsubscribe(subscribeUrl, listener);
+                DynamicConfiguration.getDynamicConfiguration()
+                        .removeListener(subscribeUrl.getServiceKey() + CONFIGURATORS_SUFFIX, serviceConfigurationListeners
+                                .get(subscribeUrl.getServiceKey()));
             } catch (Throwable t) {
                 logger.warn(t.getMessage(), t);
             }
@@ -503,7 +651,7 @@ public class RegistryProtocol implements Protocol {
                 @Override
                 public void run() {
                     try {
-                        int timeout = ConfigUtils.getServerShutdownTimeout();
+                        int timeout = ConfigurationUtils.getServerShutdownTimeout();
                         if (timeout > 0) {
                             logger.info("Waiting " + timeout + "ms for registry to notify all consumers before unexport. Usually, this is called when you use dubbo API");
                             Thread.sleep(timeout);
@@ -514,6 +662,14 @@ public class RegistryProtocol implements Protocol {
                     }
                 }
             });
+        }
+
+        public void setSubscribeUrl(URL subscribeUrl) {
+            this.subscribeUrl = subscribeUrl;
+        }
+
+        public void setRegisterUrl(URL registerUrl) {
+            this.registerUrl = registerUrl;
         }
     }
 }

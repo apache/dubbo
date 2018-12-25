@@ -19,11 +19,14 @@ package org.apache.dubbo.config.spring.context.annotation;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConsumerConfig;
+import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.RegistryDataConfig;
+import org.apache.dubbo.config.spring.ConfigCenterBean;
 
 import org.springframework.context.annotation.Configuration;
 
@@ -40,6 +43,7 @@ import org.springframework.context.annotation.Configuration;
  * @see MonitorConfig
  * @see ProviderConfig
  * @see ConsumerConfig
+ * @see org.apache.dubbo.config.ConfigCenterConfig
  * @since 2.5.8
  */
 public class DubboConfigConfiguration {
@@ -54,7 +58,10 @@ public class DubboConfigConfiguration {
             @EnableDubboConfigBinding(prefix = "dubbo.protocol", type = ProtocolConfig.class),
             @EnableDubboConfigBinding(prefix = "dubbo.monitor", type = MonitorConfig.class),
             @EnableDubboConfigBinding(prefix = "dubbo.provider", type = ProviderConfig.class),
-            @EnableDubboConfigBinding(prefix = "dubbo.consumer", type = ConsumerConfig.class)
+            @EnableDubboConfigBinding(prefix = "dubbo.consumer", type = ConsumerConfig.class),
+            @EnableDubboConfigBinding(prefix = "dubbo.configCenter", type = ConfigCenterBean.class),
+            @EnableDubboConfigBinding(prefix = "dubbo.registryData", type = RegistryDataConfig.class),
+            @EnableDubboConfigBinding(prefix = "dubbo.metadataReport", type = MetadataReportConfig.class)
     })
     public static class Single {
 
@@ -70,7 +77,8 @@ public class DubboConfigConfiguration {
             @EnableDubboConfigBinding(prefix = "dubbo.protocols", type = ProtocolConfig.class, multiple = true),
             @EnableDubboConfigBinding(prefix = "dubbo.monitors", type = MonitorConfig.class, multiple = true),
             @EnableDubboConfigBinding(prefix = "dubbo.providers", type = ProviderConfig.class, multiple = true),
-            @EnableDubboConfigBinding(prefix = "dubbo.consumers", type = ConsumerConfig.class, multiple = true)
+            @EnableDubboConfigBinding(prefix = "dubbo.consumers", type = ConsumerConfig.class, multiple = true),
+            @EnableDubboConfigBinding(prefix = "dubbo.configCenters", type = ConfigCenterBean.class, multiple = true)
     })
     public static class Multiple {
 

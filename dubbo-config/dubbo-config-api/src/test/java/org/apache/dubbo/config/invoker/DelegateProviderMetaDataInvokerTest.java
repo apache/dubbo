@@ -17,10 +17,11 @@
 
 package org.apache.dubbo.config.invoker;
 
-import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;

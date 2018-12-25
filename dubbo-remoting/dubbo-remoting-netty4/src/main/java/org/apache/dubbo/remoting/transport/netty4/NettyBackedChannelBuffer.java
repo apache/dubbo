@@ -261,7 +261,7 @@ public class NettyBackedChannelBuffer implements ChannelBuffer {
     
     @Override
     public void readBytes(ChannelBuffer dst, int length) {
-        // carefule
+        // careful
         if (length > dst.writableBytes()) {
             throw new IndexOutOfBoundsException();
         }

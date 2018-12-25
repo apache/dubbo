@@ -17,6 +17,7 @@
 package org.apache.dubbo.demo.consumer;
 
 import org.apache.dubbo.demo.DemoService;
+import org.apache.dubbo.rpc.RpcContext;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -31,12 +32,19 @@ public class Consumer {
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"META-INF/spring/dubbo-demo-consumer.xml"});
         context.start();
         DemoService demoService = (DemoService) context.getBean("demoService"); // get remote service proxy
+//        DemoService demoService1 = (DemoService) context.getBean("demoService1"); // get remote service proxy
         while (true) {
             try {
                 Thread.sleep(1000);
+//                RpcContext.getContext().setAttachment("tag", "tag3");
                 String hello = demoService.sayHello("world"); // call remote method
                 System.out.println(hello); // get result
+//                RpcContext.getContext().setAttachment("tag", "tag1");
+//                RpcContext.getContext().setAttachment("force.tag", "true");
+                String routeMethod1 = demoService.routeMethod1(); // call remote method
+                System.out.println(routeMethod1); // get result
             } catch (Throwable throwable) {
+                RpcContext.getContext().clearAttachments();
                 throwable.printStackTrace();
             }
         }

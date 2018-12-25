@@ -21,6 +21,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
@@ -213,12 +214,12 @@ public class ConfigUtils {
      * <li>return empty Properties if no file found.
      * <li>merge multi properties file if found multi file
      * </ul>
-     * @throws IllegalStateException not allow multi-file, but multi-file exsit on class path.
+     * @throws IllegalStateException not allow multi-file, but multi-file exist on class path.
      */
     public static Properties loadProperties(String fileName, boolean allowMultiFile, boolean optional) {
         Properties properties = new Properties();
         // add scene judgement in windows environment Fix 2557
-        if (fileName.startsWith("/") || fileName.matches("^[A-z]:\\\\\\S+$")) {
+        if (checkFileNameExist(fileName)) {
             try {
                 FileInputStream input = new FileInputStream(fileName);
                 try {
@@ -292,6 +293,18 @@ public class ConfigUtils {
         return properties;
     }
 
+    /**
+     * check if the fileName can be found in filesystem
+     *
+     * @param fileName
+     * @return
+     */
+    private static boolean checkFileNameExist(String fileName) {
+        File file = new File(fileName);
+        return file.exists();
+    }
+
+
     public static int getPid() {
         if (PID < 0) {
             try {
@@ -304,29 +317,4 @@ public class ConfigUtils {
         }
         return PID;
     }
-
-    @SuppressWarnings("deprecation")
-    public static int getServerShutdownTimeout() {
-        int timeout = Constants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
-        String value = ConfigUtils.getProperty(Constants.SHUTDOWN_WAIT_KEY);
-        if (value != null && value.length() > 0) {
-            try {
-                timeout = Integer.parseInt(value);
-            } catch (Exception e) {
-                // ignore
-            }
-        } else {
-            value = ConfigUtils.getProperty(Constants.SHUTDOWN_WAIT_SECONDS_KEY);
-            if (value != null && value.length() > 0) {
-                try {
-                    timeout = Integer.parseInt(value) * 1000;
-                } catch (Exception e) {
-                    // ignore
-                }
-            }
-        }
-
-        return timeout;
-    }
-
 }

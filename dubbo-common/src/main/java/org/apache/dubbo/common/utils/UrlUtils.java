@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class UrlUtils {
 
@@ -361,7 +363,10 @@ public class UrlUtils {
     public static boolean isMatch(URL consumerUrl, URL providerUrl) {
         String consumerInterface = consumerUrl.getServiceInterface();
         String providerInterface = providerUrl.getServiceInterface();
-        if (!(Constants.ANY_VALUE.equals(consumerInterface) || StringUtils.isEquals(consumerInterface, providerInterface))) {
+        //FIXME accept providerUrl with '*' as interface name, after carefully thought about all possible scenarios I think it's ok to add this condition.
+        if (!(Constants.ANY_VALUE.equals(consumerInterface)
+                || Constants.ANY_VALUE.equals(providerInterface)
+                || StringUtils.isEquals(consumerInterface, providerInterface))) {
             return false;
         }
 
@@ -434,6 +439,10 @@ public class UrlUtils {
                 value.getParameter(Constants.GROUP_KEY))
                 && isItemMatch(pattern.getParameter(Constants.VERSION_KEY),
                 value.getParameter(Constants.VERSION_KEY));
+    }
+
+    public static List<URL> classifyUrls(List<URL> urls, Predicate<URL> predicate) {
+        return urls.stream().filter(predicate).collect(Collectors.toList());
     }
 
     /**

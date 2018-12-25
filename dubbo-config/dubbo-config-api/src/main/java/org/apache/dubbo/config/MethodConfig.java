@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 
 import java.util.List;
@@ -73,6 +74,12 @@ public class MethodConfig extends AbstractMethodConfig {
     private String onthrowMethod;
 
     private List<ArgumentConfig> arguments;
+
+    /**
+     * These properties come from MethodConfig's parent Config module, they will neither be collected directly from xml or API nor be delivered to url
+     */
+    private String service;
+    private String serviceId;
 
     @Parameter(excluded = true)
     public String getName() {
@@ -211,4 +218,34 @@ public class MethodConfig extends AbstractMethodConfig {
         this.isReturn = isReturn;
     }
 
+    @Parameter(excluded = true)
+    public String getService() {
+        return service;
+    }
+
+    public void setService(String service) {
+        this.service = service;
+    }
+
+    @Parameter(excluded = true)
+    public String getServiceId() {
+        return serviceId;
+    }
+
+    public void setServiceId(String serviceId) {
+        this.serviceId = serviceId;
+    }
+
+    /**
+     * service and name must not be null.
+     *
+     * @return
+     */
+    @Override
+    @Parameter(excluded = true)
+    public String getPrefix() {
+        return Constants.DUBBO + "." + service
+                + (StringUtils.isEmpty(serviceId) ? "" : ("." + serviceId))
+                + "." + getName();
+    }
 }

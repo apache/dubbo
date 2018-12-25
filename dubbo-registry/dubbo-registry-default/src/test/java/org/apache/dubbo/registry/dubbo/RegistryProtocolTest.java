@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.dubbo;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.RegistryFactory;
@@ -34,12 +35,14 @@ import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboInvoker;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.apache.dubbo.common.Constants.DEFAULT_REGISTER_PROVIDER_KEYS;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -150,8 +153,22 @@ public class RegistryProtocolTest {
         Invoker<RegistryProtocolTest> invoker = new MockInvoker<RegistryProtocolTest>(RegistryProtocolTest.class, newRegistryUrl);
         Exporter<?> exporter = protocol.export(invoker);
         destroyRegistryProtocol();
+        try {
+            Thread.sleep(ConfigurationUtils.getServerShutdownTimeout() + 100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         assertEquals(false, exporter.getInvoker().isAvailable());
 
+    }
+
+    @Test
+    public void testGetParamsToRegistry() {
+        RegistryProtocol registryProtocol = new RegistryProtocol();
+        String[] additionalParams = new String[]{"key1", "key2"};
+        String[] registryParams = registryProtocol.getParamsToRegistry(DEFAULT_REGISTER_PROVIDER_KEYS, additionalParams);
+        String[] expectParams = ArrayUtils.addAll(DEFAULT_REGISTER_PROVIDER_KEYS, additionalParams);
+        Assert.assertArrayEquals(expectParams, registryParams);
     }
 
     private void destroyRegistryProtocol() {

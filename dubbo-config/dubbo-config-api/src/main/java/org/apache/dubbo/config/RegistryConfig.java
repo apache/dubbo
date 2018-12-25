@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 
 import java.util.Map;
@@ -88,6 +89,20 @@ public class RegistryConfig extends AbstractConfig {
     // if it's default
     private Boolean isDefault;
 
+    /**
+     * simple the registry.
+     *
+     * @since 2.7.0
+     */
+    private Boolean simple;
+    /**
+     * After simplify the registry, should add some paramter individually.
+     * addionalParameterKeys = addParamKeys
+     *
+     * @since 2.7.0
+     */
+    private String addParamKeys;
+
     public RegistryConfig() {
     }
 
@@ -107,6 +122,7 @@ public class RegistryConfig extends AbstractConfig {
     public void setProtocol(String protocol) {
         checkName("protocol", protocol);
         this.protocol = protocol;
+        this.updateIdIfAbsent(protocol);
     }
 
     @Parameter(excluded = true)
@@ -116,6 +132,12 @@ public class RegistryConfig extends AbstractConfig {
 
     public void setAddress(String address) {
         this.address = address;
+        if (address != null) {
+            int i = address.indexOf("://");
+            if (i > 0) {
+                this.updateIdIfAbsent(address.substring(0, i));
+            }
+        }
     }
 
     public Integer getPort() {
@@ -322,4 +344,29 @@ public class RegistryConfig extends AbstractConfig {
         this.isDefault = isDefault;
     }
 
+    @Parameter(excluded = true)
+    public boolean isZookeeperProtocol() {
+        if (!isValid()) {
+            return false;
+        }
+        boolean isZookeeper = StringUtils.isNotEmpty(this.getProtocol()) && this.getProtocol().equals("zookeeper");
+        if (!isZookeeper) {
+            String address = this.getAddress();
+            int index = address.indexOf("://");
+            if (StringUtils.isNotEmpty(address) && index >= 0) {
+                address = address.substring(0, index);
+            }
+            if (address.equals("zookeeper")) {
+                isZookeeper = true;
+            }
+        }
+        return isZookeeper;
+    }
+
+    @Override
+    @Parameter(excluded = true)
+    public boolean isValid() {
+        // empty protocol will default to 'dubbo'
+        return !StringUtils.isEmpty(address);
+    }
 }
