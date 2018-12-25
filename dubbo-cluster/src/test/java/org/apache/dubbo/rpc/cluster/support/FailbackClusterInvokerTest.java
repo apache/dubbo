@@ -88,6 +88,7 @@ public class FailbackClusterInvokerTest {
                 dic);
         invoker.invoke(invocation);
         Assert.assertNull(RpcContext.getContext().getInvoker());
+        DubboAppender.clear();
     }
 
     @Test()
