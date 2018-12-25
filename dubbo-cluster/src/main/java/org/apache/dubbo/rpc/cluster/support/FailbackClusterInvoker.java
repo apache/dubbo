@@ -32,7 +32,7 @@ import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -118,9 +118,9 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
         private final Invocation invocation;
         private final LoadBalance loadbalance;
         private final List<Invoker<T>> invokers;
-        private final List<Invoker<T>> lastInvokers = new ArrayList<>();
         private final int retries;
         private final long tick;
+        private Invoker<T> lastInvoker;
         private int retryTimes = 0;
 
         RetryTimerTask(LoadBalance loadbalance, Invocation invocation, List<Invoker<T>> invokers, Invoker<T> lastInvoker, int retries, long tick) {
@@ -129,15 +129,14 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
             this.invokers = invokers;
             this.retries = retries;
             this.tick = tick;
-            lastInvokers.add(lastInvoker);
+            this.lastInvoker=lastInvoker;
         }
 
         @Override
         public void run(Timeout timeout) {
             try {
-                Invoker<T> retryInvoker = select(loadbalance, invocation, invokers, lastInvokers);
-                lastInvokers.clear();
-                lastInvokers.add(retryInvoker);
+                Invoker<T> retryInvoker = select(loadbalance, invocation, invokers, Collections.singletonList(lastInvoker));
+                lastInvoker = retryInvoker;
                 retryInvoker.invoke(invocation);
             } catch (Throwable e) {
                 logger.error("Failed retry to invoke method " + invocation.getMethodName() + ", waiting again.", e);
