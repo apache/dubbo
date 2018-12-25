@@ -376,7 +376,7 @@ public class RegistryProtocol implements Protocol {
     }
 
     // available to test
-    String[] getParamsToRegistry(String[] defaultKeys, String[] addionalParameterKeys) {
+    public String[] getParamsToRegistry(String[] defaultKeys, String[] addionalParameterKeys) {
         int additionalLen = addionalParameterKeys.length;
         String[] registryParams = new String[defaultKeys.length + additionalLen];
         System.arraycopy(defaultKeys, 0, registryParams, 0, defaultKeys.length);
