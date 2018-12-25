@@ -34,7 +34,7 @@ import static org.apache.dubbo.registry.support.ProviderConsumerRegTable.getCons
 import static org.apache.dubbo.registry.support.ProviderConsumerRegTable.isRegistered;
 
 /**
- * ListTelnetHandler
+ * ListTelnetHandler handler list services and its methods details.
  */
 @Activate
 @Help(parameter = "[-l] [service]", summary = "List services and methods.", detail = "List services and methods.")
@@ -59,7 +59,7 @@ public class ListTelnetHandler implements TelnetHandler {
             }
         } else {
             service = (String) channel.getAttribute(ChangeTelnetHandler.SERVICE_KEY);
-            if (service != null && service.length() > 0) {
+            if (StringUtils.isNotEmpty(service)) {
                 buf.append("Use default service ").append(service).append(".\r\n");
             }
         }
@@ -119,9 +119,7 @@ public class ListTelnetHandler implements TelnetHandler {
 
     private void printSpecifiedProvidedService(String service, StringBuilder buf, boolean detail) {
         for (ProviderModel provider : ApplicationModel.allProviderModels()) {
-            if (service.equalsIgnoreCase(provider.getServiceName())
-                    || service.equalsIgnoreCase(provider.getServiceInterfaceClass().getName())
-                    || service.equalsIgnoreCase(provider.getServiceInterfaceClass().getSimpleName())) {
+            if (isProviderMatched(service,provider)) {
                 buf.append(provider.getServiceName()).append(" (as provider):\r\n");
                 for (ProviderMethodModel method : provider.getAllMethods()) {
                     printMethod(method.getMethod(), buf, detail);
@@ -132,9 +130,7 @@ public class ListTelnetHandler implements TelnetHandler {
 
     private void printSpecifiedReferredService(String service, StringBuilder buf, boolean detail) {
         for (ConsumerModel consumer : ApplicationModel.allConsumerModels()) {
-            if (service.equalsIgnoreCase(consumer.getServiceName())
-                    || service.equalsIgnoreCase(consumer.getServiceInterfaceClass().getName())
-                    || service.equalsIgnoreCase(consumer.getServiceInterfaceClass().getSimpleName())) {
+            if (isConsumerMatcher(service,consumer)) {
                 buf.append(consumer.getServiceName()).append(" (as consumer):\r\n");
                 for (ConsumerMethodModel method : consumer.getAllMethods()) {
                     printMethod(method.getMethod(), buf, detail);
@@ -150,5 +146,17 @@ public class ListTelnetHandler implements TelnetHandler {
             buf.append('\t').append(method.getName());
         }
         buf.append("\r\n");
+    }
+
+    private boolean isProviderMatched(String service, ProviderModel provider) {
+        return service.equalsIgnoreCase(provider.getServiceName())
+                || service.equalsIgnoreCase(provider.getServiceInterfaceClass().getName())
+                || service.equalsIgnoreCase(provider.getServiceInterfaceClass().getSimpleName());
+    }
+
+    private boolean isConsumerMatcher(String service,ConsumerModel consumer) {
+        return service.equalsIgnoreCase(consumer.getServiceName())
+                || service.equalsIgnoreCase(consumer.getServiceInterfaceClass().getName())
+                || service.equalsIgnoreCase(consumer.getServiceInterfaceClass().getSimpleName());
     }
 }
