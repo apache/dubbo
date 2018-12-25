@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.dubbo;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.RegistryFactory;
@@ -33,6 +34,7 @@ import org.apache.dubbo.rpc.cluster.support.FailfastCluster;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboInvoker;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -149,6 +151,11 @@ public class RegistryProtocolTest {
         Invoker<RegistryProtocolTest> invoker = new MockInvoker<RegistryProtocolTest>(RegistryProtocolTest.class, newRegistryUrl);
         Exporter<?> exporter = protocol.export(invoker);
         destroyRegistryProtocol();
+        try {
+            Thread.sleep(ConfigurationUtils.getServerShutdownTimeout() + 100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         assertEquals(false, exporter.getInvoker().isAvailable());
 
     }
