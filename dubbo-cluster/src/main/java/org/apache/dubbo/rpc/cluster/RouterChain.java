@@ -120,6 +120,7 @@ public class RouterChain<T> {
     public void setInvokers(List<Invoker<T>> invokers) {
         if (invokers != null) {
             this.invokers = invokers;
+            routers.forEach(router -> router.notify(invokers));
         }
     }
 }
