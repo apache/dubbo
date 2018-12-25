@@ -58,6 +58,7 @@ import static org.apache.dubbo.common.Constants.CONFIGURATORS_SUFFIX;
 import static org.apache.dubbo.common.Constants.EXPORT_KEY;
 import static org.apache.dubbo.common.Constants.INTERFACES;
 import static org.apache.dubbo.common.Constants.METHODS_KEY;
+import static org.apache.dubbo.common.Constants.OVERRIDE_PROTOCOL;
 import static org.apache.dubbo.common.Constants.QOS_ENABLE;
 import static org.apache.dubbo.common.Constants.QOS_PORT;
 import static org.apache.dubbo.common.Constants.REFER_KEY;
@@ -477,8 +478,8 @@ public class RegistryProtocol implements Protocol {
                 return;
             }
 
-            this.configurators = Configurator.toConfigurators(classifyUrls(matchedUrls, u -> u.getParameter(CATEGORY_KEY)
-                    .equals(CONFIGURATORS_CATEGORY))).orElse(configurators);
+            this.configurators = Configurator.toConfigurators(classifyUrls(matchedUrls, u -> CONFIGURATORS_CATEGORY.equals(u.getParameter(CATEGORY_KEY))
+                    || OVERRIDE_PROTOCOL.equals(u.getProtocol()))).orElse(configurators);
 
             doOverrideIfNecessary();
         }

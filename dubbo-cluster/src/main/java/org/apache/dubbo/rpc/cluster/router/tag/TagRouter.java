@@ -213,7 +213,7 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
 
     private synchronized void checkAndInit(URL url) {
         String providerApplication = url.getParameter(Constants.REMOTE_APPLICATION_KEY);
-        if (StringUtils.isEmpty(application) || !providerApplication.equals(application)) {
+        if (StringUtils.isEmpty(application) || !application.equals(providerApplication)) {
             setApplication(providerApplication);
             inited = false;
         }

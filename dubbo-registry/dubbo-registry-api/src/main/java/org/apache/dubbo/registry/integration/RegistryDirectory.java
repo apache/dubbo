@@ -61,6 +61,7 @@ import static org.apache.dubbo.common.Constants.CATEGORY_KEY;
 import static org.apache.dubbo.common.Constants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.Constants.DEFAULT_CATEGORY;
 import static org.apache.dubbo.common.Constants.DYNAMIC_CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.Constants.OVERRIDE_PROTOCOL;
 import static org.apache.dubbo.common.Constants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.Constants.ROUTERS_CATEGORY;
 import static org.apache.dubbo.common.Constants.ROUTE_PROTOCOL;
@@ -188,17 +189,22 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     public synchronized void notify(List<URL> urls) {
         List<URL> categoryUrls = urls.stream().filter(this::isValidCategory).filter(this::isNotCompatibleFor26x).collect(Collectors.toList());
 
-        this.configurators = Configurator.toConfigurators(classifyUrls(categoryUrls, url -> url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY)
-                .equals(CONFIGURATORS_CATEGORY))).orElse(configurators);
+        /**
+         * TODO Try to refactor the processing of these three type of urls using Collectors.groupBy()?
+         */
+        this.configurators = Configurator.toConfigurators(classifyUrls(categoryUrls, url -> (CONFIGURATORS_CATEGORY.equals(url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY))
+                 || OVERRIDE_PROTOCOL.equals(url.getProtocol())))).orElse(configurators);
 
         toRouters(classifyUrls(categoryUrls, url -> {
-            return url.getProtocol().equals(ROUTE_PROTOCOL) || url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY)
-                    .equals(ROUTERS_CATEGORY);
+            return ROUTE_PROTOCOL.equals(url.getProtocol())
+                    || ROUTERS_CATEGORY.equals(url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY));
         })).ifPresent(this::addRouters);
 
         // providers
-        refreshOverrideAndInvoker(classifyUrls(categoryUrls, url -> url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY)
-                .equals(PROVIDERS_CATEGORY)));
+        refreshOverrideAndInvoker(classifyUrls(categoryUrls, url -> PROVIDERS_CATEGORY.equals(url.getParameter(Constants.CATEGORY_KEY, PROVIDERS_CATEGORY))
+                && !OVERRIDE_PROTOCOL.equals(url.getProtocol())
+                && !ROUTE_PROTOCOL.equals(url.getProtocol()))
+        );
     }
 
     public void refreshOverrideAndInvoker(List<URL> urls) {
@@ -479,10 +485,12 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }
         }
 
-        List<Configurator> localDynamicConfigurators = serviceConfigurationListener.getConfigurators(); // local reference
-        if (localDynamicConfigurators != null && !localDynamicConfigurators.isEmpty()) {
-            for (Configurator configurator : localDynamicConfigurators) {
-                providerUrl = configurator.configure(providerUrl);
+        if (serviceConfigurationListener != null) {
+            List<Configurator> localDynamicConfigurators = serviceConfigurationListener.getConfigurators(); // local reference
+            if (localDynamicConfigurators != null && !localDynamicConfigurators.isEmpty()) {
+                for (Configurator configurator : localDynamicConfigurators) {
+                    providerUrl = configurator.configure(providerUrl);
+                }
             }
         }
 
@@ -602,7 +610,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         }
 
         if (multiGroup) {
-            return this.invokers;
+            return this.invokers == null ? Collections.emptyList() : this.invokers;
         }
 
         List<Invoker<T>> invokers = null;
@@ -629,7 +637,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 }
             }
         }*/
-        return invokers == null ? new ArrayList<>(0) : invokers;
+        return invokers == null ? Collections.emptyList() : invokers;
     }
 
     @Override
@@ -714,8 +722,10 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         doOverrideUrl(localConfigurators);
         List<Configurator> localAppDynamicConfigurators = consumerConfigurationListener.getConfigurators(); // local reference
         doOverrideUrl(localAppDynamicConfigurators);
-        List<Configurator> localDynamicConfigurators = serviceConfigurationListener.getConfigurators(); // local reference
-        doOverrideUrl(localDynamicConfigurators);
+        if (serviceConfigurationListener != null) {
+            List<Configurator> localDynamicConfigurators = serviceConfigurationListener.getConfigurators(); // local reference
+            doOverrideUrl(localDynamicConfigurators);
+        }
     }
 
     private void doOverrideUrl(List<Configurator> configurators) {
@@ -744,7 +754,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         }
     }
 
-    private class ReferenceConfigurationListener extends AbstractConfiguratorListener {
+    public class ReferenceConfigurationListener extends AbstractConfiguratorListener {
         private URL url;
 
         ReferenceConfigurationListener(URL url) {
