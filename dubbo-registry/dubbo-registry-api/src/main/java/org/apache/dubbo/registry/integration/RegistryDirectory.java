@@ -228,7 +228,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 .getProtocol())) {
             this.forbidden = true; // Forbid to access
             this.invokers = null;
-            routerChain.notifyFullInvokers(this.invokers, getConsumerUrl());
+            routerChain.setInvokers(this.invokers);
             destroyAllInvokers(); // Close all invokers
         } else {
             this.forbidden = false; // Allow to access
@@ -259,7 +259,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
             // pre-route and build cache, notice that route cache should build on original Invoker list.
             // toMergeMethodInvokerMap() will wrap some invokers having different groups, those wrapped invokers not should be routed.
-            routerChain.notifyFullInvokers(newInvokers, getConsumerUrl());
+            routerChain.setInvokers(newInvokers);
 //            this.methodInvokerMap = multiGroup ? toMergeMethodInvokerMap(newMethodInvokerMap) : newMethodInvokerMap;
             this.invokers = multiGroup ? toMergeInvokerList(newInvokers) : newInvokers;
             this.urlInvokerMap = newUrlInvokerMap;
@@ -351,8 +351,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }
             try {
                 Router router = routerFactory.getRouter(url);
-                router.addRouterChain(routerChain);
-//                    routerChain.addRouter(router);
+                routerChain.addRouter(router);
                 if (!routers.contains(router)) routers.add(router);
             } catch (Throwable t) {
                 logger.error("convert router url to router error, url: " + url, t);

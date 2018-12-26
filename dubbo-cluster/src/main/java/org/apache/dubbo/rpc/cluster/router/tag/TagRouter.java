@@ -30,13 +30,11 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Router;
-import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRouterRule;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRuleParser;
 
 import java.util.List;
-import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -51,13 +49,8 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
     private TagRouterRule tagRouterRule;
     private String application;
 
-    private boolean inited = false;
-
     public TagRouter(DynamicConfiguration configuration, URL url) {
         super(configuration, url);
-    }
-
-    protected TagRouter() {
     }
 
     @Override
@@ -73,9 +66,6 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
             } else {
                 this.tagRouterRule = TagRuleParser.parse(event.getValue());
             }
-
-            routerChains.forEach(RouterChain::notifyRuleChanged);
-
         } catch (Exception e) {
             logger.error("Failed to parse the raw tag router rule and it will not take effect, please check if the rule matches with the template, the raw rule is:\n ", e);
         }
@@ -157,25 +147,6 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
         }
     }
 
-    /**
-     * This method is reserved for building router cache.
-     * Currently, we rely on this method to do the init task since it will get triggered before route() really happens.
-     *
-     * @param invokers
-     * @param url
-     * @param invocation
-     * @param <T>
-     * @return
-     * @throws RpcException
-     */
-    @Override
-    public <T> Map<String, List<Invoker<T>>> preRoute(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
-        if (CollectionUtils.isNotEmpty(invokers)) {
-            checkAndInit(invokers.get(0).getUrl());
-        }
-        return super.preRoute(invokers, url, invocation);
-    }
-
     @Override
     public int getPriority() {
         return DEFAULT_PRIORITY;
@@ -211,25 +182,34 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
         this.application = app;
     }
 
-    private synchronized void checkAndInit(URL url) {
-        String providerApplication = url.getParameter(Constants.REMOTE_APPLICATION_KEY);
-        if (StringUtils.isEmpty(application) || !application.equals(providerApplication)) {
-            setApplication(providerApplication);
-            inited = false;
-        }
-
-        if (StringUtils.isEmpty(application)) {
-            logger.error("TagRouter must getConfig from or subscribe to a specific application, but the application in this TagRouter is not specified.");
+    @Override
+    public <T> void notify(List<Invoker<T>> invokers) {
+        if (invokers == null || invokers.isEmpty()) {
             return;
         }
 
-        if (!inited) {
-            inited = true;
-            String key = application + TAGROUTERRULES_DATAID;
-            configuration.addListener(key, this);
-            String rawRule = configuration.getConfig(key);
-            if (rawRule != null) {
-                this.process(new ConfigChangeEvent(key, rawRule));
+        Invoker<T> invoker = invokers.get(0);
+        URL url = invoker.getUrl();
+        String providerApplication = url.getParameter(Constants.REMOTE_APPLICATION_KEY);
+
+        if (StringUtils.isEmpty(providerApplication)) {
+            logger.error("TagRouter must getConfig from or subscribe to a specific application, but the application " +
+                    "in this TagRouter is not specified.");
+            return;
+        }
+
+        synchronized (this) {
+            if (!providerApplication.equals(application)) {
+                if (!StringUtils.isEmpty(application)) {
+                    configuration.removeListener(application + TAGROUTERRULES_DATAID, this);
+                }
+                String key = providerApplication + TAGROUTERRULES_DATAID;
+                configuration.addListener(key, this);
+                application = providerApplication;
+                String rawRule = configuration.getConfig(key);
+                if (rawRule != null) {
+                    this.process(new ConfigChangeEvent(key, rawRule));
+                }
             }
         }
     }

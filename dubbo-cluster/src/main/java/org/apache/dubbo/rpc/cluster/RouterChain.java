@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.cluster;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 
@@ -33,82 +32,68 @@ import java.util.stream.Collectors;
 public class RouterChain<T> {
 
     // full list of addresses from registry, classified by method name.
-    private List<Invoker<T>> fullInvokers;
+    private List<Invoker<T>> invokers = Collections.emptyList();
     private URL url;
 
     // containing all routers, reconstruct every time 'route://' urls change.
-    private List<Router> routers = new CopyOnWriteArrayList<>();
-    // Fixed router instances: ConfigConditionRouter, TagRouter, e.g., the rule for each instance may change but the instance will never delete or recreate.
-    private List<Router> residentRouters;
+    private volatile List<Router> routers = Collections.emptyList();
+
+    // Fixed router instances: ConfigConditionRouter, TagRouter, e.g., the rule for each instance may change but the
+    // instance will never delete or recreate.
+    private List<Router> builtinRouters = Collections.emptyList();
 
     public static <T> RouterChain<T> buildChain(URL url) {
-        RouterChain<T> routerChain = new RouterChain<>(url);
-        List<RouterFactory> extensionFactories = ExtensionLoader.getExtensionLoader(RouterFactory.class).getActivateExtension(url, (String[]) null);
-        List<Router> routers = extensionFactories.stream()
-                .map(factory -> {
-                    Router router = factory.getRouter(url);
-                    router.addRouterChain(routerChain);
-                    return router;
-                }).collect(Collectors.toList());
-        routerChain.setResidentRouters(routers);
-        return routerChain;
+        return new RouterChain<>(url);
     }
 
-    protected RouterChain(List<Router> routers) {
-        this.routers.addAll(routers);
-    }
-
-    protected RouterChain(URL url) {
+    private RouterChain(URL url) {
         this.url = url;
+
+        List<RouterFactory> extensionFactories = ExtensionLoader.getExtensionLoader(RouterFactory.class)
+                .getActivateExtension(url, (String[]) null);
+
+        List<Router> routers = extensionFactories.stream()
+                .map(factory -> factory.getRouter(url))
+                .collect(Collectors.toList());
+
+        initWithRouters(routers);
     }
 
     /**
      * the resident routers must being initialized before address notification.
-     *
-     * @param residentRouters
+     * FIXME: this method should not be public
      */
-    public void setResidentRouters(List<Router> residentRouters) {
-        this.residentRouters = residentRouters;
-        this.routers.addAll(residentRouters);
+    public void initWithRouters(List<Router> builtinRouters) {
+        this.builtinRouters = builtinRouters;
+        this.routers = new CopyOnWriteArrayList<>(builtinRouters);
         this.sort();
+    }
+
+    public void addRouter(Router router) {
+        this.routers.add(router);
     }
 
     /**
      * If we use route:// protocol in version before 2.7.0, each URL will generate a Router instance,
      * so we should keep the routers up to date, that is, each time router URLs changes, we should update the routers list,
-     * only keep the residentRouters which are available all the time and the latest notified routers which are generated from URLs.
+     * only keep the builtinRouters which are available all the time and the latest notified routers which are generated from URLs.
      *
-     * @param generatedRouters routers from 'router://' rules in 2.6.x or before.
+     * @param routers routers from 'router://' rules in 2.6.x or before.
      */
-    public void setGeneratedRouters(List<Router> generatedRouters) {
-        List<Router> newRouters = new CopyOnWriteArrayList<>();
-        newRouters.addAll(residentRouters);
-        newRouters.addAll(generatedRouters);
-        this.routers = newRouters;
+    public void addRouters(List<Router> routers) {
         // FIXME will sort cause concurrent problem? since it's kind of a write operation.
+        List<Router> newRouters = new CopyOnWriteArrayList<>();
+        newRouters.addAll(builtinRouters);
+        newRouters.addAll(routers);
+        this.routers = newRouters;
         this.sort();
-       /* if (fullInvokers != null) {
-            this.preRoute(fullInvokers, url, null);
+       /* if (invokers != null) {
+            this.rebuild(invokers, url, null);
         }*/
     }
 
-    public void sort() {
+    private void sort() {
         Collections.sort(routers);
-    }
-
-    /**
-     * TODO
-     *
-     * Building of router cache can be triggered from within different threads, for example, registry notification and governance notification.
-     * So this operation should be synchronized.
-     * @param invokers
-     * @param url
-     * @param invocation
-     */
-    public void preRoute(List<Invoker<T>> invokers, URL url, Invocation invocation) {
-        for (Router router : routers) {
-            router.preRoute(invokers, url, invocation);
-        }
     }
 
     /**
@@ -118,7 +103,7 @@ public class RouterChain<T> {
      * @return
      */
     public List<Invoker<T>> route(URL url, Invocation invocation) {
-        List<Invoker<T>> finalInvokers = fullInvokers;
+        List<Invoker<T>> finalInvokers = invokers;
         for (Router router : routers) {
 //            if (router.isRuntime()) {
 //                finalInvokers = router.route(finalInvokers, url, invocation);
@@ -129,28 +114,13 @@ public class RouterChain<T> {
     }
 
     /**
-     * When any of the router's rule changed, notify the router chain to rebuild cache from scratch.
-     */
-    public void notifyRuleChanged() {
-        if (CollectionUtils.isEmpty(this.fullInvokers)) {
-            return;
-        }
-        preRoute(this.fullInvokers, url, null);
-    }
-
-    /**
      * Notify router chain of the initial addresses from registry at the first time.
      * Notify whenever addresses in registry change.
-     *
-     * @param invokers
-     * @param url
      */
-    public void notifyFullInvokers(List<Invoker<T>> invokers, URL url) {
-        setFullMethodInvokers(invokers);
-        preRoute(invokers, url, null);
-    }
-
-    public void setFullMethodInvokers(List<Invoker<T>> fullInvokers) {
-        this.fullInvokers = (fullInvokers == null ? Collections.emptyList() : fullInvokers);
+    public void setInvokers(List<Invoker<T>> invokers) {
+        if (invokers != null) {
+            this.invokers = invokers;
+            routers.forEach(router -> router.notify(invokers));
+        }
     }
 }
