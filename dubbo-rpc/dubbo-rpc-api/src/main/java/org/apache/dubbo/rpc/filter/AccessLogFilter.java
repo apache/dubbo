@@ -30,8 +30,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
-
-import com.alibaba.fastjson.JSON;
+import org.apache.dubbo.rpc.support.AccessLogData;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -44,7 +43,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -81,7 +79,7 @@ public class AccessLogFilter implements Filter {
         }
     };
 
-    private final ConcurrentMap<String, Set<String>> logQueue = new ConcurrentHashMap<String, Set<String>>();
+    private final ConcurrentMap<String, Set<AccessLogData>> logQueue = new ConcurrentHashMap<String, Set<AccessLogData>>();
 
     private static final ScheduledExecutorService logScheduled = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-Access-Log", true));
 
@@ -90,24 +88,14 @@ public class AccessLogFilter implements Filter {
      * defined in url <b>accesslog</b>
      */
     public AccessLogFilter() {
-        logScheduled.scheduleWithFixedDelay(this::writeLogToFile,LOG_OUTPUT_INTERVAL,LOG_OUTPUT_INTERVAL,TimeUnit.MILLISECONDS);
-    }
-
-    private void log(String accessLog, String logMessage) {
-        Set<String> logSet = logQueue.get(accessLog);
-        if (logSet == null) {
-            logQueue.putIfAbsent(accessLog, new ConcurrentHashSet<String>());
-            logSet = logQueue.get(accessLog);
-        }
-        if (logSet.size() < LOG_MAX_BUFFER) {
-            logSet.add(logMessage);
-        }
+        logScheduled.scheduleWithFixedDelay(this::writeLogToFile, LOG_OUTPUT_INTERVAL, LOG_OUTPUT_INTERVAL, TimeUnit.MILLISECONDS);
     }
 
     /**
      * This method logs the access log for service method invocation call.
-     * @param invoker  service
-     * @param inv  Invocation service method.
+     *
+     * @param invoker service
+     * @param inv     Invocation service method.
      * @return Result from service method.
      * @throws RpcException
      */
@@ -117,46 +105,11 @@ public class AccessLogFilter implements Filter {
         try {
             String accessLogKey = invoker.getUrl().getParameter(Constants.ACCESS_LOG_KEY);
             if (ConfigUtils.isNotEmpty(accessLogKey)) {
-                RpcContext context = RpcContext.getContext();
-                String serviceName = invoker.getInterface().getName();
-                String version = invoker.getUrl().getParameter(Constants.VERSION_KEY);
-                String group = invoker.getUrl().getParameter(Constants.GROUP_KEY);
-                StringBuilder sn = new StringBuilder();
-                sn.append("[").append(MESSAGE_DATE_FORMATTER.get().format(new Date())).append("] ").append(context.getRemoteHost()).append(":").append(context.getRemotePort())
-                        .append(" -> ").append(context.getLocalHost()).append(":").append(context.getLocalPort())
-                        .append(" - ");
-                if (null != group && group.length() > 0) {
-                    sn.append(group).append("/");
-                }
-                sn.append(serviceName);
-                if (null != version && version.length() > 0) {
-                    sn.append(":").append(version);
-                }
-                sn.append(" ");
-                sn.append(inv.getMethodName());
-                sn.append("(");
-                Class<?>[] types = inv.getParameterTypes();
-                if (types != null && types.length > 0) {
-                    boolean first = true;
-                    for (Class<?> type : types) {
-                        if (first) {
-                            first = false;
-                        } else {
-                            sn.append(",");
-                        }
-                        sn.append(type.getName());
-                    }
-                }
-                sn.append(") ");
-                Object[] args = inv.getArguments();
-                if (args != null && args.length > 0) {
-                    sn.append(JSON.toJSONString(args));
-                }
-                String msg = sn.toString();
+                AccessLogData logData = buildAccessLogData(invoker, inv);
                 if (ConfigUtils.isDefault(accessLogKey)) {
-                    LoggerFactory.getLogger(ACCESS_LOG_KEY + "." + invoker.getInterface().getName()).info(msg);
+                    LoggerFactory.getLogger(ACCESS_LOG_KEY + "." + invoker.getInterface().getName()).info(logData.getLogMessage());
                 } else {
-                    log(accessLogKey, msg);
+                    log(accessLogKey, logData);
                 }
             }
         } catch (Throwable t) {
@@ -165,19 +118,47 @@ public class AccessLogFilter implements Filter {
         return invoker.invoke(inv);
     }
 
+    private void log(String accessLog, AccessLogData accessLogData) {
+        Set<AccessLogData> logSet = logQueue.get(accessLog);
+        if (logSet == null) {
+            logQueue.putIfAbsent(accessLog, new ConcurrentHashSet<AccessLogData>());
+            logSet = logQueue.get(accessLog);
+        }
+        if (logSet.size() < LOG_MAX_BUFFER) {
+            logSet.add(accessLogData);
+        }
+    }
+
+    private AccessLogData buildAccessLogData(Invoker<?> invoker, Invocation inv) {
+        RpcContext context = RpcContext.getContext();
+        AccessLogData logData = AccessLogData.newLogData();
+        logData.setServiceName(invoker.getInterface().getName());
+        logData.setMethodName(inv.getMethodName());
+        logData.setVersion(invoker.getUrl().getParameter(Constants.VERSION_KEY));
+        logData.setGroup(invoker.getUrl().getParameter(Constants.GROUP_KEY));
+        logData.setInvocationTime(MESSAGE_DATE_FORMATTER.get().format(new Date()));
+        logData.setLocalHost(context.getLocalHost());
+        logData.setLocalPort(context.getLocalPort());
+        logData.setRemoteHost(context.getRemoteHost());
+        logData.setRemotePort(context.getRemotePort());
+        logData.setTypes(inv.getParameterTypes());
+        logData.setArguments(inv.getArguments());
+        return logData;
+    }
+
     private void writeLogToFile() {
         if (!logQueue.isEmpty()) {
-            for (Map.Entry<String, Set<String>> entry : logQueue.entrySet()) {
+            for (Map.Entry<String, Set<AccessLogData>> entry : logQueue.entrySet()) {
                 try {
-                    String accesslog = entry.getKey();
-                    Set<String> logSet = entry.getValue();
-                    File file = new File(accesslog);
+                    String accessLog = entry.getKey();
+                    Set<AccessLogData> logSet = entry.getValue();
+                    File file = new File(accessLog);
                     File dir = file.getParentFile();
                     if (null != dir && !dir.exists()) {
                         dir.mkdirs();
                     }
                     if (logger.isDebugEnabled()) {
-                        logger.debug("Append log to " + accesslog);
+                        logger.debug("Append log to " + accessLog);
                     }
                     if (file.exists()) {
                         String now = FILE_DATE_FORMATTER.format(new Date());
@@ -189,10 +170,10 @@ public class AccessLogFilter implements Filter {
                     }
                     FileWriter writer = new FileWriter(file, true);
                     try {
-                        for (Iterator<String> iterator = logSet.iterator();
+                        for (Iterator<AccessLogData> iterator = logSet.iterator();
                              iterator.hasNext();
                              iterator.remove()) {
-                            writer.write(iterator.next());
+                            writer.write(iterator.next().getLogMessage());
                             writer.write("\r\n");
                         }
                         writer.flush();
