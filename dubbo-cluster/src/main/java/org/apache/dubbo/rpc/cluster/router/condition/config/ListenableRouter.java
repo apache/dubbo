@@ -22,7 +22,6 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.ConfigChangeType;
 import org.apache.dubbo.configcenter.ConfigurationListener;
@@ -59,8 +58,8 @@ public abstract class ListenableRouter extends AbstractRouter implements Configu
     @Override
     public synchronized void process(ConfigChangeEvent event) {
         if (logger.isInfoEnabled()) {
-            logger.info("Notification of condition rule, change type is: " + event.getChangeType() + ", raw rule is:\n " + event
-                    .getValue());
+            logger.info("Notification of condition rule, change type is: " + event.getChangeType() +
+                    ", raw rule is:\n " + event.getValue());
         }
 
         if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
@@ -71,8 +70,8 @@ public abstract class ListenableRouter extends AbstractRouter implements Configu
                 routerRule = ConditionRuleParser.parse(event.getValue());
                 generateConditions(routerRule, conditionRouters);
             } catch (Exception e) {
-                logger.error("Failed to parse the raw condition rule and it will not take effect, please check if the condition rule matches with the template, the raw rule is:\n " + event
-                        .getValue(), e);
+                logger.error("Failed to parse the raw condition rule and it will not take effect, please check " +
+                        "if the condition rule matches with the template, the raw rule is:\n " + event.getValue(), e);
             }
         }
     }
