@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.support.AccessLogData;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
@@ -72,16 +73,18 @@ public class AccessLogFilter implements Filter {
 
     private static final SimpleDateFormat FILE_DATE_FORMATTER = new SimpleDateFormat("yyyyMMdd");
 
-    private static final InternalThreadLocal<SimpleDateFormat> MESSAGE_DATE_FORMATTER = new InternalThreadLocal<SimpleDateFormat>() {
+    private static final SimpleDateFormat MESSAGE_DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+    private final ConcurrentMap<String, Set<AccessLogData>> logQueue = new ConcurrentHashMap<String, Set<AccessLogData>>();
+
+    private static final ScheduledExecutorService logScheduled = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-Access-Log", true));
+
+    private static final InternalThreadLocal<SimpleDateFormat> INLINE_MESSAGE_DATE_FORMATTER = new InternalThreadLocal<SimpleDateFormat>() {
         @Override
         protected SimpleDateFormat initialValue() {
             return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         }
     };
-
-    private final ConcurrentMap<String, Set<AccessLogData>> logQueue = new ConcurrentHashMap<String, Set<AccessLogData>>();
-
-    private static final ScheduledExecutorService logScheduled = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-Access-Log", true));
 
     /**
      * Default constructor initialize demon thread for writing into access log file with names with access log key
@@ -106,11 +109,7 @@ public class AccessLogFilter implements Filter {
             String accessLogKey = invoker.getUrl().getParameter(Constants.ACCESS_LOG_KEY);
             if (ConfigUtils.isNotEmpty(accessLogKey)) {
                 AccessLogData logData = buildAccessLogData(invoker, inv);
-                if (ConfigUtils.isDefault(accessLogKey)) {
-                    LoggerFactory.getLogger(ACCESS_LOG_KEY + "." + invoker.getInterface().getName()).info(logData.getLogMessage());
-                } else {
-                    log(accessLogKey, logData);
-                }
+                log(accessLogKey, logData);
             }
         } catch (Throwable t) {
             logger.warn("Exception in AcessLogFilter of service(" + invoker + " -> " + inv + ")", t);
@@ -129,6 +128,46 @@ public class AccessLogFilter implements Filter {
         }
     }
 
+    private void writeLogToFile() {
+        if (!logQueue.isEmpty()) {
+            for (Map.Entry<String, Set<AccessLogData>> entry : logQueue.entrySet()) {
+                try {
+                    String accessLog = entry.getKey();
+                    Set<AccessLogData> logSet = entry.getValue();
+                    if (ConfigUtils.isDefault(accessLog)) {
+                        processWithServiceLogger(logSet);
+                    } else {
+                        File file = new File(accessLog);
+                        createIfLogDirAbsent(file);
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("Append log to " + accessLog);
+                        }
+                        renameFile(file);
+                        processWithAccessKeyLogger(logSet, file);
+                    }
+
+                } catch (Exception e) {
+                    logger.error(e.getMessage(), e);
+                }
+            }
+        }
+    }
+
+    private void processWithAccessKeyLogger(Set<AccessLogData> logSet, File file) throws IOException {
+        FileWriter writer = new FileWriter(file, true);
+        try {
+            for (Iterator<AccessLogData> iterator = logSet.iterator();
+                 iterator.hasNext();
+                 iterator.remove()) {
+                writer.write(iterator.next().getLogMessage(MESSAGE_DATE_FORMATTER));
+                writer.write("\r\n");
+            }
+            writer.flush();
+        } finally {
+            writer.close();
+        }
+    }
+
     private AccessLogData buildAccessLogData(Invoker<?> invoker, Invocation inv) {
         RpcContext context = RpcContext.getContext();
         AccessLogData logData = AccessLogData.newLogData();
@@ -136,7 +175,7 @@ public class AccessLogFilter implements Filter {
         logData.setMethodName(inv.getMethodName());
         logData.setVersion(invoker.getUrl().getParameter(Constants.VERSION_KEY));
         logData.setGroup(invoker.getUrl().getParameter(Constants.GROUP_KEY));
-        logData.setInvocationTime(MESSAGE_DATE_FORMATTER.get().format(new Date()));
+        logData.setInvocationTime(new Date());
         logData.setLocalHost(context.getLocalHost());
         logData.setLocalPort(context.getLocalPort());
         logData.setRemoteHost(context.getRemoteHost());
@@ -146,43 +185,29 @@ public class AccessLogFilter implements Filter {
         return logData;
     }
 
-    private void writeLogToFile() {
-        if (!logQueue.isEmpty()) {
-            for (Map.Entry<String, Set<AccessLogData>> entry : logQueue.entrySet()) {
-                try {
-                    String accessLog = entry.getKey();
-                    Set<AccessLogData> logSet = entry.getValue();
-                    File file = new File(accessLog);
-                    File dir = file.getParentFile();
-                    if (null != dir && !dir.exists()) {
-                        dir.mkdirs();
-                    }
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Append log to " + accessLog);
-                    }
-                    if (file.exists()) {
-                        String now = FILE_DATE_FORMATTER.format(new Date());
-                        String last = FILE_DATE_FORMATTER.format(new Date(file.lastModified()));
-                        if (!now.equals(last)) {
-                            File archive = new File(file.getAbsolutePath() + "." + last);
-                            file.renameTo(archive);
-                        }
-                    }
-                    FileWriter writer = new FileWriter(file, true);
-                    try {
-                        for (Iterator<AccessLogData> iterator = logSet.iterator();
-                             iterator.hasNext();
-                             iterator.remove()) {
-                            writer.write(iterator.next().getLogMessage());
-                            writer.write("\r\n");
-                        }
-                        writer.flush();
-                    } finally {
-                        writer.close();
-                    }
-                } catch (Exception e) {
-                    logger.error(e.getMessage(), e);
-                }
+    private void processWithServiceLogger(Set<AccessLogData> logSet) {
+        for (Iterator<AccessLogData> iterator = logSet.iterator();
+             iterator.hasNext();
+             iterator.remove()) {
+            AccessLogData logData = iterator.next();
+            LoggerFactory.getLogger(ACCESS_LOG_KEY + "." + logData.getServiceName()).info(logData.getLogMessage(MESSAGE_DATE_FORMATTER));
+        }
+    }
+
+    private void createIfLogDirAbsent(File file) {
+        File dir = file.getParentFile();
+        if (null != dir && !dir.exists()) {
+            dir.mkdirs();
+        }
+    }
+
+    private void renameFile(File file) {
+        if (file.exists()) {
+            String now = FILE_DATE_FORMATTER.format(new Date());
+            String last = FILE_DATE_FORMATTER.format(new Date(file.lastModified()));
+            if (!now.equals(last)) {
+                File archive = new File(file.getAbsolutePath() + "." + last);
+                file.renameTo(archive);
             }
         }
     }

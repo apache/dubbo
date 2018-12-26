@@ -19,7 +19,9 @@ package org.apache.dubbo.rpc.support;
 import com.alibaba.fastjson.JSON;
 import org.apache.dubbo.common.utils.StringUtils;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,13 +30,14 @@ import java.util.Map;
  * dynamic value e.g. time stamp, local jmv machine host address etc. It does not allow any null or empty key.
  */
 public final class AccessLogData {
-
+    /**
+     * Access log keys
+      */
     private enum KEYS {
-        VERSION, GROUP, SERVICE, METHOD_NAME, INVOCATION_TIME, TYPES, ARGUMENTS,
-        REMOTE_HOST, REMOTE_PORT, LOCAL_HOST, LOCAL_PORT
+        VERSION, GROUP, SERVICE, METHOD_NAME, INVOCATION_TIME, TYPES
+        ,ARGUMENTS, REMOTE_HOST, REMOTE_PORT, LOCAL_HOST, LOCAL_PORT
     }
 
-    ;
     /**
      * This is used to store log data in key val format.
      */
@@ -56,6 +59,13 @@ public final class AccessLogData {
         return new AccessLogData();
     }
 
+    /**
+     * Sets the access log key
+     * @param accessLogKey
+     */
+    public void setAccessLogKey(String accessLogKey) {
+
+    }
     /**
      * Add version information.
      *
@@ -88,7 +98,7 @@ public final class AccessLogData {
      *
      * @param invocationTime
      */
-    public void setInvocationTime(String invocationTime) {
+    public void setInvocationTime(Date invocationTime) {
         set(KEYS.INVOCATION_TIME, invocationTime);
     }
 
@@ -155,12 +165,20 @@ public final class AccessLogData {
         set(KEYS.ARGUMENTS, arguments != null ? Arrays.copyOf(arguments, arguments.length) : null);
     }
 
+    /**
+     * Return gthe service of access log entry
+     * @return
+     */
+    public String getServiceName() {
+        return get(KEYS.SERVICE).toString();
+    }
 
-    public String getLogMessage() {
+
+    public String getLogMessage(SimpleDateFormat sdf) {
         StringBuilder sn = new StringBuilder();
 
         sn.append("[")
-                .append(get(KEYS.INVOCATION_TIME))
+                .append(sdf.format(get(KEYS.INVOCATION_TIME)))
                 .append("] ")
                 .append(get(KEYS.REMOTE_HOST))
                 .append(":")
