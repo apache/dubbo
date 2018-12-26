@@ -76,13 +76,13 @@ public class TTable implements TComponent {
             // print first separation line
             if (isFirstRow
                     && border.has(Border.BORDER_OUTER_TOP)) {
-                tableSB.append(drawSeparationLine(widthCacheArray)).append("\n");
+                tableSB.append(drawSeparationLine(widthCacheArray)).append(System.lineSeparator());
             }
 
             // print inner separation lines
             if (!isFirstRow
                     && border.has(Border.BORDER_INNER_H)) {
-                tableSB.append(drawSeparationLine(widthCacheArray)).append("\n");
+                tableSB.append(drawSeparationLine(widthCacheArray)).append(System.lineSeparator());
             }
 
             // draw one line
@@ -92,7 +92,7 @@ public class TTable implements TComponent {
             // print ending separation line
             if (isLastRow
                     && border.has(Border.BORDER_OUTER_BOTTOM)) {
-                tableSB.append(drawSeparationLine(widthCacheArray)).append("\n");
+                tableSB.append(drawSeparationLine(widthCacheArray)).append(System.lineSeparator());
             }
 
         }
@@ -157,7 +157,7 @@ public class TTable implements TComponent {
                         if (border.has(Border.BORDER_OUTER_RIGHT)) {
                             segmentSB.append("|");
                         }
-                        segmentSB.append("\n");
+                        segmentSB.append(System.lineSeparator());
                     }
 
                 }
