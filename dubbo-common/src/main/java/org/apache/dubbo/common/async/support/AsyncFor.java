@@ -14,19 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc;
+package org.apache.dubbo.common.async.support;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- *
+ * TODO This definition should better be placed in module 'dubbo-config-api', but only can be done when "rpc" dependencies are removed from "dubbo-config-api"
+ * If an interface is annotated with AsyncFor, it will be treated as an async counterpart for the sync one.
  */
-public interface PostProcessFilter extends Filter {
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
+public @interface AsyncFor {
+
     /**
-     * TODO Filter is singleton, so we have to add invoker & invocation as parameters for every invoke. But think of prototype, we may need to restore invocation between threads, because we will lost 'closure'.
+     * The original sync-style method name
      *
-     * @param result
-     * @param invoker
-     * @param invocation
      * @return
      */
-    Result postProcessResult(Result result, Invoker<?> invoker, Invocation invocation);
+    String value();
+
 }
