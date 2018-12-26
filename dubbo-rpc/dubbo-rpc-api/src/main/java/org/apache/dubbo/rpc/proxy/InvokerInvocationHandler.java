@@ -23,6 +23,8 @@ import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * InvokerHandler
@@ -52,22 +54,12 @@ public class InvokerInvocationHandler implements InvocationHandler {
             return invoker.equals(args[0]);
         }
 
-        RpcInvocation invocation;
-        if (RpcUtils.hasGeneratedFuture(method)) {
-            Class<?> clazz = method.getDeclaringClass();
-            String syncMethodName = methodName.substring(0, methodName.length() - Constants.ASYNC_SUFFIX.length());
-            Method syncMethod = clazz.getMethod(syncMethodName, method.getParameterTypes());
-            invocation = new RpcInvocation(syncMethod, args);
-            invocation.setAttachment(Constants.FUTURE_GENERATED_KEY, "true");
-            invocation.setAttachment(Constants.ASYNC_KEY, "true");
-        } else {
-            invocation = new RpcInvocation(method, args);
-            if (RpcUtils.hasFutureReturnType(method)) {
-                invocation.setAttachment(Constants.FUTURE_RETURNTYPE_KEY, "true");
-                invocation.setAttachment(Constants.ASYNC_KEY, "true");
-            }
+        Map<String, String> attachments = new HashMap<>();
+        if (RpcUtils.hasFutureReturnType(method)) {
+            attachments.put(Constants.FUTURE_RETURNTYPE_KEY, "true");
+            attachments.put(Constants.ASYNC_KEY, "true");
         }
-        return invoker.invoke(invocation).recreate();
+        return invoker.invoke(new RpcInvocation(method, args, attachments)).recreate();
     }
 
 
