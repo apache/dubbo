@@ -71,7 +71,7 @@ public class TKv implements TComponent {
                         line = " ";
                     }
                 }
-                sb.append(line).append('\n');
+                sb.append(line).append(System.lineSeparator());
             }
         } finally {
             if (null != scanner) {

@@ -29,7 +29,10 @@ import org.apache.dubbo.rpc.RpcException;
 import java.util.Map;
 
 /**
- * TokenInvokerFilter
+ * Perform check whether given provider token is matching with remote token or not. If it does not match
+ * it will not allow to invoke remote method.
+ *
+ * @see Filter
  */
 @Activate(group = Constants.PROVIDER, value = Constants.TOKEN_KEY)
 public class TokenFilter implements Filter {

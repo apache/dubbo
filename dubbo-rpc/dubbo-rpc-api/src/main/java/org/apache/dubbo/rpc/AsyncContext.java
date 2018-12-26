@@ -43,7 +43,7 @@ public interface AsyncContext {
     void write(Object value);
 
     /**
-     * @return true if the aysnc context is started
+     * @return true if the async context is started
      */
     boolean isAsyncStarted();
 

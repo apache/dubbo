@@ -214,7 +214,7 @@ public class ConfigUtils {
      * <li>return empty Properties if no file found.
      * <li>merge multi properties file if found multi file
      * </ul>
-     * @throws IllegalStateException not allow multi-file, but multi-file exsit on class path.
+     * @throws IllegalStateException not allow multi-file, but multi-file exist on class path.
      */
     public static Properties loadProperties(String fileName, boolean allowMultiFile, boolean optional) {
         Properties properties = new Properties();

@@ -16,9 +16,11 @@
  */
 package org.apache.dubbo.rpc.cluster.directory;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
@@ -28,6 +30,7 @@ import org.apache.dubbo.rpc.cluster.RouterChain;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Abstract implementation of Directory: Invoker list returned from this Directory's list method have been filtered by Routers
@@ -58,7 +61,14 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         if (url == null) {
             throw new IllegalArgumentException("url == null");
         }
-        this.url = url;
+
+        if (url.getProtocol().equals(Constants.REGISTRY_PROTOCOL)) {
+            Map<String, String> queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(Constants.REFER_KEY));
+            this.url = url.clearParameters().addParameters(queryMap).removeParameter(Constants.MONITOR_KEY);
+        } else {
+            this.url = url;
+        }
+
         this.consumerUrl = consumerUrl;
         setRouterChain(routerChain);
     }

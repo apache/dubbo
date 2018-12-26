@@ -14,24 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.validation;
+
+package org.apache.dubbo.registry.retry;
+
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.timer.Timeout;
+import org.apache.dubbo.registry.support.FailbackRegistry;
 
 /**
- * ValidationServiceImpl
+ * FailedUnregisteredTask
  */
-public class ValidationServiceImpl implements ValidationService {
+public final class FailedUnregisteredTask extends AbstractRetryTask {
 
-    public void save(ValidationParameter parameter) {
+    private static final String NAME = "retry unregister";
+
+    public FailedUnregisteredTask(URL url, FailbackRegistry registry) {
+        super(url, registry, NAME);
     }
 
-    public void update(ValidationParameter parameter) {
+    @Override
+    protected void doRetry(URL url, FailbackRegistry registry, Timeout timeout) {
+        registry.doUnregister(url);
+        registry.removeFailedUnregisteredTask(url);
     }
-
-    public void delete(long id, String operator) {
-    }
-
-    public void relatedQuery(ValidationParameter parameter) {
-
-    }
-
 }

@@ -432,10 +432,10 @@ public class AbstractClusterInvokerTest {
             counter.get(sinvoker).incrementAndGet();
         }
 
-        for (Invoker minvoker : counter.keySet()) {
-            Long count = counter.get(minvoker).get();
+        for (Map.Entry<Invoker, AtomicLong> entry : counter.entrySet()) {
+            Long count = entry.getValue().get();
 //            System.out.println(count);
-            if (minvoker.isAvailable())
+            if (entry.getKey().isAvailable())
                 Assert.assertTrue("count should > avg", count > runs / invokers.size());
         }
 

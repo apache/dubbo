@@ -134,7 +134,7 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
                 values.add(content);
             }
             // The Value in the KV part, if Value have more than one items.
-            else if (",".equals(separator)) { // Should be seperateed by ','
+            else if (",".equals(separator)) { // Should be separated by ','
                 if (values == null || values.isEmpty()) {
                     throw new ParseException("Illegal route rule \""
                             + rule + "\", The error char '" + separator
@@ -196,7 +196,7 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
 
     @Override
     public boolean isEnabled() {
-        return url == null ? enabled : url.getParameter(Constants.ENABLED_KEY, false);
+        return url == null ? enabled : url.getParameter(Constants.ENABLED_KEY, true);
     }
 
     @Override

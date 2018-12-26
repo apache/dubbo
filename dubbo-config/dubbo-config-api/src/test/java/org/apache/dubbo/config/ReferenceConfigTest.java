@@ -34,7 +34,7 @@ public class ReferenceConfigTest {
         registry.setAddress("multicast://224.5.6.7:1234");
 
         ProtocolConfig protocol = new ProtocolConfig();
-        protocol.setName("dubbo");
+        protocol.setName("mockprotocol");
 
         ServiceConfig<DemoService> demoService;
         demoService = new ServiceConfig<DemoService>();
@@ -72,7 +72,7 @@ public class ReferenceConfigTest {
         RegistryConfig registry = new RegistryConfig();
         registry.setAddress("multicast://224.5.6.7:1234");
         ProtocolConfig protocol = new ProtocolConfig();
-        protocol.setName("dubbo");
+        protocol.setName("mockprotocol");
 
         ReferenceConfig<DemoService> rc = new ReferenceConfig<DemoService>();
         rc.setApplication(application);

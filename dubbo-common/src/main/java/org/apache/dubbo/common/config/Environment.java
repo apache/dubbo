@@ -35,7 +35,6 @@ public class Environment {
     private Map<String, EnvironmentConfiguration> environmentConfigs = new ConcurrentHashMap<>();
     private Map<String, InmemoryConfiguration> externalConfigs = new ConcurrentHashMap<>();
     private Map<String, InmemoryConfiguration> appExternalConfigs = new ConcurrentHashMap<>();
-    private Map<String, InmemoryConfiguration> appConfigs = new ConcurrentHashMap<>();
 
     private Map<String, String> externalConfigurationMap = new HashMap<>();
     private Map<String, String> appExternalConfigurationMap = new HashMap<>();
@@ -79,10 +78,6 @@ public class Environment {
         return environmentConfigs.computeIfAbsent(toKey(prefix, id), k -> new EnvironmentConfiguration(prefix, id));
     }
 
-    public InmemoryConfiguration getAppConfig(String prefix, String id) {
-        return appConfigs.get(toKey(prefix, id));
-    }
-
     public void setExternalConfigMap(Map<String, String> externalConfiguration) {
         this.externalConfigurationMap = externalConfiguration;
     }
@@ -97,14 +92,6 @@ public class Environment {
 
     public Map<String, String> getAppExternalConfigurationMap() {
         return appExternalConfigurationMap;
-    }
-
-    public void addAppConfig(String prefix, String id, Map<String, String> properties) {
-        appConfigs.computeIfAbsent(toKey(prefix, id), k -> {
-            InmemoryConfiguration configuration = new InmemoryConfiguration(prefix, id);
-            configuration.addProperties(properties);
-            return configuration;
-        });
     }
 
     public void updateExternalConfigurationMap(Map<String, String> externalMap) {
@@ -124,27 +111,13 @@ public class Environment {
      * @param id
      * @return
      */
-    public Configuration getConfiguration(String prefix, String id) {
+    public CompositeConfiguration getConfiguration(String prefix, String id) {
         CompositeConfiguration compositeConfiguration = new CompositeConfiguration();
-        InmemoryConfiguration appConfig = this.getAppConfig(prefix, id);
         // Config center has the highest priority
-        if (!configCenterFirst) {
-            compositeConfiguration.addConfiguration(this.getSystemConfig(prefix, id));
-            if (appConfig != null) {
-                compositeConfiguration.addConfiguration(appConfig);
-            }
-            compositeConfiguration.addConfiguration(this.getAppExternalConfig(prefix, id));
-            compositeConfiguration.addConfiguration(this.getExternalConfig(prefix, id));
-            compositeConfiguration.addConfiguration(this.getPropertiesConfig(prefix, id));
-        } else {
-            compositeConfiguration.addConfiguration(this.getSystemConfig(prefix, id));
-            compositeConfiguration.addConfiguration(this.getAppExternalConfig(prefix, id));
-            compositeConfiguration.addConfiguration(this.getExternalConfig(prefix, id));
-            if (appConfig != null) {
-                compositeConfiguration.addConfiguration(appConfig);
-            }
-            compositeConfiguration.addConfiguration(this.getPropertiesConfig(prefix, id));
-        }
+        compositeConfiguration.addConfiguration(this.getSystemConfig(prefix, id));
+        compositeConfiguration.addConfiguration(this.getAppExternalConfig(prefix, id));
+        compositeConfiguration.addConfiguration(this.getExternalConfig(prefix, id));
+        compositeConfiguration.addConfiguration(this.getPropertiesConfig(prefix, id));
         return compositeConfiguration;
     }
 

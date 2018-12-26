@@ -82,4 +82,12 @@ public class ApplicationModel {
     public static void setApplication(String application) {
         ApplicationModel.application = application;
     }
+
+    /**
+     * For unit test
+     */
+    public static void reset() {
+        providedServices.clear();
+        consumedServices.clear();
+    }
 }

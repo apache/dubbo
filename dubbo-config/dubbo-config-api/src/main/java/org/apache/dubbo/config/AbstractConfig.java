@@ -18,8 +18,9 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.config.CompositeConfiguration;
 import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -78,7 +79,7 @@ public abstract class AbstractConfig implements Serializable {
         legacyProperties.put("dubbo.service.url", "dubbo.service.address");
 
         // this is only for compatibility
-        Runtime.getRuntime().addShutdownHook(DubboShutdownHook.getDubboShutdownHook());
+        DubboShutdownHook.getDubboShutdownHook().register();
     }
 
     protected String id;
@@ -460,7 +461,7 @@ public abstract class AbstractConfig implements Serializable {
                         && Modifier.isPublic(method.getModifiers())
                         && method.getParameterTypes().length == 0
                         && ClassHelper.isPrimitive(method.getReturnType())) {
-                    String prop = calculatePropertyFromGetter(name);
+                    String prop = calculateAttributeFromGetter(name);
                     String key;
                     Parameter parameter = method.getAnnotation(Parameter.class);
                     if (parameter != null && parameter.key().length() > 0 && parameter.useKeyAsProperty()) {
@@ -536,16 +537,23 @@ public abstract class AbstractConfig implements Serializable {
      */
     public void refresh() {
         try {
-            Environment env = Environment.getInstance();
-            env.addAppConfig(getPrefix(), getId(), getMetaData());
-            Configuration configuration = env.getConfiguration(getPrefix(), getId());
+            CompositeConfiguration compositeConfiguration = Environment.getInstance().getConfiguration(getPrefix(), getId());
+            InmemoryConfiguration config = new InmemoryConfiguration(getPrefix(), getId());
+            config.addProperties(getMetaData());
+            if (Environment.getInstance().isConfigCenterFirst()) {
+                // The sequence would be: SystemConfiguration -> ExternalConfiguration -> AppExternalConfiguration -> AbstractConfig -> PropertiesConfiguration
+                compositeConfiguration.addConfiguration(3,config);
+            } else {
+                // The sequence would be: SystemConfiguration -> AbstractConfig -> ExternalConfiguration -> AppExternalConfiguration -> PropertiesConfiguration
+                compositeConfiguration.addConfiguration(1, config);
+            }
 
             // loop methods, get override value and set the new value back to method
             Method[] methods = getClass().getMethods();
             for (Method method : methods) {
                 if (ClassHelper.isSetter(method)) {
                     try {
-                        String value = configuration.getString(extractPropertyName(getClass(), method));
+                        String value = compositeConfiguration.getString(extractPropertyName(getClass(), method));
                         // isTypeMatch() is called to avoid duplicate and incorrect update, for example, we have two 'setGeneric' methods in ReferenceConfig.
                         if (value != null && ClassHelper.isTypeMatch(method.getParameterTypes()[0], value)) {
                             method.invoke(this, ClassHelper.convertPrimitive(method.getParameterTypes()[0], value));

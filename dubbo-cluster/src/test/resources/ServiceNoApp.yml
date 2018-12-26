@@ -19,7 +19,7 @@
 
 # Service scope, without any app
 ---
-apiVersion: v2.7
+configVersion: v2.7
 scope: service
 key: serviceKey
 configs:

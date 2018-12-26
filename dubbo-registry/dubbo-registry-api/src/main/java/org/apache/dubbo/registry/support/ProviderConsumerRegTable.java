@@ -22,6 +22,8 @@ import org.apache.dubbo.registry.integration.RegistryDirectory;
 import org.apache.dubbo.rpc.Invoker;
 
 import java.util.Collections;
+import java.util.Map;
+import java.util.Objects;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -92,10 +94,19 @@ public class ProviderConsumerRegTable {
 
     public static Set<ConsumerInvokerWrapper> getConsumerInvoker(String serviceUniqueName) {
         Set<ConsumerInvokerWrapper> invokers = consumerInvokers.get(serviceUniqueName);
-        if (invokers == null) {
-            return Collections.emptySet();
-        }
-        return invokers;
+        return invokers == null ? Collections.emptySet() : invokers;
     }
 
+    public static boolean isRegistered(String serviceUniqueName) {
+        Set<ProviderInvokerWrapper> providerInvokerWrapperSet = ProviderConsumerRegTable.getProviderInvoker(serviceUniqueName);
+        return providerInvokerWrapperSet.stream().anyMatch(ProviderInvokerWrapper::isReg);
+    }
+
+    public static int getConsumerAddressNum(String serviceUniqueName) {
+        Set<ConsumerInvokerWrapper> providerInvokerWrapperSet = ProviderConsumerRegTable.getConsumerInvoker(serviceUniqueName);
+        return providerInvokerWrapperSet.stream()
+                .map(w -> w.getRegistryDirectory().getUrlInvokerMap())
+                .filter(Objects::nonNull)
+                .mapToInt(Map::size).sum();
+    }
 }

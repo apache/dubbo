@@ -70,11 +70,6 @@ public class ConfigCenterConfig extends AbstractConfig {
 
         // give jvm properties the chance to override local configs, e.g., -Ddubbo.configcenter.highestPriority
         refresh();
-        if (StringUtils.isNotEmpty(getId())) {
-            // read 'dubbo.configCenters.zookeeper.'
-            setPrefix(Constants.CONFIGCENTERS_SUFFIX);
-            refresh();
-        }
 
         // try to use registryConfig as the default configcenter, only applies to zookeeper.
         if (!isValid() && registry != null && registry.isZookeeperProtocol()) {
@@ -166,7 +161,6 @@ public class ConfigCenterConfig extends AbstractConfig {
 
     public void setProtocol(String protocol) {
         this.protocol = protocol;
-        this.updateIdIfAbsent(protocol);
     }
 
     @Parameter(excluded = true)
@@ -176,12 +170,6 @@ public class ConfigCenterConfig extends AbstractConfig {
 
     public void setAddress(String address) {
         this.address = address;
-        if (address != null) {
-            int i = address.indexOf("://");
-            if (i > 0) {
-                this.updateIdIfAbsent(address.substring(0, i));
-            }
-        }
     }
 
     @Parameter(key = Constants.CONFIG_CLUSTER_KEY, useKeyAsProperty = false)
