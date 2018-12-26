@@ -19,18 +19,32 @@ package org.apache.dubbo.rpc.cluster.router.condition.config;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
-import org.apache.dubbo.rpc.cluster.AbstractAppRouterFactory;
 import org.apache.dubbo.rpc.cluster.Router;
+import org.apache.dubbo.rpc.cluster.RouterFactory;
 
 /**
- *
+ * Application level router factory
  */
 @Activate(order = 200)
-public class AppConfigConditionRouterFactory extends AbstractAppRouterFactory {
-    public static final String NAME = "app-config-condition";
+public class AppRouterFactory implements RouterFactory {
+    public static final String NAME = "app";
+
+    private Router router;
 
     @Override
-    protected Router createRouter(URL url) {
-        return new AppConfigConditionRouter(DynamicConfiguration.getDynamicConfiguration(), url);
+    public Router getRouter(URL url) {
+        if (router != null) {
+            return router;
+        }
+        synchronized (this) {
+            if (router == null) {
+                router = createRouter(url);
+            }
+        }
+        return router;
+    }
+
+    private Router createRouter(URL url) {
+        return new AppRouter(DynamicConfiguration.getDynamicConfiguration(), url);
     }
 }

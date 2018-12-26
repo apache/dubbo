@@ -44,7 +44,8 @@ import java.util.regex.Pattern;
  *
  */
 public class ConditionRouter extends AbstractRouter implements Comparable<Router> {
-    public static final String NAME = "CONDITION_ROUTER";
+    public static final String NAME = "condition";
+
     private static final Logger logger = LoggerFactory.getLogger(ConditionRouter.class);
     protected static Pattern ROUTE_PATTERN = Pattern.compile("([&!=,]*)\\s*([^&!=,\\s]+)");
     protected Map<String, MatchPair> whenCondition;

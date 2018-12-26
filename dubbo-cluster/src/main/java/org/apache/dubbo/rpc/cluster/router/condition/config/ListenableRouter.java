@@ -16,10 +16,12 @@
  */
 package org.apache.dubbo.rpc.cluster.router.condition.config;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.ConfigChangeType;
 import org.apache.dubbo.configcenter.ConfigurationListener;
@@ -38,19 +40,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
+ * Abstract router which listens to dynamic configuration
  */
-public abstract class AbstractConfigConditionRouter extends AbstractRouter implements ConfigurationListener {
-    public static final String NAME = "CONFIG_CONDITION_OUTER";
+public abstract class ListenableRouter extends AbstractRouter implements ConfigurationListener {
+    public static final String NAME = "LISTENABLE_ROUTER";
     public static final int DEFAULT_PRIORITY = 200;
-    private static final Logger logger = LoggerFactory.getLogger(AbstractConfigConditionRouter.class);
+    private static final Logger logger = LoggerFactory.getLogger(ListenableRouter.class);
     private ConditionRouterRule routerRule;
     private List<ConditionRouter> conditionRouters = new ArrayList<>();
 
-    public AbstractConfigConditionRouter(DynamicConfiguration configuration, URL url) {
+    public ListenableRouter(DynamicConfiguration configuration, URL url, String listenableKey) {
         super(configuration, url);
         this.force = false;
-        this.init();
+        this.init(listenableKey);
     }
 
     @Override
@@ -138,5 +140,18 @@ public abstract class AbstractConfigConditionRouter extends AbstractRouter imple
         }
     }
 
-    protected abstract void init();
+    private void init(String key) {
+        String value = url.getParameter(key);
+        if (StringUtils.isEmpty(value)) {
+            throw new IllegalArgumentException("cannot find \'" + key + "\' from " + url);
+        }
+
+        String router = value + Constants.ROUTERS_SUFFIX;
+        String rule = configuration.getConfig(router);
+        if (rule != null) {
+            this.process(new ConfigChangeEvent(router, rule));
+        }
+
+        configuration.addListener(router, this);
+    }
 }

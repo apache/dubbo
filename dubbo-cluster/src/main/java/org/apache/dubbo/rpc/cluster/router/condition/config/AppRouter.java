@@ -14,28 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster;
+package org.apache.dubbo.rpc.cluster.router.condition.config;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.configcenter.DynamicConfiguration;
 
 /**
- *
+ * Application level router, "application.routers"
  */
-public abstract class AbstractAppRouterFactory implements RouterFactory {
-    private Router router;
+public class AppRouter extends ListenableRouter {
+    public static final String NAME = "APP_ROUTER";
 
-    @Override
-    public Router getRouter(URL url) {
-        if (router != null) {
-            return router;
-        }
-        synchronized (this) {
-            if (router == null) {
-                router = createRouter(url);
-            }
-        }
-        return router;
+    public AppRouter(DynamicConfiguration configuration, URL url) {
+        super(configuration, url, Constants.APPLICATION_KEY);
     }
-
-    protected abstract Router createRouter(URL url);
 }

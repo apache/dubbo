@@ -14,30 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.condition.config;
+package org.apache.dubbo.rpc.cluster;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.configcenter.ConfigChangeEvent;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
+
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
- *
+ * If you want to provide a router implementation based on design of v2.7.0, please extend from this abstract class.
+ * For 2.6.x style router, please implement and use RouterFactory directly.
  */
-public class AppConfigConditionRouter extends AbstractConfigConditionRouter {
+public abstract class CacheableRouterFactory implements RouterFactory {
+    private ConcurrentMap<String, Router> routerMap = new ConcurrentHashMap<>();
 
-    public AppConfigConditionRouter(DynamicConfiguration configuration, URL url) {
-        super(configuration, url);
+    @Override
+    public Router getRouter(URL url) {
+        routerMap.computeIfAbsent(url.getServiceKey(), k -> createRouter(url));
+        return routerMap.get(url.getServiceKey());
     }
 
-    protected synchronized void init() {
-        String appKey = url.getParameter(Constants.APPLICATION_KEY) + Constants.ROUTERS_SUFFIX;
-        String appRawRule = configuration.getConfig(appKey);
-        if (appRawRule != null) {
-            this.process(new ConfigChangeEvent(appKey, appRawRule));
-        }
-
-        configuration.addListener(appKey, this);
-    }
-
+    protected abstract Router createRouter(URL url);
 }
