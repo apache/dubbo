@@ -136,21 +136,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      * Disconnection events
      */
     protected String ondisconnect;
-
-    /**
-     * Callback limits
-     */
-    private Integer callbacks;
-
-    /**
-     * The scope for referring/exporting a service, if it's local, it means searching in current JVM only.
-     */
     protected MetadataReportConfig metadataReportConfig;
     protected RegistryDataConfig registryDataConfig;
     // callback limits
     private Integer callbacks;
     // the scope for referring/exporting a service, if it's local, it means searching in current JVM only.
-
     private String scope;
 
     /**
