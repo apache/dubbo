@@ -185,6 +185,9 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                     }
                     serviceConfig.setProtocols(protocolConfigs);
                 }
+                if (service.tag().length() > 0) {
+                    serviceConfig.setTag(service.tag());
+                }
                 try {
                     serviceConfig.afterPropertiesSet();
                 } catch (RuntimeException e) {

@@ -123,7 +123,7 @@ public class LoadBalanceTest {
     
     @Test
     public void testRoundRobinLoadBalance_select() {
-        int runs = 10000;
+        int runs = 1000;
         Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, RoundRobinLoadBalance.NAME);
         for (Invoker minvoker : counter.keySet()) {
             Long count = counter.get(minvoker).get();
@@ -146,7 +146,7 @@ public class LoadBalanceTest {
     public void testRoundRobinLoadBalanceWithWeight() {
         final Map<Invoker, InvokeResult> totalMap = new HashMap<Invoker, InvokeResult>();
         final AtomicBoolean shouldBegin = new AtomicBoolean(false);
-        final int runs = 10000;
+        final int runs = 1000;
         List<Thread> threads = new ArrayList<Thread>();
         int threadNum = 10;
         for (int i = 0; i < threadNum; i ++) {
@@ -188,7 +188,7 @@ public class LoadBalanceTest {
     
     @Test
     public void testRoundRobinLoadBalanceWithWeightShouldNotRecycle() {
-        int runs = 10000;
+        int runs = 1000;
         //tmperately add a new invoker
         weightInvokers.add(weightInvokerTmp);
         try {
@@ -226,7 +226,7 @@ public class LoadBalanceTest {
                 Assert.assertTrue("getField failed", true);
             }
         }
-        int runs = 10000;
+        int runs = 1000;
         //temporarily add a new invoker
         weightInvokers.add(weightInvokerTmp);
         try {
@@ -249,7 +249,7 @@ public class LoadBalanceTest {
     public void testSelectByWeightLeastActive() {
         int sumInvoker1 = 0;
         int sumInvoker2 = 0;
-        int loop = 10000;
+        int loop = 1000;
         LeastActiveLoadBalance lb = new LeastActiveLoadBalance();
         for (int i = 0; i < loop; i++) {
             Invoker selected = lb.select(weightInvokers, null, weightTestInvocation);
@@ -273,7 +273,7 @@ public class LoadBalanceTest {
         int sumInvoker1 = 0;
         int sumInvoker2 = 0;
         int sumInvoker3 = 0;
-        int loop = 10000;
+        int loop = 1000;
         RandomLoadBalance lb = new RandomLoadBalance();
         for (int i = 0; i < loop; i++) {
             Invoker selected = lb.select(weightInvokers, null, weightTestInvocation);
@@ -323,7 +323,7 @@ public class LoadBalanceTest {
 
     @Test
     public void testLeastActiveLoadBalance_select() {
-        int runs = 10000;
+        int runs = 1000;
         Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, LeastActiveLoadBalance.NAME);
         for (Invoker minvoker : counter.keySet()) {
             Long count = counter.get(minvoker).get();
