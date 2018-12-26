@@ -27,6 +27,6 @@ public class AppRouter extends ListenableRouter {
     public static final String NAME = "APP_ROUTER";
 
     public AppRouter(DynamicConfiguration configuration, URL url) {
-        super(configuration, url, Constants.APPLICATION_KEY);
+        super(configuration, url, url.getParameter(Constants.APPLICATION_KEY));
     }
 }

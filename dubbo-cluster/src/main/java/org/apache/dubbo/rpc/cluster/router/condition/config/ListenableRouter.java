@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.configcenter.ConfigChangeEvent;
@@ -49,10 +50,10 @@ public abstract class ListenableRouter extends AbstractRouter implements Configu
     private ConditionRouterRule routerRule;
     private List<ConditionRouter> conditionRouters = new ArrayList<>();
 
-    public ListenableRouter(DynamicConfiguration configuration, URL url, String listenableKey) {
+    public ListenableRouter(DynamicConfiguration configuration, URL url, String ruleKey) {
         super(configuration, url);
         this.force = false;
-        this.init(listenableKey);
+        this.init(ruleKey);
     }
 
     @Override
@@ -140,13 +141,9 @@ public abstract class ListenableRouter extends AbstractRouter implements Configu
         }
     }
 
-    private void init(String key) {
-        String value = url.getParameter(key);
-        if (StringUtils.isEmpty(value)) {
-            throw new IllegalArgumentException("cannot find \'" + key + "\' from " + url);
-        }
-
-        String router = value + Constants.ROUTERS_SUFFIX;
+    private void init(String ruleKey) {
+        Assert.notEmptyString(ruleKey, "router rule's name cannot be null");
+        String router = ruleKey + Constants.ROUTERS_SUFFIX;
         String rule = configuration.getConfig(router);
         if (rule != null) {
             this.process(new ConfigChangeEvent(router, rule));
