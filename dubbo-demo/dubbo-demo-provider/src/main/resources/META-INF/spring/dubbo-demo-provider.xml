@@ -25,7 +25,7 @@
     <dubbo:application name="demo-provider"/>
     <!--<dubbo:provider tag="tag3"/>-->
 
-    <dubbo:registry group="dubboregistrygroup1" address="zookeeper://127.0.0.1:2181">
+    <dubbo:registry id="registry1" group="dubboregistrygroup1" address="zookeeper://127.0.0.1:2181">
     </dubbo:registry>
 
     <!--<dubbo:configcenter address="zookeeper://127.0.0.1:2181?backup=127.0.0.1:2182" namespace="dubboregistrygroup1"-->
@@ -40,7 +40,7 @@
     <bean id="demoService" class="org.apache.dubbo.demo.provider.DemoServiceImpl"/>
 
     <!-- declare the service interface to be exported -->
-    <dubbo:service interface="org.apache.dubbo.demo.DemoService" ref="demoService" version="1.0.4" group="dd-test"/>
+    <dubbo:service interface="org.apache.dubbo.demo.DemoService" ref="demoService" version="1.0.4" group="dd-test" registry="registry1"/>
     <!-- declare the service interface to be exported -->
     <dubbo:service interface="org.apache.dubbo.demo.DemoService" ref="demoService" version="1.0.4" group="dd-test1"/>
 
