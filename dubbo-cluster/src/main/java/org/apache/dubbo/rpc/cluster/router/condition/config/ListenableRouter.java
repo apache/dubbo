@@ -95,23 +95,9 @@ public abstract class ListenableRouter extends AbstractRouter implements Configu
         return DEFAULT_PRIORITY;
     }
 
-    /*@Override
-    public boolean isRuntime() {
-        return isRuleRuntime();
-    }*/
-
-    @Override
-    public boolean isEnabled() {
-        return isRuleEnabled();
-    }
-
     @Override
     public boolean isForce() {
         return (routerRule != null && routerRule.isForce());
-    }
-
-    private boolean isRuleEnabled() {
-        return routerRule != null && routerRule.isValid() && routerRule.isEnabled();
     }
 
     private boolean isRuleRuntime() {
@@ -123,8 +109,7 @@ public abstract class ListenableRouter extends AbstractRouter implements Configu
             routers.clear();
             rule.getConditions().forEach(condition -> {
                 // All sub rules have the same force, runtime value.
-                ConditionRouter subRouter = new ConditionRouter(condition, rule.isForce());
-                subRouter.setEnabled(rule.isEnabled());
+                ConditionRouter subRouter = new ConditionRouter(condition, rule.isForce(), rule.isEnabled());
                 routers.add(subRouter);
             });
 
@@ -132,8 +117,7 @@ public abstract class ListenableRouter extends AbstractRouter implements Configu
             if (blackWhiteList != null && blackWhiteList.isValid()) {
                 blackWhiteList.getConditions().forEach(condition -> {
                     // All sub rules have the same force, runtime value.
-                    ConditionRouter subRouter = new ConditionRouter(condition, true);
-                    subRouter.setEnabled(blackWhiteList.isEnabled());
+                    ConditionRouter subRouter = new ConditionRouter(condition, true, blackWhiteList.isEnabled());
                     routers.add(subRouter);
                 });
             }

@@ -51,8 +51,11 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
     protected Map<String, MatchPair> whenCondition;
     protected Map<String, MatchPair> thenCondition;
 
-    public ConditionRouter(String rule, boolean force) {
+    private boolean enabled;
+
+    public ConditionRouter(String rule, boolean force, boolean enabled) {
         this.force = force;
+        this.enabled = enabled;
         this.init(rule);
     }
 
@@ -60,6 +63,7 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
         this.url = url;
         this.priority = url.getParameter(Constants.PRIORITY_KEY, 0);
         this.force = url.getParameter(Constants.FORCE_KEY, false);
+        this.enabled = url.getParameter(Constants.ENABLED_KEY, true);
         init(url.getParameterAndDecoded(Constants.RULE_KEY));
     }
 
@@ -155,7 +159,7 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
     @Override
     public <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation)
             throws RpcException {
-        if (!isEnabled()) {
+        if (!enabled) {
             return invokers;
         }
 
@@ -193,11 +197,6 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
         // We always return true for previously defined Router, that is, old Router doesn't support cache anymore.
 //        return true;
         return this.url.getParameter(Constants.RUNTIME_KEY, false);
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return url == null ? enabled : url.getParameter(Constants.ENABLED_KEY, true);
     }
 
     @Override
