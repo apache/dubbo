@@ -30,7 +30,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * ContextInvokerFilter
+ * ContextFilter set the provider RpcContext with invoker, invocation, local port it is using and host for
+ * current execution thread.
+ *
+ * @see RpcContext
+ * @see org.apache.dubbo.rpc.PostProcessFilter
  */
 @Activate(group = Constants.PROVIDER, order = -10000)
 public class ContextFilter extends AbstractPostProcessFilter {
@@ -57,7 +61,6 @@ public class ContextFilter extends AbstractPostProcessFilter {
 
         // merged from dubbox
         // we may already added some attachments into RpcContext before this filter (e.g. in rest protocol)
-        // TODO
         if (attachments != null) {
             if (RpcContext.getContext().getAttachments() != null) {
                 RpcContext.getContext().getAttachments().putAll(attachments);

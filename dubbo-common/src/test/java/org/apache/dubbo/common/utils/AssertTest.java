@@ -20,6 +20,7 @@ package org.apache.dubbo.common.utils;
 import org.junit.Test;
 
 import static org.apache.dubbo.common.utils.Assert.notNull;
+import static org.apache.dubbo.common.utils.Assert.notEmptyString;
 
 public class AssertTest {
     @Test(expected = IllegalArgumentException.class)
@@ -30,5 +31,29 @@ public class AssertTest {
     @Test(expected = IllegalStateException.class)
     public void testNotNull2() throws Exception {
         notNull(null, new IllegalStateException("null object"));
+    }
+
+    @Test
+    public void testNotNullWhenInputNotNull1() {
+        notNull(new Object(),"null object");
+    }
+
+    @Test
+    public void testNotNullWhenInputNotNull2() {
+        notNull(new Object(),new IllegalStateException("null object"));
+    }
+    @Test(expected = IllegalArgumentException.class)
+    public void testNotNullString() {
+        notEmptyString(null,"Message can't be null");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testNotEmptyString() {
+        notEmptyString("","Message can't be null or empty");
+    }
+
+    @Test
+    public void testNotNullNotEmptyString() {
+        notEmptyString("abcd","Message can'be null or empty");
     }
 }

@@ -21,15 +21,16 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.api.Greeting;
-import org.apache.dubbo.config.mock.TestProxyFactory;
-import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.config.mock.MockProtocol2;
 import org.apache.dubbo.config.mock.MockRegistryFactory2;
+import org.apache.dubbo.config.mock.TestProxyFactory;
+import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.service.GenericService;
+
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -75,6 +76,7 @@ public class ServiceConfigTest {
 
         RegistryConfig registry = new RegistryConfig();
         registry.setProtocol("mockprotocol2");
+        registry.setAddress("N/A");
 
         ArgumentConfig argument = new ArgumentConfig();
         argument.setIndex(0);

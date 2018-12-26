@@ -21,9 +21,11 @@ import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.RpcStatus;
 import org.apache.dubbo.rpc.support.BlockMyInvoker;
 import org.apache.dubbo.rpc.support.MockInvocation;
 import org.apache.dubbo.rpc.support.MyInvoker;
+import org.apache.dubbo.rpc.support.RuntimeExceptionInvoker;
 
 import org.junit.Test;
 
@@ -105,6 +107,8 @@ public class ActiveLimitFilterTest {
         URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives="+maxActives+"&timeout="+timeout);
         final Invoker<ActiveLimitFilterTest> invoker = new BlockMyInvoker<ActiveLimitFilterTest>(url, blockTime);
         final Invocation invocation = new MockInvocation();
+        RpcStatus.removeStatus(url);
+        RpcStatus.removeStatus(url, invocation.getMethodName());
         for (int i = 0; i < totalThread; i++) {
             Thread thread = new Thread(new Runnable() {
                 public void run() {
@@ -177,5 +181,34 @@ public class ActiveLimitFilterTest {
             e.printStackTrace();
         }
         assertEquals(0, count.intValue());
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testInvokeRuntimeException() {
+        URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives=0");
+        Invoker<ActiveLimitFilterTest> invoker = new RuntimeExceptionInvoker(url);
+        Invocation invocation = new MockInvocation();
+        RpcStatus count = RpcStatus.getStatus(invoker.getUrl(), invocation.getMethodName());
+        int beforeExceptionActiveCount = count.getActive();
+        activeLimitFilter.invoke(invoker, invocation);
+        int afterExceptionActiveCount = count.getActive();
+        assertEquals("After exception active count should be same"
+                , beforeExceptionActiveCount, afterExceptionActiveCount);
+    }
+
+    @Test
+    public void testInvokeRuntimeExceptionWithActiveCountMatch() {
+        URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives=0");
+        Invoker<ActiveLimitFilterTest> invoker = new RuntimeExceptionInvoker(url);
+        Invocation invocation = new MockInvocation();
+        RpcStatus count = RpcStatus.getStatus(invoker.getUrl(), invocation.getMethodName());
+        int beforeExceptionActiveCount = count.getActive();
+        try {
+            activeLimitFilter.invoke(invoker, invocation);
+        } catch (RuntimeException ex) {
+            int afterExceptionActiveCount = count.getActive();
+            assertEquals("After exception active count should be same"
+                    , beforeExceptionActiveCount, afterExceptionActiveCount);
+        }
     }
 }

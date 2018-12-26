@@ -51,7 +51,7 @@ public class FileRouterEngineTest {
     Invoker<FileRouterEngineTest> invoker1 = mock(Invoker.class);
     Invoker<FileRouterEngineTest> invoker2 = mock(Invoker.class);
     Invocation invocation;
-    Directory<FileRouterEngineTest> dic;
+    StaticDirectory<FileRouterEngineTest> dic;
     Result result = new RpcResult();
     private RouterFactory routerFactory = ExtensionLoader.getExtensionLoader(RouterFactory.class).getAdaptiveExtension();
 
@@ -70,8 +70,8 @@ public class FileRouterEngineTest {
         if (isScriptUnsupported) return;
         URL url = initUrl("notAvailablerule.javascript");
         initInvocation("method1");
-        initDic(url);
         initInvokers(url, true, false);
+        initDic(url);
 
         MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(
                 dic, url);
@@ -87,8 +87,8 @@ public class FileRouterEngineTest {
         if (isScriptUnsupported) return;
         URL url = initUrl("availablerule.javascript");
         initInvocation("method1");
-        initDic(url);
         initInvokers(url);
+        initDic(url);
 
         MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(
                 dic, url);
@@ -105,8 +105,8 @@ public class FileRouterEngineTest {
         URL url = initUrl("methodrule.javascript");
         {
             initInvocation("method1");
-            initDic(url);
             initInvokers(url, true, true);
+            initDic(url);
 
             MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(
                     dic, url);
@@ -118,8 +118,8 @@ public class FileRouterEngineTest {
         }
         {
             initInvocation("method2");
-            initDic(url);
             initInvokers(url, true, true);
+            initDic(url);
             MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(
                     dic, url);
             for (int i = 0; i < 100; i++) {
@@ -159,7 +159,10 @@ public class FileRouterEngineTest {
     }
 
     private void initDic(URL url) {
-        dic = new StaticDirectory<FileRouterEngineTest>(url, invokers, Arrays.asList(routerFactory.getRouter(url)));
+        // FIXME: this exposes the design flaw in RouterChain
+        dic = new StaticDirectory<>(url, invokers);
+        dic.buildRouterChain();
+        dic.getRouterChain().initWithRouters(Arrays.asList(routerFactory.getRouter(url)));
     }
 
     static class MockClusterInvoker<T> extends AbstractClusterInvoker<T> {
