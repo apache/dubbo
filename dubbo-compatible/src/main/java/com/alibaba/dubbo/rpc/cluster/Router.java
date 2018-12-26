@@ -21,7 +21,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.RouterChain;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -48,10 +47,6 @@ public interface Router extends org.apache.dubbo.rpc.cluster.Router {
         List<com.alibaba.dubbo.rpc.Invoker<T>> res = this.route(invs, new com.alibaba.dubbo.common.URL(url), new com.alibaba.dubbo.rpc.Invocation.CompatibleInvocation(invocation));
 
         return res.stream().map(inv -> inv.getOriginal()).collect(Collectors.toList());
-    }
-
-    @Override
-    default void addRouterChain(RouterChain routerChain) {
     }
 
     @Override

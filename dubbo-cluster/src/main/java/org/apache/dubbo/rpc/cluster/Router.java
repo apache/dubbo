@@ -22,7 +22,6 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Router. (SPI, Prototype, ThreadSafe)
@@ -43,24 +42,25 @@ public interface Router extends Comparable<Router> {
     /**
      * Filter invokers with current routing rule and only return the invokers that comply with the rule.
      *
-     * @param invokers
+     * @param invokers   invoker list
      * @param url        refer url
-     * @param invocation
+     * @param invocation invocation
      * @return routed invokers
      * @throws RpcException
      */
     <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException;
 
-    default <T> Map<String, List<Invoker<T>>> preRoute(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
-        return null;
-    }
 
     /**
-     * Each router has a reference of the router chain.
+     * Notify the router the invoker list. Invoker list may change from time to time. This method gives the router a
+     * chance to prepare before {@link Router#route(List, URL, Invocation)} gets called.
      *
-     * @param routerChain
+     * @param invokers invoker list
+     * @param <T>      invoker's type
      */
-    void addRouterChain(RouterChain routerChain);
+    default <T> void notify(List<Invoker<T>> invokers) {
+
+    }
 
     /**
      * To decide whether this router need to execute every time an RPC comes or should only execute when addresses or rule change.
