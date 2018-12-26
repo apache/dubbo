@@ -195,4 +195,20 @@ public class ActiveLimitFilterTest {
         assertEquals("After exception active count should be same"
                 , beforeExceptionActiveCount, afterExceptionActiveCount);
     }
+
+    @Test
+    public void testInvokeRuntimeExceptionWithActiveCountMatch() {
+        URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives=0");
+        Invoker<ActiveLimitFilterTest> invoker = new RuntimeExceptionInvoker(url);
+        Invocation invocation = new MockInvocation();
+        RpcStatus count = RpcStatus.getStatus(invoker.getUrl(), invocation.getMethodName());
+        int beforeExceptionActiveCount = count.getActive();
+        try {
+            activeLimitFilter.invoke(invoker, invocation);
+        } catch (RuntimeException ex) {
+            int afterExceptionActiveCount = count.getActive();
+            assertEquals("After exception active count should be same"
+                    , beforeExceptionActiveCount, afterExceptionActiveCount);
+        }
+    }
 }

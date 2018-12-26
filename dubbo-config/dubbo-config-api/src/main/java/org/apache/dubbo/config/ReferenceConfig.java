@@ -27,13 +27,14 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.metadata.integration.MetadataReportService;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
-import org.apache.dubbo.rpc.cluster.support.AvailableCluster;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
+import org.apache.dubbo.rpc.cluster.support.RegistryAwareCluster;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
@@ -190,44 +191,17 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         return urls;
     }
 
-    public synchronized T get() {
-        if (destroyed) {
-            throw new IllegalStateException("Already destroyed!");
-        }
-        if (ref == null) {
-            init();
-        }
-        return ref;
-    }
-
-    public synchronized void destroy() {
-        if (ref == null) {
-            return;
-        }
-        if (destroyed) {
-            return;
-        }
-        destroyed = true;
-        try {
-            invoker.destroy();
-        } catch (Throwable t) {
-            logger.warn("Unexpected error when destroy invoker of ReferenceConfig(" + url + ").", t);
-        }
-        invoker = null;
-        ref = null;
-    }
-
-    private void init() {
-        if (initialized) {
-            return;
-        }
-        initialized = true;
+    /**
+     * This method should be called right after the creation of this class's instance, before any property in other config modules is used.
+     * Check each config modules are created properly and override their properties if necessary.
+     */
+    public void checkAndUpdateSubConfigs() {
         if (interfaceName == null || interfaceName.length() == 0) {
             throw new IllegalStateException("<dubbo:reference interface=\"\" /> interface not allow null!");
         }
         // get consumer's global configuration
         checkDefault();
-        appendProperties(this);
+        this.refresh();
         if (getGeneric() == null && getConsumer() != null) {
             setGeneric(getConsumer().getGeneric());
         }
@@ -274,6 +248,44 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
         }
         checkApplication();
+        checkMetadataReport();
+        checkRegistryDataConfig();
+    }
+
+    public synchronized T get() {
+        checkAndUpdateSubConfigs();
+
+        if (destroyed) {
+            throw new IllegalStateException("Already destroyed!");
+        }
+        if (ref == null) {
+            init();
+        }
+        return ref;
+    }
+
+    public synchronized void destroy() {
+        if (ref == null) {
+            return;
+        }
+        if (destroyed) {
+            return;
+        }
+        destroyed = true;
+        try {
+            invoker.destroy();
+        } catch (Throwable t) {
+            logger.warn("Unexpected err when destroy invoker of ReferenceConfig(" + url + ").", t);
+        }
+        invoker = null;
+        ref = null;
+    }
+
+    private void init() {
+        if (initialized) {
+            return;
+        }
+        initialized = true;
         checkStub(interfaceClass);
         checkMock(interfaceClass);
         Map<String, String> map = new HashMap<String, String>();
@@ -281,6 +293,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
         map.put(Constants.SIDE_KEY, Constants.CONSUMER_SIDE);
         map.put(Constants.DUBBO_VERSION_KEY, Version.getProtocolVersion());
+        map.put(Constants.SPECIFICATION_VERSION_KEY, Version.getVersion());
         map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
         if (ConfigUtils.getPid() > 0) {
             map.put(Constants.PID_KEY, String.valueOf(ConfigUtils.getPid()));
@@ -330,7 +343,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
         ref = createProxy(map);
 
-        ConsumerModel consumerModel = new ConsumerModel(getUniqueServiceName(), ref, interfaceClass.getMethods(), attributes);
+        ConsumerModel consumerModel = new ConsumerModel(getUniqueServiceName(), interfaceClass, ref, interfaceClass.getMethods(), attributes);
         ApplicationModel.initConsumerModel(getUniqueServiceName(), consumerModel);
     }
 
@@ -399,10 +412,11 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                     }
                 }
                 if (registryURL != null) { // registry url is available
-                    // use AvailableCluster only when register's cluster is available
-                    URL u = registryURL.addParameter(Constants.CLUSTER_KEY, AvailableCluster.NAME);
+                    // use RegistryAwareCluster only when register's cluster is available
+                    URL u = registryURL.addParameter(Constants.CLUSTER_KEY, RegistryAwareCluster.NAME);
+                    // The invoker wrap relation would be: RegistryAwareClusterInvoker(StaticDirectory) -> FailoverClusterInvoker(RegistryDirectory, will execute route) -> Invoker
                     invoker = cluster.join(new StaticDirectory(u, invokers));
-                } else { // not a registry url
+                } else { // not a registry url, must be direct invoke.
                     invoker = cluster.join(new StaticDirectory(invokers));
                 }
             }
@@ -423,6 +437,15 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         if (logger.isInfoEnabled()) {
             logger.info("Refer dubbo service " + interfaceClass.getName() + " from url " + invoker.getUrl());
         }
+        /**
+         * @since 2.7.0
+         * ServiceData Store
+         */
+        MetadataReportService metadataReportService = null;
+        if ((metadataReportService = getMetadataReportService()) != null) {
+            URL consumerURL = new URL(Constants.CONSUMER_PROTOCOL, map.remove(Constants.REGISTER_IP_KEY), 0, map.get(Constants.INTERFACE_KEY), map);
+            metadataReportService.publishConsumer(consumerURL);
+        }
         // create service proxy
         return (T) proxyFactory.getProxy(invoker);
     }
@@ -431,7 +454,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         if (consumer == null) {
             consumer = new ConsumerConfig();
         }
-        appendProperties(consumer);
+        consumer.refresh();
     }
 
     private void resolveAsyncInterface(Class<?> interfaceClass, Map<String, String> map) {
@@ -446,7 +469,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         this.asyncInterfaceClass = interfaceClass;
         this.interfaceClass = target;
         setInterface(this.interfaceClass.getName());
-        map.put(Constants.INTERFACES, interfaceClass.getName());
+        map.put(Constants.INTERFACES, asyncInterfaceClass.getName());
     }
 
 
@@ -483,19 +506,19 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         return interfaceName;
     }
 
+    public void setInterface(String interfaceName) {
+        this.interfaceName = interfaceName;
+        if (id == null || id.length() == 0) {
+            id = interfaceName;
+        }
+    }
+
     public void setInterface(Class<?> interfaceClass) {
         if (interfaceClass != null && !interfaceClass.isInterface()) {
             throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
         }
         this.interfaceClass = interfaceClass;
         setInterface(interfaceClass == null ? null : interfaceClass.getName());
-    }
-
-    public void setInterface(String interfaceName) {
-        this.interfaceName = interfaceName;
-        if (id == null || id.length() == 0) {
-            id = interfaceName;
-        }
     }
 
     public String getClient() {
@@ -557,6 +580,12 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             buf.append(":").append(version);
         }
         return buf.toString();
+    }
+
+    @Override
+    @Parameter(excluded = true)
+    public String getPrefix() {
+        return Constants.DUBBO + ".reference." + interfaceName;
     }
 
     private void resolveFile() {

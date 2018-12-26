@@ -257,7 +257,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
     protected void checkInvokers(List<Invoker<T>> invokers, Invocation invocation) {
         if (CollectionUtils.isEmpty(invokers)) {
-            throw new RpcException("Failed to invoke the method "
+            throw new RpcException(RpcException.NO_INVOKER_AVAILABLE_AFTER_FILTER, "Failed to invoke the method "
                     + invocation.getMethodName() + " in the service " + getInterface().getName()
                     + ". No provider available for the service " + directory.getUrl().getServiceKey()
                     + " from registry " + directory.getUrl().getAddress()

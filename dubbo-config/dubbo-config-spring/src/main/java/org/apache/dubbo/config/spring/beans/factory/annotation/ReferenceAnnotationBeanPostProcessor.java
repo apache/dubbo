@@ -509,7 +509,7 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
     /**
      * Generate a key based on the annotation.
      *
-     * @param annotations annotatoin value
+     * @param annotations annotation value
      * @return unique key, never null will be returned.
      * @since 2.7.0
      */

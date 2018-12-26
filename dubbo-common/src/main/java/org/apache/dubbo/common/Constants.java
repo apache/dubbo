@@ -25,6 +25,8 @@ import java.util.regex.Pattern;
  */
 public class Constants {
 
+    public static final String DUBBO = "dubbo";
+
     public static final String PROVIDER = "provider";
 
     public static final String CONSUMER = "consumer";
@@ -45,7 +47,25 @@ public class Constants {
 
     public static final String ROUTERS_CATEGORY = "routers";
 
+    public static final String DYNAMIC_ROUTERS_CATEGORY = "dynamicrouters";
+
     public static final String CONFIGURATORS_CATEGORY = "configurators";
+
+    public static final String DYNAMIC_CONFIGURATORS_CATEGORY = "dynamicconfigurators";
+    public static final String APP_DYNAMIC_CONFIGURATORS_CATEGORY = "appdynamicconfigurators";
+
+    public static final String CONFIGURATORS_SUFFIX = ".configurators";
+
+    public static final String ROUTERS_SUFFIX = ".routers";
+
+    public static final String CONFIG_CLUSTER_KEY = "config.cluster";
+    public static final String CONFIG_NAMESPACE_KEY = "config.namespace";
+    public static final String CONFIG_GROUP_KEY = "config.group";
+    public static final String CONFIG_CHECK_KEY = "config.check";
+    public static final String CONFIG_CONFIGFILE_KEY = "config.configFile";
+    public static final String CONFIG_ENABLE_KEY = "config.highestPriority";
+    public static final String CONFIG_TIMEOUT_KEY = "config.timeout";
+    public static final String CONFIG_APPNAME_KEY = "config.appName";
 
     public static final String DEFAULT_CATEGORY = PROVIDERS_CATEGORY;
 
@@ -139,8 +159,16 @@ public class Constants {
 
     public static final int DEFAULT_RETRIES = 2;
 
+    public static final int DEFAULT_FAILBACK_TASKS = 100;
+
+    public static final int DEFAULT_FAILBACK_TIMES = 3;
+
     // default buffer size is 8k.
     public static final int DEFAULT_BUFFER_SIZE = 8 * 1024;
+
+    public static final Integer DEFAULT_METADATA_REPORT_RETRY_TIMES = 100;
+    public static final Integer DEFAULT_METADATA_REPORT_RETRY_PERIOD = 3000;
+    public static final Boolean DEFAULT_METADATA_REPORT_CYCLE_REPORT = true;
 
     public static final int MAX_BUFFER_SIZE = 16 * 1024;
 
@@ -162,6 +190,8 @@ public class Constants {
     public static final String CLUSTER_KEY = "cluster";
 
     public static final String REGISTRY_KEY = "registry";
+
+    public static final String METADATA_REPORT_KEY = "metadata";
 
     public static final String MONITOR_KEY = "monitor";
 
@@ -188,6 +218,8 @@ public class Constants {
     public static final String LOCALHOST_VALUE = "127.0.0.1";
 
     public static final String APPLICATION_KEY = "application";
+
+    public static final String REMOTE_APPLICATION_KEY = "remote.application";
 
     public static final String LOCAL_KEY = "local";
 
@@ -271,6 +303,8 @@ public class Constants {
     public static final String TIMEOUT_KEY = "timeout";
 
     public static final String RETRIES_KEY = "retries";
+
+    public static final String FAIL_BACK_TASKS_KEY = "failbacktasks";
 
     public static final String PROMPT_KEY = "prompt";
 
@@ -371,6 +405,8 @@ public class Constants {
 
     public static final String DEFAULT_CHANNEL_HANDLER = "default";
 
+    public static final String SERVICE_DESCIPTOR_KEY = "serviceDescriptor";
+
     public static final String ANY_VALUE = "*";
 
     public static final String COMMA_SEPARATOR = ",";
@@ -435,6 +471,28 @@ public class Constants {
     public static final String FORCE_KEY = "force";
 
     public static final String MERGER_KEY = "merger";
+
+    /**
+     * simple the registry for provider.
+     * @since 2.7.0
+     */
+    public static final String SIMPLE_PROVIDER_CONFIG_KEY = "simple.provider.config";
+    /**
+     * simple the registry for consumer.
+     * @since 2.7.0
+     */
+    public static final String SIMPLE_CONSUMER_CONFIG_KEY = "simple.consumer.config";
+    /**
+     * After simplify the registry, should add some paramter individually for provider.
+     * @since 2.7.0
+     */
+    public static final String EXTRA_PROVIDER_CONFIG_KEYS_KEY = "extra.provider.keys";
+    /**
+     * After simplify the registry, should add some paramter individually for consumer.
+     *
+     * @since 2.7.0
+     */
+    public static final String EXTRA_CONSUMER_CONFIG_KEYS_KEY = "extra.consumer.keys";
 
     /**
      * To decide whether to exclude unavailable invoker from the cluster
@@ -579,6 +637,8 @@ public class Constants {
 
     public static final String OVERRIDE_PROTOCOL = "override";
 
+    public static final String CONFIG_PROTOCOL = "config";
+
     public static final String PRIORITY_KEY = "priority";
 
     public static final String RULE_KEY = "rule";
@@ -671,9 +731,40 @@ public class Constants {
 
     public static final String MULTICAST = "multicast";
 
-    public static final String TAG_KEY = "tag";
+    public static final String TAG_KEY = "dubbo.tag";
 
-    public static final String REQUEST_TAG_KEY = "request.tag";
+    public static final String FORCE_USE_TAG = "dubbo.force.tag";
+
+    public static final String HOST_KEY = "host";
+
+    public static final String ADDRESS_KEY = "address";
+
+    public static final String RETRY_TIMES_KEY = "retry.times";
+
+    public static final String RETRY_PERIOD_KEY = "retry.period";
+
+    public static final String SYNC_REPORT_KEY = "sync.report";
+
+    public static final String CYCLE_REPORT_KEY = "cycle.report";
+
+    public static final String CONFIG_VERSION_KEY = "configVersion";
+
+    public static final String COMPATIBLE_CONFIG_KEY = "compatible_config";
+    // package version in the manifest
+    public static final String SPECIFICATION_VERSION_KEY = "specVersion";
+
+    public static final String OVERRIDE_PROVIDERS_KEY = "providerAddreses";
+
+    public static final String PROTOCOLS_SUFFIX = "dubbo.protocols.";
+
+    public static final String PROTOCOL_SUFFIX = "dubbo.protocol.";
+
+    public static final String REGISTRIES_SUFFIX = "dubbo.registries.";
+
+    public static final String[] DEFAULT_REGISTER_PROVIDER_KEYS = {APPLICATION_KEY, CODEC_KEY, EXCHANGER_KEY, SERIALIZATION_KEY, CLUSTER_KEY, CONNECTIONS_KEY, DEPRECATED_KEY,
+            GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY, WEIGHT_KEY, TIMESTAMP_KEY, DUBBO_VERSION_KEY, SPECIFICATION_VERSION_KEY};
+
+    public static final String[] DEFAULT_REGISTER_CONSUMER_KEYS = {APPLICATION_KEY, VERSION_KEY, GROUP_KEY, DUBBO_VERSION_KEY, SPECIFICATION_VERSION_KEY};
 
     public static final String TELNET = "telnet";
     /*

@@ -32,7 +32,6 @@ import java.util.List;
  * @see org.apache.dubbo.rpc.cluster.Directory#list(Invocation)
  */
 public interface Router extends Comparable<Router> {
-
     /**
      * get the router url.
      *
@@ -41,41 +40,47 @@ public interface Router extends Comparable<Router> {
     URL getUrl();
 
     /**
-     * route.
+     * Filter invokers with current routing rule and only return the invokers that comply with the rule.
      *
-     * @param invokers
+     * @param invokers   invoker list
      * @param url        refer url
-     * @param invocation
+     * @param invocation invocation
      * @return routed invokers
      * @throws RpcException
      */
     <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException;
 
+
     /**
-     * priority
+     * Notify the router the invoker list. Invoker list may change from time to time. This method gives the router a
+     * chance to prepare before {@link Router#route(List, URL, Invocation)} gets called.
+     *
+     * @param invokers invoker list
+     * @param <T>      invoker's type
+     */
+    default <T> void notify(List<Invoker<T>> invokers) {
+
+    }
+
+    /**
+     * To decide whether this router need to execute every time an RPC comes or should only execute when addresses or rule change.
+     *
+     * @return
+     */
+    boolean isRuntime();
+
+    /**
+     * To decide whether this router should take effect when none of the invoker can match the router rule, which means the {@link #route(List, URL, Invocation)} would be empty.
+     * Most of time, most router implementation would default this value to false.
+     *
+     * @return
+     */
+    boolean isForce();
+
+    /**
+     * used to sort routers.
      *
      * @return
      */
     int getPriority();
-
-    /**
-     * compare Router
-     *
-     * @param o
-     * @return
-     */
-    @Override
-    default int compareTo(Router o) {
-        if (o == null) {
-            throw new IllegalArgumentException();
-        }
-        if (this.getPriority() == o.getPriority()) {
-            if (o.getUrl() == null) {
-                return -1;
-            }
-            return getUrl().toFullString().compareTo(o.getUrl().toFullString());
-        } else {
-            return getPriority() > o.getPriority() ? 1 : -1;
-        }
-    }
 }

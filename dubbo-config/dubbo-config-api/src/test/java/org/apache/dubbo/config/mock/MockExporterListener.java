@@ -21,7 +21,7 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.RpcException;
 
-public class MockExporterListener implements ExporterListener  {
+public class MockExporterListener implements ExporterListener {
     @Override
     public void exported(Exporter<?> exporter) throws RpcException {
 

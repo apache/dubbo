@@ -69,10 +69,6 @@ public class ConsumerConfig extends AbstractReferenceConfig {
         return isDefault;
     }
 
-    public void setDefault(Boolean isDefault) {
-        this.isDefault = isDefault;
-    }
-
     public String getClient() {
         return client;
     }
@@ -91,6 +87,10 @@ public class ConsumerConfig extends AbstractReferenceConfig {
 
     public Boolean getDefault() {
         return isDefault;
+    }
+
+    public void setDefault(Boolean isDefault) {
+        this.isDefault = isDefault;
     }
 
     public Integer getCorethreads() {
