@@ -93,9 +93,10 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
      * Maximum number of parallel executable requests
      */
     protected String protocolLiteral;
-    // provider tag
-    protected String tag;
-    // max allowed execute times
+
+    /**
+     * max allowed execute times
+     */
     private Integer executes;
 
     /**
@@ -117,11 +118,6 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
      * Provider tag
      */
     protected String tag;
-
-    // warm up period
-    private Integer warmup;
-    // serialization
-    private String serialization;
 
     public String getVersion() {
         return version;

@@ -50,7 +50,7 @@ public abstract class AbstractConfig implements Serializable {
 
     protected static final Logger logger = LoggerFactory.getLogger(AbstractConfig.class);
     private static final long serialVersionUID = 4267533505537413570L;
-    
+
     /**
      * The maximum length of a <b>parameter's value</b>
      */
@@ -130,78 +130,6 @@ public abstract class AbstractConfig implements Serializable {
             }
         }
         return value;
-    }
-
-    /**
-     * parse the parameters of the config
-     *
-     * @param config
-     */
-    protected static void appendProperties(AbstractConfig config) {
-        if (config == null) {
-            return;
-        }
-        String prefix = "dubbo." + getTagName(config.getClass()) + ".";
-        Method[] methods = config.getClass().getMethods();
-        for (Method method : methods) {
-            try {
-                String name = method.getName();
-                if (name.length() > 3 && name.startsWith("set") && Modifier.isPublic(method.getModifiers())
-                        && method.getParameterTypes().length == 1 && isPrimitive(method.getParameterTypes()[0])) {
-                    String property = StringUtils.camelToSplitName(name.substring(3, 4).toLowerCase() + name.substring(4), ".");
-
-                    String value = null;
-                    if (config.getId() != null && config.getId().length() > 0) {
-                        String pn = prefix + config.getId() + "." + property;
-                        value = System.getProperty(pn);
-                        if (!StringUtils.isBlank(value)) {
-                            logger.info("Use System Property " + pn + " to config dubbo");
-                        }
-                    }
-                    if (value == null || value.length() == 0) {
-                        String pn = prefix + property;
-                        value = System.getProperty(pn);
-                        if (!StringUtils.isBlank(value)) {
-                            logger.info("Use System Property " + pn + " to config dubbo");
-                        }
-                    }
-                    if (value == null || value.length() == 0) {
-                        Method getter;
-                        try {
-                            getter = config.getClass().getMethod("get" + name.substring(3));
-                        } catch (NoSuchMethodException e) {
-                            try {
-                                getter = config.getClass().getMethod("is" + name.substring(3));
-                            } catch (NoSuchMethodException e2) {
-                                getter = null;
-                            }
-                        }
-                        if (getter != null) {
-                            if (getter.invoke(config) == null) {
-                                if (config.getId() != null && config.getId().length() > 0) {
-                                    value = ConfigUtils.getProperty(prefix + config.getId() + "." + property);
-                                }
-                                if (value == null || value.length() == 0) {
-                                    value = ConfigUtils.getProperty(prefix + property);
-                                }
-                                if (value == null || value.length() == 0) {
-                                    String legacyKey = legacyProperties.get(prefix + property);
-                                    if (legacyKey != null && legacyKey.length() > 0) {
-                                        value = convertLegacyValue(legacyKey, ConfigUtils.getProperty(legacyKey));
-                                    }
-                                }
-
-                            }
-                        }
-                    }
-                    if (value != null && value.length() > 0) {
-                        method.invoke(config, convertPrimitive(method.getParameterTypes()[0], value));
-                    }
-                }
-            } catch (Exception e) {
-                logger.error(e.getMessage(), e);
-            }
-        }
     }
 
     private static String getTagName(Class<?> cls) {
