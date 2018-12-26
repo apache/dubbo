@@ -35,20 +35,18 @@ import java.util.Map;
  */
 public class TypeDefinitionBuilder {
 
-    private static final ThreadLocal<ArrayList<TypeBuilder>> builders;
-
-    static {
-        builders = new ThreadLocal<ArrayList<TypeBuilder>>();
-        builders.set(new ArrayList<TypeBuilder>());
-        builders.get().add(new ArrayTypeBuilder());
-        builders.get().add(new CollectionTypeBuilder());
-        builders.get().add(new MapTypeBuilder());
-        builders.get().add(new EnumTypeBuilder());
-    }
+    private static final ThreadLocal<ArrayList<TypeBuilder>> builders = ThreadLocal.withInitial(() -> {
+        ArrayList<TypeBuilder> l = new ArrayList<>();
+        l.add(new ArrayTypeBuilder());
+        l.add(new CollectionTypeBuilder());
+        l.add(new MapTypeBuilder());
+        l.add(new EnumTypeBuilder());
+        return l;
+    });
 
     public static TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache) {
         TypeBuilder builder = getGenericTypeBuilder(type, clazz);
-        TypeDefinition td = null;
+        TypeDefinition td;
         if (builder != null) {
             td = builder.build(type, clazz, typeCache);
         } else {
@@ -66,14 +64,14 @@ public class TypeDefinitionBuilder {
         return null;
     }
 
-    private Map<Class<?>, TypeDefinition> typeCache = new HashMap<Class<?>, TypeDefinition>();
+    private Map<Class<?>, TypeDefinition> typeCache = new HashMap<>();
 
     public TypeDefinition build(Type type, Class<?> clazz) {
         return build(type, clazz, typeCache);
     }
 
     public List<TypeDefinition> getTypeDefinitions() {
-        return new ArrayList<TypeDefinition>(typeCache.values());
+        return new ArrayList<>(typeCache.values());
     }
 
 }
