@@ -141,10 +141,11 @@ public class MinaClient extends AbstractClient {
                     + getConnectTimeout() + "ms (elapsed: " + (System.currentTimeMillis() - start)
                     + "ms) from netty client " + NetUtils.getLocalHost() + " using dubbo version "
                     + Version.getVersion() + ", cause: " + e.getMessage(), e);
-        }
-        Throwable e = exception.get();
-        if (e != null) {
-            throw e;
+        } finally {
+            Throwable e = exception.get();
+            if (e != null) {
+                throw e;
+            }
         }
     }
 
