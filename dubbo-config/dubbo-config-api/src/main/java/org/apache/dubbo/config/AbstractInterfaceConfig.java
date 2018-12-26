@@ -196,13 +196,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
     }
 
-    /**
-     *
-     * Load the registry and conversion it to {@link URL}, the priority order is: system property > dubbo registry config
-     *
-     * @param provider whether it is the provider side
-     * @return
-     */
     protected void checkMonitor() {
         if (monitor == null) {
             monitor = new MonitorConfig();
@@ -235,6 +228,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
     }
 
+    /**
+     *
+     * Load the registry and conversion it to {@link URL}, the priority order is: system property > dubbo registry config
+     *
+     * @param provider whether it is the provider side
+     * @return
+     */
     protected List<URL> loadRegistries(boolean provider) {
         // check && override if necessary
         checkRegistry();
@@ -325,13 +325,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         return null;
     }
 
-    /**
-     * Check whether the remote service interface and the methods meet with Dubbo's requirements.it mainly check, if the
-     * methods configured in the configuration file are included in the interface of remote service
-     *
-     * @param interfaceClass the interface of remote service
-     * @param methods the methods configured
-     */
     final private URL loadMetadataReporterURL(boolean provider) {
         this.checkApplication();
         String address = metadataReportConfig.getAddress();
@@ -354,6 +347,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         });
     }
 
+    /**
+     * Check whether the remote service interface and the methods meet with Dubbo's requirements.it mainly check, if the
+     * methods configured in the configuration file are included in the interface of remote service
+     *
+     * @param interfaceClass the interface of remote service
+     * @param methods the methods configured
+     */
     protected void checkInterfaceAndMethods(Class<?> interfaceClass, List<MethodConfig> methods) {
         if (interfaceClass == null) {
             throw new IllegalStateException("interface not allow null!");
