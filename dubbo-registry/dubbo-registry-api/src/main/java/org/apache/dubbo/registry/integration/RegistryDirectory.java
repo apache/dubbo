@@ -25,6 +25,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
@@ -65,6 +66,7 @@ import static org.apache.dubbo.common.Constants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.Constants.ROUTERS_CATEGORY;
 import static org.apache.dubbo.common.Constants.ROUTE_PROTOCOL;
 import static org.apache.dubbo.common.utils.UrlUtils.classifyUrls;
+import static org.apache.dubbo.common.utils.UrlUtils.isConfigure;
 
 
 /**
@@ -181,24 +183,21 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     @Override
     public synchronized void notify(List<URL> urls) {
-        List<URL> categoryUrls = urls.stream().filter(this::isValidCategory).filter(this::isNotCompatibleFor26x).collect(Collectors.toList());
+        List<URL> categoryUrls = urls.stream()
+                .filter(this::isValidCategory)
+                .filter(this::isNotCompatibleFor26x)
+                .collect(Collectors.toList());
 
         /**
          * TODO Try to refactor the processing of these three type of urls using Collectors.groupBy()?
          */
-        this.configurators = Configurator.toConfigurators(classifyUrls(categoryUrls, url -> (CONFIGURATORS_CATEGORY.equals(url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY))
-                 || OVERRIDE_PROTOCOL.equals(url.getProtocol())))).orElse(configurators);
+        this.configurators = Configurator.toConfigurators(classifyUrls(categoryUrls, UrlUtils::isConfigure))
+                .orElse(configurators);
 
-        toRouters(classifyUrls(categoryUrls, url -> {
-            return ROUTE_PROTOCOL.equals(url.getProtocol())
-                    || ROUTERS_CATEGORY.equals(url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY));
-        })).ifPresent(this::addRouters);
+        toRouters(classifyUrls(categoryUrls, UrlUtils::isRoute)).ifPresent(this::addRouters);
 
         // providers
-        refreshOverrideAndInvoker(classifyUrls(categoryUrls, url -> PROVIDERS_CATEGORY.equals(url.getParameter(Constants.CATEGORY_KEY, PROVIDERS_CATEGORY))
-                && !OVERRIDE_PROTOCOL.equals(url.getProtocol())
-                && !ROUTE_PROTOCOL.equals(url.getProtocol()))
-        );
+        refreshOverrideAndInvoker(classifyUrls(categoryUrls, UrlUtils::isProvider));
     }
 
     public void refreshOverrideAndInvoker(List<URL> urls) {

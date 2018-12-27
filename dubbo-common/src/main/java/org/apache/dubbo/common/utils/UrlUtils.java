@@ -27,6 +27,12 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.Constants.CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.Constants.OVERRIDE_PROTOCOL;
+import static org.apache.dubbo.common.Constants.PROVIDERS_CATEGORY;
+import static org.apache.dubbo.common.Constants.ROUTERS_CATEGORY;
+import static org.apache.dubbo.common.Constants.ROUTE_PROTOCOL;
+
 public class UrlUtils {
 
     /**
@@ -443,6 +449,22 @@ public class UrlUtils {
 
     public static List<URL> classifyUrls(List<URL> urls, Predicate<URL> predicate) {
         return urls.stream().filter(predicate).collect(Collectors.toList());
+    }
+
+    public static boolean isConfigure(URL url) {
+        return CONFIGURATORS_CATEGORY.equals(url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY))
+                || OVERRIDE_PROTOCOL.equals(url.getProtocol());
+    }
+
+    public static boolean isRoute(URL url) {
+        return ROUTE_PROTOCOL.equals(url.getProtocol())
+                || ROUTERS_CATEGORY.equals(url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY));
+    }
+
+    public static boolean isProvider(URL url) {
+        return PROVIDERS_CATEGORY.equals(url.getParameter(Constants.CATEGORY_KEY, PROVIDERS_CATEGORY))
+                && !OVERRIDE_PROTOCOL.equals(url.getProtocol())
+                && !ROUTE_PROTOCOL.equals(url.getProtocol());
     }
 
     /**
