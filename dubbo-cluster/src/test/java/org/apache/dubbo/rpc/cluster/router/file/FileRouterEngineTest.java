@@ -160,7 +160,8 @@ public class FileRouterEngineTest {
 
     private void initDic(URL url) {
         // FIXME: this exposes the design flaw in RouterChain
-        dic = new StaticDirectory<>(url, invokers);
+        URL dicInitUrl = URL.valueOf("consumer://localhost:20880/org.apache.dubbo.rpc.cluster.router.file.FileRouterEngineTest?application=FileRouterEngineTest");
+        dic = new StaticDirectory<>(dicInitUrl, invokers);
         dic.buildRouterChain();
         dic.getRouterChain().initWithRouters(Arrays.asList(routerFactory.getRouter(url)));
     }
