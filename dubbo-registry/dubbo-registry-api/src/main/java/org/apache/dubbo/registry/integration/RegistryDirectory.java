@@ -595,8 +595,10 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     public List<Invoker<T>> doList(Invocation invocation) {
         if (forbidden) {
             // 1. No service provider 2. Service providers are disabled
-            throw new RpcException(RpcException.FORBIDDEN_EXCEPTION, "No provider available from registry " + getUrl().getAddress() + " for service " + getConsumerUrl()
-                    .getServiceKey() + " on consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ", please check status of providers(disabled, not registered or in blacklist).");
+            throw new RpcException(RpcException.FORBIDDEN_EXCEPTION, "No provider available from registry " +
+                    getUrl().getAddress() + " for service " + getConsumerUrl().getServiceKey() + " on consumer " +
+                    NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() +
+                    ", please check status of providers(disabled, not registered or in blacklist).");
         }
 
         if (multiGroup) {
