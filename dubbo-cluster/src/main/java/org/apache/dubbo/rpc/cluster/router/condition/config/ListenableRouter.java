@@ -20,8 +20,8 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.ConfigChangeType;
 import org.apache.dubbo.configcenter.ConfigurationListener;
@@ -124,14 +124,15 @@ public abstract class ListenableRouter extends AbstractRouter implements Configu
         }
     }
 
-    private void init(String ruleKey) {
-        Assert.notEmptyString(ruleKey, "router rule's name cannot be null");
-        String router = ruleKey + Constants.ROUTERS_SUFFIX;
-        String rule = configuration.getConfig(router);
-        if (rule != null) {
-            this.process(new ConfigChangeEvent(router, rule));
+    private synchronized void init(String ruleKey) {
+        if (StringUtils.isEmpty(ruleKey)) {
+            return;
         }
-
-        configuration.addListener(router, this);
+        String routerKey = ruleKey + Constants.ROUTERS_SUFFIX;
+        configuration.addListener(routerKey, this);
+        String rule = configuration.getConfig(routerKey);
+        if (rule != null) {
+            this.process(new ConfigChangeEvent(routerKey, rule));
+        }
     }
 }

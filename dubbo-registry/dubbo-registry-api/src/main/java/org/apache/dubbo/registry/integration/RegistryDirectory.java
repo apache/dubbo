@@ -220,7 +220,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 .get(0)
                 .getProtocol())) {
             this.forbidden = true; // Forbid to access
-            this.invokers = null;
+            this.invokers = Collections.emptyList();
             routerChain.setInvokers(this.invokers);
             destroyAllInvokers(); // Close all invokers
         } else {
