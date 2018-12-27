@@ -18,23 +18,20 @@ package org.apache.dubbo.rpc.cluster;
 
 import org.apache.dubbo.common.URL;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 /**
- *
+ * If you want to provide a router implementation based on design of v2.7.0, please extend from this abstract class.
+ * For 2.6.x style router, please implement and use RouterFactory directly.
  */
-public abstract class AbstractAppRouterFactory implements RouterFactory {
-    private Router router;
+public abstract class CacheableRouterFactory implements RouterFactory {
+    private ConcurrentMap<String, Router> routerMap = new ConcurrentHashMap<>();
 
     @Override
     public Router getRouter(URL url) {
-        if (router != null) {
-            return router;
-        }
-        synchronized (this) {
-            if (router == null) {
-                router = createRouter(url);
-            }
-        }
-        return router;
+        routerMap.computeIfAbsent(url.getServiceKey(), k -> createRouter(url));
+        return routerMap.get(url.getServiceKey());
     }
 
     protected abstract Router createRouter(URL url);

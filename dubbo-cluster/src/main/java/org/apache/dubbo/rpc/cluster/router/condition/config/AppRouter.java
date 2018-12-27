@@ -16,21 +16,17 @@
  */
 package org.apache.dubbo.rpc.cluster.router.condition.config;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
-import org.apache.dubbo.rpc.cluster.AbstractAppRouterFactory;
-import org.apache.dubbo.rpc.cluster.Router;
 
 /**
- *
+ * Application level router, "application.routers"
  */
-@Activate(order = 200)
-public class AppConfigConditionRouterFactory extends AbstractAppRouterFactory {
-    public static final String NAME = "app-config-condition";
+public class AppRouter extends ListenableRouter {
+    public static final String NAME = "APP_ROUTER";
 
-    @Override
-    protected Router createRouter(URL url) {
-        return new AppConfigConditionRouter(DynamicConfiguration.getDynamicConfiguration(), url);
+    public AppRouter(DynamicConfiguration configuration, URL url) {
+        super(configuration, url, url.getParameter(Constants.APPLICATION_KEY));
     }
 }
