@@ -208,9 +208,13 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     /**
      * Convert the invokerURL list to the Invoker Map. The rules of the conversion are as follows:
-     * 1.If URL has been converted to invoker, it is no longer re-referenced and obtained directly from the cache, and notice that any parameter changes in the URL will be re-referenced.
-     * 2.If the incoming invoker list is not empty, it means that it is the latest invoker list
-     * 3.If the list of incoming invokerUrl is empty, It means that the rule is only a override rule or a route rule, which needs to be re-contrasted to decide whether to re-reference.
+     * <ol>
+     * <li> If URL has been converted to invoker, it is no longer re-referenced and obtained directly from the cache,
+     * and notice that any parameter changes in the URL will be re-referenced.</li>
+     * <li>If the incoming invoker list is not empty, it means that it is the latest invoker list.</li>
+     * <li>If the list of incoming invokerUrl is empty, It means that the rule is only a override rule or a route
+     * rule, which needs to be re-contrasted to decide whether to re-reference.</li>
+     * </ol>
      *
      * @param invokerUrls this parameter can't be null
      */
