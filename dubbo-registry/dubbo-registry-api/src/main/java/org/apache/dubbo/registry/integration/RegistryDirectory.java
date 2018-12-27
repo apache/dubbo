@@ -158,7 +158,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     public void subscribe(URL url) {
         setConsumerUrl(url);
         consumerConfigurationListener.addNotifyListener(this);
-        serviceConfigurationListener = new ReferenceConfigurationListener(url);
+        serviceConfigurationListener = new ReferenceConfigurationListener(this, url);
         registry.subscribe(url, this);
     }
 
@@ -756,10 +756,12 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         }
     }
 
-    public class ReferenceConfigurationListener extends AbstractConfiguratorListener {
+    private static class ReferenceConfigurationListener extends AbstractConfiguratorListener {
+        private RegistryDirectory directory;
         private URL url;
 
-        ReferenceConfigurationListener(URL url) {
+        ReferenceConfigurationListener(RegistryDirectory directory, URL url) {
+            this.directory = directory;
             this.url = url;
             this.init();
         }
@@ -776,7 +778,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         @Override
         protected void notifyOverrides() {
             // to notify configurator/router changes
-            RegistryDirectory.this.refreshInvoker(Collections.emptyList());
+            directory.refreshInvoker(Collections.emptyList());
         }
     }
 
