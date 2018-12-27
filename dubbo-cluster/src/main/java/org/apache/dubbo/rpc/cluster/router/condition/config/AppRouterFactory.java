@@ -29,7 +29,7 @@ import org.apache.dubbo.rpc.cluster.RouterFactory;
 public class AppRouterFactory implements RouterFactory {
     public static final String NAME = "app";
 
-    private Router router;
+    private volatile Router router;
 
     @Override
     public Router getRouter(URL url) {

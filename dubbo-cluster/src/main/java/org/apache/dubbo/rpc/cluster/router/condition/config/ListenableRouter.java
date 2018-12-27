@@ -124,14 +124,13 @@ public abstract class ListenableRouter extends AbstractRouter implements Configu
         }
     }
 
-    private void init(String ruleKey) {
-        Assert.notEmptyString(ruleKey, "router rule's name cannot be null");
+    private synchronized void init(String ruleKey) {
+        Assert.notEmptyString(ruleKey, "router rule's key cannot be null");
         String router = ruleKey + Constants.ROUTERS_SUFFIX;
+        configuration.addListener(router, this);
         String rule = configuration.getConfig(router);
         if (rule != null) {
             this.process(new ConfigChangeEvent(router, rule));
         }
-
-        configuration.addListener(router, this);
     }
 }
