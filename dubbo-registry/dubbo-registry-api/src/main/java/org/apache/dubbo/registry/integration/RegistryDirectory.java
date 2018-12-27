@@ -200,7 +200,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         refreshOverrideAndInvoker(classifyUrls(categoryUrls, UrlUtils::isProvider));
     }
 
-    public void refreshOverrideAndInvoker(List<URL> urls) {
+    private void refreshOverrideAndInvoker(List<URL> urls) {
         // mock zookeeper://xxx?mock=return null
         overrideDirectoryUrl();
         refreshInvoker(urls);
