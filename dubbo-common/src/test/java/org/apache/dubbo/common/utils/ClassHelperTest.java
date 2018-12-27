@@ -29,7 +29,10 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.verify;
 
 public class ClassHelperTest {
@@ -117,5 +120,87 @@ public class ClassHelperTest {
     public void testToShortString() throws Exception {
         assertThat(toShortString(null), equalTo("null"));
         assertThat(toShortString(new ClassHelperTest()), startsWith("ClassHelperTest@"));
+    }
+
+    @Test
+    public void testConvertPrimitive() {
+        // Boolean
+        Object resultBoolEmpty = ClassHelper.convertPrimitive(Boolean.class, "");
+        assertNotNull(resultBoolEmpty);
+        assertTrue((resultBoolEmpty instanceof Boolean) && !((Boolean) resultBoolEmpty).booleanValue());
+
+        Object resultBoolBlank = ClassHelper.convertPrimitive(Boolean.class, "  ");
+        assertNotNull(resultBoolBlank);
+        assertTrue((resultBoolBlank instanceof Boolean) && !((Boolean) resultBoolBlank).booleanValue());
+
+        Object resultBoolNull = ClassHelper.convertPrimitive(Boolean.class, null);
+        assertNotNull(resultBoolNull);
+        assertTrue((resultBoolNull instanceof Boolean) && !((Boolean) resultBoolNull).booleanValue());
+
+        Object resultBoolFalse = ClassHelper.convertPrimitive(Boolean.class, "false");
+        assertTrue((resultBoolFalse instanceof Boolean) && !((Boolean) resultBoolFalse).booleanValue());
+
+        Object resultBoolTrue = ClassHelper.convertPrimitive(Boolean.class, "true");
+        assertTrue((resultBoolTrue instanceof Boolean) && ((Boolean) resultBoolTrue).booleanValue());
+
+        // Byte
+        Object resultByteEmpty = ClassHelper.convertPrimitive(Byte.class, "");
+        assertNull(resultByteEmpty);
+
+        Object resultByteBlank = ClassHelper.convertPrimitive(Byte.class, " ");
+        assertNull(resultByteBlank);
+
+        Object resultByteNull = ClassHelper.convertPrimitive(Byte.class, null);
+        assertNull(resultByteNull);
+
+        // Short
+        Object resultShortEmpty = ClassHelper.convertPrimitive(Short.class, "");
+        assertNull(resultShortEmpty);
+
+        Object resultShortBlank = ClassHelper.convertPrimitive(Short.class, " ");
+        assertNull(resultShortBlank);
+
+        Object resultShortNull = ClassHelper.convertPrimitive(Short.class, null);
+        assertNull(resultShortNull);
+
+        // Integer
+        Object resultIntEmpty = ClassHelper.convertPrimitive(Integer.class, "");
+        assertNull(resultIntEmpty);
+
+        Object resultIntBlank = ClassHelper.convertPrimitive(Integer.class, " ");
+        assertNull(resultIntBlank);
+
+        Object resultIntNull = ClassHelper.convertPrimitive(Integer.class, null);
+        assertNull(resultIntNull);
+
+        // Long
+        Object resultLongEmpty = ClassHelper.convertPrimitive(Long.class, "");
+        assertNull(resultLongEmpty);
+
+        Object resultLongBlank = ClassHelper.convertPrimitive(Long.class, " ");
+        assertNull(resultLongBlank);
+
+        Object resultLongNull = ClassHelper.convertPrimitive(Long.class, null);
+        assertNull(resultLongNull);
+
+        // Float
+        Object resultFloatEmpty = ClassHelper.convertPrimitive(Float.class, "");
+        assertNull(resultFloatEmpty);
+
+        Object resultFloatBlank = ClassHelper.convertPrimitive(Float.class, " ");
+        assertNull(resultFloatBlank);
+
+        Object resultFloatNull = ClassHelper.convertPrimitive(Float.class, null);
+        assertNull(resultFloatNull);
+
+        // Double
+        Object resultDoubleEmpty = ClassHelper.convertPrimitive(Double.class, "");
+        assertNull(resultDoubleEmpty);
+
+        Object resultDoubleBlank = ClassHelper.convertPrimitive(Double.class, " ");
+        assertNull(resultDoubleBlank);
+
+        Object resultDoubleNull = ClassHelper.convertPrimitive(Double.class, null);
+        assertNull(resultDoubleNull);
     }
 }

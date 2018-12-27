@@ -105,6 +105,14 @@ public class StringUtilsTest {
     }
 
     @Test
+    public void testIsRealBlank() {
+        assertTrue(StringUtils.isRealBlank(null));
+        assertTrue(StringUtils.isRealBlank(""));
+        assertTrue(StringUtils.isRealBlank("  "));
+        assertFalse(StringUtils.isRealBlank("abc"));
+    }
+
+    @Test
     public void testIsEmpty() throws Exception {
         assertTrue(StringUtils.isEmpty(null));
         assertTrue(StringUtils.isEmpty(""));
