@@ -434,30 +434,22 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
 
     private URL overrideWithConfigurator(URL providerUrl) {
-        List<Configurator> localConfigurators = this.configurators; // local reference
-        if (localConfigurators != null && !localConfigurators.isEmpty()) {
-            for (Configurator configurator : localConfigurators) {
-                providerUrl = configurator.configure(providerUrl);
-            }
-        }
-
-        List<Configurator> localAppDynamicConfigurators = consumerConfigurationListener.getConfigurators(); // local reference
-        if (localAppDynamicConfigurators != null && !localAppDynamicConfigurators.isEmpty()) {
-            for (Configurator configurator : localAppDynamicConfigurators) {
-                providerUrl = configurator.configure(providerUrl);
-            }
-        }
-
+        providerUrl = overrideWithConfigurators(this.configurators, providerUrl);
+        providerUrl = overrideWithConfigurators(consumerConfigurationListener.getConfigurators(), providerUrl);
         if (serviceConfigurationListener != null) {
-            List<Configurator> localDynamicConfigurators = serviceConfigurationListener.getConfigurators(); // local reference
-            if (localDynamicConfigurators != null && !localDynamicConfigurators.isEmpty()) {
-                for (Configurator configurator : localDynamicConfigurators) {
-                    providerUrl = configurator.configure(providerUrl);
-                }
-            }
+            providerUrl = overrideWithConfigurators(serviceConfigurationListener.getConfigurators(), providerUrl);
         }
 
         return providerUrl;
+    }
+
+    private URL overrideWithConfigurators(List<Configurator> configurators, URL url) {
+        if (configurators != null && !configurators.isEmpty()) {
+            for (Configurator configurator : configurators) {
+                url = configurator.configure(url);
+            }
+        }
+        return url;
     }
 
     /**
