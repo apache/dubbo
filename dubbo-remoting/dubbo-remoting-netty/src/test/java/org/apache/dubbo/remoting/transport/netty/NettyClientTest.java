@@ -24,6 +24,7 @@ import org.apache.dubbo.remoting.exchange.Exchangers;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -69,7 +70,7 @@ public class NettyClientTest {
         }
         Thread.sleep(1000);
     }
-
+@Ignore
     @Test
     public void testServerClose() throws Exception {
         for (int i = 0; i < 100; i++) {

@@ -23,6 +23,7 @@ import org.apache.dubbo.config.support.Parameter;
 import junit.framework.TestCase;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.lang.annotation.ElementType;
@@ -345,6 +346,7 @@ public class AbstractConfigTest {
         }
     }
 
+    @Ignore
     @Test
     public void testRefreshProperties() {
         try {
