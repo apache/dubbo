@@ -26,7 +26,6 @@ import org.apache.dubbo.rpc.cluster.Router;
 public abstract class AbstractRouter implements Router {
     protected int priority;
     protected boolean force = false;
-    protected boolean enabled = true;
     protected URL url;
 
     protected DynamicConfiguration configuration;
@@ -69,14 +68,6 @@ public abstract class AbstractRouter implements Router {
     @Override
     public int compareTo(Router o) {
         return (this.getPriority() >= o.getPriority()) ? 1 : -1;
-    }
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
     }
 
     public int getPriority() {

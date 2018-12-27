@@ -33,7 +33,7 @@ import java.util.List;
  */
 public interface Router extends Comparable<Router> {
     /**
-     * get the router url.
+     * Get the router url.
      *
      * @return url
      */
@@ -63,24 +63,26 @@ public interface Router extends Comparable<Router> {
     }
 
     /**
-     * To decide whether this router need to execute every time an RPC comes or should only execute when addresses or rule change.
+     * To decide whether this router need to execute every time an RPC comes or should only execute when addresses or
+     * rule change.
      *
-     * @return
+     * @return true if the router need to execute every time.
      */
     boolean isRuntime();
 
     /**
-     * To decide whether this router should take effect when none of the invoker can match the router rule, which means the {@link #route(List, URL, Invocation)} would be empty.
-     * Most of time, most router implementation would default this value to false.
+     * To decide whether this router should take effect when none of the invoker can match the router rule, which
+     * means the {@link #route(List, URL, Invocation)} would be empty. Most of time, most router implementation would
+     * default this value to false.
      *
-     * @return
+     * @return true to execute if none of invokers matches the current router
      */
     boolean isForce();
 
     /**
-     * used to sort routers.
+     * Router's priority, used to sort routers.
      *
-     * @return
+     * @return router's priority
      */
     int getPriority();
 }

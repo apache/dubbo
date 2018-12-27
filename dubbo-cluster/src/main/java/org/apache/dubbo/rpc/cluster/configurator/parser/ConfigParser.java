@@ -32,28 +32,29 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
+ * Config parser
  */
 public class ConfigParser {
 
     public static List<URL> parseConfigurators(String rawConfig) {
         List<URL> urls = new ArrayList<>();
-        ConfiguratorConfig configuratorConfig = parseObject(rawConfig, ConfiguratorConfig.class);
+        ConfiguratorConfig configuratorConfig = parseObject(rawConfig);
 
         String scope = configuratorConfig.getScope();
         List<ConfigItem> items = configuratorConfig.getConfigs();
 
         if (ConfiguratorConfig.SCOPE_APPLICATION.equals(scope)) {
             items.forEach(item -> urls.addAll(appItemToUrls(item, configuratorConfig)));
-        } else { // servcie scope by default.
+        } else {
+            // service scope by default.
             items.forEach(item -> urls.addAll(serviceItemToUrls(item, configuratorConfig)));
         }
         return urls;
     }
 
-    public static <T> T parseObject(String rawConfig, Class<T> clazz) {
-        Constructor constructor = new Constructor(clazz);
-        TypeDescription itemDescription = new TypeDescription(clazz);
+    private static <T> T parseObject(String rawConfig) {
+        Constructor constructor = new Constructor(ConfiguratorConfig.class);
+        TypeDescription itemDescription = new TypeDescription(ConfiguratorConfig.class);
         itemDescription.addPropertyParameters("items", ConfigItem.class);
         constructor.addTypeDescription(itemDescription);
 
@@ -63,13 +64,7 @@ public class ConfigParser {
 
     private static List<URL> serviceItemToUrls(ConfigItem item, ConfiguratorConfig config) {
         List<URL> urls = new ArrayList<>();
-        List<String> addresses = item.getAddresses();
-        if (addresses == null) {
-            addresses = new ArrayList<>();
-        }
-        if (addresses.size() == 0) {
-            addresses.add(Constants.ANYHOST_VALUE);
-        }
+        List<String> addresses = parseAddresses(item);
 
         addresses.forEach(addr -> {
             StringBuilder urlBuilder = new StringBuilder();
@@ -78,12 +73,7 @@ public class ConfigParser {
             urlBuilder.append(appendService(config.getKey()));
             urlBuilder.append(toParameterString(item));
 
-            urlBuilder.append("&enabled=");
-            if (item.getType() == null || ConfigItem.GENERAL_TYPE.equals(item.getType())) {
-                urlBuilder.append(config.getEnabled());
-            } else {
-                urlBuilder.append(item.getEnabled());
-            }
+            parseEnabled(item, config, urlBuilder);
 
             urlBuilder.append("&category=").append(Constants.DYNAMIC_CONFIGURATORS_CATEGORY);
             urlBuilder.append("&configVersion=").append(config.getConfigVersion());
@@ -91,7 +81,7 @@ public class ConfigParser {
             List<String> apps = item.getApplications();
             if (apps != null && apps.size() > 0) {
                 apps.forEach(app -> {
-                    urls.add(URL.valueOf(urlBuilder.append("&application=" + app).toString()));
+                    urls.add(URL.valueOf(urlBuilder.append("&application=").append(app).toString()));
                 });
             } else {
                 urls.add(URL.valueOf(urlBuilder.toString()));
@@ -103,13 +93,7 @@ public class ConfigParser {
 
     private static List<URL> appItemToUrls(ConfigItem item, ConfiguratorConfig config) {
         List<URL> urls = new ArrayList<>();
-        List<String> addresses = item.getAddresses();
-        if (addresses == null) {
-            addresses = new ArrayList<>();
-        }
-        if (addresses.size() == 0) {
-            addresses.add(Constants.ANYHOST_VALUE);
-        }
+        List<String> addresses = parseAddresses(item);
         for (String addr : addresses) {
             StringBuilder urlBuilder = new StringBuilder();
             urlBuilder.append("override://").append(addr).append("/");
@@ -126,12 +110,7 @@ public class ConfigParser {
 
                 urlBuilder.append("&application=").append(config.getKey());
 
-                urlBuilder.append("&enabled=");
-                if (item.getType() == null || ConfigItem.GENERAL_TYPE.equals(item.getType())) {
-                    urlBuilder.append(config.getEnabled());
-                } else {
-                    urlBuilder.append(item.getEnabled());
-                }
+                parseEnabled(item, config, urlBuilder);
 
                 urlBuilder.append("&category=").append(Constants.APP_DYNAMIC_CONFIGURATORS_CATEGORY);
                 urlBuilder.append("&configVersion=").append(config.getConfigVersion());
@@ -152,7 +131,8 @@ public class ConfigParser {
         }
         Map<String, String> parameters = item.getParameters();
         if (parameters == null || parameters.isEmpty()) {
-            throw new IllegalStateException("Invalid configurator rule, please specify at least one parameter you want to change in the rule!");
+            throw new IllegalStateException("Invalid configurator rule, please specify at least one parameter " +
+                    "you want to change in the rule.");
         }
 
         parameters.forEach((k, v) -> {
@@ -175,13 +155,14 @@ public class ConfigParser {
     private static String appendService(String serviceKey) {
         StringBuilder sb = new StringBuilder();
         if (StringUtils.isEmpty(serviceKey)) {
-            throw new IllegalStateException("service field in coniguration is null!");
+            throw new IllegalStateException("service field in configuration is null.");
         }
+
         String interfaceName = serviceKey;
         int i = interfaceName.indexOf("/");
         if (i > 0) {
             sb.append("group=");
-            sb.append(interfaceName.substring(0, i));
+            sb.append(interfaceName, 0, i);
             sb.append("&");
 
             interfaceName = interfaceName.substring(i + 1);
@@ -198,4 +179,23 @@ public class ConfigParser {
         return sb.toString();
     }
 
+    private static void parseEnabled(ConfigItem item, ConfiguratorConfig config, StringBuilder urlBuilder) {
+        urlBuilder.append("&enabled=");
+        if (item.getType() == null || ConfigItem.GENERAL_TYPE.equals(item.getType())) {
+            urlBuilder.append(config.getEnabled());
+        } else {
+            urlBuilder.append(item.getEnabled());
+        }
+    }
+
+    private static List<String> parseAddresses(ConfigItem item) {
+        List<String> addresses = item.getAddresses();
+        if (addresses == null) {
+            addresses = new ArrayList<>();
+        }
+        if (addresses.size() == 0) {
+            addresses.add(Constants.ANYHOST_VALUE);
+        }
+        return addresses;
+    }
 }
