@@ -29,6 +29,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
@@ -124,6 +125,19 @@ public class ClassHelperTest {
 
     @Test
     public void testConvertPrimitive() {
+        // Character
+        Object resultCharacterEmpty = ClassHelper.convertPrimitive(Character.class, "");
+        assertEquals('\0', resultCharacterEmpty);
+
+        Object resultCharacterBlank = ClassHelper.convertPrimitive(Character.class, " ");
+        assertEquals(' ', resultCharacterBlank);
+
+        Object resultCharacterNormal = ClassHelper.convertPrimitive(Character.class, "abc");
+        assertEquals('a', resultCharacterNormal);
+
+        Object resultCharacterNull = ClassHelper.convertPrimitive(Character.class, null);
+        assertNull(resultCharacterNull);
+
         // Boolean
         Object resultBoolEmpty = ClassHelper.convertPrimitive(Boolean.class, "");
         assertNotNull(resultBoolEmpty);
@@ -134,8 +148,7 @@ public class ClassHelperTest {
         assertTrue((resultBoolBlank instanceof Boolean) && !((Boolean) resultBoolBlank).booleanValue());
 
         Object resultBoolNull = ClassHelper.convertPrimitive(Boolean.class, null);
-        assertNotNull(resultBoolNull);
-        assertTrue((resultBoolNull instanceof Boolean) && !((Boolean) resultBoolNull).booleanValue());
+        assertNull(resultBoolNull);
 
         Object resultBoolFalse = ClassHelper.convertPrimitive(Boolean.class, "false");
         assertTrue((resultBoolFalse instanceof Boolean) && !((Boolean) resultBoolFalse).booleanValue());
@@ -153,6 +166,9 @@ public class ClassHelperTest {
         Object resultByteNull = ClassHelper.convertPrimitive(Byte.class, null);
         assertNull(resultByteNull);
 
+        Object resultByteNormal = ClassHelper.convertPrimitive(Byte.class, "5");
+        assertTrue((resultByteNormal instanceof Byte) && ((Byte) resultByteNormal).byteValue() == 5 );
+
         // Short
         Object resultShortEmpty = ClassHelper.convertPrimitive(Short.class, "");
         assertNull(resultShortEmpty);
@@ -162,6 +178,9 @@ public class ClassHelperTest {
 
         Object resultShortNull = ClassHelper.convertPrimitive(Short.class, null);
         assertNull(resultShortNull);
+
+        Object resultShortNormal = ClassHelper.convertPrimitive(Short.class, "6");
+        assertTrue((resultShortNormal instanceof Short) && ((Short) resultShortNormal).shortValue() == 6);
 
         // Integer
         Object resultIntEmpty = ClassHelper.convertPrimitive(Integer.class, "");
@@ -173,6 +192,9 @@ public class ClassHelperTest {
         Object resultIntNull = ClassHelper.convertPrimitive(Integer.class, null);
         assertNull(resultIntNull);
 
+        Object resultIntNormal = ClassHelper.convertPrimitive(Integer.class, "7");
+        assertTrue((resultIntNormal instanceof Integer) && ((Integer) resultIntNormal).intValue() == 7);
+
         // Long
         Object resultLongEmpty = ClassHelper.convertPrimitive(Long.class, "");
         assertNull(resultLongEmpty);
@@ -182,6 +204,9 @@ public class ClassHelperTest {
 
         Object resultLongNull = ClassHelper.convertPrimitive(Long.class, null);
         assertNull(resultLongNull);
+
+        Object resultLongNormal = ClassHelper.convertPrimitive(Long.class, "8");
+        assertTrue((resultLongNormal instanceof Long) && ((Long) resultLongNormal).longValue() == 8);
 
         // Float
         Object resultFloatEmpty = ClassHelper.convertPrimitive(Float.class, "");
@@ -193,6 +218,9 @@ public class ClassHelperTest {
         Object resultFloatNull = ClassHelper.convertPrimitive(Float.class, null);
         assertNull(resultFloatNull);
 
+        Object resultFloatNormal = ClassHelper.convertPrimitive(Float.class, "9.9");
+        assertTrue(resultFloatNormal != null && resultFloatNormal instanceof Float);
+
         // Double
         Object resultDoubleEmpty = ClassHelper.convertPrimitive(Double.class, "");
         assertNull(resultDoubleEmpty);
@@ -202,5 +230,8 @@ public class ClassHelperTest {
 
         Object resultDoubleNull = ClassHelper.convertPrimitive(Double.class, null);
         assertNull(resultDoubleNull);
+
+        Object resultDoubleNormal = ClassHelper.convertPrimitive(Double.class, "10.11");
+        assertTrue(resultDoubleNormal != null && resultDoubleNormal instanceof Double);
     }
 }

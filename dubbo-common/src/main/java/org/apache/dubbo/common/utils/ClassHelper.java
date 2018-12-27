@@ -265,22 +265,26 @@ public class ClassHelper {
     }
 
     public static Object convertPrimitive(Class<?> type, String value) {
-        if (type == char.class || type == Character.class) {
+        if (value == null) {
+            return null;
+        } else if (type == char.class || type == Character.class) {
             return value.length() > 0 ? value.charAt(0) : '\0';
         } else if (type == boolean.class || type == Boolean.class) {
             return Boolean.valueOf(value);
+        } else if (StringUtils.isRealBlank(value)) {
+            return null;
         } else if (type == byte.class || type == Byte.class) {
-            return StringUtils.isRealBlank(value) ? null : Byte.valueOf(value);
+            return Byte.valueOf(value);
         } else if (type == short.class || type == Short.class) {
-            return StringUtils.isRealBlank(value) ? null : Short.valueOf(value);
+            return Short.valueOf(value);
         } else if (type == int.class || type == Integer.class) {
-            return StringUtils.isRealBlank(value) ? null : Integer.valueOf(value);
+            return Integer.valueOf(value);
         } else if (type == long.class || type == Long.class) {
-            return StringUtils.isRealBlank(value) ? null : Long.valueOf(value);
+            return Long.valueOf(value);
         } else if (type == float.class || type == Float.class) {
-            return StringUtils.isRealBlank(value) ? null : Float.valueOf(value);
+            return Float.valueOf(value);
         } else if (type == double.class || type == Double.class) {
-            return StringUtils.isRealBlank(value) ? null : Double.valueOf(value);
+            return Double.valueOf(value);
         }
         return value;
     }
