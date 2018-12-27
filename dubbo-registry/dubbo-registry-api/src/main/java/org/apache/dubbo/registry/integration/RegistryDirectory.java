@@ -775,7 +775,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
         @Override
         protected void notifyOverrides() {
-            // 'null' means notification of configurators or routers.
+            // to notify configurator/router changes
             RegistryDirectory.this.refreshInvoker(Collections.emptyList());
         }
     }
