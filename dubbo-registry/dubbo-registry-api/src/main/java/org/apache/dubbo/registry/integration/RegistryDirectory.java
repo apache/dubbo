@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.integration;
 
 import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.ServiceMetada;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -27,6 +28,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
+import org.apache.dubbo.registry.AddressListener;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.rpc.Invocation;
@@ -89,6 +91,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     private final Map<String, String> queryMap; // Initialization at construction time, assertion not null
     private final URL directoryUrl; // Initialization at construction time, assertion not null, and always assign non null value
     private final String[] serviceMethods;
+    private final ServiceMetada serviceMetada;
     private final boolean multiGroup;
     private Protocol protocol; // Initialization at the time of injection, the assertion is not null
     private Registry registry; // Initialization at the time of injection, the assertion is not null
@@ -135,6 +138,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         this.multiGroup = group != null && ("*".equals(group) || group.contains(","));
         String methods = queryMap.get(Constants.METHODS_KEY);
         this.serviceMethods = methods == null ? null : Constants.COMMA_SPLIT_PATTERN.split(methods);
+
+        this.serviceMetada = new ServiceMetada(serviceKey, serviceType);
     }
 
     /**
@@ -241,6 +246,12 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     @Override
     public synchronized void notify(List<URL> urls) {
+        ExtensionLoader<AddressListener> addressListenerExtensionLoader = ExtensionLoader.getExtensionLoader(AddressListener.class);
+        Set<String> surpportedListeners = addressListenerExtensionLoader.getSupportedExtensions();
+        for (String addressListenerName : surpportedListeners) {
+            addressListenerExtensionLoader.getExtension(addressListenerName).notify(this.serviceMetada, urls);
+        }
+
         List<URL> categoryUrls = urls.stream()
                 .filter(this::isValidCategory)
                 .filter(this::isNotCompatibleFor26x)

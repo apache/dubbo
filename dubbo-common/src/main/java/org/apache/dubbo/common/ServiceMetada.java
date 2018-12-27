@@ -24,31 +24,21 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ServiceMetada {
 
-    private final String serviceName;
-    private final String version;
-    private final String group;
+    private final String serviceKey;
+    private final Class<?> serviceType;
 
     /* will be transferred to remote side */
     private final Map<String, Object> attachments = new ConcurrentHashMap<String, Object>();
     /* used locally*/
     private final Map<String, Object> attributeMap = new ConcurrentHashMap<String, Object>();
 
-    public ServiceMetada(String serviceName, String version, String group) {
-        this.serviceName = serviceName;
-        this.version = version;
-        this.group = group;
+    public ServiceMetada(String serviceKey, Class<?> serviceType) {
+        this.serviceKey = serviceKey;
+        this.serviceType = serviceType;
     }
 
-    public String getServiceName() {
-        return serviceName;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public String getGroup() {
-        return group;
+    public String getServiceKey() {
+        return serviceKey;
     }
 
     public Map<String, Object> getAttachments() {
