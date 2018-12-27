@@ -70,7 +70,7 @@ public class NettyClientTest {
         }
         Thread.sleep(1000);
     }
-@Ignore
+    @Ignore
     @Test
     public void testServerClose() throws Exception {
         for (int i = 0; i < 100; i++) {

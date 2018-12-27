@@ -27,7 +27,7 @@ import org.junit.Test;
  * StandaloneContainerTest
  */
 public class SpringContainerTest {
-@Ignore
+    @Ignore
     @Test
     public void testContainer() {
         SpringContainer container = (SpringContainer) ExtensionLoader.getExtensionLoader(Container.class).getExtension("spring");
