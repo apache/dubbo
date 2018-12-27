@@ -104,8 +104,7 @@ public class ClassHelper {
                 // getClassLoader() returning null indicates the bootstrap ClassLoader
                 try {
                     cl = ClassLoader.getSystemClassLoader();
-                }
-                catch (Throwable ex) {
+                } catch (Throwable ex) {
                     // Cannot access system ClassLoader - oh well, maybe the caller can live with null...
                 }
             }
@@ -265,7 +264,9 @@ public class ClassHelper {
     }
 
     public static Object convertPrimitive(Class<?> type, String value) {
-        if (type == char.class || type == Character.class) {
+        if (StringUtils.isEmpty(value)) {
+            return null;
+        } else if (type == char.class || type == Character.class) {
             return value.length() > 0 ? value.charAt(0) : '\0';
         } else if (type == boolean.class || type == Boolean.class) {
             return Boolean.valueOf(value);
