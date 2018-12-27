@@ -227,8 +227,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 .get(0)
                 .getProtocol())) {
             this.forbidden = true; // Forbid to access
-            this.invokers = null;
-            routerChain.notifyFullInvokers(this.invokers, getConsumerUrl());
+            this.invokers = Collections.emptyList();
+            routerChain.setInvokers(this.invokers);
             destroyAllInvokers(); // Close all invokers
         } else {
             this.forbidden = false; // Allow to access
@@ -259,7 +259,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
             // pre-route and build cache, notice that route cache should build on original Invoker list.
             // toMergeMethodInvokerMap() will wrap some invokers having different groups, those wrapped invokers not should be routed.
-            routerChain.notifyFullInvokers(newInvokers, getConsumerUrl());
+            routerChain.setInvokers(newInvokers);
 //            this.methodInvokerMap = multiGroup ? toMergeMethodInvokerMap(newMethodInvokerMap) : newMethodInvokerMap;
             this.invokers = multiGroup ? toMergeInvokerList(newInvokers) : newInvokers;
             this.urlInvokerMap = newUrlInvokerMap;
@@ -295,41 +295,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         return mergedInvokers;
     }
 
-    /*private Map<String, List<Invoker<T>>> toMergeMethodInvokerMap(Map<String, List<Invoker<T>>> methodMap) {
-        Map<String, List<Invoker<T>>> result = new HashMap<String, List<Invoker<T>>>();
-        for (Map.Entry<String, List<Invoker<T>>> entry : methodMap.entrySet()) {
-            String method = entry.getKey();
-            List<Invoker<T>> invokers = entry.getValue();
-            Map<String, List<Invoker<T>>> groupMap = new HashMap<String, List<Invoker<T>>>();
-            for (Invoker<T> invoker : invokers) {
-                String group = invoker.getUrl().getParameter(Constants.GROUP_KEY, "");
-                List<Invoker<T>> groupInvokers = groupMap.get(group);
-                if (groupInvokers == null) {
-                    groupInvokers = new ArrayList<Invoker<T>>();
-                    groupMap.put(group, groupInvokers);
-                }
-                groupInvokers.add(invoker);
-            }
-            if (groupMap.size() == 1) {
-                result.put(method, groupMap.values().iterator().next());
-            } else if (groupMap.size() > 1) {
-                List<Invoker<T>> groupInvokers = new ArrayList<Invoker<T>>();
-                for (List<Invoker<T>> groupList : groupMap.values()) {
-                    StaticDirectory<T> staticDirectory = new StaticDirectory<>(groupList);
-                    Map<String, List<Invoker<T>>> methodGroupInvokers = new HashMap<>();
-                    methodGroupInvokers.put(method, groupList);
-                    staticDirectory.buildRouterChain(methodGroupInvokers, dynamicConfiguration);
-                    groupInvokers.add(cluster.join(staticDirectory));
-                }
-                result.put(method, groupInvokers);
-            } else {
-                result.put(method, invokers);
-            }
-        }
-        return result;
-    }
-*/
-
     /**
      * @param urls
      * @return null : no routers ,do nothing
@@ -351,8 +316,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }
             try {
                 Router router = routerFactory.getRouter(url);
-                router.addRouterChain(routerChain);
-//                    routerChain.addRouter(router);
+                routerChain.addRouter(router);
                 if (!routers.contains(router)) routers.add(router);
             } catch (Throwable t) {
                 logger.error("convert router url to router error, url: " + url, t);

@@ -97,7 +97,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     // registry centers
     protected List<RegistryConfig> registries;
 
-    protected String registryLiteral;
+    protected String registryIds;
 
     // connection events
     protected String onconnect;
@@ -114,7 +114,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected void checkRegistry() {
         loadRegistriesFromBackwardConfig();
 
-        convertRegistryLiteralToRegistries();
+        convertRegistryIdsToRegistries();
 
         for (RegistryConfig registryConfig : registries) {
             registryConfig.refresh();
@@ -386,24 +386,24 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
     }
 
-    private void convertRegistryLiteralToRegistries() {
-        if (StringUtils.isEmpty(registryLiteral) && (registries == null || registries.isEmpty())) {
+    private void convertRegistryIdsToRegistries() {
+        if (StringUtils.isEmpty(registryIds) && (registries == null || registries.isEmpty())) {
             Set<String> configedRegistries = new HashSet<>();
             configedRegistries.addAll(getSubProperties(Environment.getInstance()
                     .getExternalConfigurationMap(), Constants.REGISTRIES_SUFFIX));
             configedRegistries.addAll(getSubProperties(Environment.getInstance()
                     .getAppExternalConfigurationMap(), Constants.REGISTRIES_SUFFIX));
 
-            registryLiteral = String.join(",", configedRegistries);
+            registryIds = String.join(",", configedRegistries);
         }
 
-        if (StringUtils.isEmpty(registryLiteral)) {
+        if (StringUtils.isEmpty(registryIds)) {
             if (registries == null || registries.isEmpty()) {
                 registries = new ArrayList<>();
                 registries.add(new RegistryConfig());
             }
         } else {
-            String[] arr = Constants.COMMA_SPLIT_PATTERN.split(registryLiteral);
+            String[] arr = Constants.COMMA_SPLIT_PATTERN.split(registryIds);
             if (registries == null || registries.isEmpty()) {
                 registries = new ArrayList<>();
             }
@@ -415,7 +415,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 }
             });
             if (registries.size() > arr.length) {
-                throw new IllegalStateException("Too much registries found, the registries assigned to this service are :" + registryLiteral + ", but got " + registries
+                throw new IllegalStateException("Too much registries found, the registries assigned to this service are :" + registryIds + ", but got " + registries
                         .size() + " registries!");
             }
         }
@@ -597,12 +597,12 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     @Parameter(excluded = true)
-    public String getRegistryLiteral() {
-        return registryLiteral;
+    public String getRegistryIds() {
+        return registryIds;
     }
 
-    public void setRegistry(String registryLiteral) {
-        this.registryLiteral = registryLiteral;
+    public void setRegistryIds(String registryIds) {
+        this.registryIds = registryIds;
     }
 
     public MonitorConfig getMonitor() {

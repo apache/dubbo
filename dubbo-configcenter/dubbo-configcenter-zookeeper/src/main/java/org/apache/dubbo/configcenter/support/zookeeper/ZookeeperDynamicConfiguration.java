@@ -100,9 +100,14 @@ public class ZookeeperDynamicConfiguration extends AbstractDynamicConfiguration<
 
     @Override
     protected String getTargetConfig(String key, String group, long timeout) {
+        // when group is not null, we are getting startup configs from Config Center
+        // for example, group=dubbo, key=dubbo.properties
         if (StringUtils.isNotEmpty(group)) {
             key = group + "/" + key;
-        } else {
+        }
+        // when group is null, we are fetching governance rules.
+        // for example, key=org.apache.dubbo.DemoService.configurators
+        else {
             int i = key.lastIndexOf(".");
             key = key.substring(0, i) + "/" + key.substring(i + 1);
         }

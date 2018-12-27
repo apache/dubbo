@@ -16,9 +16,11 @@
  */
 package org.apache.dubbo.rpc.cluster.router.condition.config;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.ConfigChangeType;
@@ -28,7 +30,6 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Router;
-import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
 import org.apache.dubbo.rpc.cluster.router.condition.ConditionRouter;
 import org.apache.dubbo.rpc.cluster.router.condition.config.model.BlackWhiteListRule;
@@ -39,26 +40,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
+ * Abstract router which listens to dynamic configuration
  */
-public abstract class AbstractConfigConditionRouter extends AbstractRouter implements ConfigurationListener {
-    public static final String NAME = "CONFIG_CONDITION_OUTER";
+public abstract class ListenableRouter extends AbstractRouter implements ConfigurationListener {
+    public static final String NAME = "LISTENABLE_ROUTER";
     public static final int DEFAULT_PRIORITY = 200;
-    private static final Logger logger = LoggerFactory.getLogger(AbstractConfigConditionRouter.class);
+    private static final Logger logger = LoggerFactory.getLogger(ListenableRouter.class);
     private ConditionRouterRule routerRule;
     private List<ConditionRouter> conditionRouters = new ArrayList<>();
 
-    public AbstractConfigConditionRouter(DynamicConfiguration configuration, URL url) {
+    public ListenableRouter(DynamicConfiguration configuration, URL url, String ruleKey) {
         super(configuration, url);
         this.force = false;
-        this.init();
+        this.init(ruleKey);
     }
 
     @Override
     public synchronized void process(ConfigChangeEvent event) {
         if (logger.isInfoEnabled()) {
-            logger.info("Notification of condition rule, change type is: " + event.getChangeType() + ", raw rule is:\n " + event
-                    .getValue());
+            logger.info("Notification of condition rule, change type is: " + event.getChangeType() +
+                    ", raw rule is:\n " + event.getValue());
         }
 
         if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
@@ -69,12 +70,10 @@ public abstract class AbstractConfigConditionRouter extends AbstractRouter imple
                 routerRule = ConditionRuleParser.parse(event.getValue());
                 generateConditions(routerRule, conditionRouters);
             } catch (Exception e) {
-                logger.error("Failed to parse the raw condition rule and it will not take effect, please check if the condition rule matches with the template, the raw rule is:\n " + event
-                        .getValue(), e);
+                logger.error("Failed to parse the raw condition rule and it will not take effect, please check " +
+                        "if the condition rule matches with the template, the raw rule is:\n " + event.getValue(), e);
             }
         }
-
-        routerChains.forEach(RouterChain::notifyRuleChanged);
     }
 
     @Override
@@ -96,23 +95,9 @@ public abstract class AbstractConfigConditionRouter extends AbstractRouter imple
         return DEFAULT_PRIORITY;
     }
 
-    /*@Override
-    public boolean isRuntime() {
-        return isRuleRuntime();
-    }*/
-
-    @Override
-    public boolean isEnabled() {
-        return isRuleEnabled();
-    }
-
     @Override
     public boolean isForce() {
         return (routerRule != null && routerRule.isForce());
-    }
-
-    private boolean isRuleEnabled() {
-        return routerRule != null && routerRule.isValid() && routerRule.isEnabled();
     }
 
     private boolean isRuleRuntime() {
@@ -124,8 +109,7 @@ public abstract class AbstractConfigConditionRouter extends AbstractRouter imple
             routers.clear();
             rule.getConditions().forEach(condition -> {
                 // All sub rules have the same force, runtime value.
-                ConditionRouter subRouter = new ConditionRouter(condition, rule.isForce());
-                subRouter.setEnabled(rule.isEnabled());
+                ConditionRouter subRouter = new ConditionRouter(condition, rule.isForce(), rule.isEnabled());
                 routers.add(subRouter);
             });
 
@@ -133,13 +117,20 @@ public abstract class AbstractConfigConditionRouter extends AbstractRouter imple
             if (blackWhiteList != null && blackWhiteList.isValid()) {
                 blackWhiteList.getConditions().forEach(condition -> {
                     // All sub rules have the same force, runtime value.
-                    ConditionRouter subRouter = new ConditionRouter(condition, true);
-                    subRouter.setEnabled(blackWhiteList.isEnabled());
+                    ConditionRouter subRouter = new ConditionRouter(condition, true, blackWhiteList.isEnabled());
                     routers.add(subRouter);
                 });
             }
         }
     }
 
-    protected abstract void init();
+    private synchronized void init(String ruleKey) {
+        Assert.notEmptyString(ruleKey, "router rule's key cannot be null");
+        String router = ruleKey + Constants.ROUTERS_SUFFIX;
+        configuration.addListener(router, this);
+        String rule = configuration.getConfig(router);
+        if (rule != null) {
+            this.process(new ConfigChangeEvent(router, rule));
+        }
+    }
 }
