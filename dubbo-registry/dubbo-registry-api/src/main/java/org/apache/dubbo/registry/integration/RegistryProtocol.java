@@ -39,7 +39,6 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.Configurator;
-import org.apache.dubbo.rpc.cluster.configurator.parser.ConfigParser;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.InvokerWrapper;
 
@@ -537,18 +536,7 @@ public class RegistryProtocol implements Protocol {
         public ServiceConfigurationListener(URL providerUrl, OverrideListener notifyListener) {
             this.providerUrl = providerUrl;
             this.notifyListener = notifyListener;
-            this.init();
-        }
-
-        private synchronized void init() {
-            DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
-            String key = providerUrl.getEncodedServiceKey() + Constants.CONFIGURATORS_SUFFIX;
-            dynamicConfiguration.addListener(key, this);
-            String rawConfig = dynamicConfiguration.getConfig(key);
-            if (!StringUtils.isEmpty(rawConfig)) {
-                configurators = Configurator.toConfigurators(ConfigParser.parseConfigurators(rawConfig))
-                        .orElse(configurators);
-            }
+            this.initWith(providerUrl.getEncodedServiceKey() + Constants.CONFIGURATORS_SUFFIX);
         }
 
         private <T> URL overrideUrl(URL providerUrl) {
@@ -564,18 +552,7 @@ public class RegistryProtocol implements Protocol {
     private class ProviderConfigurationListener extends AbstractConfiguratorListener {
 
         public ProviderConfigurationListener() {
-            this.init();
-        }
-
-        private synchronized void init() {
-            DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
-            String appKey = ApplicationModel.getApplication() + Constants.CONFIGURATORS_SUFFIX;
-            dynamicConfiguration.addListener(appKey, this);
-            String appRawConfig = dynamicConfiguration.getConfig(appKey);
-            if (!StringUtils.isEmpty(appRawConfig)) {
-                configurators = Configurator.toConfigurators(ConfigParser.parseConfigurators(appRawConfig))
-                        .orElse(configurators);
-            }
+            this.initWith(ApplicationModel.getApplication() + Constants.CONFIGURATORS_SUFFIX);
         }
 
         /**

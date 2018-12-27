@@ -25,7 +25,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
@@ -728,16 +727,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         ReferenceConfigurationListener(RegistryDirectory directory, URL url) {
             this.directory = directory;
             this.url = url;
-            this.init();
-        }
-
-        private synchronized void init() {
-            String key = url.getEncodedServiceKey() + Constants.CONFIGURATORS_SUFFIX;
-            DynamicConfiguration.getDynamicConfiguration().addListener(key, this);
-            String rawConfig = DynamicConfiguration.getDynamicConfiguration().getConfig(key);
-            if (rawConfig != null) {
-                this.process(new ConfigChangeEvent(key, rawConfig));
-            }
+            this.initWith(url.getEncodedServiceKey() + Constants.CONFIGURATORS_SUFFIX);
         }
 
         @Override
@@ -750,22 +740,12 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     private static class ConsumerConfigurationListener extends AbstractConfiguratorListener {
         List<RegistryDirectory> listeners = new ArrayList<>();
 
+        ConsumerConfigurationListener() {
+            this.initWith(ApplicationModel.getApplication() + Constants.CONFIGURATORS_SUFFIX);
+        }
 
         void addNotifyListener(RegistryDirectory listener) {
             this.listeners.add(listener);
-        }
-
-        ConsumerConfigurationListener() {
-            this.init();
-        }
-
-        private synchronized void init() {
-            String appKey = ApplicationModel.getApplication() + Constants.CONFIGURATORS_SUFFIX;
-            DynamicConfiguration.getDynamicConfiguration().addListener(appKey, this);
-            String appRawConfig = DynamicConfiguration.getDynamicConfiguration().getConfig(appKey);
-            if (appRawConfig != null) {
-                process(new ConfigChangeEvent(appKey, appRawConfig));
-            }
         }
 
         @Override
