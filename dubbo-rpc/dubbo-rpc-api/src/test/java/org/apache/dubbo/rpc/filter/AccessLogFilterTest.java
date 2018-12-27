@@ -56,11 +56,31 @@ public class AccessLogFilterTest {
     }
 
     @Test
+    public void testDefaultWithMultipleLog() throws InterruptedException {
+        URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1");
+        Invoker<AccessLogFilterTest> invoker = new MyInvoker<AccessLogFilterTest>(url);
+        Invocation invocation = new MockInvocation();
+        accessLogFilter.invoke(invoker, invocation);
+        Thread.sleep(7000);
+    }
+
+    @Test
     public void testCustom() {
         URL url = URL.valueOf("test://test:11/test?accesslog=custom-access.log");
         Invoker<AccessLogFilterTest> invoker = new MyInvoker<AccessLogFilterTest>(url);
         Invocation invocation = new MockInvocation();
         accessLogFilter.invoke(invoker, invocation);
+    }
+
+    @Test
+    public void testCustomWithMultipleLog() throws InterruptedException {
+        URL url = URL.valueOf("test://test:11/test?accesslog=custom-access.log");
+        Invoker<AccessLogFilterTest> invoker = new MyInvoker<AccessLogFilterTest>(url);
+        Invocation invocation = new MockInvocation();
+        for(int i=0;i<10;i++) {
+            accessLogFilter.invoke(invoker, invocation);
+        }
+        Thread.sleep(7000);
     }
 
 }
