@@ -658,13 +658,14 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     private boolean isValidCategory(URL url) {
         String category = url.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY);
-        if ((ROUTERS_CATEGORY.equals(category) || ROUTE_PROTOCOL.equals(url.getProtocol())) || PROVIDERS_CATEGORY.equals(category) || CONFIGURATORS_CATEGORY
-                .equals(category) || DYNAMIC_CONFIGURATORS_CATEGORY.equals(category) || APP_DYNAMIC_CONFIGURATORS_CATEGORY
-                .equals(category)) {
+        if ((ROUTERS_CATEGORY.equals(category) || ROUTE_PROTOCOL.equals(url.getProtocol())) ||
+                PROVIDERS_CATEGORY.equals(category) ||
+                CONFIGURATORS_CATEGORY.equals(category) || DYNAMIC_CONFIGURATORS_CATEGORY.equals(category) ||
+                APP_DYNAMIC_CONFIGURATORS_CATEGORY.equals(category)) {
             return true;
         }
-        logger.warn("Unsupported category " + category + " in notified url: " + url + " from registry " + getUrl().getAddress() + " to consumer " + NetUtils
-                .getLocalHost());
+        logger.warn("Unsupported category " + category + " in notified url: " + url + " from registry " +
+                getUrl().getAddress() + " to consumer " + NetUtils.getLocalHost());
         return false;
     }
 
