@@ -53,8 +53,11 @@ public class FileRouterFactory implements RouterFactory {
             }
             String rule = IOUtils.read(new FileReader(new File(url.getAbsolutePath())));
 
+            // FIXME: this code looks useless
             boolean runtime = url.getParameter(Constants.RUNTIME_KEY, false);
-            URL script = url.setProtocol(protocol).addParameter(Constants.TYPE_KEY, type).addParameter(Constants.RUNTIME_KEY, runtime).addParameterAndEncoded(Constants.RULE_KEY, rule);
+            URL script = url.setProtocol(protocol).addParameter(Constants.TYPE_KEY, type)
+                    .addParameter(Constants.RUNTIME_KEY, runtime)
+                    .addParameterAndEncoded(Constants.RULE_KEY, rule);
 
             return routerFactory.getRouter(script);
         } catch (IOException e) {

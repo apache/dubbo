@@ -21,9 +21,9 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.AsyncRpcResult;
+import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.PostProcessFilter;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -37,7 +37,7 @@ import java.lang.reflect.Method;
  * EventFilter
  */
 @Activate(group = Constants.CONSUMER)
-public class FutureFilter implements PostProcessFilter {
+public class FutureFilter implements Filter {
 
     protected static final Logger logger = LoggerFactory.getLogger(FutureFilter.class);
 
@@ -46,11 +46,11 @@ public class FutureFilter implements PostProcessFilter {
         fireInvokeCallback(invoker, invocation);
         // need to configure if there's return value before the invocation in order to help invoker to judge if it's
         // necessary to return future.
-        return postProcessResult(invoker.invoke(invocation), invoker, invocation);
+        return invoker.invoke(invocation);
     }
 
     @Override
-    public Result postProcessResult(Result result, Invoker<?> invoker, Invocation invocation) {
+    public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
         if (result instanceof AsyncRpcResult) {
             AsyncRpcResult asyncResult = (AsyncRpcResult) result;
             asyncResult.thenApplyWithContext(r -> {

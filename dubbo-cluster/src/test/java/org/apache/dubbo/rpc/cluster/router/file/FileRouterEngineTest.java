@@ -159,9 +159,11 @@ public class FileRouterEngineTest {
     }
 
     private void initDic(URL url) {
-        dic = new StaticDirectory<>(url, invokers);
+        // FIXME: this exposes the design flaw in RouterChain
+        URL dicInitUrl = URL.valueOf("consumer://localhost:20880/org.apache.dubbo.rpc.cluster.router.file.FileRouterEngineTest?application=FileRouterEngineTest");
+        dic = new StaticDirectory<>(dicInitUrl, invokers);
         dic.buildRouterChain();
-        dic.getRouterChain().setResidentRouters(Arrays.asList(routerFactory.getRouter(url)));
+        dic.getRouterChain().initWithRouters(Arrays.asList(routerFactory.getRouter(url)));
     }
 
     static class MockClusterInvoker<T> extends AbstractClusterInvoker<T> {

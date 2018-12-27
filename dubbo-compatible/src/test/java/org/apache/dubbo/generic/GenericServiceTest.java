@@ -18,7 +18,6 @@
 package org.apache.dubbo.generic;
 
 
-import com.alibaba.fastjson.JSON;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
@@ -33,6 +32,9 @@ import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.service.ComplexObject;
 import org.apache.dubbo.service.DemoService;
 import org.apache.dubbo.service.DemoServiceImpl;
+
+import com.alibaba.fastjson.JSON;
+
 import org.junit.Assert;
 import org.junit.Test;
 

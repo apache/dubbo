@@ -39,7 +39,6 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.Configurator;
-import org.apache.dubbo.rpc.cluster.configurator.parser.ConfigParser;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.InvokerWrapper;
 
@@ -58,6 +57,7 @@ import static org.apache.dubbo.common.Constants.CONFIGURATORS_SUFFIX;
 import static org.apache.dubbo.common.Constants.EXPORT_KEY;
 import static org.apache.dubbo.common.Constants.INTERFACES;
 import static org.apache.dubbo.common.Constants.METHODS_KEY;
+import static org.apache.dubbo.common.Constants.OVERRIDE_PROTOCOL;
 import static org.apache.dubbo.common.Constants.QOS_ENABLE;
 import static org.apache.dubbo.common.Constants.QOS_PORT;
 import static org.apache.dubbo.common.Constants.REFER_KEY;
@@ -375,7 +375,7 @@ public class RegistryProtocol implements Protocol {
     }
 
     // available to test
-    String[] getParamsToRegistry(String[] defaultKeys, String[] addionalParameterKeys) {
+    public String[] getParamsToRegistry(String[] defaultKeys, String[] addionalParameterKeys) {
         int additionalLen = addionalParameterKeys.length;
         String[] registryParams = new String[defaultKeys.length + additionalLen];
         System.arraycopy(defaultKeys, 0, registryParams, 0, defaultKeys.length);
@@ -477,8 +477,8 @@ public class RegistryProtocol implements Protocol {
                 return;
             }
 
-            this.configurators = Configurator.toConfigurators(classifyUrls(matchedUrls, u -> u.getParameter(CATEGORY_KEY)
-                    .equals(CONFIGURATORS_CATEGORY))).orElse(configurators);
+            this.configurators = Configurator.toConfigurators(classifyUrls(matchedUrls, u -> CONFIGURATORS_CATEGORY.equals(u.getParameter(CATEGORY_KEY))
+                    || OVERRIDE_PROTOCOL.equals(u.getProtocol()))).orElse(configurators);
 
             doOverrideIfNecessary();
         }
@@ -536,18 +536,7 @@ public class RegistryProtocol implements Protocol {
         public ServiceConfigurationListener(URL providerUrl, OverrideListener notifyListener) {
             this.providerUrl = providerUrl;
             this.notifyListener = notifyListener;
-            this.init();
-        }
-
-        private synchronized void init() {
-            DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
-            String key = providerUrl.getEncodedServiceKey() + Constants.CONFIGURATORS_SUFFIX;
-            dynamicConfiguration.addListener(key, this);
-            String rawConfig = dynamicConfiguration.getConfig(key);
-            if (!StringUtils.isEmpty(rawConfig)) {
-                configurators = Configurator.toConfigurators(ConfigParser.parseConfigurators(rawConfig))
-                        .orElse(configurators);
-            }
+            this.initWith(providerUrl.getEncodedServiceKey() + Constants.CONFIGURATORS_SUFFIX);
         }
 
         private <T> URL overrideUrl(URL providerUrl) {
@@ -563,18 +552,7 @@ public class RegistryProtocol implements Protocol {
     private class ProviderConfigurationListener extends AbstractConfiguratorListener {
 
         public ProviderConfigurationListener() {
-            this.init();
-        }
-
-        private synchronized void init() {
-            DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
-            String appKey = ApplicationModel.getApplication() + Constants.CONFIGURATORS_SUFFIX;
-            dynamicConfiguration.addListener(appKey, this);
-            String appRawConfig = dynamicConfiguration.getConfig(appKey);
-            if (!StringUtils.isEmpty(appRawConfig)) {
-                configurators = Configurator.toConfigurators(ConfigParser.parseConfigurators(appRawConfig))
-                        .orElse(configurators);
-            }
+            this.initWith(ApplicationModel.getApplication() + Constants.CONFIGURATORS_SUFFIX);
         }
 
         /**

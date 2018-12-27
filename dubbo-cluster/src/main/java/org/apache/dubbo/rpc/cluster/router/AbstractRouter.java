@@ -19,10 +19,6 @@ package org.apache.dubbo.rpc.cluster.router;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.rpc.cluster.Router;
-import org.apache.dubbo.rpc.cluster.RouterChain;
-
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * TODO Extract more code to here if necessary
@@ -30,8 +26,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public abstract class AbstractRouter implements Router {
     protected int priority;
     protected boolean force = false;
-    protected boolean enabled = true;
-    protected List<RouterChain> routerChains = new CopyOnWriteArrayList<>();
     protected URL url;
 
     protected DynamicConfiguration configuration;
@@ -52,12 +46,6 @@ public abstract class AbstractRouter implements Router {
     public void setUrl(URL url) {
         this.url = url;
     }
-
-    @Override
-    public void addRouterChain(RouterChain routerChain) {
-        this.routerChains.add(routerChain);
-    }
-
 
     public void setConfiguration(DynamicConfiguration configuration) {
         this.configuration = configuration;
@@ -80,14 +68,6 @@ public abstract class AbstractRouter implements Router {
     @Override
     public int compareTo(Router o) {
         return (this.getPriority() >= o.getPriority()) ? 1 : -1;
-    }
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
     }
 
     public int getPriority() {

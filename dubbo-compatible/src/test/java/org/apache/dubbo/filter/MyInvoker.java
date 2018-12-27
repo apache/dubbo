@@ -17,12 +17,12 @@
 package org.apache.dubbo.filter;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.service.DemoService;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcResult;
+import org.apache.dubbo.service.DemoService;
 
 public class MyInvoker<T> implements Invoker<T> {
 
