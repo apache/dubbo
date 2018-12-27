@@ -127,7 +127,7 @@ public class ClassHelperTest {
     public void testConvertPrimitive() {
         // Character
         Object resultCharacterEmpty = ClassHelper.convertPrimitive(Character.class, "");
-        assertEquals('\0', resultCharacterEmpty);
+        assertNull(resultCharacterEmpty);
 
         Object resultCharacterBlank = ClassHelper.convertPrimitive(Character.class, " ");
         assertEquals(' ', resultCharacterBlank);

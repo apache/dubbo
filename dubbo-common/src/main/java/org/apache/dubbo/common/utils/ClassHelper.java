@@ -268,7 +268,7 @@ public class ClassHelper {
         if (value == null) {
             return null;
         } else if (type == char.class || type == Character.class) {
-            return value.length() > 0 ? value.charAt(0) : '\0';
+            return value.length() > 0 ? value.charAt(0) : null;
         } else if (type == boolean.class || type == Boolean.class) {
             return Boolean.valueOf(value);
         } else if (StringUtils.isRealBlank(value)) {
