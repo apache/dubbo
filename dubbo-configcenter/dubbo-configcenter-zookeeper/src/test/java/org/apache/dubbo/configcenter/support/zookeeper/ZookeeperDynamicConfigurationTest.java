@@ -38,7 +38,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 /**
- *
+ * TODO refactor using mockito
  */
 public class ZookeeperDynamicConfigurationTest {
     private static CuratorFramework client;
@@ -61,6 +61,7 @@ public class ZookeeperDynamicConfigurationTest {
             setData("/dubbo/config/group*service:version/configurators", "The content from configurators");
             setData("/dubbo/config/appname", "The content from higer level node");
             setData("/dubbo/config/appname/tagrouters", "The content from appname tagrouters");
+            setData("/dubbo/config/never.change.DemoService/configurators", "Never change value from configurators");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -85,7 +86,7 @@ public class ZookeeperDynamicConfigurationTest {
 
     @Test
     public void testGetConfig() throws Exception {
-        Assert.assertEquals("The content from dubbo.properties", configuration.getConfig("dubbo.dubbo.properties"));
+        Assert.assertEquals("Never change value from configurators", configuration.getConfig("never.change.DemoService.configurators"));
         Assert.assertEquals("The content from dubbo.properties", configuration.getConfig("dubbo.properties", "dubbo"));
     }
 

@@ -18,26 +18,15 @@ package org.apache.dubbo.rpc.cluster.router.condition.config;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 
 /**
- *
+ * Application level router, "application.routers"
  */
-public class AppConfigConditionRouter extends AbstractConfigConditionRouter {
+public class AppRouter extends ListenableRouter {
+    public static final String NAME = "APP_ROUTER";
 
-    public AppConfigConditionRouter(DynamicConfiguration configuration, URL url) {
-        super(configuration, url);
+    public AppRouter(DynamicConfiguration configuration, URL url) {
+        super(configuration, url, url.getParameter(Constants.APPLICATION_KEY));
     }
-
-    protected synchronized void init() {
-        String appKey = url.getParameter(Constants.APPLICATION_KEY) + Constants.ROUTERS_SUFFIX;
-        String appRawRule = configuration.getConfig(appKey);
-        if (appRawRule != null) {
-            this.process(new ConfigChangeEvent(appKey, appRawRule));
-        }
-
-        configuration.addListener(appKey, this);
-    }
-
 }

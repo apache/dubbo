@@ -14,23 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.condition.config;
+package org.apache.dubbo.common.async.support;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
-import org.apache.dubbo.rpc.cluster.AbstractAppRouterFactory;
-import org.apache.dubbo.rpc.cluster.Router;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- *
+ * TODO This definition should better be placed in module 'dubbo-config-api', but only can be done when "rpc" dependencies are removed from "dubbo-config-api"
+ * If an interface is annotated with AsyncFor, it will be treated as an async counterpart for the sync one.
  */
-@Activate(order = 200)
-public class AppConfigConditionRouterFactory extends AbstractAppRouterFactory {
-    public static final String NAME = "app-config-condition";
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
+public @interface AsyncFor {
 
-    @Override
-    protected Router createRouter(URL url) {
-        return new AppConfigConditionRouter(DynamicConfiguration.getDynamicConfiguration(), url);
-    }
+    /**
+     * The original sync-style method name
+     *
+     * @return
+     */
+    String value();
+
 }

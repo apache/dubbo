@@ -16,28 +16,23 @@
  */
 package org.apache.dubbo.rpc.cluster.router.condition.config;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.configcenter.ConfigChangeEvent;
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
+import org.apache.dubbo.rpc.cluster.CacheableRouterFactory;
+import org.apache.dubbo.rpc.cluster.Router;
 
 /**
- *
+ * Service level router factory
  */
-public class ServiceConfigConditionRouter extends AbstractConfigConditionRouter {
+@Activate(order = 300)
+public class ServiceRouterFactory extends CacheableRouterFactory {
 
-    public ServiceConfigConditionRouter(DynamicConfiguration configuration, URL url) {
-        super(configuration, url);
-    }
+    public static final String NAME = "service";
 
-    protected synchronized void init() {
-        String key = url.getEncodedServiceKey() + Constants.ROUTERS_SUFFIX;
-        String rawRule = configuration.getConfig(key);
-        if (rawRule != null) {
-            this.process(new ConfigChangeEvent(key, rawRule));
-        }
-
-        configuration.addListener(key, this);
+    @Override
+    protected Router createRouter(URL url) {
+        return new ServiceRouter(DynamicConfiguration.getDynamicConfiguration(), url);
     }
 
 }

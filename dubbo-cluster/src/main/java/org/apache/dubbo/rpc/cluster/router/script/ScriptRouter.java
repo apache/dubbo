@@ -120,9 +120,4 @@ public class ScriptRouter extends AbstractRouter {
     public boolean isForce() {
         return url.getParameter(Constants.FORCE_KEY, false);
     }
-
-    @Override
-    public boolean isEnabled() {
-        return url.getParameter(Constants.ENABLED_KEY, false);
-    }
 }

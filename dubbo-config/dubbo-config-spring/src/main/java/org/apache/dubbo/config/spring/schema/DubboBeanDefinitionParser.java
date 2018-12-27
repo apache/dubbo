@@ -166,7 +166,13 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                                 registryConfig.setAddress(RegistryConfig.NO_AVAILABLE);
                                 beanDefinition.getPropertyValues().addPropertyValue(beanProperty, registryConfig);
                             } else if ("provider".equals(property) || "protocol".equals(property) || "registry".equals(property)) {
-                                beanDefinition.getPropertyValues().addPropertyValue(beanProperty, value);
+                                /**
+                                 * For 'provider' 'protocol' 'registry', keep literal value (should be id/name) and set the value to 'registryIds' 'providerIds' protocolIds'
+                                 * The following process should make sure each id refers to the corresponding instance, here's how to find the instance for different use cases:
+                                 * 1. Spring, check existing bean by id, see{@link ServiceBean#afterPropertiesSet()}; then try to use id to find configs defined in remote Config Center
+                                 * 2. API, directly use id to find configs defined in remote Config Center; if all config instances are defined locally, please use {@link org.apache.dubbo.config.ServiceConfig#setRegistries(List)}
+                                 */
+                                beanDefinition.getPropertyValues().addPropertyValue(beanProperty + "Ids", value);
                             } else {
                                 Object reference;
                                 if (isPrimitive(type)) {
