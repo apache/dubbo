@@ -392,10 +392,10 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 continue;
             }
             if (!ExtensionLoader.getExtensionLoader(Protocol.class).hasExtension(providerUrl.getProtocol())) {
-                logger.error(new IllegalStateException("Unsupported protocol " + providerUrl.getProtocol() + " in notified url: " + providerUrl + " from registry " + getUrl()
-                        .getAddress() + " to consumer " + NetUtils.getLocalHost() + ", supported protocol: " + ExtensionLoader
-                        .getExtensionLoader(Protocol.class)
-                        .getSupportedExtensions()));
+                logger.error(new IllegalStateException("Unsupported protocol " + providerUrl.getProtocol() +
+                        " in notified url: " + providerUrl + " from registry " + getUrl().getAddress() +
+                        " to consumer " + NetUtils.getLocalHost() + ", supported protocol: " +
+                        ExtensionLoader.getExtensionLoader(Protocol.class).getSupportedExtensions()));
                 continue;
             }
             URL url = mergeUrl(providerUrl);
