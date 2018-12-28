@@ -53,7 +53,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * RedisRegistry
- *
  */
 public class RedisRegistry extends FailbackRegistry {
 
@@ -588,7 +587,7 @@ public class RedisRegistry extends FailbackRegistry {
                                     jedis = jedisPool.getResource();
                                     try {
                                         if (service.endsWith(Constants.ANY_VALUE)) {
-                                            if (!first) {
+                                            if (first) {
                                                 first = false;
                                                 Set<String> keys = jedis.keys(service);
                                                 if (keys != null && !keys.isEmpty()) {
@@ -600,7 +599,7 @@ public class RedisRegistry extends FailbackRegistry {
                                             }
                                             jedis.psubscribe(new NotifySub(jedisPool), service); // blocking
                                         } else {
-                                            if (!first) {
+                                            if (first) {
                                                 first = false;
                                                 doNotify(jedis, service);
                                                 resetSkip();
