@@ -185,7 +185,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         /**
          * TODO Try to refactor the processing of these three type of urls using Collectors.groupBy()?
          */
-        this.configurators = Configurator.toConfigurators(classifyUrls(categoryUrls, UrlUtils::isConfigure))
+        this.configurators = Configurator.toConfigurators(classifyUrls(categoryUrls, UrlUtils::isConfigurator))
                 .orElse(configurators);
 
         toRouters(classifyUrls(categoryUrls, UrlUtils::isRoute)).ifPresent(this::addRouters);
