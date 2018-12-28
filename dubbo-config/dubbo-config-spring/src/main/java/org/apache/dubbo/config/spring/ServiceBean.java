@@ -176,12 +176,12 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             }
         }
 
-        if (StringUtils.isEmpty(getRegistryLiteral())) {
-            if (getApplication() != null && StringUtils.isNotEmpty(getApplication().getRegistryLiteral())) {
-                setRegistry(getApplication().getRegistryLiteral());
+        if (StringUtils.isEmpty(getRegistryIds())) {
+            if (getApplication() != null && StringUtils.isNotEmpty(getApplication().getRegistryIds())) {
+                setRegistryIds(getApplication().getRegistryIds());
             }
-            if (getProvider() != null && StringUtils.isNotEmpty(getProvider().getRegistryLiteral())) {
-                setRegistry(getProvider().getRegistryLiteral());
+            if (getProvider() != null && StringUtils.isNotEmpty(getProvider().getRegistryIds())) {
+                setRegistryIds(getProvider().getRegistryIds());
             }
         }
 
@@ -191,17 +191,17 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             Map<String, RegistryConfig> registryConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, RegistryConfig.class, false, false);
             if (registryConfigMap != null && registryConfigMap.size() > 0) {
                 List<RegistryConfig> registryConfigs = new ArrayList<>();
-                if (StringUtils.isNotEmpty(registryLiteral)) {
-                    Arrays.stream(Constants.COMMA_SPLIT_PATTERN.split(registryLiteral)).forEach(registryLiteral -> {
-                        if (registryConfigMap.containsKey(registryLiteral)) {
-                            registryConfigs.add(registryConfigMap.get(registryLiteral));
+                if (StringUtils.isNotEmpty(registryIds)) {
+                    Arrays.stream(Constants.COMMA_SPLIT_PATTERN.split(registryIds)).forEach(id -> {
+                        if (registryConfigMap.containsKey(id)) {
+                            registryConfigs.add(registryConfigMap.get(id));
                         }
                     });
                 }
 
                 if (registryConfigs.isEmpty()) {
                     for (RegistryConfig config : registryConfigMap.values()) {
-                        if (StringUtils.isEmpty(registryLiteral)) {
+                        if (StringUtils.isEmpty(registryIds)) {
                             registryConfigs.add(config);
                         }
                     }
@@ -249,9 +249,9 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             }
         }
 
-        if (StringUtils.isEmpty(getProtocolLiteral())) {
-            if (getProvider() != null && StringUtils.isNotEmpty(getProvider().getProtocolLiteral())) {
-                setProtocol(getProvider().getProtocolLiteral());
+        if (StringUtils.isEmpty(getProtocolIds())) {
+            if (getProvider() != null && StringUtils.isNotEmpty(getProvider().getProtocolIds())) {
+                setProtocolIds(getProvider().getProtocolIds());
             }
         }
 
@@ -260,18 +260,18 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             Map<String, ProtocolConfig> protocolConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProtocolConfig.class, false, false);
             if (protocolConfigMap != null && protocolConfigMap.size() > 0) {
                 List<ProtocolConfig> protocolConfigs = new ArrayList<ProtocolConfig>();
-                if (StringUtils.isNotEmpty(getProtocolLiteral())) {
-                    Arrays.stream(Constants.COMMA_SPLIT_PATTERN.split(getProtocolLiteral()))
-                            .forEach(protocolLiteral -> {
-                                if (protocolConfigMap.containsKey(protocolLiteral)) {
-                                    protocolConfigs.add(protocolConfigMap.get(protocolLiteral));
+                if (StringUtils.isNotEmpty(getProtocolIds())) {
+                    Arrays.stream(Constants.COMMA_SPLIT_PATTERN.split(getProtocolIds()))
+                            .forEach(id -> {
+                                if (protocolConfigMap.containsKey(id)) {
+                                    protocolConfigs.add(protocolConfigMap.get(id));
                                 }
                             });
                 }
 
                 if (protocolConfigs.isEmpty()) {
                     for (ProtocolConfig config : protocolConfigMap.values()) {
-                        if (StringUtils.isEmpty(protocolLiteral)) {
+                        if (StringUtils.isEmpty(protocolIds)) {
                             protocolConfigs.add(config);
                         }
                     }

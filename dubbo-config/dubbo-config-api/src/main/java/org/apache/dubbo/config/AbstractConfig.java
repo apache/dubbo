@@ -522,31 +522,10 @@ public abstract class AbstractConfig implements Serializable {
                     Object value = method.invoke(this);
                     String str = String.valueOf(value).trim();
                     if (value != null && str.length() > 0) {
-                        // ignore escape, keep the original value.
-                        /*if (parameter != null && parameter.escaped()) {
-                            str = URL.encode(str);
-                        }*/
-                        if (parameter != null && parameter.append()) {
-                            String pre = String.valueOf(metaData.get(Constants.DEFAULT_KEY + "." + key));
-                            if (pre != null && pre.length() > 0) {
-                                str = pre + "," + str;
-                            }
-                            pre = String.valueOf(metaData.get(key));
-                            if (pre != null && pre.length() > 0) {
-                                str = pre + "," + str;
-                            }
-                        }
-                      /*  if (prefix != null && prefix.length() > 0) {
-                            key = prefix + "." + key;
-                        }*/
                         metaData.put(key, str);
                     } else {
                         metaData.put(key, null);
                     }
-                    // TODO check required somewhere else.
-                    /*else if (parameter != null && parameter.required()) {
-                        throw new IllegalStateException(this.getClass().getSimpleName() + "." + key + " == null");
-                    }*/
                 } else if ("getParameters".equals(name)
                         && Modifier.isPublic(method.getModifiers())
                         && method.getParameterTypes().length == 0
@@ -599,7 +578,7 @@ public abstract class AbstractConfig implements Serializable {
                     try {
                         String value = compositeConfiguration.getString(extractPropertyName(getClass(), method));
                         // isTypeMatch() is called to avoid duplicate and incorrect update, for example, we have two 'setGeneric' methods in ReferenceConfig.
-                        if (value != null && ClassHelper.isTypeMatch(method.getParameterTypes()[0], value)) {
+                        if (StringUtils.isNotEmpty(value) && ClassHelper.isTypeMatch(method.getParameterTypes()[0], value)) {
                             method.invoke(this, ClassHelper.convertPrimitive(method.getParameterTypes()[0], value));
                         }
                     } catch (NoSuchMethodException e) {

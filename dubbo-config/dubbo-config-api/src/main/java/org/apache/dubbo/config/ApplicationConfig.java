@@ -80,7 +80,7 @@ public class ApplicationConfig extends AbstractConfig {
      * Registry centers
      */
     private List<RegistryConfig> registries;
-    private String registryLiteral;
+    private String registryIds;
 
     /**
      * Monitor center
@@ -213,12 +213,12 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     @Parameter(excluded = true)
-    public String getRegistryLiteral() {
-        return registryLiteral;
+    public String getRegistryIds() {
+        return registryIds;
     }
 
-    public void setRegistry(String registryLiteral) {
-        this.registryLiteral = registryLiteral;
+    public void setRegistryIds(String registryIds) {
+        this.registryIds = registryIds;
     }
 
     public MonitorConfig getMonitor() {

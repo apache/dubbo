@@ -88,15 +88,10 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
      * The protocol list the service will export with
      */
     protected List<ProtocolConfig> protocols;
-
-    /**
-     * Maximum number of parallel executable requests
-     */
-    protected String protocolLiteral;
-
-    /**
-     * max allowed execute times
-     */
+    protected String protocolIds;
+    // provider tag
+    protected String tag;
+    // max allowed execute times
     private Integer executes;
 
     /**
@@ -113,11 +108,6 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
      * The serialization type
      */
     private String serialization;
-
-    /**
-     * Provider tag
-     */
-    protected String tag;
 
     public String getVersion() {
         return version;
@@ -221,12 +211,12 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     }
 
     @Parameter(excluded = true)
-    public String getProtocolLiteral() {
-        return protocolLiteral;
+    public String getProtocolIds() {
+        return protocolIds;
     }
 
-    public void setProtocol(String protocolLiteral) {
-        this.protocolLiteral = protocolLiteral;
+    public void setProtocolIds(String protocolIds) {
+        this.protocolIds = protocolIds;
     }
 
     public String getAccesslog() {

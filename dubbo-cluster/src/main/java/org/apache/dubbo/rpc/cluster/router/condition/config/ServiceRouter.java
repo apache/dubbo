@@ -14,26 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.demo.consumer;
+package org.apache.dubbo.rpc.cluster.router.condition.config;
 
-import org.apache.dubbo.demo.DemoService;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.configcenter.DynamicConfiguration;
 
 /**
- *
+ * Service level router, "server-uniq-name.routers"
  */
-public class DemoServiceMock implements DemoService {
-    @Override
-    public String sayHello(String name) {
-        return "mock value";
-    }
+public class ServiceRouter extends ListenableRouter {
+    public static final String NAME = "SERVICE_ROUTER";
 
-    @Override
-    public String routeMethod1() {
-        return null;
-    }
-
-    @Override
-    public String routeMethod2() {
-        return null;
+    public ServiceRouter(DynamicConfiguration configuration, URL url) {
+        super(configuration, url, url.getEncodedServiceKey());
     }
 }

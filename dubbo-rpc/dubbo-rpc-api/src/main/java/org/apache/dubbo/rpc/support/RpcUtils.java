@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc.support;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.AsyncFor;
+import org.apache.dubbo.common.async.support.AsyncFor;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -188,8 +188,7 @@ public class RpcUtils {
     }
 
     public static boolean hasGeneratedFuture(Method method) {
-        Class<?> clazz = method.getDeclaringClass();
-        return clazz.isAnnotationPresent(AsyncFor.class) && method.getName().endsWith(Constants.ASYNC_SUFFIX) && hasFutureReturnType(method);
+        return method.isAnnotationPresent(AsyncFor.class) && hasFutureReturnType(method);
     }
 
     public static boolean isFutureReturnType(Invocation inv) {

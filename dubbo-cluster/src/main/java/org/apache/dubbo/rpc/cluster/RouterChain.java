@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.cluster;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 
@@ -27,13 +28,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 /**
- *
+ * Router chain
  */
 public class RouterChain<T> {
 
     // full list of addresses from registry, classified by method name.
     private List<Invoker<T>> invokers = Collections.emptyList();
-    private URL url;
 
     // containing all routers, reconstruct every time 'route://' urls change.
     private volatile List<Router> routers = Collections.emptyList();
@@ -47,8 +47,6 @@ public class RouterChain<T> {
     }
 
     private RouterChain(URL url) {
-        this.url = url;
-
         List<RouterFactory> extensionFactories = ExtensionLoader.getExtensionLoader(RouterFactory.class)
                 .getActivateExtension(url, (String[]) null);
 
@@ -74,22 +72,19 @@ public class RouterChain<T> {
     }
 
     /**
-     * If we use route:// protocol in version before 2.7.0, each URL will generate a Router instance,
-     * so we should keep the routers up to date, that is, each time router URLs changes, we should update the routers list,
-     * only keep the builtinRouters which are available all the time and the latest notified routers which are generated from URLs.
+     * If we use route:// protocol in version before 2.7.0, each URL will generate a Router instance, so we should
+     * keep the routers up to date, that is, each time router URLs changes, we should update the routers list, only
+     * keep the builtinRouters which are available all the time and the latest notified routers which are generated
+     * from URLs.
      *
      * @param routers routers from 'router://' rules in 2.6.x or before.
      */
     public void addRouters(List<Router> routers) {
-        // FIXME will sort cause concurrent problem? since it's kind of a write operation.
         List<Router> newRouters = new CopyOnWriteArrayList<>();
         newRouters.addAll(builtinRouters);
         newRouters.addAll(routers);
+        CollectionUtils.sort(routers);
         this.routers = newRouters;
-        this.sort();
-       /* if (invokers != null) {
-            this.rebuild(invokers, url, null);
-        }*/
     }
 
     private void sort() {
@@ -105,9 +100,6 @@ public class RouterChain<T> {
     public List<Invoker<T>> route(URL url, Invocation invocation) {
         List<Invoker<T>> finalInvokers = invokers;
         for (Router router : routers) {
-//            if (router.isRuntime()) {
-//                finalInvokers = router.route(finalInvokers, url, invocation);
-//            }
             finalInvokers = router.route(finalInvokers, url, invocation);
         }
         return finalInvokers;
@@ -118,9 +110,7 @@ public class RouterChain<T> {
      * Notify whenever addresses in registry change.
      */
     public void setInvokers(List<Invoker<T>> invokers) {
-        if (invokers != null) {
-            this.invokers = invokers;
-            routers.forEach(router -> router.notify(invokers));
-        }
+        this.invokers = (invokers == null ? Collections.emptyList() : invokers);
+        routers.forEach(router -> router.notify(this.invokers));
     }
 }

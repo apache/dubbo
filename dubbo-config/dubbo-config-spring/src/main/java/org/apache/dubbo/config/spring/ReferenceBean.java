@@ -142,12 +142,12 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
             }
         }
 
-        if (StringUtils.isEmpty(getRegistryLiteral())) {
-            if (getApplication() != null && StringUtils.isNotEmpty(getApplication().getRegistryLiteral())) {
-                setRegistry(getApplication().getRegistryLiteral());
+        if (StringUtils.isEmpty(getRegistryIds())) {
+            if (getApplication() != null && StringUtils.isNotEmpty(getApplication().getRegistryIds())) {
+                setRegistryIds(getApplication().getRegistryIds());
             }
-            if (getConsumer() != null && StringUtils.isNotEmpty(getConsumer().getRegistryLiteral())) {
-                setRegistry(getConsumer().getRegistryLiteral());
+            if (getConsumer() != null && StringUtils.isNotEmpty(getConsumer().getRegistryIds())) {
+                setRegistryIds(getConsumer().getRegistryIds());
             }
         }
 
@@ -157,17 +157,17 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
             Map<String, RegistryConfig> registryConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, RegistryConfig.class, false, false);
             if (registryConfigMap != null && registryConfigMap.size() > 0) {
                 List<RegistryConfig> registryConfigs = new ArrayList<>();
-                if (StringUtils.isNotEmpty(registryLiteral)) {
-                    Arrays.stream(Constants.COMMA_SPLIT_PATTERN.split(registryLiteral)).forEach(registryLiteral -> {
-                        if (registryConfigMap.containsKey(registryLiteral)) {
-                            registryConfigs.add(registryConfigMap.get(registryLiteral));
+                if (StringUtils.isNotEmpty(registryIds)) {
+                    Arrays.stream(Constants.COMMA_SPLIT_PATTERN.split(registryIds)).forEach(id -> {
+                        if (registryConfigMap.containsKey(id)) {
+                            registryConfigs.add(registryConfigMap.get(id));
                         }
                     });
                 }
 
                 if (registryConfigs.isEmpty()) {
                     for (RegistryConfig config : registryConfigMap.values()) {
-                        if (StringUtils.isEmpty(registryLiteral)) {
+                        if (StringUtils.isEmpty(registryIds)) {
                             registryConfigs.add(config);
                         }
                     }

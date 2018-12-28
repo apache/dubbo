@@ -143,12 +143,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
      * The provider configuration
      */
     private ProviderConfig provider;
-
-    /**
-     * The flag whether a service has exported, if it is true, it explains that the service has been successfully exposed
-     */
-    private String providerLiteral;
-  
+    private String providerIds;
     private transient volatile boolean exported;
 
     /**
@@ -424,6 +419,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         unexported = true;
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private void doExportUrls() {
         List<URL> registryURLs = loadRegistries(true);
         for (ProtocolConfig protocolConfig : protocols) {
@@ -431,8 +427,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-	private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
+    private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
         String name = protocolConfig.getName();
         if (name == null || name.length() == 0) {
             name = "dubbo";
@@ -621,8 +616,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
     }
 
-    @SuppressWarnings("rawtypes")
-	protected Class getServiceClass(T ref) {
+    protected Class getServiceClass(T ref) {
         return ref.getClass();
     }
 
@@ -790,7 +784,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             setProtocols(provider.getProtocols());
         }
 
-        convertProtocolLiteralToProtocols();
+        convertProtocolIdsToProtocols();
 
         for (ProtocolConfig protocolConfig : protocols) {
             if (StringUtils.isEmpty(protocolConfig.getName())) {
@@ -804,24 +798,24 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
     }
 
-    private void convertProtocolLiteralToProtocols() {
-        if (StringUtils.isEmpty(protocolLiteral) && (protocols == null || protocols.isEmpty())) {
+    private void convertProtocolIdsToProtocols() {
+        if (StringUtils.isEmpty(protocolIds) && (protocols == null || protocols.isEmpty())) {
             List<String> configedProtocols = new ArrayList<>();
             configedProtocols.addAll(getSubProperties(Environment.getInstance()
                     .getExternalConfigurationMap(), Constants.PROTOCOLS_SUFFIX));
             configedProtocols.addAll(getSubProperties(Environment.getInstance()
                     .getAppExternalConfigurationMap(), Constants.PROTOCOLS_SUFFIX));
 
-            protocolLiteral = String.join(",", configedProtocols);
+            protocolIds = String.join(",", configedProtocols);
         }
 
-        if (StringUtils.isEmpty(protocolLiteral)) {
+        if (StringUtils.isEmpty(protocolIds)) {
             if (protocols == null || protocols.isEmpty()) {
                 protocols = new ArrayList<>();
                 protocols.add(new ProtocolConfig());
             }
         } else {
-            String[] arr = Constants.COMMA_SPLIT_PATTERN.split(protocolLiteral);
+            String[] arr = Constants.COMMA_SPLIT_PATTERN.split(protocolIds);
             if (protocols == null || protocols.isEmpty()) {
                 protocols = new ArrayList<>();
             }
@@ -833,7 +827,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 }
             });
             if (protocols.size() > arr.length) {
-                throw new IllegalStateException("Too much protocols found, the protocols comply to this service are :" + protocolLiteral + " but got " + protocols
+                throw new IllegalStateException("Too much protocols found, the protocols comply to this service are :" + protocolIds + " but got " + protocols
                         .size() + " registries!");
             }
         }
@@ -923,12 +917,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     @Parameter(excluded = true)
-    public String getProviderLiteral() {
-        return providerLiteral;
+    public String getProviderIds() {
+        return providerIds;
     }
 
-    public void setProvider(String providerLiteral) {
-        this.providerLiteral = providerLiteral;
+    public void setProviderIds(String providerIds) {
+        this.providerIds = providerIds;
     }
 
     public String getGeneric() {

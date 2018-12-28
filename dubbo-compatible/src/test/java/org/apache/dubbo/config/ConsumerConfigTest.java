@@ -17,9 +17,9 @@
 
 package org.apache.dubbo.config;
 
-import org.junit.Test;
-
 import com.alibaba.dubbo.config.ConsumerConfig;
+
+import org.junit.Test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;

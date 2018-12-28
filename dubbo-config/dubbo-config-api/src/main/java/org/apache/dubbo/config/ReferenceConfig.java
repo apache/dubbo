@@ -20,7 +20,6 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.bytecode.Wrapper;
-import org.apache.dubbo.common.config.AsyncFor;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -105,15 +104,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
      * The interface class of the reference service
      */
     private Class<?> interfaceClass;
-
-    /**
-     * The specific asynchronized service
-     */
-    private Class<?> asyncInterfaceClass;
-
-    /**
-     * The client type
-     */
+    // client type
     private String client;
 
     /**
@@ -289,7 +280,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         checkStub(interfaceClass);
         checkMock(interfaceClass);
         Map<String, String> map = new HashMap<String, String>();
-        resolveAsyncInterface(interfaceClass, map);
 
         map.put(Constants.SIDE_KEY, Constants.CONSUMER_SIDE);
         map.put(Constants.DUBBO_VERSION_KEY, Version.getProtocolVersion());
@@ -456,22 +446,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
         consumer.refresh();
     }
-
-    private void resolveAsyncInterface(Class<?> interfaceClass, Map<String, String> map) {
-        AsyncFor annotation = interfaceClass.getAnnotation(AsyncFor.class);
-        if (annotation == null) {
-            return;
-        }
-        Class<?> target = annotation.value();
-        if (!target.isAssignableFrom(interfaceClass)) {
-            return;
-        }
-        this.asyncInterfaceClass = interfaceClass;
-        this.interfaceClass = target;
-        setInterface(this.interfaceClass.getName());
-        map.put(Constants.INTERFACES, asyncInterfaceClass.getName());
-    }
-
 
     public Class<?> getInterfaceClass() {
         if (interfaceClass != null) {
