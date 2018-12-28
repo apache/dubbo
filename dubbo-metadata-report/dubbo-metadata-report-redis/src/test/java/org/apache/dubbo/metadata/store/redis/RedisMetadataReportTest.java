@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.Constants.SYNC_REPORT_KEY;
 import static org.apache.dubbo.metadata.store.MetadataReport.META_DATA_SOTRE_TAG;
 
 /**
@@ -43,6 +44,7 @@ import static org.apache.dubbo.metadata.store.MetadataReport.META_DATA_SOTRE_TAG
  */
 public class RedisMetadataReportTest {
     RedisMetadataReport redisMetadataReport;
+    RedisMetadataReport syncRedisMetadataReport;
     RedisServer redisServer;
 
     @Before
@@ -52,6 +54,8 @@ public class RedisMetadataReportTest {
         this.redisServer.start();
         URL registryUrl = URL.valueOf("redis://localhost:" + redisPort);
         redisMetadataReport = (RedisMetadataReport) new RedisMetadataReportFactory().createMetadataReport(registryUrl);
+        URL asyncRegistryUrl = URL.valueOf("redis://localhost:" + redisPort + "?" + SYNC_REPORT_KEY + "=true");
+        syncRedisMetadataReport = (RedisMetadataReport) new RedisMetadataReportFactory().createMetadataReport(registryUrl);
     }
 
     @After
@@ -61,14 +65,23 @@ public class RedisMetadataReportTest {
 
 
     @Test
-    public void testStoreProvider() throws ClassNotFoundException {
+    public void testAsyncStoreProvider() throws ClassNotFoundException {
+        testStoreProvider(redisMetadataReport, "1.0.0.redis.md.p1", 3000);
+    }
+
+    @Test
+    public void testSyncStoreProvider() throws ClassNotFoundException {
+        testStoreProvider(syncRedisMetadataReport, "1.0.0.redis.md.p2", 3);
+    }
+
+    private void testStoreProvider(RedisMetadataReport redisMetadataReport, String version, long moreTime) throws ClassNotFoundException {
         String interfaceName = "org.apache.dubbo.metadata.store.redis.RedisMetadata4TstService";
-        String version = "1.0.0.redis.md";
         String group = null;
         String application = "vic.redis.md";
         MetadataIdentifier providerMetadataIdentifier = storePrivider(redisMetadataReport, interfaceName, version, group, application);
         Jedis jedis = null;
         try {
+            Thread.sleep(moreTime);
             jedis = redisMetadataReport.pool.getResource();
             String value = jedis.get(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY) + META_DATA_SOTRE_TAG);
             Assert.assertNotNull(value);
@@ -87,14 +100,23 @@ public class RedisMetadataReportTest {
     }
 
     @Test
-    public void testStoreConsumer() throws ClassNotFoundException {
+    public void testAsyncStoreConsumer() throws ClassNotFoundException {
+        testStoreProvider(redisMetadataReport, "1.0.0.redis.md.c1", 3000);
+    }
+
+    @Test
+    public void testSyncStoreConsumer() throws ClassNotFoundException {
+        testStoreProvider(syncRedisMetadataReport, "1.0.0.redis.md.c2", 3);
+    }
+
+    private void testStoreConsumer(RedisMetadataReport redisMetadataReport, String version, long moreTime) throws ClassNotFoundException {
         String interfaceName = "org.apache.dubbo.metadata.store.redis.RedisMetadata4TstService";
-        String version = "1.0.0.redis.md";
         String group = null;
         String application = "vic.redis.md";
         MetadataIdentifier consumerMetadataIdentifier = storeConsumer(redisMetadataReport, interfaceName, version, group, application);
         Jedis jedis = null;
         try {
+            Thread.sleep(moreTime);
             jedis = redisMetadataReport.pool.getResource();
             String value = jedis.get(consumerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY) + META_DATA_SOTRE_TAG);
             Assert.assertEquals(value, "{\"paramConsumerTest\":\"redisCm\"}");
