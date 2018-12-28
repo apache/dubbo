@@ -296,7 +296,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             return Optional.empty();
         }
 
-        List<Router> routers = new ArrayList<Router>();
+        List<Router> routers = new ArrayList<>();
         for (URL url : urls) {
             if (Constants.EMPTY_PROTOCOL.equals(url.getProtocol())) {
                 continue;
@@ -307,8 +307,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }
             try {
                 Router router = routerFactory.getRouter(url);
-                routerChain.addRouter(router);
-                if (!routers.contains(router)) routers.add(router);
+                if (!routers.contains(router)) {
+                    routers.add(router);
+                }
             } catch (Throwable t) {
                 logger.error("convert router url to router error, url: " + url, t);
             }
@@ -426,8 +427,13 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
 
     private URL overrideWithConfigurator(URL providerUrl) {
+        // override url with configurator from "override://" URL for dubbo 2.6 and before
         providerUrl = overrideWithConfigurators(this.configurators, providerUrl);
+
+        // override url with configurator from configurator from "app-name.configurators"
         providerUrl = overrideWithConfigurators(consumerConfigurationListener.getConfigurators(), providerUrl);
+
+        // override url with configurator from configurators from "service-name.configurators"
         if (serviceConfigurationListener != null) {
             providerUrl = overrideWithConfigurators(serviceConfigurationListener.getConfigurators(), providerUrl);
         }
