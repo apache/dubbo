@@ -28,20 +28,14 @@ import java.util.Map;
 /**
  * 2015/1/27.
  */
-public class
-CollectionTypeBuilder implements TypeBuilder {
+public class CollectionTypeBuilder implements TypeBuilder {
 
     @Override
     public boolean accept(Type type, Class<?> clazz) {
         if (clazz == null) {
             return false;
         }
-
-        if (Collection.class.isAssignableFrom(clazz)) {
-            return true;
-        }
-
-        return false;
+        return Collection.class.isAssignableFrom(clazz);
     }
 
     @Override
@@ -72,8 +66,7 @@ CollectionTypeBuilder implements TypeBuilder {
             }
         }
 
-        TypeDefinition td = new TypeDefinition(type.toString());
-        return td;
+        return new TypeDefinition(type.toString());
     }
 
 }
