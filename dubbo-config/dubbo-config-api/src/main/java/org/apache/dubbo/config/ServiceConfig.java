@@ -143,7 +143,15 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
      * The provider configuration
      */
     private ProviderConfig provider;
+
+    /**
+     * The providerIds
+     */
     private String providerIds;
+
+    /**
+     * Whether the provider has been exported
+     */
     private transient volatile boolean exported;
 
     /**
