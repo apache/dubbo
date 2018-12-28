@@ -27,7 +27,7 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
 /**
- * ZookeeperRegistry
+ * RedisMetadataReport
  */
 public class RedisMetadataReport extends AbstractMetadataReport {
 
