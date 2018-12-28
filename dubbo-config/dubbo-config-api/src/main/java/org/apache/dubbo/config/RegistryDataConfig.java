@@ -16,12 +16,6 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.common.utils.StringUtils;
-
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * 2018/10/31
  */
@@ -32,24 +26,6 @@ public class RegistryDataConfig extends AbstractConfig {
 
     private Boolean simpleConsumerConfig;
     private String extraConsumerKeys;
-
-    Map<String, String> transferToMap() {
-        Map<String, String> map = new HashMap<String, String>(4);
-        if (simpleProviderConfig != null && simpleProviderConfig) {
-            map.put(Constants.SIMPLE_PROVIDER_CONFIG_KEY, Boolean.TRUE.toString());
-            if (StringUtils.isNotEmpty(extraProviderKeys)) {
-                map.put(Constants.EXTRA_PROVIDER_CONFIG_KEYS_KEY, extraProviderKeys.trim());
-            }
-        }
-        if (simpleConsumerConfig != null && simpleConsumerConfig) {
-            map.put(Constants.SIMPLE_CONSUMER_CONFIG_KEY, Boolean.TRUE.toString());
-            if (StringUtils.isNotEmpty(extraConsumerKeys)) {
-                map.put(Constants.EXTRA_CONSUMER_CONFIG_KEYS_KEY, extraConsumerKeys.trim());
-            }
-        }
-
-        return map;
-    }
 
     public Boolean getSimpleProviderConfig() {
         return simpleProviderConfig;

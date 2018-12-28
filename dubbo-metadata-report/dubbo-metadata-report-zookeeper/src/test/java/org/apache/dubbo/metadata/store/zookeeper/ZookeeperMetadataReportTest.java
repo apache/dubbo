@@ -123,7 +123,7 @@ public class ZookeeperMetadataReportTest {
         FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass, url.getParameters());
 
         zookeeperMetadataReport.storeProviderMetadata(providerMetadataIdentifier, fullServiceDefinition);
-        Thread.sleep(300);
+        Thread.sleep(2000);
         return providerMetadataIdentifier;
     }
 
@@ -137,7 +137,7 @@ public class ZookeeperMetadataReportTest {
         Map<String, String> tmp = new HashMap<>();
         tmp.put("paramConsumerTest", "zkCm");
         zookeeperMetadataReport.storeConsumerMetadata(consumerMetadataIdentifier, tmp);
-        Thread.sleep(300);
+        Thread.sleep(2000);
 
         return consumerMetadataIdentifier;
     }
