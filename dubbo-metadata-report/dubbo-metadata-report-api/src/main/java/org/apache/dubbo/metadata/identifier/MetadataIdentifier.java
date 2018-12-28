@@ -68,7 +68,7 @@ public class MetadataIdentifier {
 
     public String getFilePathKey(String pathTag) {
         return toServicePath() + Constants.PATH_SEPARATOR + pathTag + Constants.PATH_SEPARATOR + (version == null ? "" : (version + Constants.PATH_SEPARATOR))
-                + (group == null ? "" : (group + Constants.PATH_SEPARATOR)) + side + getApplication();
+                + (group == null ? "" : (group + Constants.PATH_SEPARATOR)) + side + Constants.PATH_SEPARATOR + getApplication();
     }
 
     private String toServicePath() {

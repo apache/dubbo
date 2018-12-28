@@ -37,14 +37,4 @@ public class DefaultDemoService implements DemoService {
         return "DefaultDemoService - sayHell() : " + name;
     }
 
-    @Override
-    public String routeMethod1() {
-        return null;
-    }
-
-    @Override
-    public String routeMethod2() {
-        return null;
-    }
-
 }

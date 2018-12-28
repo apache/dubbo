@@ -22,9 +22,9 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
@@ -157,7 +157,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     public void subscribe(URL url) {
         setConsumerUrl(url);
         consumerConfigurationListener.addNotifyListener(this);
-        serviceConfigurationListener = new ReferenceConfigurationListener(url);
+        serviceConfigurationListener = new ReferenceConfigurationListener(this, url);
         registry.subscribe(url, this);
     }
 
@@ -223,7 +223,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      */
     // TODO: 2017/8/31 FIXME The thread pool should be used to refresh the address, otherwise the task may be accumulated.
     private void refreshInvoker(List<URL> invokerUrls) {
-        if (invokerUrls != null && invokerUrls.size() == 1 && invokerUrls.get(0) != null && Constants.EMPTY_PROTOCOL.equals(invokerUrls
+        Assert.notNull(invokerUrls, "invokerUrls should not be null");
+
+        if (invokerUrls.size() == 1 && invokerUrls.get(0) != null && Constants.EMPTY_PROTOCOL.equals(invokerUrls
                 .get(0)
                 .getProtocol())) {
             this.forbidden = true; // Forbid to access
@@ -233,7 +235,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         } else {
             this.forbidden = false; // Allow to access
             Map<String, Invoker<T>> oldUrlInvokerMap = this.urlInvokerMap; // local reference
-            if (invokerUrls == null) {
+            if (invokerUrls == Collections.<URL>emptyList()) {
                 invokerUrls = new ArrayList<>();
             }
             if (invokerUrls.isEmpty() && this.cachedInvokerUrls != null) {
@@ -718,54 +720,37 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         }
     }
 
-    public class ReferenceConfigurationListener extends AbstractConfiguratorListener {
+    private static class ReferenceConfigurationListener extends AbstractConfiguratorListener {
+        private RegistryDirectory directory;
         private URL url;
 
-        ReferenceConfigurationListener(URL url) {
+        ReferenceConfigurationListener(RegistryDirectory directory, URL url) {
+            this.directory = directory;
             this.url = url;
-            this.init();
-        }
-
-        private synchronized void init() {
-            String key = url.getEncodedServiceKey() + Constants.CONFIGURATORS_SUFFIX;
-            DynamicConfiguration.getDynamicConfiguration().addListener(key, this);
-            String rawConfig = DynamicConfiguration.getDynamicConfiguration().getConfig(key);
-            if (rawConfig != null) {
-                this.process(new ConfigChangeEvent(key, rawConfig));
-            }
+            this.initWith(url.getEncodedServiceKey() + Constants.CONFIGURATORS_SUFFIX);
         }
 
         @Override
         protected void notifyOverrides() {
-            // 'null' means notification of configurators or routers.
-            RegistryDirectory.this.refreshInvoker(null);
+            // to notify configurator/router changes
+            directory.refreshInvoker(Collections.emptyList());
         }
     }
 
     private static class ConsumerConfigurationListener extends AbstractConfiguratorListener {
         List<RegistryDirectory> listeners = new ArrayList<>();
 
+        ConsumerConfigurationListener() {
+            this.initWith(ApplicationModel.getApplication() + Constants.CONFIGURATORS_SUFFIX);
+        }
 
         void addNotifyListener(RegistryDirectory listener) {
             this.listeners.add(listener);
         }
 
-        ConsumerConfigurationListener() {
-            this.init();
-        }
-
-        private synchronized void init() {
-            String appKey = ApplicationModel.getApplication() + Constants.CONFIGURATORS_SUFFIX;
-            DynamicConfiguration.getDynamicConfiguration().addListener(appKey, this);
-            String appRawConfig = DynamicConfiguration.getDynamicConfiguration().getConfig(appKey);
-            if (appRawConfig != null) {
-                process(new ConfigChangeEvent(appKey, appRawConfig));
-            }
-        }
-
         @Override
         protected void notifyOverrides() {
-            listeners.forEach(listener -> listener.refreshInvoker(null));
+            listeners.forEach(listener -> listener.refreshInvoker(Collections.emptyList()));
         }
     }
 
