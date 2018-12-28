@@ -248,8 +248,10 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     public synchronized void notify(List<URL> urls) {
         ExtensionLoader<AddressListener> addressListenerExtensionLoader = ExtensionLoader.getExtensionLoader(AddressListener.class);
         Set<String> surpportedListeners = addressListenerExtensionLoader.getSupportedExtensions();
-        for (String addressListenerName : surpportedListeners) {
-            addressListenerExtensionLoader.getExtension(addressListenerName).notify(this.serviceMetada, urls);
+        if (surpportedListeners != null) {
+            for (String addressListenerName : surpportedListeners) {
+                addressListenerExtensionLoader.getExtension(addressListenerName).notify(this.serviceMetada, urls);
+            }
         }
 
         List<URL> categoryUrls = urls.stream()
