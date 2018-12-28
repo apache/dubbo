@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata.store.redis;
 
+import com.google.gson.Gson;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -23,8 +24,6 @@ import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
 import org.apache.dubbo.rpc.RpcException;
-
-import com.google.gson.Gson;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -81,9 +80,14 @@ public class RedisMetadataReportTest {
         MetadataIdentifier providerMetadataIdentifier = storePrivider(redisMetadataReport, interfaceName, version, group, application);
         Jedis jedis = null;
         try {
-            Thread.sleep(moreTime);
             jedis = redisMetadataReport.pool.getResource();
-            String value = jedis.get(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY) + META_DATA_SOTRE_TAG);
+            String keyTmp = providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY) + META_DATA_SOTRE_TAG;
+            String value = jedis.get(keyTmp);
+            if (value == null) {
+                Thread.sleep(moreTime);
+                value = jedis.get(keyTmp);
+            }
+
             Assert.assertNotNull(value);
 
             Gson gson = new Gson();
@@ -101,12 +105,12 @@ public class RedisMetadataReportTest {
 
     @Test
     public void testAsyncStoreConsumer() throws ClassNotFoundException {
-        testStoreProvider(redisMetadataReport, "1.0.0.redis.md.c1", 3000);
+        testStoreConsumer(redisMetadataReport, "1.0.0.redis.md.c1", 3000);
     }
 
     @Test
     public void testSyncStoreConsumer() throws ClassNotFoundException {
-        testStoreProvider(syncRedisMetadataReport, "1.0.0.redis.md.c2", 3);
+        testStoreConsumer(syncRedisMetadataReport, "1.0.0.redis.md.c2", 3);
     }
 
     private void testStoreConsumer(RedisMetadataReport redisMetadataReport, String version, long moreTime) throws ClassNotFoundException {
@@ -116,9 +120,13 @@ public class RedisMetadataReportTest {
         MetadataIdentifier consumerMetadataIdentifier = storeConsumer(redisMetadataReport, interfaceName, version, group, application);
         Jedis jedis = null;
         try {
-            Thread.sleep(moreTime);
             jedis = redisMetadataReport.pool.getResource();
-            String value = jedis.get(consumerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY) + META_DATA_SOTRE_TAG);
+            String keyTmp = consumerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY) + META_DATA_SOTRE_TAG;
+            String value = jedis.get(keyTmp);
+            if (value == null) {
+                Thread.sleep(moreTime);
+                value = jedis.get(keyTmp);
+            }
             Assert.assertEquals(value, "{\"paramConsumerTest\":\"redisCm\"}");
         } catch (Throwable e) {
             throw new RpcException("Failed to put to redis . cause: " + e.getMessage(), e);
