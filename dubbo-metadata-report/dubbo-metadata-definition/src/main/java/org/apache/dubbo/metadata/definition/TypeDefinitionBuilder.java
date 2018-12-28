@@ -26,6 +26,7 @@ import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,14 +36,12 @@ import java.util.Map;
  */
 public class TypeDefinitionBuilder {
 
-    private static final ThreadLocal<ArrayList<TypeBuilder>> builders = ThreadLocal.withInitial(() -> {
-        ArrayList<TypeBuilder> l = new ArrayList<>();
-        l.add(new ArrayTypeBuilder());
-        l.add(new CollectionTypeBuilder());
-        l.add(new MapTypeBuilder());
-        l.add(new EnumTypeBuilder());
-        return l;
-    });
+    private static final TypeBuilder ARRAY_BUILDER = new ArrayTypeBuilder();
+    private static final TypeBuilder COLLECTION_BUILDER = new CollectionTypeBuilder();
+    private static final TypeBuilder MAP_BUILDER = new MapTypeBuilder();
+    private static final TypeBuilder ENUM_BUILDER = new EnumTypeBuilder();
+
+    private static final List<TypeBuilder> BUILDERS = Arrays.asList(ARRAY_BUILDER, COLLECTION_BUILDER, MAP_BUILDER, ENUM_BUILDER);
 
     public static TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache) {
         TypeBuilder builder = getGenericTypeBuilder(type, clazz);
@@ -56,7 +55,7 @@ public class TypeDefinitionBuilder {
     }
 
     private static TypeBuilder getGenericTypeBuilder(Type type, Class<?> clazz) {
-        for (TypeBuilder builder : builders.get()) {
+        for (TypeBuilder builder : BUILDERS) {
             if (builder.accept(type, clazz)) {
                 return builder;
             }
