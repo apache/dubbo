@@ -315,7 +315,7 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     /**
-     * Check the if there is a <code>Extension</code> who's name (property) is <code>value</code> (special treatment is
+     * Check whether there is a <code>Extension</code> who's name (property) is <code>value</code> (special treatment is
      * required)
      *
      * @param type The Extension type
