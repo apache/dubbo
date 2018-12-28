@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.redis;
 
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
@@ -27,8 +28,6 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.support.FailbackRegistry;
 import org.apache.dubbo.rpc.RpcException;
-
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPubSub;
@@ -53,7 +52,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * RedisRegistry
- *
  */
 public class RedisRegistry extends FailbackRegistry {
 
@@ -589,7 +587,7 @@ public class RedisRegistry extends FailbackRegistry {
                                     try {
                                         if (service.endsWith(Constants.ANY_VALUE)) {
                                             if (!first) {
-                                                first = false;
+                                                first = true;
                                                 Set<String> keys = jedis.keys(service);
                                                 if (keys != null && !keys.isEmpty()) {
                                                     for (String s : keys) {
@@ -601,7 +599,7 @@ public class RedisRegistry extends FailbackRegistry {
                                             jedis.psubscribe(new NotifySub(jedisPool), service); // blocking
                                         } else {
                                             if (!first) {
-                                                first = false;
+                                                first = true;
                                                 doNotify(jedis, service);
                                                 resetSkip();
                                             }
@@ -612,6 +610,7 @@ public class RedisRegistry extends FailbackRegistry {
                                         jedis.close();
                                     }
                                 } catch (Throwable t) { // Retry another server
+                                    first = false;
                                     logger.warn("Failed to subscribe service from redis registry. registry: " + entry.getKey() + ", cause: " + t.getMessage(), t);
                                     // If you only have a single redis, you need to take a rest to avoid overtaking a lot of CPU resources
                                     sleep(reconnectPeriod);
