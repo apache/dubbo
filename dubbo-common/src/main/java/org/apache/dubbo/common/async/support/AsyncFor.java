@@ -24,11 +24,11 @@ import java.lang.annotation.Target;
 
 /**
  * TODO This definition should better be placed in module 'dubbo-config-api', but only can be done when "rpc" dependencies are removed from "dubbo-config-api"
- * If an interface is annotated with AsyncFor, it will be treated as an async counterpart for the sync one.
+ * If a method is annotated with AsyncFor, it will be treated as an async counterpart for the sync specified in value.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
+@Target({ElementType.METHOD})
 public @interface AsyncFor {
 
     /**
