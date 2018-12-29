@@ -67,10 +67,6 @@ public class RouterChain<T> {
         this.sort();
     }
 
-    public void addRouter(Router router) {
-        this.routers.add(router);
-    }
-
     /**
      * If we use route:// protocol in version before 2.7.0, each URL will generate a Router instance, so we should
      * keep the routers up to date, that is, each time router URLs changes, we should update the routers list, only
