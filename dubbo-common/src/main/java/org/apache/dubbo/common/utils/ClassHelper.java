@@ -264,12 +264,14 @@ public class ClassHelper {
     }
 
     public static Object convertPrimitive(Class<?> type, String value) {
-        if (StringUtils.isEmpty(value)) {
+        if (value == null) {
             return null;
         } else if (type == char.class || type == Character.class) {
             return value.length() > 0 ? value.charAt(0) : '\0';
         } else if (type == boolean.class || type == Boolean.class) {
             return Boolean.valueOf(value);
+        } else if (!isNumber(value)) {
+            return null;
         } else if (type == byte.class || type == Byte.class) {
             return Byte.valueOf(value);
         } else if (type == short.class || type == Short.class) {
@@ -284,6 +286,11 @@ public class ClassHelper {
             return Double.valueOf(value);
         }
         return value;
+    }
+
+    public static boolean isNumber(String str) {
+        String reg = "^[0-9]+(.[0-9]+)?$";
+        return str.matches(reg);
     }
 
     /**
