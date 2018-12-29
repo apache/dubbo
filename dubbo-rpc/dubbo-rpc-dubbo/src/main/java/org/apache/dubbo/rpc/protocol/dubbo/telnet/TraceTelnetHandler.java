@@ -46,7 +46,7 @@ public class TraceTelnetHandler implements TelnetHandler {
         String method;
         String times;
         // message like : XxxService , XxxService 10 , XxxService xxxMethod , XxxService xxxMethod 10
-        if (service == null || service.length() == 0) {
+        if (StringUtils.isEmpty(service)) {
             service = parts.length > 0 ? parts[0] : null;
             method = parts.length > 1 ? parts[1] : null;
             times = parts.length > 2 ? parts[2] : "1";
