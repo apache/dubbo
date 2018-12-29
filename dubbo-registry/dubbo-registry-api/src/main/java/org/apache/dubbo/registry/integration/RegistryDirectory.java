@@ -25,6 +25,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
@@ -34,7 +35,6 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.Configurator;
-import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
 import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.RouterFactory;
@@ -47,7 +47,6 @@ import org.apache.dubbo.rpc.protocol.InvokerWrapper;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -61,7 +60,6 @@ import static org.apache.dubbo.common.Constants.CATEGORY_KEY;
 import static org.apache.dubbo.common.Constants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.Constants.DEFAULT_CATEGORY;
 import static org.apache.dubbo.common.Constants.DYNAMIC_CONFIGURATORS_CATEGORY;
-import static org.apache.dubbo.common.Constants.OVERRIDE_PROTOCOL;
 import static org.apache.dubbo.common.Constants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.Constants.ROUTERS_CATEGORY;
 import static org.apache.dubbo.common.Constants.ROUTE_PROTOCOL;
@@ -80,13 +78,10 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     private static final RouterFactory routerFactory = ExtensionLoader.getExtensionLoader(RouterFactory.class)
             .getAdaptiveExtension();
 
-    private static final ConfiguratorFactory configuratorFactory = ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
-            .getAdaptiveExtension();
     private final String serviceKey; // Initialization at construction time, assertion not null
     private final Class<T> serviceType; // Initialization at construction time, assertion not null
     private final Map<String, String> queryMap; // Initialization at construction time, assertion not null
     private final URL directoryUrl; // Initialization at construction time, assertion not null, and always assign non null value
-    private final String[] serviceMethods;
     private final boolean multiGroup;
     private Protocol protocol; // Initialization at the time of injection, the assertion is not null
     private Registry registry; // Initialization at the time of injection, the assertion is not null
@@ -105,9 +100,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     // Map<url, Invoker> cache service url to invoker mapping.
     private volatile Map<String, Invoker<T>> urlInvokerMap; // The initial value is null and the midway may be assigned to null, please use the local variable reference
     private volatile List<Invoker<T>> invokers;
-
-    // Map<methodName, Invoker> cache service method to invokers mapping.
-//    private volatile Map<String, List<Invoker<T>>> methodInvokerMap; // The initial value is null and the midway may be assigned to null, please use the local variable reference
 
     // Set<invokerUrls> cache invokeUrls to invokers mapping.
     private volatile Set<URL> cachedInvokerUrls; // The initial value is null and the midway may be assigned to null, please use the local variable reference
@@ -130,8 +122,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         this.overrideDirectoryUrl = this.directoryUrl = turnRegistryUrlToConsumerUrl(url);
         String group = directoryUrl.getParameter(Constants.GROUP_KEY, "");
         this.multiGroup = group != null && ("*".equals(group) || group.contains(","));
-        String methods = queryMap.get(Constants.METHODS_KEY);
-        this.serviceMethods = methods == null ? null : Constants.COMMA_SPLIT_PATTERN.split(methods);
     }
 
     private URL turnRegistryUrlToConsumerUrl(URL url) {
@@ -187,27 +177,24 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     @Override
     public synchronized void notify(List<URL> urls) {
-        List<URL> categoryUrls = urls.stream().filter(this::isValidCategory).filter(this::isNotCompatibleFor26x).collect(Collectors.toList());
+        List<URL> categoryUrls = urls.stream()
+                .filter(this::isValidCategory)
+                .filter(this::isNotCompatibleFor26x)
+                .collect(Collectors.toList());
 
         /**
          * TODO Try to refactor the processing of these three type of urls using Collectors.groupBy()?
          */
-        this.configurators = Configurator.toConfigurators(classifyUrls(categoryUrls, url -> (CONFIGURATORS_CATEGORY.equals(url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY))
-                 || OVERRIDE_PROTOCOL.equals(url.getProtocol())))).orElse(configurators);
+        this.configurators = Configurator.toConfigurators(classifyUrls(categoryUrls, UrlUtils::isConfigurator))
+                .orElse(configurators);
 
-        toRouters(classifyUrls(categoryUrls, url -> {
-            return ROUTE_PROTOCOL.equals(url.getProtocol())
-                    || ROUTERS_CATEGORY.equals(url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY));
-        })).ifPresent(this::addRouters);
+        toRouters(classifyUrls(categoryUrls, UrlUtils::isRoute)).ifPresent(this::addRouters);
 
         // providers
-        refreshOverrideAndInvoker(classifyUrls(categoryUrls, url -> PROVIDERS_CATEGORY.equals(url.getParameter(Constants.CATEGORY_KEY, PROVIDERS_CATEGORY))
-                && !OVERRIDE_PROTOCOL.equals(url.getProtocol())
-                && !ROUTE_PROTOCOL.equals(url.getProtocol()))
-        );
+        refreshOverrideAndInvoker(classifyUrls(categoryUrls, UrlUtils::isProvider));
     }
 
-    public void refreshOverrideAndInvoker(List<URL> urls) {
+    private void refreshOverrideAndInvoker(List<URL> urls) {
         // mock zookeeper://xxx?mock=return null
         overrideDirectoryUrl();
         refreshInvoker(urls);
@@ -215,9 +202,13 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     /**
      * Convert the invokerURL list to the Invoker Map. The rules of the conversion are as follows:
-     * 1.If URL has been converted to invoker, it is no longer re-referenced and obtained directly from the cache, and notice that any parameter changes in the URL will be re-referenced.
-     * 2.If the incoming invoker list is not empty, it means that it is the latest invoker list
-     * 3.If the list of incoming invokerUrl is empty, It means that the rule is only a override rule or a route rule, which needs to be re-contrasted to decide whether to re-reference.
+     * <ol>
+     * <li> If URL has been converted to invoker, it is no longer re-referenced and obtained directly from the cache,
+     * and notice that any parameter changes in the URL will be re-referenced.</li>
+     * <li>If the incoming invoker list is not empty, it means that it is the latest invoker list.</li>
+     * <li>If the list of incoming invokerUrl is empty, It means that the rule is only a override rule or a route
+     * rule, which needs to be re-contrasted to decide whether to re-reference.</li>
+     * </ol>
      *
      * @param invokerUrls this parameter can't be null
      */
@@ -248,7 +239,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 return;
             }
             Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls);// Translate url list to Invoker map
-//            Map<String, List<Invoker<T>>> newMethodInvokerMap = toMethodInvokers(newUrlInvokerMap); // Change method name to map Invoker Map
 
             // state change
             // If the calculation is wrong, it is not processed.
@@ -262,7 +252,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             // pre-route and build cache, notice that route cache should build on original Invoker list.
             // toMergeMethodInvokerMap() will wrap some invokers having different groups, those wrapped invokers not should be routed.
             routerChain.setInvokers(newInvokers);
-//            this.methodInvokerMap = multiGroup ? toMergeMethodInvokerMap(newMethodInvokerMap) : newMethodInvokerMap;
             this.invokers = multiGroup ? toMergeInvokerList(newInvokers) : newInvokers;
             this.urlInvokerMap = newUrlInvokerMap;
 
@@ -307,7 +296,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             return Optional.empty();
         }
 
-        List<Router> routers = new ArrayList<Router>();
+        List<Router> routers = new ArrayList<>();
         for (URL url : urls) {
             if (Constants.EMPTY_PROTOCOL.equals(url.getProtocol())) {
                 continue;
@@ -318,8 +307,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }
             try {
                 Router router = routerFactory.getRouter(url);
-                routerChain.addRouter(router);
-                if (!routers.contains(router)) routers.add(router);
+                if (!routers.contains(router)) {
+                    routers.add(router);
+                }
             } catch (Throwable t) {
                 logger.error("convert router url to router error, url: " + url, t);
             }
@@ -360,10 +350,10 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 continue;
             }
             if (!ExtensionLoader.getExtensionLoader(Protocol.class).hasExtension(providerUrl.getProtocol())) {
-                logger.error(new IllegalStateException("Unsupported protocol " + providerUrl.getProtocol() + " in notified url: " + providerUrl + " from registry " + getUrl()
-                        .getAddress() + " to consumer " + NetUtils.getLocalHost() + ", supported protocol: " + ExtensionLoader
-                        .getExtensionLoader(Protocol.class)
-                        .getSupportedExtensions()));
+                logger.error(new IllegalStateException("Unsupported protocol " + providerUrl.getProtocol() +
+                        " in notified url: " + providerUrl + " from registry " + getUrl().getAddress() +
+                        " to consumer " + NetUtils.getLocalHost() + ", supported protocol: " +
+                        ExtensionLoader.getExtensionLoader(Protocol.class).getSupportedExtensions()));
                 continue;
             }
             URL url = mergeUrl(providerUrl);
@@ -437,71 +427,27 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
 
     private URL overrideWithConfigurator(URL providerUrl) {
-        List<Configurator> localConfigurators = this.configurators; // local reference
-        if (localConfigurators != null && !localConfigurators.isEmpty()) {
-            for (Configurator configurator : localConfigurators) {
-                providerUrl = configurator.configure(providerUrl);
-            }
-        }
+        // override url with configurator from "override://" URL for dubbo 2.6 and before
+        providerUrl = overrideWithConfigurators(this.configurators, providerUrl);
 
-        List<Configurator> localAppDynamicConfigurators = consumerConfigurationListener.getConfigurators(); // local reference
-        if (localAppDynamicConfigurators != null && !localAppDynamicConfigurators.isEmpty()) {
-            for (Configurator configurator : localAppDynamicConfigurators) {
-                providerUrl = configurator.configure(providerUrl);
-            }
-        }
+        // override url with configurator from configurator from "app-name.configurators"
+        providerUrl = overrideWithConfigurators(consumerConfigurationListener.getConfigurators(), providerUrl);
 
+        // override url with configurator from configurators from "service-name.configurators"
         if (serviceConfigurationListener != null) {
-            List<Configurator> localDynamicConfigurators = serviceConfigurationListener.getConfigurators(); // local reference
-            if (localDynamicConfigurators != null && !localDynamicConfigurators.isEmpty()) {
-                for (Configurator configurator : localDynamicConfigurators) {
-                    providerUrl = configurator.configure(providerUrl);
-                }
-            }
+            providerUrl = overrideWithConfigurators(serviceConfigurationListener.getConfigurators(), providerUrl);
         }
 
         return providerUrl;
     }
 
-    /**
-     * Transform the invokers list into a mapping relationship with a method
-     *
-     * @param invokersMap Invoker Map
-     * @return Mapping relation between Invoker and method
-     */
-    private Map<String, List<Invoker<T>>> toMethodInvokers(Map<String, Invoker<T>> invokersMap) {
-        Map<String, List<Invoker<T>>> newMethodInvokerMap = new HashMap<String, List<Invoker<T>>>();
-        // According to the methods classification declared by the provider URL, the methods is compatible with the registry to execute the filtered methods
-        List<Invoker<T>> invokersList = new ArrayList<Invoker<T>>();
-        if (invokersMap != null && invokersMap.size() > 0) {
-            for (Invoker<T> invoker : invokersMap.values()) {
-                String parameter = invoker.getUrl().getParameter(Constants.METHODS_KEY);
-                if (parameter != null && parameter.length() > 0) {
-                    String[] methods = Constants.COMMA_SPLIT_PATTERN.split(parameter);
-                    if (methods != null && methods.length > 0) {
-                        for (String method : methods) {
-                            if (method != null && method.length() > 0 && !Constants.ANY_VALUE.equals(method)) {
-                                List<Invoker<T>> methodInvokers = newMethodInvokerMap.get(method);
-                                if (methodInvokers == null) {
-                                    methodInvokers = new ArrayList<Invoker<T>>();
-                                    newMethodInvokerMap.put(method, methodInvokers);
-                                }
-                                methodInvokers.add(invoker);
-                            }
-                        }
-                    }
-                }
-                invokersList.add(invoker);
+    private URL overrideWithConfigurators(List<Configurator> configurators, URL url) {
+        if (configurators != null && !configurators.isEmpty()) {
+            for (Configurator configurator : configurators) {
+                url = configurator.configure(url);
             }
         }
-        newMethodInvokerMap.put(Constants.ANY_VALUE, invokersList);
-        // sort and unmodifiable
-        for (String method : new HashSet<String>(newMethodInvokerMap.keySet())) {
-            List<Invoker<T>> methodInvokers = newMethodInvokerMap.get(method);
-            Collections.sort(methodInvokers, InvokerComparator.getComparator());
-            newMethodInvokerMap.put(method, Collections.unmodifiableList(methodInvokers));
-        }
-        return Collections.unmodifiableMap(newMethodInvokerMap);
+        return url;
     }
 
     /**
@@ -571,8 +517,10 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     public List<Invoker<T>> doList(Invocation invocation) {
         if (forbidden) {
             // 1. No service provider 2. Service providers are disabled
-            throw new RpcException(RpcException.FORBIDDEN_EXCEPTION, "No provider available from registry " + getUrl().getAddress() + " for service " + getConsumerUrl()
-                    .getServiceKey() + " on consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ", please check status of providers(disabled, not registered or in blacklist).");
+            throw new RpcException(RpcException.FORBIDDEN_EXCEPTION, "No provider available from registry " +
+                    getUrl().getAddress() + " for service " + getConsumerUrl().getServiceKey() + " on consumer " +
+                    NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() +
+                    ", please check status of providers(disabled, not registered or in blacklist).");
         }
 
         if (multiGroup) {
@@ -647,33 +595,16 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         return invokers;
     }
 
-    private static class InvokerComparator implements Comparator<Invoker<?>> {
-
-        private static final InvokerComparator comparator = new InvokerComparator();
-
-        private InvokerComparator() {
-        }
-
-        public static InvokerComparator getComparator() {
-            return comparator;
-        }
-
-        @Override
-        public int compare(Invoker<?> o1, Invoker<?> o2) {
-            return o1.getUrl().toString().compareTo(o2.getUrl().toString());
-        }
-
-    }
-
     private boolean isValidCategory(URL url) {
         String category = url.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY);
-        if ((ROUTERS_CATEGORY.equals(category) || ROUTE_PROTOCOL.equals(url.getProtocol())) || PROVIDERS_CATEGORY.equals(category) || CONFIGURATORS_CATEGORY
-                .equals(category) || DYNAMIC_CONFIGURATORS_CATEGORY.equals(category) || APP_DYNAMIC_CONFIGURATORS_CATEGORY
-                .equals(category)) {
+        if ((ROUTERS_CATEGORY.equals(category) || ROUTE_PROTOCOL.equals(url.getProtocol())) ||
+                PROVIDERS_CATEGORY.equals(category) ||
+                CONFIGURATORS_CATEGORY.equals(category) || DYNAMIC_CONFIGURATORS_CATEGORY.equals(category) ||
+                APP_DYNAMIC_CONFIGURATORS_CATEGORY.equals(category)) {
             return true;
         }
-        logger.warn("Unsupported category " + category + " in notified url: " + url + " from registry " + getUrl().getAddress() + " to consumer " + NetUtils
-                .getLocalHost());
+        logger.warn("Unsupported category " + category + " in notified url: " + url + " from registry " +
+                getUrl().getAddress() + " to consumer " + NetUtils.getLocalHost());
         return false;
     }
 
