@@ -175,9 +175,9 @@ public class PojoUtils {
                 try {
                     Object fieldValue = field.get(pojo);
                     if (history.containsKey(pojo)) {
-                        Object pojoGenerilizedValue = history.get(pojo);
-                        if (pojoGenerilizedValue instanceof Map
-                                && ((Map) pojoGenerilizedValue).containsKey(field.getName())) {
+                        Object pojoGeneralizedValue = history.get(pojo);
+                        if (pojoGeneralizedValue instanceof Map
+                                && ((Map) pojoGeneralizedValue).containsKey(field.getName())) {
                             continue;
                         }
                     }

@@ -17,12 +17,13 @@
 
 package org.apache.dubbo.config;
 
-import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.config.MethodConfig;
-import com.alibaba.dubbo.config.ArgumentConfig;
-
 import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 import org.apache.dubbo.service.Person;
+
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.config.ArgumentConfig;
+import com.alibaba.dubbo.config.MethodConfig;
+
 import org.hamcrest.Matchers;
 import org.junit.Test;
 

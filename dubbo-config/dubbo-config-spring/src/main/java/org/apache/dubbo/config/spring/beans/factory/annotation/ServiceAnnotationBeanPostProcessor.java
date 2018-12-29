@@ -208,7 +208,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
      * {@link Service} Annotation.
      *
      * @param scanner       {@link ClassPathBeanDefinitionScanner}
-     * @param packageToScan pachage to scan
+     * @param packageToScan package to scan
      * @param registry      {@link BeanDefinitionRegistry}
      * @return non-null
      * @since 2.5.8

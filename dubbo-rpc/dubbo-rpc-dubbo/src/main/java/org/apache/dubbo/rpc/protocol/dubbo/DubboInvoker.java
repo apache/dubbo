@@ -18,8 +18,8 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.utils.AtomicPositiveInteger;
-import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
@@ -81,7 +81,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         }
         try {
             boolean isAsync = RpcUtils.isAsync(getUrl(), invocation);
-            boolean isAsyncFuture = RpcUtils.isGeneratedFuture(inv) || RpcUtils.isFutureReturnType(inv);
+            boolean isAsyncFuture =  RpcUtils.isGeneratedFuture(inv) || RpcUtils.isFutureReturnType(inv);
             boolean isOneway = RpcUtils.isOneway(getUrl(), invocation);
             int timeout = getUrl().getMethodParameter(methodName, Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
             if (isOneway) {
@@ -97,7 +97,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
 
                 Result result;
                 if (isAsyncFuture) {
-                    // register resultCallback, sometimes we need the asyn result being processed by the filter chain.
+                    // register resultCallback, sometimes we need the async result being processed by the filter chain.
                     result = new AsyncRpcResult(futureAdapter, futureAdapter.getResultFuture(), false);
                 } else {
                     result = new SimpleAsyncRpcResult(futureAdapter, futureAdapter.getResultFuture(), false);
@@ -148,7 +148,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 }
                 for (ExchangeClient client : clients) {
                     try {
-                        client.close(ConfigUtils.getServerShutdownTimeout());
+                        client.close(ConfigurationUtils.getServerShutdownTimeout());
                     } catch (Throwable t) {
                         logger.warn(t.getMessage(), t);
                     }

@@ -40,11 +40,33 @@ There's a [README](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samp
 ### Maven dependency
 
 ```xml
-<dependency>
-    <groupId>com.alibaba</groupId>
-    <artifactId>dubbo</artifactId>
-    <version>2.6.5</version>
-</dependency>
+<properties>
+    <dubbo.version>2.6.5</dubbo.version>
+</properties>
+    
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-dependencies-bom</artifactId>
+            <version>${dubbo.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+
+<dependencies>
+    <dependency>
+        <groupId>com.alibaba</groupId>
+        <artifactId>dubbo</artifactId>
+        <version>${dubbo.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-all</artifactId>
+    </dependency>
+</dependencies>
 ```
 
 ### Define service interfaces
@@ -147,7 +169,7 @@ The consumer will print out `Hello world` on the screen.
 
 * [Your first Dubbo application](http://dubbo.apache.org/en-us/blog/dubbo-101.html) - A 101 tutorial to reveal more details, with the same code above.
 * [Dubbo user manual](http://dubbo.apache.org/en-us/docs/user/preface/background.html) - How to use Dubbo and all its features.
-* [Dubbo developer guide](http://dubbo.apache.org/en-us/docs/dev/build.html) - How to invovle in Dubbo development.
+* [Dubbo developer guide](http://dubbo.apache.org/en-us/docs/dev/build.html) - How to involve in Dubbo development.
 * [Dubbo admin manual](http://dubbo.apache.org/en-us/docs/admin/install/provider-demo.html) - How to admin and manage Dubbo services.
 
 ## Contact

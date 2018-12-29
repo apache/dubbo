@@ -26,7 +26,6 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
@@ -85,13 +84,12 @@ public class MockClusterInvokerTest {
         URL url = URL.valueOf("remote://1.2.3.4/" + IHelloService.class.getName())
                 .addParameter(Constants.MOCK_KEY, "fail:return null")
                 .addParameter("invoke_return_error", "true");
-        Invoker<IHelloService> cluster = getClusterInvoker(url);
         URL mockUrl = URL.valueOf("mock://localhost/" + IHelloService.class.getName()
                 + "?getSomething.mock=return aa").addParameters(url.getParameters());
 
         Protocol protocol = new MockProtocol();
         Invoker<IHelloService> mInvoker1 = protocol.refer(IHelloService.class, mockUrl);
-        invokers.add(mInvoker1);
+        Invoker<IHelloService> cluster = getClusterInvokerMock(url, mInvoker1);
 
         //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
@@ -120,14 +118,14 @@ public class MockClusterInvokerTest {
     public void testMockInvokerInvoke_forcemock() {
         URL url = URL.valueOf("remote://1.2.3.4/" + IHelloService.class.getName());
         url = url.addParameter(Constants.MOCK_KEY, "force:return null");
-        Invoker<IHelloService> cluster = getClusterInvoker(url);
+
         URL mockUrl = URL.valueOf("mock://localhost/" + IHelloService.class.getName()
                 + "?getSomething.mock=return aa&getSomething3xx.mock=return xx")
                 .addParameters(url.getParameters());
 
         Protocol protocol = new MockProtocol();
         Invoker<IHelloService> mInvoker1 = protocol.refer(IHelloService.class, mockUrl);
-        invokers.add(mInvoker1);
+        Invoker<IHelloService> cluster = getClusterInvokerMock(url, mInvoker1);
 
         //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
@@ -642,16 +640,19 @@ public class MockClusterInvokerTest {
         }
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private Invoker<IHelloService> getClusterInvoker(URL url) {
+    private Invoker<IHelloService> getClusterInvokerMock(URL url, Invoker<IHelloService> mockInvoker) {
         // As `javassist` have a strict restriction of argument types, request will fail if Invocation do not contains complete parameter type information
         final URL durl = url.addParameter("proxy", "jdk");
         invokers.clear();
         ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getExtension("jdk");
         Invoker<IHelloService> invoker1 = proxy.getInvoker(new HelloService(), IHelloService.class, durl);
         invokers.add(invoker1);
+        if (mockInvoker != null) {
+            invokers.add(mockInvoker);
+        }
 
-        Directory<IHelloService> dic = new StaticDirectory<IHelloService>(durl, invokers, null);
+        StaticDirectory<IHelloService> dic = new StaticDirectory<IHelloService>(durl, invokers, null);
+        dic.buildRouterChain();
         AbstractClusterInvoker<IHelloService> cluster = new AbstractClusterInvoker(dic) {
             @Override
             protected Result doInvoke(Invocation invocation, List invokers, LoadBalance loadbalance)
@@ -664,6 +665,11 @@ public class MockClusterInvokerTest {
             }
         };
         return new MockClusterInvoker<IHelloService>(dic, cluster);
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private Invoker<IHelloService> getClusterInvoker(URL url) {
+        return getClusterInvokerMock(url, null);
     }
 
     public static interface IHelloService {

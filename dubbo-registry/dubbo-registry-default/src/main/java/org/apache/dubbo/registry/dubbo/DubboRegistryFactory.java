@@ -29,6 +29,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.Cluster;
+import org.apache.dubbo.rpc.cluster.RouterChain;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -93,6 +94,7 @@ public class DubboRegistryFactory extends AbstractRegistryFactory {
         DubboRegistry registry = new DubboRegistry(registryInvoker, registryService);
         directory.setRegistry(registry);
         directory.setProtocol(protocol);
+        directory.setRouterChain(RouterChain.buildChain(url));
         directory.notify(urls);
         directory.subscribe(new URL(Constants.CONSUMER_PROTOCOL, NetUtils.getLocalHost(), 0, RegistryService.class.getName(), url.getParameters()));
         return registry;

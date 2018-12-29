@@ -31,7 +31,7 @@ public class Response {
     public static final byte OK = 20;
 
     /**
-     * clien side timeout.
+     * client side timeout.
      */
     public static final byte CLIENT_TIMEOUT = 30;
 

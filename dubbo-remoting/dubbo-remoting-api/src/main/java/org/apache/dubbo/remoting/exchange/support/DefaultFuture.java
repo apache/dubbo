@@ -265,7 +265,7 @@ public class DefaultFuture implements ResponseFuture {
             try {
                 callbackCopy.done(res.getResult());
             } catch (Exception e) {
-                logger.error("callback invoke error .reasult:" + res.getResult() + ",url:" + channel.getUrl(), e);
+                logger.error("callback invoke error .result:" + res.getResult() + ",url:" + channel.getUrl(), e);
             }
         } else if (res.getStatus() == Response.CLIENT_TIMEOUT || res.getStatus() == Response.SERVER_TIMEOUT) {
             try {
