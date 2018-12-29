@@ -27,6 +27,7 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
  * Dynamic configuration
  */
 public interface DynamicConfiguration extends Configuration {
+    String DEFAULT_GROUP = "dubbo";
 
     /**
      * {@link #addListener(String, String, ConfigurationListener)}
@@ -34,7 +35,9 @@ public interface DynamicConfiguration extends Configuration {
      * @param key      the key to represent a configuration
      * @param listener configuration listener
      */
-    void addListener(String key, ConfigurationListener listener);
+    default void addListener(String key, ConfigurationListener listener) {
+        addListener(key, DEFAULT_GROUP, listener);
+    }
 
 
     /**
@@ -43,7 +46,9 @@ public interface DynamicConfiguration extends Configuration {
      * @param key      the key to represent a configuration
      * @param listener configuration listener
      */
-    void removeListener(String key, ConfigurationListener listener);
+    default void removeListener(String key, ConfigurationListener listener) {
+        removeListener(key, DEFAULT_GROUP, listener);
+    }
 
     /**
      * Register a configuration listener for a specified key
@@ -72,7 +77,9 @@ public interface DynamicConfiguration extends Configuration {
      * @param key the key to represent a configuration
      * @return target configuration mapped to the given key
      */
-    String getConfig(String key);
+    default String getConfig(String key) {
+        return getConfig(key, null, 0L);
+    }
 
     /**
      * Get the configuration mapped to the given key and the given group
@@ -81,7 +88,9 @@ public interface DynamicConfiguration extends Configuration {
      * @param group the group where the key belongs to
      * @return target configuration mapped to the given key and the given group
      */
-    String getConfig(String key, String group);
+    default String getConfig(String key, String group) {
+        return getConfig(key, group, 0L);
+    }
 
     /**
      * Get the configuration mapped to the given key and the given group. If the
