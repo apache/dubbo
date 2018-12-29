@@ -88,4 +88,25 @@ public interface Configurator extends Comparable<Configurator> {
         Collections.sort(configurators);
         return Optional.of(configurators);
     }
+
+    /**
+     * Sort by host, then by priority
+     * 1. the url with a specific host ip should have higher priority than 0.0.0.0
+     * 2. if two url has the same host, compare by priority value；
+     */
+    default int compareTo(Configurator o) {
+        if (o == null) {
+            return -1;
+        }
+
+        int ipCompare = getUrl().getHost().compareTo(o.getUrl().getHost());
+        // host is the same, sort by priority
+        if (ipCompare == 0) {
+            int i = getUrl().getParameter(Constants.PRIORITY_KEY, 0);
+            int j = o.getUrl().getParameter(Constants.PRIORITY_KEY, 0);
+            return Integer.compare(i, j);
+        } else {
+            return ipCompare;
+        }
+    }
 }
