@@ -35,7 +35,7 @@ import java.util.Optional;
 public interface Configurator extends Comparable<Configurator> {
 
     /**
-     * get the configurator url.
+     * Get the configurator url.
      *
      * @return configurator url.
      */
@@ -43,24 +43,28 @@ public interface Configurator extends Comparable<Configurator> {
 
     /**
      * Configure the provider url.
-     * O
      *
-     * @param url - old rovider url.
+     * @param url - old provider url.
      * @return new provider url.
      */
     URL configure(URL url);
 
 
     /**
-     * Convert override urls to map for use when re-refer.
-     * Send all rules every time, the urls will be reassembled and calculated
+     * Convert override urls to map for use when re-refer. Send all rules every time, the urls will be reassembled and
+     * calculated
      *
-     * @param urls Contract:
-     *             </br>1.override://0.0.0.0/...( or override://ip:port...?anyhost=true)&para1=value1... means global rules (all of the providers take effect)
-     *             </br>2.override://ip:port...?anyhost=false Special rules (only for a certain provider)
-     *             </br>3.override:// rule is not supported... ,needs to be calculated by registry itself.
-     *             </br>4.override://0.0.0.0/ without parameters means clearing the override
-     * @return
+     * URL contract:
+     * <ol>
+     * <li>override://0.0.0.0/...( or override://ip:port...?anyhost=true)&para1=value1... means global rules
+     * (all of the providers take effect)</li>
+     * <li>override://ip:port...?anyhost=false Special rules (only for a certain provider)</li>
+     * <li>override:// rule is not supported... ,needs to be calculated by registry itself</li>
+     * <li>override://0.0.0.0/ without parameters means clearing the override</li>
+     * </ol>
+     *
+     * @param urls URL list to convert
+     * @return converted configurator list
      */
     static Optional<List<Configurator>> toConfigurators(List<URL> urls) {
         if (CollectionUtils.isEmpty(urls)) {
