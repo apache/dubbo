@@ -74,13 +74,13 @@ public interface Configurator extends Comparable<Configurator> {
         ConfiguratorFactory configuratorFactory = ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
                 .getAdaptiveExtension();
 
-        List<Configurator> configurators = new ArrayList<Configurator>(urls.size());
+        List<Configurator> configurators = new ArrayList<>(urls.size());
         for (URL url : urls) {
             if (Constants.EMPTY_PROTOCOL.equals(url.getProtocol())) {
                 configurators.clear();
                 break;
             }
-            Map<String, String> override = new HashMap<String, String>(url.getParameters());
+            Map<String, String> override = new HashMap<>(url.getParameters());
             //The anyhost parameter of override may be added automatically, it can't change the judgement of changing url
             override.remove(Constants.ANYHOST_KEY);
             if (override.size() == 0) {
