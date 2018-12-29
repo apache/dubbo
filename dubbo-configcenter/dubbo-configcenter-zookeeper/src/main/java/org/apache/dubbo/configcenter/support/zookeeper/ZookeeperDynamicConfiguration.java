@@ -18,7 +18,6 @@ package org.apache.dubbo.configcenter.support.zookeeper;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.AbstractConfiguration;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.configcenter.ConfigurationListener;
@@ -44,7 +43,7 @@ import static org.apache.dubbo.common.Constants.CONFIG_NAMESPACE_KEY;
 /**
  *
  */
-public class ZookeeperDynamicConfiguration extends AbstractConfiguration implements DynamicConfiguration {
+public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperDynamicConfiguration.class);
     private Executor executor;
     private CuratorFramework client;
@@ -100,7 +99,7 @@ public class ZookeeperDynamicConfiguration extends AbstractConfiguration impleme
      * @return
      */
     @Override
-    protected Object getInternalProperty(String key) {
+    public Object getInternalProperty(String key) {
         ChildData childData = treeCache.getCurrentData(key);
         if (childData != null) {
             return new String(childData.getData(), StandardCharsets.UTF_8);

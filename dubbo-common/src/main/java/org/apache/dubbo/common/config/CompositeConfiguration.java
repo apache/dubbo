@@ -23,7 +23,7 @@ import java.util.List;
 /**
  *
  */
-public class CompositeConfiguration extends AbstractConfiguration {
+public class CompositeConfiguration implements Configuration {
 
     /**
      * List holding all the configuration
@@ -56,7 +56,7 @@ public class CompositeConfiguration extends AbstractConfiguration {
     }
 
     @Override
-    protected Object getInternalProperty(String key) {
+    public Object getInternalProperty(String key) {
         Configuration firstMatchingConfiguration = null;
         for (Configuration config : configList) {
             try {

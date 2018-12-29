@@ -17,7 +17,6 @@
 package org.apache.dubbo.configcenter.support.nop;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.AbstractConfiguration;
 import org.apache.dubbo.configcenter.ConfigurationListener;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 
@@ -25,7 +24,7 @@ import org.apache.dubbo.configcenter.DynamicConfiguration;
  * The default extension of {@link DynamicConfiguration}. If user does not specify a config centre, or specifies one
  * that is not a valid extension, it will default to this one.
  */
-public class NopDynamicConfiguration extends AbstractConfiguration implements DynamicConfiguration {
+public class NopDynamicConfiguration implements DynamicConfiguration {
 
     public NopDynamicConfiguration(URL url) {
         // no-op
@@ -33,7 +32,7 @@ public class NopDynamicConfiguration extends AbstractConfiguration implements Dy
 
 
     @Override
-    protected Object getInternalProperty(String key) {
+    public Object getInternalProperty(String key) {
         return null;
     }
 

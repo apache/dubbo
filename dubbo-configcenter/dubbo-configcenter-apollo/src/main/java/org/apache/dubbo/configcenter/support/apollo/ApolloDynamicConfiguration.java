@@ -18,7 +18,6 @@ package org.apache.dubbo.configcenter.support.apollo;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.AbstractConfiguration;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -42,7 +41,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 /**
  * Apollo implementation, https://github.com/ctripcorp/apollo
  */
-public class ApolloDynamicConfiguration extends AbstractConfiguration implements DynamicConfiguration {
+public class ApolloDynamicConfiguration implements DynamicConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(ApolloDynamicConfiguration.class);
     private static final String APOLLO_ENV_KEY = "env";
     private static final String APOLLO_ADDR_KEY = "apollo.meta";
@@ -128,7 +127,7 @@ public class ApolloDynamicConfiguration extends AbstractConfiguration implements
      * But I think Apollo's inheritance feature of namespace can solve the problem .
      */
     @Override
-    protected String getInternalProperty(String key) {
+    public String getInternalProperty(String key) {
         return dubboConfig.getProperty(key, null);
     }
 

@@ -16,16 +16,15 @@
  */
 package org.apache.dubbo.configcenter.mock;
 
-import org.apache.dubbo.common.config.AbstractConfiguration;
 import org.apache.dubbo.configcenter.ConfigurationListener;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 
 /**
  *
  */
-public class MockDynamicConfiguration extends AbstractConfiguration implements DynamicConfiguration {
+public class MockDynamicConfiguration implements DynamicConfiguration {
     @Override
-    protected Object getInternalProperty(String key) {
+    public Object getInternalProperty(String key) {
         return null;
     }
 
