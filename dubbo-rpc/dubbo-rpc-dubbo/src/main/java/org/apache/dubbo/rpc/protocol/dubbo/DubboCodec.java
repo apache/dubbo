@@ -97,7 +97,7 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
                                     (Invocation) getRequestData(id), proto);
                         }
 
-                        attachInvocation(channel, (Invocation) getRequestData(id), id);
+                        // attachInvocation(channel, (Invocation) getRequestData(id), id);
 
                         data = result;
                     }
@@ -139,7 +139,7 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
                                 new UnsafeByteArrayInputStream(readMessageData(is)), proto);
                     }
 
-                    attachInvocation(channel, inv, req.getId());
+                    attachInvocation(channel, inv, req);
 
                     data = inv;
                 }
@@ -159,7 +159,7 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
     /**
      * Provide the ability to transparently transmit attachment. eg: http2 headers
      */
-    protected void attachInvocation(Channel channel, Invocation requestData, long id) {
+    protected void attachInvocation(Channel channel, Invocation requestData, Request req) {
 
     }
 
