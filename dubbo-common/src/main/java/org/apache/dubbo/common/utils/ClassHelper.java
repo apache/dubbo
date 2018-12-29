@@ -104,8 +104,7 @@ public class ClassHelper {
                 // getClassLoader() returning null indicates the bootstrap ClassLoader
                 try {
                     cl = ClassLoader.getSystemClassLoader();
-                }
-                catch (Throwable ex) {
+                } catch (Throwable ex) {
                     // Cannot access system ClassLoader - oh well, maybe the caller can live with null...
                 }
             }
@@ -265,24 +264,31 @@ public class ClassHelper {
     }
 
     public static Object convertPrimitive(Class<?> type, String value) {
-        if (type == char.class || type == Character.class) {
+        if (value == null) {
+            return null;
+        } else if (type == char.class || type == Character.class) {
             return value.length() > 0 ? value.charAt(0) : '\0';
         } else if (type == boolean.class || type == Boolean.class) {
             return Boolean.valueOf(value);
         } else if (type == byte.class || type == Byte.class) {
-            return Byte.valueOf(value);
+            return isNumber(value) ? Byte.valueOf(value) : null;
         } else if (type == short.class || type == Short.class) {
-            return Short.valueOf(value);
+            return isNumber(value) ? Short.valueOf(value) : null;
         } else if (type == int.class || type == Integer.class) {
-            return Integer.valueOf(value);
+            return isNumber(value) ? Integer.valueOf(value) : null;
         } else if (type == long.class || type == Long.class) {
-            return Long.valueOf(value);
+            return isNumber(value) ? Long.valueOf(value) : null;
         } else if (type == float.class || type == Float.class) {
-            return Float.valueOf(value);
+            return isNumber(value) ? Float.valueOf(value) : null;
         } else if (type == double.class || type == Double.class) {
-            return Double.valueOf(value);
+            return isNumber(value) ? Double.valueOf(value) : null;
         }
         return value;
+    }
+
+    public static boolean isNumber(String str) {
+        String reg = "^[0-9]+(.[0-9]+)?$";
+        return str.matches(reg);
     }
 
     /**
