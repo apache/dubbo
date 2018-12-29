@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * ModuleConfig
+ * The module info
  *
  * @export
  */
@@ -30,25 +30,39 @@ public class ModuleConfig extends AbstractConfig {
 
     private static final long serialVersionUID = 5508512956753757169L;
 
-    // module name
+    /**
+     * Module name
+     */
     private String name;
 
-    // module version
+    /**
+     * Module version
+     */
     private String version;
 
-    // module owner
+    /**
+     * Module owner
+     */
     private String owner;
 
-    // module's organization
+    /**
+     * Module's organization
+     */
     private String organization;
 
-    // registry centers
+    /**
+     * Registry centers
+     */
     private List<RegistryConfig> registries;
 
-    // monitor center
+    /**
+     * Monitor center
+     */
     private MonitorConfig monitor;
 
-    // if it's default
+    /**
+     * If it's default
+     */
     private Boolean isDefault;
 
     public ModuleConfig() {

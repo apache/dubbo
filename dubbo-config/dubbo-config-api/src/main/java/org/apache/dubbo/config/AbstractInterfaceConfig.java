@@ -57,44 +57,71 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     private static final long serialVersionUID = -1559314110797223229L;
 
-    // local impl class name for the service interface
+    /**
+     * Local impl class name for the service interface
+     */
     protected String local;
 
-    // local stub class name for the service interface
+    /**
+     * Local stub class name for the service interface
+     */
     protected String stub;
 
-    // service monitor
+    /**
+     * Service monitor
+     */
     protected MonitorConfig monitor;
 
-    // proxy type
+    /**
+     * Strategies for generating dynamic agents，there are two strategies can be choosed: jdk and javassist
+     */
     protected String proxy;
 
-    // cluster type
+    /**
+     * Cluster type
+     */
     protected String cluster;
 
-    // filter
+    /**
+     * The {@link Filter} when the provicer side exposed a service or the customer side references a remote service used,
+     * if there are more than one, you can use commas to separate them
+     */
     protected String filter;
 
-    // listener
+    /**
+     * The Listener when the provider side exposes a service or the customer side references a remote service used
+     * if there are more than one, you can use commas to separate them
+     */
     protected String listener;
 
-    // owner
+    /**
+     * The owner of zhe service providers
+     */
     protected String owner;
 
-    // connection limits, 0 means shared connection, otherwise it defines the connections delegated to the
-    // current service
+    /**
+     * Connection limits, 0 means shared connection, otherwise it defines the connections delegated to the current service
+     */
     protected Integer connections;
 
-    // layer
+    /**
+     * The layer of service providers
+     */
     protected String layer;
 
-    // application info
+    /**
+     * The application info
+     */
     protected ApplicationConfig application;
 
-    // module info
+    /**
+     * The module info
+     */
     protected ModuleConfig module;
 
-    // registry centers
+    /**
+     * Registry centers
+     */
     protected List<RegistryConfig> registries;
 
     protected String registryIds;
@@ -102,7 +129,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     // connection events
     protected String onconnect;
 
-    // disconnection events
+    /**
+     * Disconnection events
+     */
     protected String ondisconnect;
     protected MetadataReportConfig metadataReportConfig;
     protected RegistryDataConfig registryDataConfig;
@@ -111,6 +140,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     // the scope for referring/exporting a service, if it's local, it means searching in current JVM only.
     private String scope;
 
+    /**
+     * Check whether the registry config is exists, and then conversion it to {@link RegistryConfig}
+     */
     protected void checkRegistry() {
         loadRegistriesFromBackwardConfig();
 
@@ -193,6 +225,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
     }
 
+    /**
+     *
+     * Load the registry and conversion it to {@link URL}, the priority order is: system property > dubbo registry config
+     *
+     * @param provider whether it is the provider side
+     * @return
+     */
     protected List<URL> loadRegistries(boolean provider) {
         // check && override if necessary
         checkRegistry();
@@ -237,6 +276,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         return registryList;
     }
 
+    /**
+     *
+     * Load the monitor config from the system properties and conversation it to {@link URL}
+     *
+     * @param registryURL
+     * @return
+     */
     protected URL loadMonitor(URL registryURL) {
         checkMonitor();
         Map<String, String> map = new HashMap<String, String>();
@@ -246,7 +292,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (ConfigUtils.getPid() > 0) {
             map.put(Constants.PID_KEY, String.valueOf(ConfigUtils.getPid()));
         }
-        //set ip
+        //set registry host
         String hostToRegistry = ConfigUtils.getSystemProperty(Constants.DUBBO_IP_TO_REGISTRY);
         if (hostToRegistry == null || hostToRegistry.length() == 0) {
             hostToRegistry = NetUtils.getLocalHost();
@@ -298,16 +344,21 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         });
     }
 
+    /**
+     * Check whether the remote service interface and the methods meet with Dubbo's requirements.it mainly check, if the
+     * methods configured in the configuration file are included in the interface of remote service
+     *
+     * @param interfaceClass the interface of remote service
+     * @param methods the methods configured
+     */
     protected void checkInterfaceAndMethods(Class<?> interfaceClass, List<MethodConfig> methods) {
-        // interface cannot be null
         if (interfaceClass == null) {
             throw new IllegalStateException("interface not allow null!");
         }
-        // to verify interfaceClass is an interface
         if (!interfaceClass.isInterface()) {
             throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
         }
-        // check if methods exist in the interface
+        // check if methods exist in the remote service interface
         if (methods != null && !methods.isEmpty()) {
             for (MethodConfig methodBean : methods) {
                 methodBean.setService(interfaceClass.getName());
@@ -332,6 +383,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
     }
 
+    /**
+     * Legitimacy check and setup of local simulated operations. The operations can be a string with Simple operation or
+     * a classname whose {@link Class} implements a particular function
+     *
+     * @param interfaceClass for provider side, it is the {@link Class} of the service that will be exported; for consumer
+     *                       side, it is the {@link Class} of the remote service interface that will be referenced
+     */
     void checkMock(Class<?> interfaceClass) {
         if (ConfigUtils.isEmpty(mock)) {
             return;
@@ -341,6 +399,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (normalizedMock.startsWith(Constants.RETURN_PREFIX)) {
             normalizedMock = normalizedMock.substring(Constants.RETURN_PREFIX.length()).trim();
             try {
+                //Check whether the mock value is legal, if it is illegal, throw exception
                 MockInvoker.parseMockValue(normalizedMock);
             } catch (Exception e) {
                 throw new IllegalStateException("Illegal mock return in <dubbo:service/reference ... " +
@@ -350,6 +409,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             normalizedMock = normalizedMock.substring(Constants.THROW_PREFIX.length()).trim();
             if (ConfigUtils.isNotEmpty(normalizedMock)) {
                 try {
+                    //Check whether the mock value is legal
                     MockInvoker.getThrowable(normalizedMock);
                 } catch (Exception e) {
                     throw new IllegalStateException("Illegal mock throw in <dubbo:service/reference ... " +
@@ -357,10 +417,17 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 }
             }
         } else {
+            //Check whether the mock class is a implementation of the interfaceClass, and if it has a default constructor
             MockInvoker.getMockObject(normalizedMock, interfaceClass);
         }
     }
 
+    /**
+     * Legitimacy check of stub, note that: the local will deprecated, and replace with <code>stub</code>
+     *
+     * @param interfaceClass for provider side, it is the {@link Class} of the service that will be exported; for consumer
+     *                       side, it is the {@link Class} of the remote service interface
+     */
     void checkStub(Class<?> interfaceClass) {
         if (ConfigUtils.isNotEmpty(local)) {
             Class<?> localClass = ConfigUtils.isDefault(local) ? ReflectUtils.forName(interfaceClass.getName() + "Local") : ReflectUtils.forName(local);
@@ -368,6 +435,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 throw new IllegalStateException("The local implementation class " + localClass.getName() + " not implement interface " + interfaceClass.getName());
             }
             try {
+                //Check if the localClass a contructor with parameter who's type is interfaceClass
                 ReflectUtils.findConstructor(localClass, interfaceClass);
             } catch (NoSuchMethodException e) {
                 throw new IllegalStateException("No such constructor \"public " + localClass.getSimpleName() + "(" + interfaceClass.getName() + ")\" in local implementation class " + localClass.getName());
@@ -379,6 +447,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 throw new IllegalStateException("The local implementation class " + localClass.getName() + " not implement interface " + interfaceClass.getName());
             }
             try {
+                //Check if the localClass a contructor with parameter who's type is interfaceClass
                 ReflectUtils.findConstructor(localClass, interfaceClass);
             } catch (NoSuchMethodException e) {
                 throw new IllegalStateException("No such constructor \"public " + localClass.getSimpleName() + "(" + interfaceClass.getName() + ")\" in local implementation class " + localClass.getName());
