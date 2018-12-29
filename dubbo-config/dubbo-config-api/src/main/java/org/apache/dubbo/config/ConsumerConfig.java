@@ -26,32 +26,32 @@ public class ConsumerConfig extends AbstractReferenceConfig {
     private static final long serialVersionUID = 2827274711143680600L;
 
     /**
-     * whether to use the default protocol
+     * Whether to use the default protocol
      */
     private Boolean isDefault;
 
     /**
-     * networking framework client uses: netty, mina, etc.
+     * Networking framework client uses: netty, mina, etc.
      */
     private String client;
 
     /**
-     * consumer thread pool type: cached, fixed, limit, eager
+     * Consumer thread pool type: cached, fixed, limit, eager
      */
     private String threadpool;
 
     /**
-     * consumer threadpool core thread size
+     * Consumer threadpool core thread size
      */
     private Integer corethreads;
 
     /**
-     * consumer threadpool thread size
+     * Consumer threadpool thread size
      */
     private Integer threads;
 
     /**
-     * consumer threadpool queue size
+     * Consumer threadpool queue size
      */
     private Integer queues;
 
