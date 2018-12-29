@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.configcenter.mock;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.configcenter.ConfigurationListener;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 
@@ -23,6 +24,9 @@ import org.apache.dubbo.configcenter.DynamicConfiguration;
  *
  */
 public class MockDynamicConfiguration implements DynamicConfiguration {
+    public MockDynamicConfiguration(URL url) {
+    }
+
     @Override
     public Object getInternalProperty(String key) {
         return null;
