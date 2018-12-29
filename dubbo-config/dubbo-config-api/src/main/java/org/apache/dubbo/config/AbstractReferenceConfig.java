@@ -185,7 +185,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     }
 
     public void setVersion(String version) {
-        checkKey("version", version);
+        checkKey(Constants.VERSION_KEY, version);
         this.version = version;
     }
 
@@ -194,7 +194,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     }
 
     public void setGroup(String group) {
-        checkKey("group", group);
+        checkKey(Constants.GROUP_KEY, group);
         this.group = group;
     }
 }

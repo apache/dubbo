@@ -20,11 +20,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.Environment;
-import org.apache.dubbo.common.utils.ConfigUtils;
-import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.common.utils.ReflectUtils;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.common.utils.*;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.metadata.integration.MetadataReportService;
 import org.apache.dubbo.monitor.MonitorFactory;
@@ -203,22 +199,14 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             appendParameters(registryDataConfigurationMap, registryDataConfig);
             for (RegistryConfig config : registries) {
                 String address = config.getAddress();
-                if (address == null || address.length() == 0) {
+                if (StringUtils.isEmpty(address)) {
                     address = Constants.ANYHOST_VALUE;
                 }
-                if (address.length() > 0 && !RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
+                if (!RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
                     Map<String, String> map = new HashMap<String, String>();
                     appendParameters(map, application);
                     appendParameters(map, config);
-                    map.put("path", RegistryService.class.getName());
-                    map.put("dubbo", Version.getProtocolVersion());
-                    map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
-                    if (ConfigUtils.getPid() > 0) {
-                        map.put(Constants.PID_KEY, String.valueOf(ConfigUtils.getPid()));
-                    }
-                    if (!map.containsKey("protocol")) {
-                        map.put("protocol", "dubbo");
-                    }
+                    overrideParameters(map);
                     List<URL> urls = UrlUtils.parseURLs(address, map);
 
                     for (URL url : urls) {
@@ -241,7 +229,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         checkMonitor();
         Map<String, String> map = new HashMap<String, String>();
         map.put(Constants.INTERFACE_KEY, MonitorService.class.getName());
-        map.put("dubbo", Version.getProtocolVersion());
+        map.put(Constants.DOBBO_PROTOCOL, Version.getProtocolVersion());
         map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
         if (ConfigUtils.getPid() > 0) {
             map.put(Constants.PID_KEY, String.valueOf(ConfigUtils.getPid()));
@@ -266,17 +254,17 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 if (getExtensionLoader(MonitorFactory.class).hasExtension("logstat")) {
                     map.put(Constants.PROTOCOL_KEY, "logstat");
                 } else {
-                    map.put(Constants.PROTOCOL_KEY, "dubbo");
+                    map.put(Constants.PROTOCOL_KEY, Constants.DOBBO_PROTOCOL);
                 }
             }
             return UrlUtils.parseURL(address, map);
         } else if (Constants.REGISTRY_PROTOCOL.equals(monitor.getProtocol()) && registryURL != null) {
-            return registryURL.setProtocol("dubbo").addParameter(Constants.PROTOCOL_KEY, "registry").addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map));
+            return registryURL.setProtocol(Constants.DOBBO_PROTOCOL).addParameter(Constants.PROTOCOL_KEY, Constants.REGISTRY_PROTOCOL).addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map));
         }
         return null;
     }
 
-    final private URL loadMetadataReporterURL(boolean provider) {
+    private URL loadMetadataReporterURL(boolean provider) {
         this.checkApplication();
         String address = metadataReportConfig.getAddress();
         if (address == null || address.length() == 0) {
@@ -300,9 +288,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     protected void checkInterfaceAndMethods(Class<?> interfaceClass, List<MethodConfig> methods) {
         // interface cannot be null
-        if (interfaceClass == null) {
-            throw new IllegalStateException("interface not allow null!");
-        }
+        Assert.notNull(interfaceClass,new IllegalStateException("interface not allow null!"));
+
         // to verify interfaceClass is an interface
         if (!interfaceClass.isInterface()) {
             throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
@@ -314,16 +301,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 methodBean.setServiceId(this.getId());
                 methodBean.refresh();
                 String methodName = methodBean.getName();
-                if (methodName == null || methodName.length() == 0) {
+                if (StringUtils.isEmpty(methodName)) {
                     throw new IllegalStateException("<dubbo:method> name attribute is required! Please check: <dubbo:service interface=\"" + interfaceClass.getName() + "\" ... ><dubbo:method name=\"\" ... /></<dubbo:reference>");
                 }
-                boolean hasMethod = false;
-                for (java.lang.reflect.Method method : interfaceClass.getMethods()) {
-                    if (method.getName().equals(methodName)) {
-                        hasMethod = true;
-                        break;
-                    }
-                }
+
+                boolean hasMethod=Arrays.stream(interfaceClass.getMethods()).anyMatch(method -> method.getName().equals(methodName));
                 if (!hasMethod) {
                     throw new IllegalStateException("The interface " + interfaceClass.getName()
                             + " not found method " + methodName);
@@ -384,6 +366,16 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 throw new IllegalStateException("No such constructor \"public " + localClass.getSimpleName() + "(" + interfaceClass.getName() + ")\" in local implementation class " + localClass.getName());
             }
         }
+    }
+
+    private void overrideParameters(Map<String, String> map) {
+        map.put(Constants.PATH_KEY, RegistryService.class.getName());
+        map.put(Constants.DOBBO_PROTOCOL, Version.getProtocolVersion());
+        map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
+        if (ConfigUtils.getPid() > 0) {
+            map.put(Constants.PID_KEY, String.valueOf(ConfigUtils.getPid()));
+        }
+        map.putIfAbsent(Constants.PROTOCOL_KEY,Constants.DOBBO_PROTOCOL);
     }
 
     private void convertRegistryIdsToRegistries() {
