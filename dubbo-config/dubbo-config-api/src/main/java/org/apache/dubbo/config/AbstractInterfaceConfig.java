@@ -20,7 +20,12 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.Environment;
-import org.apache.dubbo.common.utils.*;
+import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.ReflectUtils;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.metadata.integration.MetadataReportService;
 import org.apache.dubbo.monitor.MonitorFactory;
@@ -288,7 +293,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     protected void checkInterfaceAndMethods(Class<?> interfaceClass, List<MethodConfig> methods) {
         // interface cannot be null
-        Assert.notNull(interfaceClass,new IllegalStateException("interface not allow null!"));
+        Assert.notNull(interfaceClass, new IllegalStateException("interface not allow null!"));
 
         // to verify interfaceClass is an interface
         if (!interfaceClass.isInterface()) {
@@ -305,7 +310,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                     throw new IllegalStateException("<dubbo:method> name attribute is required! Please check: <dubbo:service interface=\"" + interfaceClass.getName() + "\" ... ><dubbo:method name=\"\" ... /></<dubbo:reference>");
                 }
 
-                boolean hasMethod=Arrays.stream(interfaceClass.getMethods()).anyMatch(method -> method.getName().equals(methodName));
+                boolean hasMethod = Arrays.stream(interfaceClass.getMethods()).anyMatch(method -> method.getName().equals(methodName));
                 if (!hasMethod) {
                     throw new IllegalStateException("The interface " + interfaceClass.getName()
                             + " not found method " + methodName);
@@ -375,7 +380,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (ConfigUtils.getPid() > 0) {
             map.put(Constants.PID_KEY, String.valueOf(ConfigUtils.getPid()));
         }
-        map.putIfAbsent(Constants.PROTOCOL_KEY,Constants.DOBBO_PROTOCOL);
+        map.putIfAbsent(Constants.PROTOCOL_KEY, Constants.DOBBO_PROTOCOL);
     }
 
     private void convertRegistryIdsToRegistries() {
@@ -460,16 +465,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     /**
      * @param local
-     * @deprecated Replace to <code>setStub(String)</code>
-     */
-    @Deprecated
-    public void setLocal(String local) {
-        checkName("local", local);
-        this.local = local;
-    }
-
-    /**
-     * @param local
      * @deprecated Replace to <code>setStub(Boolean)</code>
      */
     @Deprecated
@@ -481,13 +476,18 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
     }
 
-    public String getStub() {
-        return stub;
+    /**
+     * @param local
+     * @deprecated Replace to <code>setStub(String)</code>
+     */
+    @Deprecated
+    public void setLocal(String local) {
+        checkName("local", local);
+        this.local = local;
     }
 
-    public void setStub(String stub) {
-        checkName("stub", stub);
-        this.stub = stub;
+    public String getStub() {
+        return stub;
     }
 
     public void setStub(Boolean stub) {
@@ -496,6 +496,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         } else {
             setStub(String.valueOf(stub));
         }
+    }
+
+    public void setStub(String stub) {
+        checkName("stub", stub);
+        this.stub = stub;
     }
 
     public String getCluster() {
@@ -601,12 +606,12 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         return monitor;
     }
 
-    public void setMonitor(MonitorConfig monitor) {
-        this.monitor = monitor;
-    }
-
     public void setMonitor(String monitor) {
         this.monitor = new MonitorConfig(monitor);
+    }
+
+    public void setMonitor(MonitorConfig monitor) {
+        this.monitor = monitor;
     }
 
     public String getOwner() {
