@@ -227,7 +227,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 .get(0)
                 .getProtocol())) {
             this.forbidden = true; // Forbid to access
-            this.invokers = null;
+            this.invokers = Collections.emptyList();
             routerChain.setInvokers(this.invokers);
             destroyAllInvokers(); // Close all invokers
         } else {
@@ -294,41 +294,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         }
         return mergedInvokers;
     }
-
-    /*private Map<String, List<Invoker<T>>> toMergeMethodInvokerMap(Map<String, List<Invoker<T>>> methodMap) {
-        Map<String, List<Invoker<T>>> result = new HashMap<String, List<Invoker<T>>>();
-        for (Map.Entry<String, List<Invoker<T>>> entry : methodMap.entrySet()) {
-            String method = entry.getKey();
-            List<Invoker<T>> invokers = entry.getValue();
-            Map<String, List<Invoker<T>>> groupMap = new HashMap<String, List<Invoker<T>>>();
-            for (Invoker<T> invoker : invokers) {
-                String group = invoker.getUrl().getParameter(Constants.GROUP_KEY, "");
-                List<Invoker<T>> groupInvokers = groupMap.get(group);
-                if (groupInvokers == null) {
-                    groupInvokers = new ArrayList<Invoker<T>>();
-                    groupMap.put(group, groupInvokers);
-                }
-                groupInvokers.add(invoker);
-            }
-            if (groupMap.size() == 1) {
-                result.put(method, groupMap.values().iterator().next());
-            } else if (groupMap.size() > 1) {
-                List<Invoker<T>> groupInvokers = new ArrayList<Invoker<T>>();
-                for (List<Invoker<T>> groupList : groupMap.values()) {
-                    StaticDirectory<T> staticDirectory = new StaticDirectory<>(groupList);
-                    Map<String, List<Invoker<T>>> methodGroupInvokers = new HashMap<>();
-                    methodGroupInvokers.put(method, groupList);
-                    staticDirectory.buildRouterChain(methodGroupInvokers, dynamicConfiguration);
-                    groupInvokers.add(cluster.join(staticDirectory));
-                }
-                result.put(method, groupInvokers);
-            } else {
-                result.put(method, invokers);
-            }
-        }
-        return result;
-    }
-*/
 
     /**
      * @param urls
