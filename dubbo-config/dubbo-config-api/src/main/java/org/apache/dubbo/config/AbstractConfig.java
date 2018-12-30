@@ -116,7 +116,7 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     /**
-     * the config id
+     * The config id
      */
     protected String id;
     protected String prefix;
