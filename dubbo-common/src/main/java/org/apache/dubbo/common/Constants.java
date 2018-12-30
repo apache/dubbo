@@ -229,6 +229,8 @@ public class Constants {
 
     public static final String PROTOCOL_KEY = "protocol";
 
+    public static final String DOBBO_PROTOCOL = DUBBO;
+
     public static final String PROXY_KEY = "proxy";
 
     public static final String WEIGHT_KEY = "weight";
