@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.utils.StringUtils;
+
 /**
  * The service consumer default confuguration
  *
@@ -60,7 +62,7 @@ public class ConsumerConfig extends AbstractReferenceConfig {
         super.setTimeout(timeout);
         String rmiTimeout = System.getProperty("sun.rmi.transport.tcp.responseTimeout");
         if (timeout != null && timeout > 0
-                && (rmiTimeout == null || rmiTimeout.length() == 0)) {
+                && (StringUtils.isEmpty(rmiTimeout))) {
             System.setProperty("sun.rmi.transport.tcp.responseTimeout", String.valueOf(timeout));
         }
     }
