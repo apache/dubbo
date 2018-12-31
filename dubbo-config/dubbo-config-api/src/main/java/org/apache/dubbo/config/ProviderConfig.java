@@ -169,7 +169,7 @@ public class ProviderConfig extends AbstractServiceConfig {
     }
 
     public void setThreadpool(String threadpool) {
-        checkExtension(ThreadPool.class, "threadpool", threadpool);
+        checkExtension(ThreadPool.class, Constants.THREADPOOL_KEY, threadpool);
         this.threadpool = threadpool;
     }
 
@@ -258,7 +258,7 @@ public class ProviderConfig extends AbstractServiceConfig {
     }
 
     public void setTelnet(String telnet) {
-        checkMultiExtension(TelnetHandler.class, "telnet", telnet);
+        checkMultiExtension(TelnetHandler.class, Constants.TELNET, telnet);
         this.telnet = telnet;
     }
 
@@ -320,7 +320,7 @@ public class ProviderConfig extends AbstractServiceConfig {
     }
 
     public void setTransporter(String transporter) {
-        checkExtension(Transporter.class, "transporter", transporter);
+        checkExtension(Transporter.class, Constants.TRANSPORTER_KEY, transporter);
         this.transporter = transporter;
     }
 
@@ -329,7 +329,7 @@ public class ProviderConfig extends AbstractServiceConfig {
     }
 
     public void setExchanger(String exchanger) {
-        checkExtension(Exchanger.class, "exchanger", exchanger);
+        checkExtension(Exchanger.class, Constants.EXCHANGER_KEY, exchanger);
         this.exchanger = exchanger;
     }
 
@@ -359,8 +359,8 @@ public class ProviderConfig extends AbstractServiceConfig {
     }
 
     public void setDispatcher(String dispatcher) {
+        checkExtension(Dispatcher.class, Constants.DISPATCHER_KEY, dispatcher);
         checkExtension(Dispatcher.class, Constants.DISPATCHER_KEY, exchanger);
-        checkExtension(Dispatcher.class, "dispather", exchanger);
         this.dispatcher = dispatcher;
     }
 

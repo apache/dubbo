@@ -231,6 +231,8 @@ public class Constants {
 
     public static final String DOBBO_PROTOCOL = DUBBO;
 
+    public static final String ZOOKEEPER_PROTOCOL = "zookeeper";
+
     public static final String PROXY_KEY = "proxy";
 
     public static final String WEIGHT_KEY = "weight";
@@ -323,6 +325,8 @@ public class Constants {
     public static final String OPTIMIZER_KEY = "optimizer";
 
     public static final String EXCHANGER_KEY = "exchanger";
+
+    public static final String DISPACTHER_KEY = "dispacther";
 
     public static final String TRANSPORTER_KEY = "transporter";
 
