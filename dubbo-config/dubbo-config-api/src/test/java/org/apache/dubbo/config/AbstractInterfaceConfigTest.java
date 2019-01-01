@@ -182,7 +182,7 @@ public class AbstractInterfaceConfigTest {
     public void checkStubAndMock1() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setLocal(GreetingLocal1.class.getName());
-        interfaceConfig.checkStub(Greeting.class);
+        interfaceConfig.checkStubAndLocal(Greeting.class);
         interfaceConfig.checkMock(Greeting.class);
     }
 
@@ -190,7 +190,7 @@ public class AbstractInterfaceConfigTest {
     public void checkStubAndMock2() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setLocal(GreetingLocal2.class.getName());
-        interfaceConfig.checkStub(Greeting.class);
+        interfaceConfig.checkStubAndLocal(Greeting.class);
         interfaceConfig.checkMock(Greeting.class);
     }
 
@@ -198,7 +198,7 @@ public class AbstractInterfaceConfigTest {
     public void checkStubAndMock3() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setLocal(GreetingLocal3.class.getName());
-        interfaceConfig.checkStub(Greeting.class);
+        interfaceConfig.checkStubAndLocal(Greeting.class);
         interfaceConfig.checkMock(Greeting.class);
     }
 
@@ -206,7 +206,7 @@ public class AbstractInterfaceConfigTest {
     public void checkStubAndMock4() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setStub(GreetingLocal1.class.getName());
-        interfaceConfig.checkStub(Greeting.class);
+        interfaceConfig.checkStubAndLocal(Greeting.class);
         interfaceConfig.checkMock(Greeting.class);
     }
 
@@ -214,7 +214,7 @@ public class AbstractInterfaceConfigTest {
     public void checkStubAndMock5() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setStub(GreetingLocal2.class.getName());
-        interfaceConfig.checkStub(Greeting.class);
+        interfaceConfig.checkStubAndLocal(Greeting.class);
         interfaceConfig.checkMock(Greeting.class);
     }
 
@@ -222,7 +222,7 @@ public class AbstractInterfaceConfigTest {
     public void checkStubAndMock6() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setStub(GreetingLocal3.class.getName());
-        interfaceConfig.checkStub(Greeting.class);
+        interfaceConfig.checkStubAndLocal(Greeting.class);
         interfaceConfig.checkMock(Greeting.class);
     }
 
@@ -230,7 +230,7 @@ public class AbstractInterfaceConfigTest {
     public void checkStubAndMock7() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setMock("return {a, b}");
-        interfaceConfig.checkStub(Greeting.class);
+        interfaceConfig.checkStubAndLocal(Greeting.class);
         interfaceConfig.checkMock(Greeting.class);
     }
 
@@ -238,7 +238,7 @@ public class AbstractInterfaceConfigTest {
     public void checkStubAndMock8() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setMock(GreetingMock1.class.getName());
-        interfaceConfig.checkStub(Greeting.class);
+        interfaceConfig.checkStubAndLocal(Greeting.class);
         interfaceConfig.checkMock(Greeting.class);
     }
 
@@ -246,7 +246,7 @@ public class AbstractInterfaceConfigTest {
     public void checkStubAndMock9() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setMock(GreetingMock2.class.getName());
-        interfaceConfig.checkStub(Greeting.class);
+        interfaceConfig.checkStubAndLocal(Greeting.class);
         interfaceConfig.checkMock(Greeting.class);
     }
 
