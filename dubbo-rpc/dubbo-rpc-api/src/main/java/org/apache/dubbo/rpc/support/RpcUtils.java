@@ -182,7 +182,7 @@ public class RpcUtils {
         return isAsync;
     }
 
-    public static boolean isFutureReturnType(Invocation inv) {
+    public static boolean isReturnTypeFuture(Invocation inv) {
         return Boolean.TRUE.toString().equals(inv.getAttachment(Constants.FUTURE_RETURNTYPE_KEY));
     }
 
