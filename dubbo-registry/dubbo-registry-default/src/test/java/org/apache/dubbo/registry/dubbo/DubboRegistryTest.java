@@ -75,31 +75,31 @@ public class DubboRegistryTest {
     @Test
     public void testRegister() {
         dubboRegistry.register(serviceURL);
-        assertEquals(1, getRegistereds());
+        assertEquals(1, getRegisteredSize());
     }
 
     @Test
     public void testUnRegister() {
-        assertEquals(0, getRegistereds());
+        assertEquals(0, getRegisteredSize());
         dubboRegistry.register(serviceURL);
-        assertEquals(1, getRegistereds());
+        assertEquals(1, getRegisteredSize());
         dubboRegistry.unregister(serviceURL);
-        assertEquals(0, getRegistereds());
+        assertEquals(0, getRegisteredSize());
     }
 
     @Test
     public void testSubscribe() {
         dubboRegistry.register(serviceURL);
-        assertEquals(1, getRegistereds());
+        assertEquals(1, getRegisteredSize());
         dubboRegistry.subscribe(serviceURL, notifyListener);
-        assertEquals(1, getSubscribeds());
+        assertEquals(1, getSubscribedSize());
         assertEquals(1, getNotifiedListeners());
     }
 
     @Test
     public void testUnsubscribe() {
         dubboRegistry.subscribe(serviceURL, notifyListener);
-        assertEquals(1, getSubscribeds());
+        assertEquals(1, getSubscribedSize());
         assertEquals(1, getNotifiedListeners());
         dubboRegistry.unsubscribe(serviceURL, notifyListener);
         assertEquals(0, getNotifiedListeners());
@@ -107,7 +107,7 @@ public class DubboRegistryTest {
 
     private class MockDubboRegistry extends FailbackRegistry {
 
-        private volatile boolean isAvaliable = false;
+        private volatile boolean isAvailable = false;
 
         public MockDubboRegistry(URL url) {
             super(url);
@@ -116,13 +116,13 @@ public class DubboRegistryTest {
         @Override
         public void doRegister(URL url) {
             logger.info("Begin to register: " + url);
-            isAvaliable = true;
+            isAvailable = true;
         }
 
         @Override
         public void doUnregister(URL url) {
             logger.info("Begin to ungister: " + url);
-            isAvaliable = false;
+            isAvailable = false;
         }
 
         @Override
@@ -137,7 +137,7 @@ public class DubboRegistryTest {
 
         @Override
         public boolean isAvailable() {
-            return isAvaliable;
+            return isAvailable;
         }
     }
 
@@ -145,11 +145,11 @@ public class DubboRegistryTest {
         return dubboRegistry.getSubscribed().get(serviceURL).size();
     }
 
-    private int getRegistereds() {
+    private int getRegisteredSize() {
         return dubboRegistry.getRegistered().size();
     }
 
-    private int getSubscribeds() {
+    private int getSubscribedSize() {
         return dubboRegistry.getSubscribed().size();
     }
 }
