@@ -97,7 +97,10 @@ public class Constants {
 
     public static final String DEFAULT_PROXY = "javassist";
 
-    public static final int DEFAULT_PAYLOAD = 8 * 1024 * 1024;                      // 8M
+    /**
+     * 8M
+     */
+    public static final int DEFAULT_PAYLOAD = 8 * 1024 * 1024;
 
     public static final String DEFAULT_CLUSTER = "failover";
 
@@ -155,15 +158,18 @@ public class Constants {
 
     public static final int DEFAULT_CONNECT_TIMEOUT = 3000;
 
-//    public static final int DEFAULT_REGISTRY_CONNECT_TIMEOUT = 5000;
-
+    /**
+     * public static final int DEFAULT_REGISTRY_CONNECT_TIMEOUT = 5000;
+     */
     public static final int DEFAULT_RETRIES = 2;
 
     public static final int DEFAULT_FAILBACK_TASKS = 100;
 
     public static final int DEFAULT_FAILBACK_TIMES = 3;
 
-    // default buffer size is 8k.
+    /**
+     * default buffer size is 8k.
+     */
     public static final int DEFAULT_BUFFER_SIZE = 8 * 1024;
 
     public static final Integer DEFAULT_METADATA_REPORT_RETRY_TIMES = 100;
@@ -184,7 +190,9 @@ public class Constants {
 
     public static final String LOADBALANCE_KEY = "loadbalance";
 
-    // key for router type, for e.g., "script"/"file",  corresponding to ScriptRouterFactory.NAME, FileRouterFactory.NAME
+    /**
+     * key for router type, for e.g., "script"/"file",  corresponding to ScriptRouterFactory.NAME, FileRouterFactory.NAME
+     */
     public static final String ROUTER_KEY = "router";
 
     public static final String CLUSTER_KEY = "cluster";
@@ -475,17 +483,25 @@ public class Constants {
     public static final String MERGER_KEY = "merger";
 
     /**
+     * Numerical regular expression
+     */
+    public static final String NUMBER_REGULAR_EXPRESSION = "^[0-9]+(.[0-9]+)?$";
+
+    /**
      * simple the registry for provider.
+     *
      * @since 2.7.0
      */
     public static final String SIMPLE_PROVIDER_CONFIG_KEY = "simple.provider.config";
     /**
      * simple the registry for consumer.
+     *
      * @since 2.7.0
      */
     public static final String SIMPLE_CONSUMER_CONFIG_KEY = "simple.consumer.config";
     /**
      * After simplify the registry, should add some paramter individually for provider.
+     *
      * @since 2.7.0
      */
     public static final String EXTRA_PROVIDER_CONFIG_KEYS_KEY = "extra.provider.keys";
@@ -752,7 +768,9 @@ public class Constants {
     public static final String CONFIG_VERSION_KEY = "configVersion";
 
     public static final String COMPATIBLE_CONFIG_KEY = "compatible_config";
-    // package version in the manifest
+    /**
+     * package version in the manifest
+     */
     public static final String SPECIFICATION_VERSION_KEY = "specVersion";
 
     public static final String OVERRIDE_PROVIDERS_KEY = "providerAddreses";
@@ -763,10 +781,13 @@ public class Constants {
 
     public static final String REGISTRIES_SUFFIX = "dubbo.registries.";
 
-    public static final String[] DEFAULT_REGISTER_PROVIDER_KEYS = {APPLICATION_KEY, CODEC_KEY, EXCHANGER_KEY, SERIALIZATION_KEY, CLUSTER_KEY, CONNECTIONS_KEY, DEPRECATED_KEY,
-            GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY, WEIGHT_KEY, TIMESTAMP_KEY, DUBBO_VERSION_KEY, SPECIFICATION_VERSION_KEY};
+    public static final String[] DEFAULT_REGISTER_PROVIDER_KEYS = {APPLICATION_KEY, CODEC_KEY, EXCHANGER_KEY,
+            SERIALIZATION_KEY, CLUSTER_KEY, CONNECTIONS_KEY, DEPRECATED_KEY,
+            GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY,
+            WEIGHT_KEY, TIMESTAMP_KEY, DUBBO_VERSION_KEY, SPECIFICATION_VERSION_KEY};
 
-    public static final String[] DEFAULT_REGISTER_CONSUMER_KEYS = {APPLICATION_KEY, VERSION_KEY, GROUP_KEY, DUBBO_VERSION_KEY, SPECIFICATION_VERSION_KEY};
+    public static final String[] DEFAULT_REGISTER_CONSUMER_KEYS = {APPLICATION_KEY, VERSION_KEY, GROUP_KEY,
+            DUBBO_VERSION_KEY, SPECIFICATION_VERSION_KEY};
 
     public static final String TELNET = "telnet";
     /*

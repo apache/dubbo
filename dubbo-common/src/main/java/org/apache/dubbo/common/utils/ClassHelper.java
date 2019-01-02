@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.Constants;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -286,9 +288,14 @@ public class ClassHelper {
         return value;
     }
 
+    /**
+     * Check if it is a number
+     *
+     * @param str
+     * @return
+     */
     public static boolean isNumber(String str) {
-        String reg = "^[0-9]+(.[0-9]+)?$";
-        return str.matches(reg);
+        return str.matches(Constants.NUMBER_REGULAR_EXPRESSION);
     }
 
     /**
