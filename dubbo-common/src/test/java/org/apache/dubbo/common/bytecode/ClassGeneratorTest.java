@@ -17,7 +17,7 @@
 package org.apache.dubbo.common.bytecode;
 
 import junit.framework.TestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

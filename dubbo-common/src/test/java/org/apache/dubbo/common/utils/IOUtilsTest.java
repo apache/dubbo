@@ -17,10 +17,10 @@
 
 package org.apache.dubbo.common.utils;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.ByteArrayInputStream;
@@ -34,7 +34,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class IOUtilsTest {
     @Rule
@@ -46,7 +46,7 @@ public class IOUtilsTest {
     private Reader reader;
     private Writer writer;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         is = new ByteArrayInputStream(TEXT.getBytes("UTF-8"));
         os = new ByteArrayOutputStream();
@@ -54,7 +54,7 @@ public class IOUtilsTest {
         writer = new StringWriter();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         is.close();
         os.close();

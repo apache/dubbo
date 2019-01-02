@@ -19,20 +19,25 @@ package org.apache.dubbo.validation.support.jvalidation;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.validation.Validation;
 import org.apache.dubbo.validation.Validator;
-import org.junit.Test;
 
-import javax.validation.ValidationException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
+import java.io.NotSerializableException;
+
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
 
 public class JValidationTest {
-    @Test(expected = ValidationException.class)
-    public void testReturnTypeWithInvalidValidationProvider() throws Exception {
-        Validation jValidation = new JValidation();
-        URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.JValidation?" +
-                "jvalidation=org.apache.dubbo.validation.Validation");
-        jValidation.getValidator(url);
+    @Test
+    public void testReturnTypeWithInvalidValidationProvider() {
+        Assertions.assertThrows(NotSerializableException.class, () -> {
+            Validation jValidation = new JValidation();
+            URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.JValidation?" +
+                    "jvalidation=org.apache.dubbo.validation.Validation");
+            jValidation.getValidator(url);
+        });
+
     }
 
     @Test

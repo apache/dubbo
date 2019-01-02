@@ -26,7 +26,7 @@ import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 
 import com.google.gson.Gson;
 import junit.framework.TestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * TypeDefinitionBuilder

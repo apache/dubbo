@@ -22,10 +22,10 @@ import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.transport.dispatcher.connection.ConnectionOrderedChannelHandler;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ConnectChannelHandlerTest extends WrappedChannelHandlerTest {
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         handler = new ConnectionOrderedChannelHandler(new BizChannelHander(true), url);
     }
@@ -42,24 +42,24 @@ public class ConnectChannelHandlerTest extends WrappedChannelHandlerTest {
     public void test_Connect_Blocked() throws RemotingException {
         handler = new ConnectionOrderedChannelHandler(new BizChannelHander(false), url);
         ThreadPoolExecutor executor = (ThreadPoolExecutor) getField(handler, "connectionExecutor", 1);
-        Assert.assertEquals(1, executor.getMaximumPoolSize());
+        Assertions.assertEquals(1, executor.getMaximumPoolSize());
 
         int runs = 20;
         int taskCount = runs * 2;
         for (int i = 0; i < runs; i++) {
             handler.connected(new MockedChannel());
             handler.disconnected(new MockedChannel());
-            Assert.assertTrue(executor.getActiveCount() + " must <=1", executor.getActiveCount() <= 1);
+            Assertions.assertTrue(executor.getActiveCount() + " must <=1", executor.getActiveCount() <= 1);
         }
         //queue.size 
-        Assert.assertEquals(taskCount - 1, executor.getQueue().size());
+        Assertions.assertEquals(taskCount - 1, executor.getQueue().size());
 
         for (int i = 0; i < taskCount; i++) {
             if (executor.getCompletedTaskCount() < taskCount) {
                 sleep(100);
             }
         }
-        Assert.assertEquals(taskCount, executor.getCompletedTaskCount());
+        Assertions.assertEquals(taskCount, executor.getCompletedTaskCount());
     }
 
     @Test //biz error should not throw and affect biz thread.
@@ -116,7 +116,7 @@ public class ConnectChannelHandlerTest extends WrappedChannelHandlerTest {
      * Events do not pass through the thread pool and execute directly on the IO
      */
     @SuppressWarnings("deprecation")
-    @Ignore("Heartbeat is processed in HeartbeatHandler not WrappedChannelHandler.")
+    @Disabled("Heartbeat is processed in HeartbeatHandler not WrappedChannelHandler.")
     @Test
     public void test_Received_Event_invoke_direct() throws RemotingException {
         handler = new ConnectionOrderedChannelHandler(new BizChannelHander(false), url);
@@ -130,10 +130,10 @@ public class ConnectChannelHandlerTest extends WrappedChannelHandlerTest {
         handler.received(new MockedChannel() {
             @Override
             public void send(Object message) throws RemotingException {
-                Assert.assertEquals("response.heartbeat", true, ((Response) message).isHeartbeat());
+                Assertions.assertEquals("response.heartbeat", true, ((Response) message).isHeartbeat());
                 count.incrementAndGet();
             }
         }, req);
-        Assert.assertEquals("channel.send must be invoke", 1, count.get());
+        Assertions.assertEquals("channel.send must be invoke", 1, count.get());
     }
 }

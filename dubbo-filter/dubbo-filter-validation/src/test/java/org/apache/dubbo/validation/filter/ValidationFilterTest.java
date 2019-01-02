@@ -20,10 +20,10 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.validation.Validation;
 import org.apache.dubbo.validation.Validator;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.MatcherAssertions.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -36,7 +36,7 @@ public class ValidationFilterTest {
 
     private ValidationFilter validationFilter;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         this.validationFilter = new ValidationFilter();
     }

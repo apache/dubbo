@@ -22,8 +22,8 @@ import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.ResponseFuture;
 import org.apache.dubbo.remoting.exchange.support.Replier;
 import junit.framework.TestCase;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * ClientToServer
@@ -66,6 +66,6 @@ public abstract class ClientToServerTest extends TestCase {
     public void testFuture() throws Exception {
         ResponseFuture future = client.request(new World("world"));
         Hello result = (Hello) future.get();
-        Assert.assertEquals("hello,world", result.getName());
+        Assertions.assertEquals("hello,world", result.getName());
     }
 }

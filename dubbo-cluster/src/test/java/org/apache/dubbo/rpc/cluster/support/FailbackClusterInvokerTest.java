@@ -27,24 +27,24 @@ import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.cluster.Directory;
 
 import org.apache.log4j.Level;
-import org.junit.Assert;
-import org.junit.Before;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.FixMethodOrder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
- /**
-  * FailbackClusterInvokerTest
-  *
-  * add annotation @FixMethodOrder, the testARetryFailed Method must to first execution
+/**
+ * FailbackClusterInvokerTest
+ * <p>
+ * add annotation @FixMethodOrder, the testARetryFailed Method must to first execution
  */
 @SuppressWarnings("unchecked")
 @FixMethodOrder(org.junit.runners.MethodSorters.NAME_ASCENDING)
@@ -61,7 +61,7 @@ public class FailbackClusterInvokerTest {
      * @throws java.lang.Exception
      */
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
 
         dic = mock(Directory.class);
@@ -92,7 +92,7 @@ public class FailbackClusterInvokerTest {
         FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<FailbackClusterInvokerTest>(
                 dic);
         invoker.invoke(invocation);
-        Assert.assertNull(RpcContext.getContext().getInvoker());
+        Assertions.assertNull(RpcContext.getContext().getInvoker());
         DubboAppender.clear();
     }
 
@@ -104,7 +104,7 @@ public class FailbackClusterInvokerTest {
         FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<FailbackClusterInvokerTest>(
                 dic);
         Result ret = invoker.invoke(invocation);
-        Assert.assertSame(result, ret);
+        Assertions.assertSame(result, ret);
     }
 
     @Test()
@@ -143,15 +143,15 @@ public class FailbackClusterInvokerTest {
         invoker.invoke(invocation);
         invoker.invoke(invocation);
         invoker.invoke(invocation);
-        Assert.assertNull(RpcContext.getContext().getInvoker());
+        Assertions.assertNull(RpcContext.getContext().getInvoker());
 //        invoker.retryFailed();// when retry the invoker which get from failed map already is not the mocked invoker,so
         //Ensure that the main thread is online
         CountDownLatch countDown = new CountDownLatch(1);
         countDown.await(15000L, TimeUnit.MILLISECONDS);
         LogUtil.stop();
-        Assert.assertEquals("must have four error message ", 4, LogUtil.findMessage(Level.ERROR, "Failed retry to invoke method"));
-        Assert.assertEquals("must have two error message ", 2, LogUtil.findMessage(Level.ERROR, "Failed retry times exceed threshold"));
-        Assert.assertEquals("must have one error message ", 1, LogUtil.findMessage(Level.ERROR, "Failback background works error"));
+        Assertions.assertEquals(4, LogUtil.findMessage(Level.ERROR, "Failed retry to invoke method"), "must have four error message ");
+        Assertions.assertEquals(2, LogUtil.findMessage(Level.ERROR, "Failed retry times exceed threshold"), "must have two error message ");
+        Assertions.assertEquals(1, LogUtil.findMessage(Level.ERROR, "Failback background works error"), "must have one error message ");
         // it can be invoke successfully
     }
 }

@@ -344,10 +344,10 @@ public class CompatibleServiceAnnotationBeanPostProcessor implements BeanDefinit
 
         }
 
-        Assert.notNull(interfaceClass,
+        Assertions.notNull(interfaceClass,
                 "@Service interfaceClass() or interfaceName() or interface class must be present!");
 
-        Assert.isTrue(interfaceClass.isInterface(),
+        Assertions.isTrue(interfaceClass.isInterface(),
                 "The type that was annotated @Service is not an interface!");
 
         return interfaceClass;

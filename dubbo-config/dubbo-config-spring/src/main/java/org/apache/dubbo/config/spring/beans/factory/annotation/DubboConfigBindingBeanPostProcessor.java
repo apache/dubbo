@@ -67,8 +67,8 @@ public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, A
      * @param beanName the binding Bean Name
      */
     public DubboConfigBindingBeanPostProcessor(String prefix, String beanName) {
-        Assert.notNull(prefix, "The prefix of Configuration Properties must not be null");
-        Assert.notNull(beanName, "The name of bean must not be null");
+        Assertions.notNull(prefix, "The prefix of Configuration Properties must not be null");
+        Assertions.notNull(beanName, "The name of bean must not be null");
         this.prefix = prefix;
         this.beanName = beanName;
     }

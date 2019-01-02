@@ -20,8 +20,8 @@ import junit.framework.TestCase;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -70,7 +70,7 @@ public class ProxyTest extends TestCase {
             enhancer.create();
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
-            Assert.fail();
+            Assertions.fail();
         }
     }
 

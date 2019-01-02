@@ -18,8 +18,8 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.api.HelloService;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -57,21 +57,21 @@ public class ServiceAnnotationBeanPostProcessorTest {
 
         Map<String, HelloService> helloServicesMap = beanFactory.getBeansOfType(HelloService.class);
 
-        Assert.assertEquals(2, helloServicesMap.size());
+        Assertions.assertEquals(2, helloServicesMap.size());
 
         Map<String, ServiceBean> serviceBeansMap = beanFactory.getBeansOfType(ServiceBean.class);
 
-        Assert.assertEquals(3, serviceBeansMap.size());
+        Assertions.assertEquals(3, serviceBeansMap.size());
 
         Map<String, ServiceAnnotationBeanPostProcessor> beanPostProcessorsMap =
                 beanFactory.getBeansOfType(ServiceAnnotationBeanPostProcessor.class);
 
-        Assert.assertEquals(4, beanPostProcessorsMap.size());
+        Assertions.assertEquals(4, beanPostProcessorsMap.size());
 
-        Assert.assertTrue(beanPostProcessorsMap.containsKey("doubleServiceAnnotationBeanPostProcessor"));
-        Assert.assertTrue(beanPostProcessorsMap.containsKey("emptyServiceAnnotationBeanPostProcessor"));
-        Assert.assertTrue(beanPostProcessorsMap.containsKey("serviceAnnotationBeanPostProcessor"));
-        Assert.assertTrue(beanPostProcessorsMap.containsKey("serviceAnnotationBeanPostProcessor2"));
+        Assertions.assertTrue(beanPostProcessorsMap.containsKey("doubleServiceAnnotationBeanPostProcessor"));
+        Assertions.assertTrue(beanPostProcessorsMap.containsKey("emptyServiceAnnotationBeanPostProcessor"));
+        Assertions.assertTrue(beanPostProcessorsMap.containsKey("serviceAnnotationBeanPostProcessor"));
+        Assertions.assertTrue(beanPostProcessorsMap.containsKey("serviceAnnotationBeanPostProcessor2"));
 
     }
 

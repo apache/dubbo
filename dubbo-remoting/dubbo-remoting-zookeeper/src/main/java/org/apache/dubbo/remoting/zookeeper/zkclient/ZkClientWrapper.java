@@ -78,57 +78,57 @@ public class ZkClientWrapper {
     }
 
     public void createPersistent(String path) {
-        Assert.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
+        Assertions.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
         client.createPersistent(path, true);
     }
 
     public void createEphemeral(String path) {
-        Assert.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
+        Assertions.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
         client.createEphemeral(path);
     }
 
     public void createPersistent(String path, String data) {
-        Assert.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
+        Assertions.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
         client.createPersistent(path, data);
     }
 
     public void createEphemeral(String path, String data) {
-        Assert.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
+        Assertions.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
         client.createEphemeral(path, data);
     }
 
     public void delete(String path) {
-        Assert.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
+        Assertions.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
         client.delete(path);
     }
 
     public List<String> getChildren(String path) {
-        Assert.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
+        Assertions.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
         return client.getChildren(path);
     }
 
     public String getData(String path) {
-        Assert.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
+        Assertions.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
         return client.readData(path);
     }
 
     public boolean exists(String path) {
-        Assert.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
+        Assertions.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
         return client.exists(path);
     }
 
     public void close() {
-        Assert.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
+        Assertions.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
         client.close();
     }
 
     public List<String> subscribeChildChanges(String path, final IZkChildListener listener) {
-        Assert.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
+        Assertions.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
         return client.subscribeChildChanges(path, listener);
     }
 
     public void unsubscribeChildChanges(String path, IZkChildListener listener) {
-        Assert.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
+        Assertions.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
         client.unsubscribeChildChanges(path, listener);
     }
 

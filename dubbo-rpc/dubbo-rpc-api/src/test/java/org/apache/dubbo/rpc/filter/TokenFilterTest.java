@@ -24,8 +24,8 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcResult;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.HashMap;
@@ -53,7 +53,7 @@ public class TokenFilterTest {
         when(invocation.getAttachments()).thenReturn(attachments);
 
         Result result = tokenFilter.invoke(invoker, invocation);
-        Assert.assertEquals("result", result.getValue());
+        Assertions.assertEquals("result", result.getValue());
     }
 
     @Test(expected = RpcException.class)

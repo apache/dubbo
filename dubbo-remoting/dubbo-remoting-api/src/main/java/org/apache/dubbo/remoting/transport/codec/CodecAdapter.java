@@ -32,7 +32,7 @@ public class CodecAdapter implements Codec2 {
     private Codec codec;
 
     public CodecAdapter(Codec codec) {
-        Assert.notNull(codec, "codec == null");
+        Assertions.notNull(codec, "codec == null");
         this.codec = codec;
     }
 

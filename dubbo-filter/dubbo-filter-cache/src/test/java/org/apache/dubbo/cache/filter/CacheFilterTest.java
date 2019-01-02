@@ -25,9 +25,9 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcResult;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -65,7 +65,7 @@ public class CacheFilterTest {
         });
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         invocation = new RpcInvocation();
         cacheFilter.setCacheFactory(this.cacheFactory);
@@ -97,8 +97,8 @@ public class CacheFilterTest {
         cacheFilter.invoke(invoker, invocation);
         RpcResult rpcResult1 = (RpcResult) cacheFilter.invoke(invoker1, invocation);
         RpcResult rpcResult2 = (RpcResult) cacheFilter.invoke(invoker2, invocation);
-        Assert.assertEquals(rpcResult1.getValue(), rpcResult2.getValue());
-        Assert.assertEquals(rpcResult1.getValue(), "value");
+        Assertions.assertEquals(rpcResult1.getValue(), rpcResult2.getValue());
+        Assertions.assertEquals(rpcResult1.getValue(), "value");
     }
 
     @Test
@@ -110,8 +110,8 @@ public class CacheFilterTest {
         cacheFilter.invoke(invoker, invocation);
         RpcResult rpcResult1 = (RpcResult) cacheFilter.invoke(invoker1, invocation);
         RpcResult rpcResult2 = (RpcResult) cacheFilter.invoke(invoker2, invocation);
-        Assert.assertEquals(rpcResult1.getValue(), rpcResult2.getValue());
-        Assert.assertEquals(rpcResult1.getValue(), "value");
+        Assertions.assertEquals(rpcResult1.getValue(), rpcResult2.getValue());
+        Assertions.assertEquals(rpcResult1.getValue(), "value");
     }
 
     @Test
@@ -122,7 +122,7 @@ public class CacheFilterTest {
 
         cacheFilter.invoke(invoker3, invocation);
         RpcResult rpcResult = (RpcResult) cacheFilter.invoke(invoker2, invocation);
-        Assert.assertEquals(rpcResult.getValue(), "value2");
+        Assertions.assertEquals(rpcResult.getValue(), "value2");
     }
 
     @Test
@@ -134,7 +134,7 @@ public class CacheFilterTest {
         cacheFilter.invoke(invoker4, invocation);
         RpcResult rpcResult1 = (RpcResult) cacheFilter.invoke(invoker1, invocation);
         RpcResult rpcResult2 = (RpcResult) cacheFilter.invoke(invoker2, invocation);
-        Assert.assertEquals(rpcResult1.getValue(), null);
-        Assert.assertEquals(rpcResult2.getValue(), null);
+        Assertions.assertEquals(rpcResult1.getValue(), null);
+        Assertions.assertEquals(rpcResult2.getValue(), null);
     }
 }

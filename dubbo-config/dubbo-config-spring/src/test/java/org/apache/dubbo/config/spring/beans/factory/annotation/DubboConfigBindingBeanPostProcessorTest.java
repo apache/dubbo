@@ -19,8 +19,8 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.spring.context.properties.DefaultDubboConfigBinder;
 import org.apache.dubbo.config.spring.context.properties.DubboConfigBinder;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -60,7 +60,7 @@ public class DubboConfigBindingBeanPostProcessorTest {
 
         ApplicationConfig applicationConfig = applicationContext.getBean(ApplicationConfig.class);
 
-        Assert.assertEquals("dubbo-demo-application", applicationConfig.getName());
+        Assertions.assertEquals("dubbo-demo-application", applicationConfig.getName());
 
     }
 }

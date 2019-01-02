@@ -17,7 +17,7 @@
 package org.apache.dubbo.common.logger.support;
 
 import org.apache.dubbo.common.logger.Logger;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;

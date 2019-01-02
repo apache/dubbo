@@ -25,7 +25,7 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * RestProtocolTest
@@ -43,12 +43,12 @@ public class RestProtocolTest {
         ApplicationModel.initProviderModel(url.getServiceKey(), providerModel);
 
         Exporter<RestService> exporter = protocol.export(proxyFactory.getInvoker(server, RestService.class, url));
-        Invoker<RestService> invoker = protocol.refer(RestService.class, url);        Assert.assertFalse(server.isCalled());
+        Invoker<RestService> invoker = protocol.refer(RestService.class, url);        Assertions.assertFalse(server.isCalled());
 
         RestService client = proxyFactory.getProxy(invoker);
         String result = client.sayHello("haha");
-        Assert.assertTrue(server.isCalled());
-        Assert.assertEquals("Hello, haha", result);
+        Assertions.assertTrue(server.isCalled());
+        Assertions.assertEquals("Hello, haha", result);
         invoker.destroy();
         exporter.unexport();
     }
@@ -56,7 +56,7 @@ public class RestProtocolTest {
     @Test
     public void testRestProtocolWithContextPath() {
         RestServiceImpl server = new RestServiceImpl();
-        Assert.assertFalse(server.isCalled());
+        Assertions.assertFalse(server.isCalled());
         URL url = URL.valueOf("rest://127.0.0.1:5341/a/b/c?version=1.0.0");
         ProviderModel providerModel = new ProviderModel(url.getServiceKey(), server, RestService.class);
         ApplicationModel.initProviderModel(url.getServiceKey(), providerModel);
@@ -67,8 +67,8 @@ public class RestProtocolTest {
         Invoker<RestService> invoker = protocol.refer(RestService.class, url);
         RestService client = proxyFactory.getProxy(invoker);
         String result = client.sayHello("haha");
-        Assert.assertTrue(server.isCalled());
-        Assert.assertEquals("Hello, haha", result);
+        Assertions.assertTrue(server.isCalled());
+        Assertions.assertEquals("Hello, haha", result);
         invoker.destroy();
         exporter.unexport();
     }

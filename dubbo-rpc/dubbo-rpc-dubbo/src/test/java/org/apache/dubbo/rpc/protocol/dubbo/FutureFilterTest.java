@@ -27,10 +27,10 @@ import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.protocol.dubbo.filter.FutureFilter;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -42,7 +42,7 @@ public class FutureFilterTest {
     private static RpcInvocation invocation;
     private Filter eventFilter = new FutureFilter();
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         invocation = new RpcInvocation();
         invocation.setMethodName("echo");

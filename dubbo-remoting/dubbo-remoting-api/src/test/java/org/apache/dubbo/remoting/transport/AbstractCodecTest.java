@@ -25,7 +25,7 @@ import org.mockito.internal.verification.VerificationModeFactory;
 import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.allOf;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;

@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.common.compiler.support;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
 
@@ -29,7 +29,7 @@ public class JdkCompilerTest extends JavaCodeTest{
         Class<?> clazz = compiler.compile(getSimpleCode(), JdkCompiler.class.getClassLoader());
         Object instance = clazz.newInstance();
         Method sayHello = instance.getClass().getMethod("sayHello");
-        Assert.assertEquals("Hello world!", sayHello.invoke(instance));
+        Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
     }
 
     @Test(expected = IllegalStateException.class)
@@ -38,7 +38,7 @@ public class JdkCompilerTest extends JavaCodeTest{
         Class<?> clazz = compiler.compile(getSimpleCodeWithoutPackage(), JdkCompiler.class.getClassLoader());
         Object instance = clazz.newInstance();
         Method sayHello = instance.getClass().getMethod("sayHello");
-        Assert.assertEquals("Hello world!", sayHello.invoke(instance));
+        Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
     }
 
     @Test(expected = IllegalStateException.class)
@@ -47,6 +47,6 @@ public class JdkCompilerTest extends JavaCodeTest{
         Class<?> clazz = compiler.compile(getSimpleCodeWithSyntax(), JdkCompiler.class.getClassLoader());
         Object instance = clazz.newInstance();
         Method sayHello = instance.getClass().getMethod("sayHello");
-        Assert.assertEquals("Hello world!", sayHello.invoke(instance));
+        Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
     }
 }

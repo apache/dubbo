@@ -34,7 +34,7 @@ public class NativeJavaObjectInput implements ObjectInput {
     }
 
     protected NativeJavaObjectInput(ObjectInputStream is) {
-        Assert.notNull(is, "input == null");
+        Assertions.notNull(is, "input == null");
         inputStream = is;
     }
 

@@ -17,13 +17,13 @@
 package org.apache.dubbo.common.serialize.fst;
 
 import org.apache.dubbo.common.serialize.model.person.FullAddress;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class FstObjectInputTest {
     private FstObjectInput fstObjectInput;

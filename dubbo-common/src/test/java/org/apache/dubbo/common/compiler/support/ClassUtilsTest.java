@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.common.compiler.support;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
@@ -33,7 +33,7 @@ public class ClassUtilsTest {
     @Test
     public void testNewInstance() {
         HelloServiceImpl0 instance = (HelloServiceImpl0) ClassUtils.newInstance(HelloServiceImpl0.class.getName());
-        Assert.assertEquals("Hello world!", instance.sayHello());
+        Assertions.assertEquals("Hello world!", instance.sayHello());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -83,48 +83,48 @@ public class ClassUtilsTest {
 
     @Test
     public void testGetBoxedClass() {
-        Assert.assertEquals(Boolean.class, ClassUtils.getBoxedClass(boolean.class));
-        Assert.assertEquals(Character.class, ClassUtils.getBoxedClass(char.class));
-        Assert.assertEquals(Byte.class, ClassUtils.getBoxedClass(byte.class));
-        Assert.assertEquals(Short.class, ClassUtils.getBoxedClass(short.class));
-        Assert.assertEquals(Integer.class, ClassUtils.getBoxedClass(int.class));
-        Assert.assertEquals(Long.class, ClassUtils.getBoxedClass(long.class));
-        Assert.assertEquals(Float.class, ClassUtils.getBoxedClass(float.class));
-        Assert.assertEquals(Double.class, ClassUtils.getBoxedClass(double.class));
-        Assert.assertEquals(ClassUtilsTest.class, ClassUtils.getBoxedClass(ClassUtilsTest.class));
+        Assertions.assertEquals(Boolean.class, ClassUtils.getBoxedClass(boolean.class));
+        Assertions.assertEquals(Character.class, ClassUtils.getBoxedClass(char.class));
+        Assertions.assertEquals(Byte.class, ClassUtils.getBoxedClass(byte.class));
+        Assertions.assertEquals(Short.class, ClassUtils.getBoxedClass(short.class));
+        Assertions.assertEquals(Integer.class, ClassUtils.getBoxedClass(int.class));
+        Assertions.assertEquals(Long.class, ClassUtils.getBoxedClass(long.class));
+        Assertions.assertEquals(Float.class, ClassUtils.getBoxedClass(float.class));
+        Assertions.assertEquals(Double.class, ClassUtils.getBoxedClass(double.class));
+        Assertions.assertEquals(ClassUtilsTest.class, ClassUtils.getBoxedClass(ClassUtilsTest.class));
     }
 
     @Test
     public void testBoxedAndUnboxed() {
-        Assert.assertEquals(Boolean.valueOf(true), ClassUtils.boxed(true));
-        Assert.assertEquals(Character.valueOf('0'), ClassUtils.boxed('0'));
-        Assert.assertEquals(Byte.valueOf((byte) 0), ClassUtils.boxed((byte) 0));
-        Assert.assertEquals(Short.valueOf((short) 0), ClassUtils.boxed((short) 0));
-        Assert.assertEquals(Integer.valueOf((int) 0), ClassUtils.boxed((int) 0));
-        Assert.assertEquals(Long.valueOf((long) 0), ClassUtils.boxed((long) 0));
-        Assert.assertEquals(Float.valueOf((float) 0), ClassUtils.boxed((float) 0));
-        Assert.assertEquals(Double.valueOf((double) 0), ClassUtils.boxed((double) 0));
+        Assertions.assertEquals(Boolean.valueOf(true), ClassUtils.boxed(true));
+        Assertions.assertEquals(Character.valueOf('0'), ClassUtils.boxed('0'));
+        Assertions.assertEquals(Byte.valueOf((byte) 0), ClassUtils.boxed((byte) 0));
+        Assertions.assertEquals(Short.valueOf((short) 0), ClassUtils.boxed((short) 0));
+        Assertions.assertEquals(Integer.valueOf((int) 0), ClassUtils.boxed((int) 0));
+        Assertions.assertEquals(Long.valueOf((long) 0), ClassUtils.boxed((long) 0));
+        Assertions.assertEquals(Float.valueOf((float) 0), ClassUtils.boxed((float) 0));
+        Assertions.assertEquals(Double.valueOf((double) 0), ClassUtils.boxed((double) 0));
 
-        Assert.assertEquals(true, ClassUtils.unboxed(Boolean.valueOf(true)));
-        Assert.assertEquals('0', ClassUtils.unboxed(Character.valueOf('0')));
-        Assert.assertEquals((byte) 0, ClassUtils.unboxed(Byte.valueOf((byte) 0)));
-        Assert.assertEquals((short) 0, ClassUtils.unboxed(Short.valueOf((short) 0)));
-        Assert.assertEquals(0, ClassUtils.unboxed(Integer.valueOf((int) 0)));
-        Assert.assertEquals((long) 0, ClassUtils.unboxed(Long.valueOf((long) 0)));
-        Assert.assertEquals((float) 0, ClassUtils.unboxed(Float.valueOf((float) 0)), ((float)0));
-        Assert.assertEquals((double) 0, ClassUtils.unboxed(Double.valueOf((double) 0)), ((double)0));
+        Assertions.assertEquals(true, ClassUtils.unboxed(Boolean.valueOf(true)));
+        Assertions.assertEquals('0', ClassUtils.unboxed(Character.valueOf('0')));
+        Assertions.assertEquals((byte) 0, ClassUtils.unboxed(Byte.valueOf((byte) 0)));
+        Assertions.assertEquals((short) 0, ClassUtils.unboxed(Short.valueOf((short) 0)));
+        Assertions.assertEquals(0, ClassUtils.unboxed(Integer.valueOf((int) 0)));
+        Assertions.assertEquals((long) 0, ClassUtils.unboxed(Long.valueOf((long) 0)));
+        Assertions.assertEquals((float) 0, ClassUtils.unboxed(Float.valueOf((float) 0)), ((float)0));
+        Assertions.assertEquals((double) 0, ClassUtils.unboxed(Double.valueOf((double) 0)), ((double)0));
     }
 
     @Test
     public void testGetSize(){
-        Assert.assertEquals(0, ClassUtils.getSize(null));
+        Assertions.assertEquals(0, ClassUtils.getSize(null));
         List<Integer> list = new ArrayList<>();list.add(1);
-        Assert.assertEquals(1, ClassUtils.getSize(list));
+        Assertions.assertEquals(1, ClassUtils.getSize(list));
         Map map = new HashMap(); map.put(1, 1);
-        Assert.assertEquals(1, ClassUtils.getSize(map));
+        Assertions.assertEquals(1, ClassUtils.getSize(map));
         int[] array = new int[1];
-        Assert.assertEquals(1, ClassUtils.getSize(array));
-        Assert.assertEquals(-1, ClassUtils.getSize(new Object()));
+        Assertions.assertEquals(1, ClassUtils.getSize(array));
+        Assertions.assertEquals(-1, ClassUtils.getSize(new Object()));
     }
 
     @Test(expected = RuntimeException.class)
@@ -134,16 +134,16 @@ public class ClassUtilsTest {
 
     @Test
     public void testGetGenericClass(){
-        Assert.assertTrue(TypeVariable.class.isAssignableFrom(ClassUtils.getGenericClass(GenericClass.class)));
-        Assert.assertTrue(String.class.isAssignableFrom(ClassUtils.getGenericClass(GenericClass0.class)));
-        Assert.assertTrue(Collection.class.isAssignableFrom(ClassUtils.getGenericClass(GenericClass1.class)));
-        Assert.assertTrue(TypeVariable.class.isAssignableFrom(ClassUtils.getGenericClass(GenericClass2.class)));
-        Assert.assertTrue(GenericArrayType.class.isAssignableFrom(ClassUtils.getGenericClass(GenericClass3.class)));
+        Assertions.assertTrue(TypeVariable.class.isAssignableFrom(ClassUtils.getGenericClass(GenericClass.class)));
+        Assertions.assertTrue(String.class.isAssignableFrom(ClassUtils.getGenericClass(GenericClass0.class)));
+        Assertions.assertTrue(Collection.class.isAssignableFrom(ClassUtils.getGenericClass(GenericClass1.class)));
+        Assertions.assertTrue(TypeVariable.class.isAssignableFrom(ClassUtils.getGenericClass(GenericClass2.class)));
+        Assertions.assertTrue(GenericArrayType.class.isAssignableFrom(ClassUtils.getGenericClass(GenericClass3.class)));
     }
 
     @Test
     public void testGetSizeMethod(){
-        Assert.assertEquals("getLength()", ClassUtils.getSizeMethod(GenericClass3.class));
+        Assertions.assertEquals("getLength()", ClassUtils.getSizeMethod(GenericClass3.class));
     }
 
     private interface GenericInterface<T>{

@@ -17,10 +17,10 @@
 
 package org.apache.dubbo.common.utils;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.apache.dubbo.common.utils.Assert.notNull;
-import static org.apache.dubbo.common.utils.Assert.notEmptyString;
+import static org.apache.dubbo.common.utils.Assertions.notNull;
+import static org.apache.dubbo.common.utils.Assertions.notEmptyString;
 
 public class AssertTest {
     @Test(expected = IllegalArgumentException.class)

@@ -23,10 +23,10 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.p2p.Group;
 import org.apache.dubbo.remoting.p2p.Peer;
 import org.apache.dubbo.remoting.transport.ChannelHandlerAdapter;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.IOException;
@@ -39,12 +39,12 @@ public class FileNetworkerTest {
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         folder.create();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         folder.delete();
     }

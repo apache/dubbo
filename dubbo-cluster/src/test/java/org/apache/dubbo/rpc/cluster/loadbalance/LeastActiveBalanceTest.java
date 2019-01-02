@@ -17,15 +17,15 @@
 package org.apache.dubbo.rpc.cluster.loadbalance;
 
 import org.apache.dubbo.rpc.Invoker;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class LeastActiveBalanceTest extends LoadBalanceBaseTest {
-    @Ignore
+    @Disabled
     @Test
     public void testLeastActiveLoadBalance_select() {
         int runs = 10000;
@@ -33,7 +33,7 @@ public class LeastActiveBalanceTest extends LoadBalanceBaseTest {
         for (Map.Entry<Invoker, AtomicLong> entry : counter.entrySet()) {
             Long count = entry.getValue().get();
             //            System.out.println(count);
-            Assert.assertTrue("abs diff shoud < avg",
+            Assertions.assertTrue("abs diff shoud < avg",
                     Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()));
         }
     }
@@ -56,13 +56,13 @@ public class LeastActiveBalanceTest extends LoadBalanceBaseTest {
                 sumInvoker2++;
             }
             // never select invoker3 because it's active is more than invoker1 and invoker2
-            Assert.assertTrue("select is not the least active one", !selected.getUrl().getProtocol().equals("test3"));
+            Assertions.assertTrue("select is not the least active one", !selected.getUrl().getProtocol().equals("test3"));
         }
 
         // the sumInvoker1 : sumInvoker2 approximately equal to 1: 9
         System.out.println(sumInvoker1);
         System.out.println(sumInvoker2);
 
-        Assert.assertEquals("select failed!", sumInvoker1 + sumInvoker2, loop);
+        Assertions.assertEquals("select failed!", sumInvoker1 + sumInvoker2, loop);
     }
 }

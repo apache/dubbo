@@ -54,9 +54,9 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
     private volatile boolean hasDecoded;
 
     public DecodeableRpcInvocation(Channel channel, Request request, InputStream is, byte id) {
-        Assert.notNull(channel, "channel == null");
-        Assert.notNull(request, "request == null");
-        Assert.notNull(is, "inputStream == null");
+        Assertions.notNull(channel, "channel == null");
+        Assertions.notNull(request, "request == null");
+        Assertions.notNull(is, "inputStream == null");
         this.channel = channel;
         this.request = request;
         this.inputStream = is;

@@ -22,9 +22,9 @@ import org.apache.dubbo.remoting.Server;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,12 +37,12 @@ public class NettyClientTest {
     static Server server;
 
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws Exception {
         server = Exchangers.bind(URL.valueOf("exchange://localhost:10001?server=netty3"), new TelnetServerHandler());
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws Exception {
         try {
             if (server != null)

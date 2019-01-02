@@ -19,21 +19,21 @@ package org.apache.dubbo.common.serialize.fst;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.MatcherAssertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 
 public class FstSerializationTest {
     private FstSerialization fstSerialization;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         this.fstSerialization = new FstSerialization();
     }

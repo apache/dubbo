@@ -18,10 +18,10 @@ package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.remoting.Transporter;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
-import static org.junit.matchers.JUnitMatchers.containsString;
+import static org.junit.jupiter.api.Assertions.*;
+org.hamcrest.CoreMatchers.containsString
 
 public class ClientsTest {
     @Test

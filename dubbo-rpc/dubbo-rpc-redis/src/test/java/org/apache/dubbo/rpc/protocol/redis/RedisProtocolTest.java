@@ -28,11 +28,11 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcResult;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.TestName;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -45,7 +45,7 @@ import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class RedisProtocolTest {
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
@@ -56,7 +56,7 @@ public class RedisProtocolTest {
     @Rule
     public TestName name = new TestName();
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         int redisPort = NetUtils.getAvailablePort();
         if (name.getMethodName().equals("testAuthRedis") || name.getMethodName().equals("testWrongAuthRedis")) {
@@ -70,7 +70,7 @@ public class RedisProtocolTest {
         this.redisServer.start();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         this.redisServer.stop();
     }
@@ -181,7 +181,7 @@ public class RedisProtocolTest {
             String actual = (String) oin.readObject();
             assertThat(value, is(actual));
         } catch(Exception e) {
-            Assert.fail("jedis gets the result comparison is error!");
+            Assertions.fail("jedis gets the result comparison is error!");
         } finally {
             if (jedis != null) {
                 jedis.close();
@@ -211,9 +211,9 @@ public class RedisProtocolTest {
             assertThat(value, is(nullValue()));
         } catch (RpcException e) {
             if (e.getCause() instanceof JedisConnectionException && e.getCause().getCause() instanceof JedisDataException) {
-                Assert.assertEquals("ERR invalid password" , e.getCause().getCause().getMessage());
+                Assertions.assertEquals("ERR invalid password" , e.getCause().getCause().getMessage());
             } else {
-                Assert.fail("no invalid password exception!");
+                Assertions.fail("no invalid password exception!");
             }
         }
 

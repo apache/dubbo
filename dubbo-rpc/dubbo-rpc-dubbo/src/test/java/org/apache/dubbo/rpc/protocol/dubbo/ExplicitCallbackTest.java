@@ -24,11 +24,11 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +46,7 @@ public class ExplicitCallbackTest {
     // ============================A gorgeous line of segmentation================================================
     IDemoService demoProxy = null;
 
-    @After
+    @AfterEach
     public void tearDown() {
         destroyService();
         ProtocolUtils.closeAll();
@@ -64,7 +64,7 @@ public class ExplicitCallbackTest {
         demoProxy = (IDemoService) ProtocolUtils.refer(IDemoService.class, consumerUrl);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
     }
 
@@ -140,32 +140,32 @@ public class ExplicitCallbackTest {
         };
         {
             demoProxy.xxx2(callback);
-            Assert.assertEquals(1, demoProxy.getCallbackCount());
+            Assertions.assertEquals(1, demoProxy.getCallbackCount());
             Thread.sleep(500);
             demoProxy.unxxx2(callback);
-            Assert.assertEquals(0, demoProxy.getCallbackCount());
+            Assertions.assertEquals(0, demoProxy.getCallbackCount());
 
             demoProxy.xxx2(callback2);
-            Assert.assertEquals(1, demoProxy.getCallbackCount());
+            Assertions.assertEquals(1, demoProxy.getCallbackCount());
             Thread.sleep(500);
             demoProxy.unxxx2(callback2);
-            Assert.assertEquals(0, demoProxy.getCallbackCount());
+            Assertions.assertEquals(0, demoProxy.getCallbackCount());
 
             demoProxy.xxx2(callback);
             Thread.sleep(500);
-            Assert.assertEquals(1, demoProxy.getCallbackCount());
+            Assertions.assertEquals(1, demoProxy.getCallbackCount());
             demoProxy.unxxx2(callback);
-            Assert.assertEquals(0, demoProxy.getCallbackCount());
+            Assertions.assertEquals(0, demoProxy.getCallbackCount());
         }
         {
             demoProxy.xxx2(callback);
-            Assert.assertEquals(1, demoProxy.getCallbackCount());
+            Assertions.assertEquals(1, demoProxy.getCallbackCount());
 
             demoProxy.xxx2(callback);
-            Assert.assertEquals(1, demoProxy.getCallbackCount());
+            Assertions.assertEquals(1, demoProxy.getCallbackCount());
 
             demoProxy.xxx2(callback2);
-            Assert.assertEquals(2, demoProxy.getCallbackCount());
+            Assertions.assertEquals(2, demoProxy.getCallbackCount());
         }
         destroyService();
     }
@@ -227,14 +227,14 @@ public class ExplicitCallbackTest {
             if (last > runs) break;
             Thread.sleep(sleep * 2);
             System.out.println(count.get() + "  " + last);
-            Assert.assertTrue(count.get() > last);
+            Assertions.assertTrue(count.get() > last);
             last = count.get();
         }
         // has one sync callback
-        Assert.assertEquals(runs + 1, count.get());
+        Assertions.assertEquals(runs + 1, count.get());
     }
 
-    @Ignore("need start with separate process")
+    @Disabled("need start with separate process")
     @Test
     public void startProvider() throws Exception {
         exportService();

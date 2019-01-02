@@ -18,8 +18,8 @@ package org.apache.dubbo.rpc.cluster.loadbalance;
 
 import org.apache.dubbo.rpc.Invoker;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,10 +44,10 @@ public class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
 			}
 		}
 
-		Assert.assertEquals("the number of unHitedInvoker should be counter.size() - 1", counter.size() - 1,
+		Assertions.assertEquals("the number of unHitedInvoker should be counter.size() - 1", counter.size() - 1,
 				unHitedInvokerCount);
-		Assert.assertEquals("the number of hitedInvoker should be 1", 1, hitedInvokers.size());
-		Assert.assertEquals("the number of hited count should be the number of runs", runs,
+		Assertions.assertEquals("the number of hitedInvoker should be 1", 1, hitedInvokers.size());
+		Assertions.assertEquals("the number of hited count should be the number of runs", runs,
 				hitedInvokers.values().iterator().next().intValue());
 	}
 

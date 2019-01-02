@@ -18,7 +18,7 @@ package org.apache.dubbo.common.serialize.fastjson;
 
 import com.alibaba.fastjson.JSONObject;
 import org.apache.dubbo.common.serialize.model.Person;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
@@ -28,7 +28,7 @@ import java.io.StringReader;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class FastJsonObjectInputTest {
     private FastJsonObjectInput fastJsonObjectInput;
