@@ -31,41 +31,69 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
 
     private static final long serialVersionUID = 1L;
 
-    // timeout for remote invocation in milliseconds
+    /**
+     * The timeout for remote invocation in milliseconds
+     */
     protected Integer timeout;
 
-    // retry times
+    /**
+     * The retry times
+     */
     protected Integer retries;
 
-    // max concurrent invocations
+    /**
+     * max concurrent invocations
+     */
     protected Integer actives;
 
-    // load balance
+    /**
+     * The load balance
+     */
     protected String loadbalance;
 
-    // whether to async
+    /**
+     * Whether to async
+     * note that: it is an unreliable asynchronism that ignores return values and does not block threads.
+     */
     protected Boolean async;
 
-    // whether to ack async-sent
+    /**
+     * Whether to ack async-sent
+     */
     protected Boolean sent;
 
-    // the name of mock class which gets called when a service fails to execute
+    /**
+     * The name of mock class which gets called when a service fails to execute
+     *
+     * note that: the mock doesn't support on the provider side，and the mock is executed when a non-business exception
+     * occurs after a remote service call
+     */
     protected String mock;
 
-    // merger
+    /**
+     * Merger
+     */
     protected String merger;
 
-    // cache
+    /**
+     * Cache the return result with the call parameter as key, the following options are available: lru, threadlocal,
+     * jcache, etc.
+     */
     protected String cache;
 
-    // validation
+    /**
+     * Whether JSR303 standard annotation validation is enabled or not, if enabled, annotations on method parameters will
+     * be validated
+     */
     protected String validation;
 
-    // customized parameters
+    /**
+     * The customized parameters
+     */
     protected Map<String, String> parameters;
 
     /**
-     * forks for forking cluster
+     * Forks for forking cluster
      */
     protected Integer forks;
 

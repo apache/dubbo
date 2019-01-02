@@ -62,29 +62,91 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     private static final long serialVersionUID = -5864351140409987595L;
 
+    /**
+     * The {@link Protocol} implementation with adaptive functionality,it will be different in different scenarios.
+     * A particular {@link Protocol} implementation is determined by the protocol attribute in the {@link URL}.
+     * For example:
+     *
+     * <li>when the url is registry://224.5.6.7:1234/org.apache.dubbo.registry.RegistryService?application=dubbo-sample,
+     * then the protocol is <b>RegistryProtocol</b></li>
+     *
+     * <li>when the url is dubbo://224.5.6.7:1234/org.apache.dubbo.config.api.DemoService?application=dubbo-sample, then
+     * the protocol is <b>DubboProtocol</b></li>
+     *
+     * Actually，when the {@link ExtensionLoader} init the {@link Protocol} instants,it will automatically wraps two
+     * layers, and eventually will get a <b>ProtocolFilterWrapper</b> or <b>ProtocolListenerWrapper</b>
+     */
     private static final Protocol refprotocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
+    /**
+     * The {@link Cluster}'s implementation with adaptive functionality, and actually it will get a {@link Cluster}'s
+     * specific implementation who is wrapped with <b>MockClusterInvoker</b>
+     */
     private static final Cluster cluster = ExtensionLoader.getExtensionLoader(Cluster.class).getAdaptiveExtension();
 
+    /**
+     * A {@link ProxyFactory} implementation that will generate a reference service's proxy,the JavassistProxyFactory is
+     * its default implementation
+     */
     private static final ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+
+    /**
+     * The url of the reference service
+     */
     private final List<URL> urls = new ArrayList<URL>();
-    // interface name
+
+    /**
+     * The interface name of the reference service
+     */
     private String interfaceName;
+
+    /**
+     * The interface class of the reference service
+     */
     private Class<?> interfaceClass;
     // client type
     private String client;
-    // url for peer-to-peer invocation
+
+    /**
+     * The url for peer-to-peer invocation
+     */
     private String url;
-    // method configs
+
+    /**
+     * The method configs
+     */
     private List<MethodConfig> methods;
-    // default config
+
+    /**
+     * The consumer config (default)
+     */
     private ConsumerConfig consumer;
+
+    /**
+     * Only the service provider of the specified protocol is invoked, and other protocols are ignored.
+     */
     private String protocol;
-    // interface proxy reference
+
+    /**
+     * The interface proxy reference
+     */
     private transient volatile T ref;
+
+    /**
+     * The invoker of the reference service
+     */
     private transient volatile Invoker<?> invoker;
+
+    /**
+     * The flag whether the ReferenceConfig has been initialized
+     */
     private transient volatile boolean initialized;
+
+    /**
+     * whether this ReferenceConfig has been destroyed
+     */
     private transient volatile boolean destroyed;
+
     @SuppressWarnings("unused")
     private final Object finalizerGuardian = new Object() {
         @Override
