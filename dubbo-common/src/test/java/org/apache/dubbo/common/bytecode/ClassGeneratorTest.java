@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.bytecode;
 
-import junit.framework.TestCase;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
@@ -28,7 +27,7 @@ interface Builder<T> {
     void setName(Bean bean, T name);
 }
 
-public class ClassGeneratorTest extends TestCase {
+public class ClassGeneratorTest {
 
     @SuppressWarnings("unchecked")
     @Test

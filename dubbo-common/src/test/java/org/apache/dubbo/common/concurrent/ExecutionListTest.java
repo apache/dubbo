@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.concurrent;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -36,9 +37,9 @@ public class ExecutionListTest {
         this.executionList = new ExecutionList();
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testAddNullRunnable() {
-        this.executionList.add(null, mock(Executor.class));
+        Assertions.assertThrows(NullPointerException.class, () -> this.executionList.add(null, mock(Executor.class)));
     }
 
     @Test

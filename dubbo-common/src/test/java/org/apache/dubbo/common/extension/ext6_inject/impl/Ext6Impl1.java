@@ -28,7 +28,7 @@ public class Ext6Impl1 implements Ext6 {
     SimpleExt ext1;
 
     public void setDao(Dao obj) {
-        Assertions.assertNotNull("inject extension instance can not be null", obj);
+        Assertions.assertNotNull(obj, "inject extension instance can not be null");
         Assertions.fail();
     }
 

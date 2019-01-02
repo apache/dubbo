@@ -169,7 +169,7 @@
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-migrationsupportc</artifactId>
+            <artifactId>junit-jupiter-params</artifactId>
             <version>${junit_version}</version>
             <scope>test</scope>
         </dependency>

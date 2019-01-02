@@ -31,6 +31,6 @@ public class NamedInternalThreadFactoryTest {
 
             }
         });
-        Assertions.assertTrue("thread is not InternalThread", t.getClass().equals(InternalThread.class));
+        Assertions.assertTrue(t.getClass().equals(InternalThread.class), "thread is not InternalThread");
     }
 }

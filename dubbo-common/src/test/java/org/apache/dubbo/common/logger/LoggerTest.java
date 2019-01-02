@@ -20,9 +20,10 @@ import org.apache.dubbo.common.logger.jcl.JclLoggerAdapter;
 import org.apache.dubbo.common.logger.jdk.JdkLoggerAdapter;
 import org.apache.dubbo.common.logger.log4j.Log4jLoggerAdapter;
 import org.apache.dubbo.common.logger.slf4j.Slf4jLoggerAdapter;
+
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,9 +33,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 
-@RunWith(Parameterized.class)
 public class LoggerTest {
-    @Parameterized.Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {JclLoggerAdapter.class},
@@ -52,7 +51,8 @@ public class LoggerTest {
         this.logger = adapter.getLogger(this.getClass());
     }
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("data")
     public void testAllLogMethod() {
         logger.error("error");
         logger.warn("warn");
@@ -73,7 +73,8 @@ public class LoggerTest {
         logger.trace("trace", new Exception("trace"));
     }
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("data")
     public void testLevelEnable() {
         assertThat(logger.isWarnEnabled(), not(nullValue()));
         assertThat(logger.isTraceEnabled(), not(nullValue()));

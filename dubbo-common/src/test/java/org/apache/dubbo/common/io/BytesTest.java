@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.io;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -58,24 +59,24 @@ public class BytesTest {
         assertThat(bytesWithC64, is(bytes));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testWrongBase64Code() {
-        Bytes.bytes2base64("dubbo".getBytes(), 0, 1, new char[]{'a'});
+        Assertions.assertThrows(IllegalArgumentException.class, () -> Bytes.bytes2base64("dubbo".getBytes(), 0, 1, new char[]{'a'}));
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
+    @Test
     public void testWrongOffSet() {
-        Bytes.bytes2base64("dubbo".getBytes(), -1, 1);
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> Bytes.bytes2base64("dubbo".getBytes(), -1, 1));
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
+    @Test
     public void testLargeLength() {
-        Bytes.bytes2base64("dubbo".getBytes(), 0, 100000);
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> Bytes.bytes2base64("dubbo".getBytes(), 0, 100000));
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
+    @Test
     public void testSmallLength() {
-        Bytes.bytes2base64("dubbo".getBytes(), 0, -1);
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> Bytes.bytes2base64("dubbo".getBytes(), 0, -1));
     }
 
     @Test
@@ -115,14 +116,14 @@ public class BytesTest {
         assertThat(unzip, is(s.getBytes()));
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
+    @Test
     public void testBytes2HexWithWrongOffset() {
-        Bytes.bytes2hex("hello".getBytes(), -1, 1);
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> Bytes.bytes2hex("hello".getBytes(), -1, 1));
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
+    @Test
     public void testBytes2HexWithWrongLength() {
-        Bytes.bytes2hex("hello".getBytes(), 0, 6);
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> Bytes.bytes2hex("hello".getBytes(), 0, 6));
     }
 
     private byte[] int2bytes(int x) {

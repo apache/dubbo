@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -161,9 +162,9 @@ public class CollectionUtilsTest {
         assertThat(toStringMap("key", "value"), equalTo(Collections.singletonMap("key", "value")));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testStringMap2() throws Exception {
-        toStringMap("key", "value", "odd");
+        Assertions.assertThrows(IllegalArgumentException.class, () -> toStringMap("key", "value", "odd"));
     }
 
     @Test
@@ -178,9 +179,9 @@ public class CollectionUtilsTest {
         assertEquals(expected, CollectionUtils.toMap("a", 1, "b", 2, "c", 3));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testToMap2() throws Exception {
-        toMap("a", "b", "c");
+        Assertions.assertThrows(IllegalArgumentException.class, () -> toMap("a", "b", "c"));
     }
 
     @Test

@@ -17,43 +17,45 @@
 
 package org.apache.dubbo.common.utils;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static org.apache.dubbo.common.utils.Assertions.notNull;
-import static org.apache.dubbo.common.utils.Assertions.notEmptyString;
+import static org.apache.dubbo.common.utils.Assert.notEmptyString;
+import static org.apache.dubbo.common.utils.Assert.notNull;
 
 public class AssertTest {
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testNotNull1() throws Exception {
-        notNull(null, "null object");
+        Assertions.assertThrows(IllegalStateException.class, () -> notNull(null, "null object"));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testNotNull2() throws Exception {
-        notNull(null, new IllegalStateException("null object"));
+        Assertions.assertThrows(IllegalStateException.class, () -> notNull(null, new IllegalStateException("null object")));
     }
 
     @Test
     public void testNotNullWhenInputNotNull1() {
-        notNull(new Object(),"null object");
+        notNull(new Object(), "null object");
     }
 
     @Test
     public void testNotNullWhenInputNotNull2() {
-        notNull(new Object(),new IllegalStateException("null object"));
-    }
-    @Test(expected = IllegalArgumentException.class)
-    public void testNotNullString() {
-        notEmptyString(null,"Message can't be null");
+        notNull(new Object(), new IllegalStateException("null object"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
+    public void testNotNullString() {
+        Assertions.assertThrows(IllegalStateException.class, () -> notEmptyString(null, "Message can't be null"));
+    }
+
+    @Test
     public void testNotEmptyString() {
-        notEmptyString("","Message can't be null or empty");
+        Assertions.assertThrows(IllegalStateException.class, () -> notEmptyString("", "Message can't be null or empty"));
     }
 
     @Test
     public void testNotNullNotEmptyString() {
-        notEmptyString("abcd","Message can'be null or empty");
+        notEmptyString("abcd", "Message can'be null or empty");
     }
 }

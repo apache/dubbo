@@ -17,11 +17,12 @@
 
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.TemporaryFolderExtension;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -33,12 +34,12 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
 public class IOUtilsTest {
-    @Rule
-    public TemporaryFolder tmpDir = new TemporaryFolder();
+    @RegisterExtension
+    public TemporaryFolderExtension tmpDir = new TemporaryFolderExtension();
 
     private static String TEXT = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
     private InputStream is;
@@ -89,7 +90,7 @@ public class IOUtilsTest {
 
     @Test
     public void testLines() throws Exception {
-        File file = tmpDir.newFile();
+        File file = tmpDir.newFile("test");
         IOUtils.writeLines(file, new String[]{TEXT});
         String[] lines = IOUtils.readLines(file);
         assertThat(lines.length, equalTo(1));
@@ -117,7 +118,7 @@ public class IOUtilsTest {
 
     @Test
     public void testAppendLines() throws Exception {
-        File file = tmpDir.newFile();
+        File file = tmpDir.newFile("test1");
         IOUtils.appendLines(file, new String[]{"a", "b", "c"});
         String[] lines = IOUtils.readLines(file);
         assertThat(lines.length, equalTo(3));

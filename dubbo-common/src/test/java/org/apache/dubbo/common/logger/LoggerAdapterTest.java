@@ -26,9 +26,9 @@ import org.apache.dubbo.common.logger.log4j2.Log4j2Logger;
 import org.apache.dubbo.common.logger.log4j2.Log4j2LoggerAdapter;
 import org.apache.dubbo.common.logger.slf4j.Slf4jLogger;
 import org.apache.dubbo.common.logger.slf4j.Slf4jLoggerAdapter;
-import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,9 +36,7 @@ import java.util.Collection;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-@RunWith(Parameterized.class)
 public class LoggerAdapterTest {
-    @Parameterized.Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {JclLoggerAdapter.class, JclLogger.class},
@@ -57,7 +55,8 @@ public class LoggerAdapterTest {
         this.loggerAdapter = loggerAdapterClass.newInstance();
     }
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("data")
     public void testGetLogger() {
         Logger logger = loggerAdapter.getLogger(this.getClass());
         assertThat(logger.getClass().isAssignableFrom(this.loggerClass), is(true));
@@ -66,7 +65,8 @@ public class LoggerAdapterTest {
         assertThat(logger.getClass().isAssignableFrom(this.loggerClass), is(true));
     }
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("data")
     public void testLevel() {
         for (Level targetLevel : Level.values()) {
             loggerAdapter.setLevel(targetLevel);

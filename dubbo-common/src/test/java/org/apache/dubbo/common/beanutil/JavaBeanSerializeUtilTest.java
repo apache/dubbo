@@ -22,6 +22,7 @@ import org.apache.dubbo.common.model.person.PersonInfo;
 import org.apache.dubbo.common.model.person.PersonStatus;
 import org.apache.dubbo.common.model.person.Phone;
 import org.apache.dubbo.common.utils.PojoUtilsTest;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -71,56 +72,74 @@ public class JavaBeanSerializeUtilTest {
         Assertions.assertEquals(string, JavaBeanSerializeUtil.deserialize(descriptor));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testDeserialize_Primitive0() throws Exception {
-        JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_BEAN + 1);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_BEAN + 1);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testDeserialize_Null() throws Exception {
-        JavaBeanDescriptor descriptor = new JavaBeanDescriptor(null, JavaBeanDescriptor.TYPE_BEAN);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(null, JavaBeanDescriptor.TYPE_BEAN);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testDeserialize_containsProperty() throws Exception {
-        JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_PRIMITIVE);
-        descriptor.containsProperty(null);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_PRIMITIVE);
+            descriptor.containsProperty(null);
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testSetEnumNameProperty() throws Exception {
-        JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_PRIMITIVE);
-        descriptor.setEnumNameProperty(JavaBeanDescriptor.class.getName());
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_PRIMITIVE);
+            descriptor.setEnumNameProperty(JavaBeanDescriptor.class.getName());
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testGetEnumNameProperty() throws Exception {
-        JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_PRIMITIVE);
-        descriptor.getEnumPropertyName();
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_PRIMITIVE);
+            descriptor.getEnumPropertyName();
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testSetClassNameProperty() throws Exception {
-        JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_PRIMITIVE);
-        descriptor.setClassNameProperty(JavaBeanDescriptor.class.getName());
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_PRIMITIVE);
+            descriptor.setClassNameProperty(JavaBeanDescriptor.class.getName());
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testGetClassNameProperty() throws Exception {
-        JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_PRIMITIVE);
-        descriptor.getClassNameProperty();
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_PRIMITIVE);
+            descriptor.getClassNameProperty();
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testSetPrimitiveProperty() throws Exception {
-        JavaBeanDescriptor descriptor = new JavaBeanDescriptor(JavaBeanDescriptor.class.getName(), JavaBeanDescriptor.TYPE_BEAN);
-        descriptor.setPrimitiveProperty(JavaBeanDescriptor.class.getName());
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(JavaBeanDescriptor.class.getName(), JavaBeanDescriptor.TYPE_BEAN);
+            descriptor.setPrimitiveProperty(JavaBeanDescriptor.class.getName());
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testGetPrimitiveProperty() throws Exception {
-        JavaBeanDescriptor descriptor = new JavaBeanDescriptor(JavaBeanDescriptor.class.getName(), JavaBeanDescriptor.TYPE_BEAN);
-        descriptor.getPrimitiveProperty();
+    @Test
+    public void testGetPrimitivePropertøy() throws Exception {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(JavaBeanDescriptor.class.getName(), JavaBeanDescriptor.TYPE_BEAN);
+            descriptor.getPrimitiveProperty();
+        });
     }
 
     @Test
@@ -182,20 +201,20 @@ public class JavaBeanSerializeUtilTest {
     public void testConstructorArg() {
         Assertions.assertFalse((boolean) JavaBeanSerializeUtil.getConstructorArg(boolean.class));
         Assertions.assertFalse((boolean) JavaBeanSerializeUtil.getConstructorArg(Boolean.class));
-        Assertions.assertEquals((byte)0, JavaBeanSerializeUtil.getConstructorArg(byte.class));
-        Assertions.assertEquals((byte)0, JavaBeanSerializeUtil.getConstructorArg(Byte.class));
-        Assertions.assertEquals((short)0, JavaBeanSerializeUtil.getConstructorArg(short.class));
-        Assertions.assertEquals((short)0, JavaBeanSerializeUtil.getConstructorArg(Short.class));
+        Assertions.assertEquals((byte) 0, JavaBeanSerializeUtil.getConstructorArg(byte.class));
+        Assertions.assertEquals((byte) 0, JavaBeanSerializeUtil.getConstructorArg(Byte.class));
+        Assertions.assertEquals((short) 0, JavaBeanSerializeUtil.getConstructorArg(short.class));
+        Assertions.assertEquals((short) 0, JavaBeanSerializeUtil.getConstructorArg(Short.class));
         Assertions.assertEquals(0, JavaBeanSerializeUtil.getConstructorArg(int.class));
         Assertions.assertEquals(0, JavaBeanSerializeUtil.getConstructorArg(Integer.class));
-        Assertions.assertEquals((long)0, JavaBeanSerializeUtil.getConstructorArg(long.class));
-        Assertions.assertEquals((long)0, JavaBeanSerializeUtil.getConstructorArg(Long.class));
+        Assertions.assertEquals((long) 0, JavaBeanSerializeUtil.getConstructorArg(long.class));
+        Assertions.assertEquals((long) 0, JavaBeanSerializeUtil.getConstructorArg(Long.class));
         Assertions.assertEquals((float) 0, JavaBeanSerializeUtil.getConstructorArg(float.class));
         Assertions.assertEquals((float) 0, JavaBeanSerializeUtil.getConstructorArg(Float.class));
         Assertions.assertEquals((double) 0, JavaBeanSerializeUtil.getConstructorArg(double.class));
         Assertions.assertEquals((double) 0, JavaBeanSerializeUtil.getConstructorArg(Double.class));
-        Assertions.assertEquals((char)0, JavaBeanSerializeUtil.getConstructorArg(char.class));
-        Assertions.assertEquals(new Character((char)0), JavaBeanSerializeUtil.getConstructorArg(Character.class));
+        Assertions.assertEquals((char) 0, JavaBeanSerializeUtil.getConstructorArg(char.class));
+        Assertions.assertEquals(new Character((char) 0), JavaBeanSerializeUtil.getConstructorArg(Character.class));
         Assertions.assertEquals(null, JavaBeanSerializeUtil.getConstructorArg(JavaBeanSerializeUtil.class));
     }
 

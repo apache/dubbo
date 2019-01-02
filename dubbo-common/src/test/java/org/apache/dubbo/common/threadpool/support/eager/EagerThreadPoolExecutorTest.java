@@ -90,7 +90,7 @@ public class EagerThreadPoolExecutorTest {
         }
         Thread.sleep(5000);
         // cores theads are all alive.
-        Assertions.assertTrue("more than cores threads alive!", executor.getPoolSize() == cores);
+        Assertions.assertTrue(executor.getPoolSize() == cores, "more than cores threads alive!");
     }
 
     @Test
@@ -98,9 +98,9 @@ public class EagerThreadPoolExecutorTest {
         ExecutorService executorService = (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class)
                 .getExtension("eager")
                 .getExecutor(URL);
-        Assertions.assertTrue("test spi fail!",
+        Assertions.assertTrue(
                 executorService.getClass()
                         .getSimpleName()
-                        .equals("EagerThreadPoolExecutor"));
+                        .equals("EagerThreadPoolExecutor"), "test spi fail!");
     }
 }

@@ -31,7 +31,7 @@ public class NettyBackedChannelBuffer implements ChannelBuffer {
     private org.jboss.netty.buffer.ChannelBuffer buffer;
 
     public NettyBackedChannelBuffer(org.jboss.netty.buffer.ChannelBuffer buffer) {
-        Assertions.notNull(buffer, "buffer == null");
+        Assert.notNull(buffer, "buffer == null");
         this.buffer = buffer;
     }
 

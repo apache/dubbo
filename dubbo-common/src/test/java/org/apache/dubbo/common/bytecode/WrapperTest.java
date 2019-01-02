@@ -79,16 +79,20 @@ public class WrapperTest {
         Assertions.assertEquals(null, w.getPropertyType(null));
     }
 
-    @Test(expected = NoSuchPropertyException.class)
+    @Test
     public void testGetPropertyValue() throws Exception {
-        Wrapper w = Wrapper.getWrapper(Object.class);
-        w.getPropertyValue(null, null);
+        Assertions.assertThrows(NoSuchPropertyException.class, () -> {
+            Wrapper w = Wrapper.getWrapper(Object.class);
+            w.getPropertyValue(null, null);
+        });
     }
 
-    @Test(expected = NoSuchPropertyException.class)
+    @Test
     public void testSetPropertyValue() throws Exception {
-        Wrapper w = Wrapper.getWrapper(Object.class);
-        w.setPropertyValue(null, null, null);
+        Assertions.assertThrows(NoSuchPropertyException.class, () -> {
+            Wrapper w = Wrapper.getWrapper(Object.class);
+            w.setPropertyValue(null, null, null);
+        });
     }
 
     @Test
@@ -101,10 +105,12 @@ public class WrapperTest {
         Assertions.assertEquals(true, (boolean) w.invokeMethod(instance, "equals", null, new Object[]{instance}));
     }
 
-    @Test(expected = NoSuchMethodException.class)
+    @Test
     public void testNoSuchMethod() throws Exception {
-        Wrapper w = Wrapper.getWrapper(Object.class);
-        w.invokeMethod(new Object(), "__XX__", null, null);
+        Assertions.assertThrows(NoSuchMethodException.class, () -> {
+            Wrapper w = Wrapper.getWrapper(Object.class);
+            w.invokeMethod(new Object(), "__XX__", null, null);
+        });
     }
 
     /**
