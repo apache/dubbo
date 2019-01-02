@@ -131,32 +131,6 @@ public abstract class AbstractConfigurator implements Configurator {
         return url;
     }
 
-    /**
-     * Sort by host, priority
-     * 1. the url with a specific host ip should have higher priority than 0.0.0.0
-     * 2. if two url has the same host, compare by priority value；
-     *
-     * @param o
-     * @return
-     */
-    @Override
-    public int compareTo(Configurator o) {
-        if (o == null) {
-            return -1;
-        }
-
-        int ipCompare = getUrl().getHost().compareTo(o.getUrl().getHost());
-        if (ipCompare == 0) {//host is the same, sort by priority
-            int i = getUrl().getParameter(Constants.PRIORITY_KEY, 0),
-                    j = o.getUrl().getParameter(Constants.PRIORITY_KEY, 0);
-            return Integer.compare(i, j);
-        } else {
-            return ipCompare;
-        }
-
-
-    }
-
     protected abstract URL doConfigure(URL currentUrl, URL configUrl);
 
 }
