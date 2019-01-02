@@ -359,8 +359,8 @@ public class ProviderConfig extends AbstractServiceConfig {
     }
 
     public void setDispatcher(String dispatcher) {
-        checkExtension(Dispatcher.class, Constants.DISPATCHER_KEY, dispatcher);
         checkExtension(Dispatcher.class, Constants.DISPATCHER_KEY, exchanger);
+        checkExtension(Dispatcher.class, "dispather", exchanger);
         this.dispatcher = dispatcher;
     }
 
