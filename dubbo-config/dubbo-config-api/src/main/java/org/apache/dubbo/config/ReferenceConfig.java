@@ -128,6 +128,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         if (interfaceName == null || interfaceName.length() == 0) {
             throw new IllegalStateException("<dubbo:reference interface=\"\" /> interface not allow null!");
         }
+        completeCompoundConfigs();
         checkConfigCenter();
         // get consumer's global configuration
         checkDefault();
@@ -147,36 +148,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             checkInterfaceAndMethods(interfaceClass, methods);
         }
         resolveFile();
-        if (consumer != null) {
-            if (application == null) {
-                application = consumer.getApplication();
-            }
-            if (module == null) {
-                module = consumer.getModule();
-            }
-            if (registries == null) {
-                registries = consumer.getRegistries();
-            }
-            if (monitor == null) {
-                monitor = consumer.getMonitor();
-            }
-        }
-        if (module != null) {
-            if (registries == null) {
-                registries = module.getRegistries();
-            }
-            if (monitor == null) {
-                monitor = module.getMonitor();
-            }
-        }
-        if (application != null) {
-            if (registries == null) {
-                registries = application.getRegistries();
-            }
-            if (monitor == null) {
-                monitor = application.getMonitor();
-            }
-        }
         checkApplication();
         checkMetadataReport();
         checkRegistryDataConfig();
@@ -376,9 +347,42 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     private void checkDefault() {
         if (consumer == null) {
-            consumer = new ConsumerConfig();
+            setConsumer(new ConsumerConfig());
         }
         consumer.refresh();
+    }
+
+    private void completeCompoundConfigs() {
+        if (consumer != null) {
+            if (application == null) {
+                setApplication(consumer.getApplication());
+            }
+            if (module == null) {
+                setModule(consumer.getModule());
+            }
+            if (registries == null) {
+                setRegistries(consumer.getRegistries());
+            }
+            if (monitor == null) {
+                setMonitor(consumer.getMonitor());
+            }
+        }
+        if (module != null) {
+            if (registries == null) {
+                setRegistries(module.getRegistries());
+            }
+            if (monitor == null) {
+                setMonitor(module.getMonitor());
+            }
+        }
+        if (application != null) {
+            if (registries == null) {
+                setRegistries(application.getRegistries());
+            }
+            if (monitor == null) {
+                setMonitor(application.getMonitor());
+            }
+        }
     }
 
     public Class<?> getInterfaceClass() {
