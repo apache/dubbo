@@ -102,9 +102,9 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setName(String name) {
-        checkName("name", name);
+        checkName(Constants.NAME, name);
         this.name = name;
-        if (id == null || id.length() == 0) {
+        if (StringUtils.isEmpty(id)) {
             id = name;
         }
     }
@@ -123,7 +123,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setOwner(String owner) {
-        checkMultiName("owner", owner);
+        checkMultiName(Constants.OWNER, owner);
         this.owner = owner;
     }
 
@@ -132,7 +132,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setOrganization(String organization) {
-        checkName("organization", organization);
+        checkName(Constants.ORGANIZATION, organization);
         this.organization = organization;
     }
 
@@ -141,7 +141,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setArchitecture(String architecture) {
-        checkName("architecture", architecture);
+        checkName(Constants.ARCHITECTURE, architecture);
         this.architecture = architecture;
     }
 
@@ -150,10 +150,18 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setEnvironment(String environment) {
-        checkName("environment", environment);
+        checkName(Constants.ENVIRONMENT, environment);
         if (environment != null) {
-            if (!("develop".equals(environment) || "test".equals(environment) || "product".equals(environment))) {
-                throw new IllegalStateException("Unsupported environment: " + environment + ", only support develop/test/product, default is product.");
+            if (!(Constants.DEVELOPMENT_ENVIRONMENT.equals(environment)
+                    || Constants.TEST_ENVIRONMENT.equals(environment)
+                    || Constants.PRODUCTION_ENVIRONMENT.equals(environment))) {
+
+                throw new IllegalStateException(String.format("Unsupported environment: %s, only support %s/%s/%s, default is %s.",
+                        environment,
+                        Constants.DEVELOPMENT_ENVIRONMENT,
+                        Constants.TEST_ENVIRONMENT,
+                        Constants.PRODUCTION_ENVIRONMENT,
+                        Constants.PRODUCTION_ENVIRONMENT));
             }
         }
         this.environment = environment;
@@ -284,4 +292,5 @@ public class ApplicationConfig extends AbstractConfig {
     public boolean isValid() {
         return !StringUtils.isEmpty(name);
     }
+
 }

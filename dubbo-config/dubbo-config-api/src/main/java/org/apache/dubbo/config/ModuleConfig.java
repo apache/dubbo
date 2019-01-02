@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.config.support.Parameter;
 
 import java.util.ArrayList;
@@ -64,7 +65,7 @@ public class ModuleConfig extends AbstractConfig {
     }
 
     public void setName(String name) {
-        checkName("name", name);
+        checkName(Constants.NAME, name);
         this.name = name;
         if (id == null || id.length() == 0) {
             id = name;
@@ -85,7 +86,7 @@ public class ModuleConfig extends AbstractConfig {
     }
 
     public void setOwner(String owner) {
-        checkName("owner", owner);
+        checkName(Constants.OWNER, owner);
         this.owner = owner;
     }
 
@@ -94,7 +95,7 @@ public class ModuleConfig extends AbstractConfig {
     }
 
     public void setOrganization(String organization) {
-        checkName("organization", organization);
+        checkName(Constants.ORGANIZATION, organization);
         this.organization = organization;
     }
 

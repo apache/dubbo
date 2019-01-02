@@ -120,7 +120,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setProtocol(String protocol) {
-        checkName("protocol", protocol);
+        checkName(Constants.PROTOCOL_KEY, protocol);
         this.protocol = protocol;
         this.updateIdIfAbsent(protocol);
     }
@@ -232,7 +232,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setTransporter(String transporter) {
-        checkName("transporter", transporter);
+        checkName(Constants.TRANSPORTER_KEY, transporter);
         /*if(transporter != null && transporter.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(transporter)){
             throw new IllegalStateException("No such transporter type : " + transporter);
         }*/
@@ -244,7 +244,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setServer(String server) {
-        checkName("server", server);
+        checkName(Constants.SERVER_KEY, server);
         /*if(server != null && server.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(server)){
             throw new IllegalStateException("No such server type : " + server);
         }*/
@@ -349,18 +349,8 @@ public class RegistryConfig extends AbstractConfig {
         if (!isValid()) {
             return false;
         }
-        boolean isZookeeper = StringUtils.isNotEmpty(this.getProtocol()) && this.getProtocol().equals("zookeeper");
-        if (!isZookeeper) {
-            String address = this.getAddress();
-            int index = address.indexOf("://");
-            if (StringUtils.isNotEmpty(address) && index >= 0) {
-                address = address.substring(0, index);
-            }
-            if (address.equals("zookeeper")) {
-                isZookeeper = true;
-            }
-        }
-        return isZookeeper;
+        return Constants.ZOOKEEPER_PROTOCOL.equals(getProtocol())
+                || getAddress().startsWith(Constants.ZOOKEEPER_PROTOCOL);
     }
 
     @Override
@@ -369,4 +359,5 @@ public class RegistryConfig extends AbstractConfig {
         // empty protocol will default to 'dubbo'
         return !StringUtils.isEmpty(address);
     }
+
 }
