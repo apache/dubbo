@@ -147,34 +147,13 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
         resolveFile();
         if (consumer != null) {
-            if (application == null) {
-                application = consumer.getApplication();
-            }
-            if (module == null) {
-                module = consumer.getModule();
-            }
-            if (registries == null) {
-                registries = consumer.getRegistries();
-            }
-            if (monitor == null) {
-                monitor = consumer.getMonitor();
-            }
+            inheritIfAbsentFromConsumer();
         }
         if (module != null) {
-            if (registries == null) {
-                registries = module.getRegistries();
-            }
-            if (monitor == null) {
-                monitor = module.getMonitor();
-            }
+            inheritIfAbsentFromModule();
         }
         if (application != null) {
-            if (registries == null) {
-                registries = application.getRegistries();
-            }
-            if (monitor == null) {
-                monitor = application.getMonitor();
-            }
+            inheritIfAbsentFromApplication();
         }
         checkApplication();
         checkMetadataReport();
@@ -379,6 +358,40 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
         consumer.refresh();
     }
+
+    private void inheritIfAbsentFromConsumer() {
+        if (application == null) {
+            application = consumer.getApplication();
+        }
+        if (module == null) {
+            module = consumer.getModule();
+        }
+        if (registries == null) {
+            registries = consumer.getRegistries();
+        }
+        if (monitor == null) {
+            monitor = consumer.getMonitor();
+        }
+    }
+
+    private void inheritIfAbsentFromModule() {
+        if (registries == null) {
+            registries = module.getRegistries();
+        }
+        if (monitor == null) {
+            monitor = module.getMonitor();
+        }
+    }
+
+    private void inheritIfAbsentFromApplication() {
+        if (registries == null) {
+            registries = application.getRegistries();
+        }
+        if (monitor == null) {
+            monitor = application.getMonitor();
+        }
+    }
+
 
     public Class<?> getInterfaceClass() {
         if (interfaceClass != null) {
