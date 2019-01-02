@@ -79,57 +79,64 @@ public class MonitorFilter implements Filter {
     // collect info
     private void collect(Invoker<?> invoker, Invocation invocation, Result result, String remoteHost, long start, boolean error) {
         try {
-            // ---- service statistics ----
-            long elapsed = System.currentTimeMillis() - start; // invocation cost
-            int concurrent = getConcurrent(invoker, invocation).get(); // current concurrent count
-            String application = invoker.getUrl().getParameter(Constants.APPLICATION_KEY);
-            String service = invoker.getInterface().getName(); // service name
-            String method = RpcUtils.getMethodName(invocation); // method name
-            String group = invoker.getUrl().getParameter(Constants.GROUP_KEY);
-            String version = invoker.getUrl().getParameter(Constants.VERSION_KEY);
-            URL url = invoker.getUrl().getUrlParameter(Constants.MONITOR_KEY);
-            Monitor monitor = monitorFactory.getMonitor(url);
+            URL monitorUrl = invoker.getUrl().getUrlParameter(Constants.MONITOR_KEY);
+            Monitor monitor = monitorFactory.getMonitor(monitorUrl);
             if (monitor == null) {
                 return;
             }
-            int localPort;
-            String remoteKey;
-            String remoteValue;
-            if (Constants.CONSUMER_SIDE.equals(invoker.getUrl().getParameter(Constants.SIDE_KEY))) {
-                // ---- for service consumer ----
-                localPort = 0;
-                remoteKey = MonitorService.PROVIDER;
-                remoteValue = invoker.getUrl().getAddress();
-            } else {
-                // ---- for service provider ----
-                localPort = invoker.getUrl().getPort();
-                remoteKey = MonitorService.CONSUMER;
-                remoteValue = remoteHost;
-            }
-            String input = "", output = "";
-            if (invocation.getAttachment(Constants.INPUT_KEY) != null) {
-                input = invocation.getAttachment(Constants.INPUT_KEY);
-            }
-            if (result != null && result.getAttachment(Constants.OUTPUT_KEY) != null) {
-                output = result.getAttachment(Constants.OUTPUT_KEY);
-            }
-            monitor.collect(new URL(Constants.COUNT_PROTOCOL,
-                    NetUtils.getLocalHost(), localPort,
-                    service + "/" + method,
-                    MonitorService.APPLICATION, application,
-                    MonitorService.INTERFACE, service,
-                    MonitorService.METHOD, method,
-                    remoteKey, remoteValue,
-                    error ? MonitorService.FAILURE : MonitorService.SUCCESS, "1",
-                    MonitorService.ELAPSED, String.valueOf(elapsed),
-                    MonitorService.CONCURRENT, String.valueOf(concurrent),
-                    Constants.INPUT_KEY, input,
-                    Constants.OUTPUT_KEY, output,
-                    Constants.GROUP_KEY, group,
-                    Constants.VERSION_KEY, version));
+            URL statisticsURL = createStatisticsUrl(invoker, invocation, result, remoteHost, start, error);
+            monitor.collect(statisticsURL);
         } catch (Throwable t) {
-            logger.error("Failed to monitor count service " + invoker.getUrl() + ", cause: " + t.getMessage(), t);
+            logger.warn("Failed to monitor count service " + invoker.getUrl() + ", cause: " + t.getMessage(), t);
         }
+    }
+
+    private URL createStatisticsUrl(Invoker<?> invoker, Invocation invocation, Result result, String remoteHost, long start, boolean error) {
+        // ---- service statistics ----
+        long elapsed = System.currentTimeMillis() - start; // invocation cost
+        int concurrent = getConcurrent(invoker, invocation).get(); // current concurrent count
+        String application = invoker.getUrl().getParameter(Constants.APPLICATION_KEY);
+        String service = invoker.getInterface().getName(); // service name
+        String method = RpcUtils.getMethodName(invocation); // method name
+        String group = invoker.getUrl().getParameter(Constants.GROUP_KEY);
+        String version = invoker.getUrl().getParameter(Constants.VERSION_KEY);
+
+        int localPort;
+        String remoteKey, remoteValue;
+        if (Constants.CONSUMER_SIDE.equals(invoker.getUrl().getParameter(Constants.SIDE_KEY))) {
+            // ---- for service consumer ----
+            localPort = 0;
+            remoteKey = MonitorService.PROVIDER;
+            remoteValue = invoker.getUrl().getAddress();
+        } else {
+            // ---- for service provider ----
+            localPort = invoker.getUrl().getPort();
+            remoteKey = MonitorService.CONSUMER;
+            remoteValue = remoteHost;
+        }
+
+        String input = "", output = "";
+        if (invocation.getAttachment(Constants.INPUT_KEY) != null) {
+            input = invocation.getAttachment(Constants.INPUT_KEY);
+        }
+        if (result != null && result.getAttachment(Constants.OUTPUT_KEY) != null) {
+            output = result.getAttachment(Constants.OUTPUT_KEY);
+        }
+
+        return new URL(Constants.COUNT_PROTOCOL,
+                NetUtils.getLocalHost(), localPort,
+                service + Constants.PATH_SEPARATOR + method,
+                MonitorService.APPLICATION, application,
+                MonitorService.INTERFACE, service,
+                MonitorService.METHOD, method,
+                remoteKey, remoteValue,
+                error ? MonitorService.FAILURE : MonitorService.SUCCESS, "1",
+                MonitorService.ELAPSED, String.valueOf(elapsed),
+                MonitorService.CONCURRENT, String.valueOf(concurrent),
+                Constants.INPUT_KEY, input,
+                Constants.OUTPUT_KEY, output,
+                Constants.GROUP_KEY, group,
+                Constants.VERSION_KEY, version);
     }
 
     // concurrent counter

@@ -31,22 +31,35 @@ public class RegistryConfig extends AbstractConfig {
 
     public static final String NO_AVAILABLE = "N/A";
     private static final long serialVersionUID = 5508512956753757169L;
-    // register center address
+
+    /**
+     * Register center address
+     */
     private String address;
 
-    // username to login register center
+    /**
+     * Username to login register center
+     */
     private String username;
 
-    // password to login register center
+    /**
+     * Password to login register center
+     */
     private String password;
 
-    // default port for register center
+    /**
+     * Default port for register center
+     */
     private Integer port;
 
-    // protocol for register center
+    /**
+     * Protocol for register center
+     */
     private String protocol;
 
-    // client impl
+    /**
+     * Network transmission type
+     */
     private String transporter;
 
     private String server;
@@ -55,42 +68,65 @@ public class RegistryConfig extends AbstractConfig {
 
     private String cluster;
 
+    /**
+     * The group the services registry in
+     */
     private String group;
 
     private String version;
 
-    // request timeout in milliseconds for register center
+    /**
+     * Request timeout in milliseconds for register center
+     */
     private Integer timeout;
 
-    // session timeout in milliseconds for register center
+    /**
+     * Session timeout in milliseconds for register center
+     */
     private Integer session;
 
-    // file for saving register center dynamic list
+    /**
+     * File for saving register center dynamic list
+     */
     private String file;
 
-    // wait time before stop
+    /**
+     * Wait time before stop
+     */
     private Integer wait;
 
-    // whether to check if register center is available when boot up
+    /**
+     * Whether to check if register center is available when boot up
+     */
     private Boolean check;
 
-    // whether to allow dynamic service to register on the register center
+    /**
+     * Whether to allow dynamic service to register on the register center
+     */
     private Boolean dynamic;
 
-    // whether to export service on the register center
+    /**
+     * Whether to export service on the register center
+     */
     private Boolean register;
 
-    // whether allow to subscribe service on the register center
+    /**
+     * Whether allow to subscribe service on the register center
+     */
     private Boolean subscribe;
 
-    // customized parameters
+    /**
+     * The customized parameters
+     */
     private Map<String, String> parameters;
 
-    // if it's default
+    /**
+     * Whether it's default
+     */
     private Boolean isDefault;
 
     /**
-     * simple the registry.
+     * Simple the registry.
      *
      * @since 2.7.0
      */
