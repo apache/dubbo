@@ -20,25 +20,16 @@ import org.apache.dubbo.demo.DemoService;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-public class Consumer {
-
+public class Application {
     /**
-     * To get ipv6 address to work, add
-     * System.setProperty("java.net.preferIPv6Addresses", "true");
-     * before running your application.
+     * In order to make sure multicast registry works, need to specify '-Djava.net.preferIPv4Stack=true' before
+     * launch the application
      */
     public static void main(String[] args) {
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"META-INF/spring/dubbo-demo-consumer.xml"});
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("spring/dubbo-consumer.xml");
         context.start();
-        DemoService demoService = (DemoService) context.getBean("demoService"); // get remote service proxy
-        while (true) {
-            try {
-                Thread.sleep(1000);
-                String hello = demoService.sayHello("world"); // call remote method
-                System.out.println(hello); // get result
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
-            }
-        }
+        DemoService demoService = context.getBean("demoService", DemoService.class);
+        String hello = demoService.sayHello("world");
+        System.out.println("result: " + hello);
     }
 }

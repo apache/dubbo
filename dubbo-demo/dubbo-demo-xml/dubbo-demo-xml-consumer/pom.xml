@@ -21,14 +21,13 @@
         <artifactId>dubbo-demo</artifactId>
         <version>2.7.0-SNAPSHOT</version>
     </parent>
-    <artifactId>dubbo-demo-provider</artifactId>
+    <artifactId>dubbo-demo-xml-consumer</artifactId>
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
-    <description>The demo provider module of dubbo project</description>
+    <description>The demo consumer module of dubbo project</description>
     <properties>
         <skip_maven_deploy>true</skip_maven_deploy>
     </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
@@ -65,15 +64,11 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-metadata-report-zookeeper</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-metadata-report-redis</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-qos</artifactId>
+            <artifactId>dubbo-metadata-report-zookeeper</artifactId>
         </dependency>
     </dependencies>
 </project>

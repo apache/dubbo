@@ -18,16 +18,14 @@ package org.apache.dubbo.demo.provider;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-public class Provider {
-
+public class Application {
     /**
-     * To get ipv6 address to work, add
-     * System.setProperty("java.net.preferIPv6Addresses", "true");
-     * before running your application.
+     * In order to make sure multicast registry works, need to specify '-Djava.net.preferIPv4Stack=true' before
+     * launch the application
      */
     public static void main(String[] args) throws Exception {
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"META-INF/spring/dubbo-demo-provider.xml"});
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("spring/dubbo-provider.xml");
         context.start();
-        System.in.read(); // press any key to exit
+        System.in.read();
     }
 }

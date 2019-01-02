@@ -30,8 +30,7 @@
     </properties>
     <modules>
         <module>dubbo-demo-api</module>
-        <module>dubbo-demo-provider</module>
-        <module>dubbo-demo-consumer</module>
+        <module>dubbo-demo-xml</module>
     </modules>
 
     <dependencyManagement>
