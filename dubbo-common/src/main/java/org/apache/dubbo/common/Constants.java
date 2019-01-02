@@ -773,6 +773,46 @@ public class Constants {
     public static final String[] DEFAULT_REGISTER_CONSUMER_KEYS = {APPLICATION_KEY, VERSION_KEY, GROUP_KEY, DUBBO_VERSION_KEY, SPECIFICATION_VERSION_KEY};
 
     public static final String TELNET = "telnet";
+
+    /**
+     * Application name;
+     */
+    public static final String NAME = "name";
+
+    /**
+     * Application owner name;
+     */
+    public static final String OWNER = "owner";
+
+    /**
+     * Running application organization name.
+     */
+    public static final String ORGANIZATION = "organization";
+
+    /**
+     * Application architecture name.
+     */
+    public static final String ARCHITECTURE = "architecture";
+
+    /**
+     * Environment name
+     */
+    public static final String ENVIRONMENT = "environment";
+
+    /**
+     * Test environment key.
+     */
+    public static final String TEST_ENVIRONMENT = "test";
+
+    /**
+     * Development environment key.
+     */
+    public static final String DEVELOPMENT_ENVIRONMENT = "develop";
+
+    /**
+     * Production environment key.
+     */
+    public static final String PRODUCTION_ENVIRONMENT = "product";
     /*
      * private Constants(){ }
      */

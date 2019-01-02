@@ -17,7 +17,6 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.common.EnvironmentConstants;
 import org.apache.dubbo.common.compiler.support.AdaptiveCompiler;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -103,7 +102,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setName(String name) {
-        checkName(EnvironmentConstants.NAME, name);
+        checkName(Constants.NAME, name);
         this.name = name;
         if (StringUtils.isEmpty(id)) {
             id = name;
@@ -124,7 +123,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setOwner(String owner) {
-        checkMultiName(EnvironmentConstants.OWNER, owner);
+        checkMultiName(Constants.OWNER, owner);
         this.owner = owner;
     }
 
@@ -133,7 +132,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setOrganization(String organization) {
-        checkName(EnvironmentConstants.ORGANIZATION, organization);
+        checkName(Constants.ORGANIZATION, organization);
         this.organization = organization;
     }
 
@@ -142,7 +141,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setArchitecture(String architecture) {
-        checkName(EnvironmentConstants.ARCHITECTURE, architecture);
+        checkName(Constants.ARCHITECTURE, architecture);
         this.architecture = architecture;
     }
 
@@ -151,18 +150,18 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setEnvironment(String environment) {
-        checkName(EnvironmentConstants.ENVIRONMENT, environment);
+        checkName(Constants.ENVIRONMENT, environment);
         if (environment != null) {
-            if (!(EnvironmentConstants.DEVELOPMENT_ENVIRONMENT.equals(environment)
-                    || EnvironmentConstants.TEST_ENVIRONMENT.equals(environment)
-                    || EnvironmentConstants.PRODUCTION_ENVIRONMENT.equals(environment))) {
+            if (!(Constants.DEVELOPMENT_ENVIRONMENT.equals(environment)
+                    || Constants.TEST_ENVIRONMENT.equals(environment)
+                    || Constants.PRODUCTION_ENVIRONMENT.equals(environment))) {
 
                 throw new IllegalStateException(String.format("Unsupported environment: %s, only support %s/%s/%s, default is %s.",
-                         environment
-                        ,EnvironmentConstants.DEVELOPMENT_ENVIRONMENT
-                        ,EnvironmentConstants.TEST_ENVIRONMENT
-                        ,EnvironmentConstants.PRODUCTION_ENVIRONMENT
-                        ,EnvironmentConstants.PRODUCTION_ENVIRONMENT));
+                        environment,
+                        Constants.DEVELOPMENT_ENVIRONMENT,
+                        Constants.TEST_ENVIRONMENT,
+                        Constants.PRODUCTION_ENVIRONMENT,
+                        Constants.PRODUCTION_ENVIRONMENT));
             }
         }
         this.environment = environment;
