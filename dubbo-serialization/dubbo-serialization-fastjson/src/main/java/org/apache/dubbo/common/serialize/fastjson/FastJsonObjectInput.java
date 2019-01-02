@@ -43,77 +43,83 @@ public class FastJsonObjectInput implements ObjectInput {
 
     @Override
     public boolean readBool() throws IOException {
-        return read(boolean.class);
+        return this.read(boolean.class);
     }
 
     @Override
     public byte readByte() throws IOException {
-        return read(byte.class);
+        return this.read(byte.class);
     }
 
     @Override
     public short readShort() throws IOException {
-        return read(short.class);
+        return this.read(short.class);
     }
 
     @Override
     public int readInt() throws IOException {
-        return read(int.class);
+        return this.read(int.class);
     }
 
     @Override
     public long readLong() throws IOException {
-        return read(long.class);
+        return this.read(long.class);
     }
 
     @Override
     public float readFloat() throws IOException {
-        return read(float.class);
+        return this.read(float.class);
     }
 
     @Override
     public double readDouble() throws IOException {
-        return read(double.class);
+        return this.read(double.class);
     }
 
     @Override
     public String readUTF() throws IOException {
-        return read(String.class);
+        return this.read(String.class);
     }
 
     @Override
     public byte[] readBytes() throws IOException {
-        return readLine().getBytes();
+        return this.readJSONString().getBytes();
     }
 
     @Override
     public Object readObject() throws IOException, ClassNotFoundException {
-        String json = readLine();
+        String json = this.readJSONString();
         return JSON.parse(json);
     }
 
     @Override
     public <T> T readObject(Class<T> cls) throws IOException, ClassNotFoundException {
-        return read(cls);
+        return this.read(cls);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> T readObject(Class<T> cls, Type type) throws IOException, ClassNotFoundException {
-        Object value = readObject(cls);
+        Object value = this.readObject(cls);
         return (T) PojoUtils.realize(value, cls, type);
     }
 
-    private String readLine() throws IOException, EOFException {
-        String line = reader.readLine();
-        if (line == null || line.trim().length() == 0) {
+    private String readJSONString() throws IOException, EOFException {
+        StringBuilder builder = new StringBuilder();
+
+        String line;
+        while((line = reader.readLine()) != null) {
+            builder.append(line);
+        }
+
+        if (builder.length() == 0) {
             throw new EOFException();
         }
-        return line;
+        return builder.toString();
     }
 
     private <T> T read(Class<T> cls) throws IOException {
-        String json = readLine();
+        String json = this.readJSONString();
         return JSON.parseObject(json, cls);
     }
 }
