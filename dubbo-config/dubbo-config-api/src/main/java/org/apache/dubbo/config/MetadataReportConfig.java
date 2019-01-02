@@ -29,31 +29,31 @@ import java.util.Map;
 public class MetadataReportConfig extends AbstractConfig {
 
     private static final long serialVersionUID = 55233L;
-    // register center address
+    // Register center address
     private String address;
 
-    // username to login register center
+    // Username to login register center
     private String username;
 
-    // password to login register center
+    // Password to login register center
     private String password;
 
-    // request timeout in milliseconds for register center
+    // Request timeout in milliseconds for register center
     private Integer timeout;
 
-    // customized parameters
+    // Customized parameters
     private Map<String, String> parameters;
 
     private Integer retryTimes;
 
     private Integer retryPeriod;
     /**
-     * by default the metadatastore will store full metadata repeatly every day .
+     * By default the metadatastore will store full metadata repeatly every day .
      */
     private Boolean cycleReport;
 
     /**
-     * sync report, default async
+     * Sync report, default async
      */
     private Boolean syncReport;
 
