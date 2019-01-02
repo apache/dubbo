@@ -107,6 +107,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected String ondisconnect;
     protected MetadataReportConfig metadataReportConfig;
     protected RegistryDataConfig registryDataConfig;
+
+    protected ConfigCenterConfig configCenter;
+
     // callback limits
     private Integer callbacks;
     // the scope for referring/exporting a service, if it's local, it means searching in current JVM only.
@@ -196,6 +199,15 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             logger.info("There's no valid registryData config found. So the registry will store full url parameter " +
                     "to registry server.");
         }
+    }
+
+    void checkConfigCenter() {
+        if (configCenter == null) {
+            configCenter = new ConfigCenterConfig();
+        }
+
+        configCenter.refresh();
+        configCenter.init(application);
     }
 
     protected List<URL> loadRegistries(boolean provider) {
@@ -463,6 +475,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             // we use the loading status of DynamicConfiguration to decide whether ConfigCenter has been initiated.
             Environment.getInstance().getDynamicConfiguration().orElseGet(() -> {
                 ConfigCenterConfig configCenterConfig = new ConfigCenterConfig();
+                this.setConfigCenter(configCenterConfig);
                 configCenterConfig.setProtocol(rc.getProtocol());
                 configCenterConfig.setAddress(rc.getAddress());
                 configCenterConfig.setHighestPriority(false);
@@ -647,6 +660,14 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     public void setRegistryDataConfig(RegistryDataConfig registryDataConfig) {
         this.registryDataConfig = registryDataConfig;
+    }
+
+    public ConfigCenterConfig getConfigCenter() {
+        return configCenter;
+    }
+
+    public void setConfigCenter(ConfigCenterConfig configCenter) {
+        this.configCenter = configCenter;
     }
 
     public Integer getCallbacks() {

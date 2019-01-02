@@ -196,6 +196,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     public void checkAndUpdateSubConfigs() {
+        checkConfigCenter();
         checkDefault();
         if (provider != null) {
             if (application == null) {

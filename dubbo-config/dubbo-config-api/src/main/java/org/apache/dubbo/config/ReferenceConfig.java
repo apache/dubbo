@@ -128,6 +128,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         if (interfaceName == null || interfaceName.length() == 0) {
             throw new IllegalStateException("<dubbo:reference interface=\"\" /> interface not allow null!");
         }
+        checkConfigCenter();
         // get consumer's global configuration
         checkDefault();
         this.refresh();
