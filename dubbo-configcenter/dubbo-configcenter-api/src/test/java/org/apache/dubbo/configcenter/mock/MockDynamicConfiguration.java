@@ -17,48 +17,33 @@
 package org.apache.dubbo.configcenter.mock;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.configcenter.AbstractDynamicConfiguration;
 import org.apache.dubbo.configcenter.ConfigurationListener;
+import org.apache.dubbo.configcenter.DynamicConfiguration;
 
 /**
  *
  */
-public class MockDynamicConfiguration extends AbstractDynamicConfiguration {
-
-    MockDynamicConfiguration() {
-    }
-
-    MockDynamicConfiguration(URL url) {
-        super(url);
+public class MockDynamicConfiguration implements DynamicConfiguration {
+    public MockDynamicConfiguration(URL url) {
     }
 
     @Override
-    protected void initWith(URL url) {
-
-    }
-
-    @Override
-    protected String getTargetConfig(String key, String group, long timeout) {
+    public Object getInternalProperty(String key) {
         return null;
     }
 
     @Override
-    protected void addConfigurationListener(String key, String group, Object o, ConfigurationListener configurationListener) {
+    public void addListener(String key, String group, ConfigurationListener listener) {
 
     }
 
     @Override
-    protected void removeConfigurationListener(String key, String group, Object o, ConfigurationListener configurationListener) {
+    public void removeListener(String key, String group, ConfigurationListener listener) {
 
     }
 
     @Override
-    protected Object createTargetListener(String key, String group) {
-        return null;
-    }
-
-    @Override
-    protected Object getInternalProperty(String key) {
+    public String getConfig(String key, String group, long timeout) throws IllegalStateException {
         return null;
     }
 }
