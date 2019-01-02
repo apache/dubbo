@@ -145,12 +145,10 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             if (applicationConfigMap != null && applicationConfigMap.size() > 0) {
                 ApplicationConfig applicationConfig = null;
                 for (ApplicationConfig config : applicationConfigMap.values()) {
-                    if (config.isDefault() == null || config.isDefault()) {
-                        if (applicationConfig != null) {
-                            throw new IllegalStateException("Duplicate application configs: " + applicationConfig + " and " + config);
-                        }
-                        applicationConfig = config;
+                    if (applicationConfig != null) {
+                        throw new IllegalStateException("Duplicate application configs: " + applicationConfig + " and " + config);
                     }
+                    applicationConfig = config;
                 }
                 if (applicationConfig != null) {
                     setApplication(applicationConfig);

@@ -54,9 +54,6 @@ public class ConfigCenterConfig extends AbstractConfig {
     private String configFile = "dubbo.properties";
     private String appConfigFile;
 
-    private ApplicationConfig application;
-    private RegistryConfig registry;
-
     // customized parameters
     private Map<String, String> parameters;
 
@@ -70,13 +67,6 @@ public class ConfigCenterConfig extends AbstractConfig {
 
         // give jvm properties the chance to override local configs, e.g., -Ddubbo.configcenter.highestPriority
         refresh();
-
-        // try to use registryConfig as the default configcenter, only applies to zookeeper.
-        if (!isValid() && registry != null && registry.isZookeeperProtocol()) {
-            setAddress(registry.getAddress());
-            setProtocol(registry.getProtocol());
-        }
-//        checkConfigCenter();
 
         if (isValid()) {
             DynamicConfiguration dynamicConfiguration = startDynamicConfiguration(toConfigUrl());
@@ -276,29 +266,6 @@ public class ConfigCenterConfig extends AbstractConfig {
     public void setParameters(Map<String, String> parameters) {
         checkParameterName(parameters);
         this.parameters = parameters;
-    }
-
-    public ApplicationConfig getApplication() {
-        return application;
-    }
-
-    public void setApplication(ApplicationConfig application) {
-        this.application = application;
-    }
-
-    public RegistryConfig getRegistry() {
-        return registry;
-    }
-
-    public void setRegistry(RegistryConfig registry) {
-        this.registry = registry;
-    }
-
-    private void checkConfigCenter() {
-        if (StringUtils.isEmpty(address)
-                || (StringUtils.isEmpty(protocol) && (StringUtils.isEmpty(address) || !address.contains("://")))) {
-            throw new IllegalStateException("You must specify the right parameter for configcenter.");
-        }
     }
 
     @Override
