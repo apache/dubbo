@@ -28,16 +28,16 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <packaging>pom</packaging>
-
-    <artifactId>dubbo-demo-xml</artifactId>
+    <artifactId>dubbo-demo-annotation</artifactId>
 
     <properties>
         <skip_maven_deploy>true</skip_maven_deploy>
     </properties>
 
     <modules>
-        <module>dubbo-demo-xml-provider</module>
-        <module>dubbo-demo-xml-consumer</module>
+        <module>dubbo-demo-annotation-provider</module>
+        <module>dubbo-demo-annotation-consumer</module>
     </modules>
+
 
 </project>

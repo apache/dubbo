@@ -29,8 +29,9 @@
         <skip_maven_deploy>true</skip_maven_deploy>
     </properties>
     <modules>
-        <module>dubbo-demo-api</module>
+        <module>dubbo-demo-interface</module>
         <module>dubbo-demo-xml</module>
+        <module>dubbo-demo-annotation</module>
     </modules>
 
     <dependencyManagement>
