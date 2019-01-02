@@ -669,7 +669,7 @@
                     <![CDATA[ Whether the configs from config center has the highest priority. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="from-spring" type="xsd:boolean" use="optional">
+        <xsd:attribute name="include-spring-env" type="xsd:boolean" use="optional">
             <xsd:annotation>
                 <xsd:documentation>
                     <![CDATA[ Load the config items by Dubbo itself or Spring. ]]></xsd:documentation>

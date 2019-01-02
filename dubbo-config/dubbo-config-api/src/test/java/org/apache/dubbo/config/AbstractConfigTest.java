@@ -400,7 +400,7 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void testRefreshId() {
+    public void testRefreshById() {
         try {
             OverrideConfig overrideConfig = new OverrideConfig();
             overrideConfig.setId("override-id");
@@ -421,7 +421,7 @@ public class AbstractConfigTest {
             Environment.getInstance().setExternalConfigMap(external);
 
             ConfigCenterConfig configCenter = new ConfigCenterConfig();
-            configCenter.init();
+            configCenter.init(null);
 
             // Load configuration from  system properties -> externalConfiguration -> RegistryConfig -> dubbo.properties
             overrideConfig.refresh();

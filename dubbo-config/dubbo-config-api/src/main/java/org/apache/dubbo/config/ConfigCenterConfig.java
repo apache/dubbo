@@ -60,19 +60,16 @@ public class ConfigCenterConfig extends AbstractConfig {
     public ConfigCenterConfig() {
     }
 
-    public void init() {
+    public void init(ApplicationConfig applicationConfig) {
         if (!inited.compareAndSet(false, true)) {
             return;
         }
-
-        // give jvm properties the chance to override local configs, e.g., -Ddubbo.configcenter.highestPriority
-        refresh();
 
         if (isValid()) {
             DynamicConfiguration dynamicConfiguration = startDynamicConfiguration(toConfigUrl());
             String configContent = dynamicConfiguration.getConfig(configFile, group);
 
-            String appGroup = getApplicationName();
+            String appGroup = applicationConfig != null ? applicationConfig.getName() : null;
             String appConfigContent = null;
             if (StringUtils.isNotEmpty(appGroup)) {
                 appConfigContent = dynamicConfiguration.getConfig
@@ -108,17 +105,6 @@ public class ConfigCenterConfig extends AbstractConfig {
             map.put(Constants.PROTOCOL_KEY, "zookeeper");
         }
         return UrlUtils.parseURL(address, map);
-    }
-
-    private String getApplicationName() {
-        if (application != null) {
-            if (!application.isValid()) {
-                throw new IllegalStateException(
-                        "No application config found or it's not a valid config! Please add <dubbo:application name=\"...\" /> to your spring config.");
-            }
-            return application.getName();
-        }
-        return appName;
     }
 
     protected Map<String, String> parseProperties(String content) throws IOException {

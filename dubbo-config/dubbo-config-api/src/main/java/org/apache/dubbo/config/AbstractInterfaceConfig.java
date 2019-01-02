@@ -26,6 +26,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.metadata.integration.MetadataReportService;
 import org.apache.dubbo.monitor.MonitorFactory;
@@ -120,6 +121,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
         convertRegistryIdsToRegistries();
 
+        setRegistries(this.registries);
+
         for (RegistryConfig registryConfig : registries) {
             registryConfig.refresh();
             if (StringUtils.isNotEmpty(registryConfig.getId())) {
@@ -142,7 +145,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected void checkApplication() {
         // for backward compatibility
         if (application == null) {
-            application = new ApplicationConfig();
+            setApplication(new ApplicationConfig());
         }
 
         application.refresh();
@@ -168,7 +171,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     protected void checkMonitor() {
         if (monitor == null) {
-            monitor = new MonitorConfig();
+            setMonitor(new MonitorConfig());
         }
 
         monitor.refresh();
@@ -181,7 +184,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     protected void checkMetadataReport() {
         if (metadataReportConfig == null) {
-            metadataReportConfig = new MetadataReportConfig();
+            setMetadataReportConfig(new MetadataReportConfig());
         }
         metadataReportConfig.refresh();
         if (!metadataReportConfig.isValid()) {
@@ -192,7 +195,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     protected void checkRegistryDataConfig() {
         if (registryDataConfig == null) {
-            registryDataConfig = new RegistryDataConfig();
+            setRegistryDataConfig(new RegistryDataConfig());
         }
         registryDataConfig.refresh();
         if (!registryDataConfig.isValid()) {
@@ -203,9 +206,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     void checkConfigCenter() {
         if (configCenter == null) {
-            configCenter = new ConfigCenterConfig();
+//            setConfigCenter(new ConfigCenterConfig());
+            return;
         }
 
+        // give jvm properties the chance to override local configs, e.g., -Ddubbo.configcenter.highestPriority
         configCenter.refresh();
         configCenter.init(application);
     }
@@ -479,7 +484,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 configCenterConfig.setProtocol(rc.getProtocol());
                 configCenterConfig.setAddress(rc.getAddress());
                 configCenterConfig.setHighestPriority(false);
-                configCenterConfig.init();
+                configCenterConfig.init(this.application);
                 return null;
             });
         });
@@ -595,6 +600,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     public void setApplication(ApplicationConfig application) {
         this.application = application;
+        ConfigManager.getInstance().setApplication(application);
     }
 
     public ModuleConfig getModule() {
@@ -603,6 +609,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     public void setModule(ModuleConfig module) {
         this.module = module;
+        ConfigManager.getInstance().setModule(module);
     }
 
     public RegistryConfig getRegistry() {
@@ -612,7 +619,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     public void setRegistry(RegistryConfig registry) {
         List<RegistryConfig> registries = new ArrayList<RegistryConfig>(1);
         registries.add(registry);
-        this.registries = registries;
+        setRegistries(registries);
     }
 
     public List<RegistryConfig> getRegistries() {
@@ -622,6 +629,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     @SuppressWarnings({"unchecked"})
     public void setRegistries(List<? extends RegistryConfig> registries) {
         this.registries = (List<RegistryConfig>) registries;
+        ConfigManager.getInstance().addRegistries(this.registries);
     }
 
     @Parameter(excluded = true)
@@ -643,6 +651,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     public void setMonitor(MonitorConfig monitor) {
         this.monitor = monitor;
+        ConfigManager.getInstance().setMonitor(monitor);
     }
 
     public String getOwner() {
@@ -668,6 +677,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     public void setConfigCenter(ConfigCenterConfig configCenter) {
         this.configCenter = configCenter;
+        ConfigManager.getInstance().setConfigCenter(configCenter);
     }
 
     public Integer getCallbacks() {

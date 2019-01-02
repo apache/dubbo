@@ -196,42 +196,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     public void checkAndUpdateSubConfigs() {
+        // Use default configs defined explicitly on global configs
+        completeCompoundConfigs();
+        // Config Center should always being checked and inited first.
         checkConfigCenter();
         checkDefault();
-        if (provider != null) {
-            if (application == null) {
-                application = provider.getApplication();
-            }
-            if (module == null) {
-                module = provider.getModule();
-            }
-            if (registries == null) {
-                registries = provider.getRegistries();
-            }
-            if (monitor == null) {
-                monitor = provider.getMonitor();
-            }
-            if (protocols == null) {
-                protocols = provider.getProtocols();
-            }
-        }
-        if (module != null) {
-            if (registries == null) {
-                registries = module.getRegistries();
-            }
-            if (monitor == null) {
-                monitor = module.getMonitor();
-            }
-        }
-        if (application != null) {
-            if (registries == null) {
-                registries = application.getRegistries();
-            }
-            if (monitor == null) {
-                monitor = application.getMonitor();
-            }
-        }
-
         checkApplication();
         checkRegistry();
         checkProtocol();
@@ -710,9 +679,48 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         return port;
     }
 
+    private void completeCompoundConfigs() {
+        if (provider != null) {
+            if (application == null) {
+                setApplication(provider.getApplication());
+            }
+            if (module == null) {
+                setModule(provider.getModule());
+            }
+            if (registries == null) {
+                setRegistries(provider.getRegistries());
+            }
+            if (monitor == null) {
+                setMonitor(provider.getMonitor());
+            }
+            if (protocols == null) {
+                setProtocols(provider.getProtocols());
+            }
+            if (configCenter == null) {
+                setConfigCenter(provider.getConfigCenter());
+            }
+        }
+        if (module != null) {
+            if (registries == null) {
+                setRegistries(module.getRegistries());
+            }
+            if (monitor == null) {
+                setMonitor(module.getMonitor());
+            }
+        }
+        if (application != null) {
+            if (registries == null) {
+                setRegistries(application.getRegistries());
+            }
+            if (monitor == null) {
+                setMonitor(application.getMonitor());
+            }
+        }
+    }
+
     private void checkDefault() {
         if (provider == null) {
-            provider = new ProviderConfig();
+            setProvider(new ProviderConfig());
         }
         provider.refresh();
     }
@@ -723,6 +731,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
 
         convertProtocolIdsToProtocols();
+
+        // set after all protocols are generated
+        setProtocols(this.protocols);
 
         for (ProtocolConfig protocolConfig : protocols) {
             if (StringUtils.isEmpty(protocolConfig.getName())) {

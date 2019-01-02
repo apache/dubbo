@@ -19,6 +19,7 @@ package org.apache.dubbo.config.spring;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.ModuleConfig;
@@ -193,6 +194,15 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
                 super.setRegistryDataConfig(registryDataConfigMap.values().iterator().next());
             } else if (registryDataConfigMap != null && registryDataConfigMap.size() > 1) {
                 throw new IllegalStateException("Multiple RegistryData configs: " + registryDataConfigMap);
+            }
+        }
+
+        if (getConfigCenter() == null) {
+            Map<String, ConfigCenterConfig> configenterMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ConfigCenterConfig.class, false, false);
+            if (configenterMap != null && configenterMap.size() == 1) {
+                super.setConfigCenter(configenterMap.values().iterator().next());
+            } else if (configenterMap != null && configenterMap.size() > 1) {
+                throw new IllegalStateException("Multiple ConfigCenter found:" + configenterMap);
             }
         }
 
