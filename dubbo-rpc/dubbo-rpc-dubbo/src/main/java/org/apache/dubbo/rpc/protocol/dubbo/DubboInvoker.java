@@ -81,7 +81,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         }
         try {
             boolean isAsync = RpcUtils.isAsync(getUrl(), invocation);
-            boolean isAsyncFuture =  RpcUtils.isGeneratedFuture(inv) || RpcUtils.isFutureReturnType(inv);
+            boolean isAsyncFuture = RpcUtils.isReturnTypeFuture(inv);
             boolean isOneway = RpcUtils.isOneway(getUrl(), invocation);
             int timeout = getUrl().getMethodParameter(methodName, Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
             if (isOneway) {
