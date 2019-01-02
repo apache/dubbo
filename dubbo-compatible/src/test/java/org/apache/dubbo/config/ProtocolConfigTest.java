@@ -17,10 +17,9 @@
 
 package org.apache.dubbo.config;
 
-import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.config.ProtocolConfig;
+
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import java.util.Collections;
 import java.util.HashMap;

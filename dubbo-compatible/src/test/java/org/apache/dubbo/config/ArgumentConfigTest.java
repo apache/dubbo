@@ -17,12 +17,12 @@
 
 package org.apache.dubbo.config;
 
+import com.alibaba.dubbo.config.ArgumentConfig;
+
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import com.alibaba.dubbo.config.ArgumentConfig;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;

@@ -35,7 +35,7 @@ public class PropertiesConfiguration extends AbstractPrefixConfiguration {
     }
 
     @Override
-    protected Object getInternalProperty(String key) {
+    public Object getInternalProperty(String key) {
         return ConfigUtils.getProperty(key);
     }
 }

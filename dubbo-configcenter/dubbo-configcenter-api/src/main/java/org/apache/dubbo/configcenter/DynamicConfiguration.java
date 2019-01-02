@@ -18,88 +18,100 @@ package org.apache.dubbo.configcenter;
 
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.Environment;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 
 import java.util.Optional;
+
+import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
 /**
  * Dynamic configuration
  */
 public interface DynamicConfiguration extends Configuration {
+    String DEFAULT_GROUP = "dubbo";
 
     /**
      * {@link #addListener(String, String, ConfigurationListener)}
+     *
      * @param key      the key to represent a configuration
      * @param listener configuration listener
      */
-    void addListener(String key, ConfigurationListener listener);
+    default void addListener(String key, ConfigurationListener listener) {
+        addListener(key, DEFAULT_GROUP, listener);
+    }
 
 
     /**
      * {@link #removeListener(String, String, ConfigurationListener)}
      *
-     * @param key
-     * @param listener
+     * @param key      the key to represent a configuration
+     * @param listener configuration listener
      */
-    void removeListener(String key, ConfigurationListener listener);
+    default void removeListener(String key, ConfigurationListener listener) {
+        removeListener(key, DEFAULT_GROUP, listener);
+    }
 
     /**
      * Register a configuration listener for a specified key
-     * The listener only works for service governance purpose, so the target group would always be the value user specifies at startup or 'dubbo' by default.
-     * This method will only register listener, which means it will not trigger a notification that contains the current value.
+     * The listener only works for service governance purpose, so the target group would always be the value user
+     * specifies at startup or 'dubbo' by default. This method will only register listener, which means it will not
+     * trigger a notification that contains the current value.
      *
-     * @param key
-     * @param group
-     * @param listener
+     * @param key      the key to represent a configuration
+     * @param group    the group where the key belongs to
+     * @param listener configuration listener
      */
     void addListener(String key, String group, ConfigurationListener listener);
 
     /**
      * Stops one listener from listening to value changes in the specified key.
      *
-     * @param key
-     * @param group
-     * @param listener
+     * @param key      the key to represent a configuration
+     * @param group    the group where the key belongs to
+     * @param listener configuration listener
      */
     void removeListener(String key, String group, ConfigurationListener listener);
 
     /**
      * Get the configuration mapped to the given key
      *
-     * @param key property key
+     * @param key the key to represent a configuration
      * @return target configuration mapped to the given key
      */
-    String getConfig(String key);
+    default String getConfig(String key) {
+        return getConfig(key, null, 0L);
+    }
 
     /**
      * Get the configuration mapped to the given key and the given group
      *
-     * @param key   property key
-     * @param group group
+     * @param key   the key to represent a configuration
+     * @param group the group where the key belongs to
      * @return target configuration mapped to the given key and the given group
      */
-    String getConfig(String key, String group);
+    default String getConfig(String key, String group) {
+        return getConfig(key, group, 0L);
+    }
 
     /**
      * Get the configuration mapped to the given key and the given group. If the
      * configuration fails to fetch after timeout exceeds, IllegalStateException will be thrown.
      *
-     * @param key      property key
-     * @param group    group
-     * @param timeout  timeout value for fetching the target config
+     * @param key     the key to represent a configuration
+     * @param group   the group where the key belongs to
+     * @param timeout timeout value for fetching the target config
      * @return target configuration mapped to the given key and the given group, IllegalStateException will be thrown
      * if timeout exceeds.
      */
     String getConfig(String key, String group, long timeout) throws IllegalStateException;
 
     /**
-     * I think this method is strongly related to DynamicConfiguration, so we should put it directly in the definition of this interface instead of a separated utility class.
+     * Find DynamicConfiguration instance
      *
-     * @return
+     * @return DynamicConfiguration instance
      */
     static DynamicConfiguration getDynamicConfiguration() {
         Optional<Configuration> optional = Environment.getInstance().getDynamicConfiguration();
-        return (DynamicConfiguration) optional.orElseGet(() -> ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class)
+        return (DynamicConfiguration) optional.orElseGet(() -> getExtensionLoader(DynamicConfigurationFactory.class)
                 .getDefaultExtension()
                 .getDynamicConfiguration(null));
     }

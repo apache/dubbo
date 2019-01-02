@@ -66,7 +66,7 @@ public class AbstractMetadataReportTest {
         String group = null;
         String application = "vic";
         MetadataIdentifier providerMetadataIdentifier = storePrivider(abstractMetadataReport, interfaceName, version, group, application);
-        Thread.sleep(1000);
+        Thread.sleep(1500);
         Assert.assertNotNull(abstractMetadataReport.store.get(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY)));
     }
 

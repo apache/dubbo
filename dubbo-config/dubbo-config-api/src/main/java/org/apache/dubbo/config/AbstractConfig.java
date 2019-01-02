@@ -258,7 +258,7 @@ public abstract class AbstractConfig implements Serializable {
 
     protected static void checkExtension(Class<?> type, String property, String value) {
         checkName(property, value);
-        if (value != null && value.length() > 0
+        if (StringUtils.isNotEmpty(value)
                 && !ExtensionLoader.getExtensionLoader(type).hasExtension(value)) {
             throw new IllegalStateException("No such extension " + value + " for " + property + "/" + type.getName());
         }
@@ -266,7 +266,7 @@ public abstract class AbstractConfig implements Serializable {
 
     protected static void checkMultiExtension(Class<?> type, String property, String value) {
         checkMultiName(property, value);
-        if (value != null && value.length() > 0) {
+        if (StringUtils.isNotEmpty(value)) {
             String[] values = value.split("\\s*[,]+\\s*");
             for (String v : values) {
                 if (v.startsWith(Constants.REMOVE_VALUE_PREFIX)) {
@@ -324,7 +324,7 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     protected static void checkProperty(String property, String value, int maxlength, Pattern pattern) {
-        if (value == null || value.length() == 0) {
+        if (StringUtils.isEmpty(value)) {
             return;
         }
         if (value.length() > maxlength) {

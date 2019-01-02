@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.cluster;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 
@@ -66,10 +67,6 @@ public class RouterChain<T> {
         this.sort();
     }
 
-    public void addRouter(Router router) {
-        this.routers.add(router);
-    }
-
     /**
      * If we use route:// protocol in version before 2.7.0, each URL will generate a Router instance, so we should
      * keep the routers up to date, that is, each time router URLs changes, we should update the routers list, only
@@ -79,12 +76,11 @@ public class RouterChain<T> {
      * @param routers routers from 'router://' rules in 2.6.x or before.
      */
     public void addRouters(List<Router> routers) {
-        // FIXME will sort cause concurrent problem? since it's kind of a write operation.
         List<Router> newRouters = new CopyOnWriteArrayList<>();
         newRouters.addAll(builtinRouters);
         newRouters.addAll(routers);
+        CollectionUtils.sort(routers);
         this.routers = newRouters;
-        this.sort();
     }
 
     private void sort() {
@@ -110,9 +106,7 @@ public class RouterChain<T> {
      * Notify whenever addresses in registry change.
      */
     public void setInvokers(List<Invoker<T>> invokers) {
-        if (invokers != null) {
-            this.invokers = invokers;
-            routers.forEach(router -> router.notify(invokers));
-        }
+        this.invokers = (invokers == null ? Collections.emptyList() : invokers);
+        routers.forEach(router -> router.notify(this.invokers));
     }
 }

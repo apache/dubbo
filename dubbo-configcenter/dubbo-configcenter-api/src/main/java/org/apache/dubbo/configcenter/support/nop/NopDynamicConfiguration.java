@@ -17,7 +17,6 @@
 package org.apache.dubbo.configcenter.support.nop;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.configcenter.AbstractDynamicConfiguration;
 import org.apache.dubbo.configcenter.ConfigurationListener;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 
@@ -25,42 +24,30 @@ import org.apache.dubbo.configcenter.DynamicConfiguration;
  * The default extension of {@link DynamicConfiguration}. If user does not specify a config centre, or specifies one
  * that is not a valid extension, it will default to this one.
  */
-public class NopDynamicConfiguration extends AbstractDynamicConfiguration {
-
-    NopDynamicConfiguration() {
-    }
+public class NopDynamicConfiguration implements DynamicConfiguration {
 
     public NopDynamicConfiguration(URL url) {
-        super(url);
+        // no-op
     }
 
-    @Override
-    protected void initWith(URL url) {
-
-    }
 
     @Override
-    protected String getTargetConfig(String key, String group, long timeout) {
+    public Object getInternalProperty(String key) {
         return null;
     }
 
     @Override
-    protected void addConfigurationListener(String key, String group, Object targetListener, ConfigurationListener configurationListener) {
+    public void addListener(String key, String group, ConfigurationListener listener) {
         // no-op
     }
 
     @Override
-    protected void removeConfigurationListener(String key, String group, Object o, ConfigurationListener configurationListener) {
-
+    public void removeListener(String key, String group, ConfigurationListener listener) {
+        // no-op
     }
 
     @Override
-    protected Object createTargetListener(String key, String group) {
-        return null;
-    }
-
-    @Override
-    protected Object getInternalProperty(String key) {
+    public String getConfig(String key, String group, long timeout) throws IllegalStateException {
         return null;
     }
 }

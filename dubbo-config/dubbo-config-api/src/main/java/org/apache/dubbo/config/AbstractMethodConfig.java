@@ -98,7 +98,7 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
     }
 
     public void setLoadbalance(String loadbalance) {
-        checkExtension(LoadBalance.class, "loadbalance", loadbalance);
+        checkExtension(LoadBalance.class, Constants.LOADBALANCE_KEY, loadbalance);
         this.loadbalance = loadbalance;
     }
 
@@ -137,11 +137,11 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
         }
 
         if (mock.startsWith(Constants.RETURN_PREFIX) || mock.startsWith(Constants.THROW_PREFIX + " ")) {
-            checkLength("mock", mock);
+            checkLength(Constants.MOCK_KEY, mock);
         } else if (mock.startsWith(Constants.FAIL_PREFIX) || mock.startsWith(Constants.FORCE_PREFIX)) {
-            checkNameHasSymbol("mock", mock);
+            checkNameHasSymbol(Constants.MOCK_KEY, mock);
         } else {
-            checkName("mock", mock);
+            checkName(Constants.MOCK_KEY, mock);
         }
         this.mock = mock;
     }
