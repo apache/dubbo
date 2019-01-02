@@ -75,10 +75,7 @@ public interface Configuration {
      */
     default Object getProperty(String key, Object defaultValue) {
         Object value = getInternalProperty(key);
-        if (value == null) {
-            value = defaultValue;
-        }
-        return value;
+        return value != null ? value : defaultValue;
     }
 
     Object getInternalProperty(String key);

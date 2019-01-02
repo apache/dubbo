@@ -44,12 +44,10 @@ public abstract class AbstractPrefixConfiguration implements Configuration {
         if (value == null && StringUtils.isNotEmpty(prefix)) {
             value = getInternalProperty(prefix + key);
         }
+
         if (value == null) {
             value = getInternalProperty(key);
-            if (value == null) {
-                value = defaultValue;
-            }
         }
-        return value;
+        return value != null ? value : defaultValue;
     }
 }
