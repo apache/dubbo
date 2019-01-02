@@ -163,10 +163,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     private static Integer getRandomPort(String protocol) {
         protocol = protocol.toLowerCase();
-        if (RANDOM_PORT_MAP.containsKey(protocol)) {
-            return RANDOM_PORT_MAP.get(protocol);
-        }
-        return Integer.MIN_VALUE;
+        return RANDOM_PORT_MAP.getOrDefault(protocol, Integer.MIN_VALUE);
     }
 
     private static void putRandomPort(String protocol, Integer port) {
@@ -198,37 +195,13 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     public void checkAndUpdateSubConfigs() {
         checkDefault();
         if (provider != null) {
-            if (application == null) {
-                application = provider.getApplication();
-            }
-            if (module == null) {
-                module = provider.getModule();
-            }
-            if (registries == null) {
-                registries = provider.getRegistries();
-            }
-            if (monitor == null) {
-                monitor = provider.getMonitor();
-            }
-            if (protocols == null) {
-                protocols = provider.getProtocols();
-            }
+            inheritIfAbsentFromProvider();
         }
         if (module != null) {
-            if (registries == null) {
-                registries = module.getRegistries();
-            }
-            if (monitor == null) {
-                monitor = module.getMonitor();
-            }
+            inheritIfAbsentFromModule();
         }
         if (application != null) {
-            if (registries == null) {
-                registries = application.getRegistries();
-            }
-            if (monitor == null) {
-                monitor = application.getMonitor();
-            }
+            inheritIfAbsentFromApplication();
         }
 
         checkApplication();
@@ -372,7 +345,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
         String name = protocolConfig.getName();
         if (name == null || name.length() == 0) {
-            name = "dubbo";
+            name = Constants.DUBBO;
         }
 
         Map<String, String> map = new HashMap<String, String>();
@@ -550,6 +523,42 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     proxyFactory.getInvoker(ref, (Class) interfaceClass, local));
             exporters.add(exporter);
             logger.info("Export dubbo service " + interfaceClass.getName() + " to local registry");
+        }
+    }
+
+    private void inheritIfAbsentFromProvider() {
+        if (application == null) {
+            application = provider.getApplication();
+        }
+        if (module == null) {
+            module = provider.getModule();
+        }
+        if (registries == null) {
+            registries = provider.getRegistries();
+        }
+        if (monitor == null) {
+            monitor = provider.getMonitor();
+        }
+        if (protocols == null) {
+            protocols = provider.getProtocols();
+        }
+    }
+
+    private void inheritIfAbsentFromModule() {
+        if (registries == null) {
+            registries = module.getRegistries();
+        }
+        if (monitor == null) {
+            monitor = module.getMonitor();
+        }
+    }
+
+    private void inheritIfAbsentFromApplication() {
+        if (registries == null) {
+            registries = application.getRegistries();
+        }
+        if (monitor == null) {
+            monitor = application.getMonitor();
         }
     }
 
