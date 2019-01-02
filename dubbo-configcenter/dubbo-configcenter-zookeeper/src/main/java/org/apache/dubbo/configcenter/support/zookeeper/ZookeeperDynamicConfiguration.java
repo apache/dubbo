@@ -20,8 +20,8 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.configcenter.AbstractDynamicConfiguration;
 import org.apache.dubbo.configcenter.ConfigurationListener;
+import org.apache.dubbo.configcenter.DynamicConfiguration;
 
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
@@ -43,7 +43,7 @@ import static org.apache.dubbo.common.Constants.CONFIG_NAMESPACE_KEY;
 /**
  *
  */
-public class ZookeeperDynamicConfiguration extends AbstractDynamicConfiguration<CacheListener> {
+public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperDynamicConfiguration.class);
     private Executor executor;
     private CuratorFramework client;
@@ -54,15 +54,11 @@ public class ZookeeperDynamicConfiguration extends AbstractDynamicConfiguration<
     private CountDownLatch initializedLatch;
 
     private CacheListener cacheListener;
+    private URL url;
 
-    ZookeeperDynamicConfiguration() {
-    }
 
     ZookeeperDynamicConfiguration(URL url) {
-        super(url);
-    }
-
-    protected void initWith(URL url) {
+        this.url = url;
         rootPath = "/" + url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP) + "/config";
 
         RetryPolicy policy = new ExponentialBackoffRetry(1000, 3);
@@ -98,8 +94,34 @@ public class ZookeeperDynamicConfiguration extends AbstractDynamicConfiguration<
         }
     }
 
+    /**
+     * @param key e.g., {service}.configurators, {service}.tagrouters, {group}.dubbo.properties
+     * @return
+     */
     @Override
-    protected String getTargetConfig(String key, String group, long timeout) {
+    public Object getInternalProperty(String key) {
+        ChildData childData = treeCache.getCurrentData(key);
+        if (childData != null) {
+            return new String(childData.getData(), StandardCharsets.UTF_8);
+        }
+        return null;
+    }
+
+    /**
+     * For service governance, multi group is not supported by this implementation. So group is not used at present.
+     */
+    @Override
+    public void addListener(String key, String group, ConfigurationListener listener) {
+        cacheListener.addListener(key, listener);
+    }
+
+    @Override
+    public void removeListener(String key, String group, ConfigurationListener listener) {
+        cacheListener.removeListener(key, listener);
+    }
+
+    @Override
+    public String getConfig(String key, String group, long timeout) throws IllegalStateException {
         // when group is not null, we are getting startup configs from Config Center
         // for example, group=dubbo, key=dubbo.properties
         if (StringUtils.isNotEmpty(group)) {
@@ -113,42 +135,6 @@ public class ZookeeperDynamicConfiguration extends AbstractDynamicConfiguration<
         }
 
         return (String) getInternalProperty(rootPath + "/" + key);
-    }
-
-    /**
-     * For service governance, multi group is not supported by this implementation. So group is not used at present.
-     *
-     * @param key
-     * @param group
-     * @param cacheListener
-     * @param listener
-     */
-    @Override
-    protected void addConfigurationListener(String key, String group, CacheListener cacheListener, ConfigurationListener listener) {
-        cacheListener.addListener(key, listener);
-    }
-
-    @Override
-    protected void removeConfigurationListener(String key, String group, CacheListener cacheListener, ConfigurationListener configurationListener) {
-        cacheListener.removeListener(key, configurationListener);
-    }
-
-    @Override
-    protected CacheListener createTargetListener(String key, String group) {
-        return cacheListener;
-    }
-
-    /**
-     * @param key e.g., {service}.configurators, {service}.tagrouters, {group}.dubbo.properties
-     * @return
-     */
-    @Override
-    protected Object getInternalProperty(String key) {
-        ChildData childData = treeCache.getCurrentData(key);
-        if (childData != null) {
-            return new String(childData.getData(), StandardCharsets.UTF_8);
-        }
-        return null;
     }
 
     /**

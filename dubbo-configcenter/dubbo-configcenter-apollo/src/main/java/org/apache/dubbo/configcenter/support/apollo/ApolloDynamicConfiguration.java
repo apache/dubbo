@@ -21,10 +21,10 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.configcenter.AbstractDynamicConfiguration;
 import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.ConfigChangeType;
 import org.apache.dubbo.configcenter.ConfigurationListener;
+import org.apache.dubbo.configcenter.DynamicConfiguration;
 
 import com.ctrip.framework.apollo.Config;
 import com.ctrip.framework.apollo.ConfigChangeListener;
@@ -34,28 +34,25 @@ import com.ctrip.framework.apollo.enums.PropertyChangeType;
 import com.ctrip.framework.apollo.model.ConfigChange;
 
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * Apollo implementation, https://github.com/ctripcorp/apollo
  */
-public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<ApolloDynamicConfiguration.ApolloListener> {
+public class ApolloDynamicConfiguration implements DynamicConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(ApolloDynamicConfiguration.class);
     private static final String APOLLO_ENV_KEY = "env";
     private static final String APOLLO_ADDR_KEY = "apollo.meta";
     private static final String APOLLO_CLUSTER_KEY = "apollo.cluster";
 
+    private URL url;
     private Config dubboConfig;
-
-    ApolloDynamicConfiguration() {
-    }
+    private ConcurrentMap<String, ApolloListener> listeners = new ConcurrentHashMap<>();
 
     ApolloDynamicConfiguration(URL url) {
-        super(url);
-    }
-
-    @Override
-    public void initWith(URL url) {
+        this.url = url;
         // Instead of using Dubbo's configuration, I would suggest use the original configuration method Apollo provides.
         String configEnv = url.getParameter(APOLLO_ENV_KEY);
         String configAddr = url.getBackupAddress();
@@ -86,12 +83,34 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Apo
     }
 
     /**
+     * Since all governance rules will lay under dubbo group, this method now always uses the default dubboConfig and
+     * ignores the group parameter.
+     */
+    @Override
+    public void addListener(String key, String group, ConfigurationListener listener) {
+        ApolloListener apolloListener = listeners.computeIfAbsent(group + key, k -> createTargetListener(key, group));
+        apolloListener.addListener(listener);
+        dubboConfig.addChangeListener(apolloListener);
+    }
+
+    @Override
+    public void removeListener(String key, String group, ConfigurationListener listener) {
+        ApolloListener apolloListener = listeners.get(group + key);
+        if (apolloListener != null) {
+            apolloListener.removeListener(listener);
+            if (!apolloListener.hasInternalListener()) {
+                dubboConfig.removeChangeListener(apolloListener);
+            }
+        }
+    }
+
+    /**
      * This method will be used to:
      * 1. get configuration file at startup phase
      * 2. get all kinds of Dubbo rules
      */
     @Override
-    protected String getTargetConfig(String key, String group, long timeout) {
+    public String getConfig(String key, String group, long timeout) throws IllegalStateException {
         if (StringUtils.isNotEmpty(group) && !url.getParameter(Constants.CONFIG_GROUP_KEY, DEFAULT_GROUP).equals(group)) {
             Config config = ConfigService.getConfig(group);
             if (config != null) {
@@ -108,40 +127,19 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Apo
      * But I think Apollo's inheritance feature of namespace can solve the problem .
      */
     @Override
-    protected String getInternalProperty(String key) {
+    public String getInternalProperty(String key) {
         return dubboConfig.getProperty(key, null);
     }
 
-    /**
-     * Since all governance rules will lay under dubbo group, this method now always uses the default dubboConfig and ignores the group parameter.
-     *
-     * @param key                   property key the native listener will listen on
-     * @param group                 to distinguish different set of properties
-     * @param listener
-     * @param configurationListener Listener in Dubbo that will handle notification.
-     */
-    @Override
-    protected void addConfigurationListener(String key, String group, ApolloListener listener, ConfigurationListener configurationListener) {
-        listener.addListener(configurationListener);
-        this.dubboConfig.addChangeListener(listener);
-    }
-
-    @Override
-    protected void removeConfigurationListener(String key, String group, ApolloListener listener, ConfigurationListener configurationListener) {
-        listener.removeListener(configurationListener);
-        if (!listener.hasInternalListener()) {
-            dubboConfig.removeChangeListener(listener);
-        }
-    }
 
     /**
      * Ignores the group parameter.
-     * @param key      property key the native listener will listen on
-     * @param group    to distinguish different set of properties
+     *
+     * @param key   property key the native listener will listen on
+     * @param group to distinguish different set of properties
      * @return
      */
-    @Override
-    protected ApolloListener createTargetListener(String key, String group) {
+    private ApolloListener createTargetListener(String key, String group) {
         return new ApolloListener();
     }
 
@@ -162,8 +160,10 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Apo
                     return;
                 }
 
-                listeners.forEach(
-                        listener -> listener.process(new ConfigChangeEvent(key, change.getNewValue(), getChangeType(change)))
+                listeners.forEach(listener -> {
+                            ConfigChangeEvent event = new ConfigChangeEvent(key, change.getNewValue(), getChangeType(change));
+                            listener.process(event);
+                        }
                 );
             }
         }
@@ -175,15 +175,15 @@ public class ApolloDynamicConfiguration extends AbstractDynamicConfiguration<Apo
             return ConfigChangeType.MODIFIED;
         }
 
-        public void addListener(ConfigurationListener configurationListener) {
+        void addListener(ConfigurationListener configurationListener) {
             this.listeners.add(configurationListener);
         }
 
-        public void removeListener(ConfigurationListener configurationListener) {
+        void removeListener(ConfigurationListener configurationListener) {
             this.listeners.remove(configurationListener);
         }
 
-        public boolean hasInternalListener() {
+        boolean hasInternalListener() {
             return listeners != null && listeners.size() > 0;
         }
     }
