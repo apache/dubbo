@@ -291,20 +291,6 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
-    /**
-     * We only check boolean value at this moment.
-     *
-     * @param type
-     * @param value
-     * @return
-     */
-    private static boolean isTypeMatch(Class<?> type, String value) {
-        if ((type == boolean.class || type == Boolean.class)
-                && !("true".equals(value) || "false".equals(value))) {
-            return false;
-        }
-        return true;
-    }
 
     protected static void checkExtension(Class<?> type, String property, String value) {
         checkName(property, value);
