@@ -23,7 +23,7 @@ import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test;
  * <p>
  * mvn clean test -Dtest=*PerformanceClientTest -Dserver=10.20.153.187:9911
  */
-public class ChanelHandlerTest extends TestCase {
+public class ChanelHandlerTest  {
 
     private static final Logger logger = LoggerFactory.getLogger(ChanelHandlerTest.class);
 

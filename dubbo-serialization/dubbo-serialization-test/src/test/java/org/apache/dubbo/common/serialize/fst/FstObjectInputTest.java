@@ -17,6 +17,8 @@
 package org.apache.dubbo.common.serialize.fst;
 
 import org.apache.dubbo.common.serialize.model.person.FullAddress;
+
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
@@ -28,11 +30,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class FstObjectInputTest {
     private FstObjectInput fstObjectInput;
 
-    @Test(expected = IOException.class)
+    @Test
     public void testWrongClassInput() throws IOException, ClassNotFoundException {
-        this.fstObjectInput = new FstObjectInput(new ByteArrayInputStream("{animal: 'cat'}".getBytes()));
+        Assertions.assertThrows(IOException.class, () -> {
+            this.fstObjectInput = new FstObjectInput(new ByteArrayInputStream("{animal: 'cat'}".getBytes()));
 
-        fstObjectInput.readObject(FullAddress.class);
+            fstObjectInput.readObject(FullAddress.class);
+        });
     }
 
     @Test

@@ -23,29 +23,29 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.p2p.Group;
 import org.apache.dubbo.remoting.p2p.Peer;
 import org.apache.dubbo.remoting.transport.ChannelHandlerAdapter;
+
+import io.github.glytching.junit.extension.folder.TemporaryFolder;
+import io.github.glytching.junit.extension.folder.TemporaryFolderExtension;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static org.mockito.Mockito.mock;
-
+@ExtendWith(TemporaryFolderExtension.class)
 public class FileNetworkerTest {
-    @Rule
-    public TemporaryFolder folder = new TemporaryFolder();
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setUp(TemporaryFolder folder) throws Exception {
         folder.create();
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
+    public void tearDown(TemporaryFolder folder) throws Exception {
         folder.delete();
     }
 

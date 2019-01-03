@@ -90,9 +90,9 @@ public class ClientReconnectTest {
         }
         Thread.sleep(1500);
         //Time is not long enough to produce a error log
-        Assertions.assertEquals("no error message ", 0, LogUtil.findMessage(Level.ERROR, "client reconnect to "));
+        Assertions.assertEquals(0, LogUtil.findMessage(Level.ERROR, "client reconnect to "), "no error message ");
         //The first reconnection failed to have a warn log
-        Assertions.assertEquals("must have one warn message ", 1, LogUtil.findMessage(Level.WARN, "client reconnect to "));
+        Assertions.assertEquals(1, LogUtil.findMessage(Level.WARN, "client reconnect to "), "must have one warn message ");
         DubboAppender.doStop();
     }
 

@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.http.HttpHandler;
 import org.apache.dubbo.remoting.http.HttpServer;
+
 import org.apache.http.client.fluent.Request;
 import org.junit.jupiter.api.Test;
 
@@ -28,7 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-import static org.hamcrest.MatcherAssertions.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
 public class TomcatHttpBinderTest {

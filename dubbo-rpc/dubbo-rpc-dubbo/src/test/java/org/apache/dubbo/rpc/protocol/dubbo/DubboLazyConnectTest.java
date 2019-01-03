@@ -22,6 +22,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,10 +47,12 @@ public class DubboLazyConnectTest {
         ProtocolUtils.closeAll();
     }
 
-    @Test(expected = RpcException.class)
+    @Test
     public void testSticky1() {
-        URL url = URL.valueOf("dubbo://127.0.0.1:9090/org.apache.dubbo.rpc.protocol.dubbo.IDemoService");
-        ProtocolUtils.refer(IDemoService.class, url);
+        Assertions.assertThrows(RpcException.class, () -> {
+            URL url = URL.valueOf("dubbo://127.0.0.1:9090/org.apache.dubbo.rpc.protocol.dubbo.IDemoService");
+            ProtocolUtils.refer(IDemoService.class, url);
+        });
     }
 
     @Test
@@ -58,11 +61,13 @@ public class DubboLazyConnectTest {
         ProtocolUtils.refer(IDemoService.class, url);
     }
 
-    @Test(expected = RpcException.class)
+    @Test
     public void testSticky3() {
-        URL url = URL.valueOf("dubbo://127.0.0.1:9090/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?" + Constants.LAZY_CONNECT_KEY + "=true");
-        IDemoService service = (IDemoService) ProtocolUtils.refer(IDemoService.class, url);
-        service.get();
+        Assertions.assertThrows(RpcException.class, () -> {
+            URL url = URL.valueOf("dubbo://127.0.0.1:9090/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?" + Constants.LAZY_CONNECT_KEY + "=true");
+            IDemoService service = (IDemoService) ProtocolUtils.refer(IDemoService.class, url);
+            service.get();
+        });
     }
 
     @Test

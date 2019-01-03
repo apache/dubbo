@@ -61,7 +61,7 @@ public class AbstractConfigTest {
             Assertions.assertEquals(5L, config.getL());
             Assertions.assertEquals(6, config.getS());
             Assertions.assertEquals("dubbo", config.getStr());
-            TestCase.assertTrue(config.isBool());
+            Assertions.assertTrue(config.isBool());
         } finally {
             System.clearProperty("dubbo.properties.i");
             System.clearProperty("dubbo.properties.c");

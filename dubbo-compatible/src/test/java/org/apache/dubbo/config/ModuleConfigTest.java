@@ -21,6 +21,7 @@ import com.alibaba.dubbo.config.ModuleConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -35,11 +36,13 @@ import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class ModuleConfigTest {
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testName1() throws Exception {
-        ModuleConfig module = new ModuleConfig();
-        Map<String, String> parameters = new HashMap<String, String>();
-        ModuleConfig.appendParameters(parameters, module);
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            ModuleConfig module = new ModuleConfig();
+            Map<String, String> parameters = new HashMap<String, String>();
+            ModuleConfig.appendParameters(parameters, module);
+        });
     }
 
     @Test

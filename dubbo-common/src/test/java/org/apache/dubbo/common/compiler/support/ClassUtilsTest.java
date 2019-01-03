@@ -20,7 +20,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Collection;

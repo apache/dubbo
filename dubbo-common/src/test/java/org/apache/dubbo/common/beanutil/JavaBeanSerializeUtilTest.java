@@ -35,7 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class JavaBeanSerializeUtilTest {
+    public class JavaBeanSerializeUtilTest {
 
     @Test
     public void testSerialize_Primitive() throws Exception {

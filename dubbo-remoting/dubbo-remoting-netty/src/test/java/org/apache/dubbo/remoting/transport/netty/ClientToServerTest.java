@@ -23,13 +23,13 @@ import org.apache.dubbo.remoting.exchange.ResponseFuture;
 import org.apache.dubbo.remoting.exchange.support.Replier;
 
 import org.junit.jupiter.api.Assertions;
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
  * ClientToServer
  */
-public abstract class ClientToServerTest extends TestCase {
+public abstract class ClientToServerTest  {
 
     protected static final String LOCALHOST = "127.0.0.1";
 
@@ -43,17 +43,17 @@ public abstract class ClientToServerTest extends TestCase {
 
     protected abstract ExchangeChannel newClient(int port) throws RemotingException;
 
-    @Override
+//    @Override
     protected void setUp() throws Exception {
-        super.setUp();
+//        super.setUp();
         int port = (int) (1000 * Math.random() + 10000);
         server = newServer(port, handler);
         client = newClient(port);
     }
 
-    @Override
+//    @Override
     protected void tearDown() throws Exception {
-        super.tearDown();
+//        super.tearDown();
         try {
             if (server != null)
                 server.close();

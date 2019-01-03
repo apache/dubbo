@@ -61,7 +61,7 @@ public class FailoverClusterInvokerTest {
      * @throws java.lang.Exception
      */
 
-    @BeforeEachEach
+    @BeforeEach
     public void setUp() throws Exception {
 
         dic = mock(Directory.class);

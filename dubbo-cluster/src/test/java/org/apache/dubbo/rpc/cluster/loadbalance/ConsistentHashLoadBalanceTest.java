@@ -28,27 +28,27 @@ import java.util.concurrent.atomic.AtomicLong;
 @SuppressWarnings("rawtypes")
 public class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
 
-	@Test
-	public void testConsistentHashLoadBalance() {
-		int runs = 10000;
-		long unHitedInvokerCount = 0;
-		Map<Invoker, Long> hitedInvokers = new HashMap<>();
-		Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, ConsistentHashLoadBalance.NAME);
-		for (Invoker minvoker : counter.keySet()) {
-			Long count = counter.get(minvoker).get();
+    @Test
+    public void testConsistentHashLoadBalance() {
+        int runs = 10000;
+        long unHitedInvokerCount = 0;
+        Map<Invoker, Long> hitedInvokers = new HashMap<>();
+        Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, ConsistentHashLoadBalance.NAME);
+        for (Invoker minvoker : counter.keySet()) {
+            Long count = counter.get(minvoker).get();
 
-			if (count == 0) {
-				unHitedInvokerCount++;
-			} else {
-				hitedInvokers.put(minvoker, count);
-			}
-		}
+            if (count == 0) {
+                unHitedInvokerCount++;
+            } else {
+                hitedInvokers.put(minvoker, count);
+            }
+        }
 
-		Assertions.assertEquals("the number of unHitedInvoker should be counter.size() - 1", counter.size() - 1,
-				unHitedInvokerCount);
-		Assertions.assertEquals("the number of hitedInvoker should be 1", 1, hitedInvokers.size());
-		Assertions.assertEquals("the number of hited count should be the number of runs", runs,
-				hitedInvokers.values().iterator().next().intValue());
-	}
+        Assertions.assertEquals(counter.size() - 1,
+                unHitedInvokerCount, "the number of unHitedInvoker should be counter.size() - 1");
+        Assertions.assertEquals(1, hitedInvokers.size(), "the number of hitedInvoker should be 1");
+        Assertions.assertEquals(runs,
+                hitedInvokers.values().iterator().next().intValue(), "the number of hited count should be the number of runs");
+    }
 
 }

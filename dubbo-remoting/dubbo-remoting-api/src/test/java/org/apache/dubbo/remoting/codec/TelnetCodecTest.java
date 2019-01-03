@@ -174,7 +174,7 @@ public class TelnetCodecTest {
         if (isNeedmore) {
             Assertions.assertEquals(Codec2.DecodeResult.NEED_MORE_INPUT, obj);
         } else {
-            Assertions.assertTrue("return must string ", obj instanceof String);
+            Assertions.assertTrue(obj instanceof String, "return must string ");
         }
     }
 
@@ -254,11 +254,13 @@ public class TelnetCodecTest {
         testDecode_assertEquals(new byte[]{'a', 'x', -1, 'x', '\b'}, Codec2.DecodeResult.NEED_MORE_INPUT, new String(new byte[]{32, 32, 8, 8}));
     }
 
-    @Test(expected = IOException.class)
+    @Test
     public void testDecode_Backspace_WithError() throws IOException {
-        url = url.addParameter(AbstractMockChannel.ERROR_WHEN_SEND, Boolean.TRUE.toString());
-        testDecode_Backspace();
-        url = url.removeParameter(AbstractMockChannel.ERROR_WHEN_SEND);
+        Assertions.assertThrows(IOException.class, () -> {
+            url = url.addParameter(AbstractMockChannel.ERROR_WHEN_SEND, Boolean.TRUE.toString());
+            testDecode_Backspace();
+            url = url.removeParameter(AbstractMockChannel.ERROR_WHEN_SEND);
+        });
     }
 
     @Test()
@@ -276,23 +278,25 @@ public class TelnetCodecTest {
         testDecode_assertEquals(channel, UP, Codec2.DecodeResult.NEED_MORE_INPUT, expected1);
     }
 
-    @Test(expected = IOException.class)
+    @Test
     public void testDecode_UPorDOWN_WithError() throws IOException {
-        url = url.addParameter(AbstractMockChannel.ERROR_WHEN_SEND, Boolean.TRUE.toString());
+        Assertions.assertThrows(IOException.class, () -> {
+            url = url.addParameter(AbstractMockChannel.ERROR_WHEN_SEND, Boolean.TRUE.toString());
 
-        //init channel
-        AbstractMockChannel channel = getServerSideChannel(url);
+            //init channel
+            AbstractMockChannel channel = getServerSideChannel(url);
 
-        testDecode_assertEquals(channel, UP, Codec2.DecodeResult.NEED_MORE_INPUT, null);
+            testDecode_assertEquals(channel, UP, Codec2.DecodeResult.NEED_MORE_INPUT, null);
 
-        String request1 = "aaa\n";
-        Object expected1 = "aaa";
-        //init history
-        testDecode_assertEquals(channel, request1, expected1, null);
+            String request1 = "aaa\n";
+            Object expected1 = "aaa";
+            //init history
+            testDecode_assertEquals(channel, request1, expected1, null);
 
-        testDecode_assertEquals(channel, UP, Codec2.DecodeResult.NEED_MORE_INPUT, expected1);
+            testDecode_assertEquals(channel, UP, Codec2.DecodeResult.NEED_MORE_INPUT, expected1);
 
-        url = url.removeParameter(AbstractMockChannel.ERROR_WHEN_SEND);
+            url = url.removeParameter(AbstractMockChannel.ERROR_WHEN_SEND);
+        });
     }
 
     //=============================================================================================================================

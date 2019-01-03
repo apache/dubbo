@@ -22,6 +22,7 @@ import com.alibaba.dubbo.config.ApplicationConfig;
 import com.alibaba.dubbo.config.MonitorConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -91,10 +92,12 @@ public class ApplicationConfigTest {
         assertThat(application.getEnvironment(), equalTo("product"));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testEnvironment2() throws Exception {
-        ApplicationConfig application = new ApplicationConfig("app");
-        application.setEnvironment("illegal-env");
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            ApplicationConfig application = new ApplicationConfig("app");
+            application.setEnvironment("illegal-env");
+        });
     }
 
     @Test

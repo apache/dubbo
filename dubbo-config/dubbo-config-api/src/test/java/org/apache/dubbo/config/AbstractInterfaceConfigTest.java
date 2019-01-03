@@ -18,6 +18,7 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.folder.TemporaryFolder;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.mock.GreetingLocal1;
@@ -44,7 +45,6 @@ import java.util.List;
 import java.util.Properties;
 @EnableRuleMigrationSupport
 public class AbstractInterfaceConfigTest {
-    @Rule
     public static TemporaryFolder tempDir = new TemporaryFolder();
     private static File dubboProperties;
 

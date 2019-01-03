@@ -43,7 +43,7 @@ public class MockClusterInvokerTest {
 
     List<Invoker<IHelloService>> invokers = new ArrayList<Invoker<IHelloService>>();
 
-    @BeforeEachEach
+    @BeforeEach
     public void beforeMethod() {
         invokers.clear();
     }
@@ -451,7 +451,7 @@ public class MockClusterInvokerTest {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
         Result ret = cluster.invoke(invocation);
-        Assertions.assertTrue("result type must be String but was : " + ret.getValue().getClass(), ret.getValue() instanceof String);
+        Assertions.assertTrue(ret.getValue() instanceof String, "result type must be String but was : " + ret.getValue().getClass());
         Assertions.assertEquals("1688", (String) ret.getValue());
     }
 
@@ -465,7 +465,7 @@ public class MockClusterInvokerTest {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getInt1");
         Result ret = cluster.invoke(invocation);
-        Assertions.assertTrue("result type must be integer but was : " + ret.getValue().getClass(), ret.getValue() instanceof Integer);
+        Assertions.assertTrue(ret.getValue() instanceof Integer, "result type must be integer but was : " + ret.getValue().getClass());
         Assertions.assertEquals(new Integer(1688), (Integer) ret.getValue());
     }
 
@@ -479,7 +479,7 @@ public class MockClusterInvokerTest {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getBoolean1");
         Result ret = cluster.invoke(invocation);
-        Assertions.assertTrue("result type must be Boolean but was : " + ret.getValue().getClass(), ret.getValue() instanceof Boolean);
+        Assertions.assertTrue(ret.getValue() instanceof Boolean, "result type must be Boolean but was : " + ret.getValue().getClass());
         Assertions.assertEquals(true, Boolean.parseBoolean(ret.getValue().toString()));
     }
 
@@ -585,7 +585,7 @@ public class MockClusterInvokerTest {
             cluster.invoke(invocation);
             Assertions.fail();
         } catch (RpcException e) {
-            Assertions.assertFalse("not custem exception", e.isBiz());
+            Assertions.assertFalse(e.isBiz(), "not custem exception");
         }
     }
 

@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -276,33 +277,37 @@ public class ImplicitCallBackTest {
         destroyService();
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void test_Async_Future_Ex() throws Throwable {
-        try {
-            initOrResetUrl(true);
+        Assertions.assertThrows(RuntimeException.class, () -> {
+            try {
+                initOrResetUrl(true);
+                initOrResetExService();
+
+                int requestId = 2;
+                Person ret = demoProxy.get(requestId);
+                Assertions.assertEquals(null, ret);
+                Future<Person> pFuture = RpcContext.getContext().getFuture();
+                ret = pFuture.get(1000 * 1000, TimeUnit.MICROSECONDS);
+                Assertions.assertEquals(requestId, ret.getId());
+            } catch (ExecutionException e) {
+                throw e.getCause();
+            } finally {
+                destroyService();
+            }
+        });
+    }
+
+    @Test
+    public void test_Normal_Ex() throws Exception {
+        Assertions.assertThrows(RuntimeException.class, () -> {
+            initOrResetUrl(false);
             initOrResetExService();
 
             int requestId = 2;
             Person ret = demoProxy.get(requestId);
-            Assertions.assertEquals(null, ret);
-            Future<Person> pFuture = RpcContext.getContext().getFuture();
-            ret = pFuture.get(1000 * 1000, TimeUnit.MICROSECONDS);
             Assertions.assertEquals(requestId, ret.getId());
-        } catch (ExecutionException e) {
-            throw e.getCause();
-        } finally {
-            destroyService();
-        }
-    }
-
-    @Test(expected = RuntimeException.class)
-    public void test_Normal_Ex() throws Exception {
-        initOrResetUrl(false);
-        initOrResetExService();
-
-        int requestId = 2;
-        Person ret = demoProxy.get(requestId);
-        Assertions.assertEquals(requestId, ret.getId());
+        });
     }
 
     interface Nofify {

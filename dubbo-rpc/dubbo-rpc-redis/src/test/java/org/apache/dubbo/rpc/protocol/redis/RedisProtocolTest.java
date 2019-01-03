@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.redis;
 
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -27,13 +26,13 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcResult;
+
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.TestInfo;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -41,7 +40,6 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.embedded.RedisServer;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -53,16 +51,13 @@ public class RedisProtocolTest {
     private RedisServer redisServer;
     private URL registryUrl;
 
-    @Rule
-    public TestName name = new TestName();
-
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setUp(TestInfo testInfo) throws Exception {
         int redisPort = NetUtils.getAvailablePort();
-        if (name.getMethodName().equals("testAuthRedis") || name.getMethodName().equals("testWrongAuthRedis")) {
+        if (testInfo.getTestMethod().equals("testAuthRedis") || testInfo.getTestMethod().equals("testWrongAuthRedis")) {
             String password = "123456";
             this.redisServer = RedisServer.builder().port(redisPort).setting("requirepass " + password).build();
-            this.registryUrl = URL.valueOf("redis://username:"+password+"@localhost:"+redisPort+"?db.index=0");
+            this.registryUrl = URL.valueOf("redis://username:" + password + "@localhost:" + redisPort + "?db.index=0");
         } else {
             this.redisServer = RedisServer.builder().port(redisPort).build();
             this.registryUrl = URL.valueOf("redis://localhost:" + redisPort);
@@ -105,33 +100,39 @@ public class RedisProtocolTest {
         refer.destroy();
     }
 
-    @Test(expected = RpcException.class)
+    @Test
     public void testUnsupportedMethod() {
-        Invoker<IDemoService> refer = protocol.refer(IDemoService.class, registryUrl);
-        IDemoService demoService = this.proxy.getProxy(refer);
+        Assertions.assertThrows(RpcException.class, () -> {
+            Invoker<IDemoService> refer = protocol.refer(IDemoService.class, registryUrl);
+            IDemoService demoService = this.proxy.getProxy(refer);
 
-        demoService.unsupported(null);
+            demoService.unsupported(null);
+        });
     }
 
-    @Test(expected = RpcException.class)
+    @Test
     public void testWrongParameters() {
-        Invoker<IDemoService> refer = protocol.refer(IDemoService.class, registryUrl);
-        IDemoService demoService = this.proxy.getProxy(refer);
+        Assertions.assertThrows(RpcException.class, () -> {
+            Invoker<IDemoService> refer = protocol.refer(IDemoService.class, registryUrl);
+            IDemoService demoService = this.proxy.getProxy(refer);
 
-        demoService.set("key", "value", "wrongValue");
+            demoService.set("key", "value", "wrongValue");
+        });
     }
 
-    @Test(expected = RpcException.class)
+    @Test
     public void testWrongRedis() {
-        Invoker<IDemoService> refer = protocol.refer(IDemoService.class, URL.valueOf("redis://localhost:1"));
-        IDemoService demoService = this.proxy.getProxy(refer);
+        Assertions.assertThrows(RpcException.class, () -> {
+            Invoker<IDemoService> refer = protocol.refer(IDemoService.class, URL.valueOf("redis://localhost:1"));
+            IDemoService demoService = this.proxy.getProxy(refer);
 
-        demoService.get("key");
+            demoService.get("key");
+        });
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void testExport() {
-        protocol.export(protocol.refer(IDemoService.class, registryUrl));
+        Assertions.assertThrows(UnsupportedOperationException.class, () -> protocol.export(protocol.refer(IDemoService.class, registryUrl)));
     }
 
     @Test
@@ -171,7 +172,7 @@ public class RedisProtocolTest {
         assertThat(value, is("newValue"));
 
         // jedis gets the result comparison
-        JedisPool pool = new JedisPool(new GenericObjectPoolConfig(), "localhost", registryUrl.getPort(), 2000, password, database, (String)null);
+        JedisPool pool = new JedisPool(new GenericObjectPoolConfig(), "localhost", registryUrl.getPort(), 2000, password, database, (String) null);
         Jedis jedis = null;
         try {
             jedis = pool.getResource();
@@ -180,7 +181,7 @@ public class RedisProtocolTest {
             ObjectInput oin = serialization.deserialize(this.registryUrl, new ByteArrayInputStream(valueByte));
             String actual = (String) oin.readObject();
             assertThat(value, is(actual));
-        } catch(Exception e) {
+        } catch (Exception e) {
             Assertions.fail("jedis gets the result comparison is error!");
         } finally {
             if (jedis != null) {
@@ -211,7 +212,7 @@ public class RedisProtocolTest {
             assertThat(value, is(nullValue()));
         } catch (RpcException e) {
             if (e.getCause() instanceof JedisConnectionException && e.getCause().getCause() instanceof JedisDataException) {
-                Assertions.assertEquals("ERR invalid password" , e.getCause().getCause().getMessage());
+                Assertions.assertEquals("ERR invalid password", e.getCause().getCause().getMessage());
             } else {
                 Assertions.fail("no invalid password exception!");
             }

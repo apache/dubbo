@@ -94,11 +94,13 @@ public class ConfigParserTest {
         Assertions.assertNotNull(url.getParameter(Constants.APPLICATION_KEY));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void parseConfiguratorsServiceNoRuleTest() {
-        InputStream yamlStream = this.getClass().getResourceAsStream("/ServiceNoRule.yml");
-        ConfigParser.parseConfigurators(streamToString(yamlStream));
-        Assertions.fail();
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            InputStream yamlStream = this.getClass().getResourceAsStream("/ServiceNoRule.yml");
+            ConfigParser.parseConfigurators(streamToString(yamlStream));
+            Assertions.fail();
+        });
     }
 
     @Test

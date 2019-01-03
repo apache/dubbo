@@ -69,24 +69,25 @@ public class ServerExceptionTest extends AbstractTest {
 
     }
 
-    @Test(expected = RpcException.class)
+    @Test
     public void testServerException() throws Exception {
+        Assertions.assertThrows(RpcException.class, () -> {
+            Assertions.assertNotNull(invoker);
 
-        Assertions.assertNotNull(invoker);
+            RpcInvocation invocation = new RpcInvocation();
 
-        RpcInvocation invocation = new RpcInvocation();
+            invocation.setMethodName("echoString");
 
-        invocation.setMethodName("echoString");
+            invocation.setParameterTypes(new Class<?>[]{String.class});
 
-        invocation.setParameterTypes(new Class<?>[]{String.class});
+            String arg = "Hello, World!";
 
-        String arg = "Hello, World!";
+            invocation.setArguments(new Object[]{arg});
 
-        invocation.setArguments(new Object[]{arg});
+            Result result = invoker.invoke(invocation);
 
-        Result result = invoker.invoke(invocation);
-
-        System.out.println(result);
+            System.out.println(result);
+        });
 
     }
 

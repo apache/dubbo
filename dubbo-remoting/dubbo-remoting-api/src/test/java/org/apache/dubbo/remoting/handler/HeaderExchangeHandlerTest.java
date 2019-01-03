@@ -90,9 +90,9 @@ public class HeaderExchangeHandlerTest {
         Assertions.assertEquals(1, count.get());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void test_received_request_twoway_error_nullhandler() throws RemotingException {
-        new HeaderExchangeHandler(null);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new HeaderExchangeHandler(null));
     }
 
     @Test

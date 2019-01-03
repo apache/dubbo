@@ -78,21 +78,21 @@ public class WrappedChannelHandlerTest {
         }
     }
 
-    @Test(expected = RemotingException.class)
+    @Test
     public void test_Connect_Biz_Error() throws RemotingException {
-        handler.connected(new MockedChannel());
+        Assertions.assertThrows(RemotingException.class, () -> handler.connected(new MockedChannel()));
     }
 
     ;
 
-    @Test(expected = RemotingException.class)
+    @Test
     public void test_Disconnect_Biz_Error() throws RemotingException {
-        handler.disconnected(new MockedChannel());
+        Assertions.assertThrows(RemotingException.class, () -> handler.disconnected(new MockedChannel()));
     }
 
-    @Test(expected = RemotingException.class)
+    @Test
     public void test_MessageReceived_Biz_Error() throws RemotingException {
-        handler.received(new MockedChannel(), "");
+        Assertions.assertThrows(RemotingException.class, () -> handler.received(new MockedChannel(), ""));
     }
 
     @Test
