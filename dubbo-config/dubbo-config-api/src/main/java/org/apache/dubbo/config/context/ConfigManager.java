@@ -29,6 +29,7 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -193,8 +194,16 @@ public class ConfigManager {
         return Optional.ofNullable(protocols.get(id));
     }
 
-    public Optional<ProtocolConfig> getDefaultProtocol() {
-        return Optional.ofNullable(protocols.get(DEFAULT_KEY));
+    public Optional<List<ProtocolConfig>> getDefaultProtocols() {
+        List<ProtocolConfig> defaults = new ArrayList<>();
+        protocols.forEach((k, v) -> {
+            if (DEFAULT_KEY.equalsIgnoreCase(k)) {
+                defaults.add(v);
+            } else if (v.isDefault() == null || v.isDefault()) {
+                defaults.add(v);
+            }
+        });
+        return Optional.of(defaults);
     }
 
     public void addProtocols(List<ProtocolConfig> protocolConfigs) {
@@ -228,8 +237,16 @@ public class ConfigManager {
         return Optional.ofNullable(registries.get(id));
     }
 
-    public Optional<RegistryConfig> getDefaultRegistry() {
-        return Optional.ofNullable(registries.get(DEFAULT_KEY));
+    public Optional<List<RegistryConfig>> getDefaultRegistries() {
+        List<RegistryConfig> defaults = new ArrayList<>();
+        registries.forEach((k, v) -> {
+            if (DEFAULT_KEY.equalsIgnoreCase(k)) {
+                defaults.add(v);
+            } else if (v.isDefault() == null || v.isDefault()) {
+                defaults.add(v);
+            }
+        });
+        return Optional.of(defaults);
     }
 
     public void addRegistries(List<RegistryConfig> registryConfigs) {

@@ -767,8 +767,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
         if (StringUtils.isEmpty(protocolIds)) {
             if (protocols == null || protocols.isEmpty()) {
-                protocols = new ArrayList<>();
-                protocols.add(ConfigManager.getInstance().getDefaultProtocol().orElse(new ProtocolConfig()));
+                protocols = ConfigManager.getInstance().getDefaultProtocols().orElse(Arrays.asList(new ProtocolConfig()));
             }
         } else {
             String[] arr = Constants.COMMA_SPLIT_PATTERN.split(protocolIds);

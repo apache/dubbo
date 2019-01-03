@@ -423,8 +423,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
         if (StringUtils.isEmpty(registryIds)) {
             if (registries == null || registries.isEmpty()) {
-                registries = new ArrayList<>();
-                registries.add(ConfigManager.getInstance().getDefaultRegistry().orElse(new RegistryConfig()));
+                registries = ConfigManager.getInstance().getDefaultRegistries().orElse(Arrays.asList(new RegistryConfig()));
             }
         } else {
             String[] arr = Constants.COMMA_SPLIT_PATTERN.split(registryIds);
