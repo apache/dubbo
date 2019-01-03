@@ -59,9 +59,9 @@ public class DubboConfigConfiguration {
             @EnableDubboConfigBinding(prefix = "dubbo.monitor", type = MonitorConfig.class),
             @EnableDubboConfigBinding(prefix = "dubbo.provider", type = ProviderConfig.class),
             @EnableDubboConfigBinding(prefix = "dubbo.consumer", type = ConsumerConfig.class),
-            @EnableDubboConfigBinding(prefix = "dubbo.configCenter", type = ConfigCenterBean.class),
-            @EnableDubboConfigBinding(prefix = "dubbo.registryData", type = RegistryDataConfig.class),
-            @EnableDubboConfigBinding(prefix = "dubbo.metadataReport", type = MetadataReportConfig.class)
+            @EnableDubboConfigBinding(prefix = "dubbo.config-center", type = ConfigCenterBean.class),
+            @EnableDubboConfigBinding(prefix = "dubbo.registry-data", type = RegistryDataConfig.class),
+            @EnableDubboConfigBinding(prefix = "dubbo.metadata-report", type = MetadataReportConfig.class)
     })
     public static class Single {
 
@@ -78,7 +78,7 @@ public class DubboConfigConfiguration {
             @EnableDubboConfigBinding(prefix = "dubbo.monitors", type = MonitorConfig.class, multiple = true),
             @EnableDubboConfigBinding(prefix = "dubbo.providers", type = ProviderConfig.class, multiple = true),
             @EnableDubboConfigBinding(prefix = "dubbo.consumers", type = ConsumerConfig.class, multiple = true),
-            @EnableDubboConfigBinding(prefix = "dubbo.configCenters", type = ConfigCenterBean.class, multiple = true)
+            @EnableDubboConfigBinding(prefix = "dubbo.config-centers", type = ConfigCenterBean.class, multiple = true)
     })
     public static class Multiple {
 

@@ -28,7 +28,7 @@ import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import java.util.Arrays;
 
 /**
- * ProviderConfig
+ * The service provider default configuration
  *
  * @export
  * @see org.apache.dubbo.config.ProtocolConfig
@@ -40,73 +40,119 @@ public class ProviderConfig extends AbstractServiceConfig {
 
     // ======== protocol default values, it'll take effect when protocol's attributes are not set ========
 
-    // service IP addresses (used when there are multiple network cards available)
+    /**
+     * Service ip addresses (used when there are multiple network cards available)
+     */
     private String host;
 
-    // service port
+    /**
+     * Service port
+     */
     private Integer port;
 
-    // context path
+    /**
+     * Context path
+     */
     private String contextpath;
 
-    // thread pool
+    /**
+     * Thread pool
+     */
     private String threadpool;
 
-    // thread pool size (fixed size)
+    /**
+     * Thread pool size (fixed size)
+     */
     private Integer threads;
 
-    // IO thread pool size (fixed size)
+    /**
+     * IO thread pool size (fixed size)
+     */
     private Integer iothreads;
 
-    // thread pool queue length
+    /**
+     * Thread pool queue length
+     */
     private Integer queues;
 
-    // max acceptable connections
+    /**
+     * Max acceptable connections
+     */
     private Integer accepts;
 
-    // protocol codec
+    /**
+     * Protocol codec
+     */
     private String codec;
 
-    // charset
+    /**
+     * The serialization charset
+     */
     private String charset;
 
-    // payload max length
+    /**
+     * Payload max length
+     */
     private Integer payload;
 
-    // buffer size
+    /**
+     * The network io buffer size
+     */
     private Integer buffer;
 
-    // transporter
+    /**
+     * Transporter
+     */
     private String transporter;
 
-    // how information gets exchanged
+    /**
+     * How information gets exchanged
+     */
     private String exchanger;
 
-    // thread dispatching mode
+    /**
+     * Thread dispatching mode
+     */
     private String dispatcher;
 
-    // networker
+    /**
+     * Networker
+     */
     private String networker;
 
-    // server impl
+    /**
+     * The server-side implementation model of the protocol
+     */
     private String server;
 
-    // client impl
+    /**
+     * The client-side implementation model of the protocol
+     */
     private String client;
 
-    // supported telnet commands, separated with comma.
+    /**
+     * Supported telnet commands, separated with comma.
+     */
     private String telnet;
 
-    // command line prompt
+    /**
+     * Command line prompt
+     */
     private String prompt;
 
-    // status check
+    /**
+     * Status check
+     */
     private String status;
 
-    // wait time when stop
+    /**
+     * Wait time when stop
+     */
     private Integer wait;
 
-    // if it's default
+    /**
+     * Whether to use the default protocol
+     */
     private Boolean isDefault;
 
     @Deprecated
@@ -169,7 +215,7 @@ public class ProviderConfig extends AbstractServiceConfig {
     }
 
     public void setThreadpool(String threadpool) {
-        checkExtension(ThreadPool.class, "threadpool", threadpool);
+        checkExtension(ThreadPool.class, Constants.THREADPOOL_KEY, threadpool);
         this.threadpool = threadpool;
     }
 
@@ -258,7 +304,7 @@ public class ProviderConfig extends AbstractServiceConfig {
     }
 
     public void setTelnet(String telnet) {
-        checkMultiExtension(TelnetHandler.class, "telnet", telnet);
+        checkMultiExtension(TelnetHandler.class, Constants.TELNET, telnet);
         this.telnet = telnet;
     }
 
@@ -320,7 +366,7 @@ public class ProviderConfig extends AbstractServiceConfig {
     }
 
     public void setTransporter(String transporter) {
-        checkExtension(Transporter.class, "transporter", transporter);
+        checkExtension(Transporter.class, Constants.TRANSPORTER_KEY, transporter);
         this.transporter = transporter;
     }
 
@@ -329,7 +375,7 @@ public class ProviderConfig extends AbstractServiceConfig {
     }
 
     public void setExchanger(String exchanger) {
-        checkExtension(Exchanger.class, "exchanger", exchanger);
+        checkExtension(Exchanger.class, Constants.EXCHANGER_KEY, exchanger);
         this.exchanger = exchanger;
     }
 
