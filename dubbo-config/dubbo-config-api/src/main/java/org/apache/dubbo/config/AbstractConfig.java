@@ -291,20 +291,6 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
-    /**
-     * We only check boolean value at this moment.
-     *
-     * @param type
-     * @param value
-     * @return
-     */
-    private static boolean isTypeMatch(Class<?> type, String value) {
-        if ((type == boolean.class || type == Boolean.class)
-                && !("true".equals(value) || "false".equals(value))) {
-            return false;
-        }
-        return true;
-    }
 
     protected static void checkExtension(Class<?> type, String property, String value) {
         checkName(property, value);
@@ -565,7 +551,7 @@ public abstract class AbstractConfig implements Serializable {
             config.addProperties(getMetaData());
             if (Environment.getInstance().isConfigCenterFirst()) {
                 // The sequence would be: SystemConfiguration -> ExternalConfiguration -> AppExternalConfiguration -> AbstractConfig -> PropertiesConfiguration
-                compositeConfiguration.addConfiguration(3,config);
+                compositeConfiguration.addConfiguration(3, config);
             } else {
                 // The sequence would be: SystemConfiguration -> AbstractConfig -> ExternalConfiguration -> AppExternalConfiguration -> PropertiesConfiguration
                 compositeConfiguration.addConfiguration(1, config);
