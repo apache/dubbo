@@ -138,9 +138,9 @@ public class NetUtils {
         }
         String name = address.getHostAddress();
         return (name != null
+                && IP_PATTERN.matcher(name).matches()
                 && !Constants.ANYHOST_VALUE.equals(name)
-                && !Constants.LOCALHOST_VALUE.equals(name)
-                && IP_PATTERN.matcher(name).matches());
+                && !Constants.LOCALHOST_VALUE.equals(name));
     }
 
     /**
