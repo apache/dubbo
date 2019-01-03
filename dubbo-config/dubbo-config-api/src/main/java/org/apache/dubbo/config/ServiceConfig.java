@@ -27,6 +27,7 @@ import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.metadata.integration.MetadataReportService;
@@ -719,10 +720,16 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     private void checkDefault() {
-        if (provider == null) {
-            setProvider(new ProviderConfig());
-        }
+        createProviderIfAbsent();
         provider.refresh();
+    }
+
+    private void createProviderIfAbsent() {
+        if (provider != null) {
+            return;
+        }
+        setProvider(ConfigManager.getInstance()
+                            .getDefaultProvider().orElse(new ProviderConfig()));
     }
 
     private void checkProtocol() {
@@ -761,7 +768,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (StringUtils.isEmpty(protocolIds)) {
             if (protocols == null || protocols.isEmpty()) {
                 protocols = new ArrayList<>();
-                protocols.add(new ProtocolConfig());
+                protocols.add(ConfigManager.getInstance().getDefaultProtocol().orElse(new ProtocolConfig()));
             }
         } else {
             String[] arr = Constants.COMMA_SPLIT_PATTERN.split(protocolIds);
@@ -770,9 +777,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             }
             Arrays.stream(arr).forEach(id -> {
                 if (protocols.stream().noneMatch(prot -> prot.getId().equals(id))) {
-                    ProtocolConfig protocolConfig = new ProtocolConfig();
-                    protocolConfig.setId(id);
-                    protocols.add(protocolConfig);
+                    protocols.add(ConfigManager.getInstance().getProtocol(id).orElseGet(() -> {
+                        ProtocolConfig protocolConfig = new ProtocolConfig();
+                        protocolConfig.setId(id);
+                        return protocolConfig;
+                    }));
                 }
             });
             if (protocols.size() > arr.length) {
@@ -863,6 +872,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     public void setProvider(ProviderConfig provider) {
         this.provider = provider;
+        ConfigManager.getInstance().addProvider(provider);
     }
 
     @Parameter(excluded = true)
