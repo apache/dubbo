@@ -318,9 +318,9 @@ public abstract class AbstractConfig implements Serializable {
      * Check whether there is a <code>Extension</code> who's name (property) is <code>value</code> (special treatment is
      * required)
      *
-     * @param type The Extension type
+     * @param type     The Extension type
      * @param property The extension key
-     * @param value The Extension name
+     * @param value    The Extension name
      */
     protected static void checkMultiExtension(Class<?> type, String property, String value) {
         checkMultiName(property, value);
@@ -500,7 +500,7 @@ public abstract class AbstractConfig implements Serializable {
             try {
                 String name = method.getName();
                 if ((name.startsWith("get") || name.startsWith("is"))
-                        && !name.equals("get")
+                        && !"get".equals(name)
                         && !"getClass".equals(name)
                         && Modifier.isPublic(method.getModifiers())
                         && method.getParameterTypes().length == 0
@@ -565,7 +565,7 @@ public abstract class AbstractConfig implements Serializable {
             config.addProperties(getMetaData());
             if (Environment.getInstance().isConfigCenterFirst()) {
                 // The sequence would be: SystemConfiguration -> ExternalConfiguration -> AppExternalConfiguration -> AbstractConfig -> PropertiesConfiguration
-                compositeConfiguration.addConfiguration(3,config);
+                compositeConfiguration.addConfiguration(3, config);
             } else {
                 // The sequence would be: SystemConfiguration -> AbstractConfig -> ExternalConfiguration -> AppExternalConfiguration -> PropertiesConfiguration
                 compositeConfiguration.addConfiguration(1, config);

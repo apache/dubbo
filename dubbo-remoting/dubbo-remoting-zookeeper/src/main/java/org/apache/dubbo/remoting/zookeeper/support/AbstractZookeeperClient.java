@@ -127,6 +127,7 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
         }
     }
 
+    @Override
     public void create(String path, String content, boolean ephemeral) {
         if (checkExists(path)) {
             delete(path);
@@ -142,6 +143,7 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
         }
     }
 
+    @Override
     public String getContent(String path) {
         if (!checkExists(path)) {
             return null;
