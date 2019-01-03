@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.Constants;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
