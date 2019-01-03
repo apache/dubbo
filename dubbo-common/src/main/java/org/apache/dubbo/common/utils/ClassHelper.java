@@ -271,18 +271,20 @@ public class ClassHelper {
             return value.length() > 0 ? value.charAt(0) : '\0';
         } else if (type == boolean.class || type == Boolean.class) {
             return Boolean.valueOf(value);
+        } else if (!StringUtils.isNumeric(value, true)) {
+            return null;
         } else if (type == byte.class || type == Byte.class) {
-            return StringUtils.isNumber(value) ? Byte.valueOf(value) : null;
+            return Byte.valueOf(value);
         } else if (type == short.class || type == Short.class) {
-            return StringUtils.isNumber(value) ? Short.valueOf(value) : null;
+            return Short.valueOf(value);
         } else if (type == int.class || type == Integer.class) {
-            return StringUtils.isNumber(value) ? Integer.valueOf(value) : null;
+            return Integer.valueOf(value);
         } else if (type == long.class || type == Long.class) {
-            return StringUtils.isNumber(value) ? Long.valueOf(value) : null;
+            return Long.valueOf(value);
         } else if (type == float.class || type == Float.class) {
-            return StringUtils.isNumber(value) ? Float.valueOf(value) : null;
+            return Float.valueOf(value);
         } else if (type == double.class || type == Double.class) {
-            return StringUtils.isNumber(value) ? Double.valueOf(value) : null;
+            return Double.valueOf(value);
         }
         return value;
     }

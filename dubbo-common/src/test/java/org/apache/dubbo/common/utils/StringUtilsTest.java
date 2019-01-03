@@ -29,7 +29,6 @@ import java.util.Map;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
-import static org.apache.dubbo.common.utils.StringUtils.isNumber;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -241,9 +240,16 @@ public class StringUtilsTest {
 
     @Test
     public void testIsNumeric() throws Exception {
-        assertThat(StringUtils.isNumeric("123"), is(true));
-        assertThat(StringUtils.isNumeric("1a3"), is(false));
-        assertThat(StringUtils.isNumeric(null), is(false));
+        assertThat(StringUtils.isNumeric("123", false), is(true));
+        assertThat(StringUtils.isNumeric("1a3", false), is(false));
+        assertThat(StringUtils.isNumeric(null, false), is(false));
+
+        assertThat(StringUtils.isNumeric("0", true), is(true));
+        assertThat(StringUtils.isNumeric("0.1", true), is(true));
+        assertThat(StringUtils.isNumeric("DUBBO", true), is(false));
+        assertThat(StringUtils.isNumeric("", true), is(false));
+        assertThat(StringUtils.isNumeric(" ", true), is(false));
+        assertThat(StringUtils.isNumeric("   ", true), is(false));
     }
 
     @Test
@@ -274,15 +280,5 @@ public class StringUtilsTest {
         assertThat(s, containsString("a,"));
         assertThat(s, containsString("0,"));
         assertThat(s, containsString("{\"enabled\":true}"));
-    }
-
-    @Test
-    public void testIsNumber() throws Exception {
-        assertThat(isNumber("0"), is(true));
-        assertThat(isNumber("0.1"), is(true));
-        assertThat(isNumber("DUBBO"), is(false));
-        assertThat(isNumber(""), is(false));
-        assertThat(isNumber(" "), is(false));
-        assertThat(isNumber("   "), is(false));
     }
 }

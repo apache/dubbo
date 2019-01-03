@@ -477,9 +477,22 @@ public final class StringUtils {
         return false;
     }
 
-    public static boolean isNumeric(String str) {
-        if (str == null) {
+    public static boolean isNumeric(String str, boolean allowDot) {
+        if (str == null || str.isEmpty()) {
             return false;
+        }
+        if (allowDot) {
+            int index = str.indexOf(".");
+            if (index > 0) {
+                if (str.indexOf(".", index) == -1) {
+                    return false;
+                } else {
+                    String left = str.substring(0, index);
+                    String right = str.substring(index + 1);
+                    return StringUtils.isNumeric(left, false) && StringUtils.isNumeric(right, false);
+                }
+            }
+
         }
         int sz = str.length();
         for (int i = 0; i < sz; i++) {
@@ -488,24 +501,6 @@ public final class StringUtils {
             }
         }
         return true;
-    }
-
-    public static boolean isNumber(String str) {
-        if (str.isEmpty()) {
-            return false;
-        }
-        int index = str.indexOf(".");
-        if (index < 0) {
-            return StringUtils.isNumeric(str);
-        } else {
-            if (str.indexOf(".", index) == -1) {
-                return false;
-            } else {
-                String left = str.substring(0, index);
-                String right = str.substring(index + 1);
-                return StringUtils.isNumeric(left) && StringUtils.isNumeric(right);
-            }
-        }
     }
 
 
