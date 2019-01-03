@@ -42,19 +42,28 @@ public class DubboMonitor implements Monitor {
 
     private static final Logger logger = LoggerFactory.getLogger(DubboMonitor.class);
 
+    /**
+     * The length of the array which is a container of the statistics
+     */
     private static final int LENGTH = 10;
 
     /**
-     * The timer sends the statistics data to monitor center
+     * The timer for sending statistics
      */
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(3, new NamedThreadFactory("DubboMonitorSendTimer", true));
 
+    /**
+     * The future that can cancel the <b>scheduledExecutorService</b>
+     */
     private final ScheduledFuture<?> sendFuture;
 
     private final Invoker<MonitorService> monitorInvoker;
 
     private final MonitorService monitorService;
 
+    /**
+     * The time interval for timer <b>scheduledExecutorService</b> to send data
+     */
     private final long monitorInterval;
 
     private final ConcurrentMap<Statistics, AtomicReference<long[]>> statisticsMap = new ConcurrentHashMap<Statistics, AtomicReference<long[]>>();

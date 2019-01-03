@@ -45,15 +45,28 @@ public class MonitorFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(MonitorFilter.class);
 
+    /**
+     * The Concurrent counter
+     */
     private final ConcurrentMap<String, AtomicInteger> concurrents = new ConcurrentHashMap<String, AtomicInteger>();
 
+    /**
+     * The MonitorFactory
+     */
     private MonitorFactory monitorFactory;
 
     public void setMonitorFactory(MonitorFactory monitorFactory) {
         this.monitorFactory = monitorFactory;
     }
 
-    // intercepting invocation
+    /**
+     * The invocation interceptor,it will collect the invoke data about this invocation and send it to monitor center
+     *
+     * @param invoker    service
+     * @param invocation invocation.
+     * @return {@link Result} the invoke result
+     * @throws RpcException
+     */
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         if (invoker.getUrl().hasParameter(Constants.MONITOR_KEY)) {
@@ -76,7 +89,16 @@ public class MonitorFilter implements Filter {
         }
     }
 
-    // collect info
+    /**
+     * The collector logic, it will be handled by the default monitor
+     *
+     * @param invoker
+     * @param invocation
+     * @param result     the invoke result
+     * @param remoteHost the remote host address
+     * @param start      the timestamp the invoke begin
+     * @param error      if there is an error on the invoke
+     */
     private void collect(Invoker<?> invoker, Invocation invocation, Result result, String remoteHost, long start, boolean error) {
         try {
             URL monitorUrl = invoker.getUrl().getUrlParameter(Constants.MONITOR_KEY);
@@ -91,6 +113,17 @@ public class MonitorFilter implements Filter {
         }
     }
 
+    /**
+     * Create statistics url
+     *
+     * @param invoker
+     * @param invocation
+     * @param result
+     * @param remoteHost
+     * @param start
+     * @param error
+     * @return
+     */
     private URL createStatisticsUrl(Invoker<?> invoker, Invocation invocation, Result result, String remoteHost, long start, boolean error) {
         // ---- service statistics ----
         long elapsed = System.currentTimeMillis() - start; // invocation cost
@@ -114,7 +147,6 @@ public class MonitorFilter implements Filter {
             remoteKey = MonitorService.CONSUMER;
             remoteValue = remoteHost;
         }
-
         String input = "", output = "";
         if (invocation.getAttachment(Constants.INPUT_KEY) != null) {
             input = invocation.getAttachment(Constants.INPUT_KEY);
