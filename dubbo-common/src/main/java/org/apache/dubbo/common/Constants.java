@@ -486,10 +486,6 @@ public class Constants {
 
     public static final String MERGER_KEY = "merger";
 
-    /**
-     * Numerical regular expression
-     */
-    public static final String NUMBER_REGULAR_EXPRESSION = "^[0-9]+(.[0-9]+)?$";
 
     /**
      * simple the registry for provider.

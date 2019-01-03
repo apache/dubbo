@@ -29,6 +29,7 @@ import java.util.Map;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
+import static org.apache.dubbo.common.utils.StringUtils.isNumber;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -273,5 +274,15 @@ public class StringUtilsTest {
         assertThat(s, containsString("a,"));
         assertThat(s, containsString("0,"));
         assertThat(s, containsString("{\"enabled\":true}"));
+    }
+
+    @Test
+    public void testIsNumber() throws Exception {
+        assertThat(isNumber("0"), is(true));
+        assertThat(isNumber("0.1"), is(true));
+        assertThat(isNumber("DUBBO"), is(false));
+        assertThat(isNumber(""), is(false));
+        assertThat(isNumber(" "), is(false));
+        assertThat(isNumber("   "), is(false));
     }
 }

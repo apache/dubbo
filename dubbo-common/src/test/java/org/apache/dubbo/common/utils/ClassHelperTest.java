@@ -26,7 +26,6 @@ import static org.apache.dubbo.common.utils.ClassHelper.getClassLoader;
 import static org.apache.dubbo.common.utils.ClassHelper.resolvePrimitiveClassName;
 import static org.apache.dubbo.common.utils.ClassHelper.toShortString;
 import static org.apache.dubbo.common.utils.ClassHelper.convertPrimitive;
-import static org.apache.dubbo.common.utils.ClassHelper.isNumber;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
@@ -159,13 +158,4 @@ public class ClassHelperTest {
         assertThat(convertPrimitive(double.class, "10.1"), equalTo(new Double(10.1)));
     }
 
-    @Test
-    public void testIsNumber() throws Exception {
-        assertThat(isNumber("0"), is(true));
-        assertThat(isNumber("0.1"), is(true));
-        assertThat(isNumber("DUBBO"), is(false));
-        assertThat(isNumber(""), is(false));
-        assertThat(isNumber(" "), is(false));
-        assertThat(isNumber("   "), is(false));
-    }
 }
