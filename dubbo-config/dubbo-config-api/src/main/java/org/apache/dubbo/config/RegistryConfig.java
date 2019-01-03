@@ -126,18 +126,19 @@ public class RegistryConfig extends AbstractConfig {
     private Boolean isDefault;
 
     /**
-     * Simple the registry.
+     * Simple the registry. both useful for provider and consumer
      *
      * @since 2.7.0
      */
-    private Boolean simple;
+    private Boolean simplified;
     /**
-     * After simplify the registry, should add some paramter individually.
-     * addionalParameterKeys = addParamKeys
+     * After simplify the registry, should add some paramter individually. just for provider.
+     * <p>
+     * such as: extra-keys = A,b,c,d
      *
      * @since 2.7.0
      */
-    private String addParamKeys;
+    private String extraKeys;
 
     public RegistryConfig() {
     }
@@ -378,6 +379,23 @@ public class RegistryConfig extends AbstractConfig {
 
     public void setDefault(Boolean isDefault) {
         this.isDefault = isDefault;
+    }
+
+    public Boolean getSimplified() {
+        return simplified;
+    }
+
+    public void setSimplified(Boolean simplified) {
+        this.simplified = simplified;
+    }
+
+    @Parameter(key = Constants.EXTRA_KEYS_KEY)
+    public String getExtraKeys() {
+        return extraKeys;
+    }
+
+    public void setExtraKeys(String extraKeys) {
+        this.extraKeys = extraKeys;
     }
 
     @Parameter(excluded = true)
