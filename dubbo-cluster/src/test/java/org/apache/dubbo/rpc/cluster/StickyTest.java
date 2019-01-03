@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.cluster;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -68,6 +69,8 @@ public class StickyTest {
         invokers.add(invoker2);
 
         clusterinvoker = new StickyClusterInvoker<StickyTest>(dic);
+
+        ExtensionLoader.resetExtensionLoader(LoadBalance.class);
     }
 
     @Test
@@ -114,12 +117,12 @@ public class StickyTest {
 
         given(invoker1.invoke(invocation)).willReturn(result);
         given(invoker1.isAvailable()).willReturn(true);
-        given(invoker1.getUrl()).willReturn(url);
+        given(invoker1.getUrl()).willReturn(url.setPort(1));
         given(invoker1.getInterface()).willReturn(StickyTest.class);
 
         given(invoker2.invoke(invocation)).willReturn(result);
         given(invoker2.isAvailable()).willReturn(true);
-        given(invoker2.getUrl()).willReturn(url);
+        given(invoker2.getUrl()).willReturn(url.setPort(2));
         given(invoker2.getInterface()).willReturn(StickyTest.class);
 
         invocation.setMethodName(methodName);

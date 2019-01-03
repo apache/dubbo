@@ -25,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * a simple util class for cache {@link ReferenceConfig}.
+ * A simple util class for cache {@link ReferenceConfig}.
  * <p>
  * {@link ReferenceConfig} is a heavy Object, it's necessary to cache these object
  * for the framework which create {@link ReferenceConfig} frequently.
@@ -117,7 +117,9 @@ public class ReferenceConfigCache {
 
     void destroyKey(String key) {
         ReferenceConfig<?> config = cache.remove(key);
-        if (config == null) return;
+        if (config == null) {
+            return;
+        }
         config.destroy();
     }
 

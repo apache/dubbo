@@ -77,11 +77,19 @@ public abstract class Wrapper {
 
         @Override
         public Object invokeMethod(Object instance, String mn, Class<?>[] types, Object[] args) throws NoSuchMethodException {
-            if ("getClass".equals(mn)) return instance.getClass();
-            if ("hashCode".equals(mn)) return instance.hashCode();
-            if ("toString".equals(mn)) return instance.toString();
+            if ("getClass".equals(mn)) {
+                return instance.getClass();
+            }
+            if ("hashCode".equals(mn)) {
+                return instance.hashCode();
+            }
+            if ("toString".equals(mn)) {
+                return instance.toString();
+            }
             if ("equals".equals(mn)) {
-                if (args.length == 1) return instance.equals(args[0]);
+                if (args.length == 1) {
+                    return instance.equals(args[0]);
+                }
                 throw new IllegalArgumentException("Invoke method [" + mn + "] argument number error.");
             }
             throw new NoSuchMethodException("Method [" + mn + "] not found.");
@@ -97,10 +105,13 @@ public abstract class Wrapper {
      */
     public static Wrapper getWrapper(Class<?> c) {
         while (ClassGenerator.isDynamicClass(c)) // can not wrapper on dynamic class.
+        {
             c = c.getSuperclass();
+        }
 
-        if (c == Object.class)
+        if (c == Object.class) {
             return OBJECT_WRAPPER;
+        }
 
         Wrapper ret = WRAPPER_MAP.get(c);
         if (ret == null) {
@@ -111,8 +122,9 @@ public abstract class Wrapper {
     }
 
     private static Wrapper makeWrapper(Class<?> c) {
-        if (c.isPrimitive())
+        if (c.isPrimitive()) {
             throw new IllegalArgumentException("Can not create wrapper for primitive type: " + c);
+        }
 
         String name = c.getName();
         ClassLoader cl = ClassHelper.getClassLoader(c);
@@ -134,8 +146,9 @@ public abstract class Wrapper {
         for (Field f : c.getFields()) {
             String fn = f.getName();
             Class<?> ft = f.getType();
-            if (Modifier.isStatic(f.getModifiers()) || Modifier.isTransient(f.getModifiers()))
+            if (Modifier.isStatic(f.getModifiers()) || Modifier.isTransient(f.getModifiers())) {
                 continue;
+            }
 
             c1.append(" if( $2.equals(\"").append(fn).append("\") ){ w.").append(fn).append("=").append(arg(ft, "$3")).append("; return; }");
             c2.append(" if( $2.equals(\"").append(fn).append("\") ){ return ($w)w.").append(fn).append("; }");
@@ -150,7 +163,9 @@ public abstract class Wrapper {
         }
         for (Method m : methods) {
             if (m.getDeclaringClass() == Object.class) //ignore Object's method.
+            {
                 continue;
+            }
 
             String mn = m.getName();
             c3.append(" if( \"").append(mn).append("\".equals( $2 ) ");
@@ -175,16 +190,18 @@ public abstract class Wrapper {
 
             c3.append(" ) { ");
 
-            if (m.getReturnType() == Void.TYPE)
+            if (m.getReturnType() == Void.TYPE) {
                 c3.append(" w.").append(mn).append('(').append(args(m.getParameterTypes(), "$4")).append(");").append(" return null;");
-            else
+            } else {
                 c3.append(" return ($w)w.").append(mn).append('(').append(args(m.getParameterTypes(), "$4")).append(");");
+            }
 
             c3.append(" }");
 
             mns.add(mn);
-            if (m.getDeclaringClass() == c)
+            if (m.getDeclaringClass() == c) {
                 dmns.add(mn);
+            }
             ms.put(ReflectUtils.getDesc(m), m);
         }
         if (hasMethod) {
@@ -215,8 +232,8 @@ public abstract class Wrapper {
                 pts.put(pn, pt);
             }
         }
-        c1.append(" throw new " + NoSuchPropertyException.class.getName() + "(\"Not found property \\\"\"+$2+\"\\\" filed or setter method in class " + c.getName() + ".\"); }");
-        c2.append(" throw new " + NoSuchPropertyException.class.getName() + "(\"Not found property \\\"\"+$2+\"\\\" filed or setter method in class " + c.getName() + ".\"); }");
+        c1.append(" throw new " + NoSuchPropertyException.class.getName() + "(\"Not found property \\\"\"+$2+\"\\\" field or setter method in class " + c.getName() + ".\"); }");
+        c2.append(" throw new " + NoSuchPropertyException.class.getName() + "(\"Not found property \\\"\"+$2+\"\\\" field or setter method in class " + c.getName() + ".\"); }");
 
         // make class
         long id = WRAPPER_CLASS_COUNTER.getAndIncrement();
@@ -229,8 +246,9 @@ public abstract class Wrapper {
         cc.addField("public static " + Map.class.getName() + " pts;"); // property type map.
         cc.addField("public static String[] mns;"); // all method name array.
         cc.addField("public static String[] dmns;"); // declared method name array.
-        for (int i = 0, len = ms.size(); i < len; i++)
+        for (int i = 0, len = ms.size(); i < len; i++) {
             cc.addField("public static Class[] mts" + i + ";");
+        }
 
         cc.addMethod("public String[] getPropertyNames(){ return pns; }");
         cc.addMethod("public boolean hasProperty(String n){ return pts.containsKey($1); }");
@@ -249,8 +267,9 @@ public abstract class Wrapper {
             wc.getField("mns").set(null, mns.toArray(new String[0]));
             wc.getField("dmns").set(null, dmns.toArray(new String[0]));
             int ix = 0;
-            for (Method m : ms.values())
+            for (Method m : ms.values()) {
                 wc.getField("mts" + ix++).set(null, m.getParameterTypes());
+            }
             return (Wrapper) wc.newInstance();
         } catch (RuntimeException e) {
             throw e;
@@ -266,22 +285,30 @@ public abstract class Wrapper {
 
     private static String arg(Class<?> cl, String name) {
         if (cl.isPrimitive()) {
-            if (cl == Boolean.TYPE)
+            if (cl == Boolean.TYPE) {
                 return "((Boolean)" + name + ").booleanValue()";
-            if (cl == Byte.TYPE)
+            }
+            if (cl == Byte.TYPE) {
                 return "((Byte)" + name + ").byteValue()";
-            if (cl == Character.TYPE)
+            }
+            if (cl == Character.TYPE) {
                 return "((Character)" + name + ").charValue()";
-            if (cl == Double.TYPE)
+            }
+            if (cl == Double.TYPE) {
                 return "((Number)" + name + ").doubleValue()";
-            if (cl == Float.TYPE)
+            }
+            if (cl == Float.TYPE) {
                 return "((Number)" + name + ").floatValue()";
-            if (cl == Integer.TYPE)
+            }
+            if (cl == Integer.TYPE) {
                 return "((Number)" + name + ").intValue()";
-            if (cl == Long.TYPE)
+            }
+            if (cl == Long.TYPE) {
                 return "((Number)" + name + ").longValue()";
-            if (cl == Short.TYPE)
+            }
+            if (cl == Short.TYPE) {
                 return "((Number)" + name + ").shortValue()";
+            }
             throw new RuntimeException("Unknown primitive type: " + cl.getName());
         }
         return "(" + ReflectUtils.getName(cl) + ")" + name;
@@ -289,11 +316,14 @@ public abstract class Wrapper {
 
     private static String args(Class<?>[] cs, String name) {
         int len = cs.length;
-        if (len == 0) return "";
+        if (len == 0) {
+            return "";
+        }
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < len; i++) {
-            if (i > 0)
+            if (i > 0) {
                 sb.append(',');
+            }
             sb.append(arg(cs[i], name + "[" + i + "]"));
         }
         return sb.toString();
@@ -365,8 +395,9 @@ public abstract class Wrapper {
      */
     public Object[] getPropertyValues(Object instance, String[] pns) throws NoSuchPropertyException, IllegalArgumentException {
         Object[] ret = new Object[pns.length];
-        for (int i = 0; i < ret.length; i++)
+        for (int i = 0; i < ret.length; i++) {
             ret[i] = getPropertyValue(instance, pns[i]);
+        }
         return ret;
     }
 
@@ -378,11 +409,13 @@ public abstract class Wrapper {
      * @param pvs      property value array.
      */
     public void setPropertyValues(Object instance, String[] pns, Object[] pvs) throws NoSuchPropertyException, IllegalArgumentException {
-        if (pns.length != pvs.length)
+        if (pns.length != pvs.length) {
             throw new IllegalArgumentException("pns.length != pvs.length");
+        }
 
-        for (int i = 0; i < pns.length; i++)
+        for (int i = 0; i < pns.length; i++) {
             setPropertyValue(instance, pns[i], pvs[i]);
+        }
     }
 
     /**
@@ -406,8 +439,11 @@ public abstract class Wrapper {
      * @return has or has not.
      */
     public boolean hasMethod(String name) {
-        for (String mn : getMethodNames())
-            if (mn.equals(name)) return true;
+        for (String mn : getMethodNames()) {
+            if (mn.equals(name)) {
+                return true;
+            }
+        }
         return false;
     }
 

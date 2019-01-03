@@ -18,11 +18,11 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.serialize.support.SerializableClassRegistry;
 import org.apache.dubbo.common.serialize.support.SerializationOptimizer;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
-import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
@@ -225,8 +225,9 @@ public class DubboProtocol extends AbstractProtocol {
 
         DubboExporter<?> exporter = (DubboExporter<?>) exporterMap.get(serviceKey);
 
-        if (exporter == null)
+        if (exporter == null) {
             throw new RemotingException(channel, "Not found exported service: " + serviceKey + " in " + exporterMap.keySet() + ", may be version or group mismatch " + ", channel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress() + ", message:" + inv);
+        }
 
         return exporter.getInvoker();
     }
@@ -297,8 +298,9 @@ public class DubboProtocol extends AbstractProtocol {
         url = url.addParameterIfAbsent(Constants.HEARTBEAT_KEY, String.valueOf(Constants.DEFAULT_HEARTBEAT));
         String str = url.getParameter(Constants.SERVER_KEY, Constants.DEFAULT_REMOTING_SERVER);
 
-        if (str != null && str.length() > 0 && !ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(str))
+        if (str != null && str.length() > 0 && !ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(str)) {
             throw new RpcException("Unsupported server type: " + str + ", url: " + url);
+        }
 
         url = url.addParameter(Constants.CODEC_KEY, DubboCodec.NAME);
         ExchangeServer server;
@@ -452,7 +454,7 @@ public class DubboProtocol extends AbstractProtocol {
                     if (logger.isInfoEnabled()) {
                         logger.info("Close dubbo server: " + server.getLocalAddress());
                     }
-                    server.close(ConfigUtils.getServerShutdownTimeout());
+                    server.close(ConfigurationUtils.getServerShutdownTimeout());
                 } catch (Throwable t) {
                     logger.warn(t.getMessage(), t);
                 }
@@ -466,7 +468,7 @@ public class DubboProtocol extends AbstractProtocol {
                     if (logger.isInfoEnabled()) {
                         logger.info("Close dubbo connect: " + client.getLocalAddress() + "-->" + client.getRemoteAddress());
                     }
-                    client.close(ConfigUtils.getServerShutdownTimeout());
+                    client.close(ConfigurationUtils.getServerShutdownTimeout());
                 } catch (Throwable t) {
                     logger.warn(t.getMessage(), t);
                 }
@@ -480,7 +482,7 @@ public class DubboProtocol extends AbstractProtocol {
                     if (logger.isInfoEnabled()) {
                         logger.info("Close dubbo connect: " + client.getLocalAddress() + "-->" + client.getRemoteAddress());
                     }
-                    client.close(ConfigUtils.getServerShutdownTimeout());
+                    client.close(ConfigurationUtils.getServerShutdownTimeout());
                 } catch (Throwable t) {
                     logger.warn(t.getMessage(), t);
                 }

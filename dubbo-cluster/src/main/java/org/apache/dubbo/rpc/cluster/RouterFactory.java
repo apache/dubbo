@@ -27,17 +27,21 @@ import org.apache.dubbo.common.extension.SPI;
  *
  * @see org.apache.dubbo.rpc.cluster.Cluster#join(Directory)
  * @see org.apache.dubbo.rpc.cluster.Directory#list(org.apache.dubbo.rpc.Invocation)
+ * <p>
+ * Note Router has a different behaviour since 2.7.0, for each type of Router, there will only has one Router instance
+ * for each service. See {@link CacheableRouterFactory} and {@link RouterChain} for how to extend a new Router or how
+ * the Router instances are loaded.
  */
 @SPI
 public interface RouterFactory {
 
     /**
      * Create router.
+     * Since 2.7.0, most of the time, we will not use @Adaptive feature, so it's kept only for compatibility.
      *
-     * @param url
-     * @return router
+     * @param url url
+     * @return router instance
      */
     @Adaptive("protocol")
     Router getRouter(URL url);
-
 }

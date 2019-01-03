@@ -18,6 +18,8 @@ package org.apache.dubbo.service;
 
 import org.apache.dubbo.rpc.RpcContext;
 
+import java.util.List;
+
 /**
  * DemoServiceImpl
  */
@@ -76,6 +78,17 @@ public class DemoServiceImpl implements DemoService {
 
     public byte getbyte(byte arg) {
         return arg;
+    }
+
+    @Override
+    public String complexCompute(String input, ComplexObject co) {
+        return input + "###" + co.toString();
+    }
+
+    @Override
+    public ComplexObject findComplexObject(String var1, int var2, long l, String[] var3, List<Integer> var4, ComplexObject.TestEnum testEnum) {
+
+        return new ComplexObject(var1, var2, l, var3, var4, testEnum);
     }
 
     public Person gerPerson(Person person) {

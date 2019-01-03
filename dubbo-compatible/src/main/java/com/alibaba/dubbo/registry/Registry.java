@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 @Deprecated
 public interface Registry extends org.apache.dubbo.registry.Registry {
 
+    @Override
     com.alibaba.dubbo.common.URL getUrl();
 
     void register(com.alibaba.dubbo.common.URL url);

@@ -16,12 +16,13 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
-import com.alibaba.dubbo.config.annotation.Service;
-
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.context.annotation.DubboClassPathBeanDefinitionScanner;
+
+import com.alibaba.dubbo.config.annotation.Service;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -209,7 +210,7 @@ public class CompatibleServiceAnnotationBeanPostProcessor implements BeanDefinit
      * {@link Service} Annotation.
      *
      * @param scanner       {@link ClassPathBeanDefinitionScanner}
-     * @param packageToScan pachage to scan
+     * @param packageToScan package to scan
      * @param registry      {@link BeanDefinitionRegistry}
      * @return non-null
      * @since 2.5.8

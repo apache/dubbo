@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo.telnet;
 
-
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Level;
 import org.apache.dubbo.common.logger.LoggerFactory;

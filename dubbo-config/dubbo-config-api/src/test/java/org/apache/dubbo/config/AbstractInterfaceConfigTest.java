@@ -19,7 +19,6 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.ConfigUtils;
-import org.apache.dubbo.common.utils.IOUtils;
 import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.mock.GreetingLocal1;
 import org.apache.dubbo.config.mock.GreetingLocal2;
@@ -28,21 +27,19 @@ import org.apache.dubbo.config.mock.GreetingMock1;
 import org.apache.dubbo.config.mock.GreetingMock2;
 import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.registry.RegistryService;
+
 import junit.framework.TestCase;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -185,63 +182,72 @@ public class AbstractInterfaceConfigTest {
     public void checkStubAndMock1() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setLocal(GreetingLocal1.class.getName());
-        interfaceConfig.checkStubAndMock(Greeting.class);
+        interfaceConfig.checkStubAndLocal(Greeting.class);
+        interfaceConfig.checkMock(Greeting.class);
     }
 
     @Test(expected = IllegalStateException.class)
     public void checkStubAndMock2() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setLocal(GreetingLocal2.class.getName());
-        interfaceConfig.checkStubAndMock(Greeting.class);
+        interfaceConfig.checkStubAndLocal(Greeting.class);
+        interfaceConfig.checkMock(Greeting.class);
     }
 
     @Test
     public void checkStubAndMock3() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setLocal(GreetingLocal3.class.getName());
-        interfaceConfig.checkStubAndMock(Greeting.class);
+        interfaceConfig.checkStubAndLocal(Greeting.class);
+        interfaceConfig.checkMock(Greeting.class);
     }
 
     @Test(expected = IllegalStateException.class)
     public void checkStubAndMock4() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setStub(GreetingLocal1.class.getName());
-        interfaceConfig.checkStubAndMock(Greeting.class);
+        interfaceConfig.checkStubAndLocal(Greeting.class);
+        interfaceConfig.checkMock(Greeting.class);
     }
 
     @Test(expected = IllegalStateException.class)
     public void checkStubAndMock5() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setStub(GreetingLocal2.class.getName());
-        interfaceConfig.checkStubAndMock(Greeting.class);
+        interfaceConfig.checkStubAndLocal(Greeting.class);
+        interfaceConfig.checkMock(Greeting.class);
     }
 
     @Test
     public void checkStubAndMock6() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setStub(GreetingLocal3.class.getName());
-        interfaceConfig.checkStubAndMock(Greeting.class);
+        interfaceConfig.checkStubAndLocal(Greeting.class);
+        interfaceConfig.checkMock(Greeting.class);
     }
 
     @Test(expected = IllegalStateException.class)
     public void checkStubAndMock7() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setMock("return {a, b}");
-        interfaceConfig.checkStubAndMock(Greeting.class);
+        interfaceConfig.checkStubAndLocal(Greeting.class);
+        interfaceConfig.checkMock(Greeting.class);
     }
 
     @Test(expected = IllegalStateException.class)
     public void checkStubAndMock8() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setMock(GreetingMock1.class.getName());
-        interfaceConfig.checkStubAndMock(Greeting.class);
+        interfaceConfig.checkStubAndLocal(Greeting.class);
+        interfaceConfig.checkMock(Greeting.class);
     }
 
     @Test(expected = IllegalStateException.class)
     public void checkStubAndMock9() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setMock(GreetingMock2.class.getName());
-        interfaceConfig.checkStubAndMock(Greeting.class);
+        interfaceConfig.checkStubAndLocal(Greeting.class);
+        interfaceConfig.checkMock(Greeting.class);
     }
 
     @Test

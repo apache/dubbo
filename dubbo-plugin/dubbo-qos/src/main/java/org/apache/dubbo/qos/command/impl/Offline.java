@@ -19,8 +19,6 @@ package org.apache.dubbo.qos.command.impl;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.config.model.ApplicationModel;
-import org.apache.dubbo.config.model.ProviderModel;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
@@ -28,8 +26,10 @@ import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.support.ProviderConsumerRegTable;
 import org.apache.dubbo.registry.support.ProviderInvokerWrapper;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ProviderModel;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Set;
 
 @Cmd(name = "offline", summary = "offline dubbo", example = {
@@ -49,7 +49,7 @@ public class Offline implements BaseCommand {
         }
         boolean hasService = false;
 
-        List<ProviderModel> providerModelList = ApplicationModel.allProviderModels();
+        Collection<ProviderModel> providerModelList = ApplicationModel.allProviderModels();
         for (ProviderModel providerModel : providerModelList) {
             if (providerModel.getServiceName().matches(servicePattern)) {
                 hasService = true;

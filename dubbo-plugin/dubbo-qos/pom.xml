@@ -40,7 +40,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-config-api</artifactId>
+            <artifactId>dubbo-registry-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

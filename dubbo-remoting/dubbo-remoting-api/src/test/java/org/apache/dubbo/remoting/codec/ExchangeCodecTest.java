@@ -32,6 +32,7 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.codec.ExchangeCodec;
 import org.apache.dubbo.remoting.telnet.codec.TelnetCodec;
 
+import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,6 +41,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.fail;
 
@@ -113,8 +115,8 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         inputBytes.put(new byte[]{MAGIC_HIGH, 0}, TelnetCodec.DecodeResult.NEED_MORE_INPUT);
         inputBytes.put(new byte[]{0, MAGIC_LOW}, TelnetCodec.DecodeResult.NEED_MORE_INPUT);
 
-        for (byte[] input : inputBytes.keySet()) {
-            testDecode_assertEquals(assemblyDataProtocol(input), inputBytes.get(input));
+        for (Map.Entry<byte[], Object> entry: inputBytes.entrySet()) {
+            testDecode_assertEquals(assemblyDataProtocol(entry.getKey()), entry.getValue());
         }
     }
 
@@ -145,6 +147,23 @@ public class ExchangeCodecTest extends TelnetCodecTest {
 
         Response obj = (Response) decode(request);
         Assert.assertEquals(90, obj.getStatus());
+    }
+
+    @Test
+    public void testInvalidSerializaitonId() throws Exception {
+        byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, (byte)0x8F, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        Object obj =  decode(header);
+        Assert.assertTrue(obj instanceof Request);
+        Request request = (Request) obj;
+        Assert.assertTrue(request.isBroken());
+        Assert.assertTrue(request.getData() instanceof IOException);
+        header = new byte[]{MAGIC_HIGH, MAGIC_LOW, (byte)0x1F, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+        obj = decode(header);
+        Assert.assertTrue(obj instanceof Response);
+        Response response = (Response) obj;
+        Assert.assertEquals(response.getStatus(), Response.CLIENT_ERROR);
+        Assert.assertTrue(response.getErrorMessage().contains("IOException"));
     }
 
     @Test

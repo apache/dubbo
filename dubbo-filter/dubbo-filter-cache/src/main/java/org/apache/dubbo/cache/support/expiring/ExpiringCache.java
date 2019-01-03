@@ -24,6 +24,22 @@ import java.util.Map;
 /**
  * ExpiringCache - With the characteristic of expiration time.
  */
+
+/**
+ * This class store the cache value with the characteristic of expiration time. If a service,method,consumer or provided is configured with key <b>cache</b>
+ * with value <b>expiring</b>, dubbo initialize the instance of this class using {@link ExpiringCacheFactory} to store method's returns value
+ * to server from store without making method call.
+ * <pre>
+ *     e.g. 1) &lt;dubbo:service cache="expiring" cache.seconds="60" cache.interval="10"/&gt;
+ *          2) &lt;dubbo:consumer cache="expiring" /&gt;
+ * </pre>
+ * <li>It used constructor argument url instance <b>cache.seconds</b> value to decide time to live of cached object.Default value of it is 180 second.</li>
+ * <li>It used constructor argument url instance <b>cache.interval</b> value for cache value expiration interval.Default value of this is 4 second</li>
+ * @see Cache
+ * @see ExpiringCacheFactory
+ * @see org.apache.dubbo.cache.support.AbstractCacheFactory
+ * @see org.apache.dubbo.cache.filter.CacheFilter
+ */
 public class ExpiringCache implements Cache {
     private final Map<Object, Object> store;
 
@@ -37,10 +53,21 @@ public class ExpiringCache implements Cache {
         this.store = expiringMap;
     }
 
+    /**
+     * API to store value against a key in the calling thread scope.
+     * @param key  Unique identifier for the object being store.
+     * @param value Value getting store
+     */
     @Override
     public void put(Object key, Object value) {
         store.put(key, value);
     }
+
+    /**
+     * API to return stored value using a key against the calling thread specific store.
+     * @param key Unique identifier for cache lookup
+     * @return Return stored object against key
+     */
 
     @Override
     public Object get(Object key) {
