@@ -181,11 +181,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             return;
         }
         ConfigManager configManager = ConfigManager.getInstance();
-        MonitorConfig monitor = configManager.getMonitor();
-        if (monitor == null) {
-            monitor = new MonitorConfig();
-        }
-        setMonitor(monitor);
+        setMonitor(configManager.getMonitor().orElse(new MonitorConfig()));
     }
 
     protected void checkMetadataReport() {
@@ -477,12 +473,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         registries.stream().filter(RegistryConfig::isZookeeperProtocol).findFirst().ifPresent(rc -> {
             // we use the loading status of DynamicConfiguration to decide whether ConfigCenter has been initiated.
             Environment.getInstance().getDynamicConfiguration().orElseGet(() -> {
-                ConfigCenterConfig configCenterConfig = new ConfigCenterConfig();
-                this.setConfigCenter(configCenterConfig);
-                configCenterConfig.setProtocol(rc.getProtocol());
-                configCenterConfig.setAddress(rc.getAddress());
-                configCenterConfig.setHighestPriority(false);
-                configCenterConfig.init(this.application);
+                ConfigManager configManager = ConfigManager.getInstance();
+                ConfigCenterConfig cc = configManager.getConfigCenter().orElse(new ConfigCenterConfig());
+                configManager.setConfigCenter(cc);
+                cc.setProtocol(rc.getProtocol());
+                cc.setAddress(rc.getAddress());
+                cc.setHighestPriority(false);
+                cc.init(this.application);
                 return null;
             });
         });
@@ -606,11 +603,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             return;
         }
         ConfigManager configManager = ConfigManager.getInstance();
-        ApplicationConfig applicationConfig = configManager.getApplication();
-        if (applicationConfig == null) {
-            applicationConfig = new ApplicationConfig();
-        }
-        setApplication(applicationConfig);
+        setApplication(configManager.getApplication().orElse(new ApplicationConfig()));
     }
 
     public ModuleConfig getModule() {

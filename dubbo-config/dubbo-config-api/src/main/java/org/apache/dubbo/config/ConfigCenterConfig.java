@@ -61,11 +61,10 @@ public class ConfigCenterConfig extends AbstractConfig {
     }
 
     public void init(ApplicationConfig applicationConfig) {
-        if (!inited.compareAndSet(false, true)) {
-            return;
-        }
-
         if (isValid()) {
+            if (!inited.compareAndSet(false, true)) {
+                return;
+            }
             DynamicConfiguration dynamicConfiguration = startDynamicConfiguration(toConfigUrl());
             String configContent = dynamicConfiguration.getConfig(configFile, group);
 
@@ -123,12 +122,10 @@ public class ConfigCenterConfig extends AbstractConfig {
 
     public void setExternalConfig(Map<String, String> externalConfiguration) {
         Environment.getInstance().setExternalConfigMap(externalConfiguration);
-        inited.set(true);
     }
 
     public void setAppExternalConfig(Map<String, String> appExternalConfiguration) {
         Environment.getInstance().setAppExternalConfigMap(appExternalConfiguration);
-        inited.set(true);
     }
 
     public String getProtocol() {

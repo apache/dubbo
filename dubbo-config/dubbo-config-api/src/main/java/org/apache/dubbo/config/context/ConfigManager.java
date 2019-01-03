@@ -87,8 +87,8 @@ public class ConfigManager {
     private Map<String, ProviderConfig> providers = new ConcurrentHashMap<>();
     private Map<String, ConsumerConfig> consumers = new ConcurrentHashMap<>();
 
-    public ApplicationConfig getApplication() {
-        return application;
+    public Optional<ApplicationConfig> getApplication() {
+        return Optional.ofNullable(application);
     }
 
     public void setApplication(ApplicationConfig application) {
@@ -98,8 +98,8 @@ public class ConfigManager {
         }
     }
 
-    public MonitorConfig getMonitor() {
-        return monitor;
+    public Optional<MonitorConfig> getMonitor() {
+        return Optional.ofNullable(monitor);
     }
 
     public void setMonitor(MonitorConfig monitor) {
@@ -109,8 +109,8 @@ public class ConfigManager {
         }
     }
 
-    public ModuleConfig getModule() {
-        return module;
+    public Optional<ModuleConfig> getModule() {
+        return Optional.ofNullable(module);
     }
 
     public void setModule(ModuleConfig module) {
@@ -120,8 +120,8 @@ public class ConfigManager {
         }
     }
 
-    public ConfigCenterConfig getConfigCenter() {
-        return configCenter;
+    public Optional<ConfigCenterConfig> getConfigCenter() {
+        return Optional.ofNullable(configCenter);
     }
 
     public void setConfigCenter(ConfigCenterConfig configCenter) {
@@ -277,7 +277,8 @@ public class ConfigManager {
 
     private void checkDuplicate(AbstractConfig oldOne, AbstractConfig newOne) {
         if (oldOne != null && !oldOne.equals(newOne)) {
-            throw new IllegalStateException("Duplicate Config found for " + oldOne.getClass().getSimpleName() + ", the old one is " + oldOne + ", the new one is " + newOne);
+            String configName = oldOne.getClass().getSimpleName();
+            throw new IllegalStateException("Duplicate Config found for " + configName + ", you should use the one unique " + configName + " for one application.");
         }
     }
 
