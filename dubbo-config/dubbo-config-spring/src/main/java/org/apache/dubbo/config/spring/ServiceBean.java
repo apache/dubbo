@@ -290,6 +290,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                 }
             }
         }
+
         if (getPath() == null || getPath().length() == 0) {
             if (beanName != null && beanName.length() > 0
                     && getInterface() != null && getInterface().length() > 0

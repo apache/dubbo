@@ -25,6 +25,7 @@ import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Reference;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.metadata.integration.MetadataReportService;
 import org.apache.dubbo.rpc.Invoker;
@@ -346,10 +347,16 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     }
 
     private void checkDefault() {
-        if (consumer == null) {
-            setConsumer(new ConsumerConfig());
-        }
+        createConsumerIfAbsent();
         consumer.refresh();
+    }
+
+    private void createConsumerIfAbsent() {
+        if (consumer != null) {
+            return;
+        }
+        setConsumer(ConfigManager.getInstance()
+                            .getDefaultConsumer().orElse(new ConsumerConfig()));
     }
 
     private void completeCompoundConfigs() {
@@ -466,6 +473,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     public void setConsumer(ConsumerConfig consumer) {
         this.consumer = consumer;
+        ConfigManager.getInstance().addConsumer(consumer);
     }
 
     public String getProtocol() {

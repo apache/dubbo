@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.config.context;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ApplicationConfig;
@@ -68,6 +70,7 @@ import static org.apache.dubbo.common.Constants.DEFAULT_KEY;
  * }
  */
 public class ConfigManager {
+    private static final Logger logger = LoggerFactory.getLogger(ConfigManager.class);
     private static final ConfigManager configManager = new ConfigManager();
 
     public static ConfigManager getInstance() {
@@ -136,19 +139,22 @@ public class ConfigManager {
         return Optional.ofNullable(providers.get(DEFAULT_KEY));
     }
 
-    public void addProviderConfig(ProviderConfig providerConfig) {
+    public void addProvider(ProviderConfig providerConfig) {
         if (providerConfig == null) {
             return;
         }
 
-        String key = (providerConfig.isDefault() == null || providerConfig.isDefault()) ? DEFAULT_KEY : providerConfig.getId();
+        String key = StringUtils.isNotEmpty(providerConfig.getId())
+                ? providerConfig.getId()
+                : (providerConfig.isDefault() == null || providerConfig.isDefault()) ? DEFAULT_KEY : null;
 
         if (StringUtils.isEmpty(key)) {
             throw new IllegalStateException("A ProviderConfig should either has an id or it's the default one, " + providerConfig);
         }
 
         if (providers.containsKey(key) && !providerConfig.equals(providers.get(key))) {
-            throw new IllegalStateException("Duplicate ProviderConfig found, there already has one default ProviderConfig, " + providerConfig);
+            logger.warn("Duplicate ProviderConfig found, there already has one default ProviderConfig or more than two ProviderConfigs have the same id, " +
+                                                    "you can try to give each ProviderConfig a different id. " + providerConfig);
         } else {
             providers.put(key, providerConfig);
         }
@@ -167,14 +173,17 @@ public class ConfigManager {
             return;
         }
 
-        String key = (consumerConfig.isDefault() == null || consumerConfig.isDefault()) ? DEFAULT_KEY : consumerConfig.getId();
+        String key = StringUtils.isNotEmpty(consumerConfig.getId())
+                ? consumerConfig.getId()
+                : (consumerConfig.isDefault() == null || consumerConfig.isDefault()) ? DEFAULT_KEY : null;
 
         if (StringUtils.isEmpty(key)) {
             throw new IllegalStateException("A ConsumerConfig should either has an id or it's the default one, " + consumerConfig);
         }
 
         if (consumers.containsKey(key) && !consumerConfig.equals(consumers.get(key))) {
-            throw new IllegalStateException("Duplicate ConsumerConfig found, there already has one default ConsumerConfig, " + consumerConfig);
+            logger.warn("Duplicate ConsumerConfig found, there already has one default ConsumerConfig or more than two ConsumerConfigs have the same id, " +
+                                                    "you can try to give each ConsumerConfig a different id. " + consumerConfig);
         } else {
             consumers.put(key, consumerConfig);
         }
@@ -199,14 +208,17 @@ public class ConfigManager {
             return;
         }
 
-        String key = (protocolConfig.isDefault() == null || protocolConfig.isDefault()) ? DEFAULT_KEY : protocolConfig.getId();
+        String key = StringUtils.isNotEmpty(protocolConfig.getId())
+                ? protocolConfig.getId()
+                : (protocolConfig.isDefault() == null || protocolConfig.isDefault()) ? DEFAULT_KEY : null;
 
         if (StringUtils.isEmpty(key)) {
             throw new IllegalStateException("A ProtocolConfig should either has an id or it's the default one, " + protocolConfig);
         }
 
         if (protocols.containsKey(key) && !protocolConfig.equals(protocols.get(key))) {
-            throw new IllegalStateException("Duplicate ProtocolConfig found, there already has one default ProtocolConfig, " + protocolConfig);
+            logger.warn("Duplicate ProtocolConfig found, there already has one default ProtocolConfig or more than two ProtocolConfigs have the same id, " +
+                                                    "you can try to give each ProtocolConfig a different id. " + protocolConfig);
         } else {
             protocols.put(key, protocolConfig);
         }
@@ -231,14 +243,17 @@ public class ConfigManager {
             return;
         }
 
-        String key = (registryConfig.isDefault() == null || registryConfig.isDefault()) ? DEFAULT_KEY : registryConfig.getId();
+        String key = StringUtils.isNotEmpty(registryConfig.getId())
+                ? registryConfig.getId()
+                : (registryConfig.isDefault() == null || registryConfig.isDefault()) ? DEFAULT_KEY : null;
 
         if (StringUtils.isEmpty(key)) {
             throw new IllegalStateException("A RegistryConfig should either has an id or it's the default one, " + registryConfig);
         }
 
         if (registries.containsKey(key) && !registryConfig.equals(registries.get(key))) {
-            throw new IllegalStateException("Duplicate RegistryConfig found, there already has one default RegistryConfig, " + registryConfig);
+            logger.warn("Duplicate RegistryConfig found, there already has one default RegistryConfig or more than two RegistryConfigs have the same id, " +
+                                                    "you can try to give each RegistryConfig a different id. " + registryConfig);
         } else {
             registries.put(key, registryConfig);
         }
@@ -261,7 +276,7 @@ public class ConfigManager {
     }
 
     private void checkDuplicate(AbstractConfig oldOne, AbstractConfig newOne) {
-        if (oldOne != null && oldOne.equals(newOne)) {
+        if (oldOne != null && !oldOne.equals(newOne)) {
             throw new IllegalStateException("Duplicate Config found for " + oldOne.getClass().getSimpleName() + ", the old one is " + oldOne + ", the new one is " + newOne);
         }
     }
