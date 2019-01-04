@@ -87,8 +87,15 @@ public class NettyClientHandler extends ChannelDuplexHandler {
         // we need to have the request return directly instead of blocking the invoke process.
         promise.addListener(future -> {
             if (future.isSuccess()) {
+                // if our future is success, mark the future to sent.
+                try {
+                    handler.sent(channel, msg);
+                } finally {
+                    NettyChannel.removeChannelIfDisconnected(ctx.channel());
+                }
                 return;
             }
+
             Throwable t = future.cause();
             if (t != null && isMsg) {
                 Request request = (Request) msg;
@@ -98,11 +105,6 @@ public class NettyClientHandler extends ChannelDuplexHandler {
                 handler.received(channel, response);
             }
         });
-        try {
-            handler.sent(channel, msg);
-        } finally {
-            NettyChannel.removeChannelIfDisconnected(ctx.channel());
-        }
     }
 
     @Override
