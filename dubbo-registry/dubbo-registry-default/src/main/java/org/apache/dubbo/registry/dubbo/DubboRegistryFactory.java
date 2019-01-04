@@ -56,7 +56,7 @@ public class DubboRegistryFactory extends AbstractRegistryFactory {
                 .addParameterIfAbsent(Constants.TIMEOUT_KEY, "10000")
                 .addParameterIfAbsent(Constants.CALLBACK_INSTANCES_LIMIT_KEY, "10000")
                 .addParameterIfAbsent(Constants.CONNECT_TIMEOUT_KEY, "10000")
-                .addParameter(Constants.METHODS_KEY, StringUtils.join(new HashSet<String>(Arrays.asList(Wrapper.getWrapper(RegistryService.class).getDeclaredMethodNames())), ","))
+                .addParameter(Constants.METHODS_KEY, StringUtils.join(new HashSet<>(Arrays.asList(Wrapper.getWrapper(RegistryService.class).getDeclaredMethodNames())), ","))
                 //.addParameter(Constants.STUB_KEY, RegistryServiceStub.class.getName())
                 //.addParameter(Constants.STUB_EVENT_KEY, Boolean.TRUE.toString()) //for event dispatch
                 //.addParameter(Constants.ON_DISCONNECT_KEY, "disconnect")
@@ -79,7 +79,7 @@ public class DubboRegistryFactory extends AbstractRegistryFactory {
     @Override
     public Registry createRegistry(URL url) {
         url = getRegistryURL(url);
-        List<URL> urls = new ArrayList<URL>();
+        List<URL> urls = new ArrayList<>();
         urls.add(url.removeParameter(Constants.BACKUP_KEY));
         String backup = url.getParameter(Constants.BACKUP_KEY);
         if (backup != null && backup.length() > 0) {
@@ -88,7 +88,7 @@ public class DubboRegistryFactory extends AbstractRegistryFactory {
                 urls.add(url.setAddress(address));
             }
         }
-        RegistryDirectory<RegistryService> directory = new RegistryDirectory<RegistryService>(RegistryService.class, url.addParameter(Constants.INTERFACE_KEY, RegistryService.class.getName()).addParameterAndEncoded(Constants.REFER_KEY, url.toParameterString()));
+        RegistryDirectory<RegistryService> directory = new RegistryDirectory<>(RegistryService.class, url.addParameter(Constants.INTERFACE_KEY, RegistryService.class.getName()).addParameterAndEncoded(Constants.REFER_KEY, url.toParameterString()));
         Invoker<RegistryService> registryInvoker = cluster.join(directory);
         RegistryService registryService = proxyFactory.getProxy(registryInvoker);
         DubboRegistry registry = new DubboRegistry(registryInvoker, registryService);
