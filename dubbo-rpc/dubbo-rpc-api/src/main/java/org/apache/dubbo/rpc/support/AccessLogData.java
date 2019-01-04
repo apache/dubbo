@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.support;
 
 import com.alibaba.fastjson.JSON;
+
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.RpcContext;
 
@@ -31,18 +32,23 @@ import java.util.Map;
  * dynamic value e.g. time stamp, local jmv machine host address etc. It does not allow any null or empty key.
  */
 public final class AccessLogData {
-    /**
-     * Access log keys
-     */
-    private enum KEYS {
-        VERSION, GROUP, SERVICE, METHOD_NAME, INVOCATION_TIME, TYPES
-        ,ARGUMENTS, REMOTE_HOST, REMOTE_PORT, LOCAL_HOST, LOCAL_PORT
-    }
 
+    private static final String VERSION = "version";
+    private static final String GROUP = "group";
+    private static final String SERVICE = "service";
+    private static final String METHOD_NAME = "method-name";
+    private static final String INVOCATION_TIME = "invocation-time";
+    private static final String TYPES = "types";
+    private static final String ARGUMENTS = "arguments";
+    private static final String REMOTE_HOST = "remote-host";
+    private static final String REMOTE_PORT = "remote-port";
+    private static final String LOCAL_HOST = "localhost";
+    private static final String LOCAL_PORT = "local-port";
+ 
     /**
      * This is used to store log data in key val format.
      */
-    private Map<KEYS, Object> data;
+    private Map<String, Object> data;
 
     /**
      * Default constructor.
@@ -67,18 +73,20 @@ public final class AccessLogData {
 
     /**
      * Sets the access log key
+     *
      * @param accessLogKey
      */
     public void setAccessLogKey(String accessLogKey) {
 
     }
+
     /**
      * Add version information.
      *
      * @param version
      */
     public void setVersion(String version) {
-        set(KEYS.VERSION, version);
+        set(VERSION, version);
     }
 
     /**
@@ -87,7 +95,7 @@ public final class AccessLogData {
      * @param serviceName
      */
     public void setServiceName(String serviceName) {
-        set(KEYS.SERVICE, serviceName);
+        set(SERVICE, serviceName);
     }
 
     /**
@@ -96,7 +104,7 @@ public final class AccessLogData {
      * @param group
      */
     public void setGroup(String group) {
-        set(KEYS.GROUP, group);
+        set(GROUP, group);
     }
 
     /**
@@ -105,7 +113,7 @@ public final class AccessLogData {
      * @param invocationTime
      */
     public void setInvocationTime(Date invocationTime) {
-        set(KEYS.INVOCATION_TIME, invocationTime);
+        set(INVOCATION_TIME, invocationTime);
     }
 
     /**
@@ -114,7 +122,7 @@ public final class AccessLogData {
      * @param remoteHost
      */
     private void setRemoteHost(String remoteHost) {
-        set(KEYS.REMOTE_HOST, remoteHost);
+        set(REMOTE_HOST, remoteHost);
     }
 
     /**
@@ -123,7 +131,7 @@ public final class AccessLogData {
      * @param remotePort
      */
     private void setRemotePort(Integer remotePort) {
-        set(KEYS.REMOTE_PORT, remotePort);
+        set(REMOTE_PORT, remotePort);
     }
 
     /**
@@ -132,7 +140,7 @@ public final class AccessLogData {
      * @param localHost
      */
     private void setLocalHost(String localHost) {
-        set(KEYS.LOCAL_HOST, localHost);
+        set(LOCAL_HOST, localHost);
     }
 
     /**
@@ -141,7 +149,7 @@ public final class AccessLogData {
      * @param localPort
      */
     private void setLocalPort(Integer localPort) {
-        set(KEYS.LOCAL_PORT, localPort);
+        set(LOCAL_PORT, localPort);
     }
 
     /**
@@ -150,7 +158,7 @@ public final class AccessLogData {
      * @param methodName
      */
     public void setMethodName(String methodName) {
-        set(KEYS.METHOD_NAME, methodName);
+        set(METHOD_NAME, methodName);
     }
 
     /**
@@ -159,7 +167,7 @@ public final class AccessLogData {
      * @param types
      */
     public void setTypes(Class[] types) {
-        set(KEYS.TYPES, types != null ? Arrays.copyOf(types, types.length) : null);
+        set(TYPES, types != null ? Arrays.copyOf(types, types.length) : null);
     }
 
     /**
@@ -168,15 +176,16 @@ public final class AccessLogData {
      * @param arguments
      */
     public void setArguments(Object[] arguments) {
-        set(KEYS.ARGUMENTS, arguments != null ? Arrays.copyOf(arguments, arguments.length) : null);
+        set(ARGUMENTS, arguments != null ? Arrays.copyOf(arguments, arguments.length) : null);
     }
 
     /**
      * Return gthe service of access log entry
+     *
      * @return
      */
     public String getServiceName() {
-        return get(KEYS.SERVICE).toString();
+        return get(SERVICE).toString();
     }
 
 
@@ -184,34 +193,34 @@ public final class AccessLogData {
         StringBuilder sn = new StringBuilder();
 
         sn.append("[")
-                .append(sdf.format(get(KEYS.INVOCATION_TIME)))
+                .append(sdf.format(get(INVOCATION_TIME)))
                 .append("] ")
-                .append(get(KEYS.REMOTE_HOST))
+                .append(get(REMOTE_HOST))
                 .append(":")
-                .append(get(KEYS.REMOTE_PORT))
+                .append(get(REMOTE_PORT))
                 .append(" -> ")
-                .append(get(KEYS.LOCAL_HOST))
+                .append(get(LOCAL_HOST))
                 .append(":")
-                .append(get(KEYS.LOCAL_PORT))
+                .append(get(LOCAL_PORT))
                 .append(" - ");
 
-        String group = get(KEYS.GROUP) != null ? get(KEYS.GROUP).toString() : "";
+        String group = get(GROUP) != null ? get(GROUP).toString() : "";
         if (StringUtils.isNotEmpty(group.toString())) {
             sn.append(group).append("/");
         }
 
-        sn.append(get(KEYS.SERVICE));
+        sn.append(get(SERVICE));
 
-        String version = get(KEYS.VERSION) != null ? get(KEYS.VERSION).toString() : "";
+        String version = get(VERSION) != null ? get(VERSION).toString() : "";
         if (StringUtils.isNotEmpty(version.toString())) {
             sn.append(":").append(version);
         }
 
         sn.append(" ");
-        sn.append(get(KEYS.METHOD_NAME));
+        sn.append(get(METHOD_NAME));
 
         sn.append("(");
-        Class<?>[] types = get(KEYS.TYPES) != null? (Class<?>[]) get(KEYS.TYPES) : new Class[0];
+        Class<?>[] types = get(TYPES) != null ? (Class<?>[]) get(TYPES) : new Class[0];
         boolean first = true;
         for (Class<?> type : types) {
             if (first) {
@@ -224,7 +233,7 @@ public final class AccessLogData {
         sn.append(") ");
 
 
-        Object[] args = get(KEYS.ARGUMENTS) !=null ? (Object[]) get(KEYS.ARGUMENTS) : null;
+        Object[] args = get(ARGUMENTS) != null ? (Object[]) get(ARGUMENTS) : null;
         if (args != null && args.length > 0) {
             sn.append(JSON.toJSONString(args));
         }
@@ -238,7 +247,7 @@ public final class AccessLogData {
      * @param key
      * @return
      */
-    private Object get(KEYS key) {
+    private Object get(String key) {
         return data.get(key);
     }
 
@@ -248,8 +257,8 @@ public final class AccessLogData {
      * @param key   Any not null or non empty string
      * @param value Any object including null.
      */
-    private void set(KEYS key, Object value) {
+    private void set(String key, Object value) {
         data.put(key, value);
     }
 
-}
+ }

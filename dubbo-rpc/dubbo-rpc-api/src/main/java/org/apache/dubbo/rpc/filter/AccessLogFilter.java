@@ -20,7 +20,6 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
@@ -75,16 +74,9 @@ public class AccessLogFilter implements Filter {
 
     private static final SimpleDateFormat MESSAGE_DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    private final ConcurrentMap<String, Set<AccessLogData>> logQueue = new ConcurrentHashMap<String, Set<AccessLogData>>();
+    private static final ConcurrentMap<String, Set<AccessLogData>> logQueue = new ConcurrentHashMap<String, Set<AccessLogData>>();
 
     private static final ScheduledExecutorService logScheduled = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-Access-Log", true));
-
-    private static final InternalThreadLocal<SimpleDateFormat> INLINE_MESSAGE_DATE_FORMATTER = new InternalThreadLocal<SimpleDateFormat>() {
-        @Override
-        protected SimpleDateFormat initialValue() {
-            return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        }
-    };
 
     /**
      * Default constructor initialize demon thread for writing into access log file with names with access log key
@@ -102,7 +94,6 @@ public class AccessLogFilter implements Filter {
      * @return Result from service method.
      * @throws RpcException
      */
-
     @Override
     public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
         try {
@@ -118,13 +109,14 @@ public class AccessLogFilter implements Filter {
     }
 
     private void log(String accessLog, AccessLogData accessLogData) {
+        logQueue.computeIfAbsent(accessLog,k->new ConcurrentHashSet<>());
         Set<AccessLogData> logSet = logQueue.get(accessLog);
-        if (logSet == null) {
-            logQueue.putIfAbsent(accessLog, new ConcurrentHashSet<AccessLogData>());
-            logSet = logQueue.get(accessLog);
-        }
+
         if (logSet.size() < LOG_MAX_BUFFER) {
             logSet.add(accessLogData);
+        } else {
+            //TODO we needs use force writing to file so that buffer gets clear and new log can be written.
+            logger.warn("AccessLog buffer is full skipping buffer ");
         }
     }
 
