@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.schema;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConsumerConfig;
@@ -43,17 +44,17 @@ public class DubboNamespaceHandler extends NamespaceHandlerSupport {
 
     @Override
     public void init() {
-        registerBeanDefinitionParser("application", new DubboBeanDefinitionParser(ApplicationConfig.class, true));
-        registerBeanDefinitionParser("module", new DubboBeanDefinitionParser(ModuleConfig.class, true));
-        registerBeanDefinitionParser("registry", new DubboBeanDefinitionParser(RegistryConfig.class, true));
-        registerBeanDefinitionParser("config-center", new DubboBeanDefinitionParser(ConfigCenterBean.class, true));
-        registerBeanDefinitionParser("monitor", new DubboBeanDefinitionParser(MonitorConfig.class, true));
-        registerBeanDefinitionParser("provider", new DubboBeanDefinitionParser(ProviderConfig.class, true));
-        registerBeanDefinitionParser("consumer", new DubboBeanDefinitionParser(ConsumerConfig.class, true));
-        registerBeanDefinitionParser("protocol", new DubboBeanDefinitionParser(ProtocolConfig.class, true));
-        registerBeanDefinitionParser("service", new DubboBeanDefinitionParser(ServiceBean.class, true));
-        registerBeanDefinitionParser("reference", new DubboBeanDefinitionParser(ReferenceBean.class, false));
-        registerBeanDefinitionParser("annotation", new AnnotationBeanDefinitionParser());
+        registerBeanDefinitionParser(Constants.DUBBO_NAMESPACE_APPLICATION, new DubboBeanDefinitionParser(ApplicationConfig.class, true));
+        registerBeanDefinitionParser(Constants.DUBBO_NAMESPACE_MODULE, new DubboBeanDefinitionParser(ModuleConfig.class, true));
+        registerBeanDefinitionParser(Constants.DUBBO_NAMESPACE_REGISTRY, new DubboBeanDefinitionParser(RegistryConfig.class, true));
+        registerBeanDefinitionParser(Constants.DUBBO_NAMESPACE_CONFIG_CENTER, new DubboBeanDefinitionParser(ConfigCenterBean.class, true));
+        registerBeanDefinitionParser(Constants.DUBBO_NAMESPACE_MONITOR, new DubboBeanDefinitionParser(MonitorConfig.class, true));
+        registerBeanDefinitionParser(Constants.DUBBO_NAMESPACE_PROVIDER, new DubboBeanDefinitionParser(ProviderConfig.class, true));
+        registerBeanDefinitionParser(Constants.DUBBO_NAMESPACE_CONSUMER, new DubboBeanDefinitionParser(ConsumerConfig.class, true));
+        registerBeanDefinitionParser(Constants.DUBBO_NAMESPACE_PROTOCOL, new DubboBeanDefinitionParser(ProtocolConfig.class, true));
+        registerBeanDefinitionParser(Constants.DUBBO_NAMESPACE_SERVICE, new DubboBeanDefinitionParser(ServiceBean.class, true));
+        registerBeanDefinitionParser(Constants.DUBBO_NAMESPACE_REFERENCE, new DubboBeanDefinitionParser(ReferenceBean.class, false));
+        registerBeanDefinitionParser(Constants.DUBBO_NAMESPACE_ANNOTATION, new AnnotationBeanDefinitionParser());
     }
 
 }

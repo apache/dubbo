@@ -480,16 +480,19 @@ public class Constants {
 
     /**
      * simple the registry for provider.
+     *
      * @since 2.7.0
      */
     public static final String SIMPLE_PROVIDER_CONFIG_KEY = "simple.provider.config";
     /**
      * simple the registry for consumer.
+     *
      * @since 2.7.0
      */
     public static final String SIMPLE_CONSUMER_CONFIG_KEY = "simple.consumer.config";
     /**
      * After simplify the registry, should add some paramter individually for provider.
+     *
      * @since 2.7.0
      */
     public static final String EXTRA_PROVIDER_CONFIG_KEYS_KEY = "extra.provider.keys";
@@ -813,6 +816,29 @@ public class Constants {
      * Production environment key.
      */
     public static final String PRODUCTION_ENVIRONMENT = "product";
+
+    public static final String DUBBO_NAMESPACE_APPLICATION = APPLICATION_KEY;
+
+    public static final String DUBBO_NAMESPACE_MODULE = "module";
+
+    public static final String DUBBO_NAMESPACE_REGISTRY = REGISTRY_PROTOCOL;;
+
+    public static final String DUBBO_NAMESPACE_CONFIG_CENTER = "config-center";
+
+    public static final String DUBBO_NAMESPACE_MONITOR = MONITOR_KEY;
+
+    public static final String DUBBO_NAMESPACE_PROVIDER = PROVIDER;
+
+    public static final String DUBBO_NAMESPACE_CONSUMER = CONSUMER;
+
+    public static final String DUBBO_NAMESPACE_PROTOCOL = PROTOCOL_KEY;
+
+    public static final String DUBBO_NAMESPACE_SERVICE = "service";
+
+    public static final String DUBBO_NAMESPACE_REFERENCE = "reference";
+
+    public static final String DUBBO_NAMESPACE_ANNOTATION = "annotation";
+
     /*
      * private Constants(){ }
      */
