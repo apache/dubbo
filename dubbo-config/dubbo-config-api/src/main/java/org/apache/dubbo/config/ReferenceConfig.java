@@ -218,6 +218,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             inheritIfAbsentFromApplication();
         }
         checkApplication();
+        checkRegistry();
         checkMetadataReport();
         checkRegistryDataConfig();
     }
