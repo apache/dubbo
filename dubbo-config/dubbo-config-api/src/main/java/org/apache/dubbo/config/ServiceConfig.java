@@ -275,7 +275,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         checkProtocol();
         this.refresh();
         checkMetadataReport();
-        checkRegistryDataConfig();
 
         if (interfaceName == null || interfaceName.length() == 0) {
             throw new IllegalStateException("<dubbo:service interface=\"\" /> interface not allow null!");
