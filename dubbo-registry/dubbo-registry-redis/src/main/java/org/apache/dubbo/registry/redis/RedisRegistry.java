@@ -155,14 +155,11 @@ public class RedisRegistry extends FailbackRegistry {
         this.root = group;
 
         this.expirePeriod = url.getParameter(Constants.SESSION_TIMEOUT_KEY, Constants.DEFAULT_SESSION_TIMEOUT);
-        this.expireFuture = expireExecutor.scheduleWithFixedDelay(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    deferExpired(); // Extend the expiration time
-                } catch (Throwable t) { // Defensive fault tolerance
-                    logger.error("Unexpected exception occur at defer expire time, cause: " + t.getMessage(), t);
-                }
+        this.expireFuture = expireExecutor.scheduleWithFixedDelay(() -> {
+            try {
+                deferExpired(); // Extend the expiration time
+            } catch (Throwable t) { // Defensive fault tolerance
+                logger.error("Unexpected exception occur at defer expire time, cause: " + t.getMessage(), t);
             }
         }, expirePeriod / 2, expirePeriod / 2, TimeUnit.MILLISECONDS);
     }
@@ -400,8 +397,8 @@ public class RedisRegistry extends FailbackRegistry {
     }
 
     private void doNotify(Jedis jedis, String key) {
-        for (Map.Entry<URL, Set<NotifyListener>> entry : new HashMap<URL, Set<NotifyListener>>(getSubscribed()).entrySet()) {
-            doNotify(jedis, Arrays.asList(key), entry.getKey(), new HashSet<NotifyListener>(entry.getValue()));
+        for (Map.Entry<URL, Set<NotifyListener>> entry : new HashMap<>(getSubscribed()).entrySet()) {
+            doNotify(jedis, Arrays.asList(key), entry.getKey(), new HashSet<>(entry.getValue()));
         }
     }
 
@@ -425,7 +422,7 @@ public class RedisRegistry extends FailbackRegistry {
             if (!categories.contains(Constants.ANY_VALUE) && !categories.contains(category)) {
                 continue;
             }
-            List<URL> urls = new ArrayList<URL>();
+            List<URL> urls = new ArrayList<>();
             Map<String, String> values = jedis.hgetAll(key);
             if (values != null && values.size() > 0) {
                 for (Map.Entry<String, String> entry : values.entrySet()) {

@@ -401,7 +401,7 @@ public class RegistryProtocol implements Protocol {
         }
 
         private List<URL> getMatchedUrls(List<URL> configuratorUrls, URL currentSubscribe) {
-            List<URL> result = new ArrayList<URL>();
+            List<URL> result = new ArrayList<>();
             for (URL url : configuratorUrls) {
                 URL overrideUrl = url;
                 // Compatible with the old version
@@ -499,19 +499,16 @@ public class RegistryProtocol implements Protocol {
                 logger.warn(t.getMessage(), t);
             }
 
-            executor.submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        int timeout = ConfigUtils.getServerShutdownTimeout();
-                        if (timeout > 0) {
-                            logger.info("Waiting " + timeout + "ms for registry to notify all consumers before unexport. Usually, this is called when you use dubbo API");
-                            Thread.sleep(timeout);
-                        }
-                        exporter.unexport();
-                    } catch (Throwable t) {
-                        logger.warn(t.getMessage(), t);
+            executor.submit(() -> {
+                try {
+                    int timeout = ConfigUtils.getServerShutdownTimeout();
+                    if (timeout > 0) {
+                        logger.info("Waiting " + timeout + "ms for registry to notify all consumers before unexport. Usually, this is called when you use dubbo API");
+                        Thread.sleep(timeout);
                     }
+                    exporter.unexport();
+                } catch (Throwable t) {
+                    logger.warn(t.getMessage(), t);
                 }
             });
         }
