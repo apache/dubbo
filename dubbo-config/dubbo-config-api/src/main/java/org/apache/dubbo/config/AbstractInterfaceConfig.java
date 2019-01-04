@@ -141,7 +141,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      */
     protected String ondisconnect;
     protected MetadataReportConfig metadataReportConfig;
-    protected RegistryDataConfig registryDataConfig;
 
     protected ConfigCenterConfig configCenter;
 
@@ -233,17 +232,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
     }
 
-    protected void checkRegistryDataConfig() {
-        // TODO get from ConfigManager first, only create if absent.
-        if (registryDataConfig == null) {
-            setRegistryDataConfig(new RegistryDataConfig());
-        }
-        registryDataConfig.refresh();
-        if (!registryDataConfig.isValid()) {
-            logger.info("There's no valid registryData config found. So the registry will store full url parameter " +
-                    "to registry server.");
-        }
-    }
 
     void checkConfigCenter() {
         if (configCenter == null) {
@@ -297,11 +285,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected List<URL> loadRegistries(boolean provider) {
         // check && override if necessary
         checkRegistry();
-        checkRegistryDataConfig();
         List<URL> registryList = new ArrayList<URL>();
         if (registries != null && !registries.isEmpty()) {
-            Map<String, String> registryDataConfigurationMap = new HashMap<>(4);
-            appendParameters(registryDataConfigurationMap, registryDataConfig);
             for (RegistryConfig config : registries) {
                 String address = config.getAddress();
                 if (StringUtils.isEmpty(address)) {
@@ -321,8 +306,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                     for (URL url : urls) {
                         url = url.addParameter(Constants.REGISTRY_KEY, url.getProtocol());
                         url = url.setProtocol(Constants.REGISTRY_PROTOCOL);
-                        // add parameter
-                        url = url.addParametersIfAbsent(registryDataConfigurationMap);
                         if ((provider && url.getParameter(Constants.REGISTER_KEY, true))
                                 || (!provider && url.getParameter(Constants.SUBSCRIBE_KEY, true))) {
                             registryList.add(url);
@@ -771,14 +754,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     public void setOwner(String owner) {
         checkMultiName("owner", owner);
         this.owner = owner;
-    }
-
-    public RegistryDataConfig getRegistryDataConfig() {
-        return registryDataConfig;
-    }
-
-    public void setRegistryDataConfig(RegistryDataConfig registryDataConfig) {
-        this.registryDataConfig = registryDataConfig;
     }
 
     public ConfigCenterConfig getConfigCenter() {

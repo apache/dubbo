@@ -482,23 +482,13 @@ public class Constants {
      * simple the registry for provider.
      * @since 2.7.0
      */
-    public static final String SIMPLE_PROVIDER_CONFIG_KEY = "simple.provider.config";
-    /**
-     * simple the registry for consumer.
-     * @since 2.7.0
-     */
-    public static final String SIMPLE_CONSUMER_CONFIG_KEY = "simple.consumer.config";
+    public static final String SIMPLIFIED_KEY = "simplified";
+
     /**
      * After simplify the registry, should add some paramter individually for provider.
      * @since 2.7.0
      */
-    public static final String EXTRA_PROVIDER_CONFIG_KEYS_KEY = "extra.provider.keys";
-    /**
-     * After simplify the registry, should add some paramter individually for consumer.
-     *
-     * @since 2.7.0
-     */
-    public static final String EXTRA_CONSUMER_CONFIG_KEYS_KEY = "extra.consumer.keys";
+    public static final String EXTRA_KEYS_KEY = "extra-keys";
 
     /**
      * To decide whether to exclude unavailable invoker from the cluster
