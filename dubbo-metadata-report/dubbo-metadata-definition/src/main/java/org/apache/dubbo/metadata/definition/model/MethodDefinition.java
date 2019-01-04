@@ -74,8 +74,12 @@ public class MethodDefinition {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof MethodDefinition)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof MethodDefinition)) {
+            return false;
+        }
         MethodDefinition that = (MethodDefinition) o;
         return Objects.equals(getName(), that.getName()) &&
                 Arrays.equals(getParameterTypes(), that.getParameterTypes()) &&

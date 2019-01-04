@@ -52,6 +52,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
+ *
  */
 public abstract class AbstractMetadataReport implements MetadataReport {
 
@@ -229,6 +230,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
+    @Override
     public void storeProviderMetadata(MetadataIdentifier providerMetadataIdentifier, FullServiceDefinition serviceDefinition) {
         if (syncReport) {
             storeProviderMetadataTask(providerMetadataIdentifier, serviceDefinition);
@@ -261,6 +263,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
+    @Override
     public void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap) {
         if (syncReport) {
             storeConsumerMetadataTask(consumerMetadataIdentifier, serviceParameterMap);
