@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -28,6 +29,8 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.configcenter.DynamicConfiguration;
+import org.apache.dubbo.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.metadata.integration.MetadataReportService;
 import org.apache.dubbo.monitor.MonitorFactory;
 import org.apache.dubbo.monitor.MonitorService;
@@ -39,6 +42,7 @@ import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.support.MockInvoker;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -48,6 +52,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.apache.dubbo.common.Constants.APPLICATION_KEY;
+import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
 /**
@@ -246,7 +251,40 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
         // give jvm properties the chance to override local configs, e.g., -Ddubbo.configcenter.highestPriority
         configCenter.refresh();
-        configCenter.init(application);
+        startConfigCenter();
+    }
+
+    private void startConfigCenter() {
+        if (configCenter.isValid()) {
+            if (!configCenter.checkOrUpdateInited()) {
+                return;
+            }
+            DynamicConfiguration dynamicConfiguration = startDynamicConfiguration(configCenter.toUrl());
+            String configContent = dynamicConfiguration.getConfig(configCenter.getConfigFile(), configCenter.getGroup());
+
+            String appGroup = application != null ? application.getName() : null;
+            String appConfigContent = null;
+            if (StringUtils.isNotEmpty(appGroup)) {
+                appConfigContent = dynamicConfiguration.getConfig
+                        (StringUtils.isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile(),
+                         appGroup
+                        );
+            }
+            try {
+                Environment.getInstance().setConfigCenterFirst(configCenter.isHighestPriority());
+                Environment.getInstance().updateExternalConfigurationMap(parseProperties(configContent));
+                Environment.getInstance().updateAppExternalConfigurationMap(parseProperties(appConfigContent));
+            } catch (IOException e) {
+                throw new IllegalStateException("Failed to parse configurations from Config Center.", e);
+            }
+        }
+    }
+
+    private DynamicConfiguration startDynamicConfiguration(URL url) {
+        DynamicConfigurationFactory dynamicConfigurationFactory = ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getExtension(url.getProtocol());
+        DynamicConfiguration configuration = dynamicConfigurationFactory.getDynamicConfiguration(url);
+        Environment.getInstance().setDynamicConfiguration(configuration);
+        return configuration;
     }
 
     /**
@@ -544,11 +582,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             Environment.getInstance().getDynamicConfiguration().orElseGet(() -> {
                 ConfigManager configManager = ConfigManager.getInstance();
                 ConfigCenterConfig cc = configManager.getConfigCenter().orElse(new ConfigCenterConfig());
-                configManager.setConfigCenter(cc);
                 cc.setProtocol(rc.getProtocol());
                 cc.setAddress(rc.getAddress());
                 cc.setHighestPriority(false);
-                cc.init(this.application);
+                setConfigCenter(cc);
+                startConfigCenter();
                 return null;
             });
         });
