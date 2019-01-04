@@ -109,8 +109,7 @@ public class AccessLogFilter implements Filter {
     }
 
     private void log(String accessLog, AccessLogData accessLogData) {
-        logQueue.computeIfAbsent(accessLog,k->new ConcurrentHashSet<>());
-        Set<AccessLogData> logSet = logQueue.get(accessLog);
+        Set<AccessLogData> logSet=logQueue.computeIfAbsent(accessLog,k->new ConcurrentHashSet<>());
 
         if (logSet.size() < LOG_MAX_BUFFER) {
             logSet.add(accessLogData);
