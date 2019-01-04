@@ -213,7 +213,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         resolveFile();
         checkApplication();
         checkMetadataReport();
-        checkRegistryDataConfig();
     }
 
     public synchronized T get() {
