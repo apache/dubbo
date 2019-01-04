@@ -70,6 +70,7 @@ public abstract class AbstractRouter implements Router {
         return (this.getPriority() >= o.getPriority()) ? 1 : -1;
     }
 
+    @Override
     public int getPriority() {
         return priority;
     }
