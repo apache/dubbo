@@ -468,7 +468,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (StringUtils.isEmpty(registryIds)) {
             if (registries == null || registries.isEmpty()) {
                 registries = new ArrayList<>();
-                registries.add(new RegistryConfig());
+                registries.add(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
             }
         } else {
             String[] arr = Constants.COMMA_SPLIT_PATTERN.split(registryIds);
@@ -477,7 +477,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             }
             Arrays.stream(arr).forEach(id -> {
                 if (registries.stream().noneMatch(reg -> reg.getId().equals(id))) {
-                    RegistryConfig registryConfig = new RegistryConfig();
+                    RegistryConfig registryConfig = new RegistryConfig(RegistryConfig.NO_AVAILABLE);
                     registryConfig.setId(id);
                     registries.add(registryConfig);
                 }
