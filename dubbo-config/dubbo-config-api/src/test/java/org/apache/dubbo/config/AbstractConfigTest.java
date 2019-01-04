@@ -421,8 +421,7 @@ public class AbstractConfigTest {
             Environment.getInstance().setExternalConfigMap(external);
 
             ConfigCenterConfig configCenter = new ConfigCenterConfig();
-            configCenter.init(null);
-
+            overrideConfig.setConfigCenter(configCenter);
             // Load configuration from  system properties -> externalConfiguration -> RegistryConfig -> dubbo.properties
             overrideConfig.refresh();
 
@@ -468,7 +467,7 @@ public class AbstractConfigTest {
         String[] parameters() default {};
     }
 
-    private static class OverrideConfig extends AbstractConfig {
+    private static class OverrideConfig extends AbstractInterfaceConfig {
         public String address;
         public String protocol;
         public String exclude;

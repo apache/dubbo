@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring;
 
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
@@ -96,7 +97,7 @@ public class ConfigCenterBean extends ConfigCenterConfig implements Initializing
             if (rawProperties instanceof Map) {
                 externalProperties.putAll((Map<String, String>) rawProperties);
             } else if (rawProperties instanceof String) {
-                externalProperties.putAll(parseProperties((String) rawProperties));
+                externalProperties.putAll(ConfigurationUtils.parseProperties((String) rawProperties));
             }
 
             if (environment instanceof ConfigurableEnvironment && externalProperties.isEmpty()) {
