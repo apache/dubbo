@@ -821,7 +821,7 @@ public class Constants {
 
     public static final String DUBBO_NAMESPACE_MODULE = "module";
 
-    public static final String DUBBO_NAMESPACE_REGISTRY = REGISTRY_PROTOCOL;;
+    public static final String DUBBO_NAMESPACE_REGISTRY = REGISTRY_PROTOCOL;
 
     public static final String DUBBO_NAMESPACE_CONFIG_CENTER = "config-center";
 
