@@ -24,34 +24,35 @@ import org.apache.dubbo.remoting.p2p.Group;
 import org.apache.dubbo.remoting.p2p.Peer;
 import org.apache.dubbo.remoting.transport.ChannelHandlerAdapter;
 
-import io.github.glytching.junit.extension.folder.TemporaryFolder;
-import io.github.glytching.junit.extension.folder.TemporaryFolderExtension;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.support.io.TempDirectory;
+import org.junit.jupiter.api.support.io.TempDirectory.TempDir;
 
-import java.io.IOException;
+import java.nio.file.Path;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static org.mockito.Mockito.mock;
-@ExtendWith(TemporaryFolderExtension.class)
+
+@ExtendWith(TempDirectory.class)
 public class FileNetworkerTest {
 
     @BeforeEach
-    public void setUp(TemporaryFolder folder) throws Exception {
-        folder.create();
+    public void setUp(@TempDir Path folder) throws Exception {
+        folder.toFile().createNewFile();
     }
 
     @AfterEach
-    public void tearDown(TemporaryFolder folder) throws Exception {
-        folder.delete();
+    public void tearDown(@TempDir Path folder) {
+        folder.getFileName().toAbsolutePath().toFile().delete();
     }
 
     @Test
-    public void testJoin() throws RemotingException, InterruptedException, IOException {
-        final String groupURL = "file:///" + folder.newFile();
+    public void testJoin(@TempDir Path folder) throws RemotingException, InterruptedException {
+        final String groupURL = "file:///" + folder.getFileName().toAbsolutePath();
 
         FileNetworker networker = new FileNetworker();
         Group group = networker.lookup(URL.valueOf(groupURL));

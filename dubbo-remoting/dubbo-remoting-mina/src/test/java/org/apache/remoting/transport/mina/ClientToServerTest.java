@@ -22,7 +22,9 @@ import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.ResponseFuture;
 import org.apache.dubbo.remoting.exchange.support.Replier;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -42,13 +44,15 @@ public abstract class ClientToServerTest {
 
     protected abstract ExchangeChannel newClient(int port) throws RemotingException;
 
+    @BeforeEach
     protected void setUp() throws Exception {
         int port = (int) (1000 * Math.random() + 10000);
         server = newServer(port, handler);
         client = newClient(port);
     }
 
-    protected void tearDown() throws Exception {
+    @AfterEach
+    protected void tearDown() {
         try {
             if (server != null)
                 server.close();

@@ -599,8 +599,8 @@ public class RegistryDirectoryTest {
         List<Invoker<?>> invokers = registryDirectory.list(invocation);
         Assertions.assertEquals(2, invokers.size());
 
-        Assertions.assertEquals("override rute must be first priority", "1", invokers.get(0).getUrl().getParameter("timeout"));
-        Assertions.assertEquals("override rute must be first priority", "5", invokers.get(0).getUrl().getParameter("connections"));
+        Assertions.assertEquals("1", invokers.get(0).getUrl().getParameter("timeout"), "override rute must be first priority");
+        Assertions.assertEquals("5", invokers.get(0).getUrl().getParameter("connections"), "override rute must be first priority");
     }
 
     /**
@@ -630,8 +630,8 @@ public class RegistryDirectoryTest {
         List<Invoker<?>> invokers = registryDirectory.list(invocation);
         Assertions.assertEquals(2, invokers.size());
 
-        Assertions.assertEquals("override rute must be first priority", "1", invokers.get(0).getUrl().getParameter("timeout"));
-        Assertions.assertEquals("override rute must be first priority", "5", invokers.get(0).getUrl().getParameter("connections"));
+        Assertions.assertEquals("1", invokers.get(0).getUrl().getParameter("timeout"), "override rute must be first priority");
+        Assertions.assertEquals("5", invokers.get(0).getUrl().getParameter("connections"), "override rute must be first priority");
     }
 
     /**
@@ -657,8 +657,8 @@ public class RegistryDirectoryTest {
         List<Invoker<?>> invokers = registryDirectory.list(invocation);
         Assertions.assertEquals(2, invokers.size());
 
-        Assertions.assertEquals("override rute must be first priority", "1", invokers.get(0).getUrl().getParameter("timeout"));
-        Assertions.assertEquals("override rute must be first priority", "5", invokers.get(0).getUrl().getParameter("connections"));
+        Assertions.assertEquals("1", invokers.get(0).getUrl().getParameter("timeout"), "override rute must be first priority");
+        Assertions.assertEquals("5", invokers.get(0).getUrl().getParameter("connections"), "override rute must be first priority");
     }
 
     /**

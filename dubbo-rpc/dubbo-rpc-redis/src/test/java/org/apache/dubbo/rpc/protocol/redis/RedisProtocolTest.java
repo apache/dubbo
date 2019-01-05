@@ -52,7 +52,7 @@ public class RedisProtocolTest {
     private URL registryUrl;
 
     @BeforeEach
-    public void setUp(TestInfo testInfo) throws Exception {
+    public void setUp(TestInfo testInfo) {
         int redisPort = NetUtils.getAvailablePort();
         if (testInfo.getTestMethod().equals("testAuthRedis") || testInfo.getTestMethod().equals("testWrongAuthRedis")) {
             String password = "123456";

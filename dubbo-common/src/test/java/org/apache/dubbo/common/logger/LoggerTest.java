@@ -17,16 +17,15 @@
 package org.apache.dubbo.common.logger;
 
 import org.apache.dubbo.common.logger.jcl.JclLoggerAdapter;
-import org.apache.dubbo.common.logger.jdk.JdkLoggerAdapter;
 import org.apache.dubbo.common.logger.log4j.Log4jLoggerAdapter;
+import org.apache.dubbo.common.logger.log4j2.Log4j2LoggerAdapter;
 import org.apache.dubbo.common.logger.slf4j.Slf4jLoggerAdapter;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -34,26 +33,23 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 
 public class LoggerTest {
-    public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-                {JclLoggerAdapter.class},
-                {JdkLoggerAdapter.class},
-                {Log4jLoggerAdapter.class},
-                {Slf4jLoggerAdapter.class}
-        });
-    }
 
-    private Logger logger;
-
-    public LoggerTest(Class<? extends LoggerAdapter> loggerAdapter) throws Exception {
-        LoggerAdapter adapter = loggerAdapter.newInstance();
-        adapter.setLevel(Level.ALL);
-        this.logger = adapter.getLogger(this.getClass());
+    static Stream<Arguments> data() {
+        return Stream.of(
+                Arguments.of(JclLoggerAdapter.class),
+                Arguments.of(Log4jLoggerAdapter.class),
+                Arguments.of(Log4jLoggerAdapter.class),
+                Arguments.of(Slf4jLoggerAdapter.class),
+                Arguments.of(Log4j2LoggerAdapter.class)
+        );
     }
 
     @ParameterizedTest
     @MethodSource("data")
-    public void testAllLogMethod() {
+    public void testAllLogMethod(Class<? extends LoggerAdapter> loggerAdapter) throws Exception {
+        LoggerAdapter adapter = loggerAdapter.newInstance();
+        adapter.setLevel(Level.ALL);
+        Logger logger = adapter.getLogger(this.getClass());
         logger.error("error");
         logger.warn("warn");
         logger.info("info");
@@ -75,7 +71,10 @@ public class LoggerTest {
 
     @ParameterizedTest
     @MethodSource("data")
-    public void testLevelEnable() {
+    public void testLevelEnable(Class<? extends LoggerAdapter> loggerAdapter) throws IllegalAccessException, InstantiationException {
+        LoggerAdapter adapter = loggerAdapter.newInstance();
+        adapter.setLevel(Level.ALL);
+        Logger logger = adapter.getLogger(this.getClass());
         assertThat(logger.isWarnEnabled(), not(nullValue()));
         assertThat(logger.isTraceEnabled(), not(nullValue()));
         assertThat(logger.isErrorEnabled(), not(nullValue()));

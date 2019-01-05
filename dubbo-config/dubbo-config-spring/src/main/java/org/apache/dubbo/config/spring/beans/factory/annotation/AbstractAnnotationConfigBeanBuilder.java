@@ -53,9 +53,9 @@ abstract class AbstractAnnotationConfigBeanBuilder<A extends Annotation, B exten
 
     protected AbstractAnnotationConfigBeanBuilder(A annotation, ClassLoader classLoader,
                                                   ApplicationContext applicationContext) {
-        Assertions.notNull(annotation, "The Annotation must not be null!");
-        Assertions.notNull(classLoader, "The ClassLoader must not be null!");
-        Assertions.notNull(applicationContext, "The ApplicationContext must not be null!");
+        Assert.notNull(annotation, "The Annotation must not be null!");
+        Assert.notNull(classLoader, "The ClassLoader must not be null!");
+        Assert.notNull(applicationContext, "The ApplicationContext must not be null!");
         this.annotation = annotation;
         this.applicationContext = applicationContext;
         this.classLoader = classLoader;

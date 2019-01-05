@@ -25,12 +25,12 @@ import static org.apache.dubbo.common.utils.Assert.notNull;
 
 public class AssertTest {
     @Test
-    public void testNotNull1() throws Exception {
-        Assertions.assertThrows(IllegalStateException.class, () -> notNull(null, "null object"));
+    public void testNotNull1() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> notNull(null, "null object"));
     }
 
     @Test
-    public void testNotNull2() throws Exception {
+    public void testNotNull2() {
         Assertions.assertThrows(IllegalStateException.class, () -> notNull(null, new IllegalStateException("null object")));
     }
 
@@ -46,12 +46,12 @@ public class AssertTest {
 
     @Test
     public void testNotNullString() {
-        Assertions.assertThrows(IllegalStateException.class, () -> notEmptyString(null, "Message can't be null"));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> notEmptyString(null, "Message can't be null"));
     }
 
     @Test
     public void testNotEmptyString() {
-        Assertions.assertThrows(IllegalStateException.class, () -> notEmptyString("", "Message can't be null or empty"));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> notEmptyString("", "Message can't be null or empty"));
     }
 
     @Test

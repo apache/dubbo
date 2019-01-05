@@ -17,12 +17,12 @@
 
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.TemporaryFolderExtension;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.support.io.TempDirectory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -33,13 +33,13 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.file.Path;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+@ExtendWith(TempDirectory.class)
 public class IOUtilsTest {
-    @RegisterExtension
-    public TemporaryFolderExtension tmpDir = new TemporaryFolderExtension();
 
     private static String TEXT = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
     private InputStream is;
@@ -89,12 +89,13 @@ public class IOUtilsTest {
     }
 
     @Test
-    public void testLines() throws Exception {
-        File file = tmpDir.newFile("test");
+    public void testLines(@TempDirectory.TempDir Path tmpDir) throws Exception {
+        File file = tmpDir.getFileName().toAbsolutePath().toFile();
         IOUtils.writeLines(file, new String[]{TEXT});
         String[] lines = IOUtils.readLines(file);
         assertThat(lines.length, equalTo(1));
         assertThat(lines[0], equalTo(TEXT));
+        tmpDir.getFileName().toAbsolutePath().toFile().delete();
     }
 
     @Test
@@ -117,13 +118,14 @@ public class IOUtilsTest {
     }
 
     @Test
-    public void testAppendLines() throws Exception {
-        File file = tmpDir.newFile("test1");
+    public void testAppendLines(@TempDirectory.TempDir Path tmpDir) throws Exception {
+        File file = tmpDir.getFileName().toAbsolutePath().toFile();
         IOUtils.appendLines(file, new String[]{"a", "b", "c"});
         String[] lines = IOUtils.readLines(file);
         assertThat(lines.length, equalTo(3));
         assertThat(lines[0], equalTo("a"));
         assertThat(lines[1], equalTo("b"));
         assertThat(lines[2], equalTo("c"));
+        tmpDir.getFileName().toAbsolutePath().toFile().delete();
     }
 }

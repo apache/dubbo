@@ -43,7 +43,7 @@ public class NettyClientTest {
     }
 
     @AfterAll
-    public static void tearDown() throws Exception {
+    public static void tearDown() {
         try {
             if (server != null)
                 server.close();

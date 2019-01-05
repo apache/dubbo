@@ -43,7 +43,7 @@ public class ClientsTest {
 
     @Test
     public void testGetTransportNull() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
             String name = null;
             ExtensionLoader.getExtensionLoader(Transporter.class).getExtension(name);
         });

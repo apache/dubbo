@@ -69,7 +69,7 @@ class CompatibleReferenceBeanBuilder extends AbstractAnnotationConfigBeanBuilder
             interfaceClass = this.interfaceClass;
         }
 
-        Assertions.isTrue(interfaceClass.isInterface(),
+        Assert.isTrue(interfaceClass.isInterface(),
                 "The class of field or method that was annotated @Reference is not an interface!");
 
         referenceBean.setInterface(interfaceClass);
@@ -94,7 +94,7 @@ class CompatibleReferenceBeanBuilder extends AbstractAnnotationConfigBeanBuilder
 
     @Override
     protected void preConfigureBean(Reference reference, ReferenceBean referenceBean) {
-        Assertions.notNull(interfaceClass, "The interface class must set first!");
+        Assert.notNull(interfaceClass, "The interface class must set first!");
         DataBinder dataBinder = new DataBinder(referenceBean);
         // Set ConversionService
         dataBinder.setConversionService(getConversionService());

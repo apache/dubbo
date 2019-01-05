@@ -32,7 +32,7 @@ import org.apache.dubbo.common.serialize.model.person.FullAddress;
 import org.apache.dubbo.common.serialize.model.person.PersonInfo;
 import org.apache.dubbo.common.serialize.model.person.PersonStatus;
 import org.apache.dubbo.common.serialize.model.person.Phone;
-import org.junit.jupiter.api.AfterEach;
+
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
@@ -52,10 +52,12 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import static java.time.Duration.ofMillis;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTimeout;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -1160,25 +1162,27 @@ public abstract class AbstractSerializationTest {
     }
 
 
-    @Test(timeout = 3000)
+    @Test
     public void test_LoopReference() throws Exception {
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("k1", "v1");
-        map.put("self", map);
+        assertTimeout(ofMillis(3000), () -> {
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("k1", "v1");
+            map.put("self", map);
 
 
-        ObjectOutput objectOutput = serialization.serialize(url, byteArrayOutputStream);
-        objectOutput.writeObject(map);
-        objectOutput.flushBuffer();
+            ObjectOutput objectOutput = serialization.serialize(url, byteArrayOutputStream);
+            objectOutput.writeObject(map);
+            objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
-        ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
-        @SuppressWarnings("unchecked")
-        Map<String, Object> output = (Map<String, Object>) deserialize.readObject();
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
+                    byteArrayOutputStream.toByteArray());
+            ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
+            @SuppressWarnings("unchecked")
+            Map<String, Object> output = (Map<String, Object>) deserialize.readObject();
 
-        assertEquals("v1", output.get("k1"));
-        assertSame(output, output.get("self"));
+            assertEquals("v1", output.get("k1"));
+            assertSame(output, output.get("self"));
+        });
     }
 
     // ================ final field test ================

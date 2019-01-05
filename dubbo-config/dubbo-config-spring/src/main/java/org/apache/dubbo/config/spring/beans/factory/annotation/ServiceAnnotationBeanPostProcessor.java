@@ -342,10 +342,10 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
         }
 
-        Assertions.notNull(interfaceClass,
+        Assert.notNull(interfaceClass,
                 "@Service interfaceClass() or interfaceName() or interface class must be present!");
 
-        Assertions.isTrue(interfaceClass.isInterface(),
+        Assert.isTrue(interfaceClass.isInterface(),
                 "The type that was annotated @Service is not an interface!");
 
         return interfaceClass;

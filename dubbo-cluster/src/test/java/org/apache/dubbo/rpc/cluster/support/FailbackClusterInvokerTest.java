@@ -29,8 +29,10 @@ import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.log4j.Level;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.FixMethodOrder;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,10 +46,9 @@ import static org.mockito.Mockito.mock;
 /**
  * FailbackClusterInvokerTest
  * <p>
- * add annotation @FixMethodOrder, the testARetryFailed Method must to first execution
+ * add annotation @TestMethodOrder, the testARetryFailed Method must to first execution
  */
-@SuppressWarnings("unchecked")
-@FixMethodOrder(org.junit.runners.MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(OrderAnnotation.class)
 public class FailbackClusterInvokerTest {
 
     List<Invoker<FailbackClusterInvokerTest>> invokers = new ArrayList<Invoker<FailbackClusterInvokerTest>>();
@@ -87,6 +88,7 @@ public class FailbackClusterInvokerTest {
     }
 
     @Test
+    @Order(1)
     public void testInvokeException() {
         resetInvokerToException();
         FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<FailbackClusterInvokerTest>(
@@ -96,7 +98,8 @@ public class FailbackClusterInvokerTest {
         DubboAppender.clear();
     }
 
-    @Test()
+    @Test
+    @Order(2)
     public void testInvokeNoException() {
 
         resetInvokerToNoException();
@@ -107,7 +110,8 @@ public class FailbackClusterInvokerTest {
         Assertions.assertSame(result, ret);
     }
 
-    @Test()
+    @Test
+    @Order(3)
     public void testNoInvoke() {
         dic = mock(Directory.class);
 
@@ -130,7 +134,8 @@ public class FailbackClusterInvokerTest {
         LogUtil.stop();
     }
 
-    @Test()
+    @Test
+    @Order(4)
     public void testARetryFailed() throws Exception {
         //Test retries and
 

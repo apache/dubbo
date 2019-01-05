@@ -23,6 +23,7 @@ import org.apache.dubbo.validation.Validator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import javax.validation.ValidationException;
 import java.io.NotSerializableException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -31,7 +32,7 @@ import static org.hamcrest.core.Is.is;
 public class JValidationTest {
     @Test
     public void testReturnTypeWithInvalidValidationProvider() {
-        Assertions.assertThrows(NotSerializableException.class, () -> {
+        Assertions.assertThrows(ValidationException.class, () -> {
             Validation jValidation = new JValidation();
             URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.JValidation?" +
                     "jvalidation=org.apache.dubbo.validation.Validation");
@@ -41,7 +42,7 @@ public class JValidationTest {
     }
 
     @Test
-    public void testReturnTypeWithDefaultValidatorProvider() throws Exception {
+    public void testReturnTypeWithDefaultValidatorProvider() {
         Validation jValidation = new JValidation();
         URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.JValidation");
         Validator validator = jValidation.getValidator(url);

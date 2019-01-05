@@ -25,8 +25,8 @@ import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -35,11 +35,11 @@ import org.junit.jupiter.api.Test;
 public class DubboLazyConnectTest {
 
     @BeforeAll
-    public static void setUpBeforeClass() throws Exception {
+    public static void setUpBeforeClass() {
     }
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setUp() {
     }
 
     @AfterAll

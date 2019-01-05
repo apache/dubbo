@@ -59,7 +59,7 @@ public class DubboConfigBindingsRegistrar implements ImportBeanDefinitionRegistr
     @Override
     public void setEnvironment(Environment environment) {
 
-        Assertions.isInstanceOf(ConfigurableEnvironment.class, environment);
+        Assert.isInstanceOf(ConfigurableEnvironment.class, environment);
 
         this.environment = (ConfigurableEnvironment) environment;
 

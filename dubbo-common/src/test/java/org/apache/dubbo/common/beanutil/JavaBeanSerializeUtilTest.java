@@ -35,10 +35,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-    public class JavaBeanSerializeUtilTest {
+public class JavaBeanSerializeUtilTest {
 
     @Test
-    public void testSerialize_Primitive() throws Exception {
+    public void testSerialize_Primitive() {
         JavaBeanDescriptor descriptor;
         descriptor = JavaBeanSerializeUtil.serialize(Integer.MAX_VALUE);
         Assertions.assertTrue(descriptor.isPrimitiveType());
@@ -51,14 +51,14 @@ import java.util.UUID;
     }
 
     @Test
-    public void testSerialize_Primitive_NUll() throws Exception {
+    public void testSerialize_Primitive_NUll() {
         JavaBeanDescriptor descriptor;
         descriptor = JavaBeanSerializeUtil.serialize(null);
         Assertions.assertTrue(descriptor == null);
     }
 
     @Test
-    public void testDeserialize_Primitive() throws Exception {
+    public void testDeserialize_Primitive() {
         JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_PRIMITIVE);
         descriptor.setPrimitiveProperty(Long.MAX_VALUE);
         Assertions.assertEquals(Long.MAX_VALUE, JavaBeanSerializeUtil.deserialize(descriptor));
@@ -73,21 +73,21 @@ import java.util.UUID;
     }
 
     @Test
-    public void testDeserialize_Primitive0() throws Exception {
+    public void testDeserialize_Primitive0() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_BEAN + 1);
         });
     }
 
     @Test
-    public void testDeserialize_Null() throws Exception {
+    public void testDeserialize_Null() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             JavaBeanDescriptor descriptor = new JavaBeanDescriptor(null, JavaBeanDescriptor.TYPE_BEAN);
         });
     }
 
     @Test
-    public void testDeserialize_containsProperty() throws Exception {
+    public void testDeserialize_containsProperty() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_PRIMITIVE);
             descriptor.containsProperty(null);
@@ -95,55 +95,55 @@ import java.util.UUID;
     }
 
     @Test
-    public void testSetEnumNameProperty() throws Exception {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+    public void testSetEnumNameProperty() {
+        Assertions.assertThrows(IllegalStateException.class, () -> {
             JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_PRIMITIVE);
             descriptor.setEnumNameProperty(JavaBeanDescriptor.class.getName());
         });
     }
 
     @Test
-    public void testGetEnumNameProperty() throws Exception {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+    public void testGetEnumNameProperty() {
+        Assertions.assertThrows(IllegalStateException.class, () -> {
             JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_PRIMITIVE);
             descriptor.getEnumPropertyName();
         });
     }
 
     @Test
-    public void testSetClassNameProperty() throws Exception {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+    public void testSetClassNameProperty() {
+        Assertions.assertThrows(IllegalStateException.class, () -> {
             JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_PRIMITIVE);
             descriptor.setClassNameProperty(JavaBeanDescriptor.class.getName());
         });
     }
 
     @Test
-    public void testGetClassNameProperty() throws Exception {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+    public void testGetClassNameProperty() {
+        Assertions.assertThrows(IllegalStateException.class, () -> {
             JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_PRIMITIVE);
             descriptor.getClassNameProperty();
         });
     }
 
     @Test
-    public void testSetPrimitiveProperty() throws Exception {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+    public void testSetPrimitiveProperty() {
+        Assertions.assertThrows(IllegalStateException.class, () -> {
             JavaBeanDescriptor descriptor = new JavaBeanDescriptor(JavaBeanDescriptor.class.getName(), JavaBeanDescriptor.TYPE_BEAN);
             descriptor.setPrimitiveProperty(JavaBeanDescriptor.class.getName());
         });
     }
 
     @Test
-    public void testGetPrimitivePropertøy() throws Exception {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+    public void testGetPrimitiveProperty() {
+        Assertions.assertThrows(IllegalStateException.class, () -> {
             JavaBeanDescriptor descriptor = new JavaBeanDescriptor(JavaBeanDescriptor.class.getName(), JavaBeanDescriptor.TYPE_BEAN);
             descriptor.getPrimitiveProperty();
         });
     }
 
     @Test
-    public void testDeserialize_get_and_set() throws Exception {
+    public void testDeserialize_get_and_set() {
         JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_BEAN);
         descriptor.setType(JavaBeanDescriptor.TYPE_PRIMITIVE);
         Assertions.assertTrue(descriptor.getType() == JavaBeanDescriptor.TYPE_PRIMITIVE);
@@ -152,7 +152,7 @@ import java.util.UUID;
     }
 
     @Test
-    public void testSerialize_Array() throws Exception {
+    public void testSerialize_Array() {
         int[] array = {1, 2, 3, 4, 5, 6, 7, 8, 9};
         JavaBeanDescriptor descriptor = JavaBeanSerializeUtil.serialize(array, JavaBeanAccessor.METHOD);
         Assertions.assertTrue(descriptor.isArrayType());
@@ -219,7 +219,7 @@ import java.util.UUID;
     }
 
     @Test
-    public void testDeserialize_Array() throws Exception {
+    public void testDeserialize_Array() {
         final int len = 10;
         JavaBeanDescriptor descriptor = new JavaBeanDescriptor(int.class.getName(), JavaBeanDescriptor.TYPE_ARRAY);
         for (int i = 0; i < len; i++) {
@@ -270,7 +270,7 @@ import java.util.UUID;
     }
 
     @Test
-    public void test_Circular_Reference() throws Exception {
+    public void test_Circular_Reference() {
         PojoUtilsTest.Parent parent = new PojoUtilsTest.Parent();
         parent.setAge(Integer.MAX_VALUE);
         parent.setEmail("a@b");
@@ -296,7 +296,7 @@ import java.util.UUID;
     }
 
     @Test
-    public void testBeanSerialize() throws Exception {
+    public void testBeanSerialize() {
         Bean bean = new Bean();
         bean.setDate(new Date());
         bean.setStatus(PersonStatus.ENABLED);
@@ -346,7 +346,7 @@ import java.util.UUID;
     }
 
     @Test
-    public void testDeserializeBean() throws Exception {
+    public void testDeserializeBean() {
         Bean bean = new Bean();
         bean.setDate(new Date());
         bean.setStatus(PersonStatus.ENABLED);
@@ -382,7 +382,7 @@ import java.util.UUID;
 
     @Test
     @SuppressWarnings("unchecked")
-    public void testSerializeJavaBeanDescriptor() throws Exception {
+    public void testSerializeJavaBeanDescriptor() {
         JavaBeanDescriptor descriptor = new JavaBeanDescriptor();
         JavaBeanDescriptor result = JavaBeanSerializeUtil.serialize(descriptor);
         Assertions.assertTrue(descriptor == result);

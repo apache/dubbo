@@ -149,8 +149,8 @@ public class StreamUtilsTest {
     }
 
     @Test
-    public void testReadEmptyByteArray() throws IOException {
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
+    public void testReadEmptyByteArray() {
+        Assertions.assertThrows(NullPointerException.class, () -> {
             InputStream is = StreamUtilsTest.class.getResourceAsStream("/StreamUtilsTest.txt");
             try {
                 is = StreamUtils.limitedInputStream(is, 2);
@@ -164,7 +164,7 @@ public class StreamUtilsTest {
     }
 
     @Test
-    public void testReadWithWrongOffset() throws IOException {
+    public void testReadWithWrongOffset() {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
             InputStream is = StreamUtilsTest.class.getResourceAsStream("/StreamUtilsTest.txt");
             try {

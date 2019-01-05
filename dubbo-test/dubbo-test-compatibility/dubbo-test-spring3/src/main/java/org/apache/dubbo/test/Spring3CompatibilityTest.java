@@ -43,7 +43,7 @@ public class Spring3CompatibilityTest {
 
         String value = demoService.sayHello("Mercy");
 
-        Assertions.isTrue("DefaultDemoService - sayHell() : Mercy".equals(value), "Test is failed!");
+        Assert.isTrue("DefaultDemoService - sayHell() : Mercy".equals(value), "Test is failed!");
 
         System.out.println(value);
 
