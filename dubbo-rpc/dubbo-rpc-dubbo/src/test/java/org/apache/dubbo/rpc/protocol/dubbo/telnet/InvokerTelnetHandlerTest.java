@@ -25,7 +25,6 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -196,6 +195,34 @@ public class InvokerTelnetHandlerTest {
 
         String result = invoke.telnet(mockChannel, "echo(\"ok\")");
         assertTrue(result.contains("ok"));
+    }
+
+    @Test
+    public void testInvokeJsonParamMethod() throws RemotingException {
+        mockChannel = mock(Channel.class);
+        given(mockChannel.getAttribute("telnet.service")).willReturn(null);
+        given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
+        given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
+
+        ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", new DemoServiceImpl(), DemoService.class);
+        ApplicationModel.initProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", providerModel);
+        String param = "{\"name\":\"Dubbo\",\"age\":8}";
+        String result = invoke.telnet(mockChannel, "getPerson(" + param + ")");
+        assertTrue(result.contains("8"));
+    }
+
+    @Test
+    public void testInvokeMultiJsonParamMethod() throws RemotingException {
+        mockChannel = mock(Channel.class);
+        given(mockChannel.getAttribute("telnet.service")).willReturn(null);
+        given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
+        given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
+
+        ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", new DemoServiceImpl(), DemoService.class);
+        ApplicationModel.initProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", providerModel);
+        String param = "{\"name\":\"Dubbo\",\"age\":8},{\"name\":\"Apache\",\"age\":20}";
+        String result = invoke.telnet(mockChannel, "getPerson(" + param + ")");
+        assertTrue(result.contains("28"));
     }
 
     @Test

@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo.telnet;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -27,14 +29,10 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ProviderMethodModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import static org.apache.dubbo.common.utils.PojoUtils.realize;
 import static org.apache.dubbo.rpc.RpcContext.getContext;
@@ -50,19 +48,19 @@ public class InvokeTelnetHandler implements TelnetHandler {
                                      Class<?>[] paramTypes) {
         for (ProviderMethodModel model : methods) {
             Method m = model.getMethod();
-            if (isMatch(m, args, paramTypes,method)) {
+            if (isMatch(m, args, paramTypes, method)) {
                 return m;
             }
         }
         return null;
     }
 
-    private static boolean isMatch(Method method,List<Object> args, Class<?>[] paramClasses,String lookupMethodName) {
-        if(!method.getName().equals(lookupMethodName)) {
+    private static boolean isMatch(Method method, List<Object> args, Class<?>[] paramClasses, String lookupMethodName) {
+        if (!method.getName().equals(lookupMethodName)) {
             return false;
         }
 
-        Class<?> types[]=method.getParameterTypes();
+        Class<?> types[] = method.getParameterTypes();
         if (types.length != args.size()) {
             return false;
         }
@@ -99,13 +97,10 @@ public class InvokeTelnetHandler implements TelnetHandler {
                 if (!ReflectUtils.isCompatible(type, arg)) {
                     return false;
                 }
-            } else if (arg instanceof Map) {
-                String name = (String) ((Map<?, ?>) arg).get("class");
-                Class<?> cls = arg.getClass();
-                if (name != null && name.length() > 0) {
-                    cls = ReflectUtils.forName(name);
-                }
-                if (!type.isAssignableFrom(cls)) {
+            } else if (arg instanceof JSONObject) {
+                try {
+                    ((JSONObject) arg).toJavaObject(type);
+                } catch (Exception ex) {
                     return false;
                 }
             } else if (arg instanceof Collection) {
