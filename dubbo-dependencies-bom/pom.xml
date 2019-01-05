@@ -81,9 +81,10 @@
         <httpclient_version>4.5.3</httpclient_version>
         <httpcore_version>4.4.6</httpcore_version>
         <fastjson_version>1.2.46</fastjson_version>
-        <zookeeper_version>3.4.9</zookeeper_version>
+        <zookeeper_version>3.4.13</zookeeper_version>
         <zkclient_version>0.2</zkclient_version>
-        <curator_version>2.12.0</curator_version>
+        <curator_version>4.0.1</curator_version>
+        <curator_test_version>2.12.0</curator_test_version>
         <jedis_version>2.9.0</jedis_version>
         <xmemcached_version>1.3.6</xmemcached_version>
         <cxf_version>3.1.15</cxf_version>
@@ -98,6 +99,9 @@
         <kryo_version>4.0.1</kryo_version>
         <kryo_serializers_version>0.42</kryo_serializers_version>
         <fst_version>2.48-jdk-6</fst_version>
+        <apollo_client_version>1.1.1</apollo_client_version>
+        <snakeyaml_version>1.20</snakeyaml_version>
+        <commons_lang3_version>3.8.1</commons_lang3_version>
         <protostuff_version>1.5.9</protostuff_version>
 
         <rs_api_version>2.0</rs_api_version>
@@ -116,6 +120,7 @@
         <activation_version>1.2.0</activation_version>
         <hessian_lite_version>3.2.3</hessian_lite_version>
         <swagger_version>1.5.19</swagger_version>
+        <gson_version>2.8.5</gson_version>
     </properties>
 
     <dependencyManagement>
@@ -182,6 +187,12 @@
                 <groupId>org.apache.curator</groupId>
                 <artifactId>curator-framework</artifactId>
                 <version>${curator_version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.zookeeper</groupId>
+                        <artifactId>zookeeper</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>redis.clients</groupId>
@@ -360,6 +371,32 @@
                 <artifactId>log4j-core</artifactId>
                 <version>${log4j2_version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.ctrip.framework.apollo</groupId>
+                <artifactId>apollo-client</artifactId>
+                <version>${apollo_client_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.curator</groupId>
+                <artifactId>curator-recipes</artifactId>
+                <version>${curator_version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.zookeeper</groupId>
+                        <artifactId>zookeeper</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>${snakeyaml_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons_lang3_version}</version>
+            </dependency>
 
 
             <!-- for dubbo-rpc-webservice -->
@@ -405,7 +442,13 @@
             <dependency>
                 <groupId>org.apache.curator</groupId>
                 <artifactId>curator-test</artifactId>
-                <version>${curator_version}</version>
+                <version>${curator_test_version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.zookeeper</groupId>
+                        <artifactId>zookeeper</artifactId>
+                    </exclusion>
+                </exclusions>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -413,6 +456,11 @@
                 <artifactId>embedded-redis</artifactId>
                 <version>${embedded_redis_version}</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.google.code.gson</groupId>
+                <artifactId>gson</artifactId>
+                <version>${gson_version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

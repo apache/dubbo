@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.cluster.loadbalance;
 
 import org.apache.dubbo.rpc.Invoker;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
@@ -29,20 +30,21 @@ import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
+@Ignore
 public class RoundRobinLoadBalanceTest extends LoadBalanceBaseTest {
-    
+
     private void assertStrictWRRResult(int loop, Map<Invoker, InvokeResult> resultMap) {
         int invokeCount = 0;
         for (InvokeResult invokeResult : resultMap.values()) {
             int count = (int) invokeResult.getCount().get();
             // Because it's a strictly round robin, so the abs delta should be < 10 too
-            Assert.assertTrue("delta with expected count should < 10", 
+            Assert.assertTrue("delta with expected count should < 10",
                     Math.abs(invokeResult.getExpected(loop) - count) < 10);
             invokeCount += count;
         }
         Assert.assertEquals("select failed!", invokeCount, loop);
     }
-    
+
     @Test
     public void testRoundRobinLoadBalanceSelect() {
         int runs = 10000;
@@ -96,7 +98,7 @@ public class RoundRobinLoadBalanceTest extends LoadBalanceBaseTest {
         }
         assertStrictWRRResult(runs * threadNum, totalMap);
     }
-    
+
     @Test
     public void testNodeCacheShouldNotRecycle() {
         int loop = 10000;
@@ -105,23 +107,23 @@ public class RoundRobinLoadBalanceTest extends LoadBalanceBaseTest {
         try {
             Map<Invoker, InvokeResult> resultMap = getWeightedInvokeResult(loop, RoundRobinLoadBalance.NAME);
             assertStrictWRRResult(loop, resultMap);
-            
+
             // inner nodes cache judgement
             RoundRobinLoadBalance lb = (RoundRobinLoadBalance)getLoadBalance(RoundRobinLoadBalance.NAME);
             Assert.assertEquals(weightInvokers.size(), lb.getInvokerAddrList(weightInvokers, weightTestInvocation).size());
-            
+
             weightInvokers.remove(weightInvokerTmp);
-            
+
             resultMap = getWeightedInvokeResult(loop, RoundRobinLoadBalance.NAME);
             assertStrictWRRResult(loop, resultMap);
-            
+
             Assert.assertNotEquals(weightInvokers.size(), lb.getInvokerAddrList(weightInvokers, weightTestInvocation).size());
         } finally {
             //prevent other UT's failure
             weightInvokers.remove(weightInvokerTmp);
         }
     }
-    
+
     @Test
     public void testNodeCacheShouldRecycle() {
         {
@@ -141,28 +143,28 @@ public class RoundRobinLoadBalanceTest extends LoadBalanceBaseTest {
                 Assert.assertTrue("getField failed", true);
             }
         }
-        
+
         int loop = 10000;
         //tmperately add a new invoker
         weightInvokers.add(weightInvokerTmp);
         try {
             Map<Invoker, InvokeResult> resultMap = getWeightedInvokeResult(loop, RoundRobinLoadBalance.NAME);
             assertStrictWRRResult(loop, resultMap);
-            
+
             // inner nodes cache judgement
             RoundRobinLoadBalance lb = (RoundRobinLoadBalance)getLoadBalance(RoundRobinLoadBalance.NAME);
             Assert.assertEquals(weightInvokers.size(), lb.getInvokerAddrList(weightInvokers, weightTestInvocation).size());
-            
+
             weightInvokers.remove(weightInvokerTmp);
-            
+
             resultMap = getWeightedInvokeResult(loop, RoundRobinLoadBalance.NAME);
             assertStrictWRRResult(loop, resultMap);
-            
+
             Assert.assertEquals(weightInvokers.size(), lb.getInvokerAddrList(weightInvokers, weightTestInvocation).size());
         } finally {
             //prevent other UT's failure
             weightInvokers.remove(weightInvokerTmp);
         }
     }
-    
+
 }

@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -111,6 +113,32 @@ public class CuratorZookeeperClientTest {
         curatorClient.createEphemeral("/testPath");
         boolean connected = curatorClient.isConnected();
         assertThat(connected, is(true));
+    }
+
+    @Test
+    public void testCreateContent4Persistent() {
+        String path = "/curatorTest4CrContent/content.data";
+        String content = "createContentTest";
+        curatorClient.delete(path);
+        assertThat(curatorClient.checkExists(path), is(false));
+        assertNull(curatorClient.getContent(path));
+
+        curatorClient.create(path, content, false);
+        assertThat(curatorClient.checkExists(path), is(true));
+        assertEquals(curatorClient.getContent(path), content);
+    }
+
+    @Test
+    public void testCreateContent4Temp() {
+        String path = "/curatorTest4CrContent/content.data";
+        String content = "createContentTest";
+        curatorClient.delete(path);
+        assertThat(curatorClient.checkExists(path), is(false));
+        assertNull(curatorClient.getContent(path));
+
+        curatorClient.create(path, content, true);
+        assertThat(curatorClient.checkExists(path), is(true));
+        assertEquals(curatorClient.getContent(path), content);
     }
 
     @After

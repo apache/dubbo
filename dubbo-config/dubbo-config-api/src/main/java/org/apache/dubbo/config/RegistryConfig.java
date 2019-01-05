@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 
 import java.util.Map;
@@ -30,22 +31,35 @@ public class RegistryConfig extends AbstractConfig {
 
     public static final String NO_AVAILABLE = "N/A";
     private static final long serialVersionUID = 5508512956753757169L;
-    // register center address
+
+    /**
+     * Register center address
+     */
     private String address;
 
-    // username to login register center
+    /**
+     * Username to login register center
+     */
     private String username;
 
-    // password to login register center
+    /**
+     * Password to login register center
+     */
     private String password;
 
-    // default port for register center
+    /**
+     * Default port for register center
+     */
     private Integer port;
 
-    // protocol for register center
+    /**
+     * Protocol for register center
+     */
     private String protocol;
 
-    // client impl
+    /**
+     * Network transmission type
+     */
     private String transporter;
 
     private String server;
@@ -54,39 +68,76 @@ public class RegistryConfig extends AbstractConfig {
 
     private String cluster;
 
+    /**
+     * The group the services registry in
+     */
     private String group;
 
     private String version;
 
-    // request timeout in milliseconds for register center
+    /**
+     * Request timeout in milliseconds for register center
+     */
     private Integer timeout;
 
-    // session timeout in milliseconds for register center
+    /**
+     * Session timeout in milliseconds for register center
+     */
     private Integer session;
 
-    // file for saving register center dynamic list
+    /**
+     * File for saving register center dynamic list
+     */
     private String file;
 
-    // wait time before stop
+    /**
+     * Wait time before stop
+     */
     private Integer wait;
 
-    // whether to check if register center is available when boot up
+    /**
+     * Whether to check if register center is available when boot up
+     */
     private Boolean check;
 
-    // whether to allow dynamic service to register on the register center
+    /**
+     * Whether to allow dynamic service to register on the register center
+     */
     private Boolean dynamic;
 
-    // whether to export service on the register center
+    /**
+     * Whether to export service on the register center
+     */
     private Boolean register;
 
-    // whether allow to subscribe service on the register center
+    /**
+     * Whether allow to subscribe service on the register center
+     */
     private Boolean subscribe;
 
-    // customized parameters
+    /**
+     * The customized parameters
+     */
     private Map<String, String> parameters;
 
-    // if it's default
+    /**
+     * Whether it's default
+     */
     private Boolean isDefault;
+
+    /**
+     * Simple the registry.
+     *
+     * @since 2.7.0
+     */
+    private Boolean simple;
+    /**
+     * After simplify the registry, should add some paramter individually.
+     * addionalParameterKeys = addParamKeys
+     *
+     * @since 2.7.0
+     */
+    private String addParamKeys;
 
     public RegistryConfig() {
     }
@@ -105,8 +156,9 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setProtocol(String protocol) {
-        checkName("protocol", protocol);
+        checkName(Constants.PROTOCOL_KEY, protocol);
         this.protocol = protocol;
+        this.updateIdIfAbsent(protocol);
     }
 
     @Parameter(excluded = true)
@@ -116,6 +168,12 @@ public class RegistryConfig extends AbstractConfig {
 
     public void setAddress(String address) {
         this.address = address;
+        if (address != null) {
+            int i = address.indexOf("://");
+            if (i > 0) {
+                this.updateIdIfAbsent(address.substring(0, i));
+            }
+        }
     }
 
     public Integer getPort() {
@@ -210,7 +268,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setTransporter(String transporter) {
-        checkName("transporter", transporter);
+        checkName(Constants.TRANSPORTER_KEY, transporter);
         /*if(transporter != null && transporter.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(transporter)){
             throw new IllegalStateException("No such transporter type : " + transporter);
         }*/
@@ -222,7 +280,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setServer(String server) {
-        checkName("server", server);
+        checkName(Constants.SERVER_KEY, server);
         /*if(server != null && server.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(server)){
             throw new IllegalStateException("No such server type : " + server);
         }*/
@@ -320,6 +378,22 @@ public class RegistryConfig extends AbstractConfig {
 
     public void setDefault(Boolean isDefault) {
         this.isDefault = isDefault;
+    }
+
+    @Parameter(excluded = true)
+    public boolean isZookeeperProtocol() {
+        if (!isValid()) {
+            return false;
+        }
+        return Constants.ZOOKEEPER_PROTOCOL.equals(getProtocol())
+                || getAddress().startsWith(Constants.ZOOKEEPER_PROTOCOL);
+    }
+
+    @Override
+    @Parameter(excluded = true)
+    public boolean isValid() {
+        // empty protocol will default to 'dubbo'
+        return !StringUtils.isEmpty(address);
     }
 
 }

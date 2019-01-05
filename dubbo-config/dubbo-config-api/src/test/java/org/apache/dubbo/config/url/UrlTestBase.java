@@ -119,7 +119,7 @@ public class UrlTestBase {
 
     // ======================================================
     //   data table manipulation utils
-    // ====================================================== 
+    // ======================================================
     protected String genParamString(Object urlKey, Object value) {
 
         return (String) urlKey + "=" + value.toString();
@@ -147,8 +147,8 @@ public class UrlTestBase {
         regConfForProvider = new RegistryConfig();
         regConfForService = new RegistryConfig();
         provConf = new ProviderConfig();
-        protoConfForProvider = new ProtocolConfig();
-        protoConfForService = new ProtocolConfig();
+        protoConfForProvider = new ProtocolConfig("mockprotocol");
+        protoConfForService = new ProtocolConfig("mockprotocol");
         methodConfForService = new MethodConfig();
         servConf = new ServiceConfig<DemoService>();
 

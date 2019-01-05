@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.compiler.support.AdaptiveCompiler;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ import java.util.Map;
 
 
 /**
- * ApplicationConfig
+ * The application info
  *
  * @export
  */
@@ -35,55 +36,90 @@ public class ApplicationConfig extends AbstractConfig {
 
     private static final long serialVersionUID = 5508512956753757169L;
 
-    // application name
+    /**
+     * Application name
+     */
     private String name;
 
-    // module version
+    /**
+     * The application version
+     */
     private String version;
 
-    // application owner
+    /**
+     * Application owner
+     */
     private String owner;
 
-    // application's organization (BU)
+    /**
+     * Application's organization (BU)
+     */
     private String organization;
 
-    // architecture layer
+    /**
+     * Architecture layer
+     */
     private String architecture;
 
-    // environment, e.g. dev, test or production
+    /**
+     * Environment, e.g. dev, test or production
+     */
     private String environment;
 
-    // Java compiler
+    /**
+     * Java compiler
+     */
     private String compiler;
 
-    // logger
+    /**
+     * The type of the log access
+     */
     private String logger;
 
-    // registry centers
+    /**
+     * Registry centers
+     */
     private List<RegistryConfig> registries;
+    private String registryIds;
 
-    // monitor center
+    /**
+     * Monitor center
+     */
     private MonitorConfig monitor;
 
-    // is default or not
+    /**
+     * Is default or not
+     */
     private Boolean isDefault;
 
-    // directory for saving thread dump
+    /**
+     * Directory for saving thread dump
+     */
     private String dumpDirectory;
 
-    // whether to enable qos or not
+    /**
+     * Whether to enable qos or not
+     */
     private Boolean qosEnable;
 
-    // the qos port to listen
+    /**
+     * The qos port to listen
+     */
     private Integer qosPort;
 
-    // should we accept foreign ip or not?
+    /**
+     * Should we accept foreign ip or not?
+     */
     private Boolean qosAcceptForeignIp;
 
-    // customized parameters
+    /**
+     * Customized parameters
+     */
     private Map<String, String> parameters;
 
-    //config the shutdown.wait
+    /**
+     * Config the shutdown.wait
+     */
     private String shutwait;
 
 
@@ -94,15 +130,15 @@ public class ApplicationConfig extends AbstractConfig {
         setName(name);
     }
 
-    @Parameter(key = Constants.APPLICATION_KEY, required = true)
+    @Parameter(key = Constants.APPLICATION_KEY, required = true, useKeyAsProperty = false)
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
-        checkName("name", name);
+        checkName(Constants.NAME, name);
         this.name = name;
-        if (id == null || id.length() == 0) {
+        if (StringUtils.isEmpty(id)) {
             id = name;
         }
     }
@@ -121,7 +157,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setOwner(String owner) {
-        checkMultiName("owner", owner);
+        checkMultiName(Constants.OWNER, owner);
         this.owner = owner;
     }
 
@@ -130,7 +166,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setOrganization(String organization) {
-        checkName("organization", organization);
+        checkName(Constants.ORGANIZATION, organization);
         this.organization = organization;
     }
 
@@ -139,7 +175,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setArchitecture(String architecture) {
-        checkName("architecture", architecture);
+        checkName(Constants.ARCHITECTURE, architecture);
         this.architecture = architecture;
     }
 
@@ -148,10 +184,18 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setEnvironment(String environment) {
-        checkName("environment", environment);
+        checkName(Constants.ENVIRONMENT, environment);
         if (environment != null) {
-            if (!("develop".equals(environment) || "test".equals(environment) || "product".equals(environment))) {
-                throw new IllegalStateException("Unsupported environment: " + environment + ", only support develop/test/product, default is product.");
+            if (!(Constants.DEVELOPMENT_ENVIRONMENT.equals(environment)
+                    || Constants.TEST_ENVIRONMENT.equals(environment)
+                    || Constants.PRODUCTION_ENVIRONMENT.equals(environment))) {
+
+                throw new IllegalStateException(String.format("Unsupported environment: %s, only support %s/%s/%s, default is %s.",
+                        environment,
+                        Constants.DEVELOPMENT_ENVIRONMENT,
+                        Constants.TEST_ENVIRONMENT,
+                        Constants.PRODUCTION_ENVIRONMENT,
+                        Constants.PRODUCTION_ENVIRONMENT));
             }
         }
         this.environment = environment;
@@ -176,16 +220,25 @@ public class ApplicationConfig extends AbstractConfig {
         this.registries = (List<RegistryConfig>) registries;
     }
 
+    @Parameter(excluded = true)
+    public String getRegistryIds() {
+        return registryIds;
+    }
+
+    public void setRegistryIds(String registryIds) {
+        this.registryIds = registryIds;
+    }
+
     public MonitorConfig getMonitor() {
         return monitor;
     }
 
-    public void setMonitor(MonitorConfig monitor) {
-        this.monitor = monitor;
-    }
-
     public void setMonitor(String monitor) {
         this.monitor = new MonitorConfig(monitor);
+    }
+
+    public void setMonitor(MonitorConfig monitor) {
+        this.monitor = monitor;
     }
 
     public String getCompiler() {
@@ -264,7 +317,14 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setShutwait(String shutwait) {
-        System.setProperty( Constants.SHUTDOWN_WAIT_KEY, shutwait);
+        System.setProperty(Constants.SHUTDOWN_WAIT_KEY, shutwait);
         this.shutwait = shutwait;
     }
+
+    @Override
+    @Parameter(excluded = true)
+    public boolean isValid() {
+        return !StringUtils.isEmpty(name);
+    }
+
 }
