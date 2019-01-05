@@ -27,8 +27,10 @@ import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.cluster.Directory;
 
 import org.apache.log4j.Level;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -74,6 +76,15 @@ public class FailbackClusterInvokerTest {
 
         invokers.add(invoker);
     }
+
+    @AfterEach
+    public void tearDown() {
+
+        dic = null;
+        invocation = new RpcInvocation();
+        invokers.clear();
+    }
+
 
     private void resetInvokerToException() {
         given(invoker.invoke(invocation)).willThrow(new RuntimeException());
@@ -134,6 +145,7 @@ public class FailbackClusterInvokerTest {
         LogUtil.stop();
     }
 
+    @Disabled
     @Test
     @Order(4)
     public void testARetryFailed() throws Exception {

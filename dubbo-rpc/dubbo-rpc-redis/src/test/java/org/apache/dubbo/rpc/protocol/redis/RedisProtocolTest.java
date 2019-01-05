@@ -31,6 +31,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import redis.clients.jedis.Jedis;
@@ -134,7 +135,7 @@ public class RedisProtocolTest {
     public void testExport() {
         Assertions.assertThrows(UnsupportedOperationException.class, () -> protocol.export(protocol.refer(IDemoService.class, registryUrl)));
     }
-
+    @Disabled
     @Test
     public void testAuthRedis() {
         // default db.index=0
@@ -196,8 +197,8 @@ public class RedisProtocolTest {
 
         refer.destroy();
     }
-
-    @Test
+    @Disabled
+    //@Test
     public void testWrongAuthRedis() {
         String password = "1234567";
         this.registryUrl = this.registryUrl.setPassword(password);
