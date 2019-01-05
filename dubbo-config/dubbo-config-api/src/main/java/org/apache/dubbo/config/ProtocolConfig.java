@@ -16,10 +16,12 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.status.StatusChecker;
 import org.apache.dubbo.common.threadpool.ThreadPool;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.remoting.Codec;
 import org.apache.dubbo.remoting.Dispatcher;
@@ -39,101 +41,163 @@ public class ProtocolConfig extends AbstractConfig {
 
     private static final long serialVersionUID = 6913423882496634749L;
 
-    // protocol name
+    /**
+     * Protocol name
+     */
     private String name;
 
-    // service IP address (when there are multiple network cards available)
+    /**
+     * Service ip address (when there are multiple network cards available)
+     */
     private String host;
 
-    // service port
+    /**
+     * Service port
+     */
     private Integer port;
 
-    // context path
+    /**
+     * Context path
+     */
     private String contextpath;
 
-    // thread pool
+    /**
+     * Thread pool
+     */
     private String threadpool;
 
-    // thread pool core thread size
+    /**
+     * Thread pool core thread size
+     */
     private Integer corethreads;
 
-    // thread pool size (fixed size)
+    /**
+     * Thread pool size (fixed size)
+     */
     private Integer threads;
 
-    // IO thread pool size (fixed size)
+    /**
+     * IO thread pool size (fixed size)
+     */
     private Integer iothreads;
 
-    // thread pool's queue length
+    /**
+     * Thread pool's queue length
+     */
     private Integer queues;
 
-    // max acceptable connections
+    /**
+     * Max acceptable connections
+     */
     private Integer accepts;
 
-    // protocol codec
+    /**
+     * Protocol codec
+     */
     private String codec;
 
-    // serialization
+    /**
+     * Serialization
+     */
     private String serialization;
 
-    // charset
+    /**
+     * Charset
+     */
     private String charset;
 
-    // payload max length
+    /**
+     * Payload max length
+     */
     private Integer payload;
 
-    // buffer size
+    /**
+     * Buffer size
+     */
     private Integer buffer;
 
-    // heartbeat interval
+    /**
+     * Heartbeat interval
+     */
     private Integer heartbeat;
 
-    // access log
+    /**
+     * Access log
+     */
     private String accesslog;
 
-    // transfort
+    /**
+     * Transfort
+     */
     private String transporter;
 
-    // how information is exchanged
+    /**
+     * How information is exchanged
+     */
     private String exchanger;
 
-    // thread dispatch mode
+    /**
+     * Thread dispatch mode
+     */
     private String dispatcher;
 
-    // networker
+    /**
+     * Networker
+     */
     private String networker;
 
-    // sever impl
+    /**
+     * Sever impl
+     */
     private String server;
 
-    // client impl
+    /**
+     * Client impl
+     */
     private String client;
 
-    // supported telnet commands, separated with comma.
+    /**
+     * Supported telnet commands, separated with comma.
+     */
     private String telnet;
 
-    // command line prompt
+    /**
+     * Command line prompt
+     */
     private String prompt;
 
-    // status check
+    /**
+     * Status check
+     */
     private String status;
 
-    // whether to register
+    /**
+     * Whether to register
+     */
     private Boolean register;
 
-    // parameters
-    // 是否长连接
-    // TODO add this to provider config
+    /**
+     * whether it is a persistent connection
+     */
+    //TODO add this to provider config
     private Boolean keepAlive;
 
     // TODO add this to provider config
     private String optimizer;
 
+    /**
+     * The extension
+     */
     private String extension;
 
-    // parameters
+    /**
+     * The customized parameters
+     */
     private Map<String, String> parameters;
 
-    // if it's default
+    /**
+     * If it's default
+     */
     private Boolean isDefault;
 
     public ProtocolConfig() {
@@ -153,12 +217,10 @@ public class ProtocolConfig extends AbstractConfig {
         return name;
     }
 
-    public void setName(String name) {
+    public final void setName(String name) {
         checkName("name", name);
         this.name = name;
-        if (id == null || id.length() == 0) {
-            id = name;
-        }
+        this.updateIdIfAbsent(name);
     }
 
     @Parameter(excluded = true)
@@ -167,7 +229,7 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     public void setHost(String host) {
-        checkName("host", host);
+        checkName(Constants.HOST_KEY, host);
         this.host = host;
     }
 
@@ -176,7 +238,7 @@ public class ProtocolConfig extends AbstractConfig {
         return port;
     }
 
-    public void setPort(Integer port) {
+    public final void setPort(Integer port) {
         this.port = port;
     }
 
@@ -206,7 +268,7 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     public void setThreadpool(String threadpool) {
-        checkExtension(ThreadPool.class, "threadpool", threadpool);
+        checkExtension(ThreadPool.class, Constants.THREADPOOL_KEY, threadpool);
         this.threadpool = threadpool;
     }
 
@@ -255,8 +317,8 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     public void setCodec(String codec) {
-        if ("dubbo".equals(name)) {
-            checkMultiExtension(Codec.class, "codec", codec);
+        if (Constants.DOBBO_PROTOCOL.equals(name)) {
+            checkMultiExtension(Codec.class, Constants.CODEC_KEY, codec);
         }
         this.codec = codec;
     }
@@ -266,8 +328,8 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     public void setSerialization(String serialization) {
-        if ("dubbo".equals(name)) {
-            checkMultiExtension(Serialization.class, "serialization", serialization);
+        if (Constants.DOBBO_PROTOCOL.equals(name)) {
+            checkMultiExtension(Serialization.class, Constants.SERIALIZATION_KEY, serialization);
         }
         this.serialization = serialization;
     }
@@ -309,8 +371,8 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     public void setServer(String server) {
-        if ("dubbo".equals(name)) {
-            checkMultiExtension(Transporter.class, "server", server);
+        if (Constants.DOBBO_PROTOCOL.equals(name)) {
+            checkMultiExtension(Transporter.class, Constants.SERVER_KEY, server);
         }
         this.server = server;
     }
@@ -320,8 +382,8 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     public void setClient(String client) {
-        if ("dubbo".equals(name)) {
-            checkMultiExtension(Transporter.class, "client", client);
+        if (Constants.DOBBO_PROTOCOL.equals(name)) {
+            checkMultiExtension(Transporter.class, Constants.CLIENT_KEY, client);
         }
         this.client = client;
     }
@@ -339,7 +401,7 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     public void setTelnet(String telnet) {
-        checkMultiExtension(TelnetHandler.class, "telnet", telnet);
+        checkMultiExtension(TelnetHandler.class, Constants.TELNET, telnet);
         this.telnet = telnet;
     }
 
@@ -374,7 +436,7 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     public void setTransporter(String transporter) {
-        checkExtension(Transporter.class, "transporter", transporter);
+        checkExtension(Transporter.class, Constants.TRANSPORTER_KEY, transporter);
         this.transporter = transporter;
     }
 
@@ -383,7 +445,7 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     public void setExchanger(String exchanger) {
-        checkExtension(Exchanger.class, "exchanger", exchanger);
+        checkExtension(Exchanger.class, Constants.EXCHANGER_KEY, exchanger);
         this.exchanger = exchanger;
     }
 
@@ -413,7 +475,7 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     public void setDispatcher(String dispatcher) {
-        checkExtension(Dispatcher.class, "dispacther", dispatcher);
+        checkExtension(Dispatcher.class, Constants.DISPACTHER_KEY, dispatcher);
         this.dispatcher = dispatcher;
     }
 
@@ -469,5 +531,11 @@ public class ProtocolConfig extends AbstractConfig {
         if (name != null) {
             ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(name).destroy();
         }
+    }
+
+    @Override
+    @Parameter(excluded = true)
+    public boolean isValid() {
+        return StringUtils.isNotEmpty(name);
     }
 }

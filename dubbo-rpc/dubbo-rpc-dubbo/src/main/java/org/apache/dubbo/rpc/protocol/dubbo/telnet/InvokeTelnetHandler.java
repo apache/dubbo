@@ -50,14 +50,19 @@ public class InvokeTelnetHandler implements TelnetHandler {
                                      Class<?>[] paramTypes) {
         for (ProviderMethodModel model : methods) {
             Method m = model.getMethod();
-            if (m.getName().equals(method) && isMatch(m.getParameterTypes(), args, paramTypes)) {
+            if (isMatch(m, args, paramTypes,method)) {
                 return m;
             }
         }
         return null;
     }
 
-    private static boolean isMatch(Class<?>[] types, List<Object> args, Class<?>[] paramClasses) {
+    private static boolean isMatch(Method method,List<Object> args, Class<?>[] paramClasses,String lookupMethodName) {
+        if(!method.getName().equals(lookupMethodName)) {
+            return false;
+        }
+
+        Class<?> types[]=method.getParameterTypes();
         if (types.length != args.size()) {
             return false;
         }

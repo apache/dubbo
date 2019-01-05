@@ -144,6 +144,8 @@
         <module>dubbo-bom</module>
         <module>dubbo-all</module>
         <module>dubbo-distribution</module>
+        <module>dubbo-metadata-report</module>
+        <module>dubbo-configcenter</module>
     </modules>
 
     <dependencyManagement>

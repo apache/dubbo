@@ -104,7 +104,6 @@ public final class Version {
                 } else {
                     index = i;
                 }
-                continue;
             } else {
                 index = i;
                 break;
