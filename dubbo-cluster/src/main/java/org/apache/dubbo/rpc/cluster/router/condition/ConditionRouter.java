@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Router;
+import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -40,23 +41,34 @@ import java.util.regex.Pattern;
 
 /**
  * ConditionRouter
+ *
  */
-public class ConditionRouter implements Router {
+public class ConditionRouter extends AbstractRouter implements Comparable<Router> {
+    public static final String NAME = "condition";
 
     private static final Logger logger = LoggerFactory.getLogger(ConditionRouter.class);
-    private static Pattern ROUTE_PATTERN = Pattern.compile("([&!=,]*)\\s*([^&!=,\\s]+)");
-    private final URL url;
-    private final int priority;
-    private final boolean force;
-    private final Map<String, MatchPair> whenCondition;
-    private final Map<String, MatchPair> thenCondition;
+    protected static Pattern ROUTE_PATTERN = Pattern.compile("([&!=,]*)\\s*([^&!=,\\s]+)");
+    protected Map<String, MatchPair> whenCondition;
+    protected Map<String, MatchPair> thenCondition;
+
+    private boolean enabled;
+
+    public ConditionRouter(String rule, boolean force, boolean enabled) {
+        this.force = force;
+        this.enabled = enabled;
+        this.init(rule);
+    }
 
     public ConditionRouter(URL url) {
         this.url = url;
         this.priority = url.getParameter(Constants.PRIORITY_KEY, 0);
         this.force = url.getParameter(Constants.FORCE_KEY, false);
+        this.enabled = url.getParameter(Constants.ENABLED_KEY, true);
+        init(url.getParameterAndDecoded(Constants.RULE_KEY));
+    }
+
+    public void init(String rule) {
         try {
-            String rule = url.getParameterAndDecoded(Constants.RULE_KEY);
             if (rule == null || rule.trim().length() == 0) {
                 throw new IllegalArgumentException("Illegal route rule!");
             }
@@ -127,7 +139,7 @@ public class ConditionRouter implements Router {
                 values.add(content);
             }
             // The Value in the KV part, if Value have more than one items.
-            else if (",".equals(separator)) { // Should be seperateed by ','
+            else if (",".equals(separator)) { // Should be separated by ','
                 if (values == null || values.isEmpty()) {
                     throw new ParseException("Illegal route rule \""
                             + rule + "\", The error char '" + separator
@@ -147,6 +159,10 @@ public class ConditionRouter implements Router {
     @Override
     public <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation)
             throws RpcException {
+        if (!enabled) {
+            return invokers;
+        }
+
         if (invokers == null || invokers.isEmpty()) {
             return invokers;
         }
@@ -177,8 +193,10 @@ public class ConditionRouter implements Router {
     }
 
     @Override
-    public int getPriority() {
-        return priority;
+    public boolean isRuntime() {
+        // We always return true for previously defined Router, that is, old Router doesn't support cache anymore.
+//        return true;
+        return this.url.getParameter(Constants.RUNTIME_KEY, false);
     }
 
     @Override
@@ -203,6 +221,10 @@ public class ConditionRouter implements Router {
             //get real invoked method name from invocation
             if (invocation != null && (Constants.METHOD_KEY.equals(key) || Constants.METHODS_KEY.equals(key))) {
                 sampleValue = invocation.getMethodName();
+            } else if (Constants.ADDRESS_KEY.equals(key)) {
+                sampleValue = url.getAddress();
+            } else if (Constants.HOST_KEY.equals(key)) {
+                sampleValue = url.getHost();
             } else {
                 sampleValue = sample.get(key);
                 if (sampleValue == null) {
@@ -227,7 +249,7 @@ public class ConditionRouter implements Router {
         return result;
     }
 
-    private static final class MatchPair {
+    protected static final class MatchPair {
         final Set<String> matches = new HashSet<String>();
         final Set<String> mismatches = new HashSet<String>();
 

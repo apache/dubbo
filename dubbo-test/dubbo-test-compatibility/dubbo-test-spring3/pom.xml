@@ -44,7 +44,7 @@
 
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-demo-api</artifactId>
+            <artifactId>dubbo-demo-interface</artifactId>
         </dependency>
 
         <dependency>

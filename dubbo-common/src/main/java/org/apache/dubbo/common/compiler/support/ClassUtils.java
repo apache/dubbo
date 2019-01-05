@@ -79,7 +79,7 @@ public class ClassUtils {
     }
 
     public static Class<?> classForName(String className) throws ClassNotFoundException {
-        switch(className){
+        switch (className) {
             case "boolean":
                 return boolean.class;
             case "byte":
@@ -112,6 +112,7 @@ public class ClassUtils {
                 return float[].class;
             case "double[]":
                 return double[].class;
+            default:
         }
         try {
             return arrayForName(className);
@@ -422,8 +423,8 @@ public class ClassUtils {
     public static <K, V> Map<K, V> toMap(Map.Entry<K, V>[] entries) {
         Map<K, V> map = new HashMap<K, V>();
         if (entries != null && entries.length > 0) {
-            for (Map.Entry<K, V> enrty : entries) {
-                map.put(enrty.getKey(), enrty.getValue());
+            for (Map.Entry<K, V> entry : entries) {
+                map.put(entry.getKey(), entry.getValue());
             }
         }
         return map;

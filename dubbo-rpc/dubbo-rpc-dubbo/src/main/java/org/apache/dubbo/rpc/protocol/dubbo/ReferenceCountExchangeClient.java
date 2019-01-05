@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 final class ReferenceCountExchangeClient implements ExchangeClient {
 
     private final URL url;
-    private final AtomicInteger refenceCount = new AtomicInteger(0);
+    private final AtomicInteger referenceCount = new AtomicInteger(0);
 
     //    private final ExchangeHandler handler;
     private final ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap;
@@ -45,7 +45,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
 
     public ReferenceCountExchangeClient(ExchangeClient client, ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap) {
         this.client = client;
-        refenceCount.incrementAndGet();
+        referenceCount.incrementAndGet();
         this.url = client.getUrl();
         if (ghostClientMap == null) {
             throw new IllegalStateException("ghostClientMap can not be null, url: " + url);
@@ -148,7 +148,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
 
     @Override
     public void close(int timeout) {
-        if (refenceCount.decrementAndGet() <= 0) {
+        if (referenceCount.decrementAndGet() <= 0) {
             if (timeout == 0) {
                 client.close();
             } else {
@@ -189,6 +189,6 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     }
 
     public void incrementAndGetCount() {
-        refenceCount.incrementAndGet();
+        referenceCount.incrementAndGet();
     }
 }

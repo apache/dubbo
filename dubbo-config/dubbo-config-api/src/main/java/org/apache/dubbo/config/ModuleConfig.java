@@ -16,13 +16,14 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.config.support.Parameter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * ModuleConfig
+ * The module info
  *
  * @export
  */
@@ -30,25 +31,39 @@ public class ModuleConfig extends AbstractConfig {
 
     private static final long serialVersionUID = 5508512956753757169L;
 
-    // module name
+    /**
+     * Module name
+     */
     private String name;
 
-    // module version
+    /**
+     * Module version
+     */
     private String version;
 
-    // module owner
+    /**
+     * Module owner
+     */
     private String owner;
 
-    // module's organization
+    /**
+     * Module's organization
+     */
     private String organization;
 
-    // registry centers
+    /**
+     * Registry centers
+     */
     private List<RegistryConfig> registries;
 
-    // monitor center
+    /**
+     * Monitor center
+     */
     private MonitorConfig monitor;
 
-    // if it's default
+    /**
+     * If it's default
+     */
     private Boolean isDefault;
 
     public ModuleConfig() {
@@ -64,7 +79,7 @@ public class ModuleConfig extends AbstractConfig {
     }
 
     public void setName(String name) {
-        checkName("name", name);
+        checkName(Constants.NAME, name);
         this.name = name;
         if (id == null || id.length() == 0) {
             id = name;
@@ -85,7 +100,7 @@ public class ModuleConfig extends AbstractConfig {
     }
 
     public void setOwner(String owner) {
-        checkName("owner", owner);
+        checkName(Constants.OWNER, owner);
         this.owner = owner;
     }
 
@@ -94,7 +109,7 @@ public class ModuleConfig extends AbstractConfig {
     }
 
     public void setOrganization(String organization) {
-        checkName("organization", organization);
+        checkName(Constants.ORGANIZATION, organization);
         this.organization = organization;
     }
 
@@ -121,12 +136,12 @@ public class ModuleConfig extends AbstractConfig {
         return monitor;
     }
 
-    public void setMonitor(String monitor) {
-        this.monitor = new MonitorConfig(monitor);
-    }
-
     public void setMonitor(MonitorConfig monitor) {
         this.monitor = monitor;
+    }
+
+    public void setMonitor(String monitor) {
+        this.monitor = new MonitorConfig(monitor);
     }
 
     public Boolean isDefault() {

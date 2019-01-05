@@ -579,6 +579,7 @@ public class JSON {
                                         handler.objectItemValue(value, false);
                                         break;
                                     }
+                                    default:
                                 }
                             }
                             break;
@@ -629,6 +630,7 @@ public class JSON {
                                         handler.objectItemValue(value, false);
                                         break;
                                     }
+                                    default:
                                 }
                             }
                             break;

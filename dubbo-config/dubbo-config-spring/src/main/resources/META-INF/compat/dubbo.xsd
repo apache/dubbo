@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-            xmlns:beans="http://www.springframework.org/schema/beans" 
+            xmlns:beans="http://www.springframework.org/schema/beans"
             xmlns:tool="http://www.springframework.org/schema/tool"
             xmlns="http://code.alibabatech.com/schema/dubbo"
             targetNamespace="http://code.alibabatech.com/schema/dubbo">
@@ -23,6 +23,11 @@
         <xsd:attribute name="retries" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The method retry times. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="failbacktasks" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The max failback tasks capacity size. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="actives" type="xsd:string">
@@ -558,6 +563,122 @@
         <xsd:attribute name="default" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <!--<xsd:attribute name="simple" type="xsd:boolean">-->
+            <!--<xsd:annotation>-->
+                <!--<xsd:documentation><![CDATA[ Is simple. ]]></xsd:documentation>-->
+            <!--</xsd:annotation>-->
+        <!--</xsd:attribute>-->
+        <!--<xsd:attribute name="plusparamkeys" type="xsd:string">-->
+            <!--<xsd:annotation>-->
+                <!--<xsd:documentation><![CDATA[ Addtional Parameter Keys. ]]></xsd:documentation>-->
+            <!--</xsd:annotation>-->
+        <!--</xsd:attribute>-->
+    </xsd:complexType>
+
+    <xsd:complexType name="metadataReportType">
+        <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+            <xsd:element ref="parameter" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="id" type="xsd:ID">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The unique identifier for a bean. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="address" type="xsd:string" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The metadataReport address. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="username" type="xsd:string" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The metadataReport username. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="password" type="xsd:string" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The metadataReport password. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="timeout" type="xsd:string" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The request timeout. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="configCenterType">
+        <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+            <xsd:element ref="parameter" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="protocol" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The config center protocol. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="address" type="xsd:string" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The config center address. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="cluster" type="xsd:string" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The config center cluster. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="namespace" type="xsd:string" use="optional">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ The group of the config center, an isolated space for config items in the same config center. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="app-name" type="xsd:string" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The group of the config center. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="config-file" type="xsd:string" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The key used to get the configs at startup. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="app-config-file" type="xsd:string" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The key used to get the configs at startup. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="username" type="xsd:string" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The username for AUTH. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="password" type="xsd:string" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The password for AUTH. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="timeout" type="xsd:string" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The request timeout. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="highest-priority" type="xsd:boolean" use="optional">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Whether the configs from config center has the highest priority. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="from-spring" type="xsd:boolean" use="optional">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Load the config items by Dubbo itself or Spring. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="check" type="xsd:boolean" use="optional">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ The policy to apply when connecting to config center fails. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
@@ -1218,6 +1339,23 @@
                     <tool:exports type="org.apache.dubbo.config.RegistryConfig"/>
                 </tool:annotation>
             </xsd:appinfo>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="metadata" type="metadataReportType">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[ The metadataReport config ]]></xsd:documentation>
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports type="org.apache.dubbo.config.MetadataReportConfig"/>
+                </tool:annotation>
+            </xsd:appinfo>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="config-center" type="configCenterType">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[ The config center config ]]></xsd:documentation>
         </xsd:annotation>
     </xsd:element>
 

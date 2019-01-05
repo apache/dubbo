@@ -92,7 +92,7 @@ public class TTree implements TComponent {
                                     .append(hasChild ? "|" : EMPTY)
                                     .append(repeat(' ', costPrefixLength))
                                     .append(scanner.nextLine())
-                                    .append("\n");
+                                    .append(System.lineSeparator());
                         }
                     }
                 } finally {
