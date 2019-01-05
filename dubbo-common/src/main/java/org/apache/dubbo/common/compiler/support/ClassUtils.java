@@ -79,7 +79,7 @@ public class ClassUtils {
     }
 
     public static Class<?> _forName(String className) throws ClassNotFoundException {
-        switch(className){
+        switch (className) {
             case "boolean":
                 return boolean.class;
             case "byte":
@@ -112,6 +112,7 @@ public class ClassUtils {
                 return float[].class;
             case "double[]":
                 return double[].class;
+            default:
         }
         try {
             return arrayForName(className);
