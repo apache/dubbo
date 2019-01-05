@@ -32,6 +32,7 @@ public /**final**/ class RpcException extends RuntimeException {
     public static final int BIZ_EXCEPTION = 3;
     public static final int FORBIDDEN_EXCEPTION = 4;
     public static final int SERIALIZATION_EXCEPTION = 5;
+    public static final int NO_INVOKER_AVAILABLE_AFTER_FILTER = 6;
     private static final long serialVersionUID = 7815426752583648734L;
     private int code; // RpcException cannot be extended, use error code for exception type to keep compatibility
 
@@ -97,5 +98,9 @@ public /**final**/ class RpcException extends RuntimeException {
 
     public boolean isSerialization() {
         return code == SERIALIZATION_EXCEPTION;
+    }
+
+    public boolean isNoInvokerAvailableAfterFilter() {
+        return code == NO_INVOKER_AVAILABLE_AFTER_FILTER;
     }
 }

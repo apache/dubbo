@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 
 import java.util.Map;
@@ -29,12 +30,25 @@ public class MonitorConfig extends AbstractConfig {
 
     private static final long serialVersionUID = -1184681514659198203L;
 
+    /**
+     * The protocol of the monitor, if the value is registry, it will search the monitor address from the registry center,
+     * otherwise, it will directly connect to the monitor center
+     */
     private String protocol;
 
+    /**
+     * The monitor address
+     */
     private String address;
 
+    /**
+     * The monitor user name
+     */
     private String username;
 
+    /**
+     * The password
+     */
     private String password;
 
     private String group;
@@ -43,10 +57,14 @@ public class MonitorConfig extends AbstractConfig {
 
     private String interval;
 
-    // customized parameters
+    /**
+     * customized parameters
+     */
     private Map<String, String> parameters;
 
-    // if it's default
+    /**
+     * If it's default
+     */
     private Boolean isDefault;
 
     public MonitorConfig() {
@@ -125,12 +143,18 @@ public class MonitorConfig extends AbstractConfig {
         this.isDefault = isDefault;
     }
 
-    public void setInterval(String interval){
+    public String getInterval() {
+        return interval;
+    }
+
+    public void setInterval(String interval) {
         this.interval = interval;
     }
 
-    public String getInterval(){
-        return interval;
+    @Override
+    @Parameter(excluded = true)
+    public boolean isValid() {
+        return StringUtils.isNotEmpty(address);
     }
 
 }

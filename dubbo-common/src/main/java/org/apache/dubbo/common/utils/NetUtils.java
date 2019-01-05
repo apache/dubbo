@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -37,8 +38,6 @@ import java.util.regex.Pattern;
  */
 public class NetUtils {
 
-    public static final String LOCALHOST = "127.0.0.1";
-    public static final String ANYHOST = "0.0.0.0";
     private static final Logger logger = LoggerFactory.getLogger(NetUtils.class);
     private static final int RND_PORT_START = 30000;
 
@@ -109,18 +108,18 @@ public class NetUtils {
     public static boolean isLocalHost(String host) {
         return host != null
                 && (LOCAL_IP_PATTERN.matcher(host).matches()
-                || host.equalsIgnoreCase("localhost"));
+                || host.equalsIgnoreCase(Constants.LOCALHOST_KEY));
     }
 
     public static boolean isAnyHost(String host) {
-        return "0.0.0.0".equals(host);
+        return Constants.ANYHOST_VALUE.equals(host);
     }
 
     public static boolean isInvalidLocalHost(String host) {
         return host == null
                 || host.length() == 0
-                || host.equalsIgnoreCase("localhost")
-                || host.equals("0.0.0.0")
+                || host.equalsIgnoreCase(Constants.LOCALHOST_KEY)
+                || host.equals(Constants.ANYHOST_VALUE)
                 || (LOCAL_IP_PATTERN.matcher(host).matches());
     }
 
@@ -139,13 +138,14 @@ public class NetUtils {
         }
         String name = address.getHostAddress();
         return (name != null
-                && !ANYHOST.equals(name)
-                && !LOCALHOST.equals(name)
-                && IP_PATTERN.matcher(name).matches());
+                && IP_PATTERN.matcher(name).matches()
+                && !Constants.ANYHOST_VALUE.equals(name)
+                && !Constants.LOCALHOST_VALUE.equals(name));
     }
 
     /**
      * Check if an ipv6 address is reachable.
+     *
      * @param address the given address
      * @return true if it is reachable
      */
@@ -166,12 +166,13 @@ public class NetUtils {
      * normalize the ipv6 Address, convert scope name to scope id.
      * e.g.
      * convert
-     *   fe80:0:0:0:894:aeec:f37d:23e1%en0
+     * fe80:0:0:0:894:aeec:f37d:23e1%en0
      * to
-     *   fe80:0:0:0:894:aeec:f37d:23e1%5
-     *
+     * fe80:0:0:0:894:aeec:f37d:23e1%5
+     * <p>
      * The %5 after ipv6 address is called scope id.
      * see java doc of {@link Inet6Address} for more details.
+     *
      * @param address the input address
      * @return the normalized address, with scope id converted to int
      */
@@ -191,7 +192,7 @@ public class NetUtils {
 
     public static String getLocalHost() {
         InetAddress address = getLocalAddress();
-        return address == null ? LOCALHOST : address.getHostAddress();
+        return address == null ? Constants.LOCALHOST_VALUE : address.getHostAddress();
     }
 
     public static String filterLocalHost(String host) {
@@ -236,7 +237,7 @@ public class NetUtils {
             localAddress = InetAddress.getLocalHost();
             if (localAddress instanceof Inet6Address) {
                 Inet6Address address = (Inet6Address) localAddress;
-                if (isValidV6Address(address)){
+                if (isValidV6Address(address)) {
                     return normalizeV6Address(address);
                 }
             } else if (isValidAddress(localAddress)) {
@@ -259,7 +260,7 @@ public class NetUtils {
                             InetAddress address = addresses.nextElement();
                             if (address instanceof Inet6Address) {
                                 Inet6Address v6Address = (Inet6Address) address;
-                                if (isValidV6Address(v6Address)){
+                                if (isValidV6Address(v6Address)) {
                                     return normalizeV6Address(v6Address);
                                 }
                             } else if (isValidAddress(address)) {

@@ -48,7 +48,7 @@ public class TLadder implements TComponent {
             if (deep == 0) {
                 ladderSB
                         .append(item)
-                        .append("\n");
+                        .append(System.lineSeparator());
             }
 
             // need separator for others
@@ -57,7 +57,7 @@ public class TLadder implements TComponent {
                         .append(repeat(STEP_CHAR, deep * INDENT_STEP))
                         .append(LADDER_CHAR)
                         .append(item)
-                        .append("\n");
+                        .append(System.lineSeparator());
             }
 
             deep++;

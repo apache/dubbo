@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.support.DemoService;
 import org.apache.dubbo.rpc.support.LocalException;
 
 import com.alibaba.com.caucho.hessian.HessianException;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -123,6 +124,8 @@ public class ExceptionFilterTest {
         when(invoker.getInterface()).thenReturn(DemoService.class);
 
         Result newResult = exceptionFilter.invoke(invoker, invocation);
+
+        newResult = exceptionFilter.onResponse(newResult, invoker, invocation);
 
         Assert.assertFalse(newResult.getException() instanceof HessianException);
 

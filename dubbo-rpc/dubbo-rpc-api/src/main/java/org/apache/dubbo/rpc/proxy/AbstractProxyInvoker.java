@@ -83,7 +83,7 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
         RpcContext rpcContext = RpcContext.getContext();
         try {
             Object obj = doInvoke(proxy, invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
-            if (RpcUtils.isFutureReturnType(invocation)) {
+            if (RpcUtils.isReturnTypeFuture(invocation)) {
                 return new AsyncRpcResult((CompletableFuture<Object>) obj);
             } else if (rpcContext.isAsyncStarted()) { // ignore obj in case of RpcContext.startAsync()? always rely on user to write back.
                 return new AsyncRpcResult(rpcContext.getAsyncContext().getInternalFuture());
