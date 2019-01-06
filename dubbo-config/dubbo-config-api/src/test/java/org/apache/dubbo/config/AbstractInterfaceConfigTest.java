@@ -118,6 +118,8 @@ public class AbstractInterfaceConfigTest {
     public void testLoadRegistries() throws Exception {
         System.setProperty("dubbo.registry.address", "addr1");
         InterfaceConfig interfaceConfig = new InterfaceConfig();
+        // FIXME: now we need to check first, then load
+        interfaceConfig.checkRegistry();
         List<URL> urls = interfaceConfig.loadRegistries(true);
         TestCase.assertEquals(1, urls.size());
         URL url = urls.get(0);
