@@ -239,15 +239,15 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
         // give jvm properties the chance to override local configs, e.g., -Ddubbo.configcenter.highestPriority
         configCenter.refresh();
-        startConfigCenter();
+        prepareEnvironment();
     }
 
-    private void startConfigCenter() {
+    private void prepareEnvironment() {
         if (configCenter.isValid()) {
             if (!configCenter.checkOrUpdateInited()) {
                 return;
             }
-            DynamicConfiguration dynamicConfiguration = startDynamicConfiguration(configCenter.toUrl());
+            DynamicConfiguration dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
             String configContent = dynamicConfiguration.getConfig(configCenter.getConfigFile(), configCenter.getGroup());
 
             String appGroup = application != null ? application.getName() : null;
@@ -268,9 +268,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
     }
 
-    private DynamicConfiguration startDynamicConfiguration(URL url) {
-        DynamicConfigurationFactory dynamicConfigurationFactory = ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getExtension(url.getProtocol());
-        DynamicConfiguration configuration = dynamicConfigurationFactory.getDynamicConfiguration(url);
+    private DynamicConfiguration getDynamicConfiguration(URL url) {
+        DynamicConfigurationFactory factories = ExtensionLoader
+                .getExtensionLoader(DynamicConfigurationFactory.class)
+                .getExtension(url.getProtocol());
+        DynamicConfiguration configuration = factories.getDynamicConfiguration(url);
         Environment.getInstance().setDynamicConfiguration(configuration);
         return configuration;
     }
@@ -569,7 +571,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 cc.setAddress(rc.getAddress());
                 cc.setHighestPriority(false);
                 setConfigCenter(cc);
-                startConfigCenter();
+                prepareEnvironment();
                 return null;
             });
         });

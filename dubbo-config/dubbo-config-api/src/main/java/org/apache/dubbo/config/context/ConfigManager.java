@@ -40,43 +40,40 @@ import static org.apache.dubbo.common.Constants.DEFAULT_KEY;
 /**
  * TODO
  * Experimental API, should only being used internally at present.
+ * <p>
  * Maybe we can consider open to end user in the following version by providing a fluent style builder.
  *
  * <pre>{@code
- *  public void class DubboBuilder() {
- *
- *      public static DubboBuilder create() {
- *          return new DubboBuilder();
- *      }
- *
- *      public DubboBuilder application(ApplicationConfig application) {
- *          ConfigManager.getInstance().addApplication(application);
- *          return this;
- *      }
- *
- *      ...
- *
- *      public void build() {
- *          // export all ServiceConfigs
- *          // refer all ReferenceConfigs
- *      }
+     *  public void class DubboBuilder() {
+     *
+     *      public static DubboBuilder create() {
+     *          return new DubboBuilder();
+     *      }
+     *
+     *      public DubboBuilder application(ApplicationConfig application) {
+     *          ConfigManager.getInstance().addApplication(application);
+     *          return this;
+     *      }
+     *
+     *      ...
+     *
+     *      public void build() {
+     *          // export all ServiceConfigs
+     *          // refer all ReferenceConfigs
+     *      }
+     *  }
  *  }
  * </pre>
- *
+ * </p>
  * TODO
  * The properties defined here are duplicate with that in ReferenceConfig/ServiceConfig,
  * the properties here are currently only used for duplication check but are still not being used in the export/refer process yet.
  * Maybe we can remove the property definition in ReferenceConfig/ServiceConfig and only keep the setXxxConfig() as an entrance.
  * All workflow internally can rely on ConfigManager.
- * }
  */
 public class ConfigManager {
     private static final Logger logger = LoggerFactory.getLogger(ConfigManager.class);
     private static final ConfigManager configManager = new ConfigManager();
-
-    public static ConfigManager getInstance() {
-        return configManager;
-    }
 
     private ApplicationConfig application;
     private MonitorConfig monitor;
@@ -87,6 +84,14 @@ public class ConfigManager {
     private Map<String, RegistryConfig> registries = new ConcurrentHashMap<>();
     private Map<String, ProviderConfig> providers = new ConcurrentHashMap<>();
     private Map<String, ConsumerConfig> consumers = new ConcurrentHashMap<>();
+
+    public static ConfigManager getInstance() {
+        return configManager;
+    }
+
+    private ConfigManager() {
+
+    }
 
     public Optional<ApplicationConfig> getApplication() {
         return Optional.ofNullable(application);
