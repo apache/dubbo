@@ -117,4 +117,8 @@ public class DemoServiceImpl implements DemoService {
         return person1.getAge() + perso2.getAge();
     }
 
+    @Override
+    public String getPerson(Man man) {
+        return man.getName();
+    }
 }

@@ -133,7 +133,7 @@ public class InvokerTelnetHandlerTest {
         // pass json value to parameter of Person type
 
         String result = invoke.telnet(mockChannel, "DemoService.getPerson({\"name\":\"zhangsan\",\"age\":12})");
-        assertTrue(result.contains("No such method getPerson in service DemoService"));
+        assertTrue(result.contains("Use default service org.apache.dubbo.rpc.protocol.dubbo.support.DemoService.\r\n12\r\n"));
     }
 
     @SuppressWarnings("unchecked")
@@ -150,13 +150,13 @@ public class InvokerTelnetHandlerTest {
         // pass json value to parameter of Person type and specify it's type
         // one parameter with type of Person
         String result = invoke.telnet(mockChannel, "DemoService.getPerson({\"name\":\"zhangsan\",\"age\":12}) -p org.apache.dubbo.rpc.protocol.dubbo.support.Person");
-        assertTrue(result.contains("Use default service org.apache.dubbo.rpc.protocol.dubbo.support.DemoService.\r\n1\r\n"));
+        assertTrue(result.contains("Use default service org.apache.dubbo.rpc.protocol.dubbo.support.DemoService.\r\n12\r\n"));
 
         // two parameter with type of Person
         result = invoke.telnet(mockChannel, "DemoService.getPerson({\"name\":\"zhangsan\",\"age\":12},{\"name\":\"lisi\",\"age\":12}) " +
                 "-p org.apache.dubbo.rpc.protocol.dubbo.support.Person " +
                 "org.apache.dubbo.rpc.protocol.dubbo.support.Person");
-        assertTrue(result.contains("Use default service org.apache.dubbo.rpc.protocol.dubbo.support.DemoService.\r\n2\r\n"));
+        assertTrue(result.contains("Use default service org.apache.dubbo.rpc.protocol.dubbo.support.DemoService.\r\n24\r\n"));
     }
 
     @SuppressWarnings("unchecked")
@@ -208,7 +208,21 @@ public class InvokerTelnetHandlerTest {
         ApplicationModel.initProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", providerModel);
         String param = "{\"name\":\"Dubbo\",\"age\":8}";
         String result = invoke.telnet(mockChannel, "getPerson(" + param + ")");
-        assertTrue(result.contains("8"));
+        assertTrue(result.contains("Use default service org.apache.dubbo.rpc.protocol.dubbo.support.DemoService.\r\n8\r\n"));
+    }
+
+    @Test
+    public void testInvokeSpecifyTypeJsonParamMethod() throws RemotingException {
+        mockChannel = mock(Channel.class);
+        given(mockChannel.getAttribute("telnet.service")).willReturn(null);
+        given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
+        given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
+
+        ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", new DemoServiceImpl(), DemoService.class);
+        ApplicationModel.initProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", providerModel);
+        String param = "{\"name\":\"Dubbo\",\"age\":8,\"class\":\"org.apache.dubbo.rpc.protocol.dubbo.support.Man\"}";
+        String result = invoke.telnet(mockChannel, "getPerson(" + param + ")");
+        assertTrue(result.contains("Dubbo\r\n"));
     }
 
     @Test
@@ -222,7 +236,7 @@ public class InvokerTelnetHandlerTest {
         ApplicationModel.initProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", providerModel);
         String param = "{\"name\":\"Dubbo\",\"age\":8},{\"name\":\"Apache\",\"age\":20}";
         String result = invoke.telnet(mockChannel, "getPerson(" + param + ")");
-        assertTrue(result.contains("28"));
+        assertTrue(result.contains("Use default service org.apache.dubbo.rpc.protocol.dubbo.support.DemoService.\r\n28\r\n"));
     }
 
     @Test

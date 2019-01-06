@@ -33,6 +33,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import static org.apache.dubbo.common.utils.PojoUtils.realize;
 import static org.apache.dubbo.rpc.RpcContext.getContext;
@@ -97,11 +98,21 @@ public class InvokeTelnetHandler implements TelnetHandler {
                 if (!ReflectUtils.isCompatible(type, arg)) {
                     return false;
                 }
-            } else if (arg instanceof JSONObject) {
-                try {
-                    ((JSONObject) arg).toJavaObject(type);
-                } catch (Exception ex) {
-                    return false;
+            } else if (arg instanceof Map) {
+                String name = (String) ((Map<?, ?>) arg).get("class");
+                if (StringUtils.isNotEmpty(name)) {
+                    Class<?> cls = ReflectUtils.forName(name);
+                    if (!type.isAssignableFrom(cls)) {
+                        return false;
+                    }
+                } else {
+                    if (arg instanceof JSONObject) {
+                        try {
+                            ((JSONObject) arg).toJavaObject(type);
+                        } catch (Exception ex) {
+                            return false;
+                        }
+                    }
                 }
             } else if (arg instanceof Collection) {
                 if (!type.isArray() && !type.isAssignableFrom(arg.getClass())) {
