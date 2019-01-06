@@ -803,7 +803,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             }
             protocolConfig.refresh();
             if (StringUtils.isNotEmpty(protocolConfig.getId())) {
-                protocolConfig.setPrefix("dubbo.protocols.");
+                protocolConfig.setPrefix(Constants.PROTOCOLS_SUFFIX);
                 protocolConfig.refresh();
             }
         }
