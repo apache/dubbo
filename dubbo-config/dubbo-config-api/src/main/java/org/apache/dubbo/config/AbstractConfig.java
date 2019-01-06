@@ -140,7 +140,7 @@ public abstract class AbstractConfig implements Serializable {
                 break;
             }
         }
-        return tag.substring(0, 1).toLowerCase() + tag.substring(1);
+        return StringUtils.camelToSplitName(tag, "-");
     }
 
     protected static void appendParameters(Map<String, String> parameters, Object config) {
