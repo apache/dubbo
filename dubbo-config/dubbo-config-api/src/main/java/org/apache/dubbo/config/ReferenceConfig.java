@@ -212,6 +212,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
         resolveFile();
         checkApplication();
+        checkRegistry();
         checkMetadataReport();
     }
 
