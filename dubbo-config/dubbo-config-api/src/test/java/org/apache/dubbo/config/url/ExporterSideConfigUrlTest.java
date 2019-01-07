@@ -19,6 +19,7 @@ package org.apache.dubbo.config.url;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.config.context.ConfigManager;
 
 import org.junit.After;
 import org.junit.Before;
@@ -43,10 +44,12 @@ public class ExporterSideConfigUrlTest extends UrlTestBase {
     @Before
     public void setUp() {
         initServConf();
+        ConfigManager.getInstance().clear();
     }
 
     @After()
     public void teardown() {
+        ConfigManager.getInstance().clear();
     }
 
     @Test

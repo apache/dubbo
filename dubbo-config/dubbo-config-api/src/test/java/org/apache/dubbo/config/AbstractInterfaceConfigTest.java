@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.api.Greeting;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.mock.GreetingLocal1;
 import org.apache.dubbo.config.mock.GreetingLocal2;
 import org.apache.dubbo.config.mock.GreetingLocal3;
@@ -29,6 +30,7 @@ import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.registry.RegistryService;
 
 import junit.framework.TestCase;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -58,6 +60,11 @@ public class AbstractInterfaceConfigTest {
     @AfterClass
     public static void tearDown() throws Exception {
         System.clearProperty(Constants.DUBBO_PROPERTIES_KEY);
+    }
+
+    @After
+    public void tearMethodAfterEachUT() {
+        ConfigManager.getInstance().clear();
     }
 
     @Test
