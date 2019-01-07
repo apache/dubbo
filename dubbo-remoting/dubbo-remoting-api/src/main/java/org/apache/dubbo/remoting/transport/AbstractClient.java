@@ -152,24 +152,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                 @Override
                 public void run() {
                     try {
-
-                        /**
-                         * If the provider service is detected offline,
-                         * the client should not attempt to connect again.
-                         *
-                         * issue: https://github.com/apache/incubator-dubbo/issues/3158
-                         */
-                        if(isClosed()) {
-                            ScheduledFuture<?> future = reconnectExecutorFuture;
-                            if(future != null && !future.isCancelled()){
-                                /**
-                                 *  Client has been destroyed and
-                                 *  scheduled task should be cancelled.
-                                 */
-                                future.cancel(true);
-                            }
-                            return;
-                        }
+                        if (cancelFutureIfOffline()) return;
 
                         if (!isConnected()) {
                             connect();
@@ -191,7 +174,29 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                         }
                     }
                 }
+
+                private boolean cancelFutureIfOffline() {
+                    /**
+                     * If the provider service is detected offline,
+                     * the client should not attempt to connect again.
+                     *
+                     * issue: https://github.com/apache/incubator-dubbo/issues/3158
+                     */
+                    if(isClosed()) {
+                        ScheduledFuture<?> future = reconnectExecutorFuture;
+                        if(future != null && !future.isCancelled()){
+                            /**
+                             *  Client has been destroyed and
+                             *  scheduled task should be cancelled.
+                             */
+                            future.cancel(true);
+                        }
+                        return true;
+                    }
+                    return false;
+                }
             };
+
             reconnectExecutorFuture = reconnectExecutorService.scheduleWithFixedDelay(connectStatusCheckCommand, reconnect, reconnect, TimeUnit.MILLISECONDS);
         }
     }
