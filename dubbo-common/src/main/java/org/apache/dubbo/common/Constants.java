@@ -62,10 +62,10 @@ public class Constants {
     public static final String CONFIG_NAMESPACE_KEY = "config.namespace";
     public static final String CONFIG_GROUP_KEY = "config.group";
     public static final String CONFIG_CHECK_KEY = "config.check";
-    public static final String CONFIG_CONFIGFILE_KEY = "config.configFile";
-    public static final String CONFIG_ENABLE_KEY = "config.highestPriority";
+    public static final String CONFIG_CONFIGFILE_KEY = "config.config-file";
+    public static final String CONFIG_ENABLE_KEY = "config.highest-priority";
     public static final String CONFIG_TIMEOUT_KEY = "config.timeout";
-    public static final String CONFIG_APPNAME_KEY = "config.appName";
+    public static final String CONFIG_APPNAME_KEY = "config.app-name";
 
     public static final String DEFAULT_CATEGORY = PROVIDERS_CATEGORY;
 

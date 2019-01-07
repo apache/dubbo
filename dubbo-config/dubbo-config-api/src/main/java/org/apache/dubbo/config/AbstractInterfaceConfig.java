@@ -22,6 +22,7 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -515,7 +516,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
         if (StringUtils.isEmpty(registryIds)) {
             if (registries == null || registries.isEmpty()) {
-                registries = ConfigManager.getInstance().getDefaultRegistries().orElse(Arrays.asList(new RegistryConfig()));
+                registries = ConfigManager.getInstance().getDefaultRegistries()
+                        .filter(CollectionUtils::isNotEmpty)
+                        .orElse(Arrays.asList(new RegistryConfig()));
             }
         } else {
             String[] arr = Constants.COMMA_SPLIT_PATTERN.split(registryIds);

@@ -23,6 +23,7 @@ import org.apache.dubbo.common.bytecode.Wrapper;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ClassHelper;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -829,7 +830,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
         if (StringUtils.isEmpty(protocolIds)) {
             if (protocols == null || protocols.isEmpty()) {
-                protocols = ConfigManager.getInstance().getDefaultProtocols().orElse(Arrays.asList(new ProtocolConfig()));
+                protocols = ConfigManager.getInstance().getDefaultProtocols()
+                        .filter(CollectionUtils::isNotEmpty)
+                        .orElse(Arrays.asList(new ProtocolConfig()));
             }
         } else {
             String[] arr = Constants.COMMA_SPLIT_PATTERN.split(protocolIds);

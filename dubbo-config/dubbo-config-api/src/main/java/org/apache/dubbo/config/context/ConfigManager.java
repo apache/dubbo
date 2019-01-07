@@ -304,4 +304,16 @@ public class ConfigManager {
         }
     }
 
+    // For test purpose
+    public void clear() {
+        this.application = null;
+        this.configCenter = null;
+        this.monitor = null;
+        this.module = null;
+        this.registries.clear();
+        this.protocols.clear();
+        this.providers.clear();
+        this.consumers.clear();
+    }
+
 }
