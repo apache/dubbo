@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.service;
 
 /**
  * Echo service.
+ *
  * @export
  */
 public interface EchoService {
@@ -28,6 +29,6 @@ public interface EchoService {
      * @param message message.
      * @return message.
      */
-    Object $echo(Object message);
+    Object echo(Object message);
 
 }
