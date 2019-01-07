@@ -38,7 +38,6 @@ import java.util.Map;
 /**
  * 2018/10/9
  */
-@Ignore("Keeps fail on Travis")
 public class ZookeeperMetadataReportTest {
     private TestingServer zkServer;
     private ZookeeperMetadataReport zookeeperMetadataReport;
@@ -75,15 +74,18 @@ public class ZookeeperMetadataReportTest {
         MetadataIdentifier providerMetadataIdentifier = storePrivider(zookeeperMetadataReport, interfaceName, version, group, application);
 
         String fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(providerMetadataIdentifier));
+        fileContent = waitSeconds(fileContent, 3500, zookeeperMetadataReport.getNodePath(providerMetadataIdentifier));
         Assert.assertNotNull(fileContent);
 
         deletePath(providerMetadataIdentifier, zookeeperMetadataReport);
         fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(providerMetadataIdentifier));
+        fileContent = waitSeconds(fileContent, 1000, zookeeperMetadataReport.getNodePath(providerMetadataIdentifier));
         Assert.assertNull(fileContent);
 
 
         providerMetadataIdentifier = storePrivider(zookeeperMetadataReport, interfaceName, version, group, application);
         fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(providerMetadataIdentifier));
+        fileContent = waitSeconds(fileContent, 3500, zookeeperMetadataReport.getNodePath(providerMetadataIdentifier));
         Assert.assertNotNull(fileContent);
 
         Gson gson = new Gson();
@@ -101,14 +103,17 @@ public class ZookeeperMetadataReportTest {
         MetadataIdentifier consumerMetadataIdentifier = storeConsumer(zookeeperMetadataReport, interfaceName, version, group, application);
 
         String fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(consumerMetadataIdentifier));
+        fileContent = waitSeconds(fileContent, 3500, zookeeperMetadataReport.getNodePath(consumerMetadataIdentifier));
         Assert.assertNotNull(fileContent);
 
         deletePath(consumerMetadataIdentifier, zookeeperMetadataReport);
         fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(consumerMetadataIdentifier));
+        fileContent = waitSeconds(fileContent, 1000, zookeeperMetadataReport.getNodePath(consumerMetadataIdentifier));
         Assert.assertNull(fileContent);
 
         consumerMetadataIdentifier = storeConsumer(zookeeperMetadataReport, interfaceName, version, group, application);
         fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(consumerMetadataIdentifier));
+        fileContent = waitSeconds(fileContent, 3000, zookeeperMetadataReport.getNodePath(consumerMetadataIdentifier));
         Assert.assertNotNull(fileContent);
         Assert.assertEquals(fileContent, "{\"paramConsumerTest\":\"zkCm\"}");
     }
@@ -140,5 +145,13 @@ public class ZookeeperMetadataReportTest {
         Thread.sleep(2000);
 
         return consumerMetadataIdentifier;
+    }
+
+    private String waitSeconds(String value, long moreTime, String path) throws InterruptedException {
+        if (value == null) {
+            Thread.sleep(moreTime);
+            return zookeeperMetadataReport.zkClient.getContent(path);
+        }
+        return value;
     }
 }
