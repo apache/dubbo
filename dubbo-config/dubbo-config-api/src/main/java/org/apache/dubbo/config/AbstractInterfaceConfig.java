@@ -158,16 +158,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
         convertRegistryIdsToRegistries();
 
-        setRegistries(this.registries);
-
-        for (RegistryConfig registryConfig : registries) {
-            registryConfig.refresh();
-            if (StringUtils.isNotEmpty(registryConfig.getId())) {
-                registryConfig.setPrefix(Constants.REGISTRIES_SUFFIX);
-                registryConfig.refresh();
-            }
-        }
-
         for (RegistryConfig registryConfig : registries) {
             if (!registryConfig.isValid()) {
                 throw new IllegalStateException("No registry config found or it's not a valid config! " +
@@ -182,8 +172,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected void checkApplication() {
         // for backward compatibility
         createApplicationIfAbsent();
-
-        application.refresh();
 
         if (!application.isValid()) {
             throw new IllegalStateException("No application config found or it's not a valid config! " +
@@ -206,7 +194,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     protected void checkMonitor() {
         createMonitorIfAbsent();
-        monitor.refresh();
         if (!monitor.isValid()) {
             logger.info("There's no valid monitor config found, if you want to open monitor statistics for Dubbo, " +
                     "please make sure your monitor is configured properly.");
@@ -226,7 +213,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (metadataReportConfig == null) {
             setMetadataReportConfig(new MetadataReportConfig());
         }
-        metadataReportConfig.refresh();
         if (!metadataReportConfig.isValid()) {
             logger.warn("There's no valid metadata config found, if you are using the simplified mode of registry url, " +
                     "please make sure you have a metadata address configured properly.");
@@ -238,8 +224,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (configCenter == null) {
             return;
         }
-        // give jvm properties the chance to override local configs, e.g., -Ddubbo.configcenter.highestPriority
-        configCenter.refresh();
         prepareEnvironment();
     }
 
@@ -501,7 +485,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     private void convertRegistryIdsToRegistries() {
-        if (StringUtils.isEmpty(registryIds) && (registries == null || registries.isEmpty())) {
+        if (StringUtils.isEmpty(registryIds) && CollectionUtils.isEmpty(registries)) {
             Set<String> configedRegistries = new HashSet<>();
             configedRegistries.addAll(getSubProperties(Environment.getInstance().getExternalConfigurationMap(),
                     Constants.REGISTRIES_SUFFIX));
@@ -512,29 +496,32 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
 
         if (StringUtils.isEmpty(registryIds)) {
-            if (registries == null || registries.isEmpty()) {
-                registries = ConfigManager.getInstance().getDefaultRegistries()
+            if (CollectionUtils.isEmpty(registries)) {
+                setRegistries(
+                        ConfigManager.getInstance().getDefaultRegistries()
                         .filter(CollectionUtils::isNotEmpty)
-                        .orElse(Arrays.asList(new RegistryConfig()));
+                        .orElse(Arrays.asList(new RegistryConfig()))
+                );
             }
         } else {
-            String[] arr = Constants.COMMA_SPLIT_PATTERN.split(registryIds);
-            if (registries == null || registries.isEmpty()) {
-                registries = new ArrayList<>();
-            }
-            Arrays.stream(arr).forEach(id -> {
-                if (registries.stream().noneMatch(reg -> reg.getId().equals(id))) {
-                    registries.add(ConfigManager.getInstance().getRegistry(id).orElseGet(() -> {
+            String[] ids = Constants.COMMA_SPLIT_PATTERN.split(registryIds);
+            List<RegistryConfig> tmpRegistries = CollectionUtils.isNotEmpty(registries) ? registries : new ArrayList<>();
+            Arrays.stream(ids).forEach(id -> {
+                if (tmpRegistries.stream().noneMatch(reg -> reg.getId().equals(id))) {
+                    tmpRegistries.add(ConfigManager.getInstance().getRegistry(id).orElseGet(() -> {
                         RegistryConfig registryConfig = new RegistryConfig();
                         registryConfig.setId(id);
                         return registryConfig;
                     }));
                 }
             });
-            if (registries.size() > arr.length) {
+
+            if (tmpRegistries.size() > ids.length) {
                 throw new IllegalStateException("Too much registries found, the registries assigned to this service " +
-                        "are :" + registryIds + ", but got " + registries.size() + " registries!");
+                        "are :" + registryIds + ", but got " + tmpRegistries.size() + " registries!");
             }
+
+            setRegistries(tmpRegistries);
         }
 
     }
@@ -545,13 +532,14 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (registries == null || registries.isEmpty()) {
             String address = ConfigUtils.getProperty("dubbo.registry.address");
             if (address != null && address.length() > 0) {
-                registries = new ArrayList<RegistryConfig>();
+                List<RegistryConfig> tmpRegistries = new ArrayList<RegistryConfig>();
                 String[] as = address.split("\\s*[|]+\\s*");
                 for (String a : as) {
                     RegistryConfig registryConfig = new RegistryConfig();
                     registryConfig.setAddress(a);
-                    registries.add(registryConfig);
+                    tmpRegistries.add(registryConfig);
                 }
+                setRegistries(tmpRegistries);
             }
         }
     }
@@ -685,6 +673,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setApplication(ApplicationConfig application) {
+        application.refresh();
         this.application = application;
         ConfigManager.getInstance().setApplication(this.application);
     }
@@ -722,6 +711,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     @SuppressWarnings({"unchecked"})
     public void setRegistries(List<? extends RegistryConfig> registries) {
+        for (RegistryConfig registryConfig : registries) {
+            registryConfig.refresh();
+            if (StringUtils.isNotEmpty(registryConfig.getId())) {
+                registryConfig.setPrefix(Constants.REGISTRIES_SUFFIX);
+                registryConfig.refresh();
+            }
+        }
         this.registries = (List<RegistryConfig>) registries;
         ConfigManager.getInstance().addRegistries(this.registries);
     }
@@ -744,6 +740,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setMonitor(MonitorConfig monitor) {
+        monitor.refresh();
         this.monitor = monitor;
         ConfigManager.getInstance().setMonitor(monitor);
     }
@@ -762,6 +759,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setConfigCenter(ConfigCenterConfig configCenter) {
+        // give jvm properties the chance to override local configs, e.g., -Ddubbo.configcenter.highestPriority
+        configCenter.refresh();
         this.configCenter = configCenter;
         ConfigManager.getInstance().setConfigCenter(configCenter);
     }
@@ -803,6 +802,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setMetadataReportConfig(MetadataReportConfig metadataReportConfig) {
+        metadataReportConfig.refresh();
         this.metadataReportConfig = metadataReportConfig;
     }
 
