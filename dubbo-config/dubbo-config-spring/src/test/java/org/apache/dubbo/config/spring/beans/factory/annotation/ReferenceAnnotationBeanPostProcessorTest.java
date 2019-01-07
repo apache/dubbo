@@ -17,9 +17,11 @@
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 import org.apache.dubbo.config.annotation.Reference;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.context.annotation.DubboComponentScan;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -63,12 +65,14 @@ public class ReferenceAnnotationBeanPostProcessorTest {
     public void init() {
         // Starts Provider
         providerApplicationContext = new AnnotationConfigApplicationContext(ServiceAnnotationBeanPostProcessorTest.TestConfiguration.class);
+        ConfigManager.getInstance().clear();
     }
 
     @After
     public void destroy() {
         // Shutdowns Provider
         providerApplicationContext.close();
+        ConfigManager.getInstance().clear();
     }
 
     @Test

@@ -20,6 +20,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.spring.context.annotation.DubboComponentScan;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
@@ -42,10 +43,10 @@ public class ProviderConfiguration {
      *
      * @return {@link ApplicationConfig} Bean
      */
-    @Bean("dubbo-annotation-provider")
+    @Bean("dubbo-annotation-test")
     public ApplicationConfig applicationConfig() {
         ApplicationConfig applicationConfig = new ApplicationConfig();
-        applicationConfig.setName("dubbo-annotation-provider");
+        applicationConfig.setName("dubbo-annotation-test");
         return applicationConfig;
     }
 
