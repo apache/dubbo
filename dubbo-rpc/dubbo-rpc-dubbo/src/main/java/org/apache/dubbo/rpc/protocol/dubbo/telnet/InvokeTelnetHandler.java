@@ -139,7 +139,7 @@ public class InvokeTelnetHandler implements TelnetHandler {
         StringBuilder buf = new StringBuilder();
         String service = (String) channel.getAttribute(ChangeTelnetHandler.SERVICE_KEY);
         if (!StringUtils.isEmpty(service)) {
-            buf.append("Use default service ").append(service).append(".\r\n");
+            buf.append("Use default service ").append(service).append(".");
         }
 
         int i = message.indexOf("(");
@@ -223,6 +223,7 @@ public class InvokeTelnetHandler implements TelnetHandler {
                         result.setException(t);
                     }
                     long end = System.currentTimeMillis();
+                    buf.append("\r\nresult: ");
                     buf.append(JSON.toJSONString(result.recreate()));
                     buf.append("\r\nelapsed: ");
                     buf.append(end - start);
@@ -231,10 +232,10 @@ public class InvokeTelnetHandler implements TelnetHandler {
                     return "Failed to invoke method " + invokeMethod.getName() + ", cause: " + StringUtils.toString(t);
                 }
             } else {
-                buf.append("No such method ").append(method).append(" in service ").append(service);
+                buf.append("\r\nNo such method ").append(method).append(" in service ").append(service);
             }
         } else {
-            buf.append("No such service ").append(service);
+            buf.append("\r\nNo such service ").append(service);
         }
         return buf.toString();
     }
