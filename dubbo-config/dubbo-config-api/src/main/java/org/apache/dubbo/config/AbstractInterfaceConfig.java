@@ -371,8 +371,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
     }
 
-    private URL loadMetadataReporterURL(boolean provider) {
-        this.checkApplication();
+    private URL loadMetadataReporterURL() {
         String address = metadataReportConfig.getAddress();
         if (address == null || address.length() == 0) {
             return null;
@@ -388,9 +387,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (metadataReportConfig == null || !metadataReportConfig.isValid()) {
             return null;
         }
-        return MetadataReportService.instance(() -> {
-            return loadMetadataReporterURL(true);
-        });
+        return MetadataReportService.instance(this::loadMetadataReporterURL);
     }
 
     /**
