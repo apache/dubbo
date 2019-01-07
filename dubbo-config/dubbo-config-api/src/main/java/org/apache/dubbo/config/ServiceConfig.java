@@ -784,7 +784,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     private void checkDefault() {
         createProviderIfAbsent();
-        provider.refresh();
     }
 
     private void createProviderIfAbsent() {
@@ -799,26 +798,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if ((protocols == null || protocols.isEmpty()) && provider != null) {
             setProtocols(provider.getProtocols());
         }
-
         convertProtocolIdsToProtocols();
-
-        // set after all protocols are generated
-        setProtocols(this.protocols);
-
-        for (ProtocolConfig protocolConfig : protocols) {
-            if (StringUtils.isEmpty(protocolConfig.getName())) {
-                protocolConfig.setName(Constants.DUBBO_VERSION_KEY);
-            }
-            protocolConfig.refresh();
-            if (StringUtils.isNotEmpty(protocolConfig.getId())) {
-                protocolConfig.setPrefix(Constants.PROTOCOLS_SUFFIX);
-                protocolConfig.refresh();
-            }
-        }
     }
 
     private void convertProtocolIdsToProtocols() {
-        if (StringUtils.isEmpty(protocolIds) && (protocols == null || protocols.isEmpty())) {
+        if (StringUtils.isEmpty(protocolIds) && CollectionUtils.isEmpty(protocols)) {
             List<String> configedProtocols = new ArrayList<>();
             configedProtocols.addAll(getSubProperties(Environment.getInstance()
                     .getExternalConfigurationMap(), Constants.PROTOCOLS_SUFFIX));
@@ -829,29 +813,30 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
 
         if (StringUtils.isEmpty(protocolIds)) {
-            if (protocols == null || protocols.isEmpty()) {
-                protocols = ConfigManager.getInstance().getDefaultProtocols()
+            if (CollectionUtils.isEmpty(protocols)) {
+               setProtocols(
+                       ConfigManager.getInstance().getDefaultProtocols()
                         .filter(CollectionUtils::isNotEmpty)
-                        .orElse(Arrays.asList(new ProtocolConfig()));
+                        .orElse(Arrays.asList(new ProtocolConfig()))
+               );
             }
         } else {
             String[] arr = Constants.COMMA_SPLIT_PATTERN.split(protocolIds);
-            if (protocols == null || protocols.isEmpty()) {
-                protocols = new ArrayList<>();
-            }
+            List<ProtocolConfig> tmpProtocols = CollectionUtils.isNotEmpty(protocols) ? protocols : new ArrayList<>();
             Arrays.stream(arr).forEach(id -> {
-                if (protocols.stream().noneMatch(prot -> prot.getId().equals(id))) {
-                    protocols.add(ConfigManager.getInstance().getProtocol(id).orElseGet(() -> {
+                if (tmpProtocols.stream().noneMatch(prot -> prot.getId().equals(id))) {
+                    tmpProtocols.add(ConfigManager.getInstance().getProtocol(id).orElseGet(() -> {
                         ProtocolConfig protocolConfig = new ProtocolConfig();
                         protocolConfig.setId(id);
                         return protocolConfig;
                     }));
                 }
             });
-            if (protocols.size() > arr.length) {
+            if (tmpProtocols.size() > arr.length) {
                 throw new IllegalStateException("Too much protocols found, the protocols comply to this service are :" + protocolIds + " but got " + protocols
                         .size() + " registries!");
             }
+            setProtocols(tmpProtocols);
         }
     }
 
@@ -935,6 +920,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     public void setProvider(ProviderConfig provider) {
+        provider.refresh();
         this.provider = provider;
         ConfigManager.getInstance().addProvider(provider);
     }

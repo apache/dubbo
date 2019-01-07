@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.ExporterListener;
@@ -200,6 +201,16 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
     @SuppressWarnings({"unchecked"})
     public void setProtocols(List<? extends ProtocolConfig> protocols) {
+        for (ProtocolConfig protocolConfig : protocols) {
+            if (StringUtils.isEmpty(protocolConfig.getName())) {
+                protocolConfig.setName(Constants.DUBBO_VERSION_KEY);
+            }
+            protocolConfig.refresh();
+            if (StringUtils.isNotEmpty(protocolConfig.getId())) {
+                protocolConfig.setPrefix(Constants.PROTOCOLS_SUFFIX);
+                protocolConfig.refresh();
+            }
+        }
         this.protocols = (List<ProtocolConfig>) protocols;
         ConfigManager.getInstance().addProtocols(this.protocols);
     }
