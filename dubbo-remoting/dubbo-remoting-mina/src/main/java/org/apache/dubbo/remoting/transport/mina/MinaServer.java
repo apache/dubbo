@@ -60,7 +60,7 @@ public class MinaServer extends AbstractServer {
                 Executors.newCachedThreadPool(new NamedThreadFactory("MinaServerWorker",
                         true)));
         // config
-        SocketAcceptorConfig cfg = (SocketAcceptorConfig) acceptor.getDefaultConfig();
+        SocketAcceptorConfig cfg = acceptor.getDefaultConfig();
         cfg.setThreadModel(ThreadModel.MANUAL);
         // set codec.
         acceptor.getFilterChain().addLast("codec", new ProtocolCodecFilter(new MinaCodecAdapter(getCodec(), getUrl(), this)));

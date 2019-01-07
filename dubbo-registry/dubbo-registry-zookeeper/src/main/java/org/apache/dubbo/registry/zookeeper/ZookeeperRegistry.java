@@ -50,7 +50,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
 
     private final String root;
 
-    private final Set<String> anyServices = new ConcurrentHashSet<String>();
+    private final Set<String> anyServices = new ConcurrentHashSet<>();
 
     private final ConcurrentMap<URL, ConcurrentMap<NotifyListener, ChildListener>> zkListeners = new ConcurrentHashMap<URL, ConcurrentMap<NotifyListener, ChildListener>>();
 
@@ -67,15 +67,12 @@ public class ZookeeperRegistry extends FailbackRegistry {
         }
         this.root = group;
         zkClient = zookeeperTransporter.connect(url);
-        zkClient.addStateListener(new StateListener() {
-            @Override
-            public void stateChanged(int state) {
-                if (state == RECONNECTED) {
-                    try {
-                        recover();
-                    } catch (Exception e) {
-                        logger.error(e.getMessage(), e);
-                    }
+        zkClient.addStateListener(state -> {
+            if (state == StateListener.RECONNECTED) {
+                try {
+                    recover();
+                } catch (Exception e) {
+                    logger.error(e.getMessage(), e);
                 }
             }
         });
@@ -133,21 +130,18 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 String root = toRootPath();
                 ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
                 if (listeners == null) {
-                    zkListeners.putIfAbsent(url, new ConcurrentHashMap<NotifyListener, ChildListener>());
+                    zkListeners.putIfAbsent(url, new ConcurrentHashMap<>());
                     listeners = zkListeners.get(url);
                 }
                 ChildListener zkListener = listeners.get(listener);
                 if (zkListener == null) {
-                    listeners.putIfAbsent(listener, new ChildListener() {
-                        @Override
-                        public void childChanged(String parentPath, List<String> currentChilds) {
-                            for (String child : currentChilds) {
-                                child = URL.decode(child);
-                                if (!anyServices.contains(child)) {
-                                    anyServices.add(child);
-                                    subscribe(url.setPath(child).addParameters(Constants.INTERFACE_KEY, child,
-                                            Constants.CHECK_KEY, String.valueOf(false)), listener);
-                                }
+                    listeners.putIfAbsent(listener, (parentPath, currentChilds) -> {
+                        for (String child : currentChilds) {
+                            child = URL.decode(child);
+                            if (!anyServices.contains(child)) {
+                                anyServices.add(child);
+                                subscribe(url.setPath(child).addParameters(Constants.INTERFACE_KEY, child,
+                                        Constants.CHECK_KEY, String.valueOf(false)), listener);
                             }
                         }
                     });
@@ -164,21 +158,16 @@ public class ZookeeperRegistry extends FailbackRegistry {
                     }
                 }
             } else {
-                List<URL> urls = new ArrayList<URL>();
+                List<URL> urls = new ArrayList<>();
                 for (String path : toCategoriesPath(url)) {
                     ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
                     if (listeners == null) {
-                        zkListeners.putIfAbsent(url, new ConcurrentHashMap<NotifyListener, ChildListener>());
+                        zkListeners.putIfAbsent(url, new ConcurrentHashMap<>());
                         listeners = zkListeners.get(url);
                     }
                     ChildListener zkListener = listeners.get(listener);
                     if (zkListener == null) {
-                        listeners.putIfAbsent(listener, new ChildListener() {
-                            @Override
-                            public void childChanged(String parentPath, List<String> currentChilds) {
-                                ZookeeperRegistry.this.notify(url, listener, toUrlsWithEmpty(url, parentPath, currentChilds));
-                            }
-                        });
+                        listeners.putIfAbsent(listener, (parentPath, currentChilds) -> ZookeeperRegistry.this.notify(url, listener, toUrlsWithEmpty(url, parentPath, currentChilds)));
                         zkListener = listeners.get(listener);
                     }
                     zkClient.create(path, false);
@@ -218,7 +207,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
             throw new IllegalArgumentException("lookup url == null");
         }
         try {
-            List<String> providers = new ArrayList<String>();
+            List<String> providers = new ArrayList<>();
             for (String path : toCategoriesPath(url)) {
                 List<String> children = zkClient.getChildren(path);
                 if (children != null) {
@@ -274,7 +263,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     }
 
     private List<URL> toUrlsWithoutEmpty(URL consumer, List<String> providers) {
-        List<URL> urls = new ArrayList<URL>();
+        List<URL> urls = new ArrayList<>();
         if (providers != null && !providers.isEmpty()) {
             for (String provider : providers) {
                 provider = URL.decode(provider);

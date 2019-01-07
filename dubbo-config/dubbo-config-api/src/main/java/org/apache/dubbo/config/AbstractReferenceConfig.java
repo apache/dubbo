@@ -33,32 +33,49 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     // ======== Reference config default values, will take effect if reference's attribute is not set  ========
 
-    // check if service provider exists
+    /**
+     * Check if service provider exists, if not exists, it will be fast fail
+     */
     protected Boolean check;
 
-    // whether to eagle-init
+    /**
+     * Whether to eagle-init
+     */
     protected Boolean init;
 
-    // whether to use generic interface
+    /**
+     * Whether to use generic interface
+     */
     protected String generic;
 
-    // whether to find reference's instance from the current JVM
+    /**
+     * Whether to find reference's instance from the current JVM
+     */
     protected Boolean injvm;
 
-    // lazy create connection
+    /**
+     * Lazy create connection
+     */
     protected Boolean lazy;
 
     protected String reconnect;
 
     protected Boolean sticky;
 
-    // whether to support event in stub. //TODO solve merge problem
+    /**
+     * Whether to support event in stub.
+     */
+    //TODO solve merge problem
     protected Boolean stubevent;//= Constants.DEFAULT_STUB_EVENT;
 
-    // version
+    /**
+     * The remote service version the customer side will reference
+     */
     protected String version;
 
-    // group
+    /**
+     * The remote service group the customer side will reference
+     */
     protected String group;
 
     public Boolean isCheck() {
@@ -98,7 +115,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     /**
      * @return
-     * @deprecated instead, use scope to judge if it's in jvm, scope=local
+     * @deprecated instead, use the parameter <b>scope</> to judge if it's in jvm, scope=local
      */
     @Deprecated
     public Boolean isInjvm() {
@@ -107,7 +124,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     /**
      * @param injvm
-     * @deprecated instead, use scope to judge if it's in jvm, scope=local
+     * @deprecated instead, use the parameter <b>scope</b> to judge if it's in jvm, scope=local
      */
     @Deprecated
     public void setInjvm(Boolean injvm) {
@@ -185,7 +202,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     }
 
     public void setVersion(String version) {
-        checkKey("version", version);
+        checkKey(Constants.VERSION_KEY, version);
         this.version = version;
     }
 
@@ -194,7 +211,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     }
 
     public void setGroup(String group) {
-        checkKey("group", group);
+        checkKey(Constants.GROUP_KEY, group);
         this.group = group;
     }
 }

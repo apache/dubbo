@@ -30,6 +30,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.cluster.Directory;
+import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.Merger;
 import org.apache.dubbo.rpc.cluster.merger.MergerFactory;
 
@@ -47,26 +48,31 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("unchecked")
-public class MergeableClusterInvoker<T> implements Invoker<T> {
+public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
     private static final Logger log = LoggerFactory.getLogger(MergeableClusterInvoker.class);
-    private final Directory<T> directory;
     private ExecutorService executor = Executors.newCachedThreadPool(new NamedThreadFactory("mergeable-cluster-executor", true));
 
     public MergeableClusterInvoker(Directory<T> directory) {
-        this.directory = directory;
+        super(directory);
     }
 
     @Override
-    @SuppressWarnings("rawtypes")
-    public Result invoke(final Invocation invocation) throws RpcException {
-        List<Invoker<T>> invokers = directory.list(invocation);
-
+    protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
+        checkInvokers(invokers, invocation);
         String merger = getUrl().getMethodParameter(invocation.getMethodName(), Constants.MERGER_KEY);
         if (ConfigUtils.isEmpty(merger)) { // If a method doesn't have a merger, only invoke one Group
             for (final Invoker<T> invoker : invokers) {
                 if (invoker.isAvailable()) {
-                    return invoker.invoke(invocation);
+                    try {
+                        return invoker.invoke(invocation);
+                    } catch (RpcException e) {
+                        if (e.isNoInvokerAvailableAfterFilter()) {
+                            log.debug("No available provider for service" + directory.getUrl().getServiceKey() + " on group " + invoker.getUrl().getParameter(Constants.GROUP_KEY) + ", will continue to try another group.");
+                        } else {
+                            throw e;
+                        }
+                    }
                 }
             }
             return invokers.iterator().next().invoke(invocation);
@@ -101,8 +107,8 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
             try {
                 Result r = future.get(timeout, TimeUnit.MILLISECONDS);
                 if (r.hasException()) {
-                    log.error("Invoke " + getGroupDescFromServiceKey(entry.getKey()) + 
-                                    " failed: " + r.getException().getMessage(), 
+                    log.error("Invoke " + getGroupDescFromServiceKey(entry.getKey()) +
+                                    " failed: " + r.getException().getMessage(),
                             r.getException());
                 } else {
                     resultList.add(r);
@@ -128,7 +134,7 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
             try {
                 method = returnType.getMethod(merger, returnType);
             } catch (NoSuchMethodException e) {
-                throw new RpcException("Can not merge result because missing method [ " + merger + " ] in class [ " + 
+                throw new RpcException("Can not merge result because missing method [ " + merger + " ] in class [ " +
                         returnType.getClass().getName() + " ]");
             }
             if (!Modifier.isPublic(method.getModifiers())) {
@@ -169,6 +175,7 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
         }
         return new RpcResult(result);
     }
+
 
     @Override
     public Class<T> getInterface() {

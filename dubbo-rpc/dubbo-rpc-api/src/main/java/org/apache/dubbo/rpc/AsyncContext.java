@@ -32,6 +32,7 @@ public interface AsyncContext {
      *
      * @return the internal future
      */
+    // FIXME
     CompletableFuture getInternalFuture();
 
     /**
