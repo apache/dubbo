@@ -673,6 +673,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setApplication(ApplicationConfig application) {
+        if (application == null) {
+            return;
+        }
         application.refresh();
         this.application = application;
         ConfigManager.getInstance().setApplication(this.application);
@@ -691,6 +694,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setModule(ModuleConfig module) {
+        if (module == null) {
+            return;
+        }
         this.module = module;
         ConfigManager.getInstance().setModule(module);
     }
@@ -711,6 +717,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     @SuppressWarnings({"unchecked"})
     public void setRegistries(List<? extends RegistryConfig> registries) {
+        if (registries == null) {
+            return;
+        }
         for (RegistryConfig registryConfig : registries) {
             registryConfig.refresh();
             if (StringUtils.isNotEmpty(registryConfig.getId())) {
@@ -740,6 +749,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setMonitor(MonitorConfig monitor) {
+        if (monitor == null) {
+            return;
+        }
         monitor.refresh();
         this.monitor = monitor;
         ConfigManager.getInstance().setMonitor(monitor);
@@ -759,6 +771,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setConfigCenter(ConfigCenterConfig configCenter) {
+        if (configCenter == null) {
+            return;
+        }
         // give jvm properties the chance to override local configs, e.g., -Ddubbo.configcenter.highestPriority
         configCenter.refresh();
         this.configCenter = configCenter;

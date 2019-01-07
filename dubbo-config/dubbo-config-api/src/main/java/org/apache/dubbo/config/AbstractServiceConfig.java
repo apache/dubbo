@@ -201,6 +201,9 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
     @SuppressWarnings({"unchecked"})
     public void setProtocols(List<? extends ProtocolConfig> protocols) {
+        if (protocols == null) {
+            return;
+        }
         for (ProtocolConfig protocolConfig : protocols) {
             if (StringUtils.isEmpty(protocolConfig.getName())) {
                 protocolConfig.setName(Constants.DUBBO_VERSION_KEY);

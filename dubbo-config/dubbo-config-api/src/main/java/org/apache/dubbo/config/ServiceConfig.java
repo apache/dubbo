@@ -920,6 +920,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     public void setProvider(ProviderConfig provider) {
+        if (provider == null) {
+            return;
+        }
         provider.refresh();
         this.provider = provider;
         ConfigManager.getInstance().addProvider(provider);
