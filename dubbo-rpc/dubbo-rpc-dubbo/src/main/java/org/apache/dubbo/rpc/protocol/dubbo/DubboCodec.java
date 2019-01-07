@@ -113,8 +113,11 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
             Request req = new Request(id);
             req.setVersion(Version.getProtocolVersion());
             req.setTwoWay((flag & FLAG_TWOWAY) != 0);
-            Object data = null;
+            if ((flag & FLAG_EVENT) != 0) {
+                req.setEvent(true);
+            }
             try {
+                Object data;
                 ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
                 if (req.isHeartbeat()) {
                     data = decodeHeartbeatData(channel, in);
@@ -133,6 +136,7 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
                     }
                     data = inv;
                 }
+                req.setData(data);
             } catch (Throwable t) {
                 if (log.isWarnEnabled()) {
                     log.warn("Decode request failed: " + t.getMessage(), t);
@@ -140,20 +144,6 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
                 // bad request
                 req.setBroken(true);
                 req.setData(t);
-            }
-            if (!req.isBroken()) {
-                if ((flag & FLAG_EVENT) != 0) {
-                    if (data != null && data.equals(Request.READONLY_EVENT)) {
-                        req.setEvent(Request.READONLY_EVENT);
-                    } else {
-                        req.setEvent(Request.HEARTBEAT_EVENT);
-                    }
-                }
-                req.setData(data);
-            } else {
-                if ((flag & FLAG_EVENT) != 0) {
-                    req.setEvent(true);
-                }
             }
 
             return req;

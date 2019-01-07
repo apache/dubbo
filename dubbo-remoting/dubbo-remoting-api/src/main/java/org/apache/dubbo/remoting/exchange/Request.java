@@ -94,11 +94,6 @@ public class Request {
         return mEvent;
     }
 
-    public void setEvent(String event) {
-        mEvent = true;
-        mData = event;
-    }
-
     public void setEvent(boolean mEvent) {
         this.mEvent = mEvent;
     }
@@ -125,7 +120,8 @@ public class Request {
 
     public void setHeartbeat(boolean isHeartbeat) {
         if (isHeartbeat) {
-            setEvent(HEARTBEAT_EVENT);
+            setEvent(true);
+            setData(HEARTBEAT_EVENT);
         }
     }
 

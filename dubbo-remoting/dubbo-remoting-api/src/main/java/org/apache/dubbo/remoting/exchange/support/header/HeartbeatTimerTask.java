@@ -47,7 +47,8 @@ public class HeartbeatTimerTask extends AbstractTimerTask {
                 Request req = new Request();
                 req.setVersion(Version.getProtocolVersion());
                 req.setTwoWay(true);
-                req.setEvent(Request.HEARTBEAT_EVENT);
+                req.setEvent(true);
+                req.setData(Request.HEARTBEAT_EVENT);
                 channel.send(req);
                 if (logger.isDebugEnabled()) {
                     logger.debug("Send heartbeat to remote channel " + channel.getRemoteAddress()
