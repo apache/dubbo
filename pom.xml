@@ -492,6 +492,11 @@
                                 <!-- exclude the internal threadlocal files -->
                                 <exclude>**/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java</exclude>
                                 <exclude>**/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java</exclude>
+                                <exclude>**/org/apache/dubbo/remoting/p2p/support/*</exclude>
+                                <exclude>**/org/apache/dubbo/rpc/cluster/support/api/*</exclude>
+                                <exclude>**/org/apache/dubbo/common/support/io/TempDirectory.java</exclude>
+                                <exclude>**/org/org/apache/dubbo/config/support/io/TempDirectory.java</exclude>
+                                <exclude>**/org/apache/dubbo/remoting/p2p/support/io/TempDirectory.java</exclude>
                             </excludes>
                         </configuration>
                     </execution>
