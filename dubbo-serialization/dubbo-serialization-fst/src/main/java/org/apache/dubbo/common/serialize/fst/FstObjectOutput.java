@@ -23,7 +23,9 @@ import org.nustaq.serialization.FSTObjectOutput;
 import java.io.IOException;
 import java.io.OutputStream;
 
-
+/**
+ * Fst object output implementation
+ */
 public class FstObjectOutput implements ObjectOutput {
 
     private FSTObjectOutput output;
