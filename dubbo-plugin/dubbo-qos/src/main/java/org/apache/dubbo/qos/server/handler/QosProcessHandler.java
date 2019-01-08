@@ -93,6 +93,15 @@ public class QosProcessHandler extends ByteToMessageDecoder {
         }
     }
 
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        ScheduledFuture<?> future = welcomeFuture;
+        if(future != null && !future.isCancelled()){
+            future.cancel(true);
+        }
+        ctx.close();
+    }
+
     // G for GET, and P for POST
     private static boolean isHttp(int magic) {
         return magic == 'G' || magic == 'P';
