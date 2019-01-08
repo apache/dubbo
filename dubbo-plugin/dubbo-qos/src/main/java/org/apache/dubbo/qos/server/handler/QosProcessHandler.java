@@ -30,6 +30,7 @@ import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.CharsetUtil;
 import io.netty.util.concurrent.ScheduledFuture;
+import org.apache.dubbo.common.utils.ExecutorUtil;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -97,10 +98,7 @@ public class QosProcessHandler extends ByteToMessageDecoder {
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent) {
-            ScheduledFuture<?> future = welcomeFuture;
-            if (future != null && !future.isCancelled()) {
-                future.cancel(true);
-            }
+            ExecutorUtil.cancelScheduledFuture(welcomeFuture);
             ctx.close();
         }
     }
