@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.logger;
 
 import org.apache.dubbo.common.logger.jcl.JclLoggerAdapter;
+import org.apache.dubbo.common.logger.jdk.JdkLoggerAdapter;
 import org.apache.dubbo.common.logger.log4j.Log4jLoggerAdapter;
 import org.apache.dubbo.common.logger.log4j2.Log4j2LoggerAdapter;
 import org.apache.dubbo.common.logger.slf4j.Slf4jLoggerAdapter;
@@ -37,7 +38,7 @@ public class LoggerTest {
     static Stream<Arguments> data() {
         return Stream.of(
                 Arguments.of(JclLoggerAdapter.class),
-                Arguments.of(Log4jLoggerAdapter.class),
+                Arguments.of(JdkLoggerAdapter.class),
                 Arguments.of(Log4jLoggerAdapter.class),
                 Arguments.of(Slf4jLoggerAdapter.class),
                 Arguments.of(Log4j2LoggerAdapter.class)
