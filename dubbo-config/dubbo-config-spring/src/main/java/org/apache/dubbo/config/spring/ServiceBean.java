@@ -132,7 +132,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             }
         }
 
-        if ( !hasRegistry() && !hasProviderRegistry() && !hasApplicationRegistry()) {
+        if (!hasRegistry() && !hasProviderRegistry() && !hasApplicationRegistry()) {
             Map<String, RegistryConfig> registryConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, RegistryConfig.class, false, false);
             if (registryConfigMap != null && registryConfigMap.size() > 0) {
                 List<RegistryConfig> registryConfigs = new ArrayList<>();
@@ -200,8 +200,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             }
         }
 
-        if ( !hasProtocol()
-                && !hasProviderProtocol()) {
+        if (!hasProtocol() && !hasProviderProtocol()) {
             Map<String, ProtocolConfig> protocolConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProtocolConfig.class, false, false);
             if (protocolConfigMap != null && protocolConfigMap.size() > 0) {
                 List<ProtocolConfig> protocolConfigs = new ArrayList<ProtocolConfig>();
@@ -332,7 +331,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
     }
 
     private boolean hasProviderProtocol() {
-        return getProvider() != null && getProvider().getProtocols() != null && getProvider().getProtocols().isEmpty();
+        return getProvider() != null && getProvider().getProtocols() != null && !getProvider().getProtocols().isEmpty();
     }
 
     private boolean hasProtocol() {
