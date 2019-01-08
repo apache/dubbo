@@ -80,7 +80,7 @@ public class NettyClientHandler extends ChannelDuplexHandler {
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         super.write(ctx, msg, promise);
         final NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
-        final boolean isMsg = msg instanceof Request;
+        final boolean isRequest = msg instanceof Request;
 
         // We add listeners to make sure our out bound event is correct.
         // If our out bound event has an error (in most cases the encoder fails),
@@ -97,11 +97,9 @@ public class NettyClientHandler extends ChannelDuplexHandler {
             }
 
             Throwable t = future.cause();
-            if (t != null && isMsg) {
+            if (t != null && isRequest) {
                 Request request = (Request) msg;
-                Response response = new Response(request.getId(), request.getVersion());
-                response.setStatus(Response.BAD_REQUEST);
-                response.setErrorMessage(StringUtils.toString(t));
+                Response response = buildErrorResponse(request, t);
                 handler.received(channel, response);
             }
         });
@@ -116,5 +114,19 @@ public class NettyClientHandler extends ChannelDuplexHandler {
         } finally {
             NettyChannel.removeChannelIfDisconnected(ctx.channel());
         }
+    }
+
+    /**
+     * build a bad request's response
+     *
+     * @param request the request
+     * @param t the throwable. In most cases, serialization fails.
+     * @return the response
+     */
+    private static Response buildErrorResponse(Request request, Throwable t) {
+        Response response = new Response(request.getId(), request.getVersion());
+        response.setStatus(Response.BAD_REQUEST);
+        response.setErrorMessage(StringUtils.toString(t));
+        return response;
     }
 }
