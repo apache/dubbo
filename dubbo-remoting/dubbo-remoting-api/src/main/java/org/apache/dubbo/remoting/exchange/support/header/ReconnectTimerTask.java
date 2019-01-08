@@ -47,7 +47,7 @@ public class ReconnectTimerTask extends AbstractTimerTask {
                             + heartbeatTimeout + "ms");
                     ((Client) channel).reconnect();
                 } catch (Throwable t) {
-                    logger.warn("Exception when reconnect to remote channel " + channel.getRemoteAddress(), t);
+                    // do nothing
                 }
             } else {
                 try {
