@@ -56,8 +56,6 @@ public class Constants {
 
     public static final String CONFIGURATORS_SUFFIX = ".configurators";
 
-    public static final String ROUTERS_SUFFIX = ".routers";
-
     public static final String CONFIG_CLUSTER_KEY = "config.cluster";
     public static final String CONFIG_NAMESPACE_KEY = "config.namespace";
     public static final String CONFIG_GROUP_KEY = "config.group";

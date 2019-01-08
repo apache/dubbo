@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.router.condition.config;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -44,6 +43,7 @@ import java.util.List;
  */
 public abstract class ListenableRouter extends AbstractRouter implements ConfigurationListener {
     public static final String NAME = "LISTENABLE_ROUTER";
+    private static final String RULE_SUFFIX = ".routers.condition";
     public static final int DEFAULT_PRIORITY = 200;
     private static final Logger logger = LoggerFactory.getLogger(ListenableRouter.class);
     private ConditionRouterRule routerRule;
@@ -128,7 +128,7 @@ public abstract class ListenableRouter extends AbstractRouter implements Configu
         if (StringUtils.isEmpty(ruleKey)) {
             return;
         }
-        String routerKey = ruleKey + Constants.ROUTERS_SUFFIX;
+        String routerKey = ruleKey + RULE_SUFFIX;
         configuration.addListener(routerKey, this);
         String rule = configuration.getConfig(routerKey);
         if (rule != null) {
