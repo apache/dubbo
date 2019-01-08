@@ -31,7 +31,6 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
 import org.apache.dubbo.rpc.cluster.router.condition.ConditionRouter;
-import org.apache.dubbo.rpc.cluster.router.condition.config.model.BlackWhiteListRule;
 import org.apache.dubbo.rpc.cluster.router.condition.config.model.ConditionRouterRule;
 import org.apache.dubbo.rpc.cluster.router.condition.config.model.ConditionRuleParser;
 
@@ -112,15 +111,6 @@ public abstract class ListenableRouter extends AbstractRouter implements Configu
                 ConditionRouter subRouter = new ConditionRouter(condition, rule.isForce(), rule.isEnabled());
                 routers.add(subRouter);
             });
-
-            BlackWhiteListRule blackWhiteList = rule.getBlackWhiteList();
-            if (blackWhiteList != null && blackWhiteList.isValid()) {
-                blackWhiteList.getConditions().forEach(condition -> {
-                    // All sub rules have the same force, runtime value.
-                    ConditionRouter subRouter = new ConditionRouter(condition, true, blackWhiteList.isEnabled());
-                    routers.add(subRouter);
-                });
-            }
         }
     }
 
