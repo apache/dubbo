@@ -26,6 +26,7 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
+import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.CharsetUtil;
 import io.netty.util.concurrent.ScheduledFuture;
@@ -95,11 +96,13 @@ public class QosProcessHandler extends ByteToMessageDecoder {
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        ScheduledFuture<?> future = welcomeFuture;
-        if (future != null && !future.isCancelled()) {
-            future.cancel(true);
+        if (evt instanceof IdleStateEvent) {
+            ScheduledFuture<?> future = welcomeFuture;
+            if (future != null && !future.isCancelled()) {
+                future.cancel(true);
+            }
+            ctx.close();
         }
-        ctx.close();
     }
 
     // G for GET, and P for POST
