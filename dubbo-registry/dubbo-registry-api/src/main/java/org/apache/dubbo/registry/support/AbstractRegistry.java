@@ -61,7 +61,7 @@ public abstract class AbstractRegistry implements Registry {
     private static final String URL_SPLIT = "\\s+";
     // Log output
     protected final Logger logger = LoggerFactory.getLogger(getClass());
-    // Local disk cache, where the special key value.registies records the list of registry centers, and the others are the list of notified service providers
+    // Local disk cache, where the special key value.registries records the list of registry centers, and the others are the list of notified service providers
     private final Properties properties = new Properties();
     // File cache timing writing
     private final ExecutorService registryCacheExecutor = Executors.newFixedThreadPool(1, new NamedThreadFactory("DubboSaveRegistryCache", true));
@@ -90,6 +90,8 @@ public abstract class AbstractRegistry implements Registry {
             }
         }
         this.file = file;
+        // When starting the subscription center,
+        // we need to read the local cache file for future Registry fault tolerance processing.
         loadProperties();
         notify(url.getBackupUrls());
     }
@@ -244,7 +246,7 @@ public abstract class AbstractRegistry implements Registry {
                 }
             }
         } else {
-            final AtomicReference<List<URL>> reference = new AtomicReference<List<URL>>();
+            final AtomicReference<List<URL>> reference = new AtomicReference<>();
             NotifyListener listener = reference::set;
             subscribe(url, listener); // Subscribe logic guarantees the first notify to return
             List<URL> urls = reference.get();
@@ -364,6 +366,13 @@ public abstract class AbstractRegistry implements Registry {
         }
     }
 
+    /**
+     * Notify changes from the Provider side.
+     *
+     * @param url      consumer side url
+     * @param listener listener
+     * @param urls     provider latest urls
+     */
     protected void notify(URL url, NotifyListener listener, List<URL> urls) {
         if (url == null) {
             throw new IllegalArgumentException("notify url == null");
@@ -379,6 +388,7 @@ public abstract class AbstractRegistry implements Registry {
         if (logger.isInfoEnabled()) {
             logger.info("Notify urls for subscribe url " + url + ", urls: " + urls);
         }
+        // keep every provider's category.
         Map<String, List<URL>> result = new HashMap<>();
         for (URL u : urls) {
             if (UrlUtils.isMatch(url, u)) {
@@ -395,8 +405,10 @@ public abstract class AbstractRegistry implements Registry {
             String category = entry.getKey();
             List<URL> categoryList = entry.getValue();
             categoryNotified.put(category, categoryList);
-            saveProperties(url);
             listener.notify(categoryList);
+            // We will update our cache file after each notification.
+            // When our Registry has a subscribe failure due to network jitter, we can return at least the existing cache URL.
+            saveProperties(url);
         }
     }
 
