@@ -107,11 +107,6 @@ public abstract class AbstractRegistry implements Registry {
         notify(url.getBackupUrls());
     }
 
-    private String getFileKey(final URL url) {
-        String defaultFileKey = System.getProperty("user.home") + "/.dubbo/dubbo-registry-" + url.getParameter(Constants.APPLICATION_KEY) + "-" + url.getAddress() + ".cache";
-        return url.getParameter(Constants.FILE_KEY, defaultFileKey);
-    }
-
     protected static List<URL> filterEmpty(URL url, List<URL> urls) {
         if (urls == null || urls.isEmpty()) {
             List<URL> result = new ArrayList<>(1);
@@ -431,6 +426,11 @@ public abstract class AbstractRegistry implements Registry {
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
         }
+    }
+
+    private String getFileKey(final URL url) {
+        String defaultFileKey = System.getProperty("user.home") + "/.dubbo/dubbo-registry-" + url.getParameter(Constants.APPLICATION_KEY) + "-" + url.getAddress() + ".cache";
+        return url.getParameter(Constants.FILE_KEY, defaultFileKey);
     }
 
     @Override
