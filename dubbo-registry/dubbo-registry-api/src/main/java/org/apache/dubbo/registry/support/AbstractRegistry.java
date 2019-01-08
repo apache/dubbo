@@ -87,8 +87,7 @@ public abstract class AbstractRegistry implements Registry {
     public AbstractRegistry(URL url) {
         setUrl(url);
         syncSaveFile = url.getParameter(Constants.REGISTRY_FILESAVE_SYNC_KEY, false);
-        String defaultFile = System.getProperty("user.home") + "/.dubbo/dubbo-registry-" + url.getParameter(Constants.APPLICATION_KEY) + "-" + url.getAddress() + ".cache";
-        String filename = url.getParameter(Constants.FILE_KEY, defaultFile);
+        String filename = getFileKey(url);
         File file = null;
         if (ConfigUtils.isNotEmpty(filename)) {
             file = new File(filename);
@@ -106,6 +105,11 @@ public abstract class AbstractRegistry implements Registry {
         this.file = file;
         loadProperties();
         notify(url.getBackupUrls());
+    }
+
+    private String getFileKey(final URL url) {
+        String defaultFileKey = System.getProperty("user.home") + "/.dubbo/dubbo-registry-" + url.getParameter(Constants.APPLICATION_KEY) + "-" + url.getAddress() + ".cache";
+        return url.getParameter(Constants.FILE_KEY, defaultFileKey);
     }
 
     protected static List<URL> filterEmpty(URL url, List<URL> urls) {
@@ -199,11 +203,7 @@ public abstract class AbstractRegistry implements Registry {
             try (InputStream in = new FileInputStream(file)) {
                 properties.load(in);
                 if (logger.isInfoEnabled()) {
-                    logger.info(
-                        String.format(
-                            "Load registry store file %s, data: %s", file, properties
-                        )
-                    );
+                    logger.info("Load registry store file: " + file + ", data: " + properties);
                 }
             } catch (IOException e) {
                 logger.warn(e.getMessage(), e);
@@ -235,7 +235,7 @@ public abstract class AbstractRegistry implements Registry {
     public List<URL> lookup(URL url) {
         List<URL> result = new ArrayList<>();
         Map<String, List<URL>> notifiedUrls = getNotified().get(url);
-        if (notifiedUrls != null && notifiedUrls.size() > 0) {
+        if (notifiedUrls != null) {
             for (List<URL> urls : notifiedUrls.values()) {
                 for (URL u : urls) {
                     if (!Constants.EMPTY_PROTOCOL.equals(u.getProtocol())) {
@@ -248,7 +248,7 @@ public abstract class AbstractRegistry implements Registry {
             NotifyListener listener = reference::set;
             subscribe(url, listener); // Subscribe logic guarantees the first notify to return
             List<URL> urls = reference.get();
-            if (urls != null && !urls.isEmpty()) {
+            if (urls != null) {
                 for (URL u : urls) {
                     if (!Constants.EMPTY_PROTOCOL.equals(u.getProtocol())) {
                         result.add(u);
@@ -352,7 +352,7 @@ public abstract class AbstractRegistry implements Registry {
             }
 
             Set<NotifyListener> listeners = entry.getValue();
-            if (listeners != null && !listeners.isEmpty()) {
+            if (listeners != null) {
                 for (NotifyListener listener : listeners) {
                     try {
                         notify(url, listener, filterEmpty(url, urls));
@@ -371,12 +371,11 @@ public abstract class AbstractRegistry implements Registry {
         if (listener == null) {
             throw new IllegalArgumentException("notify listener == null");
         }
-        if ((urls == null || urls.isEmpty())
-                && !Constants.ANY_VALUE.equals(url.getServiceInterface())) {
+        if (urls == null) {
             logger.warn("Ignore empty notify urls for subscribe url " + url);
             return;
         }
-        if (urls == null) {
+        if (urls.isEmpty() && !Constants.ANY_VALUE.equals(url.getServiceInterface())) {
             logger.warn("Ignore empty notify urls for subscribe url " + url);
             return;
         }
@@ -440,33 +439,29 @@ public abstract class AbstractRegistry implements Registry {
             logger.info("Destroy registry:" + getUrl());
         }
         Set<URL> destroyRegistered = new HashSet<>(getRegistered());
-        if (!destroyRegistered.isEmpty()) {
-            for (URL url : new HashSet<>(getRegistered())) {
-                if (url.getParameter(Constants.DYNAMIC_KEY, true)) {
-                    try {
-                        unregister(url);
-                        if (logger.isInfoEnabled()) {
-                            logger.info(String.format("Destroy unregister url %s", url));
-                        }
-                    } catch (Throwable t) {
-                        logger.warn("Failed to unregister url " + url + " to registry " + getUrl() + " on destroy, cause: " + t.getMessage(), t);
+        for (URL url : destroyRegistered) {
+            if (url.getParameter(Constants.DYNAMIC_KEY, true)) {
+                try {
+                    unregister(url);
+                    if (logger.isInfoEnabled()) {
+                        logger.info("Destroy unregister url " + url);
                     }
+                } catch (Throwable t) {
+                    logger.warn("Failed to unregister url " + url + " to registry " + getUrl() + " on destroy, cause: " + t.getMessage(), t);
                 }
             }
         }
         Map<URL, Set<NotifyListener>> destroySubscribed = new HashMap<>(getSubscribed());
-        if (!destroySubscribed.isEmpty()) {
-            for (Map.Entry<URL, Set<NotifyListener>> entry : destroySubscribed.entrySet()) {
-                URL url = entry.getKey();
-                for (NotifyListener listener : entry.getValue()) {
-                    try {
-                        unsubscribe(url, listener);
-                        if (logger.isInfoEnabled()) {
-                            logger.info(String.format("Destroy unsubscribe url %s", url));
-                        }
-                    } catch (Throwable t) {
-                        logger.warn("Failed to unsubscribe url " + url + " to registry " + getUrl() + " on destroy, cause: " + t.getMessage(), t);
+        for (Map.Entry<URL, Set<NotifyListener>> entry : destroySubscribed.entrySet()) {
+            URL url = entry.getKey();
+            for (NotifyListener listener : entry.getValue()) {
+                try {
+                    unsubscribe(url, listener);
+                    if (logger.isInfoEnabled()) {
+                        logger.info("Destroy unsubscribe url " + url);
                     }
+                } catch (Throwable t) {
+                    logger.warn("Failed to unsubscribe url " + url + " to registry " + getUrl() + " on destroy, cause: " + t.getMessage(), t);
                 }
             }
         }
