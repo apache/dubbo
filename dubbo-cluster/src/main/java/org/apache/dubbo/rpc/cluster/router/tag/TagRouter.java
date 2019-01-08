@@ -42,13 +42,13 @@ import static org.apache.dubbo.common.Constants.FORCE_USE_TAG;
 import static org.apache.dubbo.common.Constants.TAG_KEY;
 
 /**
- * TagRouter
+ * TagRouter, "application.routers.tag"
  */
 public class TagRouter extends AbstractRouter implements Comparable<Router>, ConfigurationListener {
     public static final String NAME = "TAG_ROUTER";
     private static final int DEFAULT_PRIORITY = 100;
     private static final Logger logger = LoggerFactory.getLogger(TagRouter.class);
-    private static final String RULE_PREFIX = ".tagrouters";
+    private static final String RULE_SUFFIX = ".routers.tag";
 
     private TagRouterRule tagRouterRule;
     private String application;
@@ -198,9 +198,9 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
         synchronized (this) {
             if (!providerApplication.equals(application)) {
                 if (!StringUtils.isEmpty(application)) {
-                    configuration.removeListener(application + RULE_PREFIX, this);
+                    configuration.removeListener(application + RULE_SUFFIX, this);
                 }
-                String key = providerApplication + RULE_PREFIX;
+                String key = providerApplication + RULE_SUFFIX;
                 configuration.addListener(key, this);
                 application = providerApplication;
                 String rawRule = configuration.getConfig(key);
