@@ -495,7 +495,7 @@
                                 <exclude>**/org/apache/dubbo/remoting/p2p/support/*</exclude>
                                 <exclude>**/org/apache/dubbo/rpc/cluster/support/api/*</exclude>
                                 <exclude>**/org/apache/dubbo/common/support/io/TempDirectory.java</exclude>
-                                <exclude>**/org/org/apache/dubbo/config/support/io/TempDirectory.java</exclude>
+                                <exclude>**/org/apache/dubbo/config/support/io/TempDirectory.java</exclude>
                                 <exclude>**/org/apache/dubbo/remoting/p2p/support/io/TempDirectory.java</exclude>
                             </excludes>
                         </configuration>
