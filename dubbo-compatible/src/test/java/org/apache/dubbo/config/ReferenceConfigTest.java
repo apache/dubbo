@@ -29,16 +29,16 @@ import com.alibaba.dubbo.config.ServiceConfig;
 import org.junit.Test;
 
 public class ReferenceConfigTest {
+    private ApplicationConfig application = new ApplicationConfig();
+    private RegistryConfig registry = new RegistryConfig();
+    private ProtocolConfig protocol = new ProtocolConfig();
 
     @Test
     public void testInjvm() throws Exception {
-        ApplicationConfig application = new ApplicationConfig();
-        application.setName("test-protocol-random-port");
 
-        RegistryConfig registry = new RegistryConfig();
+        application.setName("test-protocol-random-port");
         registry.setAddress("multicast://224.5.6.7:1234");
 
-        ProtocolConfig protocol = new ProtocolConfig();
         protocol.setName("dubbo");
 
         ServiceConfig<DemoService> demoService;
