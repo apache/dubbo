@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.service.DemoService;
 import org.apache.dubbo.service.DemoServiceImpl;
 
@@ -26,12 +27,24 @@ import com.alibaba.dubbo.config.ReferenceConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.ServiceConfig;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 public class ReferenceConfigTest {
     private ApplicationConfig application = new ApplicationConfig();
     private RegistryConfig registry = new RegistryConfig();
     private ProtocolConfig protocol = new ProtocolConfig();
+
+    @Before
+    public void setUp() {
+        ConfigManager.getInstance().clear();
+    }
+
+    @After
+    public void tearDown() {
+        ConfigManager.getInstance().clear();
+    }
 
     @Test
     public void testInjvm() throws Exception {
