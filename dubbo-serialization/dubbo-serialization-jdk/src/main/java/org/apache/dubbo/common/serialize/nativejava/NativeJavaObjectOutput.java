@@ -24,6 +24,9 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 
+/**
+ * Native java object output implementation
+ */
 public class NativeJavaObjectOutput implements ObjectOutput {
 
     private final ObjectOutputStream outputStream;
