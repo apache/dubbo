@@ -155,8 +155,7 @@ public class HeaderExchangeHandlerTest {
     public void test_received_request_event_readonly() throws RemotingException {
         final Request request = new Request();
         request.setTwoWay(true);
-        request.setEvent(true);
-        request.setData(Request.READONLY_EVENT);
+        request.setEvent(Request.READONLY_EVENT);
 
         final Channel mchannel = new MockedChannel();
         HeaderExchangeHandler hexhandler = new HeaderExchangeHandler(new MockedExchangeHandler());
@@ -168,8 +167,7 @@ public class HeaderExchangeHandlerTest {
     public void test_received_request_event_other_discard() throws RemotingException {
         final Request request = new Request();
         request.setTwoWay(true);
-        request.setEvent(true);
-        request.setData("my event");
+        request.setEvent("my event");
 
         final Channel mchannel = new MockedChannel() {
             @Override

@@ -128,8 +128,7 @@ public class HeaderExchangeServer implements ExchangeServer {
 
     private void sendChannelReadOnlyEvent() {
         Request request = new Request();
-        request.setEvent(true);
-        request.setData(Request.READONLY_EVENT);
+        request.setEvent(Request.READONLY_EVENT);
         request.setTwoWay(false);
         request.setVersion(Version.getProtocolVersion());
 
