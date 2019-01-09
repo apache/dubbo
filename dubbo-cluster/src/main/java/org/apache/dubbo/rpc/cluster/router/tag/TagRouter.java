@@ -42,13 +42,13 @@ import static org.apache.dubbo.common.Constants.FORCE_USE_TAG;
 import static org.apache.dubbo.common.Constants.TAG_KEY;
 
 /**
- * TagRouter, "application.routers.tag"
+ * TagRouter, "application.router-tag"
  */
 public class TagRouter extends AbstractRouter implements Comparable<Router>, ConfigurationListener {
     public static final String NAME = "TAG_ROUTER";
     private static final int DEFAULT_PRIORITY = 100;
     private static final Logger logger = LoggerFactory.getLogger(TagRouter.class);
-    private static final String RULE_SUFFIX = ".routers.tag";
+    private static final String RULE_SUFFIX = ".router-tag";
 
     private TagRouterRule tagRouterRule;
     private String application;
