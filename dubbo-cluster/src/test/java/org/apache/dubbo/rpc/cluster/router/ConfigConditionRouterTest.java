@@ -47,7 +47,7 @@ public class ConfigConditionRouterTest {
                 "  - method=notExitMethod => \n" +
                 "...";
         try {
-            String servicePath = "/dubbo/config/demo-consumer/routers/condition";
+            String servicePath = "/dubbo/config/demo-consumer/condition-router";
             if (client.checkExists().forPath(servicePath) == null) {
                 client.create().creatingParentsIfNeeded().forPath(servicePath);
             }
@@ -71,7 +71,7 @@ public class ConfigConditionRouterTest {
                 "  - method=routeMethod1 => host=30.5.120.37\n" +
                 "...";
         try {
-            String servicePath = "/dubbo/config/demo-consumer/routers/condition";
+            String servicePath = "/dubbo/config/demo-consumer/condition-router";
             if (client.checkExists().forPath(servicePath) == null) {
                 client.create().creatingParentsIfNeeded().forPath(servicePath);
             }
@@ -96,7 +96,7 @@ public class ConfigConditionRouterTest {
                 "...";
 //        String serviceStr = "";
         try {
-            String servicePath = "/dubbo/config/org.apache.dubbo.demo.DemoService/routers/condition";
+            String servicePath = "/dubbo/config/org.apache.dubbo.demo.DemoService/condition-router";
             if (client.checkExists().forPath(servicePath) == null) {
                 client.create().creatingParentsIfNeeded().forPath(servicePath);
             }
@@ -117,7 +117,7 @@ public class ConfigConditionRouterTest {
                 "key: org.apache.dubbo.demo.DemoService\n" +
                 "...";
         try {
-            String servicePath = "/dubbo/config/org.apache.dubbo.demo.DemoService/routers/condition";
+            String servicePath = "/dubbo/config/org.apache.dubbo.demo.DemoService/condition-router";
             if (client.checkExists().forPath(servicePath) == null) {
                 client.create().creatingParentsIfNeeded().forPath(servicePath);
             }
