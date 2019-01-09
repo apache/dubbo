@@ -694,7 +694,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setApplication(ApplicationConfig application) {
-        ConfigManager.getInstance().setApplication(this.application);
+        ConfigManager.getInstance().setApplication(application);
         this.application = application;
     }
 
@@ -739,7 +739,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     @SuppressWarnings({"unchecked"})
     public void setRegistries(List<? extends RegistryConfig> registries) {
-        ConfigManager.getInstance().addRegistries(this.registries);
+        ConfigManager.getInstance().addRegistries((List<RegistryConfig>) registries);
         this.registries = (List<RegistryConfig>) registries;
     }
 
@@ -757,7 +757,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setMonitor(String monitor) {
-        this.monitor = new MonitorConfig(monitor);
+        setMonitor(new MonitorConfig(monitor));
     }
 
     public void setMonitor(MonitorConfig monitor) {

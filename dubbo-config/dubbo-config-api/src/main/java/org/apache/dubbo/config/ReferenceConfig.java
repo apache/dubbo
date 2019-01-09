@@ -540,11 +540,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     }
 
     public void setConsumer(ConsumerConfig consumer) {
-        if (consumer == null) {
-            return;
-        }
-        this.consumer = consumer;
         ConfigManager.getInstance().addConsumer(consumer);
+        this.consumer = consumer;
     }
 
     public String getProtocol() {
