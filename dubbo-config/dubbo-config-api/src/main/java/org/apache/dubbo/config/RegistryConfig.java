@@ -408,6 +408,15 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     @Override
+    public void refresh() {
+        super.refresh();
+        if (StringUtils.isNotEmpty(this.getId())) {
+            this.setPrefix(Constants.REGISTRIES_SUFFIX);
+            super.refresh();
+        }
+    }
+
+    @Override
     @Parameter(excluded = true)
     public boolean isValid() {
         // empty protocol will default to 'dubbo'

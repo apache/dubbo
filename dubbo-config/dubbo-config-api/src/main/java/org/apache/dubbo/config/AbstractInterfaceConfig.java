@@ -205,7 +205,15 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             return;
         }
         ConfigManager configManager = ConfigManager.getInstance();
-        setMonitor(configManager.getMonitor().orElse(new MonitorConfig()));
+        setMonitor(
+                configManager
+                        .getMonitor()
+                        .orElseGet(() -> {
+                            MonitorConfig monitorConfig = new MonitorConfig();
+                            monitorConfig.refresh();
+                            return monitorConfig;
+                        })
+        );
     }
 
     protected void checkMetadataReport() {
@@ -213,6 +221,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (metadataReportConfig == null) {
             setMetadataReportConfig(new MetadataReportConfig());
         }
+        metadataReportConfig.refresh();
         if (!metadataReportConfig.isValid()) {
             logger.warn("There's no valid metadata config found, if you are using the simplified mode of registry url, " +
                     "please make sure you have a metadata address configured properly.");
@@ -220,11 +229,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
 
-    void checkConfigCenter() {
-        if (configCenter == null) {
-            return;
+    void startConfigCenter() {
+        if (configCenter != null) {
+            prepareEnvironment();
         }
-        prepareEnvironment();
+        ConfigManager.getInstance().refreshAll();
     }
 
     private void prepareEnvironment() {
@@ -500,7 +509,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 setRegistries(
                         ConfigManager.getInstance().getDefaultRegistries()
                         .filter(CollectionUtils::isNotEmpty)
-                        .orElse(Arrays.asList(new RegistryConfig()))
+                        .orElseGet(() -> {
+                            RegistryConfig registryConfig = new RegistryConfig();
+                            registryConfig.refresh();
+                            return Arrays.asList(registryConfig);
+                        })
                 );
             }
         } else {
@@ -511,6 +524,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                     tmpRegistries.add(ConfigManager.getInstance().getRegistry(id).orElseGet(() -> {
                         RegistryConfig registryConfig = new RegistryConfig();
                         registryConfig.setId(id);
+                        registryConfig.refresh();
                         return registryConfig;
                     }));
                 }
@@ -537,6 +551,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 for (String a : as) {
                     RegistryConfig registryConfig = new RegistryConfig();
                     registryConfig.setAddress(a);
+                    registryConfig.refresh();
                     tmpRegistries.add(registryConfig);
                 }
                 setRegistries(tmpRegistries);
@@ -558,7 +573,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 cc.setAddress(rc.getAddress());
                 cc.setHighestPriority(false);
                 setConfigCenter(cc);
-                prepareEnvironment();
+                startConfigCenter();
                 return null;
             });
         });
@@ -673,12 +688,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setApplication(ApplicationConfig application) {
-        if (application == null) {
-            return;
-        }
-        application.refresh();
-        this.application = application;
         ConfigManager.getInstance().setApplication(this.application);
+        this.application = application;
     }
 
     private void createApplicationIfAbsent() {
@@ -686,7 +697,15 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             return;
         }
         ConfigManager configManager = ConfigManager.getInstance();
-        setApplication(configManager.getApplication().orElse(new ApplicationConfig()));
+        setApplication(
+                configManager
+                        .getApplication()
+                        .orElseGet(() -> {
+                            ApplicationConfig applicationConfig = new ApplicationConfig();
+                            applicationConfig.refresh();
+                            return applicationConfig;
+                        })
+        );
     }
 
     public ModuleConfig getModule() {
@@ -694,11 +713,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setModule(ModuleConfig module) {
-        if (module == null) {
-            return;
-        }
-        this.module = module;
         ConfigManager.getInstance().setModule(module);
+        this.module = module;
     }
 
     public RegistryConfig getRegistry() {
@@ -717,18 +733,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     @SuppressWarnings({"unchecked"})
     public void setRegistries(List<? extends RegistryConfig> registries) {
-        if (registries == null) {
-            return;
-        }
-        for (RegistryConfig registryConfig : registries) {
-            registryConfig.refresh();
-            if (StringUtils.isNotEmpty(registryConfig.getId())) {
-                registryConfig.setPrefix(Constants.REGISTRIES_SUFFIX);
-                registryConfig.refresh();
-            }
-        }
-        this.registries = (List<RegistryConfig>) registries;
         ConfigManager.getInstance().addRegistries(this.registries);
+        this.registries = (List<RegistryConfig>) registries;
     }
 
     @Parameter(excluded = true)
@@ -749,12 +755,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setMonitor(MonitorConfig monitor) {
-        if (monitor == null) {
-            return;
-        }
-        monitor.refresh();
-        this.monitor = monitor;
         ConfigManager.getInstance().setMonitor(monitor);
+        this.monitor = monitor;
     }
 
     public String getOwner() {
@@ -771,13 +773,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setConfigCenter(ConfigCenterConfig configCenter) {
-        if (configCenter == null) {
-            return;
-        }
-        // give jvm properties the chance to override local configs, e.g., -Ddubbo.configcenter.highestPriority
-        configCenter.refresh();
-        this.configCenter = configCenter;
         ConfigManager.getInstance().setConfigCenter(configCenter);
+        this.configCenter = configCenter;
     }
 
     public Integer getCallbacks() {
@@ -817,7 +814,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setMetadataReportConfig(MetadataReportConfig metadataReportConfig) {
-        metadataReportConfig.refresh();
         this.metadataReportConfig = metadataReportConfig;
     }
 

@@ -297,6 +297,18 @@ public class ConfigManager {
         return consumers;
     }
 
+    public void refreshAll() {
+        // refresh all configs here,
+        getApplication().ifPresent(ApplicationConfig::refresh);
+        getMonitor().ifPresent(MonitorConfig::refresh);
+        getModule().ifPresent(ModuleConfig::refresh);
+
+        getProtocols().values().forEach(ProtocolConfig::refresh);
+        getRegistries().values().forEach(RegistryConfig::refresh);
+        getProviders().values().forEach(ProviderConfig::refresh);
+        getConsumers().values().forEach(ConsumerConfig::refresh);
+    }
+
     private void checkDuplicate(AbstractConfig oldOne, AbstractConfig newOne) {
         if (oldOne != null && !oldOne.equals(newOne)) {
             String configName = oldOne.getClass().getSimpleName();

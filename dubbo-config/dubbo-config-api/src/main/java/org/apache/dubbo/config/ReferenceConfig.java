@@ -192,7 +192,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             throw new IllegalStateException("<dubbo:reference interface=\"\" /> interface not allow null!");
         }
         completeCompoundConfigs();
-        checkConfigCenter();
+        startConfigCenter();
         // get consumer's global configuration
         checkDefault();
         this.refresh();
@@ -410,15 +410,21 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     private void checkDefault() {
         createConsumerIfAbsent();
-        consumer.refresh();
     }
 
     private void createConsumerIfAbsent() {
         if (consumer != null) {
             return;
         }
-        setConsumer(ConfigManager.getInstance()
-                            .getDefaultConsumer().orElse(new ConsumerConfig()));
+        setConsumer(
+                        ConfigManager.getInstance()
+                            .getDefaultConsumer()
+                            .orElseGet(() -> {
+                                ConsumerConfig consumerConfig = new ConsumerConfig();
+                                consumerConfig.refresh();
+                                return consumerConfig;
+                            })
+                );
     }
 
     private void completeCompoundConfigs() {
