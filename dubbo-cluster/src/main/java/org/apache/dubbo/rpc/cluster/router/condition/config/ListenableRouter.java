@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
  */
 public abstract class ListenableRouter extends AbstractRouter implements ConfigurationListener {
     public static final String NAME = "LISTENABLE_ROUTER";
-    private static final String RULE_SUFFIX = ".router-condition";
+    private static final String RULE_SUFFIX = ".condition-router";
     public static final int DEFAULT_PRIORITY = 200;
     private static final Logger logger = LoggerFactory.getLogger(ListenableRouter.class);
     private ConditionRouterRule routerRule;
