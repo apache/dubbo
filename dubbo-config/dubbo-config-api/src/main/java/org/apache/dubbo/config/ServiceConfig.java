@@ -263,8 +263,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     public void checkAndUpdateSubConfigs() {
         // Use default configs defined explicitly on global configs
         completeCompoundConfigs();
-        // Config Center should always being checked and inited first.
-        checkConfigCenter();
+        // Config Center should always being started first.
+        startConfigCenter();
         checkDefault();
         checkApplication();
         checkRegistry();
@@ -817,7 +817,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                setProtocols(
                        ConfigManager.getInstance().getDefaultProtocols()
                         .filter(CollectionUtils::isNotEmpty)
-                        .orElse(Arrays.asList(new ProtocolConfig()))
+                        .orElseGet(() -> {
+                            ProtocolConfig protocolConfig = new ProtocolConfig();
+                            protocolConfig.refresh();
+                            return Arrays.asList(protocolConfig);
+                        })
                );
             }
         } else {
@@ -828,6 +832,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     tmpProtocols.add(ConfigManager.getInstance().getProtocol(id).orElseGet(() -> {
                         ProtocolConfig protocolConfig = new ProtocolConfig();
                         protocolConfig.setId(id);
+                        protocolConfig.refresh();
                         return protocolConfig;
                     }));
                 }
@@ -920,12 +925,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     public void setProvider(ProviderConfig provider) {
-        if (provider == null) {
-            return;
-        }
-        provider.refresh();
-        this.provider = provider;
         ConfigManager.getInstance().addProvider(provider);
+        this.provider = provider;
     }
 
     @Parameter(excluded = true)
