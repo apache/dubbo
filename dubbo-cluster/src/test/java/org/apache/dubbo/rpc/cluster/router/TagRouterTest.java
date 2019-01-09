@@ -50,7 +50,7 @@ public class TagRouterTest {
                 "...";
 //        String serviceStr = "";
         try {
-            String servicePath = "/dubbo/config/demo-provider/routers/tag";
+            String servicePath = "/dubbo/config/demo-provider/router-tag";
             if (client.checkExists().forPath(servicePath) == null) {
                 client.create().creatingParentsIfNeeded().forPath(servicePath);
             }
