@@ -10,24 +10,23 @@
     xmlns:ml-adapters="http://www.alibaba.com/schema/services/module-loader/adapters"
     xmlns:ml-factories="http://www.alibaba.com/schema/services/module-loader/factories"
     xmlns:beans="http://www.springframework.org/schema/beans"
+    xmlns:stores="http://www.alibaba.com/schema/services/request-contexts/session/stores"
     xmlns:p="http://www.springframework.org/schema/p"
     xmlns:rewrite-handlers="http://www.alibaba.com/schema/services/request-contexts/rewrite/handlers"
     xsi:schemaLocation="
         http://www.alibaba.com/schema/services http://localhost:8080/schema/services.xsd
-        http://www.alibaba.com/schema/services/request-contexts http://localhost:8080/schema/services-request-contexts.xsd
-        http://www.alibaba.com/schema/services/request-contexts/session/encoders http://localhost:8080/schema/services-request-contexts-session-encoders.xsd
-        http://www.alibaba.com/schema/services/request-contexts/session/idgens http://localhost:8080/schema/services-request-contexts-session-idgens.xsd
-        http://www.alibaba.com/schema/services/request-contexts/session/stores http://localhost:8080/schema/services-request-contexts-session-stores.xsd
-        http://www.alibaba.com/schema/services/request-contexts/session/model-encoders http://localhost:8080/schema/services-request-contexts-session-model-encoders.xsd
+       http://www.alibaba.com/schema/services/request-contexts http://localhost:8080/schema/services-request-contexts.xsd
+                 http://www.alibaba.com/schema/services/request-contexts/session/encoders http://localhost:8080/schema/services-request-contexts-session-encoders.xsd
+                 http://www.alibaba.com/schema/services/request-contexts/session/encrypters http://localhost:8080/schema/services-request-contexts-session-encrypters.xsd
+                 http://www.alibaba.com/schema/services/request-contexts/session/idgens http://localhost:8080/schema/services-request-contexts-session-idgens.xsd
+                 http://www.alibaba.com/schema/services/request-contexts/session/stores http://localhost:8080/schema/services-request-contexts-session-stores.xsd
+                 http://www.alibaba.com/schema/services/request-contexts/session/model-encoders http://localhost:8080/schema/services-request-contexts-session-model-encoders.xsd
         http://www.alibaba.com/schema/services/module-loader/adapters http://localhost:8080/schema/services-module-loader-adapters.xsd
         http://www.alibaba.com/schema/services/module-loader/factories http://localhost:8080/schema/services-module-loader-factories.xsd
         http://www.springframework.org/schema/beans http://localhost:8080/schema/www.springframework.org/schema/beans/spring-beans.xsd
-        http://www.alibaba.com/schema/services/request-contexts/rewrite/handlers http://localhost:8080/schema/services-request-contexts-rewrite-handlers.xsd 
-    ">
-
-    <!-- 支持${xxx}替换。 -->
+        http://www.alibaba.com/schema/services/request-contexts/rewrite/handlers http://localhost:8080/schema/services-request-contexts-rewrite-handlers.xsd">
     <services:property-placeholder>
-        <services:property key="component">common</services:property>
+    	<property key="component">common</property>
     </services:property-placeholder>
 
     <!-- 共享配置。 -->
@@ -51,13 +50,14 @@
     <!-- 综合设置。 -->
     <services:webx-configuration>
         <!-- 默认将productionMode设为true，建议在jetty插件中设置-DproductionMode=false。 -->
-        <services:productionMode>true</services:productionMode>
-        <services:components defaultComponent="home" />
+        <productionMode>true</productionMode>
+        <components defaultComponent="home" />
     </services:webx-configuration>
 
     <!-- 设置request/response/session。 -->
-    <services:request-contexts xmlns="http://www.alibaba.com/schema/services/request-contexts">
-        <rewrite>
+    <services:request-contexts>
+   	 <request-contexts:parser />
+        <request-contexts:rewrite>
         	<rule pattern=".*\.htm">
 				<substitution uri="$0" flags="L,QSA" />
 			</rule>
@@ -68,25 +68,25 @@
 						class="com.alibaba.dubbo.governance.web.common.interceptor.RestfuleUrlRewriter" />
 				</handlers>
 			</rule>
-        </rewrite>
-        <basic />
-        <buffered />
-        <lazy-commit />
-        <parser />
-        <set-locale defaultLocale="zh_CN" defaultCharset="UTF-8" />
-        <session>
+        </request-contexts:rewrite>
+        <request-contexts:basic />
+        <request-contexts:buffered />
+        <request-contexts:lazy-commit />
+        <request-contexts:parser />
+        <request-contexts:set-locale defaultLocale="zh_CN" defaultCharset="UTF-8" />
+        <request-contexts:session>
             <id>
                 <cookie path="/" maxAge="0" httpOnly="true" />
             </id>
             <stores>
-                <session-stores:cookie-store id="temporaryCookie">
-                    <session-stores:cookie name="tmp" />
-                </session-stores:cookie-store>
+                <stores:cookie-store id="temporaryCookie">
+                    <cookie name="tmp" />
+                </stores:cookie-store>
             </stores>
             <store-mappings>
                 <match name="*" store="temporaryCookie" />
             </store-mappings>
-        </session>
+        </request-contexts:session>
     </services:request-contexts>
 
     <!-- 支持上传文件。 -->
