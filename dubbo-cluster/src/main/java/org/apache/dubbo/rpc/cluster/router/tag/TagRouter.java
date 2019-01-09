@@ -48,7 +48,7 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
     public static final String NAME = "TAG_ROUTER";
     private static final int DEFAULT_PRIORITY = 100;
     private static final Logger logger = LoggerFactory.getLogger(TagRouter.class);
-    private static final String RULE_SUFFIX = ".router-tag";
+    private static final String RULE_SUFFIX = ".tag-router";
 
     private TagRouterRule tagRouterRule;
     private String application;
