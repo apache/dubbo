@@ -122,13 +122,18 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public String getConfig(String key, String group, long timeout) throws IllegalStateException {
-        // when group is not null, we are getting startup configs from Config Center
-        // for example, group=dubbo, key=dubbo.properties
+        /**
+         * when group is not null, we are getting startup configs from Config Center, for example:
+         * group=dubbo, key=dubbo.properties
+         */
         if (StringUtils.isNotEmpty(group)) {
             key = group + "/" + key;
         }
-        // when group is null, we are fetching governance rules.
-        // for example, key=org.apache.dubbo.DemoService.configurators
+        /**
+         * when group is null, we are fetching governance rules, for example:
+         * 1. key=org.apache.dubbo.DemoService.configurators
+         * 2. key = org.apache.dubbo.DemoService.condition-router
+         */
         else {
             int i = key.lastIndexOf(".");
             key = key.substring(0, i) + "/" + key.substring(i + 1);
