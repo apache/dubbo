@@ -44,24 +44,24 @@ import static org.apache.dubbo.common.Constants.DEFAULT_KEY;
  * Maybe we can consider open to end user in the following version by providing a fluent style builder.
  *
  * <pre>{@code
-     *  public void class DubboBuilder() {
-     *
-     *      public static DubboBuilder create() {
-     *          return new DubboBuilder();
-     *      }
-     *
-     *      public DubboBuilder application(ApplicationConfig application) {
-     *          ConfigManager.getInstance().addApplication(application);
-     *          return this;
-     *      }
-     *
-     *      ...
-     *
-     *      public void build() {
-     *          // export all ServiceConfigs
-     *          // refer all ReferenceConfigs
-     *      }
-     *  }
+ *  public void class DubboBuilder() {
+ *
+ *      public static DubboBuilder create() {
+ *          return new DubboBuilder();
+ *      }
+ *
+ *      public DubboBuilder application(ApplicationConfig application) {
+ *          ConfigManager.getInstance().addApplication(application);
+ *          return this;
+ *      }
+ *
+ *      ...
+ *
+ *      public void build() {
+ *          // export all ServiceConfigs
+ *          // refer all ReferenceConfigs
+ *      }
+ *  }
  *  }
  * </pre>
  * </p>
