@@ -399,18 +399,11 @@
                 <configuration>
                     <useSystemClassLoader>true</useSystemClassLoader>
                     <forkMode>once</forkMode>
-                    <argLine>${argline}</argLine>
+                    <argLine>${argline} ${jacocoArgLine}</argLine>
                     <systemProperties>
                         <!-- common shared -->
                     </systemProperties>
                 </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.junit.jupiter</groupId>
-                        <artifactId>junit-jupiter-engine</artifactId>
-                        <version>${junit_jupiter_version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
