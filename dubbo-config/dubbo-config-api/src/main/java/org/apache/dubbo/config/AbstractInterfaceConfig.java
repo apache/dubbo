@@ -231,6 +231,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     void startConfigCenter() {
         if (configCenter != null) {
+            configCenter.refresh();
             prepareEnvironment();
         }
         ConfigManager.getInstance().refreshAll();

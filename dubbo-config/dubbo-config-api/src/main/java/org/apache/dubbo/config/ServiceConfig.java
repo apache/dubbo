@@ -790,8 +790,15 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (provider != null) {
             return;
         }
-        setProvider(ConfigManager.getInstance()
-                            .getDefaultProvider().orElse(new ProviderConfig()));
+        setProvider (
+                ConfigManager.getInstance()
+                        .getDefaultProvider()
+                        .orElseGet(() -> {
+                            ProviderConfig providerConfig = new ProviderConfig();
+                            providerConfig.refresh();
+                            return providerConfig;
+                        })
+        );
     }
 
     private void checkProtocol() {
