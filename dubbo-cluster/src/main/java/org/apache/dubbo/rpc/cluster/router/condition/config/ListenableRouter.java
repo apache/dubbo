@@ -34,16 +34,16 @@ import org.apache.dubbo.rpc.cluster.router.condition.ConditionRouter;
 import org.apache.dubbo.rpc.cluster.router.condition.config.model.ConditionRouterRule;
 import org.apache.dubbo.rpc.cluster.router.condition.config.model.ConditionRuleParser;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Abstract router which listens to dynamic configuration
  */
 public abstract class ListenableRouter extends AbstractRouter implements ConfigurationListener {
     public static final String NAME = "LISTENABLE_ROUTER";
-    private static final String RULE_SUFFIX = ".routers.condition";
+    private static final String RULE_SUFFIX = ".router-condition";
     public static final int DEFAULT_PRIORITY = 200;
     private static final Logger logger = LoggerFactory.getLogger(ListenableRouter.class);
     private ConditionRouterRule routerRule;
@@ -106,13 +106,10 @@ public abstract class ListenableRouter extends AbstractRouter implements Configu
 
     private void generateConditions(ConditionRouterRule rule) {
         if (rule != null && rule.isValid()) {
-            List<ConditionRouter> routers = new ArrayList<>();
-            rule.getConditions().forEach(condition -> {
-                // All sub rules have the same force, runtime value.
-                ConditionRouter subRouter = new ConditionRouter(condition, rule.isForce(), rule.isEnabled());
-                routers.add(subRouter);
-            });
-            this.conditionRouters = routers;
+            this.conditionRouters = rule.getConditions()
+                    .stream()
+                    .map(condition -> new ConditionRouter(condition, rule.isForce(), rule.isEnabled()))
+                    .collect(Collectors.toList());
         }
     }
 
