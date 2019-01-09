@@ -35,6 +35,7 @@ import org.apache.dubbo.rpc.cluster.router.condition.config.model.ConditionRoute
 import org.apache.dubbo.rpc.cluster.router.condition.config.model.ConditionRuleParser;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -46,7 +47,7 @@ public abstract class ListenableRouter extends AbstractRouter implements Configu
     public static final int DEFAULT_PRIORITY = 200;
     private static final Logger logger = LoggerFactory.getLogger(ListenableRouter.class);
     private ConditionRouterRule routerRule;
-    private List<ConditionRouter> conditionRouters = new ArrayList<>();
+    private List<ConditionRouter> conditionRouters = Collections.emptyList();
 
     public ListenableRouter(DynamicConfiguration configuration, URL url, String ruleKey) {
         super(configuration, url);
@@ -63,11 +64,11 @@ public abstract class ListenableRouter extends AbstractRouter implements Configu
 
         if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
             routerRule = null;
-            conditionRouters.clear();
+            conditionRouters = Collections.emptyList();
         } else {
             try {
                 routerRule = ConditionRuleParser.parse(event.getValue());
-                generateConditions(routerRule, conditionRouters);
+                generateConditions(routerRule);
             } catch (Exception e) {
                 logger.error("Failed to parse the raw condition rule and it will not take effect, please check " +
                         "if the condition rule matches with the template, the raw rule is:\n " + event.getValue(), e);
@@ -103,14 +104,15 @@ public abstract class ListenableRouter extends AbstractRouter implements Configu
         return routerRule != null && routerRule.isValid() && routerRule.isRuntime();
     }
 
-    private void generateConditions(ConditionRouterRule rule, List<ConditionRouter> routers) {
+    private void generateConditions(ConditionRouterRule rule) {
         if (rule != null && rule.isValid()) {
-            routers.clear();
+            List<ConditionRouter> routers = new ArrayList<>();
             rule.getConditions().forEach(condition -> {
                 // All sub rules have the same force, runtime value.
                 ConditionRouter subRouter = new ConditionRouter(condition, rule.isForce(), rule.isEnabled());
                 routers.add(subRouter);
             });
+            this.conditionRouters = routers;
         }
     }
 
