@@ -16,52 +16,31 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo.support;
 
-import java.util.Map;
-import java.util.Set;
 
+import java.io.Serializable;
 
 /**
- * <code>TestService</code>
+ * Man.java
  */
+public class Man implements Serializable {
 
-public interface DemoService {
-    void sayHello(String name);
+    private static final long serialVersionUID = 1L;
+    private String name;
+    private int age;
 
-    Set<String> keys(Map<String, String> map);
+    public String getName() {
+        return name;
+    }
 
-    String echo(String text);
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    Map echo(Map map);
+    public int getAge() {
+        return age;
+    }
 
-    long timestamp();
-
-    String getThreadName();
-
-    int getSize(String[] strs);
-
-    int getSize(Object[] os);
-
-    Object invoke(String service, String method) throws Exception;
-
-    int stringLength(String str);
-
-    Type enumlength(Type... types);
-
-    Type getType(Type type);
-
-    String get(CustomArgument arg1);
-
-    byte getbyte(byte arg);
-
-    void nonSerializedParameter(NonSerialized ns);
-
-    NonSerialized returnNonSerialized();
-
-    long add(int a, long b);
-
-    int getPerson(Person person);
-
-    int getPerson(Person person1, Person perso2);
-
-    String getPerson(Man man);
+    public void setAge(int age) {
+        this.age = age;
+    }
 }

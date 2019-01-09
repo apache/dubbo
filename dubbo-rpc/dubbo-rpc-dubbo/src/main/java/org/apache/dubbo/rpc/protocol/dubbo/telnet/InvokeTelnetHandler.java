@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo.telnet;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -26,9 +28,6 @@ import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ProviderMethodModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
-
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -50,19 +49,19 @@ public class InvokeTelnetHandler implements TelnetHandler {
                                      Class<?>[] paramTypes) {
         for (ProviderMethodModel model : methods) {
             Method m = model.getMethod();
-            if (isMatch(m, args, paramTypes,method)) {
+            if (isMatch(m, args, paramTypes, method)) {
                 return m;
             }
         }
         return null;
     }
 
-    private static boolean isMatch(Method method,List<Object> args, Class<?>[] paramClasses,String lookupMethodName) {
-        if(!method.getName().equals(lookupMethodName)) {
+    private static boolean isMatch(Method method, List<Object> args, Class<?>[] paramClasses, String lookupMethodName) {
+        if (!method.getName().equals(lookupMethodName)) {
             return false;
         }
 
-        Class<?> types[]=method.getParameterTypes();
+        Class<?> types[] = method.getParameterTypes();
         if (types.length != args.size()) {
             return false;
         }
@@ -101,12 +100,19 @@ public class InvokeTelnetHandler implements TelnetHandler {
                 }
             } else if (arg instanceof Map) {
                 String name = (String) ((Map<?, ?>) arg).get("class");
-                Class<?> cls = arg.getClass();
-                if (name != null && name.length() > 0) {
-                    cls = ReflectUtils.forName(name);
-                }
-                if (!type.isAssignableFrom(cls)) {
-                    return false;
+                if (StringUtils.isNotEmpty(name)) {
+                    Class<?> cls = ReflectUtils.forName(name);
+                    if (!type.isAssignableFrom(cls)) {
+                        return false;
+                    }
+                } else {
+                    if (arg instanceof JSONObject) {
+                        try {
+                            ((JSONObject) arg).toJavaObject(type);
+                        } catch (Exception ex) {
+                            return false;
+                        }
+                    }
                 }
             } else if (arg instanceof Collection) {
                 if (!type.isArray() && !type.isAssignableFrom(arg.getClass())) {
@@ -133,7 +139,7 @@ public class InvokeTelnetHandler implements TelnetHandler {
         StringBuilder buf = new StringBuilder();
         String service = (String) channel.getAttribute(ChangeTelnetHandler.SERVICE_KEY);
         if (!StringUtils.isEmpty(service)) {
-            buf.append("Use default service ").append(service).append(".\r\n");
+            buf.append("Use default service ").append(service).append(".");
         }
 
         int i = message.indexOf("(");
@@ -217,6 +223,7 @@ public class InvokeTelnetHandler implements TelnetHandler {
                         result.setException(t);
                     }
                     long end = System.currentTimeMillis();
+                    buf.append("\r\nresult: ");
                     buf.append(JSON.toJSONString(result.recreate()));
                     buf.append("\r\nelapsed: ");
                     buf.append(end - start);
@@ -225,10 +232,10 @@ public class InvokeTelnetHandler implements TelnetHandler {
                     return "Failed to invoke method " + invokeMethod.getName() + ", cause: " + StringUtils.toString(t);
                 }
             } else {
-                buf.append("No such method ").append(method).append(" in service ").append(service);
+                buf.append("\r\nNo such method ").append(method).append(" in service ").append(service);
             }
         } else {
-            buf.append("No such service ").append(service);
+            buf.append("\r\nNo such service ").append(service);
         }
         return buf.toString();
     }
