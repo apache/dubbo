@@ -40,8 +40,8 @@ public class TimeoutFilter implements Filter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        long start = System.currentTimeMillis();
         if (invocation.getAttachments() != null) {
+            long start = System.currentTimeMillis();
             invocation.getAttachments().put(TIMEOUT_FILTER_START_TIME, String.valueOf(start));
         }
         return invoker.invoke(invocation);
