@@ -500,7 +500,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 }
             });
             if (registries.size() > arr.length) {
-                throw new IllegalStateException("Too much registries found, the registries assigned to this service " +
+                throw new IllegalStateException("Too many registries found, the registries assigned to this service " +
                         "are :" + registryIds + ", but got " + registries.size() + " registries!");
             }
         }
