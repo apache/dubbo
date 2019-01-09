@@ -212,7 +212,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
         resolveFile();
         checkApplication();
-        checkRegistry();
         checkMetadataReport();
     }
 
@@ -343,6 +342,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                     }
                 }
             } else { // assemble URL from register center's configuration
+                checkRegistry();
                 List<URL> us = loadRegistries(false);
                 if (us != null && !us.isEmpty()) {
                     for (URL u : us) {
