@@ -200,7 +200,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
     @SuppressWarnings({"unchecked"})
     public void setProtocols(List<? extends ProtocolConfig> protocols) {
-        ConfigManager.getInstance().addProtocols(this.protocols);
+        ConfigManager.getInstance().addProtocols((List<ProtocolConfig>) protocols);
         this.protocols = (List<ProtocolConfig>) protocols;
     }
 
@@ -209,7 +209,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     }
 
     public void setProtocol(ProtocolConfig protocol) {
-        this.protocols = Arrays.asList(protocol);
+        setProtocols(Arrays.asList(protocol));
     }
 
     @Parameter(excluded = true)
