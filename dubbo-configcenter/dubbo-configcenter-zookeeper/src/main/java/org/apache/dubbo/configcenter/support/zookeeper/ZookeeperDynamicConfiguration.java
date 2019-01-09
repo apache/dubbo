@@ -132,7 +132,7 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
         /**
          * when group is null, we are fetching governance rules, for example:
          * 1. key=org.apache.dubbo.DemoService.configurators
-         * 2. key = org.apache.dubbo.DemoService.router-condition
+         * 2. key = org.apache.dubbo.DemoService.condition-router
          */
         else {
             int i = key.lastIndexOf(".");

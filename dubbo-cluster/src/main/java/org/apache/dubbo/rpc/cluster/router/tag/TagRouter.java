@@ -42,7 +42,7 @@ import static org.apache.dubbo.common.Constants.FORCE_USE_TAG;
 import static org.apache.dubbo.common.Constants.TAG_KEY;
 
 /**
- * TagRouter, "application.router-tag"
+ * TagRouter, "application.tag-router"
  */
 public class TagRouter extends AbstractRouter implements Comparable<Router>, ConfigurationListener {
     public static final String NAME = "TAG_ROUTER";
