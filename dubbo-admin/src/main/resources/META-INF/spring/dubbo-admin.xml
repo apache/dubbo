@@ -7,7 +7,7 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 		http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
 
-	 <context:property-placeholder location="/WEB-INF/dubbo.properties"/> 
+	 <context:property-placeholder location="classpath:dubbo.properties"/> 
 	
 	<dubbo:application name="dubbo-admin" />
 
