@@ -37,11 +37,18 @@ import org.apache.zookeeper.WatchedEvent;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatcher> {
 
     private final Charset charset = Charset.forName("UTF-8");
     private final CuratorFramework client;
+    private Set<URL> sourceURLs;
+
+    public CuratorZookeeperClient(URL url, Set<URL> sourceURLs) {
+        this(url);
+        this.sourceURLs = sourceURLs;
+    }
 
     public CuratorZookeeperClient(URL url) {
         super(url);
@@ -72,6 +79,17 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
+    }
+
+    @Override
+    public URL getUrl() {
+        URL tmpURL = super.getUrl();
+        StringBuilder sb = new StringBuilder();
+        for (URL url : sourceURLs) {
+            sb.append(url.toFullString());
+            sb.append(Constants.SEMICOLON_SEPARATOR);
+        }
+        return tmpURL.addParameter(Constants.SOURCE_URL_KEY, sb);
     }
 
     @Override
@@ -147,6 +165,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
         }
         return false;
     }
+
     @Override
     public boolean isConnected() {
         return client.getZookeeperClient().isConnected();
@@ -156,7 +175,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
     public String doGetContent(String path) {
         try {
             byte[] dataBytes = client.getData().forPath(path);
-            if(dataBytes == null || dataBytes.length == 0){
+            if (dataBytes == null || dataBytes.length == 0) {
                 return null;
             }
             return new String(dataBytes, charset);

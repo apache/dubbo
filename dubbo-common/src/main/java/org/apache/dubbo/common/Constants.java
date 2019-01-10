@@ -482,12 +482,14 @@ public class Constants {
 
     /**
      * simple the registry for provider.
+     *
      * @since 2.7.0
      */
     public static final String SIMPLIFIED_KEY = "simplified";
 
     /**
      * After simplify the registry, should add some paramter individually for provider.
+     *
      * @since 2.7.0
      */
     public static final String EXTRA_KEYS_KEY = "extra-keys";
@@ -752,6 +754,8 @@ public class Constants {
     public static final String SPECIFICATION_VERSION_KEY = "specVersion";
 
     public static final String OVERRIDE_PROVIDERS_KEY = "providerAddreses";
+
+    public static final String SOURCE_URL_KEY = "sourceUrl";
 
     public static final String PROTOCOLS_SUFFIX = "dubbo.protocols.";
 

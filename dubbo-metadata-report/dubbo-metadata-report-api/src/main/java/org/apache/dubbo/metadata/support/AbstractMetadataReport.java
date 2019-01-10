@@ -329,6 +329,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
      * not private. just for unittest.
      */
     void publishAll() {
+        logger.info("start to publish all metadata.");
         this.doHandleMetadataCollection(allMetadataReports);
     }
 
@@ -377,7 +378,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
                                 // Check and connect to the registry
                                 try {
                                     int times = retryCounter.incrementAndGet();
-                                    logger.info("start to retry task for metadata report. retry times:" + times);
+                                    logger.error("start to retry task for metadata report. retry times:" + times);
                                     if (retry() && times > retryTimesIfNonFail) {
                                         cancelRetryTask();
                                     }

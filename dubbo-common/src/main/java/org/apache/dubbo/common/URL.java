@@ -70,7 +70,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @see java.net.URL
  * @see java.net.URI
  */
-public /**final**/ class URL implements Serializable {
+public /**final**/
+class URL implements Serializable {
 
     private static final long serialVersionUID = -1985165475234910535L;
 
@@ -248,7 +249,7 @@ public /**final**/ class URL implements Serializable {
                 // see https://howdoesinternetwork.com/2013/ipv6-zone-id
                 // ignore
             } else {
-                port = Integer.parseInt(url.substring(i+1));
+                port = Integer.parseInt(url.substring(i + 1));
                 url = url.substring(0, i);
             }
         }
@@ -364,7 +365,7 @@ public /**final**/ class URL implements Serializable {
 
     /**
      * Fetch IP address for this URL.
-     *
+     * <p>
      * Pls. note that IP should be used instead of Host when to compare with socket's address or to search in a map
      * which use address as its key.
      *
@@ -1175,6 +1176,10 @@ public /**final**/ class URL implements Serializable {
         return identity = buildString(true, false); // only return identity message, see the method "equals" and "hashCode"
     }
 
+    public String toServerIdentityString() {
+        return buildString(true, false, false, false, false);
+    }
+
     public String toIdentityString(String... parameters) {
         return buildString(true, false, parameters); // only return identity message, see the method "equals" and "hashCode"
     }
@@ -1231,6 +1236,10 @@ public /**final**/ class URL implements Serializable {
     }
 
     private String buildString(boolean appendUser, boolean appendParameter, boolean useIP, boolean useService, String... parameters) {
+        return buildString(appendUser, true, appendParameter, useIP, useService, parameters);
+    }
+
+    private String buildString(boolean appendUser, boolean appendPath, boolean appendParameter, boolean useIP, boolean useService, String... parameters) {
         StringBuilder buf = new StringBuilder();
         if (protocol != null && protocol.length() > 0) {
             buf.append(protocol);
@@ -1257,16 +1266,19 @@ public /**final**/ class URL implements Serializable {
                 buf.append(port);
             }
         }
-        String path;
-        if (useService) {
-            path = getServiceKey();
-        } else {
-            path = getPath();
+        if (appendPath) {
+            String path;
+            if (useService) {
+                path = getServiceKey();
+            } else {
+                path = getPath();
+            }
+            if (path != null && path.length() > 0) {
+                buf.append("/");
+                buf.append(path);
+            }
         }
-        if (path != null && path.length() > 0) {
-            buf.append("/");
-            buf.append(path);
-        }
+
         if (appendParameter) {
             buildParameters(buf, true, parameters);
         }
