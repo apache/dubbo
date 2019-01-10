@@ -88,11 +88,11 @@ public class RedisRegistry extends FailbackRegistry {
         }
         GenericObjectPoolConfig config = new URLJedisConfigAdapter(url);
 
-        String cluster = url.getParameter("cluster", "failover");
-        if (!"failover".equals(cluster) && !"replicate".equals(cluster)) {
-            throw new IllegalArgumentException("Unsupported redis cluster: " + cluster + ". The redis cluster only supported failover or replicate.");
+        String cluster = url.getParameter(Constants.CLUSTER_KEY, Constants.DEFAULT_CLUSTER);
+        if (!Constants.DEFAULT_CLUSTER.equals(cluster) && !Constants.REPLICATE.equals(cluster)) {
+            throw new IllegalArgumentException("Unsupported redis cluster: " + cluster + ". The redis cluster only supports "+ Constants.DEFAULT_CLUSTER + " or " + Constants.REPLICATE + ".");
         }
-        replicate = "replicate".equals(cluster);
+        replicate = Constants.REPLICATE.equals(cluster);
 
         List<String> addresses = new ArrayList<>();
         addresses.add(url.getAddress());
@@ -114,7 +114,7 @@ public class RedisRegistry extends FailbackRegistry {
             }
             this.jedisPools.put(address, new JedisPool(config, host, port,
                     url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT), StringUtils.isEmpty(url.getPassword()) ? null : url.getPassword(),
-                    url.getParameter("db.index", 0)));
+                    url.getParameter(Constants.DB_INDEX_KEY, 0)));
         }
 
         this.reconnectPeriod = url.getParameter(Constants.REGISTRY_RECONNECT_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RECONNECT_PERIOD);

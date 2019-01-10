@@ -817,4 +817,13 @@ public class Constants {
      * private Constants(){ }
      */
 
+    /**
+     * Redis registry replicate mode.
+     */
+    public static final String REPLICATE = "replicate";
+
+    /**
+     * Redis registry db.index key
+     */
+    public static final String DB_INDEX_KEY = "db.index";
 }
