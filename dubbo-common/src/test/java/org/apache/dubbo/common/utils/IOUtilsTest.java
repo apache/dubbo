@@ -18,12 +18,11 @@
 package org.apache.dubbo.common.utils;
 
 
-import org.apache.dubbo.common.support.io.TempDirectory;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.support.io.TempDirectory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

@@ -28,8 +28,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.apache.dubbo.remoting.p2p.support.io.TempDirectory;
-import org.apache.dubbo.remoting.p2p.support.io.TempDirectory.TempDir;
+import org.junit.jupiter.api.support.io.TempDirectory;
+import org.junit.jupiter.api.support.io.TempDirectory.TempDir;
 
 import java.nio.file.Path;
 import java.util.concurrent.CountDownLatch;

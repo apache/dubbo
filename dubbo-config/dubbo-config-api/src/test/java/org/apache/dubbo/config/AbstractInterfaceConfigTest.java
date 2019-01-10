@@ -33,6 +33,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.support.io.TempDirectory;
+import org.junit.jupiter.api.support.io.TempDirectory.TempDir;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -43,8 +45,6 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import org.apache.dubbo.config.support.io.TempDirectory;
-import org.apache.dubbo.config.support.io.TempDirectory.TempDir;
 
 @ExtendWith(TempDirectory.class)
 public class AbstractInterfaceConfigTest {
