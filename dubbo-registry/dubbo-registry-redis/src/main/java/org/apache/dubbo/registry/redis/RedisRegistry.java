@@ -54,6 +54,10 @@ import redis.clients.jedis.JedisPubSub;
  *
  * Subscription and notification are implemented by PubSub events in Redis.
  *
+ * The information of providers and consumers is stored in Redis using hset as following:
+ * 1. key: the service name and category of the provider or consumer
+ * 2. field: the url of the provider or consumer
+ * 3. value: the expiration time, used for detecting dirty data, which will be cleaned up by the Monitor Center
  */
 public class RedisRegistry extends FailbackRegistry {
 

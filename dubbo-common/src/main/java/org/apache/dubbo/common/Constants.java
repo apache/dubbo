@@ -77,6 +77,12 @@ public class Constants {
 
     public static final String CACHE_KEY = "cache";
 
+    /**
+     * Key whose value indicates that the service is dynamically registered,
+     * if set to false, the service would be "disabled" when registered and
+     * need to be "enabled" explicitly, neither would it be unregistered when
+     * shutting up and need to be unregistered explicitly. Defaults to true
+     */
     public static final String DYNAMIC_KEY = "dynamic";
 
     public static final String DUBBO_PROPERTIES_KEY = "dubbo.properties.file";
