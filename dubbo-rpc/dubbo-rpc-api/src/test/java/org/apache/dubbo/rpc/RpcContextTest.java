@@ -17,12 +17,12 @@
 package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.URL;
+
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 public class RpcContextTest {
 
@@ -142,8 +142,7 @@ public class RpcContextTest {
     @Test
     public void testAsync() {
 
-        CompletableFuture<Object> future = new CompletableFuture<>();
-        AsyncContext asyncContext = new AsyncContextImpl(future);
+        AsyncContext asyncContext = new AsyncContextImpl();
 
         RpcContext rpcContext = RpcContext.getContext();
         Assert.assertFalse(rpcContext.isAsyncStarted());
@@ -155,7 +154,7 @@ public class RpcContextTest {
         Assert.assertTrue(rpcContext.isAsyncStarted());
 
         asyncContext.write(new Object());
-        Assert.assertTrue(future.isDone());
+        Assert.assertTrue(((AsyncContextImpl)asyncContext).getInternalFuture().isDone());
 
         rpcContext.stopAsync();
         Assert.assertTrue(rpcContext.isAsyncStarted());

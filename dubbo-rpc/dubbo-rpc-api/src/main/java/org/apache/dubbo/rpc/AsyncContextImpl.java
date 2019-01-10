@@ -34,10 +34,6 @@ public class AsyncContextImpl implements AsyncContext {
     private RpcContext storedServerContext;
 
     public AsyncContextImpl() {
-    }
-
-    public AsyncContextImpl(CompletableFuture<Object> future) {
-        this.future = future;
         this.storedContext = RpcContext.getContext();
         this.storedServerContext = RpcContext.getServerContext();
     }
