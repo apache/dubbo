@@ -1176,10 +1176,6 @@ class URL implements Serializable {
         return identity = buildString(true, false); // only return identity message, see the method "equals" and "hashCode"
     }
 
-    public String toServerIdentityString() {
-        return buildString(true, false, false, false, false);
-    }
-
     public String toIdentityString(String... parameters) {
         return buildString(true, false, parameters); // only return identity message, see the method "equals" and "hashCode"
     }
@@ -1236,10 +1232,6 @@ class URL implements Serializable {
     }
 
     private String buildString(boolean appendUser, boolean appendParameter, boolean useIP, boolean useService, String... parameters) {
-        return buildString(appendUser, true, appendParameter, useIP, useService, parameters);
-    }
-
-    private String buildString(boolean appendUser, boolean appendPath, boolean appendParameter, boolean useIP, boolean useService, String... parameters) {
         StringBuilder buf = new StringBuilder();
         if (protocol != null && protocol.length() > 0) {
             buf.append(protocol);
@@ -1266,17 +1258,15 @@ class URL implements Serializable {
                 buf.append(port);
             }
         }
-        if (appendPath) {
-            String path;
-            if (useService) {
-                path = getServiceKey();
-            } else {
-                path = getPath();
-            }
-            if (path != null && path.length() > 0) {
-                buf.append("/");
-                buf.append(path);
-            }
+        String path;
+        if (useService) {
+            path = getServiceKey();
+        } else {
+            path = getPath();
+        }
+        if (path != null && path.length() > 0) {
+            buf.append("/");
+            buf.append(path);
         }
 
         if (appendParameter) {

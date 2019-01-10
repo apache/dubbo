@@ -17,7 +17,6 @@
 package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
-
 import org.junit.Test;
 
 import java.io.File;
@@ -679,14 +678,5 @@ public class URLTest {
         assertEquals(2, url.getParameters().size());
         assertEquals("1.0.0", url.getParameter("version"));
         assertEquals("morgan", url.getParameter("application"));
-    }
-
-    @Test
-    public void testToServerIdentityString(){
-        URL url = URL.valueOf("zookeeper://127.0.0.1:2181/org.apache.dubbo.registry.RegistryService?application=metadatareport-local-xml-provider2&dubbo=2.0.2&interface=org.apache.dubbo.registry.RegistryService&pid=47418&specVersion=2.7.0-SNAPSHOT&timestamp=1547102428828");
-        assertEquals(url.toServerIdentityString(), "zookeeper://127.0.0.1:2181");
-
-        url = URL.valueOf("zookeeper://us:pw@127.0.0.1:2181/org.apache.dubbo.registry.RegistryService?application=metadatareport-local-xml-provider2&dubbo=2.0.2&interface=org.apache.dubbo.registry.RegistryService&pid=47418&specVersion=2.7.0-SNAPSHOT&timestamp=1547102428828");
-        assertEquals(url.toServerIdentityString(), "zookeeper://us:pw@127.0.0.1:2181");
     }
 }

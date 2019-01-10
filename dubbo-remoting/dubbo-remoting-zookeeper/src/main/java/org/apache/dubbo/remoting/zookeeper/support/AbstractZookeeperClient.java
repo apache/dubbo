@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.zookeeper.support;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -41,13 +42,25 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
 
     private volatile boolean closed = false;
 
+    private Set<URL> sourceURLs;
+
     public AbstractZookeeperClient(URL url) {
         this.url = url;
     }
 
+    public AbstractZookeeperClient(URL url, Set<URL> sourceURLs) {
+        this.url = url;
+        this.sourceURLs = sourceURLs;
+    }
+
     @Override
     public URL getUrl() {
-        return url;
+        StringBuilder sb = new StringBuilder();
+        for (URL tmp : sourceURLs) {
+            sb.append(tmp.toFullString());
+            sb.append(Constants.SEMICOLON_SEPARATOR);
+        }
+        return url.addParameter(Constants.SOURCE_URL_KEY, sb);
     }
 
     @Override

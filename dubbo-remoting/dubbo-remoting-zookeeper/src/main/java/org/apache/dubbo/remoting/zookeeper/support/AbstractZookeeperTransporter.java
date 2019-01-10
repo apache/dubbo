@@ -1,0 +1,114 @@
+package org.apache.dubbo.remoting.zookeeper.support;
+
+import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
+import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * 2019/1/10
+ */
+public abstract class AbstractZookeeperTransporter implements ZookeeperTransporter {
+    static final Logger logger = LoggerFactory.getLogger(ZookeeperTransporter.class);
+    Map<String, ZookeeperClientData> zookeeperClientMap = new HashMap<String, ZookeeperClientData>();
+
+    /**
+     * share connnect for registry, metadata, etc..
+     *
+     * @param url
+     * @return
+     */
+    public ZookeeperClient connect(URL url) {
+        ZookeeperClientData clientData;
+        List<String> addressList = getURLBackupAddress(url);
+        // The field define the zookeeper server , including protocol, host, port, username, password
+        if ((clientData = fetchAndUpdateZookeeperClientCache(url, addressList)) != null) {
+            logger.info("ZookeeperTransporter.connnect result from map:" + clientData);
+            return clientData.getZookeeperClient();
+        }
+        ZookeeperClient zookeeperClient = null;
+        synchronized (zookeeperClientMap) {
+            if ((clientData = fetchAndUpdateZookeeperClientCache(url, addressList)) != null) {
+                logger.info("ZookeeperTransporter.connnect result from map2:" + clientData);
+                return clientData.getZookeeperClient();
+            }
+
+            Set<URL> originalURLs = new HashSet<>(2);
+            originalURLs.add(url);
+            zookeeperClient = createZookeeperClient(createServerURL(url), originalURLs);
+
+            ZookeeperClientData zookeeperClientData = new ZookeeperClientData(zookeeperClient, originalURLs);
+            logger.info("ZookeeperTransporter.connnect result from new connection. " + clientData);
+
+            writeToClientMap(addressList, zookeeperClientData);
+        }
+        return zookeeperClient;
+    }
+
+    protected abstract ZookeeperClient createZookeeperClient(URL url, Set<URL> originalURLs);
+
+    ZookeeperClientData fetchAndUpdateZookeeperClientCache(URL url, List<String> addressList) {
+
+        ZookeeperClientData zookeeperClientData = null;
+        for (String address : addressList) {
+            if ((zookeeperClientData = zookeeperClientMap.get(address)) != null) {
+                break;
+            }
+        }
+        if (zookeeperClientData != null) {
+            writeToClientMap(addressList, zookeeperClientData);
+            zookeeperClientData.fillOriginalURL(url);
+        }
+        return zookeeperClientData;
+    }
+
+    List<String> getURLBackupAddress(URL url) {
+        List<String> addressList = new ArrayList<String>();
+        addressList.add(url.getAddress());
+
+        String[] backups = url.getParameter(Constants.BACKUP_KEY, new String[0]);
+        addressList.addAll(Arrays.asList(backups));
+        return addressList;
+    }
+
+    /**
+     * write address-ZookeeperClient relationship to Map
+     *
+     * @param addressList
+     * @param zookeeperClientData
+     */
+    void writeToClientMap(List<String> addressList, ZookeeperClientData zookeeperClientData) {
+        for (String address : addressList) {
+            zookeeperClientMap.put(address, zookeeperClientData);
+        }
+    }
+
+    /**
+     * redefine the url for zookeeper. just keep protocol, username, password, host, port, and individual parameter.
+     *
+     * @param url
+     * @return
+     */
+    URL createServerURL(URL url) {
+        Map<String, String> parameterMap = new HashMap<>();
+        // for CuratorZookeeperClient
+        if (url.getParameter(Constants.TIMEOUT_KEY) != null) {
+            parameterMap.put(Constants.TIMEOUT_KEY, url.getParameter(Constants.TIMEOUT_KEY));
+        }
+        if (url.getParameter(Constants.BACKUP_KEY) != null) {
+            parameterMap.put(Constants.BACKUP_KEY, url.getParameter(Constants.BACKUP_KEY));
+        }
+        return new URL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), ZookeeperTransporter.class.getName(), parameterMap);
+    }
+
+}

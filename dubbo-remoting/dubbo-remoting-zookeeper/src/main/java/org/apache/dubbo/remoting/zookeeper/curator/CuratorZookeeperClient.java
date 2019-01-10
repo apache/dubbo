@@ -16,19 +16,18 @@
  */
 package org.apache.dubbo.remoting.zookeeper.curator;
 
-import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.remoting.zookeeper.ChildListener;
-import org.apache.dubbo.remoting.zookeeper.StateListener;
-import org.apache.dubbo.remoting.zookeeper.support.AbstractZookeeperClient;
-
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.api.CuratorWatcher;
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.framework.state.ConnectionStateListener;
 import org.apache.curator.retry.RetryNTimes;
+import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.zookeeper.ChildListener;
+import org.apache.dubbo.remoting.zookeeper.StateListener;
+import org.apache.dubbo.remoting.zookeeper.support.AbstractZookeeperClient;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException.NoNodeException;
 import org.apache.zookeeper.KeeperException.NodeExistsException;
@@ -43,15 +42,9 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
 
     private final Charset charset = Charset.forName("UTF-8");
     private final CuratorFramework client;
-    private Set<URL> sourceURLs;
 
     public CuratorZookeeperClient(URL url, Set<URL> sourceURLs) {
-        this(url);
-        this.sourceURLs = sourceURLs;
-    }
-
-    public CuratorZookeeperClient(URL url) {
-        super(url);
+        super(url, sourceURLs);
         try {
             int timeout = url.getParameter(Constants.TIMEOUT_KEY, 5000);
             CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
@@ -81,15 +74,8 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
         }
     }
 
-    @Override
-    public URL getUrl() {
-        URL tmpURL = super.getUrl();
-        StringBuilder sb = new StringBuilder();
-        for (URL url : sourceURLs) {
-            sb.append(url.toFullString());
-            sb.append(Constants.SEMICOLON_SEPARATOR);
-        }
-        return tmpURL.addParameter(Constants.SOURCE_URL_KEY, sb);
+    public CuratorZookeeperClient(URL url) {
+        this(url, null);
     }
 
     @Override

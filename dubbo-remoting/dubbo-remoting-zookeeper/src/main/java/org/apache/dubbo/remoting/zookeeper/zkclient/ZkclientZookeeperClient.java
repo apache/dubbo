@@ -31,6 +31,7 @@ import org.I0Itec.zkclient.exception.ZkNodeExistsException;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
 
 import java.util.List;
+import java.util.Set;
 
 public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildListener> {
 
@@ -41,7 +42,11 @@ public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildLis
     private volatile KeeperState state = KeeperState.SyncConnected;
 
     public ZkclientZookeeperClient(URL url) {
-        super(url);
+        this(url, null);
+    }
+
+    public ZkclientZookeeperClient(URL url, Set<URL> sourceURLs) {
+        super(url, sourceURLs);
         long timeout = url.getParameter(Constants.TIMEOUT_KEY, 30000L);
         client = new ZkClientWrapper(url.getBackupAddress(), timeout);
         client.addListener(new IZkStateListener() {

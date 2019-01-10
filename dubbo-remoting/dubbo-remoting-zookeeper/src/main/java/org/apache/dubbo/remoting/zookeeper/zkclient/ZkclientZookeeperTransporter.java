@@ -18,13 +18,14 @@ package org.apache.dubbo.remoting.zookeeper.zkclient;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
+import org.apache.dubbo.remoting.zookeeper.support.AbstractZookeeperTransporter;
 
-public class ZkclientZookeeperTransporter implements ZookeeperTransporter {
+import java.util.Set;
 
-    @Override
-    public ZookeeperClient connect(URL url) {
-        return new ZkclientZookeeperClient(url);
+public class ZkclientZookeeperTransporter extends AbstractZookeeperTransporter {
+
+    public ZookeeperClient createZookeeperClient(URL url, Set<URL> originalURLs) {
+        return new ZkclientZookeeperClient(url, originalURLs);
     }
 
 }
