@@ -79,11 +79,7 @@ public class RedisRegistryTest {
 
     @Test
     public void testSubscribeAndUnsubscribe() {
-        NotifyListener listener = new NotifyListener() {
-            @Override
-            public void notify(List<URL> urls) {
-
-            }
+        NotifyListener listener = urls -> {
         };
         redisRegistry.subscribe(serviceUrl, listener);
 
