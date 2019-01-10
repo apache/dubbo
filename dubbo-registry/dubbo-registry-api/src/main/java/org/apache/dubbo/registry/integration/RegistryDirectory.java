@@ -216,9 +216,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     private void refreshInvoker(List<URL> invokerUrls) {
         Assert.notNull(invokerUrls, "invokerUrls should not be null");
 
-        if (invokerUrls.size() == 1 && invokerUrls.get(0) != null && Constants.EMPTY_PROTOCOL.equals(invokerUrls
-                .get(0)
-                .getProtocol())) {
+        if (invokerUrls.size() == 1 && Constants.EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
             this.forbidden = true; // Forbid to access
             this.invokers = Collections.emptyList();
             routerChain.setInvokers(this.invokers);
@@ -240,8 +238,14 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }
             Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls);// Translate url list to Invoker map
 
-            // state change
-            // If the calculation is wrong, it is not processed.
+            /**
+             * If the calculation is wrong, it is not processed.
+             *
+             * 1. The protocol configured by the client is inconsistent with the protocol of the server.
+             *    eg: consumer protocol = dubbo, provider only has other protocol services(rest).
+             * 2. The registration center is not robust and pushes illegal specification data.
+             *
+             */
             if (newUrlInvokerMap == null || newUrlInvokerMap.size() == 0) {
                 logger.error(new IllegalStateException("urls to invokers error .invokerUrls.size :" + invokerUrls.size() + ", invoker.size :0. urls :" + invokerUrls
                         .toString()));
