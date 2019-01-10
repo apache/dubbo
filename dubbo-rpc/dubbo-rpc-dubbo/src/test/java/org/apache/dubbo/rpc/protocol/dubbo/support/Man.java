@@ -14,25 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.service;
+package org.apache.dubbo.rpc.protocol.dubbo.support;
+
+
+import java.io.Serializable;
 
 /**
- * Generic service interface
- *
- * @export
+ * Man.java
  */
-public interface GenericService {
+public class Man implements Serializable {
 
-    /**
-     * Generic invocation
-     *
-     * @param method         Method name, e.g. findPerson. If there are overridden methods, parameter info is
-     *                       required, e.g. findPerson(java.lang.String)
-     * @param parameterTypes Parameter types
-     * @param args           Arguments
-     * @return invocation return value
-     * @throws GenericException potential exception thrown from the invocation
-     */
-    Object $invoke(String method, String[] parameterTypes, Object[] args) throws GenericException;
+    private static final long serialVersionUID = 1L;
+    private String name;
+    private int age;
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
 }

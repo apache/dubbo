@@ -93,12 +93,7 @@ public abstract class AbstractRegistry implements Registry {
             file = new File(filename);
             if (!file.exists() && file.getParentFile() != null && !file.getParentFile().exists()) {
                 if (!file.getParentFile().mkdirs()) {
-                    throw new IllegalArgumentException(
-                        String.format(
-                            "Invalid registry store file %s, cause: Failed to create directory %s!",
-                            file, file.getParentFile()
-                        )
-                    );
+                    throw new IllegalArgumentException("Invalid registry cache file " + file + ", cause: Failed to create directory " + file.getParentFile() + "!");
                 }
             }
         }
@@ -189,7 +184,7 @@ public abstract class AbstractRegistry implements Registry {
             } else {
                 registryCacheExecutor.execute(new SaveProperties(lastCacheChanged.incrementAndGet()));
             }
-            logger.warn("Failed to save registry store file, cause: " + e.getMessage(), e);
+            logger.warn("Failed to save registry cache file, cause: " + e.getMessage(), e);
         }
     }
 
