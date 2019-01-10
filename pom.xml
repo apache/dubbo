@@ -115,6 +115,7 @@
 		<guice_version>3.0</guice_version>
 		<cglib_version>2.2</cglib_version>
 		<webx_version>5.1.2</webx_version>
+		<velocity_version>1.7</velocity_version>
 		<!-- Log libs -->
 		<slf4j_version>1.6.2</slf4j_version>
 		<jcl_version>1.1</jcl_version>
@@ -445,6 +446,12 @@
 				<artifactId>cglib-nodep</artifactId>
 				<version>${cglib_version}</version>
 			</dependency>
+			<dependency>
+                <groupId>org.apache.velocity</groupId>
+                <artifactId>velocity</artifactId>
+                <version>${velocity_version}</version>
+                
+            </dependency>
 		</dependencies>
 	</dependencyManagement>
 	<dependencies>

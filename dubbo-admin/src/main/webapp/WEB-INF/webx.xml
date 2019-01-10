@@ -7,8 +7,8 @@
     xmlns:model-encoders="http://www.alibaba.com/schema/services/request-contexts/session/model-encoders"
     xmlns:session-idgens="http://www.alibaba.com/schema/services/request-contexts/session/idgens"
     xmlns:session-stores="http://www.alibaba.com/schema/services/request-contexts/session/stores"
-    xmlns:ml-adapters="http://www.alibaba.com/schema/services/module-loader/adapters"
-    xmlns:ml-factories="http://www.alibaba.com/schema/services/module-loader/factories"
+    xmlns:madapters="http://www.alibaba.com/schema/services/module-loader/adapters"
+    xmlns:mfactories="http://www.alibaba.com/schema/services/module-loader/factories"
     xmlns:beans="http://www.springframework.org/schema/beans"
     xmlns:stores="http://www.alibaba.com/schema/services/request-contexts/session/stores"
     xmlns:p="http://www.springframework.org/schema/p"
@@ -108,9 +108,9 @@
 
     <!-- 装载模块。 -->
     <services:module-loader>
-        <ml-factories:class-modules>
-            <ml-factories:search-packages type="$1" packages="com.alibaba.dubbo.governance.web.common.module.*" />
-        </ml-factories:class-modules>
+        <mfactories:class-modules>
+            <search-packages type="$1" packages="com.alibaba.dubbo.governance.web.common.module.*" />
+        </mfactories:class-modules>
     </services:module-loader>
 
 	<beans:bean id="messageResourceService" class="com.alibaba.dubbo.governance.biz.common.i18n.impl.MessageResourceServiceImpl">

@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <beans:beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:services="http://www.alibaba.com/schema/services"
-	xmlns:dr-factories="http://www.alibaba.com/schema/services/data-resolver/factories"
+	xmlns:factories="http://www.alibaba.com/schema/services/data-resolver/factories"
 	xmlns:mapping-rules="http://www.alibaba.com/schema/services/mapping-rules"
-	xmlns:tpl-engines="http://www.alibaba.com/schema/services/template/engines"
-	xmlns:ftl-plugins="http://www.alibaba.com/schema/services/template/engines/freemarker/plugins"
-	xmlns:vm-plugins="http://www.alibaba.com/schema/services/template/engines/velocity/plugins"
+	xmlns:engines="http://www.alibaba.com/schema/services/template/engines"
+    xmlns:plugins="http://www.alibaba.com/schema/services/template/engines/velocity/plugins"
 	xmlns:beans="http://www.springframework.org/schema/beans" xmlns:p="http://www.springframework.org/schema/p"
 	xsi:schemaLocation="
         http://www.alibaba.com/schema/services http://localhost:8080/schema/services.xsd
         http://www.alibaba.com/schema/services/data-resolver/factories http://localhost:8080/schema/services-data-resolver-factories.xsd
         http://www.alibaba.com/schema/services/mapping-rules http://localhost:8080/schema/services-mapping-rules.xsd
         http://www.alibaba.com/schema/services/template/engines http://localhost:8080/schema/services-template-engines.xsd
-        http://www.alibaba.com/schema/services/template/engines/freemarker/plugins http://localhost:8080/schema/services-template-engines-freemarker-plugins.xsd
         http://www.alibaba.com/schema/services/template/engines/velocity/plugins http://localhost:8080/schema/services-template-engines-velocity-plugins.xsd
+        http://www.alibaba.com/schema/services/template/engines/freemarker/plugins http://localhost:8080/schema/services-template-engines-freemarker-plugins.xsd
         http://www.springframework.org/schema/beans http://localhost:8080/schema/www.springframework.org/schema/beans/spring-beans.xsd
     ">
 
@@ -21,37 +20,43 @@
 	<!-- 注意：此文件需要property-placeholder变量：${component}。 -->
 
 	<!-- Template渲染服务。 -->
-	<services:template
-		xmlns="http://www.alibaba.com/schema/services/template/engines"
-		searchExtensions="true">
-		<velocity-engine templateEncoding="utf-8"
+	 <services:template searchExtensions="true">
+		<engines:velocity-engine templateEncoding="utf-8"
 			strictReference="false" path="/templates/${component}">
-			<global-macros>
-				<name>global/*.vm</name>
-			</global-macros>
+            <global-macros>
+                <name>macros/**/*.vm</name>
+            </global-macros>
+				<!-- <plugins:fasttext-support /> -->
 			<plugins>
-				<!-- <vm-plugins:fasttext-support /> -->
-				<vm-plugins:renderable-support />
-				<!-- <vm-plugins:escape-support defaultEscape="html">
-					<vm-plugins:noescape>
-						<vm-plugins:if-matches pattern="^control\." />
-						<vm-plugins:if-matches pattern="^screen_placeholder" />
-						<vm-plugins:if-matches pattern="^stringEscapeUtil\.escape" />
-						<vm-plugins:if-matches pattern="^csrfToken\.(get)?hiddenField" />
+				<plugins:renderable-support />
+			</plugins>
+				<!-- <plugins:escape-support defaultEscape="html">
+					<plugins:noescape>
+						<plugins:if-matches pattern="^control\." />
+						<plugins:if-matches pattern="^screen_placeholder" />
+						<plugins:if-matches pattern="^stringEscapeUtil\.escape" />
+						<plugins:if-matches pattern="^csrfToken\.(get)?hiddenField" />
 					</vm-plugins:noescape>
 				</vm-plugins:escape-support> -->
-			</plugins>
-		</velocity-engine>
+		
+		</engines:velocity-engine>
 		<!-- <freemarker-engine templateEncoding="GBK" path="/${component}/templates" 
 			/> <jsp-engine path="/templates/${component}" /> -->
 	</services:template>
 
 	<!-- 名称查找规则。 -->
-	<services:mapping-rules
-		xmlns="http://www.alibaba.com/schema/services/mapping-rules">
+	<services:mapping-rules>
 
+		<mapping-rules:extension-rule id="extension">
+            <mapping extension="" to="jsp" />
+            <mapping extension="php" to="jsp" />
+            <mapping extension="jhtml" to="jsp" />
+            <mapping extension="vhtml" to="vm" />
+            <mapping extension="noext" to="" />
+        </mapping-rules:extension-rule>
+        
 		<!-- External target name => Internal target name -->
-		<extension-rule id="extension.input">
+		<mapping-rules:extension-rule id="extension.input">
 			<!-- 默认后缀 -->
 			<mapping extension="" to="" />
 
@@ -64,10 +69,10 @@
 			<mapping extension="htm" to="" />
 			<mapping extension="vhtml" to="" />
 			<mapping extension="vm" to="" />
-		</extension-rule>
+		</mapping-rules:extension-rule>
 
 		<!-- Internal target name => External target name -->
-		<extension-rule id="extension.output">
+		<mapping-rules:extension-rule id="extension.output">
 			<!-- 默认后缀 -->
 			<mapping extension="" to="htm" />
 
@@ -80,33 +85,33 @@
 			<mapping extension="htm" to="htm" />
 			<mapping extension="vhtml" to="htm" />
 			<mapping extension="vm" to="htm" />
-		</extension-rule>
+		</mapping-rules:extension-rule>
 
 		<!-- Target name => Action module name -->
-		<direct-module-rule id="action" />
+		<mapping-rules:direct-template-rule id="action" templatePrefix=""/>
 
 		<!-- Target name => Screen module name (*.do) -->
-		<direct-module-rule id="screen.notemplate" />
+		<mapping-rules:direct-template-rule id="screen.notemplate" templatePrefix=""/>
 
 		<!-- Target name => Screen module name (*.jsp, *.vm) -->
-		<fallback-module-rule id="screen" moduleType="screen" />
+		<mapping-rules:fallback-module-rule id="screen" moduleType="screen" />
 
 		<!-- Target name => Screen template name -->
-		<direct-template-rule id="screen.template"
+		<mapping-rules:direct-template-rule id="screen.template"
 			templatePrefix="screen" />
 
 		<!-- Target name => Layout template name -->
-		<fallback-template-rule id="layout.template"
+		<mapping-rules:fallback-template-rule id="layout.template"
 			templatePrefix="layout" />
 
 		<!-- Target name => Control module name (setControl method) -->
-		<direct-module-rule id="control.notemplate" />
+		<mapping-rules:direct-template-rule id="control.notemplate"  templatePrefix=""/>
 
 		<!-- Target name => Control module name (setTemplate method) -->
-		<fallback-module-rule id="control" moduleType="control" />
+		<mapping-rules:fallback-module-rule id="control" moduleType="control" />
 
 		<!-- Target name => Control template name -->
-		<direct-template-rule id="control.template"
+		<mapping-rules:direct-template-rule id="control.template"
 			templatePrefix="control" />
 
 	</services:mapping-rules>
@@ -117,7 +122,7 @@
 		<turbine-rundata-resolver />
 		<parameter-resolver />
 		<form-resolver />
-		<dr-factories:factory
+		<factories:factory
 			class="com.alibaba.dubbo.governance.web.common.resolver.MapDataResolverFactory" />
 	</services:data-resolver>
 
