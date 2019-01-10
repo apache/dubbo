@@ -454,28 +454,6 @@ public class RedisRegistry extends FailbackRegistry {
                 }
             }
         }
-
-        @Override
-        public void onPMessage(String pattern, String key, String msg) {
-            onMessage(key, msg);
-        }
-
-        @Override
-        public void onSubscribe(String key, int num) {
-        }
-
-        @Override
-        public void onPSubscribe(String pattern, int num) {
-        }
-
-        @Override
-        public void onUnsubscribe(String key, int num) {
-        }
-
-        @Override
-        public void onPUnsubscribe(String pattern, int num) {
-        }
-
     }
 
     private class Notifier extends Thread {
