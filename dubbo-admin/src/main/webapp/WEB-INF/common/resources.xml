@@ -13,9 +13,13 @@
         http://www.springframework.org/schema/beans http://localhost:8080/schema/www.springframework.org/schema/beans/spring-beans.xsd
     ">
      <services:resource-loading>
-        <resource pattern="/">
-            <loaders:file-loader />
+       <resource pattern="/classpath">
+            <loaders:classpath-loader />
         </resource>
+        <resource pattern="/webroot" internal="true">
+            <loaders:webapp-loader />
+        </resource>
+        <resource-alias pattern="/" name="/webroot" />
     </services:resource-loading>
      <services:resource-loading>
         <resource-alias pattern="/" name="/webroot" />
@@ -25,7 +29,7 @@
         <resource-alias pattern="/*/templates/global" name="/webroot/common/templates" />
 
         <!-- 配置文件根目录：/conf -->
-        <resource-alias pattern="/conf" name="/webroot/WEB-INF" />
+        <resource-alias pattern="/conf" name="/webapp/WEB-INF" />
 
         <!-- 内部资源 -->
         <resource pattern="/webroot" internal="true">

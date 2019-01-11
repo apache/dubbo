@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:loaders="http://www.alibaba.com/schema/services/resource-loading/loaders"
+	xmlns:services="http://www.alibaba.com/schema/services"
 	xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
-		http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+		http://www.alibaba.com/schema/services http://localhost:8080/schema/services.xsd
+		http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd
+		http://www.alibaba.com/schema/services/resource-loading/loaders http://localhost:8080/schema/services-resource-loading-loaders.xsd">
 
-	 <context:property-placeholder location="classpath:dubbo.properties"/> 
+	<services:property-placeholder location="classpath:dubbo.properties">
+	</services:property-placeholder> 
 	
 	<dubbo:application name="dubbo-admin" />
 
