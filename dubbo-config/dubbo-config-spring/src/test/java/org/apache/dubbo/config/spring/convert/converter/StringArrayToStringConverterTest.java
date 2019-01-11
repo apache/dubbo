@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.config.spring.convert.converter;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * {@link StringArrayToStringConverter} Test
@@ -31,15 +31,15 @@ public class StringArrayToStringConverterTest {
 
         String value = converter.convert(new String[]{"Hello", "World"});
 
-        Assert.assertEquals("Hello,World", value);
+        Assertions.assertEquals("Hello,World", value);
 
         value = converter.convert(new String[]{});
 
-        Assert.assertNull(value);
+        Assertions.assertNull(value);
 
         value = converter.convert(null);
 
-        Assert.assertNull(value);
+        Assertions.assertNull(value);
 
     }
 

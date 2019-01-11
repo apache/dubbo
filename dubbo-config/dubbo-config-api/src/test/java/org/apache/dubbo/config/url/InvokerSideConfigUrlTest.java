@@ -27,11 +27,11 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.mock.MockRegistry;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
@@ -135,19 +135,19 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
     //   test Start
     // ====================================================== 
 
-    @BeforeClass
+    @BeforeAll
     public static void start() {
         //RegistryController.startRegistryIfAbsence(1);
     }
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
         initServConf();
         initRefConf();
     }
 
-    @After()
+    @AfterEach()
     public void teardown() {
         //RegistryServer.reloadCache();
     }
@@ -163,7 +163,7 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
         verifyInvokerUrlGeneration(refConf, refConfTable);
     }
 
-    @Ignore("parameter on register center will not be merged any longer with query parameter request from the consumer")
+    @Disabled("parameter on register center will not be merged any longer with query parameter request from the consumer")
     @Test
     public void regConfForConsumerUrlTest() {
         verifyInvokerUrlGeneration(regConfForConsumer, regConfForConsumerTable);

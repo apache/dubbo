@@ -19,9 +19,9 @@ package org.apache.dubbo.config.spring.status;
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -34,7 +34,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -47,7 +47,7 @@ public class DataSourceStatusCheckerTest {
     @Mock
     private ApplicationContext applicationContext;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         SpringExtensionFactory.clearContexts();
         initMocks(this);
@@ -55,7 +55,7 @@ public class DataSourceStatusCheckerTest {
         new ServiceBean<Object>().setApplicationContext(applicationContext);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         Mockito.reset(applicationContext);
     }

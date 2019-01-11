@@ -22,9 +22,9 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.exchange.Request;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.List;
@@ -39,7 +39,7 @@ public class HeartBeatTaskTest {
     private HeartbeatTimerTask heartbeatTimerTask;
     private HashedWheelTimer heartbeatTimer;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         long tickDuration = 1000;
         heartbeatTimer = new HashedWheelTimer(tickDuration / Constants.HEARTBEAT_CHECK_TICK, TimeUnit.MILLISECONDS);
@@ -70,11 +70,11 @@ public class HeartBeatTaskTest {
 
         Thread.sleep(2000L);
         List<Object> objects = channel.getSentObjects();
-        Assert.assertTrue(objects.size() > 0);
+        Assertions.assertTrue(objects.size() > 0);
         Object obj = objects.get(0);
-        Assert.assertTrue(obj instanceof Request);
+        Assertions.assertTrue(obj instanceof Request);
         Request request = (Request) obj;
-        Assert.assertTrue(request.isHeartbeat());
+        Assertions.assertTrue(request.isHeartbeat());
     }
 
 }

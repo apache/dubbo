@@ -19,26 +19,26 @@ package org.apache.dubbo.remoting.zookeeper.zkclient;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.I0Itec.zkclient.IZkChildListener;
 import org.apache.curator.test.TestingServer;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 
 public class ZkClientWrapperTest {
     private TestingServer zkServer;
     private ZkClientWrapper zkClientWrapper;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         int zkServerPort = NetUtils.getAvailablePort();
         zkServer = new TestingServer(zkServerPort, true);
         zkClientWrapper = new ZkClientWrapper("127.0.0.1:" + zkServerPort, 10000);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         zkServer.stop();
     }

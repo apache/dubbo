@@ -24,10 +24,10 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcStatus;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import com.alibaba.fastjson.JSON;
 import org.mockito.Mockito;
@@ -63,14 +63,14 @@ public class LoadBalanceBaseTest {
     /**
      * @throws java.lang.Exception
      */
-    @BeforeClass
+    @BeforeAll
     public static void setUpBeforeClass() throws Exception {
     }
 
     /**
      * @throws java.lang.Exception
      */
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
 
         invocation = mock(Invocation.class);
@@ -136,20 +136,20 @@ public class LoadBalanceBaseTest {
 
     @Test
     public void testLoadBalanceWarmup() {
-        Assert.assertEquals(1, calculateDefaultWarmupWeight(0));
-        Assert.assertEquals(1, calculateDefaultWarmupWeight(13));
-        Assert.assertEquals(1, calculateDefaultWarmupWeight(6 * 1000));
-        Assert.assertEquals(2, calculateDefaultWarmupWeight(12 * 1000));
-        Assert.assertEquals(10, calculateDefaultWarmupWeight(60 * 1000));
-        Assert.assertEquals(50, calculateDefaultWarmupWeight(5 * 60 * 1000));
-        Assert.assertEquals(50, calculateDefaultWarmupWeight(5 * 60 * 1000 + 23));
-        Assert.assertEquals(50, calculateDefaultWarmupWeight(5 * 60 * 1000 + 5999));
-        Assert.assertEquals(51, calculateDefaultWarmupWeight(5 * 60 * 1000 + 6000));
-        Assert.assertEquals(90, calculateDefaultWarmupWeight(9 * 60 * 1000));
-        Assert.assertEquals(98, calculateDefaultWarmupWeight(10 * 60 * 1000 - 12 * 1000));
-        Assert.assertEquals(99, calculateDefaultWarmupWeight(10 * 60 * 1000 - 6 * 1000));
-        Assert.assertEquals(100, calculateDefaultWarmupWeight(10 * 60 * 1000));
-        Assert.assertEquals(100, calculateDefaultWarmupWeight(20 * 60 * 1000));
+        Assertions.assertEquals(1, calculateDefaultWarmupWeight(0));
+        Assertions.assertEquals(1, calculateDefaultWarmupWeight(13));
+        Assertions.assertEquals(1, calculateDefaultWarmupWeight(6 * 1000));
+        Assertions.assertEquals(2, calculateDefaultWarmupWeight(12 * 1000));
+        Assertions.assertEquals(10, calculateDefaultWarmupWeight(60 * 1000));
+        Assertions.assertEquals(50, calculateDefaultWarmupWeight(5 * 60 * 1000));
+        Assertions.assertEquals(50, calculateDefaultWarmupWeight(5 * 60 * 1000 + 23));
+        Assertions.assertEquals(50, calculateDefaultWarmupWeight(5 * 60 * 1000 + 5999));
+        Assertions.assertEquals(51, calculateDefaultWarmupWeight(5 * 60 * 1000 + 6000));
+        Assertions.assertEquals(90, calculateDefaultWarmupWeight(9 * 60 * 1000));
+        Assertions.assertEquals(98, calculateDefaultWarmupWeight(10 * 60 * 1000 - 12 * 1000));
+        Assertions.assertEquals(99, calculateDefaultWarmupWeight(10 * 60 * 1000 - 6 * 1000));
+        Assertions.assertEquals(100, calculateDefaultWarmupWeight(10 * 60 * 1000));
+        Assertions.assertEquals(100, calculateDefaultWarmupWeight(20 * 60 * 1000));
     }
 
     /**
@@ -209,7 +209,7 @@ public class LoadBalanceBaseTest {
     protected Invoker<LoadBalanceBaseTest> weightInvoker3;
     protected Invoker<LoadBalanceBaseTest> weightInvokerTmp;
 
-    @Before
+    @BeforeEach
     public void before() throws Exception {
         weightInvoker1 = mock(Invoker.class, Mockito.withSettings().stubOnly());
         weightInvoker2 = mock(Invoker.class, Mockito.withSettings().stubOnly());

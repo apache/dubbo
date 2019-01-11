@@ -15,31 +15,34 @@
  * limitations under the License.
  */
 package org.apache.dubbo.remoting.zookeeper.curator;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.zookeeper.ChildListener;
+
 import org.apache.curator.framework.api.CuratorWatcher;
 import org.apache.curator.test.TestingServer;
 import org.apache.zookeeper.WatchedEvent;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 
 public class CuratorZookeeperClientTest {
     private TestingServer zkServer;
     private CuratorZookeeperClient curatorClient;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         int zkServerPort = NetUtils.getAvailablePort();
         zkServer = new TestingServer(zkServerPort, true);
@@ -82,17 +85,21 @@ public class CuratorZookeeperClientTest {
     }
 
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testWithInvalidServer() {
-        curatorClient = new CuratorZookeeperClient(URL.valueOf("zookeeper://127.0.0.1:1/service"));
-        curatorClient.create("/testPath", true);
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            curatorClient = new CuratorZookeeperClient(URL.valueOf("zookeeper://127.0.0.1:1/service"));
+            curatorClient.create("/testPath", true);
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testWithStoppedServer() throws IOException {
-        curatorClient.create("/testPath", true);
-        zkServer.stop();
-        curatorClient.delete("/testPath");
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            curatorClient.create("/testPath", true);
+            zkServer.stop();
+            curatorClient.delete("/testPath");
+        });
     }
 
     @Test
@@ -141,7 +148,7 @@ public class CuratorZookeeperClientTest {
         assertEquals(curatorClient.getContent(path), content);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         curatorClient.close();
         zkServer.stop();

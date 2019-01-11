@@ -20,8 +20,8 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class ReferenceConfigTest {
 
@@ -54,7 +54,7 @@ public class ReferenceConfigTest {
             System.setProperty("java.net.preferIPv4Stack", "true");
             demoService.export();
             rc.get();
-            Assert.assertTrue(!Constants.LOCAL_PROTOCOL.equalsIgnoreCase(
+            Assertions.assertTrue(!Constants.LOCAL_PROTOCOL.equalsIgnoreCase(
                     rc.getInvoker().getUrl().getProtocol()));
         } finally {
             System.clearProperty("java.net.preferIPv4Stack");
@@ -87,8 +87,8 @@ public class ReferenceConfigTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Assert.assertFalse(success);
-        Assert.assertNull(demoService);
+        Assertions.assertFalse(success);
+        Assertions.assertNull(demoService);
 
         ServiceConfig<DemoService> sc = new ServiceConfig<DemoService>();
         sc.setInterface(DemoService.class);
@@ -107,8 +107,8 @@ public class ReferenceConfigTest {
         } finally {
             System.clearProperty("java.net.preferIPv4Stack");
         }
-        Assert.assertTrue(success);
-        Assert.assertNotNull(demoService);
+        Assertions.assertTrue(success);
+        Assertions.assertNotNull(demoService);
 
     }
 }

@@ -19,21 +19,21 @@ package org.apache.dubbo.rpc.protocol.thrift;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.rpc.gen.dubbo.$__DemoStub;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class ThriftUtilsTest {
 
     @Test
     public void testGenerateMethodArgsClassName() {
 
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 $__DemoStub.echoString_args.class.getName(),
                 ThriftUtils.generateMethodArgsClassName(
                         org.apache.dubbo.rpc.gen.dubbo.Demo.class.getName(),
                         "echoString"));
 
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 $__DemoStub.echoString_args.class.getName(),
                 ExtensionLoader.getExtensionLoader(ClassNameGenerator.class)
                         .getExtension(DubboClassNameGenerator.NAME).generateArgsClassName(
@@ -44,12 +44,12 @@ public class ThriftUtilsTest {
     @Test
     public void testGenerateMethodResultClassName() {
 
-        Assert.assertEquals($__DemoStub.echoString_result.class.getName(),
+        Assertions.assertEquals($__DemoStub.echoString_result.class.getName(),
                 ThriftUtils.generateMethodResultClassName(
                         org.apache.dubbo.rpc.gen.dubbo.Demo.class.getName(),
                         "echoString"));
 
-        Assert.assertEquals($__DemoStub.echoString_result.class.getName(),
+        Assertions.assertEquals($__DemoStub.echoString_result.class.getName(),
                 ExtensionLoader.getExtensionLoader(ClassNameGenerator.class)
                         .getExtension(DubboClassNameGenerator.NAME).generateResultClassName(
                         org.apache.dubbo.rpc.gen.dubbo.Demo.class.getName(), "echoString"));
@@ -58,12 +58,12 @@ public class ThriftUtilsTest {
 
     @Test
     public void testGenerateMethodArgsClassNameThrift() {
-        Assert.assertEquals(org.apache.dubbo.rpc.gen.thrift.Demo.echoString_args.class.getName(),
+        Assertions.assertEquals(org.apache.dubbo.rpc.gen.thrift.Demo.echoString_args.class.getName(),
                 ThriftUtils.generateMethodArgsClassNameThrift(
                         org.apache.dubbo.rpc.gen.thrift.Demo.Iface.class.getName(),
                         "echoString"));
 
-        Assert.assertEquals(org.apache.dubbo.rpc.gen.thrift.Demo.echoString_args.class.getName(),
+        Assertions.assertEquals(org.apache.dubbo.rpc.gen.thrift.Demo.echoString_args.class.getName(),
                 ExtensionLoader.getExtensionLoader(ClassNameGenerator.class)
                         .getExtension(ThriftClassNameGenerator.NAME).generateArgsClassName(
                         org.apache.dubbo.rpc.gen.thrift.Demo.Iface.class.getName(),
@@ -73,12 +73,12 @@ public class ThriftUtilsTest {
 
     @Test
     public void testGenerateMethodResultClassNameThrift() {
-        Assert.assertEquals(org.apache.dubbo.rpc.gen.thrift.Demo.echoString_result.class.getName(),
+        Assertions.assertEquals(org.apache.dubbo.rpc.gen.thrift.Demo.echoString_result.class.getName(),
                 ThriftUtils.generateMethodResultClassNameThrift(
                         org.apache.dubbo.rpc.gen.thrift.Demo.Iface.class.getName(),
                         "echoString"));
 
-        Assert.assertEquals(org.apache.dubbo.rpc.gen.thrift.Demo.echoString_result.class.getName(),
+        Assertions.assertEquals(org.apache.dubbo.rpc.gen.thrift.Demo.echoString_result.class.getName(),
                 ExtensionLoader.getExtensionLoader(ClassNameGenerator.class)
                         .getExtension(ThriftClassNameGenerator.NAME).generateResultClassName(
                         org.apache.dubbo.rpc.gen.thrift.Demo.Iface.class.getName(),

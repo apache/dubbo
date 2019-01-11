@@ -20,15 +20,15 @@ import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.base.AbstractSerializationPersonOkTest;
 import org.apache.dubbo.common.serialize.java.JavaSerialization;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * JdkPersonOkTest
@@ -61,7 +61,7 @@ public class Hessian2PersonOkTest extends AbstractSerializationPersonOkTest {
         // NOTE: Hessian2 throws ArrayIndexOutOfBoundsException instead of IOException, let's live with this.
     }
 
-    @Ignore("type missing, char[] -> String")
+    @Disabled("type missing, char[] -> String")
     @Test
     public void test_charArray() throws Exception {
     }
@@ -200,12 +200,12 @@ public class Hessian2PersonOkTest extends AbstractSerializationPersonOkTest {
         // NOTE: Hessian2 throws ArrayIndexOutOfBoundsException instead of IOException, let's live with this.
     }
 
-    @Ignore("type missing, Byte -> Integer")
+    @Disabled("type missing, Byte -> Integer")
     @Test
     public void test_ByteWrap() throws Exception {
     }
 
-    @Ignore("Bad Stream read other type data")
+    @Disabled("Bad Stream read other type data")
     @Test
     public void test_MediaContent_badStream() throws Exception {
     }
