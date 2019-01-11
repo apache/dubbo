@@ -18,25 +18,29 @@
 package org.apache.dubbo.config;
 
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertThat;
 
 public class ModuleConfigTest {
-    @Test(expected = IllegalStateException.class)
-    public void testName1() throws Exception {
-        ModuleConfig module = new ModuleConfig();
-        Map<String, String> parameters = new HashMap<String, String>();
-        ModuleConfig.appendParameters(parameters, module);
+    @Test
+    public void testName1() {
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            ModuleConfig module = new ModuleConfig();
+            Map<String, String> parameters = new HashMap<String, String>();
+            ModuleConfig.appendParameters(parameters, module);
+        });
+
     }
 
     @Test

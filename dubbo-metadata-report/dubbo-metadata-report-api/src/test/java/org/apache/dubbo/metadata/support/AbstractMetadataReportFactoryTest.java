@@ -24,8 +24,8 @@ import org.apache.dubbo.metadata.store.MetadataReport;
 
 import com.alibaba.fastjson.JSON;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -62,7 +62,7 @@ public class AbstractMetadataReportFactoryTest {
         URL url = URL.valueOf("zookeeper://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
         MetadataReport metadataReport1 = metadataReportFactory.getMetadataReport(url);
         MetadataReport metadataReport2 = metadataReportFactory.getMetadataReport(url);
-        Assert.assertEquals(metadataReport1, metadataReport2);
+        Assertions.assertEquals(metadataReport1, metadataReport2);
     }
 
     @Test
@@ -71,7 +71,7 @@ public class AbstractMetadataReportFactoryTest {
         URL url2 = URL.valueOf("zookeeper://" + NetUtils.getLocalAddress().getHostAddress() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
         MetadataReport metadataReport1 = metadataReportFactory.getMetadataReport(url1);
         MetadataReport metadataReport2 = metadataReportFactory.getMetadataReport(url2);
-        Assert.assertEquals(metadataReport1, metadataReport2);
+        Assertions.assertEquals(metadataReport1, metadataReport2);
     }
 
     @Test
@@ -80,7 +80,7 @@ public class AbstractMetadataReportFactoryTest {
         URL url2 = URL.valueOf("zookeeper://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService2?version=1.0.0&application=vic");
         MetadataReport metadataReport1 = metadataReportFactory.getMetadataReport(url1);
         MetadataReport metadataReport2 = metadataReportFactory.getMetadataReport(url2);
-        Assert.assertEquals(metadataReport1, metadataReport2);
+        Assertions.assertEquals(metadataReport1, metadataReport2);
     }
 
     @Test
@@ -89,6 +89,6 @@ public class AbstractMetadataReportFactoryTest {
         URL url2 = URL.valueOf("zookeeper://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic&group=bbb");
         MetadataReport metadataReport1 = metadataReportFactory.getMetadataReport(url1);
         MetadataReport metadataReport2 = metadataReportFactory.getMetadataReport(url2);
-        Assert.assertNotEquals(metadataReport1, metadataReport2);
+        Assertions.assertNotEquals(metadataReport1, metadataReport2);
     }
 }

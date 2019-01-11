@@ -23,8 +23,8 @@ import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 
-import junit.framework.TestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * <p>
  * mvn clean test -Dtest=*PerformanceClientTest -Dserver=10.20.153.187:9911
  */
-public class PerformanceClientTest extends TestCase {
+public class PerformanceClientTest  {
 
     private static final Logger logger = LoggerFactory.getLogger(PerformanceClientTest.class);
 

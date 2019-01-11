@@ -25,13 +25,13 @@ import com.alibaba.dubbo.config.ReferenceConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.ServiceConfig;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class ConfigTest {
 
-    @Before
+    @BeforeEach
     public void setup() {
         // In IDE env, make sure adding the following argument to VM options
         System.setProperty("java.net.preferIPv4Stack", "true");
@@ -52,6 +52,6 @@ public class ConfigTest {
         reference.setInterface(DemoService.class);
         DemoService demoService = reference.get();
         String message = demoService.sayHello("dubbo");
-        Assert.assertEquals("hello dubbo", message);
+        Assertions.assertEquals("hello dubbo", message);
     }
 }

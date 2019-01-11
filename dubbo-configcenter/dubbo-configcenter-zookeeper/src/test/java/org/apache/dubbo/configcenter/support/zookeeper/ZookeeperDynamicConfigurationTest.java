@@ -28,10 +28,10 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.test.TestingServer;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,7 +48,7 @@ public class ZookeeperDynamicConfigurationTest {
     private static TestingServer zkServer;
     private static DynamicConfiguration configuration;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws Exception {
         zkServer = new TestingServer(zkServerPort, true);
 
@@ -72,7 +72,7 @@ public class ZookeeperDynamicConfigurationTest {
         configuration = ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getExtension(configUrl.getProtocol()).getDynamicConfiguration(configUrl);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws Exception {
         zkServer.stop();
     }
@@ -86,8 +86,8 @@ public class ZookeeperDynamicConfigurationTest {
 
     @Test
     public void testGetConfig() throws Exception {
-        Assert.assertEquals("Never change value from configurators", configuration.getConfig("never.change.DemoService.configurators"));
-        Assert.assertEquals("The content from dubbo.properties", configuration.getConfig("dubbo.properties", "dubbo"));
+        Assertions.assertEquals("Never change value from configurators", configuration.getConfig("never.change.DemoService.configurators"));
+        Assertions.assertEquals("The content from dubbo.properties", configuration.getConfig("dubbo.properties", "dubbo"));
     }
 
     @Test
@@ -111,15 +111,15 @@ public class ZookeeperDynamicConfigurationTest {
         Thread.sleep(5000);
 
         latch.await();
-        Assert.assertEquals(1, listener1.getCount("group*service:version.configurators"));
-        Assert.assertEquals(1, listener2.getCount("group*service:version.configurators"));
-        Assert.assertEquals(1, listener3.getCount("appname.tagrouters"));
-        Assert.assertEquals(1, listener4.getCount("appname.tagrouters"));
+        Assertions.assertEquals(1, listener1.getCount("group*service:version.configurators"));
+        Assertions.assertEquals(1, listener2.getCount("group*service:version.configurators"));
+        Assertions.assertEquals(1, listener3.getCount("appname.tagrouters"));
+        Assertions.assertEquals(1, listener4.getCount("appname.tagrouters"));
 
-        Assert.assertEquals("new value1", listener1.getValue());
-        Assert.assertEquals("new value1", listener2.getValue());
-        Assert.assertEquals("new value2", listener3.getValue());
-        Assert.assertEquals("new value2", listener4.getValue());
+        Assertions.assertEquals("new value1", listener1.getValue());
+        Assertions.assertEquals("new value1", listener2.getValue());
+        Assertions.assertEquals("new value2", listener3.getValue());
+        Assertions.assertEquals("new value2", listener4.getValue());
     }
 
     private class TestListener implements ConfigurationListener {
