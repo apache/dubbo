@@ -37,18 +37,18 @@ public class RandomLoadBalance extends AbstractLoadBalance {
         // Every invoker has the same weight?
         boolean sameWeight = true;
         // the weight of every invokers
-        int[] weights = new int[length];
+        int[] weightArr = new int[length + 1];
         // the first invoker's weight
         int firstWeight = getWeight(invokers.get(0), invocation);
-        weights[0] = firstWeight;
+        weightArr[0] = 0;
+        weightArr[1] = firstWeight;
         // The sum of weights
         int totalWeight = firstWeight;
         for (int i = 1; i < length; i++) {
             int weight = getWeight(invokers.get(i), invocation);
-            // save for later use
-            weights[i] = weight;
             // Sum
             totalWeight += weight;
+            weightArr[i + 1] = totalWeight;
             if (sameWeight && weight != firstWeight) {
                 sameWeight = false;
             }
@@ -57,10 +57,25 @@ public class RandomLoadBalance extends AbstractLoadBalance {
             // If (not every invoker has the same weight & at least one invoker's weight>0), select randomly based on totalWeight.
             int offset = ThreadLocalRandom.current().nextInt(totalWeight);
             // Return a invoker based on the random value.
-            for (int i = 0; i < length; i++) {
-                offset -= weights[i];
-                if (offset < 0) {
-                    return invokers.get(i);
+            int low = 0, high = length, mid;
+            //binary search
+            while (low <= high) {
+                mid = (low + high) / 2;
+                if (offset == weightArr[mid]) {
+                    while (mid + 1 <= length && weightArr[mid + 1] == offset) {
+                        mid++;
+                    }
+                    return invokers.get(mid);
+                }
+                if (mid != length && offset > weightArr[mid] && offset < weightArr[mid + 1]) {
+                    return invokers.get(mid);
+                }
+                if (offset < weightArr[mid]) {
+                    high = mid - 1;
+                    continue;
+                }
+                if (offset > weightArr[mid]) {
+                    low = mid + 1;
                 }
             }
         }
