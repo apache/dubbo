@@ -376,7 +376,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             return null;
         }
         Map<String, String> map = new HashMap<String, String>();
-        map.put(APPLICATION_KEY, application.getName());
         appendParameters(map, metadataReportConfig);
         return UrlUtils.parseURL(address, map);
     }
