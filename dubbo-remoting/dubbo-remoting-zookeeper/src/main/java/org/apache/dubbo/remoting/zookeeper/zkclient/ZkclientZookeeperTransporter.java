@@ -20,12 +20,10 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.support.AbstractZookeeperTransporter;
 
-import java.util.Set;
-
 public class ZkclientZookeeperTransporter extends AbstractZookeeperTransporter {
 
-    public ZookeeperClient createZookeeperClient(URL url, Set<URL> originalURLs) {
-        return new ZkclientZookeeperClient(url, originalURLs);
+    public ZookeeperClient createZookeeperClient(URL url) {
+        return new ZkclientZookeeperClient(url);
     }
 
 }

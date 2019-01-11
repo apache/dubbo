@@ -16,6 +16,10 @@
  */
 package org.apache.dubbo.remoting.zookeeper.zkclient;
 
+import org.I0Itec.zkclient.IZkChildListener;
+import org.I0Itec.zkclient.IZkStateListener;
+import org.I0Itec.zkclient.exception.ZkNoNodeException;
+import org.I0Itec.zkclient.exception.ZkNodeExistsException;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
@@ -23,15 +27,9 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.zookeeper.ChildListener;
 import org.apache.dubbo.remoting.zookeeper.StateListener;
 import org.apache.dubbo.remoting.zookeeper.support.AbstractZookeeperClient;
-
-import org.I0Itec.zkclient.IZkChildListener;
-import org.I0Itec.zkclient.IZkStateListener;
-import org.I0Itec.zkclient.exception.ZkNoNodeException;
-import org.I0Itec.zkclient.exception.ZkNodeExistsException;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
 
 import java.util.List;
-import java.util.Set;
 
 public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildListener> {
 
@@ -42,11 +40,7 @@ public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildLis
     private volatile KeeperState state = KeeperState.SyncConnected;
 
     public ZkclientZookeeperClient(URL url) {
-        this(url, null);
-    }
-
-    public ZkclientZookeeperClient(URL url, Set<URL> sourceURLs) {
-        super(url, sourceURLs);
+        super(url);
         long timeout = url.getParameter(Constants.TIMEOUT_KEY, 30000L);
         client = new ZkClientWrapper(url.getBackupAddress(), timeout);
         client.addListener(new IZkStateListener() {
@@ -67,7 +61,6 @@ public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildLis
         });
         client.start();
     }
-
 
     @Override
     public void createPersistent(String path) {

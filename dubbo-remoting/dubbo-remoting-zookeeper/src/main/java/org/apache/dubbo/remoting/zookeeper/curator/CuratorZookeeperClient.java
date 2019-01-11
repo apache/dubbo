@@ -35,9 +35,7 @@ import org.apache.zookeeper.WatchedEvent;
 
 import java.nio.charset.Charset;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatcher> {
 
@@ -46,11 +44,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
 
 
     public CuratorZookeeperClient(URL url) {
-        this(url, new HashSet<URL>());
-    }
-
-    public CuratorZookeeperClient(URL url, Set<URL> sourceURLs) {
-        super(url, sourceURLs);
+        super(url);
         try {
             int timeout = url.getParameter(Constants.TIMEOUT_KEY, 5000);
             CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()

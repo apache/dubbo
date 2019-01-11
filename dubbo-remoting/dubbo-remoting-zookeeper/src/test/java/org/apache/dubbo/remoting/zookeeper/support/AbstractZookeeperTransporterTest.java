@@ -35,7 +35,7 @@ import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
 
 /**
- * 2019/1/10
+ * AbstractZookeeperTransporterTest
  */
 public class AbstractZookeeperTransporterTest {
     private TestingServer zkServer;
@@ -119,10 +119,8 @@ public class AbstractZookeeperTransporterTest {
 
         URL url = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort + "/org.apache.dubbo.registry.RegistryService?backup=127.0.0.1:" + zkServerPort3 + ",127.0.0.1:" + zkServerPort2 + "&application=metadatareport-local-xml-provider2&dubbo=2.0.2&interface=org.apache.dubbo.registry.RegistryService&pid=47418&specVersion=2.7.0-SNAPSHOT&timestamp=1547102428828");
         ZookeeperClient newZookeeperClient = abstractZookeeperTransporter.connect(url);
-        Assert.assertEquals(abstractZookeeperTransporter.zookeeperClientMap.size(), 3);
-        Assert.assertEquals(abstractZookeeperTransporter.zookeeperClientMap.get("127.0.0.1:" + zkServerPort).zookeeperClient, newZookeeperClient);
-        Assert.assertTrue(abstractZookeeperTransporter.zookeeperClientMap.get("127.0.0.1:" + zkServerPort).originalURLs.contains(url));
-        Assert.assertTrue(abstractZookeeperTransporter.zookeeperClientMap.get("127.0.0.1:" + zkServerPort).originalURLs.size() == 1);
+        Assert.assertEquals(abstractZookeeperTransporter.getZookeeperClientMap().size(), 3);
+        Assert.assertEquals(abstractZookeeperTransporter.getZookeeperClientMap().get("127.0.0.1:" + zkServerPort), newZookeeperClient);
 
         URL url2 = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort + "/org.apache.dubbo.metadata.store.MetadataReport?address=zookeeper://127.0.0.1:2181&application=metadatareport-local-xml-provider2&cycle-report=false&interface=org.apache.dubbo.metadata.store.MetadataReport&retry-period=4590&retry-times=23&sync-report=true");
         checkFetchAndUpdateCacheNotNull(url2);
@@ -135,8 +133,8 @@ public class AbstractZookeeperTransporterTest {
 
     private void checkFetchAndUpdateCacheNotNull(URL url) {
         List<String> addressList = abstractZookeeperTransporter.getURLBackupAddress(url);
-        ZookeeperClientData zookeeperClientData = abstractZookeeperTransporter.fetchAndUpdateZookeeperClientCache(url, addressList);
-        Assert.assertNotNull(zookeeperClientData);
+        ZookeeperClient zookeeperClient = abstractZookeeperTransporter.fetchAndUpdateZookeeperClientCache(url, addressList);
+        Assert.assertNotNull(zookeeperClient);
     }
 
     @Test
@@ -144,17 +142,13 @@ public class AbstractZookeeperTransporterTest {
         URL url = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort + "/org.apache.dubbo.registry.RegistryService?application=metadatareport-local-xml-provider2&dubbo=2.0.2&interface=org.apache.dubbo.registry.RegistryService&pid=47418&specVersion=2.7.0-SNAPSHOT&timestamp=1547102428828");
         URL url2 = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort + "/org.apache.dubbo.metadata.store.MetadataReport?address=zookeeper://127.0.0.1:2181&application=metadatareport-local-xml-provider2&cycle-report=false&interface=org.apache.dubbo.metadata.store.MetadataReport&retry-period=4590&retry-times=23&sync-report=true");
         ZookeeperClient newZookeeperClient = abstractZookeeperTransporter.connect(url);
-        Assert.assertEquals(abstractZookeeperTransporter.zookeeperClientMap.size(), 1);
-        Assert.assertEquals(abstractZookeeperTransporter.zookeeperClientMap.get("127.0.0.1:" + zkServerPort).zookeeperClient, newZookeeperClient);
-        Assert.assertTrue(abstractZookeeperTransporter.zookeeperClientMap.get("127.0.0.1:" + zkServerPort).originalURLs.contains(url));
-        Assert.assertTrue(abstractZookeeperTransporter.zookeeperClientMap.get("127.0.0.1:" + zkServerPort).originalURLs.size() == 1);
+        Assert.assertEquals(abstractZookeeperTransporter.getZookeeperClientMap().size(), 1);
+        Assert.assertEquals(abstractZookeeperTransporter.getZookeeperClientMap().get("127.0.0.1:" + zkServerPort), newZookeeperClient);
 
         ZookeeperClient newZookeeperClient2 = abstractZookeeperTransporter.connect(url2);
         Assert.assertEquals(newZookeeperClient, newZookeeperClient2);
-        Assert.assertEquals(abstractZookeeperTransporter.zookeeperClientMap.size(), 1);
-        Assert.assertEquals(abstractZookeeperTransporter.zookeeperClientMap.get("127.0.0.1:" + zkServerPort).zookeeperClient, newZookeeperClient);
-        Assert.assertTrue(abstractZookeeperTransporter.zookeeperClientMap.get("127.0.0.1:" + zkServerPort).originalURLs.contains(url2));
-        Assert.assertTrue(abstractZookeeperTransporter.zookeeperClientMap.get("127.0.0.1:" + zkServerPort).originalURLs.size() == 2);
+        Assert.assertEquals(abstractZookeeperTransporter.getZookeeperClientMap().size(), 1);
+        Assert.assertEquals(abstractZookeeperTransporter.getZookeeperClientMap().get("127.0.0.1:" + zkServerPort), newZookeeperClient);
     }
 
     @Test
@@ -165,17 +159,13 @@ public class AbstractZookeeperTransporterTest {
         URL url = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort + "/org.apache.dubbo.registry.RegistryService?application=metadatareport-local-xml-provider2&dubbo=2.0.2&interface=org.apache.dubbo.registry.RegistryService&pid=47418&specVersion=2.7.0-SNAPSHOT&timestamp=1547102428828");
         URL url2 = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort2 + "/org.apache.dubbo.metadata.store.MetadataReport?address=zookeeper://127.0.0.1:2181&application=metadatareport-local-xml-provider2&cycle-report=false&interface=org.apache.dubbo.metadata.store.MetadataReport&retry-period=4590&retry-times=23&sync-report=true");
         ZookeeperClient newZookeeperClient = abstractZookeeperTransporter.connect(url);
-        Assert.assertEquals(abstractZookeeperTransporter.zookeeperClientMap.size(), 1);
-        Assert.assertEquals(abstractZookeeperTransporter.zookeeperClientMap.get("127.0.0.1:" + zkServerPort).zookeeperClient, newZookeeperClient);
-        Assert.assertTrue(abstractZookeeperTransporter.zookeeperClientMap.get("127.0.0.1:" + zkServerPort).originalURLs.contains(url));
-        Assert.assertTrue(abstractZookeeperTransporter.zookeeperClientMap.get("127.0.0.1:" + zkServerPort).originalURLs.size() == 1);
+        Assert.assertEquals(abstractZookeeperTransporter.getZookeeperClientMap().size(), 1);
+        Assert.assertEquals(abstractZookeeperTransporter.getZookeeperClientMap().get("127.0.0.1:" + zkServerPort), newZookeeperClient);
 
         ZookeeperClient newZookeeperClient2 = abstractZookeeperTransporter.connect(url2);
         Assert.assertNotEquals(newZookeeperClient, newZookeeperClient2);
-        Assert.assertEquals(abstractZookeeperTransporter.zookeeperClientMap.size(), 2);
-        Assert.assertEquals(abstractZookeeperTransporter.zookeeperClientMap.get("127.0.0.1:" + zkServerPort2).zookeeperClient, newZookeeperClient2);
-        Assert.assertTrue(abstractZookeeperTransporter.zookeeperClientMap.get("127.0.0.1:" + zkServerPort2).originalURLs.contains(url2));
-        Assert.assertTrue(abstractZookeeperTransporter.zookeeperClientMap.get("127.0.0.1:" + zkServerPort2).originalURLs.size() == 1);
+        Assert.assertEquals(abstractZookeeperTransporter.getZookeeperClientMap().size(), 2);
+        Assert.assertEquals(abstractZookeeperTransporter.getZookeeperClientMap().get("127.0.0.1:" + zkServerPort2), newZookeeperClient2);
 
         zkServer2.stop();
     }
@@ -191,17 +181,13 @@ public class AbstractZookeeperTransporterTest {
         URL url = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort + "/org.apache.dubbo.registry.RegistryService?backup=127.0.0.1:" + zkServerPort2 + "&application=metadatareport-local-xml-provider2&dubbo=2.0.2&interface=org.apache.dubbo.registry.RegistryService&pid=47418&specVersion=2.7.0-SNAPSHOT&timestamp=1547102428828");
         URL url2 = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort2 + "/org.apache.dubbo.metadata.store.MetadataReport?backup=127.0.0.1:" + zkServerPort3 + "&address=zookeeper://127.0.0.1:2181&application=metadatareport-local-xml-provider2&cycle-report=false&interface=org.apache.dubbo.metadata.store.MetadataReport&retry-period=4590&retry-times=23&sync-report=true");
         ZookeeperClient newZookeeperClient = abstractZookeeperTransporter.connect(url);
-        Assert.assertEquals(abstractZookeeperTransporter.zookeeperClientMap.size(), 2);
-        Assert.assertEquals(abstractZookeeperTransporter.zookeeperClientMap.get("127.0.0.1:" + zkServerPort).zookeeperClient, newZookeeperClient);
-        Assert.assertTrue(abstractZookeeperTransporter.zookeeperClientMap.get("127.0.0.1:" + zkServerPort).originalURLs.contains(url));
-        Assert.assertTrue(abstractZookeeperTransporter.zookeeperClientMap.get("127.0.0.1:" + zkServerPort).originalURLs.size() == 1);
+        Assert.assertEquals(abstractZookeeperTransporter.getZookeeperClientMap().size(), 2);
+        Assert.assertEquals(abstractZookeeperTransporter.getZookeeperClientMap().get("127.0.0.1:" + zkServerPort), newZookeeperClient);
 
         ZookeeperClient newZookeeperClient2 = abstractZookeeperTransporter.connect(url2);
         Assert.assertEquals(newZookeeperClient, newZookeeperClient2);
-        Assert.assertEquals(abstractZookeeperTransporter.zookeeperClientMap.size(), 3);
-        Assert.assertEquals(abstractZookeeperTransporter.zookeeperClientMap.get("127.0.0.1:" + zkServerPort2).zookeeperClient, newZookeeperClient2);
-        Assert.assertTrue(abstractZookeeperTransporter.zookeeperClientMap.get("127.0.0.1:" + zkServerPort2).originalURLs.contains(url2));
-        Assert.assertEquals(abstractZookeeperTransporter.zookeeperClientMap.get("127.0.0.1:" + zkServerPort2).originalURLs.size(), 2);
+        Assert.assertEquals(abstractZookeeperTransporter.getZookeeperClientMap().size(), 3);
+        Assert.assertEquals(abstractZookeeperTransporter.getZookeeperClientMap().get("127.0.0.1:" + zkServerPort2), newZookeeperClient2);
 
         zkServer2.stop();
         zkServer3.stop();
@@ -218,17 +204,13 @@ public class AbstractZookeeperTransporterTest {
         URL url = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort + "/org.apache.dubbo.registry.RegistryService?backup=127.0.0.1:" + zkServerPort3 + "&application=metadatareport-local-xml-provider2&dubbo=2.0.2&interface=org.apache.dubbo.registry.RegistryService&pid=47418&specVersion=2.7.0-SNAPSHOT&timestamp=1547102428828");
         URL url2 = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort2 + "/org.apache.dubbo.metadata.store.MetadataReport?address=zookeeper://127.0.0.1:2181&application=metadatareport-local-xml-provider2&cycle-report=false&interface=org.apache.dubbo.metadata.store.MetadataReport&retry-period=4590&retry-times=23&sync-report=true");
         ZookeeperClient newZookeeperClient = abstractZookeeperTransporter.connect(url);
-        Assert.assertEquals(abstractZookeeperTransporter.zookeeperClientMap.size(), 2);
-        Assert.assertEquals(abstractZookeeperTransporter.zookeeperClientMap.get("127.0.0.1:" + zkServerPort).zookeeperClient, newZookeeperClient);
-        Assert.assertTrue(abstractZookeeperTransporter.zookeeperClientMap.get("127.0.0.1:" + zkServerPort).originalURLs.contains(url));
-        Assert.assertTrue(abstractZookeeperTransporter.zookeeperClientMap.get("127.0.0.1:" + zkServerPort).originalURLs.size() == 1);
+        Assert.assertEquals(abstractZookeeperTransporter.getZookeeperClientMap().size(), 2);
+        Assert.assertEquals(abstractZookeeperTransporter.getZookeeperClientMap().get("127.0.0.1:" + zkServerPort), newZookeeperClient);
 
         ZookeeperClient newZookeeperClient2 = abstractZookeeperTransporter.connect(url2);
         Assert.assertNotEquals(newZookeeperClient, newZookeeperClient2);
-        Assert.assertEquals(abstractZookeeperTransporter.zookeeperClientMap.size(), 3);
-        Assert.assertEquals(abstractZookeeperTransporter.zookeeperClientMap.get("127.0.0.1:" + zkServerPort2).zookeeperClient, newZookeeperClient2);
-        Assert.assertTrue(abstractZookeeperTransporter.zookeeperClientMap.get("127.0.0.1:" + zkServerPort2).originalURLs.contains(url2));
-        Assert.assertEquals(abstractZookeeperTransporter.zookeeperClientMap.get("127.0.0.1:" + zkServerPort2).originalURLs.size(), 1);
+        Assert.assertEquals(abstractZookeeperTransporter.getZookeeperClientMap().size(), 3);
+        Assert.assertEquals(abstractZookeeperTransporter.getZookeeperClientMap().get("127.0.0.1:" + zkServerPort2), newZookeeperClient2);
 
         zkServer2.stop();
         zkServer3.stop();

@@ -20,7 +20,6 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
@@ -29,15 +28,16 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 2019/1/10
+ * AbstractZookeeperTransporter is abstract implements of ZookeeperTransporter.
+ * <p>
+ * If you want to extends this, implements createZookeeperClient.
  */
 public abstract class AbstractZookeeperTransporter implements ZookeeperTransporter {
-    static final Logger logger = LoggerFactory.getLogger(ZookeeperTransporter.class);
-    Map<String, ZookeeperClientData> zookeeperClientMap = new ConcurrentHashMap<>();
+    private static final Logger logger = LoggerFactory.getLogger(ZookeeperTransporter.class);
+    private final Map<String, ZookeeperClient> zookeeperClientMap = new ConcurrentHashMap<>();
 
     /**
      * share connnect for registry, metadata, etc..
@@ -46,44 +46,39 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
      * @return
      */
     public ZookeeperClient connect(URL url) {
-        ZookeeperClientData clientData;
+        ZookeeperClient clientData;
         List<String> addressList = getURLBackupAddress(url);
         // The field define the zookeeper server , including protocol, host, port, username, password
         if ((clientData = fetchAndUpdateZookeeperClientCache(url, addressList)) != null) {
-            logger.info("ZookeeperTransporter.connnect result from map:" + clientData);
-            return clientData.getZookeeperClient();
+            logger.info("Get result from map for the first time when invoking zookeeperTransporter.connnect");
+            return clientData;
         }
         ZookeeperClient zookeeperClient = null;
         // avoid creating too many connections， so add lock
         synchronized (zookeeperClientMap) {
             if ((clientData = fetchAndUpdateZookeeperClientCache(url, addressList)) != null) {
-                logger.info("ZookeeperTransporter.connnect result from map2:" + clientData);
-                return clientData.getZookeeperClient();
+                logger.info("Get result from map for the second time when invoking zookeeperTransporter.connnect");
+                return clientData;
             }
 
-            Set<URL> originalURLs = new ConcurrentHashSet<>(2);
-            originalURLs.add(url);
-            zookeeperClient = createZookeeperClient(createServerURL(url), originalURLs);
-
-            ZookeeperClientData zookeeperClientData = new ZookeeperClientData(zookeeperClient, originalURLs);
-            logger.info("ZookeeperTransporter.connnect result from new connection. " + clientData);
-
-            writeToClientMap(addressList, zookeeperClientData);
+            zookeeperClient = createZookeeperClient(createServerURL(url));
+            logger.info("Get result by creating new connection when invoking zookeeperTransporter.connnect. ");
+            writeToClientMap(addressList, zookeeperClient);
         }
         return zookeeperClient;
     }
 
     /**
-     * @param url          the url that will create zookeeper connection . The url in org.apache.dubbo.remoting.zookeeper.support.AbstractZookeeperTransporter#connect(org.apache.dubbo.common.URL) parameter is rewritten by this one.
-     *                     such as: zookeeper://127.0.0.1:2181/org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter
-     * @param originalURLs the source invoked url collections (it is org.apache.dubbo.remoting.zookeeper.support.AbstractZookeeperTransporter#connect paramter). such as : zookeeper://127.0.0.1:2181/org.apache.dubbo.registry.RegistryService?application=metadatareport-local-xml-provider2&dubbo=2.0.2&interface=org.apache.dubbo.registry.RegistryService&pid=47418&specVersion=2.7.0-SNAPSHOT
+     * @param url the url that will create zookeeper connection .
+     *            The url in AbstractZookeeperTransporter#connect parameter is rewritten by this one.
+     *            such as: zookeeper://127.0.0.1:2181/org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter
      * @return
      */
-    protected abstract ZookeeperClient createZookeeperClient(URL url, Set<URL> originalURLs);
+    protected abstract ZookeeperClient createZookeeperClient(URL url);
 
-    ZookeeperClientData fetchAndUpdateZookeeperClientCache(URL url, List<String> addressList) {
+    ZookeeperClient fetchAndUpdateZookeeperClientCache(URL url, List<String> addressList) {
 
-        ZookeeperClientData zookeeperClientData = null;
+        ZookeeperClient zookeeperClientData = null;
         for (String address : addressList) {
             if ((zookeeperClientData = zookeeperClientMap.get(address)) != null) {
                 break;
@@ -91,7 +86,6 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
         }
         if (zookeeperClientData != null) {
             writeToClientMap(addressList, zookeeperClientData);
-            zookeeperClientData.fillOriginalURL(url);
         }
         return zookeeperClientData;
     }
@@ -109,11 +103,11 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
      * write address-ZookeeperClient relationship to Map
      *
      * @param addressList
-     * @param zookeeperClientData
+     * @param ZookeeperClient
      */
-    void writeToClientMap(List<String> addressList, ZookeeperClientData zookeeperClientData) {
+    void writeToClientMap(List<String> addressList, ZookeeperClient ZookeeperClient) {
         for (String address : addressList) {
-            zookeeperClientMap.put(address, zookeeperClientData);
+            zookeeperClientMap.put(address, ZookeeperClient);
         }
     }
 
@@ -132,7 +126,16 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
         if (url.getParameter(Constants.BACKUP_KEY) != null) {
             parameterMap.put(Constants.BACKUP_KEY, url.getParameter(Constants.BACKUP_KEY));
         }
-        return new URL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), ZookeeperTransporter.class.getName(), parameterMap);
+        return new URL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(),
+                ZookeeperTransporter.class.getName(), parameterMap);
     }
 
+    /**
+     * for unit test
+     *
+     * @return
+     */
+    Map<String, ZookeeperClient> getZookeeperClientMap() {
+        return zookeeperClientMap;
+    }
 }

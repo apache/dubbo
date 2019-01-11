@@ -73,6 +73,7 @@ public class MetadataReportConfig extends AbstractConfig {
         setAddress(address);
     }
 
+    @Parameter(excluded = true)
     public String getAddress() {
         return address;
     }
