@@ -29,7 +29,7 @@ import java.util.function.Function;
  *
  * <p>
  * You should never rely on this class directly when using or extending Dubbo, the implementation of {@link AsyncRpcResult}
- * is only a workaround for compatibility purpose. It may be changed or even get removed from the next version.
+ * is only a workaround for compatibility purpose. It may be changed or even get removed from the next major version.
  * Please only use {@link Result} or {@link RpcResult}.
  *
  * Extending the {@link Filter} is one typical use case:
@@ -147,19 +147,15 @@ public class AsyncRpcResult extends AbstractResult {
     }
 
     public Result getRpcResult() {
-        Result result;
         try {
             if (resultFuture.isDone()) {
-                result = resultFuture.get();
-            } else {
-                result = new RpcResult();
+                return resultFuture.get();
             }
         } catch (Exception e) {
             // This should never happen;
-            logger.error("Got exception when trying to fetch the underlying result of AsyncRpcResult.", e);
-            result = new RpcResult();
+            logger.error("Got exception when trying to fetch the underlying result from AsyncRpcResult.", e);
         }
-        return result;
+        return new RpcResult();
     }
 
     @Override

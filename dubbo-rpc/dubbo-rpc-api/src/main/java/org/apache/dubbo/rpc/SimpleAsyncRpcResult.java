@@ -25,7 +25,7 @@ import java.util.concurrent.CompletableFuture;
  *
  * <p>
  * You should never rely on this class directly when using or extending Dubbo, the implementation of {@link SimpleAsyncRpcResult}
- * is only a workaround for compatibility purpose. It may be changed or even get removed from the next version.
+ * is only a workaround for compatibility purpose. It may be changed or even get removed from the next major version.
  * Please only use {@link Result} or {@link RpcResult}.
  * </p>
  *
