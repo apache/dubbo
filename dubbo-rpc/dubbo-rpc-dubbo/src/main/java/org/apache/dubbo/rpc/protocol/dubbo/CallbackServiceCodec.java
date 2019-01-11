@@ -77,7 +77,7 @@ class CallbackServiceCodec {
      * @throws IOException
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static String exportOrunexportCallbackService(Channel channel, URL url, Class clazz, Object inst, Boolean export) throws IOException {
+    private static String exportOrUnexportCallbackService(Channel channel, URL url, Class clazz, Object inst, Boolean export) throws IOException {
         int instid = System.identityHashCode(inst);
 
         Map<String, String> params = new HashMap<String, String>(3);
@@ -252,10 +252,10 @@ class CallbackServiceCodec {
             case CallbackServiceCodec.CALLBACK_NONE:
                 return args[paraIndex];
             case CallbackServiceCodec.CALLBACK_CREATE:
-                inv.setAttachment(INV_ATT_CALLBACK_KEY + paraIndex, exportOrunexportCallbackService(channel, url, pts[paraIndex], args[paraIndex], true));
+                inv.setAttachment(INV_ATT_CALLBACK_KEY + paraIndex, exportOrUnexportCallbackService(channel, url, pts[paraIndex], args[paraIndex], true));
                 return null;
             case CallbackServiceCodec.CALLBACK_DESTROY:
-                inv.setAttachment(INV_ATT_CALLBACK_KEY + paraIndex, exportOrunexportCallbackService(channel, url, pts[paraIndex], args[paraIndex], false));
+                inv.setAttachment(INV_ATT_CALLBACK_KEY + paraIndex, exportOrUnexportCallbackService(channel, url, pts[paraIndex], args[paraIndex], false));
                 return null;
             default:
                 return args[paraIndex];
