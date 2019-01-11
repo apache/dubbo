@@ -110,7 +110,7 @@ class CallbackServiceCodec {
                     Exporter<?> exporter = protocol.export(invoker);
                     // this is used for tracing if instid has published service or not.
                     channel.setAttribute(cacheKey, exporter);
-                    logger.info("export a callback service :" + exportUrl + ", on " + channel + ", url is: " + url);
+                    logger.info("Exporter a callback service :" + exportUrl + ", on " + channel + ", url is: " + url);
                     increaseInstanceCount(channel, countKey);
                 }
             }
