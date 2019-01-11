@@ -29,6 +29,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+/**
+ * Protostuff object output implementation
+ */
 public class ProtostuffObjectOutput implements ObjectOutput {
 
     private LinkedBuffer buffer = LinkedBuffer.allocate();
