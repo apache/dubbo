@@ -20,23 +20,24 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 2019/1/10
  */
 public abstract class AbstractZookeeperTransporter implements ZookeeperTransporter {
     static final Logger logger = LoggerFactory.getLogger(ZookeeperTransporter.class);
-    Map<String, ZookeeperClientData> zookeeperClientMap = new HashMap<String, ZookeeperClientData>();
+    Map<String, ZookeeperClientData> zookeeperClientMap = new ConcurrentHashMap<>();
 
     /**
      * share connnect for registry, metadata, etc..
@@ -53,13 +54,14 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
             return clientData.getZookeeperClient();
         }
         ZookeeperClient zookeeperClient = null;
+        // avoid creating too many connections， so add lock
         synchronized (zookeeperClientMap) {
             if ((clientData = fetchAndUpdateZookeeperClientCache(url, addressList)) != null) {
                 logger.info("ZookeeperTransporter.connnect result from map2:" + clientData);
                 return clientData.getZookeeperClient();
             }
 
-            Set<URL> originalURLs = new HashSet<>(2);
+            Set<URL> originalURLs = new ConcurrentHashSet<>(2);
             originalURLs.add(url);
             zookeeperClient = createZookeeperClient(createServerURL(url), originalURLs);
 
