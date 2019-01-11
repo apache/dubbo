@@ -35,6 +35,7 @@ import org.apache.zookeeper.WatchedEvent;
 
 import java.nio.charset.Charset;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -42,6 +43,11 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
 
     private final Charset charset = Charset.forName("UTF-8");
     private final CuratorFramework client;
+
+
+    public CuratorZookeeperClient(URL url) {
+        this(url, new HashSet<URL>());
+    }
 
     public CuratorZookeeperClient(URL url, Set<URL> sourceURLs) {
         super(url, sourceURLs);
@@ -72,10 +78,6 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
-    }
-
-    public CuratorZookeeperClient(URL url) {
-        this(url, null);
     }
 
     @Override
@@ -161,10 +163,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
     public String doGetContent(String path) {
         try {
             byte[] dataBytes = client.getData().forPath(path);
-            if (dataBytes == null || dataBytes.length == 0) {
-                return null;
-            }
-            return new String(dataBytes, charset);
+            return (dataBytes == null || dataBytes.length == 0) ? null : new String(dataBytes, charset);
         } catch (NodeExistsException e) {
         } catch (NoNodeException e) {
         } catch (Exception e) {
