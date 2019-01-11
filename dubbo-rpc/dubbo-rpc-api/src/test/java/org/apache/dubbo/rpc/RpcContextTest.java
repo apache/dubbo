@@ -142,12 +142,10 @@ public class RpcContextTest {
     @Test
     public void testAsync() {
 
-        AsyncContext asyncContext = new AsyncContextImpl();
-
         RpcContext rpcContext = RpcContext.getContext();
         Assert.assertFalse(rpcContext.isAsyncStarted());
 
-        RpcContext.startAsync();
+        AsyncContext asyncContext = RpcContext.startAsync();
         Assert.assertTrue(rpcContext.isAsyncStarted());
 
         asyncContext.write(new Object());
