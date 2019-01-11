@@ -245,10 +245,10 @@ class CallbackServiceCodec {
     public static Object encodeInvocationArgument(Channel channel, RpcInvocation inv, int paraIndex) throws IOException {
         // get URL directly
         URL url = inv.getInvoker() == null ? null : inv.getInvoker().getUrl();
-        byte callbackstatus = isCallBack(url, inv.getMethodName(), paraIndex);
+        byte callbackStatus = isCallBack(url, inv.getMethodName(), paraIndex);
         Object[] args = inv.getArguments();
         Class<?>[] pts = inv.getParameterTypes();
-        switch (callbackstatus) {
+        switch (callbackStatus) {
             case CallbackServiceCodec.CALLBACK_NONE:
                 return args[paraIndex];
             case CallbackServiceCodec.CALLBACK_CREATE:
