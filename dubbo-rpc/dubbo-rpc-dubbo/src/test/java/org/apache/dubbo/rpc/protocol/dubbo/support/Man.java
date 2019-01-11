@@ -14,15 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.serialize;
+package org.apache.dubbo.rpc.protocol.dubbo.support;
+
+
+import java.io.Serializable;
 
 /**
- * Interface defines that the object is cleanable.
+ * Man.java
  */
-public interface Cleanable {
+public class Man implements Serializable {
 
-    /**
-     * Implementations must implement this cleanup method
-     */
-    void cleanup();
+    private static final long serialVersionUID = 1L;
+    private String name;
+    private int age;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
 }
