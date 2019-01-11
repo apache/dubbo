@@ -17,8 +17,8 @@
 package org.apache.dubbo.config.spring.context.annotation;
 
 import org.apache.dubbo.config.ApplicationConfig;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.PropertySource;
 
@@ -40,9 +40,9 @@ public class DubboConfigBindingsRegistrarTest {
 
         ApplicationConfig applicationConfig = context.getBean("applicationBean", ApplicationConfig.class);
 
-        Assert.assertEquals("dubbo-demo-application", applicationConfig.getName());
+        Assertions.assertEquals("dubbo-demo-application", applicationConfig.getName());
 
-        Assert.assertEquals(2, context.getBeansOfType(ApplicationConfig.class).size());
+        Assertions.assertEquals(2, context.getBeansOfType(ApplicationConfig.class).size());
 
     }
 

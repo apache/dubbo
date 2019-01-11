@@ -21,9 +21,9 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.zookeeper.StateListener;
 import org.I0Itec.zkclient.IZkChildListener;
 import org.apache.curator.test.TestingServer;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
@@ -31,15 +31,15 @@ import java.util.concurrent.CountDownLatch;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class ZkclientZookeeperClientTest {
     private TestingServer zkServer;
     private ZkclientZookeeperClient zkclientZookeeperClient;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         int zkServerPort = NetUtils.getAvailablePort();
         zkServer = new TestingServer(zkServerPort, true);
@@ -132,7 +132,7 @@ public class ZkclientZookeeperClientTest {
         assertEquals(zkclientZookeeperClient.getContent(path), content);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         zkclientZookeeperClient.close();
         zkServer.stop();

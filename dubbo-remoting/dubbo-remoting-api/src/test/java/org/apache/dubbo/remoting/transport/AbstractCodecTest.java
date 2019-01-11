@@ -18,19 +18,19 @@ package org.apache.dubbo.remoting.transport;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.Channel;
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Assertions;
 import org.hamcrest.CoreMatchers;
 import org.mockito.internal.verification.VerificationModeFactory;
 
 import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.allOf;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-public class AbstractCodecTest extends TestCase {
+public class AbstractCodecTest  {
 
     public void test_checkPayload_default8M() throws Exception {
         Channel channel = mock(Channel.class);

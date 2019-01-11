@@ -29,9 +29,9 @@ import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.transport.dispatcher.FakeChannelHandlers;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -42,7 +42,7 @@ public class HeartbeatHandlerTest {
     private ExchangeServer server;
     private ExchangeClient client;
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         if (client != null) {
             client.close();
@@ -72,7 +72,7 @@ public class HeartbeatHandlerTest {
 
         client = Exchangers.connect(serverURL);
         Thread.sleep(10000);
-        Assert.assertTrue(handler.disconnectCount > 0);
+        Assertions.assertTrue(handler.disconnectCount > 0);
         System.out.println("disconnect count " + handler.disconnectCount);
     }
 
@@ -88,8 +88,8 @@ public class HeartbeatHandlerTest {
         Thread.sleep(10000);
         System.err.println("++++++++++++++ disconnect count " + handler.disconnectCount);
         System.err.println("++++++++++++++ connect count " + handler.connectCount);
-        Assert.assertTrue(handler.disconnectCount == 0);
-        Assert.assertTrue(handler.connectCount == 1);
+        Assertions.assertTrue(handler.disconnectCount == 0);
+        Assertions.assertTrue(handler.connectCount == 1);
     }
 
     @Test
@@ -104,7 +104,7 @@ public class HeartbeatHandlerTest {
         serverURL = serverURL.addParameter(Constants.HEARTBEAT_KEY, 1000);
         client = Exchangers.connect(serverURL);
         Thread.sleep(10000);
-        Assert.assertTrue(handler.connectCount > 0);
+        Assertions.assertTrue(handler.connectCount > 0);
         System.out.println("connect count " + handler.connectCount);
     }
 

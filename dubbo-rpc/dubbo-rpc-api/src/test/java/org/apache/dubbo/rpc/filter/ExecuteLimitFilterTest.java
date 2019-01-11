@@ -25,8 +25,8 @@ import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.RpcStatus;
 import org.apache.dubbo.rpc.support.BlockMyInvoker;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.concurrent.CountDownLatch;
@@ -50,7 +50,7 @@ public class ExecuteLimitFilterTest {
         when(invocation.getMethodName()).thenReturn("testNoExecuteLimitInvoke");
 
         Result result = executeLimitFilter.invoke(invoker, invocation);
-        Assert.assertEquals("result", result.getValue());
+        Assertions.assertEquals("result", result.getValue());
     }
 
     @Test
@@ -63,7 +63,7 @@ public class ExecuteLimitFilterTest {
         when(invocation.getMethodName()).thenReturn("testExecuteLimitInvoke");
 
         Result result = executeLimitFilter.invoke(invoker, invocation);
-        Assert.assertEquals("result", result.getValue());
+        Assertions.assertEquals("result", result.getValue());
     }
 
     @Test
@@ -81,9 +81,9 @@ public class ExecuteLimitFilterTest {
         try {
             executeLimitFilter.invoke(invoker, invocation);
         } catch (Exception e) {
-            Assert.assertTrue(e instanceof RpcException);
+            Assertions.assertTrue(e instanceof RpcException);
         }
-        Assert.assertEquals(1, RpcStatus.getStatus(url, invocation.getMethodName()).getFailed());
+        Assertions.assertEquals(1, RpcStatus.getStatus(url, invocation.getMethodName()).getFailed());
     }
 
     @Test
@@ -126,6 +126,6 @@ public class ExecuteLimitFilterTest {
             e.printStackTrace();
         }
 
-        Assert.assertEquals(totalExecute - maxExecute, failed.get());
+        Assertions.assertEquals(totalExecute - maxExecute, failed.get());
     }
 }
