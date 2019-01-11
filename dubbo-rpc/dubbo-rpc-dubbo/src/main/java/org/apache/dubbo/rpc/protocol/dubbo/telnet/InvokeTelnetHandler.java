@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol.dubbo.telnet;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -45,87 +44,6 @@ import static org.apache.dubbo.rpc.RpcContext.getContext;
 @Help(parameter = "[service.]method(args) [-p parameter classes]", summary = "Invoke the service method.",
         detail = "Invoke the service method.")
 public class InvokeTelnetHandler implements TelnetHandler {
-    private static Method findMethod(List<ProviderMethodModel> methods, String method, List<Object> args,
-                                     Class<?>[] paramTypes) {
-        for (ProviderMethodModel model : methods) {
-            Method m = model.getMethod();
-            if (isMatch(m, args, paramTypes, method)) {
-                return m;
-            }
-        }
-        return null;
-    }
-
-    private static boolean isMatch(Method method, List<Object> args, Class<?>[] paramClasses, String lookupMethodName) {
-        if (!method.getName().equals(lookupMethodName)) {
-            return false;
-        }
-
-        Class<?> types[] = method.getParameterTypes();
-        if (types.length != args.size()) {
-            return false;
-        }
-        for (int i = 0; i < types.length; i++) {
-            Class<?> type = types[i];
-            Object arg = args.get(i);
-
-            if (paramClasses != null && type != paramClasses[i]) {
-                return false;
-            }
-
-            if (arg == null) {
-                // if the type is primitive, the method to invoke will cause NullPointerException definitely
-                // so we can offer a specified error message to the invoker in advance and avoid unnecessary invoking
-                if (type.isPrimitive()) {
-                    throw new NullPointerException(String.format("The type of No.%d parameter is primitive(%s), " +
-                            "but the value passed is null.", i + 1, type.getName()));
-                }
-
-                // if the type is not primitive, we choose to believe what the invoker want is a null value
-                continue;
-            }
-
-            if (ReflectUtils.isPrimitive(arg.getClass())) {
-                // allow string arg to enum type, @see PojoUtils.realize0()
-                if (arg instanceof String && type.isEnum()) {
-                    continue;
-                }
-
-                if (!ReflectUtils.isPrimitive(type)) {
-                    return false;
-                }
-
-                if (!ReflectUtils.isCompatible(type, arg)) {
-                    return false;
-                }
-            } else if (arg instanceof Map) {
-                String name = (String) ((Map<?, ?>) arg).get("class");
-                if (StringUtils.isNotEmpty(name)) {
-                    Class<?> cls = ReflectUtils.forName(name);
-                    if (!type.isAssignableFrom(cls)) {
-                        return false;
-                    }
-                } else {
-                    if (arg instanceof JSONObject) {
-                        try {
-                            ((JSONObject) arg).toJavaObject(type);
-                        } catch (Exception ex) {
-                            return false;
-                        }
-                    }
-                }
-            } else if (arg instanceof Collection) {
-                if (!type.isArray() && !type.isAssignableFrom(arg.getClass())) {
-                    return false;
-                }
-            } else {
-                if (!type.isAssignableFrom(arg.getClass())) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
 
     @Override
     @SuppressWarnings("unchecked")
@@ -143,26 +61,6 @@ public class InvokeTelnetHandler implements TelnetHandler {
         }
 
         int i = message.indexOf("(");
-        String originalMessage = message;
-        Class<?>[] paramTypes = null;
-        if (message.contains("-p")) {
-            message = originalMessage.substring(0, originalMessage.indexOf("-p")).trim();
-            String paramClassesString = originalMessage.substring(originalMessage.indexOf("-p") + 2).trim();
-            if (paramClassesString.length() > 0) {
-                String[] split = paramClassesString.split("\\s+");
-                if (split.length > 0) {
-                    paramTypes = new Class[split.length];
-                    for (int j = 0; j < split.length; j++) {
-                        try {
-                            paramTypes[j] = Class.forName(split[j]);
-                        } catch (ClassNotFoundException e) {
-                            return "Unknown parameter class for name " + split[j];
-                        }
-                    }
-
-                }
-            }
-        }
 
         if (i < 0 || !message.endsWith(")")) {
             return "Invalid parameters, format: service.method(args)";
@@ -182,27 +80,17 @@ public class InvokeTelnetHandler implements TelnetHandler {
         } catch (Throwable t) {
             return "Invalid json argument, cause: " + t.getMessage();
         }
-        if (paramTypes != null) {
-            if (paramTypes.length != list.size()) {
-                return "Parameter's number does not match the number of parameter class";
-            }
-            List<Object> listOfActualClass = new ArrayList<>(list.size());
-            for (int ii = 0; ii < list.size(); ii++) {
-                if (list.get(ii) instanceof JSONObject) {
-                    JSONObject jsonObject = (JSONObject) list.get(ii);
-                    listOfActualClass.add(jsonObject.toJavaObject(paramTypes[ii]));
-                } else {
-                    listOfActualClass.add(list.get(ii));
-                }
-            }
-            list = listOfActualClass;
-        }
 
         Method invokeMethod = null;
         ProviderModel selectedProvider = null;
         for (ProviderModel provider : ApplicationModel.allProviderModels()) {
             if (isServiceMatch(service, provider)) {
-                invokeMethod = findMethod(provider.getAllMethods(), method, list, paramTypes);
+                List<Method> methodList = findSameSignatureMethod(provider.getAllMethods(), method, list);
+                try {
+                    invokeMethod = findInvokeMethod(methodList, list);
+                } catch (Throwable t) {
+                    return "Failed to invoke method " + method + ", cause: " + t.getMessage();
+                }
                 selectedProvider = provider;
                 break;
             }
@@ -240,10 +128,96 @@ public class InvokeTelnetHandler implements TelnetHandler {
         return buf.toString();
     }
 
+
     private boolean isServiceMatch(String service, ProviderModel provider) {
         return provider.getServiceName().equalsIgnoreCase(service)
                 || provider.getServiceInterfaceClass().getSimpleName().equalsIgnoreCase(service)
                 || provider.getServiceInterfaceClass().getName().equalsIgnoreCase(service)
                 || StringUtils.isEmpty(service);
     }
+
+    private List<Method> findSameSignatureMethod(List<ProviderMethodModel> methods, String lookupMethodName, List<Object> args) {
+        List<Method> sameSignatureMethods = new ArrayList<>();
+        for (ProviderMethodModel model : methods) {
+            Method method = model.getMethod();
+            if (method.getName().equals(lookupMethodName) && method.getParameterTypes().length == args.size()) {
+                sameSignatureMethods.add(method);
+            }
+        }
+        return sameSignatureMethods;
+    }
+
+
+    private Method findInvokeMethod(List<Method> methods, List<Object> args) {
+        for (Method method : methods) {
+            Class<?>[] parameterTypes = method.getParameterTypes();
+            boolean allParameterMatch = true;
+            for (int i = 0; i < parameterTypes.length; i++) {
+                Class<?> type = parameterTypes[i];
+                Object arg = args.get(i);
+
+                if (arg == null) {
+                    // if the type is primitive, the method to invoke will cause NullPointerException definitely
+                    // so we can offer a specified error message to the invoker in advance and avoid unnecessary invoking
+                    if (type.isPrimitive()) {
+                        throw new NullPointerException(String.format("The type of No.%d parameter is primitive(%s), " +
+                                "but the value passed is null.", i + 1, type.getName()));
+                    }
+
+                    // if the type is not primitive, we choose to believe what the invoker want is a null value
+                    continue;
+                }
+
+                if (ReflectUtils.isPrimitive(arg.getClass())) {
+                    // allow string arg to enum type, @see PojoUtils.realize0()
+                    if (arg instanceof String && type.isEnum()) {
+                        continue;
+                    }
+
+                    if (!ReflectUtils.isPrimitive(type)) {
+                        allParameterMatch = false;
+                        break;
+                    }
+
+                    if (!ReflectUtils.isCompatible(type, arg)) {
+                        allParameterMatch = false;
+                        break;
+                    }
+                } else if (arg instanceof Map) {
+                    String name = (String) ((Map<?, ?>) arg).get("class");
+                    if (StringUtils.isNotEmpty(name)) {
+                        Class<?> cls = ReflectUtils.forName(name);
+                        if (!type.isAssignableFrom(cls)) {
+                            allParameterMatch = false;
+                            break;
+                        }
+                    } else {
+                        if (methods.size() == 1) {
+                            continue;
+                        }
+                        throw new IllegalArgumentException("This method has same signature method," +
+                                "No." + (i + 1) + " parameter must contains key \"class\"," +
+                                "and it's value is the full name of this parameter. " +
+                                "eg: invoke xxxMethod({\"prop\" : \"value\",\"class\":\"org.apache.dubbo.demo.DemoClass\"})"
+                        );
+                    }
+                } else if (arg instanceof Collection) {
+                    if (!type.isArray() && !type.isAssignableFrom(arg.getClass())) {
+                        allParameterMatch = false;
+                        break;
+                    }
+                } else {
+                    if (!type.isAssignableFrom(arg.getClass())) {
+                        allParameterMatch = false;
+                        break;
+                    }
+                }
+            }
+            if (allParameterMatch) {
+                return method;
+            }
+        }
+        return null;
+    }
+
 }

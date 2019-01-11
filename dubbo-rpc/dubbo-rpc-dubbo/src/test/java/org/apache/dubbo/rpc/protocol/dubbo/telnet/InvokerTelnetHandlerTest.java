@@ -25,14 +25,11 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -56,7 +53,7 @@ public class InvokerTelnetHandlerTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testInvokeDefaultSService() throws RemotingException {
+    public void testInvokeDefaultService() throws RemotingException {
         mockChannel = mock(Channel.class);
         given(mockChannel.getAttribute("telnet.service")).willReturn("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService");
         given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
@@ -66,6 +63,21 @@ public class InvokerTelnetHandlerTest {
         ApplicationModel.initProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", providerModel);
 
         String result = invoke.telnet(mockChannel, "DemoService.echo(\"ok\")");
+        assertTrue(result.contains("result: \"ok\""));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testInvokeWithSpecifyService() throws RemotingException {
+        mockChannel = mock(Channel.class);
+        given(mockChannel.getAttribute("telnet.service")).willReturn(null);
+        given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
+        given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
+
+        ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", new DemoServiceImpl(), DemoService.class);
+        ApplicationModel.initProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", providerModel);
+
+        String result = invoke.telnet(mockChannel, "echo(\"ok\")");
         assertTrue(result.contains("result: \"ok\""));
     }
 
@@ -81,21 +93,11 @@ public class InvokerTelnetHandlerTest {
         ApplicationModel.initProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", providerModel);
 
         // pass null value to parameter of primitive type
-        try {
-            invoke.telnet(mockChannel, "DemoService.add(null, 2)");
-            fail("It should cause a NullPointerException by the above code.");
-        } catch (NullPointerException ex) {
-            String message = ex.getMessage();
-            assertEquals("The type of No.1 parameter is primitive(int), but the value passed is null.", message);
-        }
+        String result = invoke.telnet(mockChannel, "DemoService.add(null, 2)");
+        assertTrue(result.contains("The type of No.1 parameter is primitive(int), but the value passed is null."));
 
-        try {
-            invoke.telnet(mockChannel, "DemoService.add(1, null)");
-            fail("It should cause a NullPointerException by the above code.");
-        } catch (NullPointerException ex) {
-            String message = ex.getMessage();
-            assertEquals("The type of No.2 parameter is primitive(long), but the value passed is null.", message);
-        }
+        result = invoke.telnet(mockChannel, "DemoService.add(1, null)");
+        assertTrue(result.contains("The type of No.2 parameter is primitive(long), but the value passed is null."));
 
         // pass null value to parameter of object type
         try {
@@ -122,7 +124,7 @@ public class InvokerTelnetHandlerTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testComplexParamWithoutSpecifyParamType() throws RemotingException {
+    public void testOverriddenMethodWithSpecifyParamType() throws RemotingException {
         mockChannel = mock(Channel.class);
         given(mockChannel.getAttribute("telnet.service")).willReturn("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService");
         given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
@@ -137,69 +139,8 @@ public class InvokerTelnetHandlerTest {
         assertTrue(result.contains("result: 12"));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
-    public void testComplexParamSpecifyParamType() throws RemotingException {
-        mockChannel = mock(Channel.class);
-        given(mockChannel.getAttribute("telnet.service")).willReturn("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService");
-        given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
-        given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
-
-        ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", new DemoServiceImpl(), DemoService.class);
-        ApplicationModel.initProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", providerModel);
-
-        // pass json value to parameter of Person type and specify it's type
-        // one parameter with type of Person
-        String result = invoke.telnet(mockChannel, "DemoService.getPerson({\"name\":\"zhangsan\",\"age\":12}) -p org.apache.dubbo.rpc.protocol.dubbo.support.Person");
-        assertTrue(result.contains("result: 12"));
-
-        // two parameter with type of Person
-        result = invoke.telnet(mockChannel, "DemoService.getPerson({\"name\":\"zhangsan\",\"age\":12},{\"name\":\"lisi\",\"age\":12}) " +
-                "-p org.apache.dubbo.rpc.protocol.dubbo.support.Person " +
-                "org.apache.dubbo.rpc.protocol.dubbo.support.Person");
-        assertTrue(result.contains("result: 24"));
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testComplexParamSpecifyWrongParamType() throws RemotingException {
-        mockChannel = mock(Channel.class);
-        given(mockChannel.getAttribute("telnet.service")).willReturn("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService");
-        given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
-        given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
-
-        ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", new DemoServiceImpl(), DemoService.class);
-        ApplicationModel.initProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", providerModel);
-
-        // pass json value to parameter of Person type
-        // wrong name of parameter class
-        String result = invoke.telnet(mockChannel, "DemoService.getPerson({\"name\":\"zhangsan\",\"age\":12}) -p wrongType");
-        assertEquals("Unknown parameter class for name wrongType", result);
-
-        // wrong number of parameter class
-        result = invoke.telnet(mockChannel, "DemoService.getPerson({\"name\":\"zhangsan\",\"age\":12},{\"name\":\"lisi\",\"age\":12}) " +
-                "-p org.apache.dubbo.rpc.protocol.dubbo.support.Person");
-        assertEquals("Parameter's number does not match the number of parameter class", result);
-    }
-
-
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testInvokeAutoFindMethod() throws RemotingException {
-        mockChannel = mock(Channel.class);
-        given(mockChannel.getAttribute("telnet.service")).willReturn(null);
-        given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
-        given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
-
-        ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", new DemoServiceImpl(), DemoService.class);
-        ApplicationModel.initProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", providerModel);
-
-        String result = invoke.telnet(mockChannel, "echo(\"ok\")");
-        assertTrue(result.contains("result: \"ok\""));
-    }
-
-    @Test
-    public void testInvokeJsonParamMethod() throws RemotingException {
+    public void testOverriddenMethodWithoutSpecifyParamType() throws RemotingException {
         mockChannel = mock(Channel.class);
         given(mockChannel.getAttribute("telnet.service")).willReturn(null);
         given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
@@ -209,21 +150,7 @@ public class InvokerTelnetHandlerTest {
         ApplicationModel.initProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", providerModel);
         String param = "{\"name\":\"Dubbo\",\"age\":8}";
         String result = invoke.telnet(mockChannel, "getPerson(" + param + ")");
-        assertTrue(result.contains("result: 8") || result.contains("result: \"Dubbo\""));
-    }
-
-    @Test
-    public void testInvokeSpecifyTypeJsonParamMethod() throws RemotingException {
-        mockChannel = mock(Channel.class);
-        given(mockChannel.getAttribute("telnet.service")).willReturn(null);
-        given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
-        given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
-
-        ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", new DemoServiceImpl(), DemoService.class);
-        ApplicationModel.initProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", providerModel);
-        String param = "{\"name\":\"Dubbo\",\"age\":8,\"class\":\"org.apache.dubbo.rpc.protocol.dubbo.support.Man\"}";
-        String result = invoke.telnet(mockChannel, "getPerson(" + param + ")");
-        assertTrue(result.contains("result: \"Dubbo\""));
+        assertTrue(result.contains("This method has same signature method,No.1 parameter must contains key \"class\""));
     }
 
     @Test
