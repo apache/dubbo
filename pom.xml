@@ -23,7 +23,7 @@
 	</parent>-->
     <groupId>com.alibaba</groupId>
 	<artifactId>dubbo-parent</artifactId>
-	<version>2.5.4-SNAPSHOT</version>
+	<version>5.1.2</version>
 	<packaging>pom</packaging>
 	<name>${project.artifactId}</name>
 	<description>The parent project of dubbo</description>
@@ -160,12 +160,6 @@
 				<artifactId>spring-web</artifactId>
 				<version>${spring_version}</version>
 			</dependency>
-			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-beans</artifactId>
-				<version>${spring_version}</version>
-			</dependency>
-			
 			<dependency>
 					<groupId>org.springframework</groupId>
 					<artifactId>spring-context-support</artifactId>
@@ -449,8 +443,7 @@
 			<dependency>
                 <groupId>org.apache.velocity</groupId>
                 <artifactId>velocity</artifactId>
-                <version>${velocity_version}</version>
-                
+                <version>${velocity_version}</version>      
             </dependency>
 		</dependencies>
 	</dependencyManagement>

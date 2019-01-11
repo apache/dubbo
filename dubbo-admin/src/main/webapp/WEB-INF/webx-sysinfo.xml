@@ -15,7 +15,7 @@
 
     <!-- 支持${xxx}替换。 -->
     <services:property-placeholder>
-        <services:property key="component">sysinfo</services:property>
+        <property key="component">sysinfo</property>
     </services:property-placeholder>
 
     <!-- 共享配置。 -->

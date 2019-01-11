@@ -9,8 +9,16 @@
 		http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd
 		http://www.alibaba.com/schema/services/resource-loading/loaders http://localhost:8080/schema/services-resource-loading-loaders.xsd">
 
-	<services:property-placeholder location="classpath:dubbo.properties">
-	</services:property-placeholder> 
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
+		<property name="ignoreResourceNotFound" value="true" />
+		<property name="locations">
+			<list>
+				<value>/WEB-INF/dubbo.properties</value>
+				<value>file://${user.home}/dubbo.properties</value>
+			</list>
+		</property>
+	</bean> 
 	
 	<dubbo:application name="dubbo-admin" />
 

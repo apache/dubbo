@@ -15,7 +15,7 @@
 
     <!-- 支持${xxx}替换。 -->
     <services:property-placeholder>
-        <services:property key="component">sysmanage</services:property>
+        <property key="component">sysmanage</property>
     </services:property-placeholder>
 
     <!-- 共享配置。 -->

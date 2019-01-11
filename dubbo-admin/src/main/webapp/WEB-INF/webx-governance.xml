@@ -14,7 +14,7 @@
 
     <!-- 支持${xxx}替换。 -->
     <services:property-placeholder>
-        <services:property key="component">governance</services:property>
+        <property key="component">governance</property>
     </services:property-placeholder>
     
 	<services:pull xmlns="http://www.alibaba.com/schema/services/pull/factories">

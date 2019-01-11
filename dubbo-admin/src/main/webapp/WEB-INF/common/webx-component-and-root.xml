@@ -22,9 +22,9 @@
 	<!-- Template渲染服务。 -->
 	 <services:template searchExtensions="true">
 		<engines:velocity-engine templateEncoding="utf-8"
-			strictReference="false" path="/templates/${component}">
+			strictReference="false" path="/WEB-INF/templates/${component}">
             <global-macros>
-                <name>macros/**/*.vm</name>
+                <name>macros/*.vm</name>
             </global-macros>
 				<!-- <plugins:fasttext-support /> -->
 			<plugins>

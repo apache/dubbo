@@ -10,8 +10,7 @@
         http://www.alibaba.com/schema/services/pipeline/valves http://localhost:8080/schema/services-pipeline-valves.xsd
         http://www.springframework.org/schema/beans http://localhost:8080/schema/www.springframework.org/schema/beans/spring-beans.xsd">
 
-	<services:pipeline
-		xmlns="http://www.alibaba.com/schema/services/pipeline/valves">
+	<services:pipeline>
 
 		<!-- 初始化turbine rundata，并在pipelineContext中设置可能会用到的对象(如rundata、utils)，以便valve取得。 -->
 		<prepareForTurbine />

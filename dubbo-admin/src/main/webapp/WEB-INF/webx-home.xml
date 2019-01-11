@@ -12,10 +12,9 @@
         http://www.alibaba.com/schema/services/module-loader/factories http://localhost:8080/schema/services-module-loader-factories.xsd
         http://www.springframework.org/schema/beans http://localhost:8080/schema/www.springframework.org/schema/beans/spring-beans.xsd
     ">
-
     <!-- 支持${xxx}替换。 -->
     <services:property-placeholder>
-        <services:property key="component">home</services:property>
+        <property key="component">home</property>
     </services:property-placeholder>
 
     <!-- 共享配置。 -->

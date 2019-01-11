@@ -13,13 +13,9 @@
         http://www.springframework.org/schema/beans http://localhost:8080/schema/www.springframework.org/schema/beans/spring-beans.xsd
     ">
      <services:resource-loading>
-       <resource pattern="/classpath">
-            <loaders:classpath-loader />
-        </resource>
-        <resource pattern="/webroot" internal="true">
+       <resource pattern="/">
             <loaders:webapp-loader />
         </resource>
-        <resource-alias pattern="/" name="/webroot" />
     </services:resource-loading>
      <services:resource-loading>
         <resource-alias pattern="/" name="/webroot" />
@@ -39,7 +35,7 @@
             <res-loaders:classpath-loader />
         </resource>
         
-        <resource-alias pattern="/templates" name="/webroot/WEB-INF/templates" />
+        <resource-alias pattern="/templates" name="/WEB-INF/templates" />
 		<!--<resource pattern="/templates">
             <res-loaders:file-loader basedir="${dubbo.governance.webapp.home}/WEB-INF/templates" />
         </resource>-->
