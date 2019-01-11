@@ -76,4 +76,7 @@ public class AsyncContextImpl implements AsyncContext {
         // Restore any other contexts in here if necessary.
     }
 
+    public CompletableFuture<Object> getInternalFuture() {
+        return future;
+    }
 }
