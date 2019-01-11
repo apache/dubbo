@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -79,10 +80,122 @@ public class RandomLoadBalanceTest extends LoadBalanceBaseTest {
         }
 
         // 1 : 9 : 6
-        System.out.println(sumInvoker1);
-        System.out.println(sumInvoker2);
-        System.out.println(sumInvoker3);
+        System.out.println(sumInvoker1 + " " + sumInvoker2 + " " + sumInvoker3);
         Assertions.assertEquals(sumInvoker1 + sumInvoker2 + sumInvoker3, loop, "select failed!");
     }
 
+    @Test
+    public void testNew() {
+
+        for (int i = 1; i < 30; i++) {
+            testBinary(i);
+        }
+
+      /*old cost11ms	new cost0ms
+        old cost17ms	new cost0ms
+        old cost10ms	new cost0ms
+        old cost6ms	    new cost0ms
+        old cost4ms	    new cost0ms
+        old cost3ms	    new cost0ms
+        old cost15ms	new cost0ms
+        old cost40ms	new cost0ms
+        old cost20ms	new cost0ms
+        old cost2ms	    new cost0ms
+        old cost8ms	    new cost0ms
+        old cost10ms	new cost0ms
+        old cost3ms	    new cost0ms
+        old cost9ms	    new cost0ms
+        old cost5ms	    new cost0ms
+        old cost4ms	    new cost0ms
+        old cost7ms	    new cost0ms
+        old cost10ms	new cost0ms
+        old cost5ms	    new cost0ms
+        old cost6ms	    new cost0ms
+        old cost5ms	    new cost0ms
+        old cost5ms	    new cost0ms
+        old cost6ms	    new cost0ms
+        old cost7ms	    new cost0ms
+        old cost5ms	    new cost0ms
+        old cost3ms	    new cost0ms
+        old cost8ms	    new cost0ms
+        old cost9ms	    new cost0ms
+        old cost9ms	    new cost0ms*/
+
+        for (int i = 0; i < 10; i++) {
+            testSelectByWeight();
+        }
+/*      660 5574 3766
+        635 5589 3776
+        621 5564 3815
+        648 5620 3732
+        603 5646 3751
+        600 5685 3715
+        617 5666 3717
+        643 5644 3713
+        641 5623 3736
+        615 5648 3737*/
+    }
+
+    private void testBinary(int length) {
+        int[] weights = new int[length];
+        int[] weightArr = new int[length + 1];
+        int totalWeight = 0;
+        int loop = 100000;
+        weightArr[0] = 0;
+        for (int i = 0; i < length; i++) {
+            weights[i] = ThreadLocalRandom.current().nextInt(10);
+            totalWeight += weights[i];
+            weightArr[i + 1] = totalWeight;
+        }
+        long oldCost = 0L, newCost = 0L;
+        for (int i = 0; i < loop; i++) {
+            int offset = ThreadLocalRandom.current().nextInt(totalWeight);
+            int findOffset = offset;
+            int oldResult = -1;
+            //use loop
+            long start = System.currentTimeMillis();
+            for (int j = 0; j < length; j++) {
+                offset -= weights[j];
+                if (offset < 0) {
+                    oldResult = j;
+                    break;
+                }
+            }
+            long endFirst = System.currentTimeMillis();
+            //use Binary Search
+            int newResult = -1;
+            int low = 0, high = length, mid;
+            while (low <= high) {
+                mid = (low + high) / 2;
+                if (findOffset == weightArr[mid]) {
+                    newResult = mid;
+                    while (++mid <= length && weightArr[mid] == findOffset) {
+                        newResult = mid;
+                    }
+                    break;
+                }
+
+                if (mid != length && findOffset > weightArr[mid] && findOffset < weightArr[mid + 1]) {
+                    newResult = mid;
+                    break;
+                }
+
+                if (findOffset < weightArr[mid]) {
+                    high = mid - 1;
+                    continue;
+                }
+                if (findOffset > weightArr[mid]) {
+                    low = mid + 1;
+                }
+            }
+            long endSecond = System.currentTimeMillis();
+            //compare two result
+            Assertions.assertEquals(oldResult, newResult);
+            //calc cost time
+            oldCost += endFirst - start;
+            newCost = endSecond - start;
+        }
+        System.out.println("old cost" + oldCost + "ms" + "\t" + "new cost" + newCost + "ms");
+    }
 }
+
