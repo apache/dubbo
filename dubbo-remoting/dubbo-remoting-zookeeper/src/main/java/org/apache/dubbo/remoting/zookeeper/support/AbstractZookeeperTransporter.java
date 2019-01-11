@@ -73,6 +73,12 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
         return zookeeperClient;
     }
 
+    /**
+     * @param url          the url that will create zookeeper connection . The url in org.apache.dubbo.remoting.zookeeper.support.AbstractZookeeperTransporter#connect(org.apache.dubbo.common.URL) parameter is rewritten by this one.
+     *                     such as: zookeeper://127.0.0.1:2181/org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter
+     * @param originalURLs the source invoked url collections (it is org.apache.dubbo.remoting.zookeeper.support.AbstractZookeeperTransporter#connect paramter). such as : zookeeper://127.0.0.1:2181/org.apache.dubbo.registry.RegistryService?application=metadatareport-local-xml-provider2&dubbo=2.0.2&interface=org.apache.dubbo.registry.RegistryService&pid=47418&specVersion=2.7.0-SNAPSHOT
+     * @return
+     */
     protected abstract ZookeeperClient createZookeeperClient(URL url, Set<URL> originalURLs);
 
     ZookeeperClientData fetchAndUpdateZookeeperClientCache(URL url, List<String> addressList) {
