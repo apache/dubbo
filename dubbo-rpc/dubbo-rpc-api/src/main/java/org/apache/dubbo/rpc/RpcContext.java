@@ -749,10 +749,6 @@ public class RpcContext {
         return asyncContext.stop();
     }
 
-    public void setAsyncContext(AsyncContext asyncContext) {
-        this.asyncContext = asyncContext;
-    }
-
     public AsyncContext getAsyncContext() {
         return asyncContext;
     }

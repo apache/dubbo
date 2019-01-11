@@ -147,9 +147,6 @@ public class RpcContextTest {
         RpcContext rpcContext = RpcContext.getContext();
         Assert.assertFalse(rpcContext.isAsyncStarted());
 
-        rpcContext.setAsyncContext(asyncContext);
-        Assert.assertFalse(rpcContext.isAsyncStarted());
-
         RpcContext.startAsync();
         Assert.assertTrue(rpcContext.isAsyncStarted());
 

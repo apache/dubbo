@@ -65,7 +65,7 @@ public class AsyncContextImpl implements AsyncContext {
     @Override
     public void start() {
         if (this.started.compareAndSet(false, true)) {
-            setInternalFuture(new CompletableFuture<>());
+            this.future = new CompletableFuture<>();
         }
     }
 
@@ -76,11 +76,4 @@ public class AsyncContextImpl implements AsyncContext {
         // Restore any other contexts in here if necessary.
     }
 
-    public void setInternalFuture(CompletableFuture<Object> future) {
-        this.future = future;
-    }
-
-    public CompletableFuture<Object> getInternalFuture() {
-        return future;
-    }
 }
