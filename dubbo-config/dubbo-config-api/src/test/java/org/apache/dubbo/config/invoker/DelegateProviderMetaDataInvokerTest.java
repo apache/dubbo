@@ -22,18 +22,18 @@ import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class DelegateProviderMetaDataInvokerTest {
     private ServiceConfig service;
     private Invoker<Greeting> invoker;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         service = Mockito.mock(ServiceConfig.class);
         invoker = Mockito.mock(Invoker.class);

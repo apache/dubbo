@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.common.json;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Deprecated
 public class JSONTest {
@@ -42,12 +42,12 @@ public class JSONTest {
         JSON.json(e, writer);
         String json = writer.getBuffer().toString();
         System.out.println(json);
-        // Assert.assertEquals("{\"code\":\"001\",\"message\":\"AAAAAAAA\"}", json);
+        // Assertions.assertEquals("{\"code\":\"001\",\"message\":\"AAAAAAAA\"}", json);
 
         StringReader reader = new StringReader(json);
         MyException result = JSON.parse(reader, MyException.class);
-        Assert.assertEquals("001", result.getCode());
-        Assert.assertEquals("AAAAAAAA", result.getMessage());
+        Assertions.assertEquals("001", result.getCode());
+        Assertions.assertEquals("AAAAAAAA", result.getMessage());
     }
 
     @Test
@@ -59,11 +59,11 @@ public class JSONTest {
         StringWriter writer = new StringWriter();
         JSON.json(map, writer);
         String json = writer.getBuffer().toString();
-        Assert.assertEquals("{\"aaa\":\"bbb\"}", json);
+        Assertions.assertEquals("{\"aaa\":\"bbb\"}", json);
 
         StringReader reader = new StringReader(json);
         Map<String, String> result = JSON.parse(reader, Map.class);
-        Assert.assertEquals("bbb", result.get("aaa"));
+        Assertions.assertEquals("bbb", result.get("aaa"));
     }
 
     @Test
@@ -75,12 +75,12 @@ public class JSONTest {
         StringWriter writer = new StringWriter();
         JSON.json(new Object[]{map}, writer); // args
         String json = writer.getBuffer().toString();
-        Assert.assertEquals("[{\"aaa\":\"bbb\"}]", json);
+        Assertions.assertEquals("[{\"aaa\":\"bbb\"}]", json);
 
         StringReader reader = new StringReader(json);
         Object[] result = JSON.parse(reader, new Class<?>[]{Map.class});
-        Assert.assertEquals(1, result.length);
-        Assert.assertEquals("bbb", ((Map<String, String>) result[0]).get("aaa"));
+        Assertions.assertEquals(1, result.length);
+        Assertions.assertEquals("bbb", ((Map<String, String>) result[0]).get("aaa"));
     }
 
     @Test
@@ -92,11 +92,11 @@ public class JSONTest {
         StringWriter writer = new StringWriter();
         JSON.json(map, writer);
         String json = writer.getBuffer().toString();
-        Assert.assertEquals("{\"aaa\":\"bbb\"}", json);
+        Assertions.assertEquals("{\"aaa\":\"bbb\"}", json);
 
         StringReader reader = new StringReader(json);
         LinkedHashMap<String, String> result = JSON.parse(reader, LinkedHashMap.class);
-        Assert.assertEquals("bbb", result.get("aaa"));
+        Assertions.assertEquals("bbb", result.get("aaa"));
     }
 
     @Test

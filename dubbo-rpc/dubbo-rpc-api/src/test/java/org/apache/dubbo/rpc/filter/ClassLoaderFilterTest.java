@@ -25,8 +25,8 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.support.DemoService;
 import org.apache.dubbo.rpc.support.MyInvoker;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.net.URLClassLoader;
@@ -59,7 +59,7 @@ public class ClassLoaderFilterTest {
 
             @Override
             public Result invoke(Invocation invocation) throws RpcException {
-                Assert.assertEquals(cl, Thread.currentThread().getContextClassLoader());
+                Assertions.assertEquals(cl, Thread.currentThread().getContextClassLoader());
                 return null;
             }
         };

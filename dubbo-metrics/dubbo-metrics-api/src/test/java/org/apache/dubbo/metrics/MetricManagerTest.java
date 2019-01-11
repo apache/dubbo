@@ -16,14 +16,14 @@
  */
 package org.apache.dubbo.metrics;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class MetricManagerTest {
 
     @Test
     public void testNOPMetricManager() {
-        Assert.assertTrue(MetricManager.getIMetricManager() instanceof NOPMetricManager);
+        Assertions.assertTrue(MetricManager.getIMetricManager() instanceof NOPMetricManager);
     }
 
     @Test
@@ -31,23 +31,23 @@ public class MetricManagerTest {
         Compass compass = MetricManager.getCompass("test", MetricName.build("test"));
         compass.record(10, "success");
 
-        Assert.assertEquals(0, compass.getCountAndRtPerCategory().size());
-        Assert.assertEquals(0, compass.getMethodCountPerCategory().size());
-        Assert.assertEquals(0, compass.getMethodRtPerCategory().size());
+        Assertions.assertEquals(0, compass.getCountAndRtPerCategory().size());
+        Assertions.assertEquals(0, compass.getMethodCountPerCategory().size());
+        Assertions.assertEquals(0, compass.getMethodRtPerCategory().size());
     }
 
     @Test
     public void testNopCounter() {
         Counter counter = MetricManager.getCounter("test", MetricName.build("test2"));
         counter.inc();
-        Assert.assertEquals(0, counter.getCount());
+        Assertions.assertEquals(0, counter.getCount());
     }
 
     @Test
     public void testBucketCounter() {
         BucketCounter bc = MetricManager.getBucketCounters("test", MetricName.build("test3"));
         bc.update();
-        Assert.assertEquals(0, bc.getBucketInterval());
-        Assert.assertEquals(0, bc.getBucketCounts().size());
+        Assertions.assertEquals(0, bc.getBucketInterval());
+        Assertions.assertEquals(0, bc.getBucketCounts().size());
     }
 }

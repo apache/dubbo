@@ -25,13 +25,14 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.fail;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -43,12 +44,12 @@ public class InvokerTelnetHandlerTest {
     private static TelnetHandler invoke = new InvokeTelnetHandler();
     private Channel mockChannel;
 
-    @Before
+    @BeforeEach
     public void setup() {
         ApplicationModel.reset();
     }
 
-    @After
+    @AfterEach
     public void after() {
         ProtocolUtils.closeAll();
     }

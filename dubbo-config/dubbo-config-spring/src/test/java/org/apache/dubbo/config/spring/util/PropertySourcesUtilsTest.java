@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.config.spring.util;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.MutablePropertySources;
 
@@ -49,7 +49,7 @@ public class PropertySourcesUtilsTest {
         String KEY_AGE = "age";
         Map<String, String> result = PropertySourcesUtils.getSubProperties(propertySources, KEY_PREFIX);
 
-        Assert.assertEquals(Collections.emptyMap(), result);
+        Assertions.assertEquals(Collections.emptyMap(), result);
 
         source.put(KEY_PREFIX + "." + KEY_NAME, "Mercy");
         source.put(KEY_PREFIX + "." + KEY_AGE, 31);
@@ -59,15 +59,15 @@ public class PropertySourcesUtilsTest {
         expected.put(KEY_AGE, "31");
 
         result = PropertySourcesUtils.getSubProperties(propertySources, KEY_PREFIX);
-        Assert.assertEquals(expected, result);
+        Assertions.assertEquals(expected, result);
 
         result = PropertySourcesUtils.getSubProperties(propertySources, "");
 
-        Assert.assertEquals(Collections.emptyMap(), result);
+        Assertions.assertEquals(Collections.emptyMap(), result);
 
         result = PropertySourcesUtils.getSubProperties(propertySources, "no-exists");
 
-        Assert.assertEquals(Collections.emptyMap(), result);
+        Assertions.assertEquals(Collections.emptyMap(), result);
 
         source.put(KEY_PREFIX + ".app.name", "${info.name}");
         source.put("info.name", "Hello app");
@@ -76,7 +76,7 @@ public class PropertySourcesUtilsTest {
 
         String appName = result.get("app.name");
 
-        Assert.assertEquals("Hello app", appName);
+        Assertions.assertEquals("Hello app", appName);
 
     }
 

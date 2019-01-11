@@ -31,10 +31,10 @@ import org.apache.dubbo.rpc.cluster.RouterFactory;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.script.ScriptEngineManager;
 import java.util.ArrayList;
@@ -55,11 +55,11 @@ public class FileRouterEngineTest {
     Result result = new RpcResult();
     private RouterFactory routerFactory = ExtensionLoader.getExtensionLoader(RouterFactory.class).getAdaptiveExtension();
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpBeforeClass() throws Exception {
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         invokers.add(invoker1);
         invokers.add(invoker2);
@@ -78,7 +78,7 @@ public class FileRouterEngineTest {
         for (int i = 0; i < 100; i++) {
             sinvoker.invoke(invocation);
             Invoker<FileRouterEngineTest> invoker = sinvoker.getSelectedInvoker();
-            Assert.assertEquals(invoker2, invoker);
+            Assertions.assertEquals(invoker2, invoker);
         }
     }
 
@@ -95,7 +95,7 @@ public class FileRouterEngineTest {
         for (int i = 0; i < 100; i++) {
             sinvoker.invoke(invocation);
             Invoker<FileRouterEngineTest> invoker = sinvoker.getSelectedInvoker();
-            Assert.assertEquals(invoker1, invoker);
+            Assertions.assertEquals(invoker1, invoker);
         }
     }
 
@@ -113,7 +113,7 @@ public class FileRouterEngineTest {
             for (int i = 0; i < 100; i++) {
                 sinvoker.invoke(invocation);
                 Invoker<FileRouterEngineTest> invoker = sinvoker.getSelectedInvoker();
-                Assert.assertEquals(invoker1, invoker);
+                Assertions.assertEquals(invoker1, invoker);
             }
         }
         {
@@ -125,7 +125,7 @@ public class FileRouterEngineTest {
             for (int i = 0; i < 100; i++) {
                 sinvoker.invoke(invocation);
                 Invoker<FileRouterEngineTest> invoker = sinvoker.getSelectedInvoker();
-                Assert.assertEquals(invoker2, invoker);
+                Assertions.assertEquals(invoker2, invoker);
             }
         }
     }
