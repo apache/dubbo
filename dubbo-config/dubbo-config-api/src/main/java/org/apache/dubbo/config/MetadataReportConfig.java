@@ -149,7 +149,7 @@ public class MetadataReportConfig extends AbstractConfig {
         this.syncReport = syncReport;
     }
 
-
+    @Override
     @Parameter(excluded = true)
     public String getPrefix() {
         return StringUtils.isNotEmpty(prefix) ? prefix : (Constants.DUBBO + "." + PREFIX_TAG);
