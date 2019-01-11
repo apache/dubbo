@@ -515,7 +515,7 @@ public class PojoUtils {
         } catch (Throwable t) {
             try {
                 Constructor<?>[] constructors = cls.getDeclaredConstructors();
-                if (constructors == null && constructors.length == 0) {
+                if (constructors == null || constructors.length == 0) {
                     throw new RuntimeException("Illegal constructor: " + cls.getName());
                 }
                 Constructor<?> constructor = constructors[0];
