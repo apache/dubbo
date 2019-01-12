@@ -18,7 +18,6 @@ package org.apache.dubbo.common.utils;
 
 import org.apache.commons.lang3.time.FastDateFormat;
 
-import java.text.ParseException;
 import java.util.Date;
 
 /**
