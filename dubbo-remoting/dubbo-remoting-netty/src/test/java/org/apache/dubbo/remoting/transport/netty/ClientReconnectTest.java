@@ -28,9 +28,9 @@ import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 
 import org.apache.log4j.Level;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Client reconnect test
@@ -40,7 +40,7 @@ public class ClientReconnectTest {
         System.out.println(3 % 1);
     }
 
-    @Before
+    @BeforeEach
     public void clear() {
         DubboAppender.clear();
     }
@@ -50,24 +50,24 @@ public class ClientReconnectTest {
         {
             int port = NetUtils.getAvailablePort();
             Client client = startClient(port, 200);
-            Assert.assertEquals(false, client.isConnected());
+            Assertions.assertEquals(false, client.isConnected());
             Server server = startServer(port);
             for (int i = 0; i < 100 && !client.isConnected(); i++) {
                 Thread.sleep(10);
             }
-            Assert.assertEquals(true, client.isConnected());
+            Assertions.assertEquals(true, client.isConnected());
             client.close(2000);
             server.close(2000);
         }
         {
             int port = NetUtils.getAvailablePort();
             Client client = startClient(port, 20000);
-            Assert.assertEquals(false, client.isConnected());
+            Assertions.assertEquals(false, client.isConnected());
             Server server = startServer(port);
             for (int i = 0; i < 5; i++) {
                 Thread.sleep(200);
             }
-            Assert.assertEquals(false, client.isConnected());
+            Assertions.assertEquals(false, client.isConnected());
             client.close(2000);
             server.close(2000);
         }
@@ -90,9 +90,9 @@ public class ClientReconnectTest {
         }
         Thread.sleep(1500);
         //Time is not long enough to produce a error log
-        Assert.assertEquals("no error message ", 0, LogUtil.findMessage(Level.ERROR, "client reconnect to "));
+        Assertions.assertEquals(0, LogUtil.findMessage(Level.ERROR, "client reconnect to "), "no error message ");
         //The first reconnection failed to have a warn log
-        Assert.assertEquals("must have one warn message ", 1, LogUtil.findMessage(Level.WARN, "client reconnect to "));
+        Assertions.assertEquals(1, LogUtil.findMessage(Level.WARN, "client reconnect to "), "must have one warn message ");
         DubboAppender.doStop();
     }
 

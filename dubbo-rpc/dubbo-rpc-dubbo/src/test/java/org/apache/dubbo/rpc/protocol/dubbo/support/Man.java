@@ -14,21 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos.command.impl;
+package org.apache.dubbo.rpc.protocol.dubbo.support;
 
-import org.apache.dubbo.qos.command.CommandContext;
-import org.apache.dubbo.qos.common.QosConstants;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
+import java.io.Serializable;
 
-public class QuitTest {
-    @Test
-    public void testExecute() throws Exception {
-        Quit quit = new Quit();
-        String output = quit.execute(Mockito.mock(CommandContext.class), null);
-        assertThat(output, equalTo(QosConstants.CLOSE));
+/**
+ * Man.java
+ */
+public class Man implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+    private String name;
+    private int age;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
     }
 }

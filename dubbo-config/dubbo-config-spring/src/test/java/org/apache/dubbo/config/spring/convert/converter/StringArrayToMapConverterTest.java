@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.config.spring.convert.converter;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -38,15 +38,15 @@ public class StringArrayToMapConverterTest {
 
         expected.put("Hello", "World");
 
-        Assert.assertEquals(expected, value);
+        Assertions.assertEquals(expected, value);
 
         value = converter.convert(new String[]{});
 
-        Assert.assertNull(value);
+        Assertions.assertNull(value);
 
         value = converter.convert(null);
 
-        Assert.assertNull(value);
+        Assertions.assertNull(value);
 
     }
 }

@@ -28,11 +28,11 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 
@@ -50,11 +50,11 @@ public class ReferenceCountExchangeClientTest {
     ExchangeClient helloClient;
     String errorMsg = "safe guard client , should not be called ,must have a bug";
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpBeforeClass() throws Exception {
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownAfterClass() {
         ProtocolUtils.closeAll();
     }
@@ -71,7 +71,7 @@ public class ReferenceCountExchangeClientTest {
         return protocol.export(proxy.getInvoker(instance, type, url));
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
     }
 
@@ -81,8 +81,8 @@ public class ReferenceCountExchangeClientTest {
     @Test
     public void test_share_connect() {
         init(0);
-        Assert.assertEquals(demoClient.getLocalAddress(), helloClient.getLocalAddress());
-        Assert.assertEquals(demoClient, helloClient);
+        Assertions.assertEquals(demoClient.getLocalAddress(), helloClient.getLocalAddress());
+        Assertions.assertEquals(demoClient, helloClient);
         destoy();
     }
 
@@ -92,8 +92,8 @@ public class ReferenceCountExchangeClientTest {
     @Test
     public void test_not_share_connect() {
         init(1);
-        Assert.assertNotSame(demoClient.getLocalAddress(), helloClient.getLocalAddress());
-        Assert.assertNotSame(demoClient, helloClient);
+        Assertions.assertNotSame(demoClient.getLocalAddress(), helloClient.getLocalAddress());
+        Assertions.assertNotSame(demoClient, helloClient);
         destoy();
     }
 
@@ -107,8 +107,8 @@ public class ReferenceCountExchangeClientTest {
         DubboAppender.clear();
         demoServiceInvoker.destroy();
         demoServiceInvoker.destroy();
-        Assert.assertEquals("hello", helloService.hello());
-        Assert.assertEquals("should not  warning message", 0, LogUtil.findMessage(errorMsg));
+        Assertions.assertEquals("hello", helloService.hello());
+        Assertions.assertEquals(0, LogUtil.findMessage(errorMsg), "should not  warning message");
         LogUtil.checkNoError();
         DubboAppender.doStop();
         destoy();
@@ -126,8 +126,8 @@ public class ReferenceCountExchangeClientTest {
         ReferenceCountExchangeClient client = getReferenceClient(helloServiceInvoker);
         // close once, counter counts down from 2 to 1, no warning occurs
         client.close();
-        Assert.assertEquals("hello", helloService.hello());
-        Assert.assertEquals("should not warning message", 0, LogUtil.findMessage(errorMsg));
+        Assertions.assertEquals("hello", helloService.hello());
+        Assertions.assertEquals(0, LogUtil.findMessage(errorMsg), "should not warning message");
         // counter is incorrect, invocation still succeeds
         client.close();
 
@@ -135,26 +135,26 @@ public class ReferenceCountExchangeClientTest {
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
-            Assert.fail();
+            Assertions.fail();
         }
 
-        Assert.assertEquals("hello", helloService.hello());
-        Assert.assertEquals("should warning message", 1, LogUtil.findMessage(errorMsg));
+        Assertions.assertEquals("hello", helloService.hello());
+        Assertions.assertEquals(1, LogUtil.findMessage(errorMsg), "should warning message");
 
         // output one error every 5000 invocations.
-        Assert.assertEquals("hello", helloService.hello());
-        Assert.assertEquals("should warning message", 1, LogUtil.findMessage(errorMsg));
+        Assertions.assertEquals("hello", helloService.hello());
+        Assertions.assertEquals(1, LogUtil.findMessage(errorMsg), "should warning message");
 
         DubboAppender.doStop();
 
         // status switch to available once invoke again
-        Assert.assertEquals("client status available", true, helloServiceInvoker.isAvailable());
+        Assertions.assertEquals(true, helloServiceInvoker.isAvailable(), "client status available");
 
         client.close();
         // client has been replaced with lazy client. lazy client is fetched from referenceclientmap, and since it's
         // been invoked once, it's close status is false
-        Assert.assertEquals("client status close", false, client.isClosed());
-        Assert.assertEquals("client status close", false, helloServiceInvoker.isAvailable());
+        Assertions.assertEquals(false, client.isClosed(), "client status close");
+        Assertions.assertEquals(false, helloServiceInvoker.isAvailable(), "client status close");
         destoy();
     }
 
@@ -169,11 +169,11 @@ public class ReferenceCountExchangeClientTest {
 
         demoServiceInvoker = (Invoker<IDemoService>) referInvoker(IDemoService.class, demoUrl);
         demoService = proxy.getProxy(demoServiceInvoker);
-        Assert.assertEquals("demo", demoService.demo());
+        Assertions.assertEquals("demo", demoService.demo());
 
         helloServiceInvoker = (Invoker<IHelloService>) referInvoker(IHelloService.class, helloUrl);
         helloService = proxy.getProxy(helloServiceInvoker);
-        Assert.assertEquals("hello", helloService.hello());
+        Assertions.assertEquals("hello", helloService.hello());
 
         demoClient = getClient(demoServiceInvoker);
         helloClient = getClient(helloServiceInvoker);
@@ -197,7 +197,7 @@ public class ReferenceCountExchangeClientTest {
                 return (ExchangeClient) clientField.get(client);
             } catch (Exception e) {
                 e.printStackTrace();
-                Assert.fail(e.getMessage());
+                Assertions.fail(e.getMessage());
                 throw new RuntimeException(e);
             }
         }
@@ -218,7 +218,7 @@ public class ReferenceCountExchangeClientTest {
 
         } catch (Exception e) {
             e.printStackTrace();
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
             throw new RuntimeException(e);
         }
     }
