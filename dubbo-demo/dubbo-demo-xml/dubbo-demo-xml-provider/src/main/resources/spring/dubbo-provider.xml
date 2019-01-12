@@ -22,9 +22,7 @@
        http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
 
     <!-- provider's application name, used for tracing dependency relationship -->
-    <dubbo:application name="demo-provider">
-        <dubbo:parameter key="heartbeat" value="10000"/>
-    </dubbo:application>
+    <dubbo:application name="demo-provider"/>
 
     <dubbo:registry address="multicast://224.5.6.7:1234" />
 
