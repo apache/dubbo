@@ -29,8 +29,6 @@ import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.transport.AbstractChannelHandlerDelegate;
 
-import com.alibaba.fastjson.JSON;
-
 import java.util.concurrent.TimeUnit;
 
 public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
@@ -57,7 +55,6 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
         setWriteTimestamp(channel);
         handler.connected(channel);
         // When a channel has connected, add it's heartbeat task and reconnected task to hashedWheelTimer
-        logger.info("heart beat connected:" + System.currentTimeMillis()); // TODO for log
         long heartbeat;
         if (Constants.CONSUMER_SIDE.equals(channel.getUrl().getParameter(Constants.SIDE_KEY, Constants.PROVIDER_SIDE))) {
             String dubbo = channel.getUrl().getParameter(Constants.DUBBO_VERSION_KEY);
@@ -78,11 +75,6 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
         hashedWheelTimer.newTimeout(heartBeatTimerTask, heartbeat, TimeUnit.MILLISECONDS);
         hashedWheelTimer.newTimeout(reconnectTimerTask, heartbeatTimeout, TimeUnit.MILLISECONDS);
 
-        if (Constants.PROVIDER.equals(channel.getUrl().getParameter(Constants.SIDE_KEY, Constants.PROVIDER))) {
-            logger.info("server heartBeat:" + JSON.toJSONString(channel)); // TODO for log
-        } else if (Constants.CONSUMER_SIDE.equals(channel.getUrl().getParameter(Constants.SIDE_KEY, Constants.PROVIDER))) {
-            logger.info("client heartBeat:" + JSON.toJSONString(channel)); // TODO for log
-        }
     }
 
     @Override
@@ -90,23 +82,18 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
         clearReadTimestamp(channel);
         clearWriteTimestamp(channel);
         handler.disconnected(channel);
-        logger.info("heart beat handler disconnect:" + System.currentTimeMillis()); // TODO for log
-
     }
 
     @Override
     public void sent(Channel channel, Object message) throws RemotingException {
         setWriteTimestamp(channel);
-        logger.info("heart beat handler send:" + System.currentTimeMillis()); // TODO for log
         handler.sent(channel, message);
     }
 
     @Override
     public void received(Channel channel, Object message) throws RemotingException {
         setReadTimestamp(channel);
-        logger.info("heart beat handler receive:" + System.currentTimeMillis()); // TODO for log
         if (isHeartbeatRequest(message)) {
-            logger.info("heart beat request:" + System.currentTimeMillis()); // TODO for log
             Request req = (Request) message;
             if (req.isTwoWay()) {
                 Response res = new Response(req.getId(), req.getVersion());
@@ -124,7 +111,6 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
             return;
         }
         if (isHeartbeatResponse(message)) {
-            logger.info("heart beat response:" + System.currentTimeMillis()); // TODO for log
             if (logger.isDebugEnabled()) {
                 logger.debug("Receive heartbeat response in thread " + Thread.currentThread().getName());
             }

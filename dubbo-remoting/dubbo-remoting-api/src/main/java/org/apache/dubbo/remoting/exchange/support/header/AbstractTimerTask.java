@@ -17,22 +17,17 @@
 
 package org.apache.dubbo.remoting.exchange.support.header;
 
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.timer.Timeout;
 import org.apache.dubbo.common.timer.Timer;
 import org.apache.dubbo.common.timer.TimerTask;
-import org.apache.dubbo.common.utils.Log;
 import org.apache.dubbo.remoting.Channel;
 
-import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 /**
  * AbstractTimerTask
  */
 public abstract class AbstractTimerTask implements TimerTask {
-    private static final Logger logger = LoggerFactory.getLogger(AbstractTimerTask.class);
 
 
     private final Channel channel;
@@ -68,8 +63,6 @@ public abstract class AbstractTimerTask implements TimerTask {
         if (timer.isStop() || timeout.isCancelled()) {
             return;
         }
-        // TODO for log
-        logger.info(this.getClass().getSimpleName() + ", tick:" + this.tick + ", next beat:" + tick + ",current:" + System.currentTimeMillis());
 
         timer.newTimeout(timeout.task(), tick, TimeUnit.MILLISECONDS);
     }
@@ -85,7 +78,4 @@ public abstract class AbstractTimerTask implements TimerTask {
         return tick;
     }
 
-    interface ChannelProvider {
-        Collection<Channel> getChannels();
-    }
 }

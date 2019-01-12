@@ -54,7 +54,6 @@ public class ReconnectTimerTask extends AbstractTimerTask {
                             + getTick() + "ms");
                     channel.close();
                     // For provider side, if the channel is closed, just return.
-                    logger.info("reconnected task returned"); // TODO for log
                     return;
                 } catch (Throwable t) {
                     logger.warn("Exception when close channel " + channel, t);
