@@ -52,8 +52,7 @@ public class HeartBeatTaskTest {
             }
         };
 
-        AbstractTimerTask.ChannelProvider cp = () -> Collections.<Channel>singletonList(channel);
-        heartbeatTimerTask = new HeartbeatTimerTask(cp, tickDuration / Constants.HEARTBEAT_CHECK_TICK, (int) tickDuration);
+        heartbeatTimerTask = new HeartbeatTimerTask(channel, tickDuration);
     }
 
     @Test

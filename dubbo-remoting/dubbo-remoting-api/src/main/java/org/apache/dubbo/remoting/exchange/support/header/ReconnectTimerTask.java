@@ -17,8 +17,10 @@
 
 package org.apache.dubbo.remoting.exchange.support.header;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.timer.Timeout;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Client;
 
@@ -29,22 +31,19 @@ public class ReconnectTimerTask extends AbstractTimerTask {
 
     private static final Logger logger = LoggerFactory.getLogger(ReconnectTimerTask.class);
 
-    private final int heartbeatTimeout;
-
-    ReconnectTimerTask(ChannelProvider channelProvider, Long heartbeatTimeoutTick, int heartbeatTimeout1) {
-        super(channelProvider, heartbeatTimeoutTick);
-        this.heartbeatTimeout = heartbeatTimeout1;
+    ReconnectTimerTask(Channel channel, long reconnectedTick) {
+        super(channel, reconnectedTick);
     }
 
     @Override
-    protected void doTask(Channel channel) {
+    protected void doTask(Channel channel, Timeout timeout) {
         Long lastRead = lastRead(channel);
-        Long now = now();
-        if (lastRead != null && now - lastRead > heartbeatTimeout) {
-            if (channel instanceof Client) {
+        long heartBeatDuration = lastRead == null ? 0 : now() - lastRead;
+        if (heartBeatDuration > getTick()) {
+            if (Constants.CONSUMER_SIDE.equals(channel.getUrl().getParameter(Constants.SIDE_KEY))) {
                 try {
                     logger.warn("Reconnect to remote channel " + channel.getRemoteAddress() + ", because heartbeat read idle time out: "
-                            + heartbeatTimeout + "ms");
+                            + getTick() + "ms");
                     ((Client) channel).reconnect();
                 } catch (Throwable t) {
                     // do nothing
@@ -52,12 +51,20 @@ public class ReconnectTimerTask extends AbstractTimerTask {
             } else {
                 try {
                     logger.warn("Close channel " + channel + ", because heartbeat read idle time out: "
-                            + heartbeatTimeout + "ms");
+                            + getTick() + "ms");
                     channel.close();
+                    // For provider side, if the channel is closed, just return.
+                    logger.info("reconnected task returned"); // TODO for log
+                    return;
                 } catch (Throwable t) {
                     logger.warn("Exception when close channel " + channel, t);
                 }
             }
         }
+        // Set the next heartbeat task with recalculate tick duration.
+        if (!channel.isClosed()) {
+            reput(timeout, Math.min(getTick() - heartBeatDuration > 0 ? getTick() - heartBeatDuration : getTick(), getTick()));
+        }
+
     }
 }

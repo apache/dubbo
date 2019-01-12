@@ -21,8 +21,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.timer.HashedWheelTimer;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
@@ -34,10 +32,7 @@ import org.apache.dubbo.remoting.exchange.Request;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static java.util.Collections.unmodifiableCollection;
 
 /**
  * ExchangeServerImpl
@@ -47,25 +42,15 @@ public class HeaderExchangeServer implements ExchangeServer {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final Server server;
-    // heartbeat timeout (ms), default value is 0 , won't execute a heartbeat.
-    private int heartbeat;
-    private int heartbeatTimeout;
-    private AtomicBoolean closed = new AtomicBoolean(false);
 
-    private HashedWheelTimer heartbeatTimer;
+    private AtomicBoolean closed = new AtomicBoolean(false);
 
     public HeaderExchangeServer(Server server) {
         if (server == null) {
             throw new IllegalArgumentException("server == null");
         }
         this.server = server;
-        this.heartbeat = server.getUrl().getParameter(Constants.HEARTBEAT_KEY, 0);
-        this.heartbeatTimeout = server.getUrl().getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartbeat * 3);
-        if (heartbeatTimeout < heartbeat * 2) {
-            throw new IllegalStateException("heartbeatTimeout < heartbeatInterval * 2");
-        }
 
-        startHeartbeatTimer();
     }
 
     public Server getServer() {
@@ -148,7 +133,6 @@ public class HeaderExchangeServer implements ExchangeServer {
         if (!closed.compareAndSet(false, true)) {
             return;
         }
-        stopHeartbeatTimer();
     }
 
     @Override
@@ -203,25 +187,6 @@ public class HeaderExchangeServer implements ExchangeServer {
     @Override
     public void reset(URL url) {
         server.reset(url);
-        try {
-            if (url.hasParameter(Constants.HEARTBEAT_KEY)
-                    || url.hasParameter(Constants.HEARTBEAT_TIMEOUT_KEY)) {
-                int h = url.getParameter(Constants.HEARTBEAT_KEY, heartbeat);
-                int t = url.getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, h * 3);
-                if (t < h * 2) {
-                    throw new IllegalStateException("heartbeatTimeout < heartbeatInterval * 2");
-                }
-                if (h != heartbeat || t != heartbeatTimeout) {
-                    heartbeat = h;
-                    heartbeatTimeout = t;
-
-                    stopHeartbeatTimer();
-                    startHeartbeatTimer();
-                }
-            }
-        } catch (Throwable t) {
-            logger.error(t.getMessage(), t);
-        }
     }
 
     @Override
@@ -247,40 +212,4 @@ public class HeaderExchangeServer implements ExchangeServer {
         }
         server.send(message, sent);
     }
-
-    /**
-     * Each interval cannot be less than 1000ms.
-     */
-    private long calculateLeastDuration(int time) {
-        if (time / Constants.HEARTBEAT_CHECK_TICK <= 0) {
-            return Constants.LEAST_HEARTBEAT_DURATION;
-        } else {
-            return time / Constants.HEARTBEAT_CHECK_TICK;
-        }
-    }
-
-    private void startHeartbeatTimer() {
-        long tickDuration = calculateLeastDuration(heartbeat);
-        heartbeatTimer = new HashedWheelTimer(new NamedThreadFactory("dubbo-server-heartbeat", true), tickDuration,
-                TimeUnit.MILLISECONDS, Constants.TICKS_PER_WHEEL);
-
-        AbstractTimerTask.ChannelProvider cp = () -> unmodifiableCollection(HeaderExchangeServer.this.getChannels());
-
-        long heartbeatTick = calculateLeastDuration(heartbeat);
-        long heartbeatTimeoutTick = calculateLeastDuration(heartbeatTimeout);
-        HeartbeatTimerTask heartBeatTimerTask = new HeartbeatTimerTask(cp, heartbeatTick, heartbeat);
-        ReconnectTimerTask reconnectTimerTask = new ReconnectTimerTask(cp, heartbeatTimeoutTick, heartbeatTimeout);
-
-        // init task and start timer.
-        heartbeatTimer.newTimeout(heartBeatTimerTask, heartbeatTick, TimeUnit.MILLISECONDS);
-        heartbeatTimer.newTimeout(reconnectTimerTask, heartbeatTimeoutTick, TimeUnit.MILLISECONDS);
-    }
-
-    private void stopHeartbeatTimer() {
-        if (heartbeatTimer != null) {
-            heartbeatTimer.stop();
-            heartbeatTimer = null;
-        }
-    }
-
 }

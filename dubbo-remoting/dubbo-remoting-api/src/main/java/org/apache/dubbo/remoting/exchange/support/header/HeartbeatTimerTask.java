@@ -20,6 +20,7 @@ package org.apache.dubbo.remoting.exchange.support.header;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.timer.Timeout;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.exchange.Request;
 
@@ -30,20 +31,25 @@ public class HeartbeatTimerTask extends AbstractTimerTask {
 
     private static final Logger logger = LoggerFactory.getLogger(HeartbeatTimerTask.class);
 
-    private final int heartbeat;
-
-    HeartbeatTimerTask(ChannelProvider channelProvider, Long heartbeatTick, int heartbeat) {
-        super(channelProvider, heartbeatTick);
-        this.heartbeat = heartbeat;
+    HeartbeatTimerTask(Channel channel, Long heartbeatTick) {
+        super(channel, heartbeatTick);
     }
 
     @Override
-    protected void doTask(Channel channel) {
+    protected void doTask(Channel channel, Timeout timeout) {
+        long heartbeatDuration = 0;
         try {
             Long lastRead = lastRead(channel);
             Long lastWrite = lastWrite(channel);
-            if ((lastRead != null && now() - lastRead > heartbeat)
-                    || (lastWrite != null && now() - lastWrite > heartbeat)) {
+            long now = now();
+            if (null != lastRead) {
+                heartbeatDuration = now - lastRead;
+            }
+            if (null != lastWrite) {
+                heartbeatDuration = Math.max(heartbeatDuration, now - lastWrite);
+            }
+            if (heartbeatDuration > getTick()) {
+                // Heartbeat timeout, send a heartbeat package.
                 Request req = new Request();
                 req.setVersion(Version.getProtocolVersion());
                 req.setTwoWay(true);
@@ -52,11 +58,15 @@ public class HeartbeatTimerTask extends AbstractTimerTask {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Send heartbeat to remote channel " + channel.getRemoteAddress()
                             + ", cause: The channel has no data-transmission exceeds a heartbeat period: "
-                            + heartbeat + "ms");
+                            + getTick() + "ms");
                 }
             }
         } catch (Throwable t) {
             logger.warn("Exception when heartbeat to remote channel " + channel.getRemoteAddress(), t);
+        }
+        if (!channel.isClosed()) {
+            // Set the next heartbeat task with recalculate tick duration.
+            reput(timeout, Math.min(getTick() - heartbeatDuration > 0 ? getTick() - heartbeatDuration : getTick(), getTick()));
         }
     }
 }

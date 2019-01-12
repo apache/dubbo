@@ -17,9 +17,12 @@
 
 package org.apache.dubbo.remoting.exchange.support.header;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.timer.Timeout;
 import org.apache.dubbo.common.timer.Timer;
 import org.apache.dubbo.common.timer.TimerTask;
+import org.apache.dubbo.common.utils.Log;
 import org.apache.dubbo.remoting.Channel;
 
 import java.util.Collection;
@@ -29,17 +32,19 @@ import java.util.concurrent.TimeUnit;
  * AbstractTimerTask
  */
 public abstract class AbstractTimerTask implements TimerTask {
+    private static final Logger logger = LoggerFactory.getLogger(AbstractTimerTask.class);
 
-    private final ChannelProvider channelProvider;
+
+    private final Channel channel;
 
     private final Long tick;
 
-    AbstractTimerTask(ChannelProvider channelProvider, Long tick) {
-        if (channelProvider == null || tick == null) {
+    AbstractTimerTask(Channel channel, Long tick) {
+        if (channel == null || tick == null) {
             throw new IllegalArgumentException();
         }
         this.tick = tick;
-        this.channelProvider = channelProvider;
+        this.channel = channel;
     }
 
     static Long lastRead(Channel channel) {
@@ -54,7 +59,7 @@ public abstract class AbstractTimerTask implements TimerTask {
         return System.currentTimeMillis();
     }
 
-    private void reput(Timeout timeout, Long tick) {
+    protected void reput(Timeout timeout, Long tick) {
         if (timeout == null || tick == null) {
             throw new IllegalArgumentException();
         }
@@ -63,23 +68,22 @@ public abstract class AbstractTimerTask implements TimerTask {
         if (timer.isStop() || timeout.isCancelled()) {
             return;
         }
+        // TODO for log
+        logger.info(this.getClass().getSimpleName() + ", tick:" + this.tick + ", next beat:" + tick + ",current:" + System.currentTimeMillis());
 
         timer.newTimeout(timeout.task(), tick, TimeUnit.MILLISECONDS);
     }
 
     @Override
     public void run(Timeout timeout) throws Exception {
-        Collection<Channel> c = channelProvider.getChannels();
-        for (Channel channel : c) {
-            if (channel.isClosed()) {
-                continue;
-            }
-            doTask(channel);
-        }
-        reput(timeout, tick);
+            doTask(channel, timeout);
     }
 
-    protected abstract void doTask(Channel channel);
+    protected abstract void doTask(Channel channel, Timeout timeout);
+
+    protected Long getTick() {
+        return tick;
+    }
 
     interface ChannelProvider {
         Collection<Channel> getChannels();
