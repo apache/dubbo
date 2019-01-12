@@ -50,19 +50,19 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
         List<String> addressList = getURLBackupAddress(url);
         // The field define the zookeeper server , including protocol, host, port, username, password
         if ((clientData = fetchAndUpdateZookeeperClientCache(url, addressList)) != null) {
-            logger.info("Get result from map for the first time when invoking zookeeperTransporter.connnect");
+            logger.info("Get result from map for the first time when invoking zookeeperTransporter.connnect .");
             return clientData;
         }
         ZookeeperClient zookeeperClient = null;
         // avoid creating too many connections， so add lock
         synchronized (zookeeperClientMap) {
             if ((clientData = fetchAndUpdateZookeeperClientCache(url, addressList)) != null) {
-                logger.info("Get result from map for the second time when invoking zookeeperTransporter.connnect");
+                logger.info("Get result from map for the second time when invoking zookeeperTransporter.connnect .");
                 return clientData;
             }
 
             zookeeperClient = createZookeeperClient(createServerURL(url));
-            logger.info("Get result by creating new connection when invoking zookeeperTransporter.connnect. ");
+            logger.info("Get result by creating new connection when invoking zookeeperTransporter.connnect .");
             writeToClientMap(addressList, zookeeperClient);
         }
         return zookeeperClient;

@@ -606,6 +606,12 @@
                 <xsd:documentation><![CDATA[ The request timeout. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="group" type="xsd:string" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The group of metadata-report. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
         <xsd:attribute name="retry-times" type="xsd:integer" use="optional">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ if fail, retry times. ]]></xsd:documentation>
