@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.filter;
 
+import static org.apache.dubbo.common.utils.DateUtil.format;
+
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
@@ -34,7 +36,6 @@ import org.apache.dubbo.rpc.support.AccessLogData;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
@@ -70,9 +71,7 @@ public class AccessLogFilter implements Filter {
 
     private static final long LOG_OUTPUT_INTERVAL = 5000;
 
-    private static final SimpleDateFormat FILE_DATE_FORMATTER = new SimpleDateFormat("yyyyMMdd");
-
-    private static final SimpleDateFormat MESSAGE_DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final String FILE_DATE_FORMAT = "yyyyMMdd";
 
     private static final ConcurrentMap<String, Set<AccessLogData>> logQueue = new ConcurrentHashMap<String, Set<AccessLogData>>();
 
@@ -109,7 +108,7 @@ public class AccessLogFilter implements Filter {
     }
 
     private void log(String accessLog, AccessLogData accessLogData) {
-        Set<AccessLogData> logSet=logQueue.computeIfAbsent(accessLog,k->new ConcurrentHashSet<>());
+        Set<AccessLogData> logSet = logQueue.computeIfAbsent(accessLog, k -> new ConcurrentHashSet<>());
 
         if (logSet.size() < LOG_MAX_BUFFER) {
             logSet.add(accessLogData);
@@ -150,7 +149,7 @@ public class AccessLogFilter implements Filter {
             for (Iterator<AccessLogData> iterator = logSet.iterator();
                  iterator.hasNext();
                  iterator.remove()) {
-                writer.write(iterator.next().getLogMessage(MESSAGE_DATE_FORMATTER));
+                writer.write(iterator.next().getLogMessage());
                 writer.write("\r\n");
             }
             writer.flush();
@@ -177,7 +176,7 @@ public class AccessLogFilter implements Filter {
              iterator.hasNext();
              iterator.remove()) {
             AccessLogData logData = iterator.next();
-            LoggerFactory.getLogger(ACCESS_LOG_KEY + "." + logData.getServiceName()).info(logData.getLogMessage(MESSAGE_DATE_FORMATTER));
+            LoggerFactory.getLogger(ACCESS_LOG_KEY + "." + logData.getServiceName()).info(logData.getLogMessage());
         }
     }
 
@@ -190,13 +189,12 @@ public class AccessLogFilter implements Filter {
 
     private void renameFile(File file) {
         if (file.exists()) {
-            String now = FILE_DATE_FORMATTER.format(new Date());
-            String last = FILE_DATE_FORMATTER.format(new Date(file.lastModified()));
+            String now = format(new Date(), FILE_DATE_FORMAT);
+            String last = format(new Date(file.lastModified()), FILE_DATE_FORMAT);
             if (!now.equals(last)) {
                 File archive = new File(file.getAbsolutePath() + "." + last);
                 file.renameTo(archive);
             }
         }
     }
-
 }

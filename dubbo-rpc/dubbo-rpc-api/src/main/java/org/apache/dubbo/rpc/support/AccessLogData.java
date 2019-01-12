@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.support;
 
+import static org.apache.dubbo.common.utils.DateUtil.format;
+
 import com.alibaba.fastjson.JSON;
 
 import org.apache.dubbo.common.utils.StringUtils;
@@ -33,6 +35,8 @@ import java.util.Map;
  */
 public final class AccessLogData {
 
+    private static final String MESSAGE_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+
     private static final String VERSION = "version";
     private static final String GROUP = "group";
     private static final String SERVICE = "service";
@@ -44,7 +48,7 @@ public final class AccessLogData {
     private static final String REMOTE_PORT = "remote-port";
     private static final String LOCAL_HOST = "localhost";
     private static final String LOCAL_PORT = "local-port";
- 
+
     /**
      * This is used to store log data in key val format.
      */
@@ -189,11 +193,11 @@ public final class AccessLogData {
     }
 
 
-    public String getLogMessage(SimpleDateFormat sdf) {
+    public String getLogMessage() {
         StringBuilder sn = new StringBuilder();
 
         sn.append("[")
-                .append(sdf.format(get(INVOCATION_TIME)))
+                .append(format(getInvocationTime(), MESSAGE_DATE_FORMAT))
                 .append("] ")
                 .append(get(REMOTE_HOST))
                 .append(":")
@@ -241,6 +245,9 @@ public final class AccessLogData {
         return sn.toString();
     }
 
+    private Date getInvocationTime() {
+        return (Date)get(INVOCATION_TIME);
+    }
     /**
      * Return value of key
      *
@@ -261,4 +268,4 @@ public final class AccessLogData {
         data.put(key, value);
     }
 
- }
+}
