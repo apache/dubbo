@@ -16,18 +16,17 @@
  */
 package org.apache.dubbo.rpc.support;
 
-import static org.apache.dubbo.common.utils.DateUtil.format;
-
-import com.alibaba.fastjson.JSON;
-
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.RpcContext;
 
-import java.text.SimpleDateFormat;
+import com.alibaba.fastjson.JSON;
+
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.apache.dubbo.common.utils.DateUtil.format;
 
 /**
  * AccessLogData is a container for log event data. In internally uses map and store each filed of log as value. It does not generate any
