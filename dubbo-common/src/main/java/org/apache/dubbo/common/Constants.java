@@ -755,8 +755,6 @@ public class Constants {
 
     public static final String OVERRIDE_PROVIDERS_KEY = "providerAddreses";
 
-    public static final String SOURCE_URL_KEY = "sourceUrl";
-
     public static final String PROTOCOLS_SUFFIX = "dubbo.protocols.";
 
     public static final String PROTOCOL_SUFFIX = "dubbo.protocol.";
