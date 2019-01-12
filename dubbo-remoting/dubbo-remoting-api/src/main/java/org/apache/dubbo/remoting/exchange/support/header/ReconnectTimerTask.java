@@ -38,24 +38,26 @@ public class ReconnectTimerTask extends AbstractTimerTask {
 
     @Override
     protected void doTask(Channel channel) {
-        try {
-            Long lastRead = lastRead(channel);
-            Long now = now();
-            if (lastRead != null && now - lastRead > heartbeatTimeout) {
-                logger.warn("Close channel " + channel + ", because heartbeat read idle time out: "
-                        + heartbeatTimeout + "ms");
-                if (channel instanceof Client) {
-                    try {
-                        ((Client) channel).reconnect();
-                    } catch (Exception e) {
-                        //do nothing
-                    }
-                } else {
+        Long lastRead = lastRead(channel);
+        Long now = now();
+        if (lastRead != null && now - lastRead > heartbeatTimeout) {
+            if (channel instanceof Client) {
+                try {
+                    logger.warn("Reconnect to remote channel " + channel.getRemoteAddress() + ", because heartbeat read idle time out: "
+                            + heartbeatTimeout + "ms");
+                    ((Client) channel).reconnect();
+                } catch (Throwable t) {
+                    // do nothing
+                }
+            } else {
+                try {
+                    logger.warn("Close channel " + channel + ", because heartbeat read idle time out: "
+                            + heartbeatTimeout + "ms");
                     channel.close();
+                } catch (Throwable t) {
+                    logger.warn("Exception when close channel " + channel, t);
                 }
             }
-        } catch (Throwable t) {
-            logger.warn("Exception when reconnect to remote channel " + channel.getRemoteAddress(), t);
         }
     }
 }

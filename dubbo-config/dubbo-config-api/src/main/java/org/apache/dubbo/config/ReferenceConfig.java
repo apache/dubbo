@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.bytecode.Wrapper;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.ClassHelper;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -104,7 +105,10 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
      * The interface class of the reference service
      */
     private Class<?> interfaceClass;
-    // client type
+    
+    /**
+     * client type
+     */
     private String client;
 
     /**
@@ -226,7 +230,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         checkAndUpdateSubConfigs();
 
         if (destroyed) {
-            throw new IllegalStateException("Already destroyed!");
+            throw new IllegalStateException("The invoker of ReferenceConfig(" + url + ") has already destroyed!");
         }
         if (ref == null) {
             init();
@@ -245,7 +249,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         try {
             invoker.destroy();
         } catch (Throwable t) {
-            logger.warn("Unexpected err when destroy invoker of ReferenceConfig(" + url + ").", t);
+            logger.warn("Unexpected error occured when destroy invoker of ReferenceConfig(" + url + ").", t);
         }
         invoker = null;
         ref = null;
@@ -270,7 +274,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
             String[] methods = Wrapper.getWrapper(interfaceClass).getMethodNames();
             if (methods.length == 0) {
-                logger.warn("NO method found in service interface " + interfaceClass.getName());
+                logger.warn("No method found in service interface " + interfaceClass.getName());
                 map.put("methods", Constants.ANY_VALUE);
             } else {
                 map.put("methods", StringUtils.join(new HashSet<String>(Arrays.asList(methods)), ","));
@@ -465,8 +469,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
         try {
             if (interfaceName != null && interfaceName.length() > 0) {
-                this.interfaceClass = Class.forName(interfaceName, true, Thread.currentThread()
-                        .getContextClassLoader());
+                this.interfaceClass = Class.forName(interfaceName, true, ClassHelper.getClassLoader());
             }
         } catch (ClassNotFoundException t) {
             throw new IllegalStateException(t.getMessage(), t);
@@ -588,7 +591,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                     fis = new FileInputStream(new File(resolveFile));
                     properties.load(fis);
                 } catch (IOException e) {
-                    throw new IllegalStateException("Unload " + resolveFile + ", cause: " + e.getMessage(), e);
+                    throw new IllegalStateException("Failed to load " + resolveFile + ", cause: " + e.getMessage(), e);
                 } finally {
                     try {
                         if (null != fis) {

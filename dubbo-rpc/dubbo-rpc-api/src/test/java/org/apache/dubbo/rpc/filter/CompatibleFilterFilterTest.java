@@ -24,12 +24,12 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.support.DemoService;
 import org.apache.dubbo.rpc.support.Type;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -41,7 +41,7 @@ public class CompatibleFilterFilterTest {
     private Invocation invocation;
     private Invoker invoker;
 
-    @After
+    @AfterEach
     public void tearDown() {
         Mockito.reset(invocation, invoker);
     }

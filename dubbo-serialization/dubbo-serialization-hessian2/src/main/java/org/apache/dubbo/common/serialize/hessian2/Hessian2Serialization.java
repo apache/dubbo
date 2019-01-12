@@ -25,6 +25,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * Hessian2 serialization implementation, hessian2 is the default serialization protocol for dubbo
+ *
+ * <pre>
+ *     e.g. &lt;dubbo:protocol serialization="hessian2" /&gt;
+ * </pre>
+ */
 public class Hessian2Serialization implements Serialization {
 
     public static final byte ID = 2;

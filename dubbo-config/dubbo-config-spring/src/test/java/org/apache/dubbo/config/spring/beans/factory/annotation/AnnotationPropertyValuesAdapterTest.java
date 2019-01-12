@@ -21,8 +21,8 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.api.DemoService;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.DefaultConversionService;
@@ -88,54 +88,54 @@ public class AnnotationPropertyValuesAdapterTest {
 
 //        System.out.println(referenceBean);
 
-        Assert.assertEquals(DemoService.class, referenceBean.getInterfaceClass());
-        Assert.assertEquals("org.apache.dubbo.config.spring.api.DemoService", referenceBean.getInterface());
-        Assert.assertEquals("1.0.0", referenceBean.getVersion());
-        Assert.assertEquals("group", referenceBean.getGroup());
-        Assert.assertEquals("dubbo://localhost:12345", referenceBean.getUrl());
-        Assert.assertEquals("client", referenceBean.getClient());
-        Assert.assertEquals(true, referenceBean.isGeneric());
-        Assert.assertEquals(true, referenceBean.isInjvm());
-        Assert.assertEquals(false, referenceBean.isCheck());
-        Assert.assertEquals(true, referenceBean.isInit());
-        Assert.assertEquals(true, referenceBean.getLazy());
-        Assert.assertEquals(true, referenceBean.getStubevent());
-        Assert.assertEquals("reconnect", referenceBean.getReconnect());
-        Assert.assertEquals(true, referenceBean.getSticky());
+        Assertions.assertEquals(DemoService.class, referenceBean.getInterfaceClass());
+        Assertions.assertEquals("org.apache.dubbo.config.spring.api.DemoService", referenceBean.getInterface());
+        Assertions.assertEquals("1.0.0", referenceBean.getVersion());
+        Assertions.assertEquals("group", referenceBean.getGroup());
+        Assertions.assertEquals("dubbo://localhost:12345", referenceBean.getUrl());
+        Assertions.assertEquals("client", referenceBean.getClient());
+        Assertions.assertEquals(true, referenceBean.isGeneric());
+        Assertions.assertEquals(true, referenceBean.isInjvm());
+        Assertions.assertEquals(false, referenceBean.isCheck());
+        Assertions.assertEquals(true, referenceBean.isInit());
+        Assertions.assertEquals(true, referenceBean.getLazy());
+        Assertions.assertEquals(true, referenceBean.getStubevent());
+        Assertions.assertEquals("reconnect", referenceBean.getReconnect());
+        Assertions.assertEquals(true, referenceBean.getSticky());
 
-        Assert.assertEquals("javassist", referenceBean.getProxy());
+        Assertions.assertEquals("javassist", referenceBean.getProxy());
 
-        Assert.assertEquals("stub", referenceBean.getStub());
-        Assert.assertEquals("failover", referenceBean.getCluster());
-        Assert.assertEquals(Integer.valueOf(1), referenceBean.getConnections());
-        Assert.assertEquals(Integer.valueOf(1), referenceBean.getCallbacks());
-        Assert.assertEquals("onconnect", referenceBean.getOnconnect());
-        Assert.assertEquals("ondisconnect", referenceBean.getOndisconnect());
-        Assert.assertEquals("owner", referenceBean.getOwner());
-        Assert.assertEquals("layer", referenceBean.getLayer());
-        Assert.assertEquals(Integer.valueOf(1), referenceBean.getRetries());
-        Assert.assertEquals("random", referenceBean.getLoadbalance());
-        Assert.assertEquals(true, referenceBean.isAsync());
-        Assert.assertEquals(Integer.valueOf(1), referenceBean.getActives());
-        Assert.assertEquals(true, referenceBean.getSent());
-        Assert.assertEquals("mock", referenceBean.getMock());
-        Assert.assertEquals("validation", referenceBean.getValidation());
-        Assert.assertEquals(Integer.valueOf(2), referenceBean.getTimeout());
-        Assert.assertEquals("cache", referenceBean.getCache());
-        Assert.assertEquals("default,default", referenceBean.getFilter());
-        Assert.assertEquals("default,default", referenceBean.getListener());
-        Assert.assertEquals("protocol", referenceBean.getProtocol());
+        Assertions.assertEquals("stub", referenceBean.getStub());
+        Assertions.assertEquals("failover", referenceBean.getCluster());
+        Assertions.assertEquals(Integer.valueOf(1), referenceBean.getConnections());
+        Assertions.assertEquals(Integer.valueOf(1), referenceBean.getCallbacks());
+        Assertions.assertEquals("onconnect", referenceBean.getOnconnect());
+        Assertions.assertEquals("ondisconnect", referenceBean.getOndisconnect());
+        Assertions.assertEquals("owner", referenceBean.getOwner());
+        Assertions.assertEquals("layer", referenceBean.getLayer());
+        Assertions.assertEquals(Integer.valueOf(1), referenceBean.getRetries());
+        Assertions.assertEquals("random", referenceBean.getLoadbalance());
+        Assertions.assertEquals(true, referenceBean.isAsync());
+        Assertions.assertEquals(Integer.valueOf(1), referenceBean.getActives());
+        Assertions.assertEquals(true, referenceBean.getSent());
+        Assertions.assertEquals("mock", referenceBean.getMock());
+        Assertions.assertEquals("validation", referenceBean.getValidation());
+        Assertions.assertEquals(Integer.valueOf(2), referenceBean.getTimeout());
+        Assertions.assertEquals("cache", referenceBean.getCache());
+        Assertions.assertEquals("default,default", referenceBean.getFilter());
+        Assertions.assertEquals("default,default", referenceBean.getListener());
+        Assertions.assertEquals("protocol", referenceBean.getProtocol());
 
         Map<String, String> data = new LinkedHashMap<String, String>();
         data.put("key1", "value1");
 
-        Assert.assertEquals(data, referenceBean.getParameters());
+        Assertions.assertEquals(data, referenceBean.getParameters());
         // Bean compare
-        Assert.assertEquals(null, referenceBean.getApplication());
-        Assert.assertEquals(null, referenceBean.getModule());
-        Assert.assertEquals(null, referenceBean.getConsumer());
-        Assert.assertEquals(null, referenceBean.getMonitor());
-        Assert.assertEquals(null, referenceBean.getRegistry());
+        Assertions.assertEquals(null, referenceBean.getApplication());
+        Assertions.assertEquals(null, referenceBean.getModule());
+        Assertions.assertEquals(null, referenceBean.getConsumer());
+        Assertions.assertEquals(null, referenceBean.getMonitor());
+        Assertions.assertEquals(null, referenceBean.getRegistry());
 
     }
 

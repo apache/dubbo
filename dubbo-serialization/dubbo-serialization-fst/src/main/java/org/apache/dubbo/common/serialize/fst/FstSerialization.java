@@ -25,6 +25,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * Fst serialization implementation
+ *
+ * <pre>
+ *     e.g. &lt;dubbo:protocol serialization="fst" /&gt;
+ * </pre>
+ */
 public class FstSerialization implements Serialization {
 
     @Override

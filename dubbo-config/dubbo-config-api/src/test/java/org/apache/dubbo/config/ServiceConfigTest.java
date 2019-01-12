@@ -31,9 +31,10 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.service.GenericService;
 
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.Collections;
@@ -44,11 +45,11 @@ import static org.apache.dubbo.common.Constants.GENERIC_SERIALIZATION_NATIVE_JAV
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.withSettings;
 
 public class ServiceConfigTest {
@@ -59,7 +60,7 @@ public class ServiceConfigTest {
     private ServiceConfig<DemoServiceImpl> service2 = new ServiceConfig<DemoServiceImpl>();
 
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         MockProtocol2.delegate = protocolDelegate;
         MockRegistryFactory2.registry = registryDelegate;
@@ -134,7 +135,7 @@ public class ServiceConfigTest {
     }
 
     @Test
-    @Ignore("cannot pass in travis")
+    @Disabled("cannot pass in travis")
     public void testUnexport() throws Exception {
         System.setProperty(Constants.SHUTDOWN_WAIT_KEY, "0");
         try {
@@ -158,10 +159,12 @@ public class ServiceConfigTest {
         assertThat(service.getInterfaceClass() == GenericService.class, is(true));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testInterface1() throws Exception {
-        ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
-        service.setInterface(DemoServiceImpl.class);
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
+            service.setInterface(DemoServiceImpl.class);
+        });
     }
 
     @Test
@@ -190,22 +193,28 @@ public class ServiceConfigTest {
         assertThat(service.getGeneric(), equalTo(GENERIC_SERIALIZATION_BEAN));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testGeneric2() throws Exception {
-        ServiceConfig service = new ServiceConfig();
-        service.setGeneric("illegal");
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            ServiceConfig service = new ServiceConfig();
+            service.setGeneric("illegal");
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testMock() throws Exception {
-        ServiceConfig service = new ServiceConfig();
-        service.setMock("true");
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            ServiceConfig service = new ServiceConfig();
+            service.setMock("true");
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testMock2() throws Exception {
-        ServiceConfig service = new ServiceConfig();
-        service.setMock(true);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            ServiceConfig service = new ServiceConfig();
+            service.setMock(true);
+        });
     }
 
     @Test

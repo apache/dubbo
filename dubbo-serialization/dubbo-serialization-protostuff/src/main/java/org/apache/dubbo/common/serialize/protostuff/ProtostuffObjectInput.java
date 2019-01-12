@@ -29,6 +29,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 
+/**
+ * Protostuff object input implementation
+ */
 public class ProtostuffObjectInput implements ObjectInput {
 
     private DataInputStream dis;

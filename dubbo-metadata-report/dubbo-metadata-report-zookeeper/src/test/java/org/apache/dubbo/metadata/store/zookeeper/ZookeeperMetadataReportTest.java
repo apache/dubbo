@@ -26,11 +26,11 @@ import org.apache.dubbo.remoting.zookeeper.curator.CuratorZookeeperTransporter;
 
 import com.google.gson.Gson;
 import org.apache.curator.test.TestingServer;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,14 +38,14 @@ import java.util.Map;
 /**
  * 2018/10/9
  */
-@Ignore("Keeps fail on Travis")
+@Disabled("Keeps fail on Travis")
 public class ZookeeperMetadataReportTest {
     private TestingServer zkServer;
     private ZookeeperMetadataReport zookeeperMetadataReport;
     private URL registryUrl;
     private ZookeeperMetadataReportFactory zookeeperMetadataReportFactory;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         int zkServerPort = NetUtils.getAvailablePort();
         this.zkServer = new TestingServer(zkServerPort, true);
@@ -56,7 +56,7 @@ public class ZookeeperMetadataReportTest {
         this.zookeeperMetadataReport = (ZookeeperMetadataReport) zookeeperMetadataReportFactory.createMetadataReport(registryUrl);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         zkServer.stop();
     }
@@ -75,20 +75,20 @@ public class ZookeeperMetadataReportTest {
         MetadataIdentifier providerMetadataIdentifier = storePrivider(zookeeperMetadataReport, interfaceName, version, group, application);
 
         String fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(providerMetadataIdentifier));
-        Assert.assertNotNull(fileContent);
+        Assertions.assertNotNull(fileContent);
 
         deletePath(providerMetadataIdentifier, zookeeperMetadataReport);
         fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(providerMetadataIdentifier));
-        Assert.assertNull(fileContent);
+        Assertions.assertNull(fileContent);
 
 
         providerMetadataIdentifier = storePrivider(zookeeperMetadataReport, interfaceName, version, group, application);
         fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(providerMetadataIdentifier));
-        Assert.assertNotNull(fileContent);
+        Assertions.assertNotNull(fileContent);
 
         Gson gson = new Gson();
         FullServiceDefinition fullServiceDefinition = gson.fromJson(fileContent, FullServiceDefinition.class);
-        Assert.assertEquals(fullServiceDefinition.getParameters().get("paramTest"), "zkTest");
+        Assertions.assertEquals(fullServiceDefinition.getParameters().get("paramTest"), "zkTest");
     }
 
 
@@ -101,16 +101,16 @@ public class ZookeeperMetadataReportTest {
         MetadataIdentifier consumerMetadataIdentifier = storeConsumer(zookeeperMetadataReport, interfaceName, version, group, application);
 
         String fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(consumerMetadataIdentifier));
-        Assert.assertNotNull(fileContent);
+        Assertions.assertNotNull(fileContent);
 
         deletePath(consumerMetadataIdentifier, zookeeperMetadataReport);
         fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(consumerMetadataIdentifier));
-        Assert.assertNull(fileContent);
+        Assertions.assertNull(fileContent);
 
         consumerMetadataIdentifier = storeConsumer(zookeeperMetadataReport, interfaceName, version, group, application);
         fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(consumerMetadataIdentifier));
-        Assert.assertNotNull(fileContent);
-        Assert.assertEquals(fileContent, "{\"paramConsumerTest\":\"zkCm\"}");
+        Assertions.assertNotNull(fileContent);
+        Assertions.assertEquals(fileContent, "{\"paramConsumerTest\":\"zkCm\"}");
     }
 
 
