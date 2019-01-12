@@ -55,15 +55,8 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
         setWriteTimestamp(channel);
         handler.connected(channel);
         // When a channel has connected, add it's heartbeat task and reconnected task to hashedWheelTimer
-        long heartbeat;
-        if (Constants.CONSUMER_SIDE.equals(channel.getUrl().getParameter(Constants.SIDE_KEY, Constants.PROVIDER_SIDE))) {
-            String dubbo = channel.getUrl().getParameter(Constants.DUBBO_VERSION_KEY);
-            heartbeat = channel.getUrl().getParameter(Constants.HEARTBEAT_KEY, dubbo != null &&
-                    dubbo.startsWith("1.0.") ? Constants.DEFAULT_HEARTBEAT : 0);
-        } else {
-            // For provider side, the default value of heartbeat is 0.
-            heartbeat = channel.getUrl().getParameter(Constants.HEARTBEAT_KEY, 0);
-        }
+        long heartbeat = channel.getUrl().getParameter(Constants.HEARTBEAT_KEY, Constants.LEAST_HEARTBEAT_DURATION);
+
         long heartbeatTimeout = channel.getUrl().getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartbeat * 3);
 
         if (heartbeatTimeout < heartbeat * 2) {
