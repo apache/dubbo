@@ -24,6 +24,7 @@ import org.apache.dubbo.common.serialize.support.SerializableClassRegistry;
 import org.apache.dubbo.common.serialize.support.SerializationOptimizer;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
@@ -367,19 +368,25 @@ public class DubboProtocol extends AbstractProtocol {
 
     private ExchangeClient[] getClients(URL url) {
         // whether to share connection
-        boolean service_share_connect = false;
+        boolean useShareConnect = false;
         int connections = url.getParameter(Constants.CONNECTIONS_KEY, 0);
         List<ReferenceCountExchangeClient> shareClients = null;
         // if not configured, connection is shared, otherwise, one connection for one service
         if (connections == 0) {
-            service_share_connect = true;
-            connections = Integer.parseInt(ConfigUtils.getProperty(Constants.SERVICE_CONNECTIONS_KEY,
-                    Constants.SERVICE_CONNECTIONS));
+            useShareConnect = true;
+
+            /**
+             * The xml configuration should have a higher priority than properties.
+             */
+            String shareConnectionsStr = url.getParameter(Constants.SHARE_CONNECTIONS_KEY, (String) null);
+            connections = Integer.parseInt( StringUtils.isBlank(shareConnectionsStr) ? ConfigUtils.getProperty(Constants.SHARE_CONNECTIONS_KEY,
+                    Constants.DEFAULT_SHARE_CONNECTIONS) : shareConnectionsStr);
             shareClients = getSharedClient(url, connections);
         }
+
         ExchangeClient[] clients = new ExchangeClient[connections];
         for (int i = 0; i < clients.length; i++) {
-            if (service_share_connect) {
+            if (useShareConnect) {
                 clients[i] = shareClients.get(i);
             } else {
                 clients[i] = initClient(url);
@@ -416,7 +423,7 @@ public class DubboProtocol extends AbstractProtocol {
             connectNum = Math.max(connectNum, 1);
 
             // If the clients is empty, then the first initialization is
-            if(CollectionUtils.isEmpty(clients)) {
+            if (CollectionUtils.isEmpty(clients)) {
                 clients = buildReferenceCountExchangeClientList(url, key, connectNum);
                 referenceClientMap.put(key, clients);
 
@@ -424,7 +431,7 @@ public class DubboProtocol extends AbstractProtocol {
                 for (int i = 0; i < clients.size(); i++) {
                     ReferenceCountExchangeClient referenceCountExchangeClient = clients.get(i);
                     // If there is a client in the list that is no longer available, create a new one to replace him.
-                    if(referenceCountExchangeClient == null || referenceCountExchangeClient.isClosed()) {
+                    if (referenceCountExchangeClient == null || referenceCountExchangeClient.isClosed()) {
                         clients.set(i, buildReferenceCountExchangeClient(url, key));
                         continue;
                     }
@@ -483,6 +490,7 @@ public class DubboProtocol extends AbstractProtocol {
 
     /**
      * Bulk build client
+     *
      * @param url
      * @param key
      * @param connectNum
@@ -500,6 +508,7 @@ public class DubboProtocol extends AbstractProtocol {
 
     /**
      * Build a single client
+     *
      * @param url
      * @param key
      * @return
@@ -516,6 +525,7 @@ public class DubboProtocol extends AbstractProtocol {
 
     /**
      * Create new connection
+     *
      * @param url
      */
     private ExchangeClient initClient(URL url) {
