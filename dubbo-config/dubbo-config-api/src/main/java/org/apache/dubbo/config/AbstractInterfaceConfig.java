@@ -96,7 +96,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected String listener;
 
     /**
-     * The owner of zhe service providers
+     * The owner of the service providers
      */
     protected String owner;
 
