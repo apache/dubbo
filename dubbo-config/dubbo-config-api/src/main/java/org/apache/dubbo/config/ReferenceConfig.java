@@ -44,13 +44,7 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
 
@@ -105,7 +99,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
      * The interface class of the reference service
      */
     private Class<?> interfaceClass;
-    
+
     /**
      * client type
      */
@@ -115,6 +109,11 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
      * The url for peer-to-peer invocation
      */
     private String url;
+
+    /**
+     * The classloader for load interface
+     */
+    private ClassLoader classLoader;
 
     /**
      * The method configs
@@ -204,8 +203,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             interfaceClass = GenericService.class;
         } else {
             try {
-                interfaceClass = Class.forName(interfaceName, true, Thread.currentThread()
-                        .getContextClassLoader());
+                interfaceClass = Class.forName(interfaceName, true, classLoader());
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
@@ -224,6 +222,14 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         checkApplication();
         checkMetadataReport();
         checkRegistryDataConfig();
+    }
+
+    private ClassLoader classLoader() {
+        return Objects.isNull(classLoader) ? Thread.currentThread().getContextClassLoader() : this.classLoader;
+    }
+
+    private void setClassLoader(ClassLoader classLoader) {
+        this.classLoader = classLoader;
     }
 
     public synchronized T get() {
