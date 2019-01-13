@@ -48,9 +48,14 @@ public class TelnetCodec extends TransportCodec {
 
     private static final byte[] DOWN = new byte[]{27, 91, 66};
 
-    private static final List<?> ENTER = Arrays.asList(new Object[]{new byte[]{'\r', '\n'} /* Windows Enter */, new byte[]{'\n'} /* Linux Enter */});
+    private static final List<?> ENTER = Arrays.asList(
+            new byte[]{'\r', '\n'} /* Windows Enter */,
+            new byte[]{'\n'} /* Linux Enter */);
 
-    private static final List<?> EXIT = Arrays.asList(new Object[]{new byte[]{3} /* Windows Ctrl+C */, new byte[]{-1, -12, -1, -3, 6} /* Linux Ctrl+C */, new byte[]{-1, -19, -1, -3, 6} /* Linux Pause */});
+    private static final List<?> EXIT = Arrays.asList(
+            new byte[]{3} /* Windows Ctrl+C */,
+            new byte[]{-1, -12, -1, -3, 6} /* Linux Ctrl+C */,
+            new byte[]{-1, -19, -1, -3, 6} /* Linux Pause */);
 
     private static Charset getCharset(Channel channel) {
         if (channel != null) {
