@@ -118,16 +118,19 @@ public class HttpProtocol extends AbstractProxyProtocol {
             @Override
             public RemoteInvocation createRemoteInvocation(MethodInvocation methodInvocation) {
                 RemoteInvocation invocation;
-                /**
-                 * package was renamed to 'org.apache.dubbo' in v2.7.0, so only provider versions after v2.7.0 can recognize org.apache.xxx.HttpRemoteInvocation'.
+                /*
+                  package was renamed to 'org.apache.dubbo' in v2.7.0, so only provider versions after v2.7.0 can
+                  recognize org.apache.xxx.HttpRemoteInvocation'.
                  */
                 if (Version.isFramework270OrHigher(url.getParameter(Constants.RELEASE_KEY))) {
                     invocation = new HttpRemoteInvocation(methodInvocation);
                 } else {
-                    /**
-                     * The customized 'com.alibaba.dubbo.rpc.protocol.http.HttpRemoteInvocation' was firstly introduced in v2.6.3.
-                     * The main purpose is to support transformation of attachments in HttpProtocol: https://github.com/apache/incubator-dubbo/pull/1827.
-                     * To guarantee interoperability with lower versions, we need to check if the provider is v2.6.3 or higher before sending customized HttpRemoteInvocation.
+                    /*
+                      The customized 'com.alibaba.dubbo.rpc.protocol.http.HttpRemoteInvocation' was firstly introduced
+                      in v2.6.3. The main purpose is to support transformation of attachments in HttpProtocol:
+                      https://github.com/apache/incubator-dubbo/pull/1827. To guarantee interoperability with lower
+                      versions, we need to check if the provider is v2.6.3 or higher before sending customized
+                      HttpRemoteInvocation.
                      */
                     if (Version.isFramework263OrHigher(url.getParameter(Constants.DUBBO_VERSION_KEY))) {
                         invocation = new com.alibaba.dubbo.rpc.protocol.http.HttpRemoteInvocation(methodInvocation);

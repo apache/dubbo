@@ -42,7 +42,8 @@ public final class Version {
 
     /**
      * For protocol compatibility purpose.
-     * Because {@link #isSupportResponseAttachment} is checked for every call, int compare expect to has higher performance than string.
+     * Because {@link #isSupportResponseAttachment} is checked for every call, int compare expect to has higher
+     * performance than string.
      */
     private static final int LOWEST_VERSION_FOR_RESPONSE_ATTACHMENT = 20002; // 2.0.2
     private static final Map<String, Integer> VERSION2INT = new HashMap<String, Integer>();
@@ -65,8 +66,6 @@ public final class Version {
 
     /**
      * To check the framework release version number to decide if it's 2.7.0 or higher
-     * @param version
-     * @return
      */
     public static boolean isFramework270OrHigher (String version) {
         return StringUtils.isNotEmpty(version);
@@ -76,9 +75,8 @@ public final class Version {
      * To check the framework release version number to decide if it's 2.6.3 or higher
      *
      * Because response attachments feature is firstly introduced in 2.6.3
-     * and moreover we have no other approach to check the framework version number, so we use isSupportResponseAttachment to decide if it's v2.6.3
-     * @param version
-     * @return
+     * and moreover we have no other approach to check the framework version number, so we use
+     * isSupportResponseAttachment to decide if it's v2.6.3
      */
     public static boolean isFramework263OrHigher (String version) {
         return isSupportResponseAttachment(version);
@@ -88,7 +86,8 @@ public final class Version {
         if (version == null || version.length() == 0) {
             return false;
         }
-        // for previous dubbo version(2.0.10/020010~2.6.2/020602), this version is the jar's version, so they need to be ignore
+        // for previous dubbo version(2.0.10/020010~2.6.2/020602), this version is the jar's version, so they need to
+        // be ignore
         int iVersion = getIntVersion(version);
         if (iVersion >= 20010 && iVersion <= 20602) {
             return false;
