@@ -22,6 +22,8 @@ import org.apache.dubbo.rpc.cluster.Merger;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Arrays;
+import java.util.Objects;
 
 public class MapMerger implements Merger<Map<?, ?>> {
 
@@ -31,11 +33,7 @@ public class MapMerger implements Merger<Map<?, ?>> {
             return Collections.emptyMap();
         }
         Map<Object, Object> result = new HashMap<Object, Object>();
-        for (Map<?, ?> item : items) {
-            if (item != null) {
-                result.putAll(item);
-            }
-        }
+        Arrays.stream(items).filter(Objects::nonNull).forEach(item -> result.putAll(item));
         return result;
     }
 

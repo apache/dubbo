@@ -23,6 +23,8 @@ import org.apache.dubbo.rpc.cluster.Merger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Arrays;
+import java.util.Objects;
 
 public class ListMerger implements Merger<List<?>> {
 
@@ -32,11 +34,7 @@ public class ListMerger implements Merger<List<?>> {
             return Collections.emptyList();
         }
         List<Object> result = new ArrayList<Object>();
-        for (List<?> item : items) {
-            if (item != null) {
-                result.addAll(item);
-            }
-        }
+        Arrays.stream(items).filter(Objects::nonNull).forEach(item -> result.addAll(item));
         return result;
     }
 
