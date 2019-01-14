@@ -84,7 +84,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected String cluster;
 
     /**
-     * The {@link Filter} when the provicer side exposed a service or the customer side references a remote service used,
+     * The {@link Filter} when the provider side exposed a service or the customer side references a remote service used,
      * if there are more than one, you can use commas to separate them
      */
     protected String filter;
