@@ -23,7 +23,7 @@ import org.springframework.validation.DataBinder;
 
 import java.util.Map;
 
-import static com.alibaba.spring.util.PropertySourcesUtils.getSubProperties;
+import static com.alibaba.dubbo.config.spring.util.PropertySourcesUtils.getSubProperties;
 
 /**
  * Default {@link DubboConfigBinder} implementation based on Spring {@link DataBinder}

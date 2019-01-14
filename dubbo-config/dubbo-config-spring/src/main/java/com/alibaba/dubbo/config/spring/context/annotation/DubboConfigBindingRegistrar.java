@@ -41,8 +41,8 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static com.alibaba.spring.util.PropertySourcesUtils.getSubProperties;
-import static com.alibaba.spring.util.PropertySourcesUtils.normalizePrefix;
+import static com.alibaba.dubbo.config.spring.util.PropertySourcesUtils.getSubProperties;
+import static com.alibaba.dubbo.config.spring.util.PropertySourcesUtils.normalizePrefix;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 import static org.springframework.beans.factory.support.BeanDefinitionReaderUtils.registerWithGeneratedName;
 
