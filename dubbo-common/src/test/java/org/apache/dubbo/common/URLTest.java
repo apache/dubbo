@@ -17,7 +17,6 @@
 package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
-
 import org.junit.Test;
 
 import java.io.File;
@@ -124,7 +123,7 @@ public class URLTest {
         assertEquals("home/user1/router.js", url.getPath());
         assertEquals(0, url.getParameters().size());
 
-        // Caution!! 
+        // Caution!!
         url = URL.valueOf("file://home/user1/router.js");
         //                      ^^ only tow slash!
         assertEquals("file", url.getProtocol());

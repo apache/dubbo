@@ -57,7 +57,6 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
         }
         // avoid creating too many connections， so add lock
         synchronized (zookeeperClientMap) {
-
             if ((zookeeperClient = fetchAndUpdateZookeeperClientCache(addressList)) != null && zookeeperClient.isConnected()) {
                 logger.info("find valid zookeeper client from the cache for address: " + url);
                 return zookeeperClient;

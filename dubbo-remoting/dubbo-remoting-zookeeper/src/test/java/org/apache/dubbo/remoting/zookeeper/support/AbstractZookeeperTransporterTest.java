@@ -81,7 +81,7 @@ public class AbstractZookeeperTransporterTest {
 
 
     @Test
-    public void testCreateServerURLWhenHasUser() {
+    public void testToCreateURLWhenHasUser() {
         URL url = URL.valueOf("zookeeper://us2:pw2@127.0.0.1:" + zkServerPort + "/org.apache.dubbo.registry.RegistryService?application=metadatareport-local-xml-provider2&dubbo=2.0.2&interface=org.apache.dubbo.registry.RegistryService&pid=47418&specVersion=2.7.0-SNAPSHOT&timestamp=1547102428828");
         URL newUrl = abstractZookeeperTransporter.toClientURL(url);
         Assert.assertEquals(newUrl.getProtocol(), "zookeeper");

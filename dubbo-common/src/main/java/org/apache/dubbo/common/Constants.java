@@ -482,12 +482,14 @@ public class Constants {
 
     /**
      * simple the registry for provider.
+     *
      * @since 2.7.0
      */
     public static final String SIMPLIFIED_KEY = "simplified";
 
     /**
      * After simplify the registry, should add some paramter individually for provider.
+     *
      * @since 2.7.0
      */
     public static final String EXTRA_KEYS_KEY = "extra-keys";
