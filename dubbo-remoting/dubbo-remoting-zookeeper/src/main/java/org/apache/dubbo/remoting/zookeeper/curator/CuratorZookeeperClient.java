@@ -158,8 +158,8 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
         try {
             byte[] dataBytes = client.getData().forPath(path);
             return (dataBytes == null || dataBytes.length == 0) ? null : new String(dataBytes, charset);
-        } catch (NodeExistsException e) {
         } catch (NoNodeException e) {
+            // ignore NoNode Exception.
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

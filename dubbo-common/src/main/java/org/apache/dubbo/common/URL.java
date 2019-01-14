@@ -70,8 +70,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @see java.net.URL
  * @see java.net.URI
  */
-public /**final**/
-class URL implements Serializable {
+public /**final**/ class URL implements Serializable {
 
     private static final long serialVersionUID = -1985165475234910535L;
 
@@ -497,6 +496,15 @@ class URL implements Serializable {
             return defaultValue;
         }
         return Constants.COMMA_SPLIT_PATTERN.split(value);
+    }
+
+    public List<String> getParameter(String key, List<String> defaultValue) {
+        String value = getParameter(key);
+        if (value == null || value.length() == 0) {
+            return defaultValue;
+        }
+        String[] strArray = Constants.COMMA_SPLIT_PATTERN.split(value);
+        return Arrays.asList(strArray);
     }
 
     private Map<String, Number> getNumbers() {

@@ -24,7 +24,7 @@ import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,24 +41,25 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
 
     /**
      * share connnect for registry, metadata, etc..
+     * <p>
+     * Make sure the connection is connected.
      *
      * @param url
      * @return
      */
     public ZookeeperClient connect(URL url) {
-        ZookeeperClient clientData;
+        ZookeeperClient zookeeperClient;
         List<String> addressList = getURLBackupAddress(url);
         // The field define the zookeeper server , including protocol, host, port, username, password
-        if ((clientData = fetchAndUpdateZookeeperClientCache(url, addressList)) != null) {
+        if ((zookeeperClient = fetchAndUpdateZookeeperClientCache(addressList)) != null && zookeeperClient.isConnected()) {
             logger.info("Get result from map for the first time when invoking zookeeperTransporter.connnect .");
-            return clientData;
+            return zookeeperClient;
         }
-        ZookeeperClient zookeeperClient = null;
         // avoid creating too many connections， so add lock
         synchronized (zookeeperClientMap) {
-            if ((clientData = fetchAndUpdateZookeeperClientCache(url, addressList)) != null) {
+            if ((zookeeperClient = fetchAndUpdateZookeeperClientCache(addressList)) != null && zookeeperClient.isConnected()) {
                 logger.info("Get result from map for the second time when invoking zookeeperTransporter.connnect .");
-                return clientData;
+                return zookeeperClient;
             }
 
             zookeeperClient = createZookeeperClient(createServerURL(url));
@@ -76,26 +77,39 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
      */
     protected abstract ZookeeperClient createZookeeperClient(URL url);
 
-    ZookeeperClient fetchAndUpdateZookeeperClientCache(URL url, List<String> addressList) {
+    /**
+     * get the ZookeeperClient from cache, the ZookeeperClient must be connected.
+     * <p>
+     * It is not private method for unit test.
+     *
+     * @param addressList
+     * @return
+     */
+    ZookeeperClient fetchAndUpdateZookeeperClientCache(List<String> addressList) {
 
-        ZookeeperClient zookeeperClientData = null;
+        ZookeeperClient zookeeperClient = null;
         for (String address : addressList) {
-            if ((zookeeperClientData = zookeeperClientMap.get(address)) != null) {
+            if ((zookeeperClient = zookeeperClientMap.get(address)) != null && zookeeperClient.isConnected()) {
                 break;
             }
         }
-        if (zookeeperClientData != null) {
-            writeToClientMap(addressList, zookeeperClientData);
+        if (zookeeperClient != null && zookeeperClient.isConnected()) {
+            writeToClientMap(addressList, zookeeperClient);
         }
-        return zookeeperClientData;
+        return zookeeperClient;
     }
 
+    /**
+     * get all zookeeper urls (such as :zookeeper://127.0.0.1:2181?127.0.0.1:8989,127.0.0.1:9999)
+     *
+     * @param url such as:zookeeper://127.0.0.1:2181?127.0.0.1:8989,127.0.0.1:9999
+     * @return such as 127.0.0.1:2181,127.0.0.1:8989,127.0.0.1:9999
+     */
     List<String> getURLBackupAddress(URL url) {
         List<String> addressList = new ArrayList<String>();
         addressList.add(url.getAddress());
 
-        String[] backups = url.getParameter(Constants.BACKUP_KEY, new String[0]);
-        addressList.addAll(Arrays.asList(backups));
+        addressList.addAll(url.getParameter(Constants.BACKUP_KEY, Collections.EMPTY_LIST));
         return addressList;
     }
 
@@ -103,11 +117,11 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
      * write address-ZookeeperClient relationship to Map
      *
      * @param addressList
-     * @param ZookeeperClient
+     * @param zookeeperClient
      */
-    void writeToClientMap(List<String> addressList, ZookeeperClient ZookeeperClient) {
+    void writeToClientMap(List<String> addressList, ZookeeperClient zookeeperClient) {
         for (String address : addressList) {
-            zookeeperClientMap.put(address, ZookeeperClient);
+            zookeeperClientMap.put(address, zookeeperClient);
         }
     }
 

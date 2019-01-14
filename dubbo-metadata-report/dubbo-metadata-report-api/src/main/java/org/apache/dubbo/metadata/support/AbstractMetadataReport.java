@@ -378,7 +378,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
                                 // Check and connect to the registry
                                 try {
                                     int times = retryCounter.incrementAndGet();
-                                    logger.error("start to retry task for metadata report. retry times:" + times);
+                                    logger.info("start to retry task for metadata report. retry times:" + times);
                                     if (retry() && times > retryTimesIfNonFail) {
                                         cancelRetryTask();
                                     }
