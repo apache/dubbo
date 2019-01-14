@@ -16,13 +16,14 @@
  */
 package org.apache.dubbo.remoting.zookeeper.support;
 
-import org.apache.curator.test.TestingServer;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 import org.apache.dubbo.remoting.zookeeper.curator.CuratorZookeeperTransporter;
+
+import org.apache.curator.test.TestingServer;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -67,7 +68,7 @@ public class AbstractZookeeperTransporterTest {
     @Test
     public void testCreateServerURL() {
         URL url = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort + "/org.apache.dubbo.registry.RegistryService?application=metadatareport-local-xml-provider2&dubbo=2.0.2&interface=org.apache.dubbo.registry.RegistryService&pid=47418&specVersion=2.7.0-SNAPSHOT&timestamp=1547102428828&timeout=2300");
-        URL newUrl = abstractZookeeperTransporter.createServerURL(url);
+        URL newUrl = abstractZookeeperTransporter.toClientURL(url);
         Assert.assertEquals(newUrl.getProtocol(), "zookeeper");
         Assert.assertEquals(newUrl.getHost(), "127.0.0.1");
         Assert.assertEquals(newUrl.getPort(), zkServerPort);
@@ -80,9 +81,9 @@ public class AbstractZookeeperTransporterTest {
 
 
     @Test
-    public void testCreateServerURLWhenHasUser() {
+    public void testToCreateURLWhenHasUser() {
         URL url = URL.valueOf("zookeeper://us2:pw2@127.0.0.1:" + zkServerPort + "/org.apache.dubbo.registry.RegistryService?application=metadatareport-local-xml-provider2&dubbo=2.0.2&interface=org.apache.dubbo.registry.RegistryService&pid=47418&specVersion=2.7.0-SNAPSHOT&timestamp=1547102428828");
-        URL newUrl = abstractZookeeperTransporter.createServerURL(url);
+        URL newUrl = abstractZookeeperTransporter.toClientURL(url);
         Assert.assertEquals(newUrl.getProtocol(), "zookeeper");
         Assert.assertEquals(newUrl.getHost(), "127.0.0.1");
         Assert.assertEquals(newUrl.getPort(), zkServerPort);
