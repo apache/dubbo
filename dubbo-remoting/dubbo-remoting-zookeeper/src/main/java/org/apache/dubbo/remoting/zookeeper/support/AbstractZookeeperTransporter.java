@@ -52,18 +52,18 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
         List<String> addressList = getURLBackupAddress(url);
         // The field define the zookeeper server , including protocol, host, port, username, password
         if ((zookeeperClient = fetchAndUpdateZookeeperClientCache(addressList)) != null && zookeeperClient.isConnected()) {
-            logger.info("Get result from map for the first time when invoking zookeeperTransporter.connnect .");
+            logger.info("find valid zookeeper client from the cache for address: " + url);
             return zookeeperClient;
         }
         // avoid creating too many connections， so add lock
         synchronized (zookeeperClientMap) {
             if ((zookeeperClient = fetchAndUpdateZookeeperClientCache(addressList)) != null && zookeeperClient.isConnected()) {
-                logger.info("Get result from map for the second time when invoking zookeeperTransporter.connnect .");
+                logger.info("find valid zookeeper client from the cache for address: " + url);
                 return zookeeperClient;
             }
 
-            zookeeperClient = createZookeeperClient(createServerURL(url));
-            logger.info("Get result by creating new connection when invoking zookeeperTransporter.connnect .");
+            zookeeperClient = createZookeeperClient(toClientURL(url));
+            logger.info("No valid zookeeper client found from cache, therefore create a new client for url. " + url);
             writeToClientMap(addressList, zookeeperClient);
         }
         return zookeeperClient;
@@ -131,7 +131,7 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
      * @param url
      * @return
      */
-    URL createServerURL(URL url) {
+    URL toClientURL(URL url) {
         Map<String, String> parameterMap = new HashMap<>();
         // for CuratorZookeeperClient
         if (url.getParameter(Constants.TIMEOUT_KEY) != null) {
