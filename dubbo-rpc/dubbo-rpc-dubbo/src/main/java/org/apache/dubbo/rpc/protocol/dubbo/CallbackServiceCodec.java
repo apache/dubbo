@@ -80,7 +80,7 @@ class CallbackServiceCodec {
     private static String exportOrUnexportCallbackService(Channel channel, URL url, Class clazz, Object inst, Boolean export) throws IOException {
         int instid = System.identityHashCode(inst);
 
-        Map<String, String> params = new HashMap<String, String>(3);
+        Map<String, String> params = new HashMap<>(3);
         // no need to new client again
         params.put(Constants.IS_SERVER_KEY, Boolean.FALSE.toString());
         // mark it's a callback, for troubleshooting
@@ -92,7 +92,7 @@ class CallbackServiceCodec {
         // add method, for verifying against method, automatic fallback (see dubbo protocol)
         params.put(Constants.METHODS_KEY, StringUtils.join(Wrapper.getWrapper(clazz).getDeclaredMethodNames(), ","));
 
-        Map<String, String> tmpMap = new HashMap<String, String>(url.getParameters());
+        Map<String, String> tmpMap = new HashMap<>(url.getParameters());
         tmpMap.putAll(params);
         tmpMap.remove(Constants.VERSION_KEY);// doesn't need to distinguish version for callback
         tmpMap.put(Constants.INTERFACE_KEY, clazz.getName());
