@@ -25,6 +25,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.RpcInvocation;
 
 import java.util.Arrays;
 
@@ -43,6 +44,12 @@ public class TimeoutFilter implements Filter {
         if (invocation.getAttachments() != null) {
             long start = System.currentTimeMillis();
             invocation.getAttachments().put(TIMEOUT_FILTER_START_TIME, String.valueOf(start));
+        } else {
+            if (invocation instanceof RpcInvocation) {
+                RpcInvocation invc = (RpcInvocation) invocation;
+                long start = System.currentTimeMillis();
+                invc.setAttachment(TIMEOUT_FILTER_START_TIME, String.valueOf(start));
+            }
         }
         return invoker.invoke(invocation);
     }
