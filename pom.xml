@@ -98,7 +98,7 @@
         <cglib_version>2.2</cglib_version>
         <mockito_version>2.23.4</mockito_version>
         <!-- Build args -->
-        <argline>-server -Xms256m -XX:PermSize=64m -XX:MaxPermSize=128m -Dfile.encoding=UTF-8
+        <argline>-server -Xms256m -Xmx512m -XX:PermSize=64m -XX:MaxPermSize=128m -Dfile.encoding=UTF-8
             -Djava.net.preferIPv4Stack=true
         </argline>
         <skip_maven_deploy>false</skip_maven_deploy>
