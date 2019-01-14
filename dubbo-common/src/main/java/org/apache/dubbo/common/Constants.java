@@ -749,9 +749,9 @@ public class Constants {
 
     public static final String COMPATIBLE_CONFIG_KEY = "compatible_config";
     // package version in the manifest
-    public static final String SPECIFICATION_VERSION_KEY = "specVersion";
+    public static final String RELEASE_KEY = "release";
 
-    public static final String OVERRIDE_PROVIDERS_KEY = "providerAddreses";
+    public static final String OVERRIDE_PROVIDERS_KEY = "providerAddresses";
 
     public static final String PROTOCOLS_SUFFIX = "dubbo.protocols.";
 
@@ -760,9 +760,9 @@ public class Constants {
     public static final String REGISTRIES_SUFFIX = "dubbo.registries.";
 
     public static final String[] DEFAULT_REGISTER_PROVIDER_KEYS = {APPLICATION_KEY, CODEC_KEY, EXCHANGER_KEY, SERIALIZATION_KEY, CLUSTER_KEY, CONNECTIONS_KEY, DEPRECATED_KEY,
-            GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY, WEIGHT_KEY, TIMESTAMP_KEY, DUBBO_VERSION_KEY, SPECIFICATION_VERSION_KEY};
+            GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY, WEIGHT_KEY, TIMESTAMP_KEY, DUBBO_VERSION_KEY, RELEASE_KEY};
 
-    public static final String[] DEFAULT_REGISTER_CONSUMER_KEYS = {APPLICATION_KEY, VERSION_KEY, GROUP_KEY, DUBBO_VERSION_KEY, SPECIFICATION_VERSION_KEY};
+    public static final String[] DEFAULT_REGISTER_CONSUMER_KEYS = {APPLICATION_KEY, VERSION_KEY, GROUP_KEY, DUBBO_VERSION_KEY, RELEASE_KEY};
 
     public static final String TELNET = "telnet";
 

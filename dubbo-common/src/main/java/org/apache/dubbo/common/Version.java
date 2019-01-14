@@ -19,6 +19,7 @@ package org.apache.dubbo.common;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassHelper;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import java.net.URL;
 import java.security.CodeSource;
@@ -60,6 +61,27 @@ public final class Version {
 
     public static String getVersion() {
         return VERSION;
+    }
+
+    /**
+     * To check the framework release version number to decide if it's 2.7.0 or higher
+     * @param version
+     * @return
+     */
+    public static boolean isFramework270OrHigher (String version) {
+        return StringUtils.isNotEmpty(version);
+    }
+
+    /**
+     * To check the framework release version number to decide if it's 2.6.3 or higher
+     *
+     * Because response attachments feature is firstly introduced in 2.6.3
+     * and moreover we have no other approach to check the framework version number, so we use isSupportResponseAttachment to decide if it's v2.6.3
+     * @param version
+     * @return
+     */
+    public static boolean isFramework263OrHigher (String version) {
+        return isSupportResponseAttachment(version);
     }
 
     public static boolean isSupportResponseAttachment(String version) {
