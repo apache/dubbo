@@ -17,27 +17,27 @@
 
 import org.apache.dubbo.rpc.protocol.thrift.ThriftUtils;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class ClassNameTest {
 
     @Test
     public void testThriftUtils() {
 
-        Assert.assertEquals($__ClassNameTestDubboStub.echo_args.class.getName(),
+        Assertions.assertEquals($__ClassNameTestDubboStub.echo_args.class.getName(),
                 ThriftUtils.generateMethodArgsClassName(
                         ClassNameTestDubbo.class.getName(), "echo"));
 
-        Assert.assertEquals($__ClassNameTestDubboStub.echo_result.class.getName(),
+        Assertions.assertEquals($__ClassNameTestDubboStub.echo_result.class.getName(),
                 ThriftUtils.generateMethodResultClassName(
                         ClassNameTestDubbo.class.getName(), "echo"));
 
-        Assert.assertEquals(ClassNameTestThrift.echo_args.class.getName(),
+        Assertions.assertEquals(ClassNameTestThrift.echo_args.class.getName(),
                 ThriftUtils.generateMethodArgsClassNameThrift(
                         ClassNameTestThrift.Iface.class.getName(), "echo"));
 
-        Assert.assertEquals(ClassNameTestThrift.echo_result.class.getName(),
+        Assertions.assertEquals(ClassNameTestThrift.echo_result.class.getName(),
                 ThriftUtils.generateMethodResultClassNameThrift(
                         ClassNameTestThrift.Iface.class.getName(), "echo"));
 

@@ -30,13 +30,13 @@ import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 import org.apache.dubbo.remoting.p2p.Group;
 import org.apache.dubbo.remoting.p2p.Networkers;
 import org.apache.dubbo.remoting.p2p.Peer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 
 public class MulticastExchangeNetworkerTest {

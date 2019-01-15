@@ -22,8 +22,8 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 
-import junit.framework.TestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * ProformanceClient
  * The test class will report abnormal thread pool, because the judgment on the thread pool concurrency problems produced in DefaultChannelHandler (connected event has been executed asynchronously, judgment, then closed the thread pool, thread pool and execution error, this problem can be specified through the Constants.CHANNEL_HANDLER_KEY=connection.)
  */
-public class PerformanceClientCloseTest extends TestCase {
+public class PerformanceClientCloseTest  {
 
     private static final Logger logger = LoggerFactory.getLogger(PerformanceClientCloseTest.class);
 

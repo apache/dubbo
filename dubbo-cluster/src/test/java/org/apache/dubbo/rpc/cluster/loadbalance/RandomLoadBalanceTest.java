@@ -18,8 +18,9 @@ package org.apache.dubbo.rpc.cluster.loadbalance;
 
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcStatus;
-import org.junit.Assert;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -34,7 +35,7 @@ public class RandomLoadBalanceTest extends LoadBalanceBaseTest {
         Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, RandomLoadBalance.NAME);
         for (Map.Entry<Invoker, AtomicLong> entry : counter.entrySet()) {
             Long count = entry.getValue().get();
-            Assert.assertTrue("abs diff should < avg", Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()));
+            Assertions.assertTrue(Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()), "abs diff should < avg");
         }
 
         for (int i = 0; i < 5; i++) {
@@ -46,11 +47,11 @@ public class RandomLoadBalanceTest extends LoadBalanceBaseTest {
         for (Map.Entry<Invoker, AtomicLong> entry : counter.entrySet()) {
             Long count = entry.getValue().get();
         }
-        Assert.assertEquals(runs, counter.get(invoker1).intValue());
-        Assert.assertEquals(0, counter.get(invoker2).intValue());
-        Assert.assertEquals(0, counter.get(invoker3).intValue());
-        Assert.assertEquals(0, counter.get(invoker4).intValue());
-        Assert.assertEquals(0, counter.get(invoker5).intValue());
+        Assertions.assertEquals(runs, counter.get(invoker1).intValue());
+        Assertions.assertEquals(0, counter.get(invoker2).intValue());
+        Assertions.assertEquals(0, counter.get(invoker3).intValue());
+        Assertions.assertEquals(0, counter.get(invoker4).intValue());
+        Assertions.assertEquals(0, counter.get(invoker5).intValue());
     }
 
     @Test
@@ -81,7 +82,7 @@ public class RandomLoadBalanceTest extends LoadBalanceBaseTest {
         System.out.println(sumInvoker1);
         System.out.println(sumInvoker2);
         System.out.println(sumInvoker3);
-        Assert.assertEquals("select failed!", sumInvoker1 + sumInvoker2 + sumInvoker3, loop);
+        Assertions.assertEquals(sumInvoker1 + sumInvoker2 + sumInvoker3, loop, "select failed!");
     }
 
 }
