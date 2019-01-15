@@ -45,7 +45,7 @@ public final class Version {
      * Because {@link #isSupportResponseAttachment} is checked for every call, int compare expect to has higher
      * performance than string.
      */
-    private static final int LOWEST_VERSION_FOR_RESPONSE_ATTACHMENT = 20002; // 2.0.2
+    private static final int LOWEST_VERSION_FOR_RESPONSE_ATTACHMENT = 2000200; // 2.0.2
     private static final Map<String, Integer> VERSION2INT = new HashMap<String, Integer>();
 
     static {
@@ -68,7 +68,13 @@ public final class Version {
      * To check the framework release version number to decide if it's 2.7.0 or higher
      */
     public static boolean isFramework270OrHigher (String version) {
-        return StringUtils.isNotEmpty(version);
+        if (StringUtils.isEmpty(version)) {
+            return false;
+        }
+        if (getIntVersion(version) >= 2070000) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -89,7 +95,7 @@ public final class Version {
         // for previous dubbo version(2.0.10/020010~2.6.2/020602), this version is the jar's version, so they need to
         // be ignore
         int iVersion = getIntVersion(version);
-        if (iVersion >= 20010 && iVersion <= 20602) {
+        if (iVersion >= 2001000 && iVersion <= 2060200) {
             return false;
         }
 
@@ -100,6 +106,10 @@ public final class Version {
         Integer v = VERSION2INT.get(version);
         if (v == null) {
             v = parseInt(version);
+            // e.g., version number 2.6.3 will convert to 2060300
+            if (version.split("\\.").length == 3) {
+                v = v * 100;
+            }
             VERSION2INT.put(version, v);
         }
         return v;
