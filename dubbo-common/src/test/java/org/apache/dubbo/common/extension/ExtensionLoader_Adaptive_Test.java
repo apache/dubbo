@@ -29,19 +29,19 @@ import org.apache.dubbo.common.extension.ext6_inject.Ext6;
 import org.apache.dubbo.common.extension.ext6_inject.impl.Ext6Impl2;
 import org.apache.dubbo.common.utils.LogUtil;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.allOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.matchers.JUnitMatchers.containsString;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class ExtensionLoader_Adaptive_Test {
 
@@ -304,7 +304,7 @@ public class ExtensionLoader_Adaptive_Test {
 
         assertEquals("Ext6Impl1-echo-Ext1Impl1-echo", ext.echo(url, "ha"));
 
-        Assert.assertTrue("can not find error.", LogUtil.checkNoError());
+        Assertions.assertTrue(LogUtil.checkNoError(), "can not find error.");
         LogUtil.stop();
 
         url = url.addParameters("simple.ext", "impl2");

@@ -17,7 +17,7 @@
 package org.apache.dubbo.common.concurrent;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.ArgumentMatchers.any;
@@ -33,7 +33,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.dubbo.common.utils.NamedThreadFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 
 public class CompletableFutureTaskTest {
