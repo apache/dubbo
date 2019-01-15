@@ -20,10 +20,10 @@ import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.rpc.cluster.Merger;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class SetMerger implements Merger<Set<?>> {
 
@@ -32,8 +32,8 @@ public class SetMerger implements Merger<Set<?>> {
         if (ArrayUtils.isEmpty(items)) {
             return Collections.emptySet();
         }
-        Set<Object> result = new HashSet<Object>();
-        Arrays.stream(items).filter(Objects::nonNull).forEach(item -> result.addAll(item));
+        Set<Object> result = Arrays.stream(items).filter(Objects::nonNull)
+                .flatMap(Set::stream).collect(Collectors.toSet());
         return result;
     }
 }
