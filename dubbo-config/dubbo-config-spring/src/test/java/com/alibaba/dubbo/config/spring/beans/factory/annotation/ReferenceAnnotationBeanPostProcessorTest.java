@@ -124,7 +124,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
             InjectionMetadata.InjectedElement injectedElement = entry.getKey();
 
-            Assert.assertEquals("com.alibaba.spring.beans.factory.annotation.AnnotationInjectedBeanPostProcessor$AnnotatedFieldElement",
+            Assert.assertEquals("com.alibaba.dubbo.config.spring.beans.factory.annotation.AnnotationInjectedBeanPostProcessor$AnnotatedFieldElement",
                     injectedElement.getClass().getName());
 
             ReferenceBean<?> referenceBean = entry.getValue();
@@ -152,7 +152,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
             InjectionMetadata.InjectedElement injectedElement = entry.getKey();
 
-            Assert.assertEquals("com.alibaba.spring.beans.factory.annotation.AnnotationInjectedBeanPostProcessor$AnnotatedMethodElement",
+            Assert.assertEquals("com.alibaba.dubbo.config.spring.beans.factory.annotation.AnnotationInjectedBeanPostProcessor$AnnotatedMethodElement",
                     injectedElement.getClass().getName());
 
             ReferenceBean<?> referenceBean = entry.getValue();
