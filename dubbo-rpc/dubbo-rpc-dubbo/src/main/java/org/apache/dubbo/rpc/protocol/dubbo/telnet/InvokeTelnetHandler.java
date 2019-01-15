@@ -17,8 +17,8 @@
 package org.apache.dubbo.rpc.protocol.dubbo.telnet;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
@@ -42,90 +42,13 @@ import static org.apache.dubbo.rpc.RpcContext.getContext;
  * InvokeTelnetHandler
  */
 @Activate
-@Help(parameter = "[service.]method(args) [-p parameter classes]", summary = "Invoke the service method.",
+@Help(parameter = "[service.]method(args) ", summary = "Invoke the service method.",
         detail = "Invoke the service method.")
 public class InvokeTelnetHandler implements TelnetHandler {
-    private static Method findMethod(List<ProviderMethodModel> methods, String method, List<Object> args,
-                                     Class<?>[] paramTypes) {
-        for (ProviderMethodModel model : methods) {
-            Method m = model.getMethod();
-            if (isMatch(m, args, paramTypes, method)) {
-                return m;
-            }
-        }
-        return null;
-    }
 
-    private static boolean isMatch(Method method, List<Object> args, Class<?>[] paramClasses, String lookupMethodName) {
-        if (!method.getName().equals(lookupMethodName)) {
-            return false;
-        }
-
-        Class<?> types[] = method.getParameterTypes();
-        if (types.length != args.size()) {
-            return false;
-        }
-        for (int i = 0; i < types.length; i++) {
-            Class<?> type = types[i];
-            Object arg = args.get(i);
-
-            if (paramClasses != null && type != paramClasses[i]) {
-                return false;
-            }
-
-            if (arg == null) {
-                // if the type is primitive, the method to invoke will cause NullPointerException definitely
-                // so we can offer a specified error message to the invoker in advance and avoid unnecessary invoking
-                if (type.isPrimitive()) {
-                    throw new NullPointerException(String.format("The type of No.%d parameter is primitive(%s), " +
-                            "but the value passed is null.", i + 1, type.getName()));
-                }
-
-                // if the type is not primitive, we choose to believe what the invoker want is a null value
-                continue;
-            }
-
-            if (ReflectUtils.isPrimitive(arg.getClass())) {
-                // allow string arg to enum type, @see PojoUtils.realize0()
-                if (arg instanceof String && type.isEnum()) {
-                    continue;
-                }
-
-                if (!ReflectUtils.isPrimitive(type)) {
-                    return false;
-                }
-
-                if (!ReflectUtils.isCompatible(type, arg)) {
-                    return false;
-                }
-            } else if (arg instanceof Map) {
-                String name = (String) ((Map<?, ?>) arg).get("class");
-                if (StringUtils.isNotEmpty(name)) {
-                    Class<?> cls = ReflectUtils.forName(name);
-                    if (!type.isAssignableFrom(cls)) {
-                        return false;
-                    }
-                } else {
-                    if (arg instanceof JSONObject) {
-                        try {
-                            ((JSONObject) arg).toJavaObject(type);
-                        } catch (Exception ex) {
-                            return false;
-                        }
-                    }
-                }
-            } else if (arg instanceof Collection) {
-                if (!type.isArray() && !type.isAssignableFrom(arg.getClass())) {
-                    return false;
-                }
-            } else {
-                if (!type.isAssignableFrom(arg.getClass())) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
+    public static final String INVOKE_MESSAGE_KEY = "telnet.invoke.method.message";
+    public static final String INVOKE_METHOD_LIST_KEY = "telnet.invoke.method.list";
+    public static final String INVOKE_METHOD_PROVIDER_KEY = "telnet.invoke.method.provider";
 
     @Override
     @SuppressWarnings("unchecked")
@@ -136,33 +59,9 @@ public class InvokeTelnetHandler implements TelnetHandler {
                     "invoke com.xxx.XxxService.xxxMethod(1234, \"abcd\", {\"prop\" : \"value\"})";
         }
 
-        StringBuilder buf = new StringBuilder();
         String service = (String) channel.getAttribute(ChangeTelnetHandler.SERVICE_KEY);
-        if (!StringUtils.isEmpty(service)) {
-            buf.append("Use default service ").append(service).append(".");
-        }
 
         int i = message.indexOf("(");
-        String originalMessage = message;
-        Class<?>[] paramTypes = null;
-        if (message.contains("-p")) {
-            message = originalMessage.substring(0, originalMessage.indexOf("-p")).trim();
-            String paramClassesString = originalMessage.substring(originalMessage.indexOf("-p") + 2).trim();
-            if (paramClassesString.length() > 0) {
-                String[] split = paramClassesString.split("\\s+");
-                if (split.length > 0) {
-                    paramTypes = new Class[split.length];
-                    for (int j = 0; j < split.length; j++) {
-                        try {
-                            paramTypes[j] = Class.forName(split[j]);
-                        } catch (ClassNotFoundException e) {
-                            return "Unknown parameter class for name " + split[j];
-                        }
-                    }
-
-                }
-            }
-        }
 
         if (i < 0 || !message.endsWith(")")) {
             return "Invalid parameters, format: service.method(args)";
@@ -182,32 +81,44 @@ public class InvokeTelnetHandler implements TelnetHandler {
         } catch (Throwable t) {
             return "Invalid json argument, cause: " + t.getMessage();
         }
-        if (paramTypes != null) {
-            if (paramTypes.length != list.size()) {
-                return "Parameter's number does not match the number of parameter class";
-            }
-            List<Object> listOfActualClass = new ArrayList<>(list.size());
-            for (int ii = 0; ii < list.size(); ii++) {
-                if (list.get(ii) instanceof JSONObject) {
-                    JSONObject jsonObject = (JSONObject) list.get(ii);
-                    listOfActualClass.add(jsonObject.toJavaObject(paramTypes[ii]));
-                } else {
-                    listOfActualClass.add(list.get(ii));
-                }
-            }
-            list = listOfActualClass;
-        }
-
+        StringBuilder buf = new StringBuilder();
         Method invokeMethod = null;
         ProviderModel selectedProvider = null;
-        for (ProviderModel provider : ApplicationModel.allProviderModels()) {
-            if (isServiceMatch(service, provider)) {
-                invokeMethod = findMethod(provider.getAllMethods(), method, list, paramTypes);
-                selectedProvider = provider;
-                break;
+        if (isInvokedSelectCommand(channel)) {
+            selectedProvider = (ProviderModel) channel.getAttribute(INVOKE_METHOD_PROVIDER_KEY);
+            invokeMethod = (Method) channel.getAttribute(SelectTelnetHandler.SELECT_METHOD_KEY);
+        } else {
+            for (ProviderModel provider : ApplicationModel.allProviderModels()) {
+                if (isServiceMatch(service, provider)) {
+                    selectedProvider = provider;
+                    List<Method> methodList = findSameSignatureMethod(provider.getAllMethods(), method, list);
+                    if (CollectionUtils.isNotEmpty(methodList)) {
+                        if (methodList.size() == 1) {
+                            invokeMethod = methodList.get(0);
+                        } else {
+                            List<Method> matchMethods = findMatchMethods(methodList, list);
+                            if (CollectionUtils.isNotEmpty(matchMethods)) {
+                                if (matchMethods.size() == 1) {
+                                    invokeMethod = matchMethods.get(0);
+                                } else { //exist overridden method
+                                    channel.setAttribute(INVOKE_METHOD_PROVIDER_KEY, provider);
+                                    channel.setAttribute(INVOKE_METHOD_LIST_KEY, matchMethods);
+                                    channel.setAttribute(INVOKE_MESSAGE_KEY, message);
+                                    printSelectMessage(buf, matchMethods);
+                                    return buf.toString();
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
             }
         }
 
+
+        if (!StringUtils.isEmpty(service)) {
+            buf.append("Use default service ").append(service).append(".");
+        }
         if (selectedProvider != null) {
             if (invokeMethod != null) {
                 try {
@@ -240,10 +151,111 @@ public class InvokeTelnetHandler implements TelnetHandler {
         return buf.toString();
     }
 
+
     private boolean isServiceMatch(String service, ProviderModel provider) {
         return provider.getServiceName().equalsIgnoreCase(service)
                 || provider.getServiceInterfaceClass().getSimpleName().equalsIgnoreCase(service)
                 || provider.getServiceInterfaceClass().getName().equalsIgnoreCase(service)
                 || StringUtils.isEmpty(service);
+    }
+
+    private List<Method> findSameSignatureMethod(List<ProviderMethodModel> methods, String lookupMethodName, List<Object> args) {
+        List<Method> sameSignatureMethods = new ArrayList<>();
+        for (ProviderMethodModel model : methods) {
+            Method method = model.getMethod();
+            if (method.getName().equals(lookupMethodName) && method.getParameterTypes().length == args.size()) {
+                sameSignatureMethods.add(method);
+            }
+        }
+        return sameSignatureMethods;
+    }
+
+    private List<Method> findMatchMethods(List<Method> methods, List<Object> args) {
+        List<Method> matchMethod = new ArrayList<>();
+        for (Method method : methods) {
+            if (isMatch(method, args)) {
+                matchMethod.add(method);
+            }
+        }
+        return matchMethod;
+    }
+
+    private static boolean isMatch(Method method, List<Object> args) {
+        Class<?>[] types = method.getParameterTypes();
+        if (types.length != args.size()) {
+            return false;
+        }
+        for (int i = 0; i < types.length; i++) {
+            Class<?> type = types[i];
+            Object arg = args.get(i);
+
+            if (arg == null) {
+                if (type.isPrimitive()) {
+                    return false;
+                }
+
+                // if the type is not primitive, we choose to believe what the invoker want is a null value
+                continue;
+            }
+
+            if (ReflectUtils.isPrimitive(arg.getClass())) {
+                // allow string arg to enum type, @see PojoUtils.realize0()
+                if (arg instanceof String && type.isEnum()) {
+                    continue;
+                }
+
+                if (!ReflectUtils.isPrimitive(type)) {
+                    return false;
+                }
+
+                if (!ReflectUtils.isCompatible(type, arg)) {
+                    return false;
+                }
+            } else if (arg instanceof Map) {
+                String name = (String) ((Map<?, ?>) arg).get("class");
+                if (StringUtils.isNotEmpty(name)) {
+                    Class<?> cls = ReflectUtils.forName(name);
+                    if (!type.isAssignableFrom(cls)) {
+                        return false;
+                    }
+                } else {
+                    return true;
+                }
+            } else if (arg instanceof Collection) {
+                if (!type.isArray() && !type.isAssignableFrom(arg.getClass())) {
+                    return false;
+                }
+            } else {
+                if (!type.isAssignableFrom(arg.getClass())) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private void printSelectMessage(StringBuilder buf, List<Method> methods) {
+        buf.append("Methods:\r\n");
+        for (int i = 0; i < methods.size(); i++) {
+            Method method = methods.get(i);
+            buf.append((i + 1) + ". " + method.getName() + "(");
+            Class<?>[] parameterTypes = method.getParameterTypes();
+            for (int n = 0; n < parameterTypes.length; n++) {
+                buf.append(parameterTypes[n].getSimpleName());
+                if (n != parameterTypes.length - 1) {
+                    buf.append(",");
+                }
+            }
+            buf.append(")\r\n");
+        }
+        buf.append("Please use the select command to select the method you want to invoke. eg: select 1");
+    }
+
+    private boolean isInvokedSelectCommand(Channel channel) {
+        if (channel.hasAttribute(SelectTelnetHandler.SELECT_KEY)) {
+            channel.removeAttribute(SelectTelnetHandler.SELECT_KEY);
+            return true;
+        }
+        return false;
     }
 }
