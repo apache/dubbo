@@ -46,21 +46,21 @@ public class VersionTest {
 
     @Test
     public void testIsFramework270OrHigher() {
-        Assert.assertTrue(Version.isFramework270OrHigher("2.7.0"));
-        Assert.assertTrue(Version.isFramework270OrHigher("2.7.0.1"));
-        Assert.assertTrue(Version.isFramework270OrHigher("2.7.0.2"));
-        Assert.assertTrue(Version.isFramework270OrHigher("2.8.0"));
-        Assert.assertFalse(Version.isFramework270OrHigher("2.6.3"));
-        Assert.assertFalse(Version.isFramework270OrHigher("2.6.3.1"));
+        Assert.assertTrue(Version.isRelease270OrHigher("2.7.0"));
+        Assert.assertTrue(Version.isRelease270OrHigher("2.7.0.1"));
+        Assert.assertTrue(Version.isRelease270OrHigher("2.7.0.2"));
+        Assert.assertTrue(Version.isRelease270OrHigher("2.8.0"));
+        Assert.assertFalse(Version.isRelease270OrHigher("2.6.3"));
+        Assert.assertFalse(Version.isRelease270OrHigher("2.6.3.1"));
     }
 
     @Test
     public void testIsFramework263OrHigher() {
-        Assert.assertTrue(Version.isFramework263OrHigher("2.7.0"));
-        Assert.assertTrue(Version.isFramework263OrHigher("2.7.0.1"));
-        Assert.assertTrue(Version.isFramework263OrHigher("2.6.4"));
-        Assert.assertFalse(Version.isFramework263OrHigher("2.6.2"));
-        Assert.assertFalse(Version.isFramework263OrHigher("2.6.1.1"));
-        Assert.assertTrue(Version.isFramework263OrHigher("2.6.3"));
+        Assert.assertTrue(Version.isRelease263OrHigher("2.7.0"));
+        Assert.assertTrue(Version.isRelease263OrHigher("2.7.0.1"));
+        Assert.assertTrue(Version.isRelease263OrHigher("2.6.4"));
+        Assert.assertFalse(Version.isRelease263OrHigher("2.6.2"));
+        Assert.assertFalse(Version.isRelease263OrHigher("2.6.1.1"));
+        Assert.assertTrue(Version.isRelease263OrHigher("2.6.3"));
     }
 }
