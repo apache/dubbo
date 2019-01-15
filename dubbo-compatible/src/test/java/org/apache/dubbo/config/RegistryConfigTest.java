@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.config.RegistryConfig;
+
 import org.junit.Test;
 
 import java.util.Collections;

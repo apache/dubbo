@@ -29,9 +29,8 @@ import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.transport.dispatcher.FakeChannelHandlers;
-
-import org.junit.Assert;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.concurrent.CompletableFuture;
@@ -66,6 +65,11 @@ public class HeartbeatHandlerTest {
 
         FakeChannelHandlers.setTestingChannelHandlers();
         serverURL = serverURL.removeParameter(Constants.HEARTBEAT_KEY);
+
+        // Let the client not reply to the heartbeat, and turn off automatic reconnect to simulate the client dropped.
+        serverURL = serverURL.addParameter(Constants.HEARTBEAT_KEY, 600 * 1000);
+        serverURL = serverURL.addParameter(Constants.RECONNECT_KEY, false);
+
         client = Exchangers.connect(serverURL);
         Thread.sleep(10000);
         Assert.assertTrue(handler.disconnectCount > 0);

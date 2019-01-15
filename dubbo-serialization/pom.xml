@@ -35,6 +35,7 @@
         <module>dubbo-serialization-kryo</module>
         <module>dubbo-serialization-fst</module>
         <module>dubbo-serialization-jdk</module>
+        <module>dubbo-serialization-protostuff</module>
         <module>dubbo-serialization-test</module>
     </modules>
 </project>

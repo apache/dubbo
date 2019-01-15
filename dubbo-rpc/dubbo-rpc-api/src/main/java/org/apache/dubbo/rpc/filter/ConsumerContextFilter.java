@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc.filter;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.rpc.AbstractPostProcessFilter;
+import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -28,10 +28,14 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 
 /**
- * ConsumerContextInvokerFilter
+ * ConsumerContextFilter set current RpcContext with invoker,invocation, local host, remote host and port
+ * for consumer invoker.It does it to make the requires info available to execution thread's RpcContext.
+ *
+ * @see org.apache.dubbo.rpc.Filter
+ * @see RpcContext
  */
 @Activate(group = Constants.CONSUMER, order = -10000)
-public class ConsumerContextFilter extends AbstractPostProcessFilter {
+public class ConsumerContextFilter implements Filter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -47,7 +51,7 @@ public class ConsumerContextFilter extends AbstractPostProcessFilter {
         try {
             // TODO should we clear server context?
             RpcContext.removeServerContext();
-            return postProcessResult(invoker.invoke(invocation), invoker, invocation);
+            return invoker.invoke(invocation);
         } finally {
             // TODO removeContext? but we need to save future for RpcContext.getFuture() API. If clear attachments here, attachments will not available when postProcessResult is invoked.
             RpcContext.getContext().clearAttachments();
@@ -55,7 +59,7 @@ public class ConsumerContextFilter extends AbstractPostProcessFilter {
     }
 
     @Override
-    protected Result doPostProcess(Result result, Invoker<?> invoker, Invocation invocation) {
+    public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
         RpcContext.getServerContext().setAttachments(result.getAttachments());
         return result;
     }

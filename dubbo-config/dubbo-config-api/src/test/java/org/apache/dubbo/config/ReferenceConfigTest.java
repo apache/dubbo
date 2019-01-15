@@ -18,12 +18,25 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.config.api.DemoService;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 public class ReferenceConfigTest {
+
+    @Before
+    public void setUp() {
+        ConfigManager.getInstance().clear();
+    }
+
+    @After
+    public void tearDown() {
+        ConfigManager.getInstance().clear();
+    }
 
     @Test
     public void testInjvm() throws Exception {
@@ -34,7 +47,7 @@ public class ReferenceConfigTest {
         registry.setAddress("multicast://224.5.6.7:1234");
 
         ProtocolConfig protocol = new ProtocolConfig();
-        protocol.setName("dubbo");
+        protocol.setName("mockprotocol");
 
         ServiceConfig<DemoService> demoService;
         demoService = new ServiceConfig<DemoService>();
@@ -51,14 +64,17 @@ public class ReferenceConfigTest {
         rc.setInjvm(false);
 
         try {
+            System.setProperty("java.net.preferIPv4Stack", "true");
             demoService.export();
             rc.get();
             Assert.assertTrue(!Constants.LOCAL_PROTOCOL.equalsIgnoreCase(
                     rc.getInvoker().getUrl().getProtocol()));
         } finally {
+            System.clearProperty("java.net.preferIPv4Stack");
             demoService.unexport();
         }
     }
+
     /**
      * unit test for dubbo-1765
      */
@@ -69,7 +85,7 @@ public class ReferenceConfigTest {
         RegistryConfig registry = new RegistryConfig();
         registry.setAddress("multicast://224.5.6.7:1234");
         ProtocolConfig protocol = new ProtocolConfig();
-        protocol.setName("dubbo");
+        protocol.setName("mockprotocol");
 
         ReferenceConfig<DemoService> rc = new ReferenceConfig<DemoService>();
         rc.setApplication(application);
@@ -95,11 +111,14 @@ public class ReferenceConfigTest {
         sc.setProtocol(protocol);
 
         try {
+            System.setProperty("java.net.preferIPv4Stack", "true");
             sc.export();
             demoService = rc.get();
             success = true;
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            System.clearProperty("java.net.preferIPv4Stack");
         }
         Assert.assertTrue(success);
         Assert.assertNotNull(demoService);

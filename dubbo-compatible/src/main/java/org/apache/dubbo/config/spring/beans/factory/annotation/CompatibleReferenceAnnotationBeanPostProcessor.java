@@ -16,9 +16,10 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
+import org.apache.dubbo.config.spring.ReferenceBean;
+
 import com.alibaba.dubbo.config.annotation.Reference;
 
-import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeanUtils;

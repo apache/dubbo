@@ -32,23 +32,57 @@ import java.util.List;
  * @see org.apache.dubbo.rpc.cluster.Directory#list(Invocation)
  */
 public interface Router extends Comparable<Router> {
-
     /**
-     * get the router url.
+     * Get the router url.
      *
      * @return url
      */
     URL getUrl();
 
     /**
-     * route.
+     * Filter invokers with current routing rule and only return the invokers that comply with the rule.
      *
-     * @param invokers
+     * @param invokers   invoker list
      * @param url        refer url
-     * @param invocation
+     * @param invocation invocation
      * @return routed invokers
      * @throws RpcException
      */
     <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException;
 
+
+    /**
+     * Notify the router the invoker list. Invoker list may change from time to time. This method gives the router a
+     * chance to prepare before {@link Router#route(List, URL, Invocation)} gets called.
+     *
+     * @param invokers invoker list
+     * @param <T>      invoker's type
+     */
+    default <T> void notify(List<Invoker<T>> invokers) {
+
+    }
+
+    /**
+     * To decide whether this router need to execute every time an RPC comes or should only execute when addresses or
+     * rule change.
+     *
+     * @return true if the router need to execute every time.
+     */
+    boolean isRuntime();
+
+    /**
+     * To decide whether this router should take effect when none of the invoker can match the router rule, which
+     * means the {@link #route(List, URL, Invocation)} would be empty. Most of time, most router implementation would
+     * default this value to false.
+     *
+     * @return true to execute if none of invokers matches the current router
+     */
+    boolean isForce();
+
+    /**
+     * Router's priority, used to sort routers.
+     *
+     * @return router's priority
+     */
+    int getPriority();
 }

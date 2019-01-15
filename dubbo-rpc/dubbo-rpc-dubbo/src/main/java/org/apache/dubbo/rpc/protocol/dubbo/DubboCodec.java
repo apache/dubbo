@@ -179,10 +179,11 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
         out.writeUTF(inv.getMethodName());
         out.writeUTF(ReflectUtils.getDesc(inv.getParameterTypes()));
         Object[] args = inv.getArguments();
-        if (args != null)
+        if (args != null) {
             for (int i = 0; i < args.length; i++) {
                 out.writeObject(encodeInvocationArgument(channel, inv, i));
             }
+        }
         out.writeObject(RpcUtils.getNecessaryAttachments(inv));
     }
 
@@ -190,7 +191,7 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
     protected void encodeResponseData(Channel channel, ObjectOutput out, Object data, String version) throws IOException {
         Result result = (Result) data;
         // currently, the version value in Response records the version of Request
-        boolean attach = Version.isSupportResponseAttatchment(version);
+        boolean attach = Version.isSupportResponseAttachment(version);
         Throwable th = result.getException();
         if (th == null) {
             Object ret = result.getValue();

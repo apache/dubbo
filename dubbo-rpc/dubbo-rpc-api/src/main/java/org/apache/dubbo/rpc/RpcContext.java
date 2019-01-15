@@ -50,12 +50,15 @@ public class RpcContext {
     /**
      * use internal thread local to improve performance
      */
+    // FIXME REQUEST_CONTEXT
     private static final InternalThreadLocal<RpcContext> LOCAL = new InternalThreadLocal<RpcContext>() {
         @Override
         protected RpcContext initialValue() {
             return new RpcContext();
         }
     };
+
+    // FIXME RESPONSE_CONTEXT
     private static final InternalThreadLocal<RpcContext> SERVER_LOCAL = new InternalThreadLocal<RpcContext>() {
         @Override
         protected RpcContext initialValue() {
@@ -662,7 +665,7 @@ public class RpcContext {
                     if (o instanceof CompletableFuture) {
                         return (CompletableFuture<T>) o;
                     }
-                    CompletableFuture.completedFuture(o);
+                    return CompletableFuture.completedFuture(o);
                 } else {
                     // The service has a normal sync method signature, should get future from RpcContext.
                 }
@@ -728,12 +731,11 @@ public class RpcContext {
     @SuppressWarnings("unchecked")
     public static AsyncContext startAsync() throws IllegalStateException {
         RpcContext currentContext = getContext();
-        if (currentContext.asyncContext != null) {
-            currentContext.asyncContext.start();
-            return currentContext.asyncContext;
-        } else {
-            throw new IllegalStateException("This service does not support asynchronous operations, you should open async explicitly before use.");
+        if (currentContext.asyncContext == null) {
+            currentContext.asyncContext = new AsyncContextImpl();
         }
+        currentContext.asyncContext.start();
+        return currentContext.asyncContext;
     }
 
     public boolean isAsyncStarted() {
@@ -745,10 +747,6 @@ public class RpcContext {
 
     public boolean stopAsync() {
         return asyncContext.stop();
-    }
-
-    public void setAsyncContext(AsyncContext asyncContext) {
-        this.asyncContext = asyncContext;
     }
 
     public AsyncContext getAsyncContext() {

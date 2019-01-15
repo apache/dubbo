@@ -20,7 +20,9 @@ package com.alibaba.dubbo.remoting;
 @Deprecated
 public interface Channel extends org.apache.dubbo.remoting.Channel {
 
+    @Override
     com.alibaba.dubbo.common.URL getUrl();
 
+    @Override
     com.alibaba.dubbo.remoting.ChannelHandler getChannelHandler();
 }

@@ -19,6 +19,7 @@ package org.apache.dubbo.common;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.io.UnsupportedEncodingException;
@@ -42,20 +43,11 @@ public class Parameters {
     }
 
     public Parameters(Map<String, String> parameters) {
-        this.parameters = Collections.unmodifiableMap(parameters != null ? new HashMap<String, String>(parameters) : new HashMap<String, String>(0));
+        this.parameters = Collections.unmodifiableMap(parameters != null ? new HashMap<>(parameters) : new HashMap<>(0));
     }
 
     private static Map<String, String> toMap(String... pairs) {
-        Map<String, String> parameters = new HashMap<String, String>();
-        if (pairs.length > 0) {
-            if (pairs.length % 2 != 0) {
-                throw new IllegalArgumentException("pairs must be even.");
-            }
-            for (int i = 0; i < pairs.length; i = i + 2) {
-                parameters.put(pairs[i], pairs[i + 1]);
-            }
-        }
-        return parameters;
+        return CollectionUtils.toStringMap(pairs);
     }
 
     public static Parameters parseParameters(String query) {

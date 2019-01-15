@@ -16,8 +16,9 @@
  */
 package org.apache.dubbo.common.serialize.hessian2;
 
-import com.alibaba.com.caucho.hessian.io.Hessian2Input;
 import org.apache.dubbo.common.serialize.ObjectInput;
+
+import com.alibaba.com.caucho.hessian.io.Hessian2Input;
 
 import java.io.IOException;
 import java.io.InputStream;
