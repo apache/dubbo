@@ -41,13 +41,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -71,7 +71,7 @@ public class RedisRegistry extends FailbackRegistry {
 
     private final Map<String, JedisPool> jedisPools = new ConcurrentHashMap<>();
 
-    private final ConcurrentMap<String, Notifier> notifiers = new ConcurrentHashMap<String, Notifier>();
+    private final ConcurrentMap<String, Notifier> notifiers = new ConcurrentHashMap<>();
 
     private final int reconnectPeriod;
 
@@ -121,7 +121,7 @@ public class RedisRegistry extends FailbackRegistry {
         }
         replicate = "replicate".equals(cluster);
 
-        List<String> addresses = new ArrayList<String>();
+        List<String> addresses = new ArrayList<>();
         addresses.add(url.getAddress());
         String[] backups = url.getParameter(Constants.BACKUP_KEY, new String[0]);
         if (backups != null && backups.length > 0) {
@@ -541,7 +541,6 @@ public class RedisRegistry extends FailbackRegistry {
         private final String service;
         private final AtomicInteger connectSkip = new AtomicInteger();
         private final AtomicInteger connectSkipped = new AtomicInteger();
-        private final Random random = new Random();
         private volatile Jedis jedis;
         private volatile boolean first = true;
         private volatile boolean running = true;
@@ -563,7 +562,7 @@ public class RedisRegistry extends FailbackRegistry {
             int skip = connectSkip.get(); // Growth of skipping times
             if (skip >= 10) { // If the number of skipping times increases by more than 10, take the random number
                 if (connectRandom == 0) {
-                    connectRandom = random.nextInt(10);
+                    connectRandom = ThreadLocalRandom.current().nextInt(10);
                 }
                 skip = 10 + connectRandom;
             }
