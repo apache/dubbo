@@ -79,7 +79,7 @@ public class RmiProtocol extends AbstractProxyProtocol {
         /*
           RMI needs extra parameter since it uses customized remote invocation object
 
-          The customized RemoteInvocation was firstly introduced in v2.6.3; The package was renamed to 'org.apache.*'
+          The customized RemoteInvocation was firstly introduced in v2.6.3; The package was renamed to 'org.apache.*' since v2.7.0
           Considering the above two conditions, we need to check before sending customized RemoteInvocation:
           1. if the provider version is v2.7.0 or higher, send 'org.apache.dubbo.rpc.protocol.rmi.RmiRemoteInvocation'.
           2. if the provider version is v2.6.3 or higher, send 'com.alibaba.dubbo.rpc.protocol.rmi.RmiRemoteInvocation'.

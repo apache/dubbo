@@ -127,7 +127,7 @@ public class HttpProtocol extends AbstractProxyProtocol {
                 } else {
                     /*
                       The customized 'com.alibaba.dubbo.rpc.protocol.http.HttpRemoteInvocation' was firstly introduced
-                      in v2.6.3. The main purpose is to support transformation of attachments in HttpProtocol:
+                      in v2.6.3. The main purpose is to support transformation of attachments in HttpProtocol, see
                       https://github.com/apache/incubator-dubbo/pull/1827. To guarantee interoperability with lower
                       versions, we need to check if the provider is v2.6.3 or higher before sending customized
                       HttpRemoteInvocation.
