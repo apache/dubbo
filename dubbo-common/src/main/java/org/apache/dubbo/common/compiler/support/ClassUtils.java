@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.compiler.support;
 
+import org.apache.dubbo.common.utils.StringUtils;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Array;
@@ -291,7 +293,7 @@ public class ClassUtils {
     }
 
     public static boolean isBeforeJava5(String javaVersion) {
-        return (javaVersion == null || javaVersion.length() == 0 || "1.0".equals(javaVersion)
+        return (StringUtils.isEmpty(javaVersion) || "1.0".equals(javaVersion)
                 || "1.1".equals(javaVersion) || "1.2".equals(javaVersion)
                 || "1.3".equals(javaVersion) || "1.4".equals(javaVersion));
     }

@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.compiler.support.AdaptiveCompiler;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 
@@ -202,7 +203,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public RegistryConfig getRegistry() {
-        return registries == null || registries.isEmpty() ? null : registries.get(0);
+        return CollectionUtils.isEmpty(registries) ? null : registries.get(0);
     }
 
     public void setRegistry(RegistryConfig registry) {

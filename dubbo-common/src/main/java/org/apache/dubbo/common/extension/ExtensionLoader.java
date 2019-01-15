@@ -21,12 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.support.ActivateComparator;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ClassHelper;
-import org.apache.dubbo.common.utils.ConcurrentHashSet;
-import org.apache.dubbo.common.utils.ConfigUtils;
-import org.apache.dubbo.common.utils.Holder;
-import org.apache.dubbo.common.utils.ReflectUtils;
-import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.*;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -187,7 +182,7 @@ public class ExtensionLoader<T> {
      */
     public List<T> getActivateExtension(URL url, String key, String group) {
         String value = url.getParameter(key);
-        return getActivateExtension(url, value == null || value.length() == 0 ? null : Constants.COMMA_SPLIT_PATTERN.split(value), group);
+        return getActivateExtension(url, StringUtils.isEmpty(value) ? null : Constants.COMMA_SPLIT_PATTERN.split(value), group);
     }
 
     /**
@@ -253,7 +248,7 @@ public class ExtensionLoader<T> {
     }
 
     private boolean isMatchGroup(String group, String[] groups) {
-        if (group == null || group.length() == 0) {
+        if (StringUtils.isEmpty(group)) {
             return true;
         }
         if (groups != null && groups.length > 0) {
@@ -293,7 +288,7 @@ public class ExtensionLoader<T> {
      */
     @SuppressWarnings("unchecked")
     public T getLoadedExtension(String name) {
-        if (name == null || name.length() == 0) {
+        if (StringUtils.isEmpty(name)) {
             throw new IllegalArgumentException("Extension name == null");
         }
         Holder<Object> holder = cachedInstances.get(name);
@@ -325,7 +320,7 @@ public class ExtensionLoader<T> {
      */
     @SuppressWarnings("unchecked")
     public T getExtension(String name) {
-        if (name == null || name.length() == 0) {
+        if (StringUtils.isEmpty(name)) {
             throw new IllegalArgumentException("Extension name == null");
         }
         if ("true".equals(name)) {
@@ -362,7 +357,7 @@ public class ExtensionLoader<T> {
     }
 
     public boolean hasExtension(String name) {
-        if (name == null || name.length() == 0) {
+        if (StringUtils.isEmpty(name)) {
             throw new IllegalArgumentException("Extension name == null");
         }
         Class<?> c = this.getExtensionClass(name);
@@ -528,7 +523,7 @@ public class ExtensionLoader<T> {
             }
             injectExtension(instance);
             Set<Class<?>> wrapperClasses = cachedWrapperClasses;
-            if (wrapperClasses != null && !wrapperClasses.isEmpty()) {
+            if (CollectionUtils.isNotEmpty(wrapperClasses)) {
                 for (Class<?> wrapperClass : wrapperClasses) {
                     instance = injectExtension((T) wrapperClass.getConstructor(type).newInstance(instance));
                 }
@@ -709,7 +704,7 @@ public class ExtensionLoader<T> {
             wrappers.add(clazz);
         } else {
             clazz.getConstructor();
-            if (name == null || name.length() == 0) {
+            if (StringUtils.isEmpty(name)) {
                 name = findAnnotationName(clazz);
                 if (name.length() == 0) {
                     throw new IllegalStateException("No such extension name for the class " + clazz.getName() + " in the config " + resourceURL);
