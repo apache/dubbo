@@ -34,7 +34,6 @@ import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRouterRule;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRuleParser;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -163,24 +162,12 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
                 invocation.getAttachment(TAG_KEY);
         // Tag request
         if (!StringUtils.isEmpty(tag)) {
-            List<Invoker<T>> tagedInvokers = new ArrayList<>();
-            // Select tag invokers first
-            for (Invoker<T> invoker : invokers) {
-                if (tag.equals(invoker.getUrl().getParameter(Constants.TAG_KEY))) {
-                    tagedInvokers.add(invoker);
-                }
+            result = filterInvoker(invokers, invoker -> tag.equals(invoker.getUrl().getParameter(Constants.TAG_KEY)));
+            if (CollectionUtils.isEmpty(result) && !isForceUseTag(invocation)) {
+                result = filterInvoker(invokers, invoker -> StringUtils.isEmpty(invoker.getUrl().getParameter(Constants.TAG_KEY)));
             }
-            result = tagedInvokers;
-        }
-        // If Constants.REQUEST_TAG_KEY unspecified or no invoker be selected, downgrade to normal invokers
-        if (result.isEmpty() && !isForceUseTag(invocation)) {
-            List<Invoker<T>> untagedInvokers = new ArrayList<>();
-            for (Invoker<T> invoker : invokers) {
-                if (StringUtils.isEmpty(invoker.getUrl().getParameter(Constants.TAG_KEY))) {
-                    untagedInvokers.add(invoker);
-                }
-            }
-            result = untagedInvokers;
+        } else {
+            result = filterInvoker(invokers, invoker -> StringUtils.isEmpty(invoker.getUrl().getParameter(Constants.TAG_KEY)));
         }
         return result;
     }
