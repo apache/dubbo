@@ -65,7 +65,7 @@ public final class Version {
     }
 
     /**
-     * To check the framework release version number to decide if it's 2.7.0 or higher
+     * Check the framework release version number to decide if it's 2.7.0 or higher
      */
     public static boolean isRelease270OrHigher(String version) {
         if (StringUtils.isEmpty(version)) {
@@ -78,11 +78,11 @@ public final class Version {
     }
 
     /**
-     * To check the framework release version number to decide if it's 2.6.3 or higher
+     * Check the framework release version number to decide if it's 2.6.3 or higher
      *
      * Because response attachments feature is firstly introduced in 2.6.3
-     * and moreover we have no other approach to check the framework version number, so we use
-     * isSupportResponseAttachment to decide if it's v2.6.3
+     * and moreover we have no other approach to know the framework's version, so we use
+     * isSupportResponseAttachment to decide if it's v2.6.3.
      */
     public static boolean isRelease263OrHigher(String version) {
         return isSupportResponseAttachment(version);
