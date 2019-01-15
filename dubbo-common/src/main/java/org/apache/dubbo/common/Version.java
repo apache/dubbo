@@ -67,7 +67,7 @@ public final class Version {
     /**
      * To check the framework release version number to decide if it's 2.7.0 or higher
      */
-    public static boolean isFramework270OrHigher (String version) {
+    public static boolean isRelease270OrHigher(String version) {
         if (StringUtils.isEmpty(version)) {
             return false;
         }
@@ -84,7 +84,7 @@ public final class Version {
      * and moreover we have no other approach to check the framework version number, so we use
      * isSupportResponseAttachment to decide if it's v2.6.3
      */
-    public static boolean isFramework263OrHigher (String version) {
+    public static boolean isRelease263OrHigher(String version) {
         return isSupportResponseAttachment(version);
     }
 

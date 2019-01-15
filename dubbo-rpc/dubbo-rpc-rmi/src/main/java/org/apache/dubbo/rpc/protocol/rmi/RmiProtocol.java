@@ -29,8 +29,8 @@ import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.rmi.RemoteException;
 
-import static org.apache.dubbo.common.Version.isFramework263OrHigher;
-import static org.apache.dubbo.common.Version.isFramework270OrHigher;
+import static org.apache.dubbo.common.Version.isRelease263OrHigher;
+import static org.apache.dubbo.common.Version.isRelease270OrHigher;
 
 /**
  * RmiProtocol.
@@ -85,9 +85,9 @@ public class RmiProtocol extends AbstractProxyProtocol {
           2. if the provider version is v2.6.3 or higher, send 'com.alibaba.dubbo.rpc.protocol.rmi.RmiRemoteInvocation'.
           3. if the provider version is lower than v2.6.3, does not use customized RemoteInvocation.
          */
-        if (isFramework270OrHigher(url.getParameter(Constants.RELEASE_KEY))) {
+        if (isRelease270OrHigher(url.getParameter(Constants.RELEASE_KEY))) {
             rmiProxyFactoryBean.setRemoteInvocationFactory(RmiRemoteInvocation::new);
-        } else if (isFramework263OrHigher(url.getParameter(Constants.DUBBO_VERSION_KEY))) {
+        } else if (isRelease263OrHigher(url.getParameter(Constants.DUBBO_VERSION_KEY))) {
             rmiProxyFactoryBean.setRemoteInvocationFactory(com.alibaba.dubbo.rpc.protocol.rmi.RmiRemoteInvocation::new);
         }
         rmiProxyFactoryBean.setServiceUrl(url.toIdentityString());
