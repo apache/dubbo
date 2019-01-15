@@ -17,13 +17,14 @@
 
 package org.apache.dubbo.common.utils;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.EmptyStackException;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class StackTest {
     @Test
@@ -57,33 +58,43 @@ public class StackTest {
         assertThat(stack.isEmpty(), is(true));
     }
 
-    @Test(expected = EmptyStackException.class)
+    @Test
     public void testIllegalPop() throws Exception {
-        Stack<String> stack = new Stack<String>();
-        stack.pop();
+        Assertions.assertThrows(EmptyStackException.class, () -> {
+            Stack<String> stack = new Stack<String>();
+            stack.pop();
+        });
     }
 
-    @Test(expected = EmptyStackException.class)
+    @Test
     public void testIllegalPeek() throws Exception {
-        Stack<String> stack = new Stack<String>();
-        stack.peek();
+        Assertions.assertThrows(EmptyStackException.class, () -> {
+            Stack<String> stack = new Stack<String>();
+            stack.peek();
+        });
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
+    @Test
     public void testIllegalGet() throws Exception {
-        Stack<String> stack = new Stack<String>();
-        stack.get(1);
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
+            Stack<String> stack = new Stack<String>();
+            stack.get(1);
+        });
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
+    @Test
     public void testIllegalSet() throws Exception {
-        Stack<String> stack = new Stack<String>();
-        stack.set(1, "illegal");
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
+            Stack<String> stack = new Stack<String>();
+            stack.set(1, "illegal");
+        });
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
+    @Test
     public void testIllegalRemove() throws Exception {
-        Stack<String> stack = new Stack<String>();
-        stack.remove(1);
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
+            Stack<String> stack = new Stack<String>();
+            stack.remove(1);
+        });
     }
 }

@@ -21,7 +21,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.container.Container;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * StandaloneContainerTest
