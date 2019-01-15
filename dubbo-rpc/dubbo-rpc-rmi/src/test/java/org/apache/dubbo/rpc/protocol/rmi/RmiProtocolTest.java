@@ -25,10 +25,10 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.service.EchoService;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class RmiProtocolTest {
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
@@ -89,7 +89,7 @@ public class RmiProtocolTest {
     }
 
     // FIXME RMI protocol doesn't support casting to EchoService yet.
-    @Ignore
+    @Disabled
     @Test
     public void testRmiProtocol_echoService() throws Exception {
         DemoService service = new DemoServiceImpl();

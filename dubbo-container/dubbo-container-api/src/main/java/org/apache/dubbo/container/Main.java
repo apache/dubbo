@@ -88,7 +88,6 @@ public class Main {
             }
             System.out.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]").format(new Date()) + " Dubbo service server started!");
         } catch (RuntimeException e) {
-            e.printStackTrace();
             logger.error(e.getMessage(), e);
             System.exit(1);
         }
