@@ -111,6 +111,6 @@ public class SelectTelnetHandlerTest {
         ApplicationModel.initProviderModel(DemoService.class.getName(), providerModel);
 
         String result = select.telnet(mockChannel, null);
-        assertTrue(result.contains("IPlease input the index of the method you want to invoke"));
+        assertTrue(result.contains("Please input the index of the method you want to invoke"));
     }
 }
