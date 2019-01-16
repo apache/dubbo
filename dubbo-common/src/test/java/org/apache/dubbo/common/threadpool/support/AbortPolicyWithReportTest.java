@@ -17,14 +17,20 @@
 package org.apache.dubbo.common.threadpool.support;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+
 
 public class AbortPolicyWithReportTest {
+
+    private static Integer val = 0;
     @Test
     public void jStackDumpTest() throws InterruptedException {
         URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?dump.directory=/tmp&version=1.0.0&application=morgan&noValue");
@@ -44,4 +50,29 @@ public class AbortPolicyWithReportTest {
         Thread.sleep(1000);
 
     }
+
+
+    @Test
+    public void testThreadPoolShutDown() throws InterruptedException {
+        Semaphore semaphore = new Semaphore(1);
+        semaphore.acquire();
+        ExecutorService pool = Executors.newSingleThreadExecutor();
+        pool.execute(() -> {
+            try {
+                //Simulated Time consuming calculation
+                TimeUnit.SECONDS.sleep(5);
+                val = 10;
+                System.out.println("计算完成");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } finally {
+                semaphore.release();
+            }
+        });
+        pool.shutdown();
+        semaphore.acquire();
+        Assertions.assertEquals(val, 10);
+    }
+
+
 }
