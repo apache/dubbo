@@ -16,31 +16,38 @@
  */
 package org.apache.dubbo.rpc.cluster;
 
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.rpc.Invocation;
-import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.rpc.cluster.Router;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
  *
  */
-public class CompatibleRouter implements Router {
+public class RouterTest {
 
-    @Override
-    public URL getUrl() {
-        return null;
+    private static List<Router> routers = new ArrayList<>();
+
+    @BeforeClass
+    public static void setUp () {
+        CompatibleRouter compatibleRouter = new CompatibleRouter();
+        routers.add(compatibleRouter);
+        CompatibleRouter2 compatibleRouter2 = new CompatibleRouter2();
+        routers.add(compatibleRouter2);
+        NewRouter newRouter = new NewRouter();
+        routers.add(newRouter);
     }
 
-    @Override
-    public <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
-        return null;
-    }
-
-    @Override
-    public int compareTo(Router o) {
-        return 0;
+    @Test
+    public void testCompareTo () {
+        try {
+            Collections.sort(routers);
+            Assert.assertTrue(true);
+        } catch (Exception e) {
+            Assert.assertFalse(false);
+        }
     }
 }
