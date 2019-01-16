@@ -93,6 +93,9 @@ public interface Router extends Comparable<Router> {
         }
         if (this.getPriority() == o.getPriority()) {
             if (o.getUrl() == null) {
+                return 1;
+            }
+            if (getUrl() == null) {
                 return -1;
             }
             if (getUrl() == null) {
