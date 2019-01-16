@@ -103,8 +103,6 @@
         <resteasy_version>3.0.19.Final</resteasy_version>
         <tomcat_embed_version>8.5.31</tomcat_embed_version>
 
-        <!-- Alibaba Spring context support -->
-        <alibaba_spring_context_support_version>1.0.1</alibaba_spring_context_support_version>
         <!-- Log libs -->
         <slf4j_version>1.7.25</slf4j_version>
         <jcl_version>1.2</jcl_version>
@@ -307,13 +305,6 @@
                 <version>${tomcat_embed_version}</version>
             </dependency>
 
-            <!-- Spring Context Support -->
-            <dependency>
-                <groupId>com.alibaba.spring</groupId>
-                <artifactId>spring-context-support</artifactId>
-                <version>${alibaba_spring_context_support_version}</version>
-            </dependency>
-
             <!-- Log libs -->
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -374,13 +365,6 @@
             </dependency>
 
             <!-- Alibaba extensions -->
-
-            <!-- Spring Context Support -->
-            <dependency>
-                <groupId>com.alibaba.spring</groupId>
-                <artifactId>spring-context-support</artifactId>
-                <version>${alibaba_spring_context_support_version}</version>
-            </dependency>
 
             <!-- YAML -->
             <dependency>
