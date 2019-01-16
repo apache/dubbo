@@ -21,6 +21,7 @@ import org.apache.dubbo.config.spring.context.annotation.DubboComponentScanRegis
 import org.apache.dubbo.config.spring.context.annotation.consumer.ConsumerConfiguration;
 import org.apache.dubbo.config.spring.context.annotation.provider.DemoServiceImpl;
 import org.apache.dubbo.config.spring.context.annotation.provider.ProviderConfiguration;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.aop.support.AopUtils;

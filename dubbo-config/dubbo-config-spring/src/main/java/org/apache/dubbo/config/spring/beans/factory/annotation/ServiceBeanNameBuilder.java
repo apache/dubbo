@@ -20,6 +20,7 @@ import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
+
 import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
 

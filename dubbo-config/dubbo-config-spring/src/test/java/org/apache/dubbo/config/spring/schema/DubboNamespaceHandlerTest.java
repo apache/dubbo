@@ -26,6 +26,7 @@ import org.apache.dubbo.config.spring.ConfigTest;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

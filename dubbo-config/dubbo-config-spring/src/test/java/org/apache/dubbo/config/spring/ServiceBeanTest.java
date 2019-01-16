@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.spring;
 
 import org.apache.dubbo.config.annotation.Service;
+
 import org.junit.Assert;
 import org.junit.Test;
 

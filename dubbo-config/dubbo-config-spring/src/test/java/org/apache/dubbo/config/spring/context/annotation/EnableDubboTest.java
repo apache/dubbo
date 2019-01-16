@@ -21,6 +21,7 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.context.annotation.consumer.test.TestConsumerConfiguration;
 import org.apache.dubbo.config.spring.context.annotation.provider.DemoServiceImpl;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

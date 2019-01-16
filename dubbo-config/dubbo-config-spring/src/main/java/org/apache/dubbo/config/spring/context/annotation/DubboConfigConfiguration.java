@@ -26,6 +26,7 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.spring.ConfigCenterBean;
+
 import org.springframework.context.annotation.Configuration;
 
 /**

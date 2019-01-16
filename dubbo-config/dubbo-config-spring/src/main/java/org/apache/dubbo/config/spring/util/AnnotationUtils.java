@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.util;
 
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.annotation.Service;
+
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.PropertyResolver;
 import org.springframework.util.StringUtils;

@@ -20,6 +20,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.ReferenceBean;
+
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;

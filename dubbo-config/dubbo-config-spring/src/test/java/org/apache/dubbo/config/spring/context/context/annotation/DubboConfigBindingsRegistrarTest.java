@@ -20,6 +20,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.spring.context.annotation.DubboConfigBindingsRegistrar;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubboConfigBinding;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubboConfigBindings;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;

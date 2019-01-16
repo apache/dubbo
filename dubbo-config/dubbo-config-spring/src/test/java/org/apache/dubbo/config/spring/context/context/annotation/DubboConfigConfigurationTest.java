@@ -21,6 +21,7 @@ import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.spring.context.annotation.DubboConfigConfiguration;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

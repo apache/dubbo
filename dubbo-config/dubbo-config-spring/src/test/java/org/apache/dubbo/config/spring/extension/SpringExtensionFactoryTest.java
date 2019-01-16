@@ -21,6 +21,7 @@ import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
 import org.apache.dubbo.config.spring.impl.HelloServiceImpl;
 import org.apache.dubbo.rpc.Protocol;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
