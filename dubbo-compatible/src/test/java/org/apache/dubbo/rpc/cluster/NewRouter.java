@@ -16,38 +16,39 @@
  */
 package org.apache.dubbo.rpc.cluster;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcException;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
  *
  */
-public class RouterTest {
-
-    private static List<Router> routers = new ArrayList<>();
-
-    @BeforeClass
-    public static void setUp () {
-        CompatibleRouter compatibleRouter = new CompatibleRouter();
-        routers.add(compatibleRouter);
-        CompatibleRouter2 compatibleRouter2 = new CompatibleRouter2();
-        routers.add(compatibleRouter2);
-        NewRouter newRouter = new NewRouter();
-        routers.add(newRouter);
+public class NewRouter implements Router {
+    @Override
+    public URL getUrl() {
+        return null;
     }
 
-    @Test
-    public void testCompareTo () {
-        try {
-            Collections.sort(routers);
-            Assert.assertTrue(true);
-        } catch (Exception e) {
-            Assert.assertFalse(false);
-        }
+    @Override
+    public <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
+        return null;
+    }
+
+    @Override
+    public boolean isRuntime() {
+        return false;
+    }
+
+    @Override
+    public boolean isForce() {
+        return false;
+    }
+
+    @Override
+    public int getPriority() {
+        return 0;
     }
 }
