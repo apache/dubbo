@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.ReferenceBean;
@@ -582,7 +583,7 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
     }
 
     private String toPlainString(String[] array) {
-        if (array == null || array.length == 0) {
+        if (ArrayUtils.isEmpty(array)) {
             return "";
         }
         StringBuilder buffer = new StringBuilder();

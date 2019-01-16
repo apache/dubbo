@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring;
 
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
@@ -78,7 +79,7 @@ public class ConfigCenterBean extends ConfigCenterConfig implements Initializing
 
         if ((getRegistry() == null)) {
             List<RegistryConfig> registryConfigs = new ArrayList<>();
-            if (getApplication() != null && getApplication().getRegistries() != null && !getApplication().getRegistries().isEmpty()) {
+            if (getApplication() != null && CollectionUtils.isNotEmpty(getApplication().getRegistries())) {
                 registryConfigs = getApplication().getRegistries();
             } else {
                 Map<String, RegistryConfig> registryConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, RegistryConfig.class, false, false);
