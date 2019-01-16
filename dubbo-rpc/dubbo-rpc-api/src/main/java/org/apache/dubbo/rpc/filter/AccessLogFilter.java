@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
@@ -140,7 +141,7 @@ public class AccessLogFilter implements Filter {
                 }
                 sn.append(") ");
                 Object[] args = inv.getArguments();
-                if (args != null && args.length > 0) {
+                if (ArrayUtils.isNotEmpty(args)) {
                     sn.append(JSON.toJSONString(args));
                 }
                 String msg = sn.toString();

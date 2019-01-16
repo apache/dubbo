@@ -18,6 +18,7 @@ package org.apache.dubbo.cache.support.jcache;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import javax.cache.Cache;
 import javax.cache.CacheException;
@@ -49,7 +50,7 @@ public class JCache implements org.apache.dubbo.cache.Cache {
         // jcache parameter is the full-qualified class name of SPI implementation
         String type = url.getParameter("jcache");
 
-        CachingProvider provider = type == null || type.length() == 0 ? Caching.getCachingProvider() : Caching.getCachingProvider(type);
+        CachingProvider provider = StringUtils.isEmpty(type) ? Caching.getCachingProvider() : Caching.getCachingProvider(type);
         CacheManager cacheManager = provider.getCacheManager();
         Cache<Object, Object> cache = cacheManager.getCache(key);
         if (cache == null) {

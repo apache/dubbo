@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
@@ -58,10 +59,10 @@ public class ScriptRouter extends AbstractRouter {
         String type = url.getParameter(Constants.TYPE_KEY);
         this.priority = url.getParameter(Constants.PRIORITY_KEY, 0);
         String rule = url.getParameterAndDecoded(Constants.RULE_KEY);
-        if (type == null || type.length() == 0) {
+        if (StringUtils.isEmpty(type)) {
             type = Constants.DEFAULT_SCRIPT_TYPE_KEY;
         }
-        if (rule == null || rule.length() == 0) {
+        if (StringUtils.isEmpty(rule)) {
             throw new IllegalStateException("route rule can not be empty. rule:" + rule);
         }
         ScriptEngine engine = engines.get(type);

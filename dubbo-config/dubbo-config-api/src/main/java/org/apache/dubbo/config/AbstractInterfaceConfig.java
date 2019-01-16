@@ -26,6 +26,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.metadata.integration.MetadataReportService;
 import org.apache.dubbo.monitor.MonitorFactory;
@@ -242,7 +243,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         checkRegistry();
         checkRegistryDataConfig();
         List<URL> registryList = new ArrayList<URL>();
-        if (registries != null && !registries.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(registries)) {
             Map<String, String> registryDataConfigurationMap = new HashMap<>(4);
             appendParameters(registryDataConfigurationMap, registryDataConfig);
             for (RegistryConfig config : registries) {
@@ -291,7 +292,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         appendRuntimeParameters(map);
         //set ip
         String hostToRegistry = ConfigUtils.getSystemProperty(Constants.DUBBO_IP_TO_REGISTRY);
-        if (hostToRegistry == null || hostToRegistry.length() == 0) {
+        if (StringUtils.isEmpty(hostToRegistry)) {
             hostToRegistry = NetUtils.getLocalHost();
         } else if (NetUtils.isInvalidLocalHost(hostToRegistry)) {
             throw new IllegalArgumentException("Specified invalid registry ip from property:" +
@@ -332,7 +333,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     private URL loadMetadataReporterURL(boolean provider) {
         this.checkApplication();
         String address = metadataReportConfig.getAddress();
-        if (address == null || address.length() == 0) {
+        if (StringUtils.isEmpty(address)) {
             return null;
         }
         Map<String, String> map = new HashMap<String, String>();
@@ -367,13 +368,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
         }
         // check if methods exist in the remote service interface
-        if (methods != null && !methods.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(methods)) {
             for (MethodConfig methodBean : methods) {
                 methodBean.setService(interfaceClass.getName());
                 methodBean.setServiceId(this.getId());
                 methodBean.refresh();
                 String methodName = methodBean.getName();
-                if (methodName == null || methodName.length() == 0) {
+                if (StringUtils.isEmpty(methodName)) {
                     throw new IllegalStateException("<dubbo:method> name attribute is required! Please check: " +
                             "<dubbo:service interface=\"" + interfaceClass.getName() + "\" ... >" +
                             "<dubbo:method name=\"\" ... /></<dubbo:reference>");
@@ -472,7 +473,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     private void convertRegistryIdsToRegistries() {
-        if (StringUtils.isEmpty(registryIds) && (registries == null || registries.isEmpty())) {
+        if (StringUtils.isEmpty(registryIds) && CollectionUtils.isEmpty(registries)) {
             Set<String> configedRegistries = new HashSet<>();
             configedRegistries.addAll(getSubProperties(Environment.getInstance().getExternalConfigurationMap(),
                     Constants.REGISTRIES_SUFFIX));
@@ -483,13 +484,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
 
         if (StringUtils.isEmpty(registryIds)) {
-            if (registries == null || registries.isEmpty()) {
+            if (CollectionUtils.isEmpty(registries)) {
                 registries = new ArrayList<>();
                 registries.add(new RegistryConfig());
             }
         } else {
             String[] arr = Constants.COMMA_SPLIT_PATTERN.split(registryIds);
-            if (registries == null || registries.isEmpty()) {
+            if (CollectionUtils.isEmpty(registries)) {
                 registries = new ArrayList<>();
             }
             Arrays.stream(arr).forEach(id -> {
@@ -663,7 +664,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public RegistryConfig getRegistry() {
-        return registries == null || registries.isEmpty() ? null : registries.get(0);
+        return CollectionUtils.isEmpty(registries) ? null : registries.get(0);
     }
 
     public void setRegistry(RegistryConfig registry) {

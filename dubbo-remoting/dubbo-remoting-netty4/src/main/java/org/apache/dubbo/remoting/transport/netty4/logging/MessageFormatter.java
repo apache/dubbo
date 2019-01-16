@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.transport.netty4.logging;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ArrayUtils;
 
 import java.text.MessageFormat;
 import java.util.HashMap;
@@ -141,7 +142,7 @@ final class MessageFormatter {
     }
 
     static Throwable getThrowableCandidate(Object[] argArray) {
-        if (argArray == null || argArray.length == 0) {
+        if (ArrayUtils.isEmpty(argArray)) {
             return null;
         }
 
