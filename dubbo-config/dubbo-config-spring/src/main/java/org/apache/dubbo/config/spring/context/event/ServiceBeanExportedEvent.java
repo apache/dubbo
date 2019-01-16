@@ -14,24 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.util;
+package org.apache.dubbo.config.spring.context.event;
+
+import org.apache.dubbo.config.spring.ServiceBean;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
 
 /**
- * Object Utilities
+ * A {@link ApplicationEvent} after {@link ServiceBean} {@link ServiceBean#export() export} invocation
  *
- * @since 2.6.6
+ * @see ApplicationEvent
+ * @see ApplicationListener
+ * @see ServiceBean
+ * @since 2.6.5
  */
-public abstract class ObjectUtils {
+public class ServiceBeanExportedEvent extends ApplicationEvent {
 
     /**
-     * Convert from variable arguments to array
+     * Create a new ApplicationEvent.
      *
-     * @param values variable arguments
-     * @param <T>    The class
-     * @return array
+     * @param serviceBean {@link ServiceBean} bean
      */
-    public static <T> T[] of(T... values) {
-        return values;
+    public ServiceBeanExportedEvent(ServiceBean serviceBean) {
+        super(serviceBean);
     }
 
+    /**
+     * Get {@link ServiceBean} instance
+     *
+     * @return non-null
+     */
+    public ServiceBean getServiceBean() {
+        return (ServiceBean) super.getSource();
+    }
 }

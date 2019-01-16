@@ -14,55 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.context.annotation.consumer;
+package org.apache.dubbo.config.spring.context.context.annotation.consumer.test;
 
-import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.api.DemoService;
-import org.apache.dubbo.config.spring.context.annotation.DubboComponentScan;
+import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-@Configuration("consumerConfiguration")
-@DubboComponentScan(
-        basePackageClasses = ConsumerConfiguration.class
-)
-@PropertySource("META-INF/default.properties")
-public class ConsumerConfiguration {
+/**
+ * Test Consumer Configuration
+ *
+ * @since 2.5.7
+ */
+@EnableDubbo(scanBasePackageClasses = TestConsumerConfiguration.class, multipleConfig = true)
+@PropertySource("META-INF/dubbb-consumer.properties")
+@EnableTransactionManagement
+public class TestConsumerConfiguration {
 
-    /**
-     * Current application configuration, to replace XML config:
-     * <prev>
-     * &lt;dubbo:application name="dubbo-demo-application"/&gt;
-     * </prev>
-     *
-     * @return {@link ApplicationConfig} Bean
-     */
-    @Bean("dubbo-demo-application")
-    public ApplicationConfig applicationConfig() {
-        ApplicationConfig applicationConfig = new ApplicationConfig();
-        applicationConfig.setName("dubbo-demo-application");
-        return applicationConfig;
-    }
-
-    /**
-     * Current registry center configuration, to replace XML config:
-     * <prev>
-     * &lt;dubbo:registry address="N/A"/&gt;
-     * </prev>
-     *
-     * @return {@link RegistryConfig} Bean
-     */
-    @Bean
-    public RegistryConfig registryConfig() {
-        RegistryConfig registryConfig = new RegistryConfig();
-        registryConfig.setAddress("N/A");
-        return registryConfig;
-    }
-
-    @Reference(version = "2.5.7", url = "dubbo://127.0.0.1:12345")
+    @Reference(version = "2.5.7", url = "dubbo://127.0.0.1:12345", application = "dubbo-demo-application")
     private DemoService demoService;
 
     public DemoService getDemoService() {
@@ -75,13 +46,13 @@ public class ConsumerConfiguration {
 
 
     @Bean
-    public Child c() {
-        return new Child();
+    public TestConsumerConfiguration.Child c() {
+        return new TestConsumerConfiguration.Child();
     }
 
     public static abstract class Ancestor {
 
-        @Reference(version = "2.5.7", url = "dubbo://127.0.0.1:12345")
+        @Reference(version = "2.5.7", url = "dubbo://127.0.0.1:12345", application = "dubbo-demo-application")
         private DemoService demoServiceFromAncestor;
 
         public DemoService getDemoServiceFromAncestor() {
@@ -93,7 +64,7 @@ public class ConsumerConfiguration {
         }
     }
 
-    public static abstract class Parent extends Ancestor {
+    public static abstract class Parent extends TestConsumerConfiguration.Ancestor {
 
         private DemoService demoServiceFromParent;
 
@@ -101,16 +72,16 @@ public class ConsumerConfiguration {
             return demoServiceFromParent;
         }
 
-        @Reference(version = "2.5.7", url = "dubbo://127.0.0.1:12345")
+        @Reference(version = "2.5.7", url = "dubbo://127.0.0.1:12345", application = "dubbo-demo-application")
         public void setDemoServiceFromParent(DemoService demoServiceFromParent) {
             this.demoServiceFromParent = demoServiceFromParent;
         }
 
     }
 
-    public static class Child extends Parent {
+    public static class Child extends TestConsumerConfiguration.Parent {
 
-        @Reference(version = "2.5.7", url = "dubbo://127.0.0.1:12345")
+        @Reference(version = "2.5.7", url = "dubbo://127.0.0.1:12345", application = "dubbo-demo-application")
         private DemoService demoServiceFromChild;
 
         public DemoService getDemoServiceFromChild() {
@@ -121,5 +92,4 @@ public class ConsumerConfiguration {
             this.demoServiceFromChild = demoServiceFromChild;
         }
     }
-
 }

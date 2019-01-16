@@ -16,15 +16,14 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.spring.context.annotation.DubboConfigBindingRegistrar;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubboConfigBinding;
 import org.apache.dubbo.config.spring.context.properties.DefaultDubboConfigBinder;
 import org.apache.dubbo.config.spring.context.properties.DubboConfigBinder;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -76,7 +75,7 @@ public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, A
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 
-        if (beanName != null && beanName.equals(this.beanName) && bean instanceof AbstractConfig) {
+        if (beanName.equals(this.beanName) && bean instanceof AbstractConfig) {
 
             AbstractConfig dubboConfig = (AbstractConfig) bean;
 

@@ -124,7 +124,6 @@ public class AnnotationPropertyValuesAdapterTest {
         Assert.assertEquals("cache", referenceBean.getCache());
         Assert.assertEquals("default,default", referenceBean.getFilter());
         Assert.assertEquals("default,default", referenceBean.getListener());
-        Assert.assertEquals("protocol", referenceBean.getProtocol());
 
         Map<String, String> data = new LinkedHashMap<String, String>();
         data.put("key1", "value1");
@@ -142,7 +141,7 @@ public class AnnotationPropertyValuesAdapterTest {
     private static class TestBean {
 
         @Reference(
-                interfaceClass = DemoService.class, interfaceName = "org.apache.dubbo.config.spring.api.DemoService", version = "${version}", group = "group",
+                interfaceClass = DemoService.class, interfaceName = "com.alibaba.dubbo.config.spring.api.DemoService", version = "${version}", group = "group",
                 url = "${url}  ", client = "client", generic = true, injvm = true,
                 check = false, init = true, lazy = true, stubevent = true,
                 reconnect = "reconnect", sticky = true, proxy = "javassist", stub = "stub",
@@ -151,7 +150,7 @@ public class AnnotationPropertyValuesAdapterTest {
                 loadbalance = "random", async = true, actives = 1, sent = true,
                 mock = "mock", validation = "validation", timeout = 2, cache = "cache",
                 filter = {"default", "default"}, listener = {"default", "default"}, parameters = {"key1", "value1"}, application = "application",
-                module = "module", consumer = "consumer", monitor = "monitor", registry = {"registry1", "registry2"}, protocol = "protocol"
+                module = "module", consumer = "consumer", monitor = "monitor", registry = {"registry1", "registry2"}
         )
         private DemoService demoService;
 

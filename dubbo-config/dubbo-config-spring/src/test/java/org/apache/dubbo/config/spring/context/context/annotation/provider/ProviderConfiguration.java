@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.context.annotation.provider;
+package org.apache.dubbo.config.spring.context.context.annotation.provider;
 
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
@@ -30,7 +30,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @DubboComponentScan(basePackages = "org.apache.dubbo.config.spring.context.annotation.provider")
-@PropertySource("classpath:/META-INF/default.properties")
+@PropertySource("META-INF/default.properties")
 @EnableTransactionManagement
 public class ProviderConfiguration {
 

@@ -21,7 +21,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.context.annotation.DubboClassPathBeanDefinitionScanner;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -72,7 +71,6 @@ import static org.springframework.util.ClassUtils.resolveClassName;
 public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistryPostProcessor, EnvironmentAware,
         ResourceLoaderAware, BeanClassLoaderAware {
 
-    private static final String SEPARATOR = ":";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -208,7 +206,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
      * {@link Service} Annotation.
      *
      * @param scanner       {@link ClassPathBeanDefinitionScanner}
-     * @param packageToScan package to scan
+     * @param packageToScan pachage to scan
      * @param registry      {@link BeanDefinitionRegistry}
      * @return non-null
      * @since 2.5.8
@@ -262,7 +260,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         if (scanner.checkCandidate(beanName, serviceBeanDefinition)) { // check duplicated candidate bean
             registry.registerBeanDefinition(beanName, serviceBeanDefinition);
 
-            if (logger.isWarnEnabled()) {
+            if (logger.isInfoEnabled()) {
                 logger.warn("The BeanDefinition[" + serviceBeanDefinition +
                         "] of ServiceBean has been registered with name : " + beanName);
             }
@@ -290,27 +288,10 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
      */
     private String generateServiceBeanName(Service service, Class<?> interfaceClass, String annotatedServiceBeanName) {
 
-        StringBuilder beanNameBuilder = new StringBuilder(ServiceBean.class.getSimpleName());
+        ServiceBeanNameBuilder builder = ServiceBeanNameBuilder.create(service, interfaceClass, environment);
 
-        beanNameBuilder.append(SEPARATOR).append(annotatedServiceBeanName);
 
-        String interfaceClassName = interfaceClass.getName();
-
-        beanNameBuilder.append(SEPARATOR).append(interfaceClassName);
-
-        String version = service.version();
-
-        if (StringUtils.hasText(version)) {
-            beanNameBuilder.append(SEPARATOR).append(version);
-        }
-
-        String group = service.group();
-
-        if (StringUtils.hasText(group)) {
-            beanNameBuilder.append(SEPARATOR).append(group);
-        }
-
-        return beanNameBuilder.toString();
+        return builder.build();
 
     }
 
@@ -387,7 +368,8 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
         MutablePropertyValues propertyValues = beanDefinition.getPropertyValues();
 
-        String[] ignoreAttributeNames = of("provider", "monitor", "application", "module", "registry", "protocol", "interface", "interfaceName");
+        String[] ignoreAttributeNames = of("provider", "monitor", "application", "module", "registry", "protocol",
+                "interface", "interfaceName");
 
         propertyValues.addPropertyValues(new AnnotationPropertyValuesAdapter(service, environment, ignoreAttributeNames));
 
@@ -397,7 +379,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         builder.addPropertyValue("interface", interfaceClass.getName());
 
         /**
-         * Add {@link org.apache.dubbo.config.ProviderConfig} Bean reference
+         * Add {@link com.alibaba.dubbo.config.ProviderConfig} Bean reference
          */
         String providerConfigBeanName = service.provider();
         if (StringUtils.hasText(providerConfigBeanName)) {
@@ -405,7 +387,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         }
 
         /**
-         * Add {@link org.apache.dubbo.config.MonitorConfig} Bean reference
+         * Add {@link com.alibaba.dubbo.config.MonitorConfig} Bean reference
          */
         String monitorConfigBeanName = service.monitor();
         if (StringUtils.hasText(monitorConfigBeanName)) {
@@ -413,7 +395,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         }
 
         /**
-         * Add {@link org.apache.dubbo.config.ApplicationConfig} Bean reference
+         * Add {@link com.alibaba.dubbo.config.ApplicationConfig} Bean reference
          */
         String applicationConfigBeanName = service.application();
         if (StringUtils.hasText(applicationConfigBeanName)) {
@@ -421,7 +403,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         }
 
         /**
-         * Add {@link org.apache.dubbo.config.ModuleConfig} Bean reference
+         * Add {@link com.alibaba.dubbo.config.ModuleConfig} Bean reference
          */
         String moduleConfigBeanName = service.module();
         if (StringUtils.hasText(moduleConfigBeanName)) {
@@ -430,7 +412,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
 
         /**
-         * Add {@link org.apache.dubbo.config.RegistryConfig} Bean reference
+         * Add {@link com.alibaba.dubbo.config.RegistryConfig} Bean reference
          */
         String[] registryConfigBeanNames = service.registry();
 
@@ -441,7 +423,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         }
 
         /**
-         * Add {@link org.apache.dubbo.config.ProtocolConfig} Bean reference
+         * Add {@link com.alibaba.dubbo.config.ProtocolConfig} Bean reference
          */
         String[] protocolConfigBeanNames = service.protocol();
 

@@ -17,7 +17,6 @@
 package org.apache.dubbo.config.spring.context.properties;
 
 import org.apache.dubbo.config.AbstractConfig;
-
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.validation.DataBinder;
 
@@ -37,7 +36,7 @@ public class DefaultDubboConfigBinder extends AbstractDubboConfigBinder {
         dataBinder.setIgnoreInvalidFields(isIgnoreInvalidFields());
         dataBinder.setIgnoreUnknownFields(isIgnoreUnknownFields());
         // Get properties under specified prefix from PropertySources
-        Map<String, String> properties = getSubProperties(getPropertySources(), prefix);
+        Map<String, Object> properties = getSubProperties(getPropertySources(), prefix);
         // Convert Map to MutablePropertyValues
         MutablePropertyValues propertyValues = new MutablePropertyValues(properties);
         // Bind
@@ -45,3 +44,4 @@ public class DefaultDubboConfigBinder extends AbstractDubboConfigBinder {
     }
 
 }
+

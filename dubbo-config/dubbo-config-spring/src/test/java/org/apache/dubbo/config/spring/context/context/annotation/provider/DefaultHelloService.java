@@ -14,33 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.convert.converter;
+package org.apache.dubbo.config.spring.context.context.annotation.provider;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.apache.dubbo.config.spring.api.HelloService;
+import org.springframework.stereotype.Service;
 
 /**
- * {@link StringArrayToStringConverter} Test
+ * Default {@link HelloService} annotation with Spring's {@link Service}
+ * and Dubbo's {@link org.apache.dubbo.config.annotation.Service}
+ *
+ * @since TODO
  */
-public class StringArrayToStringConverterTest {
+@Service
+@org.apache.dubbo.config.annotation.Service
+public class DefaultHelloService implements HelloService {
 
-    @Test
-    public void testConvert() {
-
-        StringArrayToStringConverter converter = new StringArrayToStringConverter();
-
-        String value = converter.convert(new String[]{"Hello", "World"});
-
-        Assert.assertEquals("Hello,World", value);
-
-        value = converter.convert(new String[]{});
-
-        Assert.assertNull(value);
-
-        value = converter.convert(null);
-
-        Assert.assertNull(value);
-
+    @Override
+    public String sayHello(String name) {
+        return "Greeting, " + name;
     }
 
 }

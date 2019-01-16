@@ -23,7 +23,6 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
-
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.Documented;
@@ -66,7 +65,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@Import(DubboConfigConfigurationSelector.class)
+@Import(DubboConfigConfigurationRegistrar.class)
 public @interface EnableDubboConfig {
 
     /**
