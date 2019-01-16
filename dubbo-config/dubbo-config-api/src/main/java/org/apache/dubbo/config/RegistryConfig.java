@@ -132,8 +132,8 @@ public class RegistryConfig extends AbstractConfig {
      */
     private Boolean simple;
     /**
-     * After simplify the registry, should add some paramter individually.
-     * addionalParameterKeys = addParamKeys
+     * After simplify the registry, should add some parameter individually.
+     * additionalParameterKeys = addParamKeys
      *
      * @since 2.7.0
      */
