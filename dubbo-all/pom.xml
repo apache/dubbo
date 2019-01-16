@@ -395,6 +395,10 @@
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+        </dependency>
 
         <!-- Temporarily add this part to exclude transitive dependency -->
         <dependency>
@@ -483,7 +487,6 @@
                                     <include>org.apache.dubbo:dubbo-metadata-definition</include>
                                     <include>org.apache.dubbo:dubbo-metadata-report-redis</include>
                                     <include>org.apache.dubbo:dubbo-metadata-report-zookeeper</include>
-                                    <include>com.google.code.gson:gson</include>
                                 </includes>
                             </artifactSet>
                             <transformers>
