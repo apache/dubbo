@@ -83,7 +83,7 @@ class ServiceBeanNameBuilder {
 
     private static void append(StringBuilder builder, String value) {
         if (StringUtils.hasText(value)) {
-            builder.append(value).append(SEPARATOR);
+            builder.append(SEPARATOR).append(value);
         }
     }
 
@@ -98,14 +98,14 @@ class ServiceBeanNameBuilder {
     }
 
     public String build() {
-        StringBuilder beanNameBuilder = new StringBuilder("ServiceBean").append(SEPARATOR);
+        StringBuilder beanNameBuilder = new StringBuilder("ServiceBean");
         // Required
         append(beanNameBuilder, interfaceClassName);
         // Optional
         append(beanNameBuilder, version);
         append(beanNameBuilder, group);
-        // Build and remove last ":"
-        String rawBeanName = beanNameBuilder.substring(0, beanNameBuilder.length() - 1);
+        // Build
+        String rawBeanName = beanNameBuilder.toString();
         // Resolve placeholders
         return environment.resolvePlaceholders(rawBeanName);
     }
