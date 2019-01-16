@@ -18,11 +18,9 @@ package org.apache.dubbo.config.spring.context.annotation;
 
 import org.apache.dubbo.config.AbstractConfig;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationAttributes;
-import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotationMetadata;
 
 import static org.apache.dubbo.config.spring.util.AnnotatedBeanDefinitionRegistryUtils.registerBeans;
@@ -35,14 +33,7 @@ import static org.apache.dubbo.config.spring.util.AnnotatedBeanDefinitionRegistr
  * @see Ordered
  * @since 2.5.8
  */
-public class DubboConfigConfigurationRegistrar implements ImportBeanDefinitionRegistrar, EnvironmentAware, Ordered {
-
-    /**
-     * The property name of {@link EnableDubboConfig}'s {@link Ordered order}
-     */
-    public static final String DUBBO_CONFIG_ORDER_PROPERTY_NAME = "dubbo.config.order";
-
-    private int order;
+public class DubboConfigConfigurationRegistrar implements ImportBeanDefinitionRegistrar {
 
     @Override
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
@@ -57,29 +48,6 @@ public class DubboConfigConfigurationRegistrar implements ImportBeanDefinitionRe
         } else {
             registerBeans(registry, DubboConfigConfiguration.Single.class);
         }
-    }
-
-    /**
-     * Set {@link Ordered order}, it may be changed in in the future.
-     *
-     * @param order {@link Ordered order}
-     */
-    public void setOrder(int order) {
-        this.order = order;
-    }
-
-    @Override
-    public int getOrder() {
-        return order;
-    }
-
-    @Override
-    public void setEnvironment(Environment environment) {
-        this.order = environment.getProperty(DUBBO_CONFIG_ORDER_PROPERTY_NAME, int.class, LOWEST_PRECEDENCE);
-    }
-
-    private static <T> T[] of(T... values) {
-        return values;
     }
 
 }
