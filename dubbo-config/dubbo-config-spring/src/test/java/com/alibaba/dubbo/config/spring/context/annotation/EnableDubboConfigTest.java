@@ -23,19 +23,17 @@ import com.alibaba.dubbo.config.MonitorConfig;
 import com.alibaba.dubbo.config.ProtocolConfig;
 import com.alibaba.dubbo.config.ProviderConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
+import com.alibaba.dubbo.config.spring.util.ObjectUtils;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.core.env.MapPropertySource;
-import org.springframework.core.env.StandardEnvironment;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
-import static com.alibaba.dubbo.config.spring.context.annotation.DubboConfigConfigurationRegistrar.DUBBO_CONFIG_ORDER_PROPERTY_NAME;
+import static java.util.Arrays.asList;
 
 /**
  * {@link EnableDubboConfig} Test
@@ -43,26 +41,6 @@ import static com.alibaba.dubbo.config.spring.context.annotation.DubboConfigConf
  * @since 2.5.8
  */
 public class EnableDubboConfigTest {
-
-    @Test
-    public void testOrder() {
-        Map<String, Object> source = new HashMap<String, Object>();
-        source.put(DUBBO_CONFIG_ORDER_PROPERTY_NAME, "1");
-        MapPropertySource propertySource = new MapPropertySource("test-property-source", source);
-        ConfigurableEnvironment environment = new StandardEnvironment();
-
-        environment.getPropertySources().addFirst(propertySource);
-
-        DubboConfigConfigurationRegistrar selector = new DubboConfigConfigurationRegistrar();
-
-        selector.setEnvironment(environment);
-
-        Assert.assertEquals(1, selector.getOrder());
-
-        selector.setOrder(2);
-
-        Assert.assertEquals(2, selector.getOrder());
-    }
 
     @Test
     public void testSingle() {
@@ -74,6 +52,8 @@ public class EnableDubboConfigTest {
         // application
         ApplicationConfig applicationConfig = context.getBean("applicationBean", ApplicationConfig.class);
         Assert.assertEquals("dubbo-demo-application", applicationConfig.getName());
+
+        Assert.assertArrayEquals(ObjectUtils.of("applicationBean"), context.getBeanNamesForType(ApplicationConfig.class));
 
         // module
         ModuleConfig moduleConfig = context.getBean("moduleBean", ModuleConfig.class);
@@ -110,9 +90,17 @@ public class EnableDubboConfigTest {
         context.register(TestMultipleConfig.class);
         context.refresh();
 
+        Set<String> expectedBeanNames = new TreeSet<String>(asList("applicationBean", "applicationBean1", "applicationBean2", "applicationBean3"));
+        Set<String> actualBeanNames = new TreeSet<String>(asList(context.getBeanNamesForType(ApplicationConfig.class)));
+
+        Assert.assertEquals(expectedBeanNames, actualBeanNames);
+
         // application
         ApplicationConfig applicationConfig = context.getBean("applicationBean", ApplicationConfig.class);
         Assert.assertEquals("dubbo-demo-application", applicationConfig.getName());
+
+        applicationConfig = context.getBean("applicationBean1", ApplicationConfig.class);
+        Assert.assertEquals("dubbo-demo-application1", applicationConfig.getName());
 
         ApplicationConfig applicationBean2 = context.getBean("applicationBean2", ApplicationConfig.class);
         Assert.assertEquals("dubbo-demo-application2", applicationBean2.getName());
@@ -122,13 +110,13 @@ public class EnableDubboConfigTest {
 
     }
 
-    @EnableDubboConfig(multiple = true)
+    @EnableDubboConfig
     @PropertySource("META-INF/config.properties")
     private static class TestMultipleConfig {
 
     }
 
-    @EnableDubboConfig
+    @EnableDubboConfig(multiple = false)
     @PropertySource("META-INF/config.properties")
     private static class TestConfig {
 

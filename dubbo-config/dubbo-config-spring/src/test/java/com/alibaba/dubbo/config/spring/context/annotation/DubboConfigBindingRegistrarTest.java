@@ -23,6 +23,11 @@ import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.PropertySource;
 
+import java.util.Set;
+import java.util.TreeSet;
+
+import static java.util.Arrays.asList;
+
 /**
  * {@link DubboConfigBindingRegistrar}
  *
@@ -55,9 +60,14 @@ public class DubboConfigBindingRegistrarTest {
 
         context.refresh();
 
-        ApplicationConfig applicationConfig = context.getBean("applicationBean", ApplicationConfig.class);
+        Set<String> expectedBeanNames = new TreeSet<String>(asList("applicationBean1", "applicationBean2", "applicationBean3"));
+        Set<String> actualBeanNames = new TreeSet<String>(asList(context.getBeanNamesForType(ApplicationConfig.class)));
 
-        Assert.assertEquals("dubbo-demo-application", applicationConfig.getName());
+        Assert.assertEquals(expectedBeanNames, actualBeanNames);
+
+        ApplicationConfig applicationConfig = context.getBean("applicationBean1", ApplicationConfig.class);
+
+        Assert.assertEquals("dubbo-demo-application1", applicationConfig.getName());
 
         applicationConfig = context.getBean("applicationBean2", ApplicationConfig.class);
 
