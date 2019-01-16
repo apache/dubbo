@@ -23,20 +23,11 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.spring.context.annotation.DubboConfigConfigurationRegistrar;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubboConfig;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.core.env.MapPropertySource;
-import org.springframework.core.env.StandardEnvironment;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.apache.dubbo.config.spring.context.annotation.DubboConfigConfigurationRegistrar.DUBBO_CONFIG_ORDER_PROPERTY_NAME;
 
 /**
  * {@link EnableDubboConfig} Test
@@ -44,26 +35,6 @@ import static org.apache.dubbo.config.spring.context.annotation.DubboConfigConfi
  * @since 2.5.8
  */
 public class EnableDubboConfigTest {
-
-    @Test
-    public void testOrder() {
-        Map<String, Object> source = new HashMap<String, Object>();
-        source.put(DUBBO_CONFIG_ORDER_PROPERTY_NAME, "1");
-        MapPropertySource propertySource = new MapPropertySource("test-property-source", source);
-        ConfigurableEnvironment environment = new StandardEnvironment();
-
-        environment.getPropertySources().addFirst(propertySource);
-
-        DubboConfigConfigurationRegistrar selector = new DubboConfigConfigurationRegistrar();
-
-        selector.setEnvironment(environment);
-
-        Assert.assertEquals(1, selector.getOrder());
-
-        selector.setOrder(2);
-
-        Assert.assertEquals(2, selector.getOrder());
-    }
 
     @Test
     public void testSingle() {
