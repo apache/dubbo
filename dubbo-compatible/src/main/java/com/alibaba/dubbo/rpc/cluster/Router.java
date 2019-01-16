@@ -36,8 +36,6 @@ public interface Router extends org.apache.dubbo.rpc.cluster.Router {
                                                      com.alibaba.dubbo.rpc.Invocation invocation)
             throws com.alibaba.dubbo.rpc.RpcException;
 
-    int compareTo(com.alibaba.dubbo.rpc.cluster.Router o);
-
     // Add since 2.7.0
     @Override
     default <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
@@ -62,10 +60,5 @@ public interface Router extends org.apache.dubbo.rpc.cluster.Router {
     @Override
     default int getPriority() {
         return 1;
-    }
-
-    @Override
-    default int compareTo(org.apache.dubbo.rpc.cluster.Router o) {
-        return compareTo((Router) o);
     }
 }

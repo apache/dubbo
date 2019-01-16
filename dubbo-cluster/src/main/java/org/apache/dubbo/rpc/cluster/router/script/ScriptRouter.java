@@ -24,6 +24,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
 
 import javax.script.Bindings;
@@ -119,5 +120,14 @@ public class ScriptRouter extends AbstractRouter {
     @Override
     public boolean isForce() {
         return url.getParameter(Constants.FORCE_KEY, false);
+    }
+
+    @Override
+    public int compareTo(Router o) {
+        if (o == null || o.getClass() != ScriptRouter.class) {
+            return 1;
+        }
+        ScriptRouter c = (ScriptRouter) o;
+        return this.priority == c.priority ? rule.compareTo(c.rule) : (this.priority > c.priority ? 1 : -1);
     }
 }
