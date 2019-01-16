@@ -95,6 +95,9 @@ public interface Router extends Comparable<Router> {
             if (o.getUrl() == null) {
                 return -1;
             }
+            if (getUrl() == null) {
+                return 1;
+            }
             return getUrl().toFullString().compareTo(o.getUrl().toFullString());
         } else {
             return getPriority() > o.getPriority() ? 1 : -1;
