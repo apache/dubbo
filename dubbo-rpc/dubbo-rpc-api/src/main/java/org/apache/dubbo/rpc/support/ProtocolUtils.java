@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.support;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.StringUtils;
 
 public class ProtocolUtils {
 
@@ -31,7 +32,7 @@ public class ProtocolUtils {
 
     public static String serviceKey(int port, String serviceName, String serviceVersion, String serviceGroup) {
         StringBuilder buf = new StringBuilder();
-        if (serviceGroup != null && serviceGroup.length() > 0) {
+        if (StringUtils.isNotEmpty(serviceGroup)) {
             buf.append(serviceGroup);
             buf.append("/");
         }

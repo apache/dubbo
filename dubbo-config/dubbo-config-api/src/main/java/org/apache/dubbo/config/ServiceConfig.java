@@ -26,6 +26,7 @@ import org.apache.dubbo.common.utils.ClassHelper;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.support.Parameter;
@@ -173,7 +174,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     @Deprecated
     private static List<ProtocolConfig> convertProviderToProtocol(List<ProviderConfig> providers) {
-        if (providers == null || providers.isEmpty()) {
+        if (CollectionUtils.isEmpty(providers)) {
             return null;
         }
         List<ProtocolConfig> protocols = new ArrayList<ProtocolConfig>(providers.size());
@@ -185,7 +186,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     @Deprecated
     private static List<ProviderConfig> convertProtocolToProvider(List<ProtocolConfig> protocols) {
-        if (protocols == null || protocols.isEmpty()) {
+        if (CollectionUtils.isEmpty(protocols)) {
             return null;
         }
         List<ProviderConfig> providers = new ArrayList<ProviderConfig>(protocols.size());
@@ -277,7 +278,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         checkMetadataReport();
         checkRegistryDataConfig();
 
-        if (interfaceName == null || interfaceName.length() == 0) {
+        if (StringUtils.isEmpty(interfaceName)) {
             throw new IllegalStateException("<dubbo:service interface=\"\" /> interface not allow null!");
         }
 
@@ -360,7 +361,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
         exported = true;
 
-        if (path == null || path.length() == 0) {
+        if (StringUtils.isEmpty(path)) {
             path = interfaceName;
         }
         ProviderModel providerModel = new ProviderModel(getUniqueServiceName(), ref, interfaceClass);
@@ -410,7 +411,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
         String name = protocolConfig.getName();
-        if (name == null || name.length() == 0) {
+        if (StringUtils.isEmpty(name)) {
             name = Constants.DUBBO;
         }
 
@@ -422,7 +423,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         appendParameters(map, provider, Constants.DEFAULT_KEY);
         appendParameters(map, protocolConfig);
         appendParameters(map, this);
-        if (methods != null && !methods.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(methods)) {
             for (MethodConfig method : methods) {
                 appendParameters(map, method, method.getName());
                 String retryKey = method.getName() + ".retry";
@@ -433,7 +434,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     }
                 }
                 List<ArgumentConfig> arguments = method.getArguments();
-                if (arguments != null && !arguments.isEmpty()) {
+                if (CollectionUtils.isNotEmpty(arguments)) {
                     for (ArgumentConfig argument : arguments) {
                         // convert argument type
                         if (argument.getType() != null && argument.getType().length() > 0) {
@@ -508,13 +509,13 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
         // export service
         String contextPath = protocolConfig.getContextpath();
-        if ((contextPath == null || contextPath.length() == 0) && provider != null) {
+        if (StringUtils.isEmpty(contextPath) && provider != null) {
             contextPath = provider.getContextpath();
         }
 
         String host = this.findConfigedHosts(protocolConfig, registryURLs, map);
         Integer port = this.findConfigedPorts(protocolConfig, name, map);
-        URL url = new URL(name, host, port, (contextPath == null || contextPath.length() == 0 ? "" : contextPath + "/") + path, map);
+        URL url = new URL(name, host, port, (StringUtils.isEmpty(contextPath) ? "" : contextPath + "/") + path, map);
 
         if (ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
                 .hasExtension(url.getProtocol())) {
@@ -535,7 +536,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 if (logger.isInfoEnabled()) {
                     logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
                 }
-                if (registryURLs != null && !registryURLs.isEmpty()) {
+                if (CollectionUtils.isNotEmpty(registryURLs)) {
                     for (URL registryURL : registryURLs) {
                         url = url.addParameterIfAbsent(Constants.DYNAMIC_KEY, registryURL.getParameter(Constants.DYNAMIC_KEY));
                         URL monitorUrl = loadMonitor(registryURL);
@@ -651,9 +652,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
 
         // if bind ip is not found in environment, keep looking up
-        if (hostToBind == null || hostToBind.length() == 0) {
+        if (StringUtils.isEmpty(hostToBind)) {
             hostToBind = protocolConfig.getHost();
-            if (provider != null && (hostToBind == null || hostToBind.length() == 0)) {
+            if (provider != null && StringUtils.isEmpty(hostToBind)) {
                 hostToBind = provider.getHost();
             }
             if (isInvalidLocalHost(hostToBind)) {
@@ -664,7 +665,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     logger.warn(e.getMessage(), e);
                 }
                 if (isInvalidLocalHost(hostToBind)) {
-                    if (registryURLs != null && !registryURLs.isEmpty()) {
+                    if (CollectionUtils.isNotEmpty(registryURLs)) {
                         for (URL registryURL : registryURLs) {
                             if (Constants.MULTICAST.equalsIgnoreCase(registryURL.getParameter("registry"))) {
                                 // skip multicast registry since we cannot connect to it via Socket
@@ -701,7 +702,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         String hostToRegistry = getValueFromConfig(protocolConfig, Constants.DUBBO_IP_TO_REGISTRY);
         if (hostToRegistry != null && hostToRegistry.length() > 0 && isInvalidLocalHost(hostToRegistry)) {
             throw new IllegalArgumentException("Specified invalid registry ip from property:" + Constants.DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
-        } else if (hostToRegistry == null || hostToRegistry.length() == 0) {
+        } else if (StringUtils.isEmpty(hostToRegistry)) {
             // bind ip is used as registry ip by default
             hostToRegistry = hostToBind;
         }
@@ -778,7 +779,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private String getValueFromConfig(ProtocolConfig protocolConfig, String key) {
         String protocolPrefix = protocolConfig.getName().toUpperCase() + "_";
         String port = ConfigUtils.getSystemProperty(protocolPrefix + key);
-        if (port == null || port.length() == 0) {
+        if (StringUtils.isEmpty(port)) {
             port = ConfigUtils.getSystemProperty(key);
         }
         return port;
@@ -792,7 +793,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     private void checkProtocol() {
-        if ((protocols == null || protocols.isEmpty()) && provider != null) {
+        if (CollectionUtils.isEmpty(protocols) && provider != null) {
             setProtocols(provider.getProtocols());
         }
 
@@ -811,7 +812,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     private void convertProtocolIdsToProtocols() {
-        if (StringUtils.isEmpty(protocolIds) && (protocols == null || protocols.isEmpty())) {
+        if (StringUtils.isEmpty(protocolIds) && CollectionUtils.isEmpty(protocols)) {
             List<String> configedProtocols = new ArrayList<>();
             configedProtocols.addAll(getSubProperties(Environment.getInstance()
                     .getExternalConfigurationMap(), Constants.PROTOCOLS_SUFFIX));
@@ -822,13 +823,13 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
 
         if (StringUtils.isEmpty(protocolIds)) {
-            if (protocols == null || protocols.isEmpty()) {
+            if (CollectionUtils.isEmpty(protocols)) {
                 protocols = new ArrayList<>();
                 protocols.add(new ProtocolConfig());
             }
         } else {
             String[] arr = Constants.COMMA_SPLIT_PATTERN.split(protocolIds);
-            if (protocols == null || protocols.isEmpty()) {
+            if (CollectionUtils.isEmpty(protocols)) {
                 protocols = new ArrayList<>();
             }
             Arrays.stream(arr).forEach(id -> {
@@ -886,7 +887,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     public void setInterface(String interfaceName) {
         this.interfaceName = interfaceName;
-        if (id == null || id.length() == 0) {
+        if (StringUtils.isEmpty(id)) {
             id = interfaceName;
         }
     }
