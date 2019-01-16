@@ -298,9 +298,7 @@ public class MulticastRegistry extends FailbackRegistry {
     public void destroy() {
         super.destroy();
         try {
-            if (cleanFuture != null) {
-                cleanFuture.cancel(true);
-            }
+            ExecutorUtil.cancelScheduledFuture(cleanFuture);
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
         }
@@ -342,8 +340,8 @@ public class MulticastRegistry extends FailbackRegistry {
                 if (urls != null) {
                     urls.remove(url);
                 }
-                if (urls == null || urls.isEmpty()){
-                    if (urls == null){
+                if (urls == null || urls.isEmpty()) {
+                    if (urls == null) {
                         urls = new ConcurrentHashSet<URL>();
                     }
                     URL empty = url.setProtocol(Constants.EMPTY_PROTOCOL);
