@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.injvm;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
@@ -56,7 +57,7 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
         if (!key.getServiceKey().contains("*")) {
             result = map.get(key.getServiceKey());
         } else {
-            if (map != null && !map.isEmpty()) {
+            if (CollectionUtils.isNotEmptyMap(map)) {
                 for (Exporter<?> exporter : map.values()) {
                     if (UrlUtils.isServiceKeyMatch(key, exporter.getInvoker().getUrl())) {
                         result = exporter;

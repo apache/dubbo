@@ -22,6 +22,7 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
@@ -120,7 +121,7 @@ public class RegistryProtocol implements Protocol {
     //Filter the parameters that do not need to be output in url(Starting with .)
     private static String[] getFilteredKeys(URL url) {
         Map<String, String> params = url.getParameters();
-        if (params != null && !params.isEmpty()) {
+        if (CollectionUtils.isNotEmptyMap(params)) {
             return params.keySet().stream()
                     .filter(k -> k.startsWith(HIDE_KEY_PREFIX))
                     .toArray(String[]::new);

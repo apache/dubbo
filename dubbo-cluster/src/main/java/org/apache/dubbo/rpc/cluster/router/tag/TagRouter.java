@@ -181,7 +181,7 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
 
     @Override
     public <T> void notify(List<Invoker<T>> invokers) {
-        if (invokers == null || invokers.isEmpty()) {
+        if (CollectionUtils.isEmpty(invokers)) {
             return;
         }
 
