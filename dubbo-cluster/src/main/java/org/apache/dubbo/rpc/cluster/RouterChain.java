@@ -63,8 +63,8 @@ public class RouterChain<T> {
      */
     public void initWithRouters(List<Router> builtinRouters) {
         this.builtinRouters = builtinRouters;
+        Collections.sort(builtinRouters);
         this.routers = new CopyOnWriteArrayList<>(builtinRouters);
-        this.sort();
     }
 
     /**
@@ -83,12 +83,8 @@ public class RouterChain<T> {
         this.routers = newRouters;
     }
 
-    private void sort() {
-        Collections.sort(routers);
-    }
 
     /**
-     *
      * @param url
      * @param invocation
      * @return
