@@ -16,19 +16,17 @@
  */
 package org.apache.dubbo.rpc.cluster;
 
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.rpc.Invocation;
-import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.rpc.cluster.Router;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcException;
 
 import java.util.List;
 
 /**
  *
  */
-public class CompatibleRouter implements Router {
-
+public class NewRouter implements Router {
     @Override
     public URL getUrl() {
         return null;
@@ -40,7 +38,17 @@ public class CompatibleRouter implements Router {
     }
 
     @Override
-    public int compareTo(Router o) {
+    public boolean isRuntime() {
+        return false;
+    }
+
+    @Override
+    public boolean isForce() {
+        return false;
+    }
+
+    @Override
+    public int getPriority() {
         return 0;
     }
 }
