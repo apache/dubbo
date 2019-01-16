@@ -27,9 +27,8 @@ import java.util.Map;
  * ProviderModel which is about published services
  */
 public class ProviderModel {
-    private final String serviceName;
     private final Object serviceInstance;
-    private final Class<?> serviceInterfaceClass;
+    private final ServiceMetadata serviceMetadata;
     private final Map<String, List<ProviderMethodModel>> methods = new HashMap<String, List<ProviderMethodModel>>();
 
     public ProviderModel(String serviceName, Object serviceInstance, Class<?> serviceInterfaceClass) {
@@ -37,20 +36,18 @@ public class ProviderModel {
             throw new IllegalArgumentException("Service[" + serviceName + "]Target is NULL.");
         }
 
-        this.serviceName = serviceName;
         this.serviceInstance = serviceInstance;
-        this.serviceInterfaceClass = serviceInterfaceClass;
-
-        initMethod();
+        this.serviceMetadata = new ServiceMetadata(serviceName, serviceInterfaceClass);
+        initMethod(serviceInterfaceClass);
     }
 
 
     public String getServiceName() {
-        return serviceName;
+        return this.serviceMetadata.getServiceKey();
     }
 
     public Class<?> getServiceInterfaceClass() {
-        return serviceInterfaceClass;
+        return this.serviceMetadata.getServiceType();
     }
 
     public Object getServiceInstance() {
@@ -77,9 +74,9 @@ public class ProviderModel {
         return null;
     }
 
-    private void initMethod() {
+    private void initMethod(Class<?> serviceInterfaceClass) {
         Method[] methodsToExport = null;
-        methodsToExport = this.serviceInterfaceClass.getMethods();
+        methodsToExport = serviceInterfaceClass.getMethods();
 
         for (Method method : methodsToExport) {
             method.setAccessible(true);
@@ -89,8 +86,14 @@ public class ProviderModel {
                 methodModels = new ArrayList<ProviderMethodModel>(1);
                 methods.put(method.getName(), methodModels);
             }
-            methodModels.add(new ProviderMethodModel(method, serviceName));
+            methodModels.add(new ProviderMethodModel(method));
         }
     }
 
+    /**
+     * @return serviceMetadata
+     */
+    public ServiceMetadata getServiceMetadata() {
+        return serviceMetadata;
+    }
 }

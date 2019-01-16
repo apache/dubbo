@@ -73,7 +73,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
      *
      * <li>when the url is dubbo://224.5.6.7:1234/org.apache.dubbo.config.api.DemoService?application=dubbo-sample, then
      * the protocol is <b>DubboProtocol</b></li>
-     *
+     * <p>
      * Actually，when the {@link ExtensionLoader} init the {@link Protocol} instants,it will automatically wraps two
      * layers, and eventually will get a <b>ProtocolFilterWrapper</b> or <b>ProtocolListenerWrapper</b>
      */
@@ -300,7 +300,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
         ref = createProxy(map);
 
-        ConsumerModel consumerModel = new ConsumerModel(getUniqueServiceName(), interfaceClass, ref, interfaceClass.getMethods(), attributes);
+        ConsumerModel consumerModel = new ConsumerModel(getUniqueServiceName(), interfaceClass, interfaceClass.getMethods(), attributes);
         ApplicationModel.initConsumerModel(getUniqueServiceName(), consumerModel);
     }
 
@@ -417,14 +417,14 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             return;
         }
         setConsumer(
-                        ConfigManager.getInstance()
-                            .getDefaultConsumer()
-                            .orElseGet(() -> {
-                                ConsumerConfig consumerConfig = new ConsumerConfig();
-                                consumerConfig.refresh();
-                                return consumerConfig;
-                            })
-                );
+                ConfigManager.getInstance()
+                        .getDefaultConsumer()
+                        .orElseGet(() -> {
+                            ConsumerConfig consumerConfig = new ConsumerConfig();
+                            consumerConfig.refresh();
+                            return consumerConfig;
+                        })
+        );
     }
 
     private void completeCompoundConfigs() {
