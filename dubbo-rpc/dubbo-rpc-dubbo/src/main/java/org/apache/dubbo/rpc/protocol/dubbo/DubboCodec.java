@@ -68,7 +68,7 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
             // decode response.
             Response res = new Response(id);
             if ((flag & FLAG_EVENT) != 0) {
-                res.setEvent(Response.HEARTBEAT_EVENT);
+                res.setEvent(true);
             }
             // get status.
             byte status = header[3];

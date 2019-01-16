@@ -136,7 +136,7 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
             // decode response.
             Response res = new Response(id);
             if ((flag & FLAG_EVENT) != 0) {
-                res.setEvent(Response.HEARTBEAT_EVENT);
+                res.setEvent(true);
             }
             // get status.
             byte status = header[3];
