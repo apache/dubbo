@@ -73,6 +73,9 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     // serialization
     private String serialization;
 
+    // provider tag
+    protected String tag;
+
     public String getVersion() {
         return version;
     }
@@ -238,6 +241,15 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
     public void setSerialization(String serialization) {
         this.serialization = serialization;
+    }
+
+    @Parameter(key = "dubbo.tag")
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
     }
 
 }
