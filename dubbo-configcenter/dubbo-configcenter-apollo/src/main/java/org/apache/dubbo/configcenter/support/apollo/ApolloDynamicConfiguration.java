@@ -34,6 +34,7 @@ import com.ctrip.framework.apollo.enums.PropertyChangeType;
 import com.ctrip.framework.apollo.model.ConfigChange;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -108,7 +109,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
     public void addListener(String key, String group, ConfigurationListener listener) {
         ApolloListener apolloListener = listeners.computeIfAbsent(group + key, k -> createTargetListener(key, group));
         apolloListener.addListener(listener);
-        dubboConfig.addChangeListener(apolloListener);
+        dubboConfig.addChangeListener(apolloListener, Collections.singleton(key));
     }
 
     @Override
