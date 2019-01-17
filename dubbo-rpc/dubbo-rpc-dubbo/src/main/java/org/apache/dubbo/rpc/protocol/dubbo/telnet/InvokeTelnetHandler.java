@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.apache.dubbo.common.utils.PojoUtils.realize;
-import static org.apache.dubbo.rpc.RpcContext.getContext;
 
 /**
  * InvokeTelnetHandler
@@ -124,7 +123,6 @@ public class InvokeTelnetHandler implements TelnetHandler {
                 try {
                     Object[] array = realize(list.toArray(), invokeMethod.getParameterTypes(),
                             invokeMethod.getGenericParameterTypes());
-                    getContext().setLocalAddress(channel.getLocalAddress()).setRemoteAddress(channel.getRemoteAddress());
                     long start = System.currentTimeMillis();
                     RpcResult result = new RpcResult();
                     try {

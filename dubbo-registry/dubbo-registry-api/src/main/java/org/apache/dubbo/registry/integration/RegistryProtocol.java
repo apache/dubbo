@@ -22,6 +22,7 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
@@ -120,7 +121,7 @@ public class RegistryProtocol implements Protocol {
     //Filter the parameters that do not need to be output in url(Starting with .)
     private static String[] getFilteredKeys(URL url) {
         Map<String, String> params = url.getParameters();
-        if (params != null && !params.isEmpty()) {
+        if (CollectionUtils.isNotEmptyMap(params)) {
             return params.keySet().stream()
                     .filter(k -> k.startsWith(HIDE_KEY_PREFIX))
                     .toArray(String[]::new);
@@ -397,11 +398,11 @@ public class RegistryProtocol implements Protocol {
     }
 
     // available to test
-    public String[] getParamsToRegistry(String[] defaultKeys, String[] addionalParameterKeys) {
-        int additionalLen = addionalParameterKeys.length;
+    public String[] getParamsToRegistry(String[] defaultKeys, String[] additionalParameterKeys) {
+        int additionalLen = additionalParameterKeys.length;
         String[] registryParams = new String[defaultKeys.length + additionalLen];
         System.arraycopy(defaultKeys, 0, registryParams, 0, defaultKeys.length);
-        System.arraycopy(addionalParameterKeys, 0, registryParams, defaultKeys.length, additionalLen);
+        System.arraycopy(additionalParameterKeys, 0, registryParams, defaultKeys.length, additionalLen);
         return registryParams;
     }
 

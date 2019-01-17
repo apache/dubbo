@@ -19,8 +19,10 @@ package org.apache.dubbo.config.spring;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ReflectUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConsumerConfig;
@@ -74,7 +76,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
 
     public void setPackage(String annotationPackage) {
         this.annotationPackage = annotationPackage;
-        this.annotationPackages = (annotationPackage == null || annotationPackage.length() == 0) ? null
+        this.annotationPackages = (StringUtils.isEmpty(annotationPackage)) ? null
                 : Constants.COMMA_SPLIT_PATTERN.split(annotationPackage);
     }
 
@@ -86,7 +88,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory)
             throws BeansException {
-        if (annotationPackage == null || annotationPackage.length() == 0) {
+        if (StringUtils.isEmpty(annotationPackage)) {
             return;
         }
         if (beanFactory instanceof BeanDefinitionRegistry) {
@@ -306,7 +308,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
     }
 
     private boolean isMatchPackage(Object bean) {
-        if (annotationPackages == null || annotationPackages.length == 0) {
+        if (ArrayUtils.isEmpty(annotationPackages)) {
             return true;
         }
         String beanClassName = bean.getClass().getName();
