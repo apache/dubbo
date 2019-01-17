@@ -163,7 +163,7 @@ public class Parameters {
         return Boolean.parseBoolean(value);
     }
 
-    public boolean hasParamter(String key) {
+    public boolean hasParameter(String key) {
         String value = getParameter(key);
         return value != null && value.length() > 0;
     }
@@ -234,7 +234,7 @@ public class Parameters {
         return Boolean.parseBoolean(value);
     }
 
-    public boolean hasMethodParamter(String method, String key) {
+    public boolean hasMethodParameter(String method, String key) {
         String value = getMethodParameter(method, key);
         return value != null && value.length() > 0;
     }
