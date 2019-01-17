@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.spring.context.annotation;
 
 import org.apache.dubbo.config.ApplicationConfig;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
