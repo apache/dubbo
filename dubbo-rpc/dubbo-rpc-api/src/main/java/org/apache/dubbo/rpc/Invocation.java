@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
