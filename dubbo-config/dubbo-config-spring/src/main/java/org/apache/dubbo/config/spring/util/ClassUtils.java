@@ -14,24 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.convert.converter;
+package org.apache.dubbo.config.spring.util;
 
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
 /**
- * String[] to String {@ConditionalGenericConverter}
+ * {@link Class} Utilities
+ * <p>
+ * The source code is cloned from
+ * https://github.com/alibaba/spring-context-support/blob/1.0.2/src/main/java/com/alibaba/spring/util/ClassUtils.java
  *
- * @see StringUtils#arrayToCommaDelimitedString(Object[])
- * @since 2.5.11
+ * @since 2.6.6
  */
-public class StringArrayToStringConverter implements Converter<String[], String> {
+public abstract class ClassUtils {
 
-    @Override
-    public String convert(String[] source) {
-        return ObjectUtils.isEmpty(source) ? null : StringUtils.arrayToCommaDelimitedString(source);
+    public static <T> Class<T> resolveGenericType(Class<?> declaredClass) {
+        ParameterizedType parameterizedType = (ParameterizedType) declaredClass.getGenericSuperclass();
+        Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+        return (Class<T>) actualTypeArguments[0];
     }
-
 }
