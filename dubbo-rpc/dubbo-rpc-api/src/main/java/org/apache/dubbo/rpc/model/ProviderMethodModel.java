@@ -17,12 +17,15 @@
 package org.apache.dubbo.rpc.model;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class ProviderMethodModel {
     private final Method method;
     private final String methodName;
     private final String[] methodArgTypes;
 
+    private final ConcurrentMap<String, String> attributeMap = new ConcurrentHashMap<>();
 
     public ProviderMethodModel(Method method) {
         this.method = method;
@@ -40,6 +43,10 @@ public class ProviderMethodModel {
 
     public String[] getMethodArgTypes() {
         return methodArgTypes;
+    }
+
+    public ConcurrentMap<String, String> getAttributeMap() {
+        return attributeMap;
     }
 
     private static String[] getArgTypes(Method method) {
