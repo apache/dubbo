@@ -17,9 +17,11 @@
 package org.apache.dubbo.registry;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.SPI;
 
 import java.util.List;
 
+@SPI
 public interface AddressListener {
 
     /**
