@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -83,4 +84,7 @@ public interface Invocation {
      */
     Invoker<?> getInvoker();
 
+    Object put(Object key, Object value);
+
+    Object get(Object key);
 }
