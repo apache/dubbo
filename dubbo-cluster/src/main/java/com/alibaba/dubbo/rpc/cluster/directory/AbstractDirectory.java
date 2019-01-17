@@ -28,6 +28,7 @@ import com.alibaba.dubbo.rpc.cluster.Directory;
 import com.alibaba.dubbo.rpc.cluster.Router;
 import com.alibaba.dubbo.rpc.cluster.RouterFactory;
 import com.alibaba.dubbo.rpc.cluster.router.MockInvokersSelector;
+import com.alibaba.dubbo.rpc.cluster.router.tag.TagRouter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -107,6 +108,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         }
         // append mock invoker selector
         routers.add(new MockInvokersSelector());
+        routers.add(new TagRouter());
         Collections.sort(routers);
         this.routers = routers;
     }
