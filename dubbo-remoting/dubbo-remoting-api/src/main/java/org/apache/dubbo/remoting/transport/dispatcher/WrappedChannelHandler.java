@@ -36,7 +36,7 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
 
     protected static final Logger logger = LoggerFactory.getLogger(WrappedChannelHandler.class);
 
-    protected static final ExecutorService SHARED_EXECUTOR = Executors.newCachedThreadPool(new NamedThreadFactory("DubboSharedHandler", true));
+    private volatile ExecutorService sharedExecutor;
 
     protected final ExecutorService executor;
 
@@ -109,12 +109,18 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
         return url;
     }
 
-    public ExecutorService getExecutorService() {
+    protected ExecutorService getExecutorService() {
         ExecutorService cexecutor = executor;
         if (cexecutor == null || cexecutor.isShutdown()) {
-            cexecutor = SHARED_EXECUTOR;
+            if (sharedExecutor == null) {
+                synchronized (this) {
+                    if (sharedExecutor == null) {
+                        sharedExecutor = Executors.newCachedThreadPool(new NamedThreadFactory("DubboSharedHandler", true));
+                    }
+                }
+            }
+            cexecutor = sharedExecutor;
         }
         return cexecutor;
     }
-
 }

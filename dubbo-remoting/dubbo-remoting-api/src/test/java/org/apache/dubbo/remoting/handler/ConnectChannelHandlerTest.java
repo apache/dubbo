@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.remoting.handler;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.remoting.ExecutionException;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.transport.dispatcher.connection.ConnectionOrderedChannelHandler;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -108,12 +108,24 @@ public class ConnectChannelHandlerTest extends WrappedChannelHandlerTest {
 
     @Test
     public void test_Received_InvokeInExecuter() throws RemotingException {
+        handler = new ConnectionOrderedChannelHandler(new BizChannelHander(false), url);
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) getField(handler, "executor", 1);
+        //default fixed thread pool
+        Assertions.assertEquals(executor.getMaximumPoolSize(), Constants.DEFAULT_THREADS);
+        //shutdown user thread pool
+        executor.shutdown();
+        executor = (ThreadPoolExecutor) getField(handler, "sharedExecutor", 1);
+        Assertions.assertNull(executor);
+        //first init share thread pool
+        handler.received(new MockedChannel(), "");
+        executor = (ThreadPoolExecutor) getField(handler, "sharedExecutor", 1);
+        Assertions.assertNotNull(executor);
+        //share cache  thread pool
+        Assertions.assertEquals(executor.getMaximumPoolSize(), Integer.MAX_VALUE);
+        //shutdown share thread pool
+        executor.shutdown();
+        //all thread pool are shutdown  throw RemotingException
         Assertions.assertThrows(ExecutionException.class, () -> {
-            handler = new ConnectionOrderedChannelHandler(new BizChannelHander(false), url);
-            ThreadPoolExecutor executor = (ThreadPoolExecutor) getField(handler, "SHARED_EXECUTOR", 1);
-            executor.shutdown();
-            executor = (ThreadPoolExecutor) getField(handler, "executor", 1);
-            executor.shutdown();
             handler.received(new MockedChannel(), "");
         });
     }
@@ -126,9 +138,14 @@ public class ConnectChannelHandlerTest extends WrappedChannelHandlerTest {
     @Test
     public void test_Received_Event_invoke_direct() throws RemotingException {
         handler = new ConnectionOrderedChannelHandler(new BizChannelHander(false), url);
-        ThreadPoolExecutor executor = (ThreadPoolExecutor) getField(handler, "SHARED_EXECUTOR", 1);
+        //shutdown user pool
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) getField(handler, "executor", 1);
         executor.shutdown();
-        executor = (ThreadPoolExecutor) getField(handler, "executor", 1);
+        // init share thread pool
+        handler.received(new MockedChannel(), "");
+        // get share thread pool
+        executor = (ThreadPoolExecutor) getField(handler, "sharedExecutor", 1);
+        //shutdown share thread pool
         executor.shutdown();
         Request req = new Request();
         req.setHeartbeat(true);
