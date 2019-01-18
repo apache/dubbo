@@ -1,61 +1,68 @@
 # Release Notes
 
 ## 2.7.0
-环境要求：需要Java 8及以上版本支持
 
-请在[这里]()了解关于升级2.7.x版本的注意事项和兼容性问题
+Requirements: **Java 8+** required
 
-## New Features
+Please check [here](https://github.com/apache/incubator-dubbo/blob/2.7.0-release/CHANGES.md#upgrading-and-compatibility-notifications) for notes and possible compatibility issues for upgrading from 2.6.x or lower to 2.7.0.
 
-- 服务治理规则增强。
-  - 更丰富的服务治理规则，新增应用级别条件路由、Tag路由等
-  - 治理规则与注册中心解耦，增加对Apollo等第三方专业配置中心的支持，更易于扩展
-  -  新增应用级别的动态配置规则
-  -  规则体使用更易读、易用YAML格式
+### New Features
 
-- 外部化配置。支持读取托管在远程的集中式配置中心的dubbo.properties，实现应用配置的集中式管控。
+- Enhancement of service governance rules.
+  - Enriched Routing Rules.
+    1. Conditional Routing. Supports both application-level and service-level conditions.
+    2. Tag Routing. Newly introduced to better support traffic isolation, such as grey deployment.
+  - Decoupling governance rules with the registry, making it easier to extend. Apollo and Zookeeper are available in this version. Nacos support is on the way...
+  - Application-level Dynamic Configuration support.
+  - Use YAML as the configuration language, which is more friendly to read and use.
 
-- 更精炼的注册中心URL，进一步减轻注册中心存储和同步压力，初步实现地址和配置的职责分离。
+- Externalized Configuration. Supports reading `dubbo.properties` hosted in remote centralized configuration center - centralized configuration.
 
-- 新增服务元数据中心，负责存储包括服务静态化配置、服务定义（如方法签名）等数据，默认提供Zookeeper, Redis支持。此功能也是OPS实现服务测试、Mock等治理能力的基础。
+- Simplified registry URL. With lower Registry memory use and less notification pressure from Service Directory, separates Configuration notification from Service Discovery.
 
-- 异步编程模式增强（限定于Dubbo协议）
-  - 原生CompletableFuture<T>签名接口支持
-  - 服务端异步支持
-  - 异步Filter链
+- Metadata Center. A totally new concept since 2.7.0,  used to store service metadata including static configuration, service definition, method signature, etc.. By default, Zookeeper and Redis are supported as the backend storage. Will work as the basis of service testing, mock and other service governance features going to be supported in OPS.
 
-- 新增Protobuf序列化协议扩展
+- Asynchronous Programming Model (only works for Dubbo protocol now)
+  - Built-in support for the method with CompletableFuture<T> signature.
+  - Server-side asynchronous support, with an AsyncContext API works like Servlet 3.0.
+  - Asynchronous filter chain callback.
 
-- 新增ExpiringCache缓存策略扩展
+- Serialization Extension: Protobuf.
 
-## Enhancements / Bugfixes
+- Caching Policy Extension: Expiring Cache.
 
-- 负载均衡策略优化，包括ConsitentHash(#2190) 、LeastActive(#2171)、Random(#2597) 、RoundRobin(#2586) (#2650)
+### Enhancements / Bugfixes
 
-- 升级第三方依赖：默认通信框架为netty 4、默认ZK客户端为Curator、Jetty 9k
+- Load Balancing strategy enhancement: ConsitentHash #2190, LeastActive #2171, Random #2597, RoundRobin #2650.
 
-- 增加地址读取时对IPV6的支持(#2079)
+- Third-party dependency upgrading.
+  - Switch default remoting to Netty 4.
+  - Switch default Zookeeper client to Curator.
+  - Upgrade Jetty to 9.x.
 
-- 性能优化，链接关闭的情况下使得Consumer快速返回  (#2185)
+- IPV6 support #2079.
 
-- 修复Jdk原生类型在kryo中的序列化问题 (#2178)
+- Performance tuning, check hanging requests on a closed channel, make them return directly #2185.
 
-- 修复Provider端反序列化失败后，没有及早通知Consumer端的问题 (#1903)
+- Fixed the serialization problem of JDK primitive types in Kryo #2178.
 
+- Fixed the problem of failing to notify Consumer as early as possible after the Provider side deserialization failed #1903.
 
-## 升级与兼容性
+### Upgrading and Compatibility Notifications
 
-此次版本发布我们遵循了保持和老版本兼容的原则，尤其是在一些可能会破坏2.7版本与低版本互操作性的问题上，我们增加了一些兼容性代码，典型如服务治理规则、Package重命名、注册URL简化等。
+We have always keep compatibility in mind during the whole process of 2.7.0. We even want old users to upgrade with only on pom version upgrade, but it's hard to achieve that, especially when considering that we have the package renamed in this version, so we had some tradeoffs. If you only used the Dubbo's most basic features, you may have little problems of upgrading, but if you have used some advanced features or have some SPI extensions inside, you'd better read the upgrade notifications carefully. The compatibility issues can be classified into the following 5 categories, for each part, there will have detailed dos and don'ts published later in the official website.
 
-1. Package重命名
+1. Interoperability between 2.7.0 and lower versions
 
-com.alibaba.dubbo -> org.apache.dubbo
+2. Package renaming
 
-2. 注册URL简化
+   com.alibaba.Dubbo -> org.apache.Dubbo
 
-3. 服务治理规则
+3. Simplification of registered URLs
 
-4. 配置
+4. Service Governance Rules
+
+5. Configuration
 
 
 ## 2.6.5
