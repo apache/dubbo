@@ -25,7 +25,7 @@ public class ProviderMethodModel {
     private final String methodName;
     private final String[] methodArgTypes;
 
-    private final ConcurrentMap<String, String> attributeMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Object> attributeMap = new ConcurrentHashMap<>();
 
     public ProviderMethodModel(Method method) {
         this.method = method;
@@ -45,7 +45,7 @@ public class ProviderMethodModel {
         return methodArgTypes;
     }
 
-    public ConcurrentMap<String, String> getAttributeMap() {
+    public ConcurrentMap<String, Object> getAttributeMap() {
         return attributeMap;
     }
 

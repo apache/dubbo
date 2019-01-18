@@ -33,7 +33,7 @@ public class ConsumerMethodModel {
     private final String methodName;
     private final boolean generic;
 
-    private final ConcurrentMap<String, String> attributeMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Object> attributeMap = new ConcurrentHashMap<>();
 
     private final AsyncMethodInfo asyncInfo;
 
@@ -56,7 +56,7 @@ public class ConsumerMethodModel {
         return method;
     }
 
-    public ConcurrentMap<String, String> getAttributeMap() {
+    public ConcurrentMap<String, Object> getAttributeMap() {
         return attributeMap;
     }
 
