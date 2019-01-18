@@ -521,7 +521,6 @@ public class PojoUtils {
                  * declared by the class represented by this Class object.
                  * This method returns an array of length 0,
                  * if this Class object represents an interface, a primitive type, an array class, or void.
-                 * So I removed the logical judgment of 'constructors == null'.
                  */
                 if (constructors.length == 0) {
                     throw new RuntimeException("Illegal constructor: " + cls.getName());
