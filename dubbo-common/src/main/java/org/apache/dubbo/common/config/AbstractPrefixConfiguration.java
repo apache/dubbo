@@ -21,7 +21,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 /**
  * This is an abstraction specially customized for the sequence Dubbo retrieves properties.
  */
-public abstract class AbstractPrefixConfiguration extends AbstractConfiguration {
+public abstract class AbstractPrefixConfiguration implements Configuration {
     protected String id;
     protected String prefix;
 
@@ -44,9 +44,10 @@ public abstract class AbstractPrefixConfiguration extends AbstractConfiguration 
         if (value == null && StringUtils.isNotEmpty(prefix)) {
             value = getInternalProperty(prefix + key);
         }
+
         if (value == null) {
-            value = super.getProperty(key, defaultValue);
+            value = getInternalProperty(key);
         }
-        return value;
+        return value != null ? value : defaultValue;
     }
 }

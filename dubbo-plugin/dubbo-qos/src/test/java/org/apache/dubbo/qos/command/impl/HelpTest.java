@@ -17,11 +17,11 @@
 package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.qos.command.CommandContext;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class HelpTest {
     @Test

@@ -24,6 +24,7 @@ import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 
@@ -85,7 +86,7 @@ public abstract class AbstractRegistry implements Registry {
             file = new File(filename);
             if (!file.exists() && file.getParentFile() != null && !file.getParentFile().exists()) {
                 if (!file.getParentFile().mkdirs()) {
-                    throw new IllegalArgumentException("Invalid registry store file " + file + ", cause: Failed to create directory " + file.getParentFile() + "!");
+                    throw new IllegalArgumentException("Invalid registry cache file " + file + ", cause: Failed to create directory " + file.getParentFile() + "!");
                 }
             }
         }
@@ -186,7 +187,7 @@ public abstract class AbstractRegistry implements Registry {
             } else {
                 registryCacheExecutor.execute(new SaveProperties(lastCacheChanged.incrementAndGet()));
             }
-            logger.warn("Failed to save registry store file, cause: " + e.getMessage(), e);
+            logger.warn("Failed to save registry cache file, cause: " + e.getMessage(), e);
         }
     }
 
@@ -197,10 +198,10 @@ public abstract class AbstractRegistry implements Registry {
                 in = new FileInputStream(file);
                 properties.load(in);
                 if (logger.isInfoEnabled()) {
-                    logger.info("Load registry store file " + file + ", data: " + properties);
+                    logger.info("Load registry cache file " + file + ", data: " + properties);
                 }
             } catch (Throwable e) {
-                logger.warn("Failed to load registry store file " + file, e);
+                logger.warn("Failed to load registry cache file " + file, e);
             } finally {
                 if (in != null) {
                     try {
@@ -248,7 +249,7 @@ public abstract class AbstractRegistry implements Registry {
             NotifyListener listener = reference::set;
             subscribe(url, listener); // Subscribe logic guarantees the first notify to return
             List<URL> urls = reference.get();
-            if (urls != null && !urls.isEmpty()) {
+            if (CollectionUtils.isNotEmpty(urls)) {
                 for (URL u : urls) {
                     if (!Constants.EMPTY_PROTOCOL.equals(u.getProtocol())) {
                         result.add(u);
@@ -292,11 +293,10 @@ public abstract class AbstractRegistry implements Registry {
         if (logger.isInfoEnabled()) {
             logger.info("Subscribe: " + url);
         }
-        Set<NotifyListener> listeners = subscribed.get(url);
-        if (listeners == null) {
-            subscribed.putIfAbsent(url, new ConcurrentHashSet<NotifyListener>());
-            listeners = subscribed.get(url);
-        }
+
+        Set<NotifyListener> listeners = subscribed.computeIfAbsent(url, k -> {
+            return new ConcurrentHashSet<>();
+        });
         listeners.add(listener);
     }
 
@@ -387,22 +387,18 @@ public abstract class AbstractRegistry implements Registry {
         for (URL u : urls) {
             if (UrlUtils.isMatch(url, u)) {
                 String category = u.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY);
-                List<URL> categoryList = result.get(category);
-                if (categoryList == null) {
-                    categoryList = new ArrayList<URL>();
-                    result.put(category, categoryList);
-                }
+                List<URL> categoryList = result.computeIfAbsent(category, k -> {
+                    return new ArrayList<>();
+                });
                 categoryList.add(u);
             }
         }
         if (result.size() == 0) {
             return;
         }
-        Map<String, List<URL>> categoryNotified = notified.get(url);
-        if (categoryNotified == null) {
-            notified.putIfAbsent(url, new ConcurrentHashMap<String, List<URL>>());
-            categoryNotified = notified.get(url);
-        }
+        Map<String, List<URL>> categoryNotified = notified.computeIfAbsent(url, k -> {
+            return new ConcurrentHashMap<>();
+        });
         for (Map.Entry<String, List<URL>> entry : result.entrySet()) {
             String category = entry.getKey();
             List<URL> categoryList = entry.getValue();

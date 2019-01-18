@@ -17,12 +17,12 @@
 package org.apache.dubbo.qos.command.decoder;
 
 import org.apache.dubbo.qos.command.CommandContext;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.arrayContaining;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class TelnetCommandDecoderTest {
     @Test

@@ -22,8 +22,8 @@ import org.apache.dubbo.common.serialize.ObjectOutput;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -32,7 +32,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 
 public class SerializationTest {
@@ -44,7 +44,7 @@ public class SerializationTest {
     private ByteArrayOutputStream byteArrayOutputStream;
     private ByteArrayInputStream byteArrayInputStream;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         this.mySerialization = new MySerialization();
 

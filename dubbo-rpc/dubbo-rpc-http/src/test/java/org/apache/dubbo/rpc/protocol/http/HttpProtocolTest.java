@@ -24,16 +24,21 @@ import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.serialize.nativejava.NativeJavaSerialization;
-import org.apache.dubbo.rpc.*;
+import org.apache.dubbo.rpc.Exporter;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.service.GenericService;
-import junit.framework.Assert;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * HttpProtocolTest
@@ -43,7 +48,7 @@ public class HttpProtocolTest {
     @Test
     public void testHttpProtocol() {
         HttpServiceImpl server = new HttpServiceImpl();
-        Assert.assertFalse(server.isCalled());
+        Assertions.assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         URL url = URL.valueOf("http://127.0.0.1:5342/" + HttpService.class.getName() + "?version=1.0.0");
@@ -51,8 +56,8 @@ public class HttpProtocolTest {
         Invoker<HttpService> invoker = protocol.refer(HttpService.class, url);
         HttpService client = proxyFactory.getProxy(invoker);
         String result = client.sayHello("haha");
-        Assert.assertTrue(server.isCalled());
-        Assert.assertEquals("Hello, haha", result);
+        Assertions.assertTrue(server.isCalled());
+        Assertions.assertEquals("Hello, haha", result);
         invoker.destroy();
         exporter.unexport();
     }
@@ -60,7 +65,7 @@ public class HttpProtocolTest {
     @Test
     public void testGenericInvoke() {
         HttpServiceImpl server = new HttpServiceImpl();
-        Assert.assertFalse(server.isCalled());
+        Assertions.assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         URL url = URL.valueOf("http://127.0.0.1:5342/" + HttpService.class.getName() + "?version=1.0.0");
@@ -68,8 +73,8 @@ public class HttpProtocolTest {
         Invoker<GenericService> invoker = protocol.refer(GenericService.class, url);
         GenericService client = proxyFactory.getProxy(invoker, true);
         String result = (String) client.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{"haha"});
-        Assert.assertTrue(server.isCalled());
-        Assert.assertEquals("Hello, haha", result);
+        Assertions.assertTrue(server.isCalled());
+        Assertions.assertEquals("Hello, haha", result);
         invoker.destroy();
         exporter.unexport();
     }
@@ -77,7 +82,7 @@ public class HttpProtocolTest {
     @Test
     public void testGenericInvokeWithNativeJava() throws IOException, ClassNotFoundException {
         HttpServiceImpl server = new HttpServiceImpl();
-        Assert.assertFalse(server.isCalled());
+        Assertions.assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         URL url = URL.valueOf("http://127.0.0.1:5342/" + HttpService.class.getName() + "?version=1.0.0&generic=nativejava");
@@ -95,8 +100,8 @@ public class HttpProtocolTest {
         Object result = client.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{byteArrayOutputStream.toByteArray()});
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream((byte[]) result);
         ObjectInput objectInput = serialization.deserialize(url, byteArrayInputStream);
-        Assert.assertTrue(server.isCalled());
-        Assert.assertEquals("Hello, haha", objectInput.readObject());
+        Assertions.assertTrue(server.isCalled());
+        Assertions.assertEquals("Hello, haha", objectInput.readObject());
         invoker.destroy();
         exporter.unexport();
     }
@@ -104,7 +109,7 @@ public class HttpProtocolTest {
     @Test
     public void testGenericInvokeWithBean() {
         HttpServiceImpl server = new HttpServiceImpl();
-        Assert.assertFalse(server.isCalled());
+        Assertions.assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         URL url = URL.valueOf("http://127.0.0.1:5342/" + HttpService.class.getName() + "?version=1.0.0&generic=bean");
@@ -115,8 +120,8 @@ public class HttpProtocolTest {
         JavaBeanDescriptor javaBeanDescriptor = JavaBeanSerializeUtil.serialize("haha");
 
         Object result = client.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{javaBeanDescriptor});
-        Assert.assertTrue(server.isCalled());
-        Assert.assertEquals("Hello, haha", JavaBeanSerializeUtil.deserialize((JavaBeanDescriptor) result));
+        Assertions.assertTrue(server.isCalled());
+        Assertions.assertEquals("Hello, haha", JavaBeanSerializeUtil.deserialize((JavaBeanDescriptor) result));
         invoker.destroy();
         exporter.unexport();
     }
@@ -124,7 +129,7 @@ public class HttpProtocolTest {
     @Test
     public void testOverload() {
         HttpServiceImpl server = new HttpServiceImpl();
-        Assert.assertFalse(server.isCalled());
+        Assertions.assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         URL url = URL.valueOf("http://127.0.0.1:5342/" + HttpService.class.getName() + "?version=1.0.0&hessian.overload.method=true&hessian2.request=false");
@@ -132,9 +137,9 @@ public class HttpProtocolTest {
         Invoker<HttpService> invoker = protocol.refer(HttpService.class, url);
         HttpService client = proxyFactory.getProxy(invoker);
         String result = client.sayHello("haha");
-        Assert.assertEquals("Hello, haha", result);
+        Assertions.assertEquals("Hello, haha", result);
         result = client.sayHello("haha", 1);
-        Assert.assertEquals("Hello, haha. ", result);
+        Assertions.assertEquals("Hello, haha. ", result);
         invoker.destroy();
         exporter.unexport();
     }
@@ -142,7 +147,7 @@ public class HttpProtocolTest {
     @Test
     public void testSimpleClient() {
         HttpServiceImpl server = new HttpServiceImpl();
-        Assert.assertFalse(server.isCalled());
+        Assertions.assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         URL url = URL.valueOf("http://127.0.0.1:5342/" + HttpService.class.getName() + "?version=1.0.0&client=simple");
@@ -150,8 +155,8 @@ public class HttpProtocolTest {
         Invoker<HttpService> invoker = protocol.refer(HttpService.class, url);
         HttpService client = proxyFactory.getProxy(invoker);
         String result = client.sayHello("haha");
-        Assert.assertTrue(server.isCalled());
-        Assert.assertEquals("Hello, haha", result);
+        Assertions.assertTrue(server.isCalled());
+        Assertions.assertEquals("Hello, haha", result);
         invoker.destroy();
         exporter.unexport();
     }
@@ -169,7 +174,7 @@ public class HttpProtocolTest {
             client.timeOut(6000);
             fail();
         } catch (RpcException expected) {
-            Assert.assertEquals(true, expected.isTimeout());
+            Assertions.assertEquals(true, expected.isTimeout());
         } finally {
             invoker.destroy();
             exporter.unexport();

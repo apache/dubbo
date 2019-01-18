@@ -25,9 +25,9 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.service.GenericService;
 
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -52,13 +52,13 @@ public class EnumBak {
         Invoker<DemoService> reference = protocol.refer(DemoService.class, consumerurl);
         DemoService demoProxy = (DemoService) proxy.getProxy(reference);
 //        System.out.println(demoProxy.getThreadName());
-        Assert.assertEquals((byte) -128, demoProxy.getbyte((byte) -128));
+        Assertions.assertEquals((byte) -128, demoProxy.getbyte((byte) -128));
 
 //        invoker.destroy();
         reference.destroy();
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testExportService() throws InterruptedException {
         int port = NetUtils.getAvailablePort();
@@ -95,14 +95,14 @@ public class EnumBak {
         DemoService demoProxy = (DemoService) proxy.getProxy(reference);
         Type type = demoProxy.enumlength(Type.High);
         System.out.println(type);
-        Assert.assertEquals(Type.High, type);
+        Assertions.assertEquals(Type.High, type);
 
         invoker.destroy();
         reference.destroy();
     }
 
     // verify compatibility when 2.0.5 invokes 2.0.3
-    @Ignore
+    @Disabled
     @Test
     public void testEnumCompat() {
         int port = 20880;
@@ -112,12 +112,12 @@ public class EnumBak {
         DemoService demoProxy = (DemoService) proxy.getProxy(reference);
         Type type = demoProxy.enumlength(Type.High);
         System.out.println(type);
-        Assert.assertEquals(Type.High, type);
+        Assertions.assertEquals(Type.High, type);
         reference.destroy();
     }
 
     // verify compatibility when 2.0.5 invokes 2.0.3
-    @Ignore
+    @Disabled
     @Test
     public void testGenricEnumCompat() {
         int port = 20880;
@@ -132,7 +132,7 @@ public class EnumBak {
     }
 
     // verify compatibility when 2.0.5 invokes 2.0.3, enum in custom parameter
-    @Ignore
+    @Disabled
     @Test
     public void testGenricCustomArg() {
 
@@ -151,7 +151,7 @@ public class EnumBak {
         reference.destroy();
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testGenericExport() throws InterruptedException {
         int port = NetUtils.getAvailablePort();

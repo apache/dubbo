@@ -27,6 +27,14 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.Constants.CATEGORY_KEY;
+import static org.apache.dubbo.common.Constants.CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.Constants.DEFAULT_CATEGORY;
+import static org.apache.dubbo.common.Constants.OVERRIDE_PROTOCOL;
+import static org.apache.dubbo.common.Constants.PROVIDERS_CATEGORY;
+import static org.apache.dubbo.common.Constants.ROUTERS_CATEGORY;
+import static org.apache.dubbo.common.Constants.ROUTE_PROTOCOL;
+
 public class UrlUtils {
 
     /**
@@ -118,7 +126,7 @@ public class UrlUtils {
                 String defaultValue = entry.getValue();
                 if (defaultValue != null && defaultValue.length() > 0) {
                     String value = parameters.get(key);
-                    if (value == null || value.length() == 0) {
+                    if (StringUtils.isEmpty(value)) {
                         changed = true;
                         parameters.put(key, defaultValue);
                     }
@@ -310,7 +318,7 @@ public class UrlUtils {
 
     //compatible for dubbo-2.0.0
     public static List<String> revertForbid(List<String> forbid, Set<URL> subscribed) {
-        if (forbid != null && !forbid.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(forbid)) {
             List<String> newForbid = new ArrayList<String>();
             for (String serviceName : forbid) {
                 if (!serviceName.contains(":") && !serviceName.contains("/")) {
@@ -343,14 +351,14 @@ public class UrlUtils {
             service = service.substring(0, i);
         }
         return URL.valueOf(Constants.EMPTY_PROTOCOL + "://0.0.0.0/" + service + URL_PARAM_STARTING_SYMBOL
-                + Constants.CATEGORY_KEY + "=" + category
+                + CATEGORY_KEY + "=" + category
                 + (group == null ? "" : "&" + Constants.GROUP_KEY + "=" + group)
                 + (version == null ? "" : "&" + Constants.VERSION_KEY + "=" + version));
     }
 
     public static boolean isMatchCategory(String category, String categories) {
         if (categories == null || categories.length() == 0) {
-            return Constants.DEFAULT_CATEGORY.equals(category);
+            return DEFAULT_CATEGORY.equals(category);
         } else if (categories.contains(Constants.ANY_VALUE)) {
             return true;
         } else if (categories.contains(Constants.REMOVE_VALUE_PREFIX)) {
@@ -370,8 +378,8 @@ public class UrlUtils {
             return false;
         }
 
-        if (!isMatchCategory(providerUrl.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY),
-                consumerUrl.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY))) {
+        if (!isMatchCategory(providerUrl.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY),
+                consumerUrl.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY))) {
             return false;
         }
         if (!providerUrl.getParameter(Constants.ENABLED_KEY, true)
@@ -402,12 +410,10 @@ public class UrlUtils {
         if ("*".equals(pattern)) {
             return true;
         }
-        if ((pattern == null || pattern.length() == 0)
-                && (value == null || value.length() == 0)) {
+        if (StringUtils.isEmpty(pattern) && StringUtils.isEmpty(value)) {
             return true;
         }
-        if ((pattern == null || pattern.length() == 0)
-                || (value == null || value.length() == 0)) {
+        if (StringUtils.isEmpty(pattern) || StringUtils.isEmpty(value)) {
             return false;
         }
 
@@ -443,6 +449,22 @@ public class UrlUtils {
 
     public static List<URL> classifyUrls(List<URL> urls, Predicate<URL> predicate) {
         return urls.stream().filter(predicate).collect(Collectors.toList());
+    }
+
+    public static boolean isConfigurator(URL url) {
+        return OVERRIDE_PROTOCOL.equals(url.getProtocol()) ||
+                CONFIGURATORS_CATEGORY.equals(url.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY));
+    }
+
+    public static boolean isRoute(URL url) {
+        return ROUTE_PROTOCOL.equals(url.getProtocol()) ||
+                ROUTERS_CATEGORY.equals(url.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY));
+    }
+
+    public static boolean isProvider(URL url) {
+        return !OVERRIDE_PROTOCOL.equals(url.getProtocol()) &&
+                !ROUTE_PROTOCOL.equals(url.getProtocol()) &&
+                PROVIDERS_CATEGORY.equals(url.getParameter(CATEGORY_KEY, PROVIDERS_CATEGORY));
     }
 
     /**

@@ -18,8 +18,9 @@ package org.apache.dubbo.monitor.dubbo;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.monitor.MonitorService;
-import org.junit.Assert;
-import org.junit.Test;
+
+import org.hamcrest.MatcherAssert;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -44,20 +45,20 @@ public class StatisticsTest {
         Statistics statistics1 = new Statistics(statistics);
         Statistics statistics2 = new Statistics(statistics);
 
-        Assert.assertThat(statistics1, equalTo(statistics1));
-        Assert.assertThat(statistics1, equalTo(statistics2));
+        MatcherAssert.assertThat(statistics1, equalTo(statistics1));
+        MatcherAssert.assertThat(statistics1, equalTo(statistics2));
 
         statistics1.setVersion("2");
-        Assert.assertThat(statistics1, not(equalTo(statistics2)));
-        Assert.assertThat(statistics1.hashCode(), not(equalTo(statistics2.hashCode())));
+        MatcherAssert.assertThat(statistics1, not(equalTo(statistics2)));
+        MatcherAssert.assertThat(statistics1.hashCode(), not(equalTo(statistics2.hashCode())));
 
         statistics1.setMethod("anotherMethod");
-        Assert.assertThat(statistics1, not(equalTo(statistics2)));
-        Assert.assertThat(statistics1.hashCode(), not(equalTo(statistics2.hashCode())));
+        MatcherAssert.assertThat(statistics1, not(equalTo(statistics2)));
+        MatcherAssert.assertThat(statistics1.hashCode(), not(equalTo(statistics2.hashCode())));
 
         statistics1.setClient("anotherClient");
-        Assert.assertThat(statistics1, not(equalTo(statistics2)));
-        Assert.assertThat(statistics1.hashCode(), not(equalTo(statistics2.hashCode())));
+        MatcherAssert.assertThat(statistics1, not(equalTo(statistics2)));
+        MatcherAssert.assertThat(statistics1.hashCode(), not(equalTo(statistics2.hashCode())));
     }
 
     @Test
@@ -83,11 +84,11 @@ public class StatisticsTest {
                 .addParameter(MonitorService.CONCURRENT, 1)
                 .addParameter(MonitorService.MAX_CONCURRENT, 1));
 
-        Assert.assertThat(statisticsWithDetailInfo.getServer(), equalTo(statistics.getServer()));
-        Assert.assertThat(statisticsWithDetailInfo.getService(), equalTo(statistics.getService()));
-        Assert.assertThat(statisticsWithDetailInfo.getMethod(), equalTo(statistics.getMethod()));
+        MatcherAssert.assertThat(statisticsWithDetailInfo.getServer(), equalTo(statistics.getServer()));
+        MatcherAssert.assertThat(statisticsWithDetailInfo.getService(), equalTo(statistics.getService()));
+        MatcherAssert.assertThat(statisticsWithDetailInfo.getMethod(), equalTo(statistics.getMethod()));
 
-        Assert.assertThat(statisticsWithDetailInfo.getGroup(), equalTo(statistics.getGroup()));
-        Assert.assertThat(statisticsWithDetailInfo, not(equalTo(statistics)));
+        MatcherAssert.assertThat(statisticsWithDetailInfo.getGroup(), equalTo(statistics.getGroup()));
+        MatcherAssert.assertThat(statisticsWithDetailInfo, not(equalTo(statistics)));
     }
 }

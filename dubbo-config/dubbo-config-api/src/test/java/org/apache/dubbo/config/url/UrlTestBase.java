@@ -30,7 +30,7 @@ import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 
 import java.util.Arrays;
 
-import static junit.framework.TestCase.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 @SuppressWarnings("unused")
 public class UrlTestBase {
