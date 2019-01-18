@@ -28,7 +28,9 @@ import org.apache.dubbo.configcenter.DynamicConfiguration;
 
 import com.ctrip.framework.apollo.Config;
 import com.ctrip.framework.apollo.ConfigChangeListener;
+import com.ctrip.framework.apollo.ConfigFile;
 import com.ctrip.framework.apollo.ConfigService;
+import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
 import com.ctrip.framework.apollo.enums.ConfigSourceType;
 import com.ctrip.framework.apollo.enums.PropertyChangeType;
 import com.ctrip.framework.apollo.model.ConfigChange;
@@ -50,9 +52,11 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
     private static final String APOLLO_ADDR_KEY = "apollo.meta";
     private static final String APOLLO_CLUSTER_KEY = "apollo.cluster";
     private static final String APOLLO_PROTOCOL_PREFIX = "http://";
+    private static final String APOLLO_APPLICATION_KEY = "application";
 
     private URL url;
     private Config dubboConfig;
+    private ConfigFile dubboConfigFile;
     private ConcurrentMap<String, ApolloListener> listeners = new ConcurrentHashMap<>();
 
     ApolloDynamicConfiguration(URL url) {
@@ -72,6 +76,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
         }
 
         dubboConfig = ConfigService.getConfig(url.getParameter(Constants.CONFIG_NAMESPACE_KEY, DEFAULT_GROUP));
+        dubboConfigFile = ConfigService.getConfigFile(url.getParameter(Constants.CONFIG_NAMESPACE_KEY, DEFAULT_GROUP), ConfigFileFormat.Properties);
         // Decide to fail or to continue when failed to connect to remote server.
         boolean check = url.getParameter(Constants.CONFIG_CHECK_KEY, true);
         if (dubboConfig.getSourceType() != ConfigSourceType.REMOTE) {
@@ -130,11 +135,30 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
      */
     @Override
     public String getConfig(String key, String group, long timeout) throws IllegalStateException {
-        if (StringUtils.isNotEmpty(group) && !url.getParameter(Constants.CONFIG_GROUP_KEY, DEFAULT_GROUP).equals(group)) {
-            Config config = ConfigService.getAppConfig();
-            return config.getProperty(key, null);
+        if (StringUtils.isNotEmpty(group)) {
+            if (group.equals(url.getParameter(Constants.APPLICATION_KEY))) {
+                return ConfigService.getAppConfig().getProperty(key, null);
+            } else {
+                ConfigService.getConfig(group).getProperty(key, null);
+            }
         }
         return dubboConfig.getProperty(key, null);
+    }
+
+    @Override
+    public String getConfigFile(String key, String group, long timeout) throws IllegalStateException {
+        if (StringUtils.isNotEmpty(group)) {
+            if (group.equals(url.getParameter(Constants.APPLICATION_KEY))) {
+                return ConfigService.getConfigFile(APOLLO_APPLICATION_KEY, ConfigFileFormat.Properties).getContent();
+            } else {
+                ConfigFile configFile = ConfigService.getConfigFile(group, ConfigFileFormat.Properties);
+                if (configFile == null) {
+                    throw new IllegalStateException("There is no namespace named " + group + " in Apollo.");
+                }
+                return configFile.getContent();
+            }
+        }
+        return dubboConfigFile.getContent();
     }
 
     /**

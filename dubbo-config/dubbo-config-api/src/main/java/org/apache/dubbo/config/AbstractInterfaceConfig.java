@@ -247,12 +247,12 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 return;
             }
             DynamicConfiguration dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
-            String configContent = dynamicConfiguration.getConfig(configCenter.getConfigFile(), configCenter.getGroup());
+            String configContent = dynamicConfiguration.getConfigFile(configCenter.getConfigFile(), configCenter.getGroup());
 
             String appGroup = application != null ? application.getName() : null;
             String appConfigContent = null;
             if (StringUtils.isNotEmpty(appGroup)) {
-                appConfigContent = dynamicConfiguration.getConfig
+                appConfigContent = dynamicConfiguration.getConfigFile
                         (StringUtils.isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile(),
                          appGroup
                         );

@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
 
 import java.util.Map;
@@ -34,21 +35,47 @@ public class ConfigCenterConfig extends AbstractConfig {
 
     private String protocol;
     private String address;
+
+    /* The config center cluster, it's real meaning may very on different Config Center products. */
     private String cluster;
+
+    /* The namespace of the config center, generally it's used for multi-tenant,
+    but it's real meaning depends on the actual Config Center you use.
+    */
+
     private String namespace = "dubbo";
+    /* The group of the config center, generally it's used to identify an isolated space for a batch of config items,
+    but it's real meaning depends on the actual Config Center you use.
+    */
     private String group = "dubbo";
     private String username;
     private String password;
     private Long timeout = 3000L;
+
+    // If the Config Center is given the highest priority, it will override all the other configurations
     private Boolean highestPriority = true;
+
+    // Decide the behaviour when initial connection try fails, 'true' means interrupt the whole process once fail.
     private Boolean check = true;
 
-    private String appName;
+    /* Used to specify the key that your properties file mapping to, most of the time you do not need to change this parameter.
+    Notice that for Apollo, this parameter is meaningless, set the 'namespace' is enough.
+    */
     private String configFile = "dubbo.properties";
+
+    /* the .properties file under 'configFile' is global shared while .properties under this one is limited only to this application
+    */
     private String appConfigFile;
 
-    // customized parameters
+    /* If the Config Center product you use have some special parameters that is not covered by this class, you can add it to here.
+    For example, with XML:
+      <dubbo:config-center>
+           <dubbo:parameter key="config.{your key}" value="{your value}" />
+      </dubbo:config-center>
+     */
     private Map<String, String> parameters;
+
+    protected ApplicationConfig application;
 
     public ConfigCenterConfig() {
     }
@@ -59,6 +86,9 @@ public class ConfigCenterConfig extends AbstractConfig {
             address = Constants.ANYHOST_VALUE;
         }
         map.put(Constants.PATH_KEY, ConfigCenterConfig.class.getSimpleName());
+        if (getApplication() != null) {
+            map.put(Constants.APPLICATION_KEY, getApplication().getName());
+        }
         // use 'zookeeper' as the default configcenter.
         if (StringUtils.isEmpty(map.get(Constants.PROTOCOL_KEY))) {
             map.put(Constants.PROTOCOL_KEY, Constants.ZOOKEEPER_PROTOCOL);
@@ -183,13 +213,16 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.appConfigFile = appConfigFile;
     }
 
-    @Parameter(key = Constants.CONFIG_APPNAME_KEY, useKeyAsProperty = false)
-    public String getAppName() {
-        return appName;
+    public ApplicationConfig getApplication() {
+        if (application != null && !application.isValid()) {
+            throw new IllegalStateException("Name is required for ApplicationConfig, for example, in XML it looks like <dubbo:application name=\"...\" />.");
+        }
+        return application;
     }
 
-    public void setAppName(String appName) {
-        this.appName = appName;
+    public void setApplication(ApplicationConfig application) {
+        ConfigManager.getInstance().setApplication(application);
+        this.application = application;
     }
 
     public Map<String, String> getParameters() {

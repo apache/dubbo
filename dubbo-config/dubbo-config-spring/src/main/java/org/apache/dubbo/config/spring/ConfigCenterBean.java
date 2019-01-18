@@ -46,7 +46,6 @@ public class ConfigCenterBean extends ConfigCenterConfig implements Initializing
     private transient ApplicationContext applicationContext;
 
     private Boolean includeSpringEnv = false;
-    private ApplicationConfig application;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
@@ -84,7 +83,7 @@ public class ConfigCenterBean extends ConfigCenterConfig implements Initializing
     public void setEnvironment(Environment environment) {
         if (includeSpringEnv) {
             Map<String, String> externalProperties = getConfigurations(getConfigFile(), environment);
-            Map<String, String> appExternalProperties = getConfigurations(StringUtils.isNotEmpty(getAppConfigFile()) ? getAppConfigFile() : (StringUtils.isEmpty(getAppName()) ? ("application." + getConfigFile()) : (getAppName() + "." + getConfigFile())), environment);
+            Map<String, String> appExternalProperties = getConfigurations(StringUtils.isNotEmpty(getAppConfigFile()) ? getAppConfigFile() : (getApplication() == null ? ("application." + getConfigFile()) : (getApplication().getName() + "." + getConfigFile())), environment);
             org.apache.dubbo.common.config.Environment.getInstance().setExternalConfigMap(externalProperties);
             org.apache.dubbo.common.config.Environment.getInstance().setAppExternalConfigMap(appExternalProperties);
         }
@@ -130,11 +129,4 @@ public class ConfigCenterBean extends ConfigCenterConfig implements Initializing
         this.includeSpringEnv = includeSpringEnv;
     }
 
-    public ApplicationConfig getApplication() {
-        return application;
-    }
-
-    public void setApplication(ApplicationConfig application) {
-        this.application = application;
-    }
 }
