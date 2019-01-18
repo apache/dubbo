@@ -24,12 +24,12 @@ import com.alibaba.dubbo.config.ProtocolConfig;
 import com.alibaba.dubbo.config.ProviderConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.spring.util.ObjectUtils;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.PropertySource;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -107,6 +107,15 @@ public class EnableDubboConfigTest {
 
         ApplicationConfig applicationBean3 = context.getBean("applicationBean3", ApplicationConfig.class);
         Assert.assertEquals("dubbo-demo-application3", applicationBean3.getName());
+
+
+        Map<String, ProtocolConfig> protocolConfigs = context.getBeansOfType(ProtocolConfig.class);
+
+        for (Map.Entry<String, ProtocolConfig> entry : protocolConfigs.entrySet()) {
+            String beanName = entry.getKey();
+            ProtocolConfig protocol = entry.getValue();
+            Assert.assertEquals(beanName, protocol.getName());
+        }
 
     }
 
