@@ -46,6 +46,7 @@
                 <exclude>**/*.log</exclude>
                 <exclude>release.properties</exclude>
                 <exclude>**/*.xml.*</exclude>
+                <exclude>**/*.patch</exclude>
             </excludes>
         </fileSet>
     </fileSets>
