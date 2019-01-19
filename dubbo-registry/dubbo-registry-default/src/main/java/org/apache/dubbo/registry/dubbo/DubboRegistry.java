@@ -38,7 +38,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * DubboRegistry
- *
  */
 public class DubboRegistry extends FailbackRegistry {
 
@@ -124,9 +123,7 @@ public class DubboRegistry extends FailbackRegistry {
         super.destroy();
         try {
             // Cancel the reconnection timer
-            if (!reconnectFuture.isCancelled()) {
-                reconnectFuture.cancel(true);
-            }
+            ExecutorUtil.cancelScheduledFuture(reconnectFuture);
         } catch (Throwable t) {
             logger.warn("Failed to cancel reconnect timer", t);
         }

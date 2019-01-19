@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.spring;
 
 import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
@@ -112,7 +113,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             Map<String, ProviderConfig> providerConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProviderConfig.class, false, false);
             if (providerConfigMap != null && providerConfigMap.size() > 0) {
                 Map<String, ProtocolConfig> protocolConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProtocolConfig.class, false, false);
-                if ((protocolConfigMap == null || protocolConfigMap.size() == 0)
+                if (CollectionUtils.isEmptyMap(protocolConfigMap)
                         && providerConfigMap.size() > 1) { // backward compatibility
                     List<ProviderConfig> providerConfigs = new ArrayList<ProviderConfig>();
                     for (ProviderConfig config : providerConfigMap.values()) {
@@ -185,11 +186,11 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             }
         }
 
-        if ((getRegistries() == null || getRegistries().isEmpty())
-                && (getProvider() == null || getProvider().getRegistries() == null || getProvider().getRegistries().isEmpty())
-                && (getApplication() == null || getApplication().getRegistries() == null || getApplication().getRegistries().isEmpty())) {
+        if ((CollectionUtils.isEmpty(getRegistries()))
+                && (getProvider() == null || CollectionUtils.isEmpty(getProvider().getRegistries()))
+                && (getApplication() == null || CollectionUtils.isEmpty(getApplication().getRegistries()))) {
             Map<String, RegistryConfig> registryConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, RegistryConfig.class, false, false);
-            if (registryConfigMap != null && registryConfigMap.size() > 0) {
+            if (CollectionUtils.isNotEmptyMap(registryConfigMap)) {
                 List<RegistryConfig> registryConfigs = new ArrayList<>();
                 if (StringUtils.isNotEmpty(registryIds)) {
                     Arrays.stream(Constants.COMMA_SPLIT_PATTERN.split(registryIds)).forEach(id -> {
@@ -255,8 +256,8 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             }
         }
 
-        if ((getProtocols() == null || getProtocols().isEmpty())
-                && (getProvider() == null || getProvider().getProtocols() == null || getProvider().getProtocols().isEmpty())) {
+        if (CollectionUtils.isEmpty(getProtocols())
+                && (getProvider() == null || CollectionUtils.isEmpty(getProvider().getProtocols()))) {
             Map<String, ProtocolConfig> protocolConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProtocolConfig.class, false, false);
             if (protocolConfigMap != null && protocolConfigMap.size() > 0) {
                 List<ProtocolConfig> protocolConfigs = new ArrayList<ProtocolConfig>();
@@ -282,9 +283,9 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                 }
             }
         }
-        if (getPath() == null || getPath().length() == 0) {
-            if (beanName != null && beanName.length() > 0
-                    && getInterface() != null && getInterface().length() > 0
+        if (StringUtils.isEmpty(getPath())) {
+            if (StringUtils.isNotEmpty(beanName)
+                    && StringUtils.isNotEmpty(getInterface())
                     && beanName.startsWith(getInterface())) {
                 setPath(beanName);
             }

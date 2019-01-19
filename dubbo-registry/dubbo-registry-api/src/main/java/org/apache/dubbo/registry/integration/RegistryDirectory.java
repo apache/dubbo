@@ -26,6 +26,7 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
@@ -242,7 +243,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
             // state change
             // If the calculation is wrong, it is not processed.
-            if (newUrlInvokerMap == null || newUrlInvokerMap.size() == 0) {
+            if (CollectionUtils.isEmptyMap(newUrlInvokerMap)) {
                 logger.error(new IllegalStateException("urls to invokers error .invokerUrls.size :" + invokerUrls.size() + ", invoker.size :0. urls :" + invokerUrls
                         .toString()));
                 return;
@@ -442,7 +443,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
 
     private URL overrideWithConfigurators(List<Configurator> configurators, URL url) {
-        if (configurators != null && !configurators.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(configurators)) {
             for (Configurator configurator : configurators) {
                 url = configurator.configure(url);
             }
@@ -626,7 +627,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
 
     private void doOverrideUrl(List<Configurator> configurators) {
-        if (configurators != null && !configurators.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(configurators)) {
             for (Configurator configurator : configurators) {
                 this.overrideDirectoryUrl = configurator.configure(overrideDirectoryUrl);
             }
