@@ -21,7 +21,8 @@ import com.alibaba.dubbo.config.ModuleConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,14 +33,16 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class ModuleConfigTest {
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testName1() throws Exception {
-        ModuleConfig module = new ModuleConfig();
-        Map<String, String> parameters = new HashMap<String, String>();
-        ModuleConfig.appendParameters(parameters, module);
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            ModuleConfig module = new ModuleConfig();
+            Map<String, String> parameters = new HashMap<String, String>();
+            ModuleConfig.appendParameters(parameters, module);
+        });
     }
 
     @Test

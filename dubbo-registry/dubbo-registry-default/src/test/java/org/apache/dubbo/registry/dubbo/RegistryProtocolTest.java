@@ -36,18 +36,17 @@ import org.apache.dubbo.rpc.protocol.dubbo.DubboInvoker;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.dubbo.common.Constants.DEFAULT_REGISTER_PROVIDER_KEYS;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * RegistryProtocolTest
- *
  */
 public class RegistryProtocolTest {
 
@@ -66,16 +65,18 @@ public class RegistryProtocolTest {
         assertEquals(9090, registryProtocol.getDefaultPort());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testExportUrlNull() {
-        RegistryProtocol registryProtocol = new RegistryProtocol();
-        registryProtocol.setCluster(new FailfastCluster());
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            RegistryProtocol registryProtocol = new RegistryProtocol();
+            registryProtocol.setCluster(new FailfastCluster());
 
-        Protocol dubboProtocol = DubboProtocol.getDubboProtocol();
-        registryProtocol.setProtocol(dubboProtocol);
-        Invoker<DemoService> invoker = new DubboInvoker<DemoService>(DemoService.class,
-                registryUrl, new ExchangeClient[]{new MockedClient("10.20.20.20", 2222, true)});
-        registryProtocol.export(invoker);
+            Protocol dubboProtocol = DubboProtocol.getDubboProtocol();
+            registryProtocol.setProtocol(dubboProtocol);
+            Invoker<DemoService> invoker = new DubboInvoker<DemoService>(DemoService.class,
+                    registryUrl, new ExchangeClient[]{new MockedClient("10.20.20.20", 2222, true)});
+            registryProtocol.export(invoker);
+        });
     }
 
     @Test
@@ -92,7 +93,7 @@ public class RegistryProtocolTest {
         Exporter<DemoService> exporter = registryProtocol.export(invoker);
         Exporter<DemoService> exporter2 = registryProtocol.export(invoker);
         //The same invoker, exporter that multiple exported are different
-        Assert.assertNotSame(exporter, exporter2);
+        Assertions.assertNotSame(exporter, exporter2);
         exporter.unexport();
         exporter2.unexport();
 
@@ -168,7 +169,7 @@ public class RegistryProtocolTest {
         String[] additionalParams = new String[]{"key1", "key2"};
         String[] registryParams = registryProtocol.getParamsToRegistry(DEFAULT_REGISTER_PROVIDER_KEYS, additionalParams);
         String[] expectParams = ArrayUtils.addAll(DEFAULT_REGISTER_PROVIDER_KEYS, additionalParams);
-        Assert.assertArrayEquals(expectParams, registryParams);
+        Assertions.assertArrayEquals(expectParams, registryParams);
     }
 
     private void destroyRegistryProtocol() {

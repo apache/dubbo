@@ -115,7 +115,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         map.put(Constants.PATH_KEY, ConfigCenterConfig.class.getSimpleName());
         // use 'zookeeper' as the default configcenter.
         if (StringUtils.isEmpty(map.get(Constants.PROTOCOL_KEY))) {
-            map.put(Constants.PROTOCOL_KEY, "zookeeper");
+            map.put(Constants.PROTOCOL_KEY, Constants.ZOOKEEPER_PROTOCOL);
         }
         return UrlUtils.parseURL(address, map);
     }

@@ -24,7 +24,7 @@ import java.io.ObjectInputStream;
 import java.lang.reflect.Type;
 
 /**
- * Java Object input.
+ * Java object input implementation
  */
 public class JavaObjectInput extends NativeJavaObjectInput {
     public final static int MAX_BYTE_ARRAY_LENGTH = 8 * 1024 * 1024;

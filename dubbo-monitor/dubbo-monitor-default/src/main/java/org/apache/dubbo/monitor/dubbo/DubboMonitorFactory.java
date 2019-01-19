@@ -18,6 +18,7 @@ package org.apache.dubbo.monitor.dubbo;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.monitor.Monitor;
 import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.monitor.support.AbstractMonitorFactory;
@@ -45,11 +46,11 @@ public class DubboMonitorFactory extends AbstractMonitorFactory {
     @Override
     protected Monitor createMonitor(URL url) {
         url = url.setProtocol(url.getParameter(Constants.PROTOCOL_KEY, "dubbo"));
-        if (url.getPath() == null || url.getPath().length() == 0) {
+        if (StringUtils.isEmpty(url.getPath())) {
             url = url.setPath(MonitorService.class.getName());
         }
         String filter = url.getParameter(Constants.REFERENCE_FILTER_KEY);
-        if (filter == null || filter.length() == 0) {
+        if (StringUtils.isEmpty(filter)) {
             filter = "";
         } else {
             filter = filter + ",";

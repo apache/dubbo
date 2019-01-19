@@ -18,6 +18,7 @@
 package com.alibaba.dubbo.common;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
@@ -403,7 +404,7 @@ public class URL extends org.apache.dubbo.common.URL {
 
     @Override
     public URL addParameterAndEncoded(String key, String value) {
-        if (value == null || value.length() == 0) {
+        if (StringUtils.isEmpty(value)) {
             return this;
         }
         return addParameter(key, encode(value));

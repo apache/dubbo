@@ -229,6 +229,10 @@ public class Constants {
 
     public static final String PROTOCOL_KEY = "protocol";
 
+    public static final String DOBBO_PROTOCOL = DUBBO;
+
+    public static final String ZOOKEEPER_PROTOCOL = "zookeeper";
+
     public static final String PROXY_KEY = "proxy";
 
     public static final String WEIGHT_KEY = "weight";
@@ -321,6 +325,8 @@ public class Constants {
     public static final String OPTIMIZER_KEY = "optimizer";
 
     public static final String EXCHANGER_KEY = "exchanger";
+
+    public static final String DISPACTHER_KEY = "dispacther";
 
     public static final String TRANSPORTER_KEY = "transporter";
 
@@ -483,12 +489,12 @@ public class Constants {
      */
     public static final String SIMPLE_CONSUMER_CONFIG_KEY = "simple.consumer.config";
     /**
-     * After simplify the registry, should add some paramter individually for provider.
+     * After simplify the registry, should add some parameter individually for provider.
      * @since 2.7.0
      */
     public static final String EXTRA_PROVIDER_CONFIG_KEYS_KEY = "extra.provider.keys";
     /**
-     * After simplify the registry, should add some paramter individually for consumer.
+     * After simplify the registry, should add some parameter individually for consumer.
      *
      * @since 2.7.0
      */
@@ -767,6 +773,46 @@ public class Constants {
     public static final String[] DEFAULT_REGISTER_CONSUMER_KEYS = {APPLICATION_KEY, VERSION_KEY, GROUP_KEY, DUBBO_VERSION_KEY, SPECIFICATION_VERSION_KEY};
 
     public static final String TELNET = "telnet";
+
+    /**
+     * Application name;
+     */
+    public static final String NAME = "name";
+
+    /**
+     * Application owner name;
+     */
+    public static final String OWNER = "owner";
+
+    /**
+     * Running application organization name.
+     */
+    public static final String ORGANIZATION = "organization";
+
+    /**
+     * Application architecture name.
+     */
+    public static final String ARCHITECTURE = "architecture";
+
+    /**
+     * Environment name
+     */
+    public static final String ENVIRONMENT = "environment";
+
+    /**
+     * Test environment key.
+     */
+    public static final String TEST_ENVIRONMENT = "test";
+
+    /**
+     * Development environment key.
+     */
+    public static final String DEVELOPMENT_ENVIRONMENT = "develop";
+
+    /**
+     * Production environment key.
+     */
+    public static final String PRODUCTION_ENVIRONMENT = "product";
     /*
      * private Constants(){ }
      */

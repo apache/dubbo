@@ -20,20 +20,20 @@ package org.apache.dubbo.common.utils;
 import org.apache.log4j.Category;
 import org.apache.log4j.Level;
 import org.apache.log4j.spi.LoggingEvent;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class DubboAppenderTest {
     private LoggingEvent event;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         Level level = Mockito.mock(Level.class);
         Category category = Mockito.mock(Category.class);
@@ -44,7 +44,7 @@ public class DubboAppenderTest {
         Mockito.when(event.getMessage()).thenReturn("message");
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         DubboAppender.clear();
         DubboAppender.doStop();

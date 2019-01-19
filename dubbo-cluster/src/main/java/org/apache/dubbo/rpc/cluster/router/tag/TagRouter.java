@@ -42,7 +42,7 @@ import static org.apache.dubbo.common.Constants.FORCE_USE_TAG;
 import static org.apache.dubbo.common.Constants.TAG_KEY;
 
 /**
- *
+ * TagRouter
  */
 public class TagRouter extends AbstractRouter implements Comparable<Router>, ConfigurationListener {
     public static final String NAME = "TAG_ROUTER";
@@ -117,10 +117,9 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
             }
             // FAILOVER: return all Providers without any tags.
             else {
-                List<Invoker<T>> tmp = filterInvoker(invokers, invoker -> addressNotMatches(invoker.getUrl(), tagRouterRule
-                        .getAddresses()));
-                return filterInvoker(tmp, invoker -> StringUtils.isEmpty(invoker.getUrl()
-                        .getParameter(TAG_KEY)));
+                List<Invoker<T>> tmp = filterInvoker(invokers, invoker -> addressNotMatches(invoker.getUrl(),
+                        tagRouterRule.getAddresses()));
+                return filterInvoker(tmp, invoker -> StringUtils.isEmpty(invoker.getUrl().getParameter(TAG_KEY)));
             }
         } else {
             // List<String> addresses = tagRouterRule.filter(providerApp);
@@ -137,10 +136,7 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
             }
             return filterInvoker(result, invoker -> {
                 String localTag = invoker.getUrl().getParameter(TAG_KEY);
-                if (StringUtils.isEmpty(localTag) || !tagRouterRule.getTagNames().contains(localTag)) {
-                    return true;
-                }
-                return false;
+                return StringUtils.isEmpty(localTag) || !tagRouterRule.getTagNames().contains(localTag);
             });
         }
     }
@@ -185,7 +181,7 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
 
     @Override
     public <T> void notify(List<Invoker<T>> invokers) {
-        if (invokers == null || invokers.isEmpty()) {
+        if (CollectionUtils.isEmpty(invokers)) {
             return;
         }
 

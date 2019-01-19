@@ -114,7 +114,7 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
             req.setVersion(Version.getProtocolVersion());
             req.setTwoWay((flag & FLAG_TWOWAY) != 0);
             if ((flag & FLAG_EVENT) != 0) {
-                req.setEvent(Request.HEARTBEAT_EVENT);
+                req.setEvent(true);
             }
             try {
                 Object data;
@@ -145,6 +145,7 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
                 req.setBroken(true);
                 req.setData(t);
             }
+
             return req;
         }
     }

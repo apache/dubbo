@@ -18,7 +18,6 @@
 package org.apache.dubbo.generic;
 
 
-import com.alibaba.fastjson.JSON;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
@@ -33,8 +32,11 @@ import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.service.ComplexObject;
 import org.apache.dubbo.service.DemoService;
 import org.apache.dubbo.service.DemoServiceImpl;
-import org.junit.Assert;
-import org.junit.Test;
+
+import com.alibaba.fastjson.JSON;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -56,11 +58,11 @@ public class GenericServiceTest {
 
         GenericService client = (GenericService) proxyFactory.getProxy(invoker, true);
         Object result = client.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{"haha"});
-        Assert.assertEquals("hello haha", result);
+        Assertions.assertEquals("hello haha", result);
 
         org.apache.dubbo.rpc.service.GenericService newClient = (org.apache.dubbo.rpc.service.GenericService) proxyFactory.getProxy(invoker, true);
         Object res = newClient.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{"hehe"});
-        Assert.assertEquals("hello hehe", res);
+        Assertions.assertEquals("hello hehe", res);
         invoker.destroy();
         exporter.unexport();
     }
@@ -76,13 +78,13 @@ public class GenericServiceTest {
 
         GenericService client = proxyFactory.getProxy(invoker, true);
         Object result = client.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{"haha"});
-        Assert.assertEquals("hello haha", result);
+        Assertions.assertEquals("hello haha", result);
 
         Invoker<DemoService> invoker2 = protocol.refer(DemoService.class, url);
 
         GenericService client2 = (GenericService) proxyFactory.getProxy(invoker2, true);
         Object result2 = client2.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{"haha"});
-        Assert.assertEquals("hello haha", result2);
+        Assertions.assertEquals("hello haha", result2);
 
         invoker.destroy();
         exporter.unexport();
@@ -114,13 +116,13 @@ public class GenericServiceTest {
 
         GenericService client = proxyFactory.getProxy(invoker, true);
         Object result = client.$invoke(methodDefinition.getName(), methodDefinition.getParameterTypes(), new Object[]{"haha", parm2});
-        Assert.assertEquals("haha###" + complexObject.toString(), result);
+        Assertions.assertEquals("haha###" + complexObject.toString(), result);
 
 
         Invoker<DemoService> invoker2 = protocol.refer(DemoService.class, url);
         GenericService client2 = (GenericService) proxyFactory.getProxy(invoker2, true);
         Object result2 = client2.$invoke("complexCompute", methodDefinition.getParameterTypes(), new Object[]{"haha2", parm2});
-        Assert.assertEquals("haha2###" + complexObject.toString(), result2);
+        Assertions.assertEquals("haha2###" + complexObject.toString(), result2);
 
         invoker.destroy();
         exporter.unexport();
@@ -148,9 +150,9 @@ public class GenericServiceTest {
         GenericService client = proxyFactory.getProxy(invoker, true);
         Object result = client.$invoke("findComplexObject", new String[]{"java.lang.String", "int", "long", "java.lang.String[]", "java.util.List", "org.apache.dubbo.service.ComplexObject$TestEnum"},
                 new Object[]{var1, var2, l, var3, var4, testEnum});
-        Assert.assertNotNull(result);
+        Assertions.assertNotNull(result);
         ComplexObject r = map2bean((Map) result);
-        Assert.assertEquals(r, createComplexObject(var1, var2, l, var3, var4, testEnum));
+        Assertions.assertEquals(r, createComplexObject(var1, var2, l, var3, var4, testEnum));
 
         invoker.destroy();
         exporter.unexport();
@@ -182,22 +184,22 @@ public class GenericServiceTest {
                 inner3TypeDefinition = typeDefinition;
             }
         }
-        Assert.assertEquals(topTypeDefinition.getProperties().get("v").getType(), "long");
-        Assert.assertEquals(topTypeDefinition.getProperties().get("maps").getType(), "java.util.Map<java.lang.String, java.lang.String>");
-        Assert.assertEquals(topTypeDefinition.getProperties().get("innerObject").getType(), "org.apache.dubbo.service.ComplexObject$InnerObject");
-        Assert.assertEquals(topTypeDefinition.getProperties().get("intList").getType(), "java.util.List<java.lang.Integer>");
-        Assert.assertEquals(topTypeDefinition.getProperties().get("strArrays").getType(), "java.lang.String[]");
-        Assert.assertEquals(topTypeDefinition.getProperties().get("innerObject3").getType(), "org.apache.dubbo.service.ComplexObject.InnerObject3[]");
-        Assert.assertEquals(topTypeDefinition.getProperties().get("testEnum").getType(), "org.apache.dubbo.service.ComplexObject.TestEnum");
-        Assert.assertEquals(topTypeDefinition.getProperties().get("innerObject2").getType(), "java.util.Set<org.apache.dubbo.service.ComplexObject$InnerObject2>");
+        Assertions.assertEquals(topTypeDefinition.getProperties().get("v").getType(), "long");
+        Assertions.assertEquals(topTypeDefinition.getProperties().get("maps").getType(), "java.util.Map<java.lang.String, java.lang.String>");
+        Assertions.assertEquals(topTypeDefinition.getProperties().get("innerObject").getType(), "org.apache.dubbo.service.ComplexObject$InnerObject");
+        Assertions.assertEquals(topTypeDefinition.getProperties().get("intList").getType(), "java.util.List<java.lang.Integer>");
+        Assertions.assertEquals(topTypeDefinition.getProperties().get("strArrays").getType(), "java.lang.String[]");
+        Assertions.assertEquals(topTypeDefinition.getProperties().get("innerObject3").getType(), "org.apache.dubbo.service.ComplexObject.InnerObject3[]");
+        Assertions.assertEquals(topTypeDefinition.getProperties().get("testEnum").getType(), "org.apache.dubbo.service.ComplexObject.TestEnum");
+        Assertions.assertEquals(topTypeDefinition.getProperties().get("innerObject2").getType(), "java.util.Set<org.apache.dubbo.service.ComplexObject$InnerObject2>");
 
-        Assert.assertSame(innerTypeDefinition.getProperties().get("innerA").getType(), "java.lang.String");
-        Assert.assertSame(innerTypeDefinition.getProperties().get("innerB").getType(), "int");
+        Assertions.assertSame(innerTypeDefinition.getProperties().get("innerA").getType(), "java.lang.String");
+        Assertions.assertSame(innerTypeDefinition.getProperties().get("innerB").getType(), "int");
 
-        Assert.assertSame(inner2TypeDefinition.getProperties().get("innerA2").getType(), "java.lang.String");
-        Assert.assertSame(inner2TypeDefinition.getProperties().get("innerB2").getType(), "int");
+        Assertions.assertSame(inner2TypeDefinition.getProperties().get("innerA2").getType(), "java.lang.String");
+        Assertions.assertSame(inner2TypeDefinition.getProperties().get("innerB2").getType(), "int");
 
-        Assert.assertSame(inner3TypeDefinition.getProperties().get("innerA3").getType(), "java.lang.String");
+        Assertions.assertSame(inner3TypeDefinition.getProperties().get("innerA3").getType(), "java.lang.String");
 
         Map<String, Object> result = new HashMap<>();
         result.put("v", l);

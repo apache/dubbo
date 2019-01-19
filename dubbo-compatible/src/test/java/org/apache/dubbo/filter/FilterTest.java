@@ -17,18 +17,18 @@
 
 package org.apache.dubbo.filter;
 
-import org.apache.dubbo.service.MockInvocation;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.service.MockInvocation;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class FilterTest {
 
@@ -42,7 +42,7 @@ public class FilterTest {
             myFilter.invoke(invoker, invocation);
             fail();
         } catch (RpcException e) {
-            Assert.assertTrue(e.getMessage().contains("arg0 illegal"));
+            Assertions.assertTrue(e.getMessage().contains("arg0 illegal"));
         }
     }
 
@@ -54,8 +54,8 @@ public class FilterTest {
         System.out.println(res);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tear() {
-        Assert.assertEquals(2, MyFilter.count);
+        Assertions.assertEquals(2, MyFilter.count);
     }
 }

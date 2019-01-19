@@ -18,10 +18,10 @@ package org.apache.dubbo.rpc.support;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.async.support.AsyncFor;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ReflectUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.RpcInvocation;
 
@@ -48,7 +48,7 @@ public class RpcUtils {
                     && invocation.getInvoker().getUrl() != null
                     && !invocation.getMethodName().startsWith("$")) {
                 String service = invocation.getInvoker().getUrl().getServiceInterface();
-                if (service != null && service.length() > 0) {
+                if (StringUtils.isNotEmpty(service)) {
                     Class<?> invokerInterface = invocation.getInvoker().getInterface();
                     Class<?> cls = invokerInterface != null ? ReflectUtils.forName(invokerInterface.getClassLoader(), service)
                             : ReflectUtils.forName(service);
@@ -72,7 +72,7 @@ public class RpcUtils {
                     && invocation.getInvoker().getUrl() != null
                     && !invocation.getMethodName().startsWith("$")) {
                 String service = invocation.getInvoker().getUrl().getServiceInterface();
-                if (service != null && service.length() > 0) {
+                if (StringUtils.isNotEmpty(service)) {
                     Class<?> invokerInterface = invocation.getInvoker().getInterface();
                     Class<?> cls = invokerInterface != null ? ReflectUtils.forName(invokerInterface.getClassLoader(), service)
                             : ReflectUtils.forName(service);
@@ -183,15 +183,7 @@ public class RpcUtils {
         return isAsync;
     }
 
-    public static boolean isGeneratedFuture(Invocation inv) {
-        return Boolean.TRUE.toString().equals(inv.getAttachment(Constants.FUTURE_GENERATED_KEY));
-    }
-
-    public static boolean hasGeneratedFuture(Method method) {
-        return method.isAnnotationPresent(AsyncFor.class) && hasFutureReturnType(method);
-    }
-
-    public static boolean isFutureReturnType(Invocation inv) {
+    public static boolean isReturnTypeFuture(Invocation inv) {
         return Boolean.TRUE.toString().equals(inv.getAttachment(Constants.FUTURE_RETURNTYPE_KEY));
     }
 
