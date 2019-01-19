@@ -35,9 +35,9 @@ public final class DateUtil {
      * @param format format of data.
      * @return
      */
-    public static String format(Date date,String format) {
-        Assert.notNull(date,"Given date can't be null");
-        Assert.notEmptyString(format,"Given date format can't be null or empty");
+    public static String format(Date date, String format) {
+        Assert.notNull(date, "Given date can't be null");
+        Assert.notEmptyString(format, "Given date format can't be null or empty");
         return FastDateFormat.getInstance(format).format(date);
     }
 }
