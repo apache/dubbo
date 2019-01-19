@@ -774,7 +774,7 @@ public class PojoUtilsTest {
         }
 
         public void setList(List<Child> list) {
-            if (list != null && !list.isEmpty()) {
+            if (CollectionUtils.isNotEmpty(list)) {
                 this.list.addAll(list);
             }
         }
@@ -784,7 +784,7 @@ public class PojoUtilsTest {
         }
 
         public void setChildren(Map<String, Child> children) {
-            if (children != null && !children.isEmpty()) {
+            if (CollectionUtils.isNotEmptyMap(children)) {
                 this.children.putAll(children);
             }
         }

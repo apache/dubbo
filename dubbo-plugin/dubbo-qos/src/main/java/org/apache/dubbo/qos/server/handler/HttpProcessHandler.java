@@ -58,27 +58,27 @@ public class HttpProcessHandler extends SimpleChannelInboundHandler<HttpRequest>
         // return 404 when fail to construct command context
         if (commandContext == null) {
             log.warn("can not found commandContext url: " + msg.getUri());
-            FullHttpResponse response = http_404();
+            FullHttpResponse response = http404();
             ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
         } else {
             commandContext.setRemote(ctx.channel());
             try {
                 String result = commandExecutor.execute(commandContext);
-                FullHttpResponse response = http_200(result);
+                FullHttpResponse response = http200(result);
                 ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
             } catch (NoSuchCommandException ex) {
                 log.error("can not find commandContext: " + commandContext, ex);
-                FullHttpResponse response = http_404();
+                FullHttpResponse response = http404();
                 ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
             } catch (Exception qosEx) {
                 log.error("execute commandContext: " + commandContext + " got exception", qosEx);
-                FullHttpResponse response = http_500(qosEx.getMessage());
+                FullHttpResponse response = http500(qosEx.getMessage());
                 ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
             }
         }
     }
 
-    private static final FullHttpResponse http_200(String result) {
+    private static final FullHttpResponse http200(String result) {
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK,
                 Unpooled.wrappedBuffer(result.getBytes()));
         HttpHeaders httpHeaders = response.headers();
@@ -87,7 +87,7 @@ public class HttpProcessHandler extends SimpleChannelInboundHandler<HttpRequest>
         return response;
     }
 
-    private static final FullHttpResponse http_404() {
+    private static final FullHttpResponse http404() {
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND);
         HttpHeaders httpHeaders = response.headers();
         httpHeaders.set(HttpHeaders.Names.CONTENT_TYPE, "text/plain");
@@ -95,7 +95,7 @@ public class HttpProcessHandler extends SimpleChannelInboundHandler<HttpRequest>
         return response;
     }
 
-    private static final FullHttpResponse http_500(String errorMessage) {
+    private static final FullHttpResponse http500(String errorMessage) {
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR
                 , Unpooled.wrappedBuffer(errorMessage.getBytes()));
         HttpHeaders httpHeaders = response.headers();

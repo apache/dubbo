@@ -22,6 +22,7 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
@@ -155,7 +156,7 @@ public class HeaderExchangeServer implements ExchangeServer {
     public Collection<ExchangeChannel> getExchangeChannels() {
         Collection<ExchangeChannel> exchangeChannels = new ArrayList<ExchangeChannel>();
         Collection<Channel> channels = server.getChannels();
-        if (channels != null && !channels.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(channels)) {
             for (Channel channel : channels) {
                 exchangeChannels.add(HeaderExchangeChannel.getOrAddChannel(channel));
             }

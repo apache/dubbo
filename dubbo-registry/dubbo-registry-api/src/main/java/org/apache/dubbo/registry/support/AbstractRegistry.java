@@ -24,6 +24,7 @@ import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 
@@ -248,7 +249,7 @@ public abstract class AbstractRegistry implements Registry {
             NotifyListener listener = reference::set;
             subscribe(url, listener); // Subscribe logic guarantees the first notify to return
             List<URL> urls = reference.get();
-            if (urls != null && !urls.isEmpty()) {
+            if (CollectionUtils.isNotEmpty(urls)) {
                 for (URL u : urls) {
                     if (!Constants.EMPTY_PROTOCOL.equals(u.getProtocol())) {
                         result.add(u);
