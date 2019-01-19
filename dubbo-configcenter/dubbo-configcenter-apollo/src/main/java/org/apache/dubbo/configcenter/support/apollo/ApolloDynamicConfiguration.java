@@ -139,7 +139,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
             if (group.equals(url.getParameter(Constants.APPLICATION_KEY))) {
                 return ConfigService.getAppConfig().getProperty(key, null);
             } else {
-                ConfigService.getConfig(group).getProperty(key, null);
+                return ConfigService.getConfig(group).getProperty(key, null);
             }
         }
         return dubboConfig.getProperty(key, null);
