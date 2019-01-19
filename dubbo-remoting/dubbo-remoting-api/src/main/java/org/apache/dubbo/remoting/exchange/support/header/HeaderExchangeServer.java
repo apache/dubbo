@@ -48,12 +48,11 @@ public class HeaderExchangeServer implements ExchangeServer {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final Server server;
-    // heartbeat timeout (ms), default value is 0 , won't execute a heartbeat.
     private int heartbeat;
-    private int heartbeatTimeout;
+    private int idleTimeout;
     private AtomicBoolean closed = new AtomicBoolean(false);
 
-    private HashedWheelTimer heartbeatTimer;
+    private HashedWheelTimer idleCheckTimer;
 
     public HeaderExchangeServer(Server server) {
         if (server == null) {
@@ -61,12 +60,12 @@ public class HeaderExchangeServer implements ExchangeServer {
         }
         this.server = server;
         this.heartbeat = server.getUrl().getParameter(Constants.HEARTBEAT_KEY, 0);
-        this.heartbeatTimeout = server.getUrl().getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartbeat * 3);
-        if (heartbeatTimeout < heartbeat * 2) {
-            throw new IllegalStateException("heartbeatTimeout < heartbeatInterval * 2");
+        this.idleTimeout = server.getUrl().getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartbeat * 3);
+        if (idleTimeout < heartbeat * 2) {
+            throw new IllegalStateException("idleTimeout < heartbeatInterval * 2");
         }
 
-        startHeartbeatTimer();
+        startIdleCheckTimer();
     }
 
     public Server getServer() {
@@ -149,7 +148,7 @@ public class HeaderExchangeServer implements ExchangeServer {
         if (!closed.compareAndSet(false, true)) {
             return;
         }
-        stopHeartbeatTimer();
+        stopIdleCheckTimer();
     }
 
     @Override
@@ -210,14 +209,14 @@ public class HeaderExchangeServer implements ExchangeServer {
                 int h = url.getParameter(Constants.HEARTBEAT_KEY, heartbeat);
                 int t = url.getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, h * 3);
                 if (t < h * 2) {
-                    throw new IllegalStateException("heartbeatTimeout < heartbeatInterval * 2");
+                    throw new IllegalStateException("idleTimeout < heartbeatInterval * 2");
                 }
-                if (h != heartbeat || t != heartbeatTimeout) {
+                if (h != heartbeat || t != idleTimeout) {
                     heartbeat = h;
-                    heartbeatTimeout = t;
+                    idleTimeout = t;
 
-                    stopHeartbeatTimer();
-                    startHeartbeatTimer();
+                    stopIdleCheckTimer();
+                    startIdleCheckTimer();
                 }
             }
         } catch (Throwable t) {
@@ -260,27 +259,23 @@ public class HeaderExchangeServer implements ExchangeServer {
         }
     }
 
-    private void startHeartbeatTimer() {
+    private void startIdleCheckTimer() {
         long tickDuration = calculateLeastDuration(heartbeat);
-        heartbeatTimer = new HashedWheelTimer(new NamedThreadFactory("dubbo-server-heartbeat", true), tickDuration,
+        idleCheckTimer = new HashedWheelTimer(new NamedThreadFactory("dubbo-server-idleCheck", true), tickDuration,
                 TimeUnit.MILLISECONDS, Constants.TICKS_PER_WHEEL);
-
         AbstractTimerTask.ChannelProvider cp = () -> unmodifiableCollection(HeaderExchangeServer.this.getChannels());
 
-        long heartbeatTick = calculateLeastDuration(heartbeat);
-        long heartbeatTimeoutTick = calculateLeastDuration(heartbeatTimeout);
-        HeartbeatTimerTask heartBeatTimerTask = new HeartbeatTimerTask(cp, heartbeatTick, heartbeat);
-        ReconnectTimerTask reconnectTimerTask = new ReconnectTimerTask(cp, heartbeatTimeoutTick, heartbeatTimeout);
+        long idleTimeoutTick = calculateLeastDuration(idleTimeout);
+        CloseTimerTask closeTimerTask = new CloseTimerTask(cp, idleTimeoutTick, idleTimeout);
 
         // init task and start timer.
-        heartbeatTimer.newTimeout(heartBeatTimerTask, heartbeatTick, TimeUnit.MILLISECONDS);
-        heartbeatTimer.newTimeout(reconnectTimerTask, heartbeatTimeoutTick, TimeUnit.MILLISECONDS);
+        idleCheckTimer.newTimeout(closeTimerTask, idleTimeoutTick, TimeUnit.MILLISECONDS);
     }
 
-    private void stopHeartbeatTimer() {
-        if (heartbeatTimer != null) {
-            heartbeatTimer.stop();
-            heartbeatTimer = null;
+    private void stopIdleCheckTimer() {
+        if (idleCheckTimer != null) {
+            idleCheckTimer.stop();
+            idleCheckTimer = null;
         }
     }
 

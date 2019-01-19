@@ -39,11 +39,10 @@ public class HeaderExchangeClient implements ExchangeClient {
 
     private final Client client;
     private final ExchangeChannel channel;
-    // heartbeat(ms), default value is 0 , won't execute a heartbeat.
     private int heartbeat;
-    private int heartbeatTimeout;
+    private int idleTimeout;
 
-    private HashedWheelTimer heartbeatTimer;
+    private HashedWheelTimer idleCheckTimer;
 
     public HeaderExchangeClient(Client client, boolean needHeartbeat) {
         if (client == null) {
@@ -55,16 +54,16 @@ public class HeaderExchangeClient implements ExchangeClient {
 
         this.heartbeat = client.getUrl().getParameter(Constants.HEARTBEAT_KEY, dubbo != null &&
                 dubbo.startsWith("1.0.") ? Constants.DEFAULT_HEARTBEAT : 0);
-        this.heartbeatTimeout = client.getUrl().getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartbeat * 3);
-        if (heartbeatTimeout < heartbeat * 2) {
-            throw new IllegalStateException("heartbeatTimeout < heartbeatInterval * 2");
+        this.idleTimeout = client.getUrl().getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartbeat * 3);
+        if (idleTimeout < heartbeat * 2) {
+            throw new IllegalStateException("idleTimeout < heartbeatInterval * 2");
         }
 
         if (needHeartbeat) {
             long tickDuration = calculateLeastDuration(heartbeat);
-            heartbeatTimer = new HashedWheelTimer(new NamedThreadFactory("dubbo-client-heartbeat", true), tickDuration,
+            idleCheckTimer = new HashedWheelTimer(new NamedThreadFactory("dubbo-client-idleCheck", true), tickDuration,
                     TimeUnit.MILLISECONDS, Constants.TICKS_PER_WHEEL);
-            startHeartbeatTimer();
+            startIdleCheckTimer();
         }
     }
 
@@ -178,28 +177,28 @@ public class HeaderExchangeClient implements ExchangeClient {
         return channel.hasAttribute(key);
     }
 
-    private void startHeartbeatTimer() {
+    private void startIdleCheckTimer() {
         AbstractTimerTask.ChannelProvider cp = () -> Collections.singletonList(HeaderExchangeClient.this);
 
         long heartbeatTick = calculateLeastDuration(heartbeat);
-        long heartbeatTimeoutTick = calculateLeastDuration(heartbeatTimeout);
+        long heartbeatTimeoutTick = calculateLeastDuration(idleTimeout);
         HeartbeatTimerTask heartBeatTimerTask = new HeartbeatTimerTask(cp, heartbeatTick, heartbeat);
-        ReconnectTimerTask reconnectTimerTask = new ReconnectTimerTask(cp, heartbeatTimeoutTick, heartbeatTimeout);
+        ReconnectTimerTask reconnectTimerTask = new ReconnectTimerTask(cp, heartbeatTimeoutTick, idleTimeout);
 
         // init task and start timer.
-        heartbeatTimer.newTimeout(heartBeatTimerTask, heartbeatTick, TimeUnit.MILLISECONDS);
-        heartbeatTimer.newTimeout(reconnectTimerTask, heartbeatTimeoutTick, TimeUnit.MILLISECONDS);
+        idleCheckTimer.newTimeout(heartBeatTimerTask, heartbeatTick, TimeUnit.MILLISECONDS);
+        idleCheckTimer.newTimeout(reconnectTimerTask, heartbeatTimeoutTick, TimeUnit.MILLISECONDS);
     }
 
-    private void stopHeartbeatTimer() {
-        if (heartbeatTimer != null) {
-            heartbeatTimer.stop();
-            heartbeatTimer = null;
+    private void stopIdleCheckTimer() {
+        if (idleCheckTimer != null) {
+            idleCheckTimer.stop();
+            idleCheckTimer = null;
         }
     }
 
     private void doClose() {
-        stopHeartbeatTimer();
+        stopIdleCheckTimer();
     }
 
     /**
