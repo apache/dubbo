@@ -30,6 +30,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.PriorityOrdered;
 import org.springframework.core.env.Environment;
 
 /**
@@ -40,7 +41,8 @@ import org.springframework.core.env.Environment;
  * @since 2.5.8
  */
 
-public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, ApplicationContextAware, InitializingBean {
+public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, ApplicationContextAware,
+        PriorityOrdered {
 
     private final Log log = LogFactory.getLog(getClass());
 
@@ -77,6 +79,8 @@ public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, A
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 
         if (beanName != null && beanName.equals(this.beanName) && bean instanceof AbstractConfig) {
+
+            init();
 
             AbstractConfig dubboConfig = (AbstractConfig) bean;
 
@@ -126,8 +130,7 @@ public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, A
         this.applicationContext = applicationContext;
     }
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
+    public void init() {
 
         if (dubboConfigBinder == null) {
             try {
@@ -158,4 +161,8 @@ public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, A
         return defaultDubboConfigBinder;
     }
 
+    @Override
+    public int getOrder() {
+        return Integer.MIN_VALUE;
+    }
 }
