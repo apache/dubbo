@@ -43,11 +43,11 @@ public class ConfigCenterConfig extends AbstractConfig {
     but it's real meaning depends on the actual Config Center you use.
     */
 
-    private String namespace = "dubbo";
+    private String namespace = Constants.DUBBO;
     /* The group of the config center, generally it's used to identify an isolated space for a batch of config items,
     but it's real meaning depends on the actual Config Center you use.
     */
-    private String group = "dubbo";
+    private String group = Constants.DUBBO;
     private String username;
     private String password;
     private Long timeout = 3000L;
@@ -61,7 +61,7 @@ public class ConfigCenterConfig extends AbstractConfig {
     /* Used to specify the key that your properties file mapping to, most of the time you do not need to change this parameter.
     Notice that for Apollo, this parameter is meaningless, set the 'namespace' is enough.
     */
-    private String configFile = "dubbo.properties";
+    private String configFile = Constants.DEFAULT_DUBBO_PROPERTIES;
 
     /* the .properties file under 'configFile' is global shared while .properties under this one is limited only to this application
     */
