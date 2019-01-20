@@ -727,7 +727,7 @@ class URL implements Serializable {
         String methodKey = method + "." + key;
         Number n = getNumbers().get(methodKey);
         if (n != null) {
-            return n.intValue();
+            return n.doubleValue();
         }
         String value = getMethodParameter(method, key);
         if (StringUtils.isEmpty(value)) {
@@ -742,7 +742,7 @@ class URL implements Serializable {
         String methodKey = method + "." + key;
         Number n = getNumbers().get(methodKey);
         if (n != null) {
-            return n.intValue();
+            return n.floatValue();
         }
         String value = getMethodParameter(method, key);
         if (StringUtils.isEmpty(value)) {
@@ -757,7 +757,7 @@ class URL implements Serializable {
         String methodKey = method + "." + key;
         Number n = getNumbers().get(methodKey);
         if (n != null) {
-            return n.intValue();
+            return n.longValue();
         }
         String value = getMethodParameter(method, key);
         if (StringUtils.isEmpty(value)) {
