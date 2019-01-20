@@ -44,7 +44,6 @@ public class SimpleAsyncRpcResult extends AsyncRpcResult {
 
     @Override
     public Object recreate() throws Throwable {
-        // TODO should we check the status of valueFuture here?
-        return null;
-    }
+        return getRpcResult().getValue();
+     }
 }
