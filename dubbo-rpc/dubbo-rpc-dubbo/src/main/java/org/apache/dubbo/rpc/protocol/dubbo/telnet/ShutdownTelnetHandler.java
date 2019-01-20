@@ -25,11 +25,11 @@ import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.telnet.support.Help;
 
 /**
- * ShutDownTelnetHandler
+ * ShutdownTelnetHandler
  */
 @Activate
 @Help(parameter = "[-t <milliseconds>]", summary = "Shutdown Dubbo Application.", detail = "Shutdown Dubbo Application.")
-public class ShutDownTelnetHandler implements TelnetHandler {
+public class ShutdownTelnetHandler implements TelnetHandler {
     @Override
     public String telnet(Channel channel, String message) throws RemotingException {
 

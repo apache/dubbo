@@ -27,9 +27,9 @@ import static org.mockito.Mockito.mock;
 /**
  * SelectTelnetHandlerTest.java
  */
-public class ShutDownTelnetHandlerTest {
+public class ShutdownTelnetHandlerTest {
 
-    private static TelnetHandler handler = new ShutDownTelnetHandler();
+    private static TelnetHandler handler = new ShutdownTelnetHandler();
     private Channel mockChannel;
 
     @SuppressWarnings("unchecked")

@@ -6,4 +6,4 @@ invoke=org.apache.dubbo.rpc.protocol.dubbo.telnet.InvokeTelnetHandler
 trace=org.apache.dubbo.rpc.protocol.dubbo.telnet.TraceTelnetHandler
 count=org.apache.dubbo.rpc.protocol.dubbo.telnet.CountTelnetHandler
 select=org.apache.dubbo.rpc.protocol.dubbo.telnet.SelectTelnetHandler
-shutdown=org.apache.dubbo.rpc.protocol.dubbo.telnet.ShutDownTelnetHandler
+shutdown=org.apache.dubbo.rpc.protocol.dubbo.telnet.ShutdownTelnetHandler
