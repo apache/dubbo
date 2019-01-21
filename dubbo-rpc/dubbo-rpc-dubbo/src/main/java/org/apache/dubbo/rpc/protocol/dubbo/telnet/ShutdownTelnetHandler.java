@@ -51,6 +51,7 @@ public class ShutdownTelnetHandler implements TelnetHandler {
             }
         }
         StringBuilder buf = new StringBuilder();
+        DubboShutdownHook.getDubboShutdownHook().unregister();
         DubboShutdownHook.getDubboShutdownHook().doDestroy();
         long end = System.currentTimeMillis();
         buf.append("Application has shutdown successfully");
