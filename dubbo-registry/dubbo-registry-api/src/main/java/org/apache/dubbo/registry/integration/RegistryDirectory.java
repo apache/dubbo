@@ -69,7 +69,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     private final Map<String, String> queryMap; // Initialization at construction time, assertion not null
     private final URL directoryUrl; // Initialization at construction time, assertion not null, and always assign non null value
     private final String[] serviceMethods;
-    private final boolean multiGroup;
+    private final boolean multiGroup; //Whether it is multiple groups
     private Protocol protocol; // Initialization at the time of injection, the assertion is not null
     private Registry registry; // Initialization at the time of injection, the assertion is not null
     private volatile boolean forbidden = false;
@@ -95,9 +95,11 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     public RegistryDirectory(Class<T> serviceType, URL url) {
         super(url);
+        //check serviceType not null
         if (serviceType == null) {
             throw new IllegalArgumentException("service type is null.");
         }
+        //check url.ServiceKey not null
         if (url.getServiceKey() == null || url.getServiceKey().length() == 0) {
             throw new IllegalArgumentException("registry serviceKey is null.");
         }
@@ -106,7 +108,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         this.queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(Constants.REFER_KEY));
         this.overrideDirectoryUrl = this.directoryUrl = url.setPath(url.getServiceInterface()).clearParameters().addParameters(queryMap).removeParameter(Constants.MONITOR_KEY);
         String group = directoryUrl.getParameter(Constants.GROUP_KEY, "");
-        this.multiGroup = group != null && ("*".equals(group) || group.contains(","));
+        this.multiGroup = group != null && ("*".equals(group) || group.contains(",")); //If the group in the url contains * or , it means that multiple groups are configured.
         String methods = queryMap.get(Constants.METHODS_KEY);
         this.serviceMethods = methods == null ? null : Constants.COMMA_SPLIT_PATTERN.split(methods);
     }
@@ -123,23 +125,28 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * @return
      */
     public static List<Configurator> toConfigurators(List<URL> urls) {
+        //check urls not null
         if (urls == null || urls.isEmpty()) {
             return Collections.emptyList();
         }
-
-        List<Configurator> configurators = new ArrayList<Configurator>(urls.size());
+        //Create a size of urls.size() ArrayList
+        List<Configurator> configurators = new ArrayList<>(urls.size());
         for (URL url : urls) {
+            //if protocol is empty clear configurators,break
             if (Constants.EMPTY_PROTOCOL.equals(url.getProtocol())) {
                 configurators.clear();
                 break;
             }
-            Map<String, String> override = new HashMap<String, String>(url.getParameters());
+            //
+            Map<String, String> override = new HashMap<>(url.getParameters());
             //The anyhost parameter of override may be added automatically, it can't change the judgement of changing url
             override.remove(Constants.ANYHOST_KEY);
+            // if override is null,clear configurators,continue
             if (override.size() == 0) {
                 configurators.clear();
                 continue;
             }
+            //Build configurator via configuratorFactory
             configurators.add(configuratorFactory.getConfigurator(url));
         }
         Collections.sort(configurators);
@@ -182,12 +189,13 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     @Override
     public synchronized void notify(List<URL> urls) {
-        List<URL> invokerUrls = new ArrayList<URL>();
-        List<URL> routerUrls = new ArrayList<URL>();
-        List<URL> configuratorUrls = new ArrayList<URL>();
+        List<URL> invokerUrls = new ArrayList<>();
+        List<URL> routerUrls = new ArrayList<>();
+        List<URL> configuratorUrls = new ArrayList<>();
         for (URL url : urls) {
             String protocol = url.getProtocol();
             String category = url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY);
+            //Set up urls for different protocols and categories
             if (Constants.ROUTERS_CATEGORY.equals(category)
                     || Constants.ROUTE_PROTOCOL.equals(protocol)) {
                 routerUrls.add(url);
@@ -214,6 +222,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         List<Configurator> localConfigurators = this.configurators; // local reference
         // merge override parameters
         this.overrideDirectoryUrl = directoryUrl;
+        //check local reference
         if (localConfigurators != null && !localConfigurators.isEmpty()) {
             for (Configurator configurator : localConfigurators) {
                 this.overrideDirectoryUrl = configurator.configure(overrideDirectoryUrl);
@@ -258,6 +267,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 logger.error(new IllegalStateException("urls to invokers error .invokerUrls.size :" + invokerUrls.size() + ", invoker.size :0. urls :" + invokerUrls.toString()));
                 return;
             }
+            // If there are multiple groups, merge the methodInvokeMap
             this.methodInvokerMap = multiGroup ? toMergeMethodInvokerMap(newMethodInvokerMap) : newMethodInvokerMap;
             this.urlInvokerMap = newUrlInvokerMap;
             try {
@@ -268,27 +278,33 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         }
     }
 
+    /**
+     * Combine methods of multiple groups by method name
+     *
+     * @param methodMap Invoker map key:method value:List<Invoker>
+     * @return
+     */
     private Map<String, List<Invoker<T>>> toMergeMethodInvokerMap(Map<String, List<Invoker<T>>> methodMap) {
-        Map<String, List<Invoker<T>>> result = new HashMap<String, List<Invoker<T>>>();
+        Map<String, List<Invoker<T>>> result = new HashMap<>();
         for (Map.Entry<String, List<Invoker<T>>> entry : methodMap.entrySet()) {
             String method = entry.getKey();
             List<Invoker<T>> invokers = entry.getValue();
-            Map<String, List<Invoker<T>>> groupMap = new HashMap<String, List<Invoker<T>>>();
+            Map<String, List<Invoker<T>>> groupMap = new HashMap<>();//Build a group map
             for (Invoker<T> invoker : invokers) {
                 String group = invoker.getUrl().getParameter(Constants.GROUP_KEY, "");
                 List<Invoker<T>> groupInvokers = groupMap.get(group);
                 if (groupInvokers == null) {
-                    groupInvokers = new ArrayList<Invoker<T>>();
+                    groupInvokers = new ArrayList<>();
                     groupMap.put(group, groupInvokers);
                 }
                 groupInvokers.add(invoker);
             }
             if (groupMap.size() == 1) {
-                result.put(method, groupMap.values().iterator().next());
+                result.put(method, groupMap.values().iterator().next()); //If there is only one group, set result to the value of group
             } else if (groupMap.size() > 1) {
-                List<Invoker<T>> groupInvokers = new ArrayList<Invoker<T>>();
+                List<Invoker<T>> groupInvokers = new ArrayList<>();
                 for (List<Invoker<T>> groupList : groupMap.values()) {
-                    groupInvokers.add(cluster.join(new StaticDirectory<T>(groupList)));
+                    groupInvokers.add(cluster.join(new StaticDirectory<>(groupList)));
                 }
                 result.put(method, groupInvokers);
             } else {
@@ -337,11 +353,11 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * @return invokers
      */
     private Map<String, Invoker<T>> toInvokers(List<URL> urls) {
-        Map<String, Invoker<T>> newUrlInvokerMap = new HashMap<String, Invoker<T>>();
+        Map<String, Invoker<T>> newUrlInvokerMap = new HashMap<>();
         if (urls == null || urls.isEmpty()) {
             return newUrlInvokerMap;
         }
-        Set<String> keys = new HashSet<String>();
+        Set<String> keys = new HashSet<>();
         String queryProtocols = this.queryMap.get(Constants.PROTOCOL_KEY);
         for (URL providerUrl : urls) {
             // If protocol is configured at the reference side, only the matching protocol is selected
@@ -462,9 +478,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * @return Mapping relation between Invoker and method
      */
     private Map<String, List<Invoker<T>>> toMethodInvokers(Map<String, Invoker<T>> invokersMap) {
-        Map<String, List<Invoker<T>>> newMethodInvokerMap = new HashMap<String, List<Invoker<T>>>();
+        Map<String, List<Invoker<T>>> newMethodInvokerMap = new HashMap<>();
         // According to the methods classification declared by the provider URL, the methods is compatible with the registry to execute the filtered methods
-        List<Invoker<T>> invokersList = new ArrayList<Invoker<T>>();
+        List<Invoker<T>> invokersList = new ArrayList<>();
         if (invokersMap != null && invokersMap.size() > 0) {
             for (Invoker<T> invoker : invokersMap.values()) {
                 String parameter = invoker.getUrl().getParameter(Constants.METHODS_KEY);
@@ -476,7 +492,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                                     && !Constants.ANY_VALUE.equals(method)) {
                                 List<Invoker<T>> methodInvokers = newMethodInvokerMap.get(method);
                                 if (methodInvokers == null) {
-                                    methodInvokers = new ArrayList<Invoker<T>>();
+                                    methodInvokers = new ArrayList<>();
                                     newMethodInvokerMap.put(method, methodInvokers);
                                 }
                                 methodInvokers.add(invoker);
