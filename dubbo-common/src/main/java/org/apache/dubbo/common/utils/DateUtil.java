@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.commons.lang3.time.FastDateFormat;
+import org.apache.dubbo.common.time.FastDateFormat;
 
 import java.util.Date;
 
