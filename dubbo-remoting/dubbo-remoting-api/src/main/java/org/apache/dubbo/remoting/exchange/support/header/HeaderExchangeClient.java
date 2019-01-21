@@ -19,6 +19,7 @@ package org.apache.dubbo.remoting.exchange.support.header;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
+import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Client;
@@ -42,12 +43,11 @@ public class HeaderExchangeClient implements ExchangeClient {
     private int heartbeat;
     private int idleTimeout;
 
-    private HashedWheelTimer idleCheckTimer;
+    private static HashedWheelTimer idleCheckTimer = new HashedWheelTimer(new NamedThreadFactory("dubbo-client-idleCheck", true), 1,
+            TimeUnit.SECONDS, Constants.TICKS_PER_WHEEL);
 
     public HeaderExchangeClient(Client client, boolean needHeartbeat) {
-        if (client == null) {
-            throw new IllegalArgumentException("client == null");
-        }
+        Assert.notNull(client, "Client can't be null");
         this.client = client;
         this.channel = new HeaderExchangeChannel(client);
         String dubbo = client.getUrl().getParameter(Constants.DUBBO_VERSION_KEY);
@@ -60,10 +60,7 @@ public class HeaderExchangeClient implements ExchangeClient {
         }
 
         if (needHeartbeat) {
-            long tickDuration = calculateLeastDuration(heartbeat);
-            idleCheckTimer = new HashedWheelTimer(new NamedThreadFactory("dubbo-client-idleCheck", true), tickDuration,
-                    TimeUnit.MILLISECONDS, Constants.TICKS_PER_WHEEL);
-            startIdleCheckTimer();
+            startIdleCheckTask();
         }
     }
 
@@ -177,7 +174,7 @@ public class HeaderExchangeClient implements ExchangeClient {
         return channel.hasAttribute(key);
     }
 
-    private void startIdleCheckTimer() {
+    private void startIdleCheckTask() {
         AbstractTimerTask.ChannelProvider cp = () -> Collections.singletonList(HeaderExchangeClient.this);
 
         long heartbeatTick = calculateLeastDuration(heartbeat);
@@ -190,15 +187,7 @@ public class HeaderExchangeClient implements ExchangeClient {
         idleCheckTimer.newTimeout(reconnectTimerTask, heartbeatTimeoutTick, TimeUnit.MILLISECONDS);
     }
 
-    private void stopIdleCheckTimer() {
-        if (idleCheckTimer != null) {
-            idleCheckTimer.stop();
-            idleCheckTimer = null;
-        }
-    }
-
     private void doClose() {
-        stopIdleCheckTimer();
     }
 
     /**

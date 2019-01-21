@@ -22,6 +22,7 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
+import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.Channel;
@@ -52,12 +53,11 @@ public class HeaderExchangeServer implements ExchangeServer {
     private int idleTimeout;
     private AtomicBoolean closed = new AtomicBoolean(false);
 
-    private HashedWheelTimer idleCheckTimer;
+    private static HashedWheelTimer idleCheckTimer = new HashedWheelTimer(new NamedThreadFactory("dubbo-server-idleCheck", true), 1,
+            TimeUnit.SECONDS, Constants.TICKS_PER_WHEEL);
 
     public HeaderExchangeServer(Server server) {
-        if (server == null) {
-            throw new IllegalArgumentException("server == null");
-        }
+        Assert.notNull(server, "server == null");
         this.server = server;
         this.heartbeat = server.getUrl().getParameter(Constants.HEARTBEAT_KEY, 0);
         this.idleTimeout = server.getUrl().getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartbeat * 3);
@@ -65,7 +65,7 @@ public class HeaderExchangeServer implements ExchangeServer {
             throw new IllegalStateException("idleTimeout < heartbeatInterval * 2");
         }
 
-        startIdleCheckTimer();
+        startIdleCheckTask();
     }
 
     public Server getServer() {
@@ -148,7 +148,6 @@ public class HeaderExchangeServer implements ExchangeServer {
         if (!closed.compareAndSet(false, true)) {
             return;
         }
-        stopIdleCheckTimer();
     }
 
     @Override
@@ -215,8 +214,7 @@ public class HeaderExchangeServer implements ExchangeServer {
                     heartbeat = h;
                     idleTimeout = t;
 
-                    stopIdleCheckTimer();
-                    startIdleCheckTimer();
+                    startIdleCheckTask();
                 }
             }
         } catch (Throwable t) {
@@ -259,10 +257,7 @@ public class HeaderExchangeServer implements ExchangeServer {
         }
     }
 
-    private void startIdleCheckTimer() {
-        long tickDuration = calculateLeastDuration(heartbeat);
-        idleCheckTimer = new HashedWheelTimer(new NamedThreadFactory("dubbo-server-idleCheck", true), tickDuration,
-                TimeUnit.MILLISECONDS, Constants.TICKS_PER_WHEEL);
+    private void startIdleCheckTask() {
         AbstractTimerTask.ChannelProvider cp = () -> unmodifiableCollection(HeaderExchangeServer.this.getChannels());
 
         long idleTimeoutTick = calculateLeastDuration(idleTimeout);
@@ -270,13 +265,6 @@ public class HeaderExchangeServer implements ExchangeServer {
 
         // init task and start timer.
         idleCheckTimer.newTimeout(closeTimerTask, idleTimeoutTick, TimeUnit.MILLISECONDS);
-    }
-
-    private void stopIdleCheckTimer() {
-        if (idleCheckTimer != null) {
-            idleCheckTimer.stop();
-            idleCheckTimer = null;
-        }
     }
 
 }
