@@ -374,7 +374,8 @@ public class RegistryProtocol implements Protocol {
         Map<String, String> parameters = new HashMap<String, String>(directory.getUrl().getParameters());
         URL subscribeUrl = new URL(CONSUMER_PROTOCOL, parameters.remove(REGISTER_IP_KEY), 0, type.getName(), parameters);
         if (!ANY_VALUE.equals(url.getServiceInterface()) && url.getParameter(REGISTER_KEY, true)) {
-            registry.register(getRegisteredConsumerUrl(subscribeUrl, url));
+            directory.setRegisteredConsumerUrl(getRegisteredConsumerUrl(subscribeUrl, url));
+            registry.register(directory.getRegisteredConsumerUrl());
         }
         directory.buildRouterChain(subscribeUrl);
         directory.subscribe(subscribeUrl.addParameter(CATEGORY_KEY,
@@ -385,7 +386,7 @@ public class RegistryProtocol implements Protocol {
         return invoker;
     }
 
-    private URL getRegisteredConsumerUrl(final URL consumerUrl, URL registryUrl) {
+    public URL getRegisteredConsumerUrl(final URL consumerUrl, URL registryUrl) {
         if (!registryUrl.getParameter(SIMPLE_CONSUMER_CONFIG_KEY, false)) {
             return consumerUrl.addParameters(CATEGORY_KEY, CONSUMERS_CATEGORY,
                     CHECK_KEY, String.valueOf(false));
@@ -598,6 +599,7 @@ public class RegistryProtocol implements Protocol {
             overrideListeners.values().forEach(listener -> ((OverrideListener) listener).doOverrideIfNecessary());
         }
     }
+
     /**
      * exporter proxy, establish the corresponding relationship between the returned exporter and the exporter
      * exported by the protocol, and can modify the relationship at the time of override.
