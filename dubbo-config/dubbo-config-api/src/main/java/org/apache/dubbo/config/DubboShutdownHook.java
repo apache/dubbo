@@ -85,8 +85,6 @@ public class DubboShutdownHook extends Thread {
         if (!destroyed.compareAndSet(false, true)) {
             return;
         }
-        // unregister the shutdownHook
-        unregister();
         // destroy all the registries
         AbstractRegistryFactory.destroyAll();
         // destroy all the protocols
