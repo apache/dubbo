@@ -161,6 +161,6 @@ public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, A
 
     @Override
     public int getOrder() {
-        return Integer.MIN_VALUE;
+        return PriorityOrdered.HIGHEST_PRECEDENCE;
     }
 }
