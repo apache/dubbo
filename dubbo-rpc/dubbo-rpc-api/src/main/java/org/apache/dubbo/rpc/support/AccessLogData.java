@@ -74,14 +74,6 @@ public final class AccessLogData {
         return new AccessLogData();
     }
 
-    /**
-     * Sets the access log key
-     *
-     * @param accessLogKey
-     */
-    public void setAccessLogKey(String accessLogKey) {
-
-    }
 
     /**
      * Add version information.

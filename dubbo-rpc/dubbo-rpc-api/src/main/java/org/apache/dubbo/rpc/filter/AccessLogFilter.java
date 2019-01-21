@@ -41,7 +41,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -73,7 +72,7 @@ public class AccessLogFilter implements Filter {
 
     private static final String FILE_DATE_FORMAT = "yyyyMMdd";
 
-    private static final ConcurrentMap<String, Set<AccessLogData>> logQueue = new ConcurrentHashMap<String, Set<AccessLogData>>();
+    private static final Map<String, Set<AccessLogData>> logEntries = new ConcurrentHashMap<String, Set<AccessLogData>>();
 
     private static final ScheduledExecutorService logScheduled = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-Access-Log", true));
 
@@ -108,7 +107,7 @@ public class AccessLogFilter implements Filter {
     }
 
     private void log(String accessLog, AccessLogData accessLogData) {
-        Set<AccessLogData> logSet = logQueue.computeIfAbsent(accessLog, k -> new ConcurrentHashSet<>());
+        Set<AccessLogData> logSet = logEntries.computeIfAbsent(accessLog, k -> new ConcurrentHashSet<>());
 
         if (logSet.size() < LOG_MAX_BUFFER) {
             logSet.add(accessLogData);
@@ -119,8 +118,8 @@ public class AccessLogFilter implements Filter {
     }
 
     private void writeLogToFile() {
-        if (!logQueue.isEmpty()) {
-            for (Map.Entry<String, Set<AccessLogData>> entry : logQueue.entrySet()) {
+        if (!logEntries.isEmpty()) {
+            for (Map.Entry<String, Set<AccessLogData>> entry : logEntries.entrySet()) {
                 try {
                     String accessLog = entry.getKey();
                     Set<AccessLogData> logSet = entry.getValue();
@@ -144,8 +143,7 @@ public class AccessLogFilter implements Filter {
     }
 
     private void processWithAccessKeyLogger(Set<AccessLogData> logSet, File file) throws IOException {
-        FileWriter writer = new FileWriter(file, true);
-        try {
+        try (FileWriter writer = new FileWriter(file, true)) {
             for (Iterator<AccessLogData> iterator = logSet.iterator();
                  iterator.hasNext();
                  iterator.remove()) {
@@ -153,8 +151,6 @@ public class AccessLogFilter implements Filter {
                 writer.write("\r\n");
             }
             writer.flush();
-        } finally {
-            writer.close();
         }
     }
 
