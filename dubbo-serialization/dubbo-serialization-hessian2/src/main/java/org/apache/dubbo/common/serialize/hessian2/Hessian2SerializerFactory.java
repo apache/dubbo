@@ -16,11 +16,25 @@
  */
 package org.apache.dubbo.common.serialize.hessian2;
 
+import com.alibaba.com.caucho.hessian.io.Deserializer;
+import com.alibaba.com.caucho.hessian.io.HessianProtocolException;
 import com.alibaba.com.caucho.hessian.io.SerializerFactory;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
+
+import java.util.Set;
 
 public class Hessian2SerializerFactory extends SerializerFactory {
+    private final static Logger logger = LoggerFactory.getLogger(Hessian2SerializerFactory.class);
 
     public static final SerializerFactory SERIALIZER_FACTORY = new Hessian2SerializerFactory();
+
+    /**
+     * For those classes are unknown in current classloader, record them in this set to avoid
+     * frequently class loading and to reduce performance overhead.
+     */
+    private Set<String> typeNotFoundDeserializer = new ConcurrentHashSet<String>(8);
 
     private Hessian2SerializerFactory() {
     }
@@ -28,6 +42,20 @@ public class Hessian2SerializerFactory extends SerializerFactory {
     @Override
     public ClassLoader getClassLoader() {
         return Thread.currentThread().getContextClassLoader();
+    }
+
+    @Override
+    public Deserializer getDeserializer(String type)
+            throws HessianProtocolException {
+        if (type == null || type.equals("") || typeNotFoundDeserializer.contains(type)) {
+            return null;
+        }
+        Deserializer deserializer = super.getDeserializer(type);
+        if (deserializer == null) {
+            typeNotFoundDeserializer.add(type);
+            logger.warn("unable to find deserializer for string type:" + type);
+        }
+        return deserializer;
     }
 
 }
