@@ -123,10 +123,10 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
 
     private void handleValue(ObjectInput in) throws IOException {
         try {
-            Type[] returnType = RpcUtils.getReturnTypes(invocation);
-            setValue(returnType == null || returnType.length == 0 ? in.readObject() :
-                    (returnType.length == 1 ? in.readObject((Class<?>) returnType[0])
-                            : in.readObject((Class<?>) returnType[0], returnType[1])));
+            Type[] returnTypes = RpcUtils.getReturnTypes(invocation);
+            setValue(returnTypes == null || returnTypes.length == 0 ? in.readObject() :
+                    (returnTypes.length == 1 ? in.readObject((Class<?>) returnTypes[0])
+                            : in.readObject((Class<?>) returnTypes[0], returnTypes[1])));
         } catch (ClassNotFoundException e) {
             rethrow(e);
         }
