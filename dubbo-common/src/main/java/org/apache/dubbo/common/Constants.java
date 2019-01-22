@@ -62,10 +62,10 @@ public class Constants {
     public static final String CONFIG_NAMESPACE_KEY = "config.namespace";
     public static final String CONFIG_GROUP_KEY = "config.group";
     public static final String CONFIG_CHECK_KEY = "config.check";
-    public static final String CONFIG_CONFIGFILE_KEY = "config.configFile";
-    public static final String CONFIG_ENABLE_KEY = "config.highestPriority";
+    public static final String CONFIG_CONFIGFILE_KEY = "config.config-file";
+    public static final String CONFIG_ENABLE_KEY = "config.highest-priority";
     public static final String CONFIG_TIMEOUT_KEY = "config.timeout";
-    public static final String CONFIG_APPNAME_KEY = "config.appName";
+    public static final String CONFIG_APPNAME_KEY = "config.app-name";
 
     public static final String DEFAULT_CATEGORY = PROVIDERS_CATEGORY;
 
@@ -163,6 +163,8 @@ public class Constants {
 
     public static final int DEFAULT_FAILBACK_TIMES = 3;
 
+    public static final int MAX_PROXY_COUNT = 65535;
+
     // default buffer size is 8k.
     public static final int DEFAULT_BUFFER_SIZE = 8 * 1024;
 
@@ -175,6 +177,8 @@ public class Constants {
     public static final int MIN_BUFFER_SIZE = 1 * 1024;
 
     public static final String REMOVE_VALUE_PREFIX = "-";
+
+    public static final String PROPERTIES_CHAR_SEPERATOR = "-";
 
     public static final String HIDE_KEY_PREFIX = ".";
 
@@ -480,25 +484,17 @@ public class Constants {
 
     /**
      * simple the registry for provider.
-     * @since 2.7.0
-     */
-    public static final String SIMPLE_PROVIDER_CONFIG_KEY = "simple.provider.config";
-    /**
-     * simple the registry for consumer.
-     * @since 2.7.0
-     */
-    public static final String SIMPLE_CONSUMER_CONFIG_KEY = "simple.consumer.config";
-    /**
-     * After simplify the registry, should add some parameter individually for provider.
-     * @since 2.7.0
-     */
-    public static final String EXTRA_PROVIDER_CONFIG_KEYS_KEY = "extra.provider.keys";
-    /**
-     * After simplify the registry, should add some parameter individually for consumer.
      *
      * @since 2.7.0
      */
-    public static final String EXTRA_CONSUMER_CONFIG_KEYS_KEY = "extra.consumer.keys";
+    public static final String SIMPLIFIED_KEY = "simplified";
+
+    /**
+     * After simplify the registry, should add some paramter individually for provider.
+     *
+     * @since 2.7.0
+     */
+    public static final String EXTRA_KEYS_KEY = "extra-keys";
 
     /**
      * To decide whether to exclude unavailable invoker from the cluster
@@ -757,9 +753,9 @@ public class Constants {
 
     public static final String COMPATIBLE_CONFIG_KEY = "compatible_config";
     // package version in the manifest
-    public static final String SPECIFICATION_VERSION_KEY = "specVersion";
+    public static final String RELEASE_KEY = "release";
 
-    public static final String OVERRIDE_PROVIDERS_KEY = "providerAddreses";
+    public static final String OVERRIDE_PROVIDERS_KEY = "providerAddresses";
 
     public static final String PROTOCOLS_SUFFIX = "dubbo.protocols.";
 
@@ -768,9 +764,9 @@ public class Constants {
     public static final String REGISTRIES_SUFFIX = "dubbo.registries.";
 
     public static final String[] DEFAULT_REGISTER_PROVIDER_KEYS = {APPLICATION_KEY, CODEC_KEY, EXCHANGER_KEY, SERIALIZATION_KEY, CLUSTER_KEY, CONNECTIONS_KEY, DEPRECATED_KEY,
-            GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY, WEIGHT_KEY, TIMESTAMP_KEY, DUBBO_VERSION_KEY, SPECIFICATION_VERSION_KEY};
+            GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY, WEIGHT_KEY, TIMESTAMP_KEY, DUBBO_VERSION_KEY, RELEASE_KEY};
 
-    public static final String[] DEFAULT_REGISTER_CONSUMER_KEYS = {APPLICATION_KEY, VERSION_KEY, GROUP_KEY, DUBBO_VERSION_KEY, SPECIFICATION_VERSION_KEY};
+    public static final String[] DEFAULT_REGISTER_CONSUMER_KEYS = {APPLICATION_KEY, VERSION_KEY, GROUP_KEY, DUBBO_VERSION_KEY, RELEASE_KEY};
 
     public static final String TELNET = "telnet";
 

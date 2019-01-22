@@ -19,9 +19,11 @@ package org.apache.dubbo.config.spring.status;
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;

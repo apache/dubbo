@@ -35,4 +35,32 @@ public class VersionTest {
         Assertions.assertTrue(Version.isSupportResponseAttachment("2.0.3"));
         Assertions.assertFalse(Version.isSupportResponseAttachment("2.0.0"));
     }
+
+    @Test
+    public void testGetIntVersion() {
+        Assertions.assertEquals(2060100, Version.getIntVersion("2.6.1"));
+        Assertions.assertEquals(2060101, Version.getIntVersion("2.6.1.1"));
+        Assertions.assertEquals(2070001, Version.getIntVersion("2.7.0.1"));
+        Assertions.assertEquals(2070000, Version.getIntVersion("2.7.0"));
+    }
+
+    @Test
+    public void testIsFramework270OrHigher() {
+        Assertions.assertTrue(Version.isRelease270OrHigher("2.7.0"));
+        Assertions.assertTrue(Version.isRelease270OrHigher("2.7.0.1"));
+        Assertions.assertTrue(Version.isRelease270OrHigher("2.7.0.2"));
+        Assertions.assertTrue(Version.isRelease270OrHigher("2.8.0"));
+        Assertions.assertFalse(Version.isRelease270OrHigher("2.6.3"));
+        Assertions.assertFalse(Version.isRelease270OrHigher("2.6.3.1"));
+    }
+
+    @Test
+    public void testIsFramework263OrHigher() {
+        Assertions.assertTrue(Version.isRelease263OrHigher("2.7.0"));
+        Assertions.assertTrue(Version.isRelease263OrHigher("2.7.0.1"));
+        Assertions.assertTrue(Version.isRelease263OrHigher("2.6.4"));
+        Assertions.assertFalse(Version.isRelease263OrHigher("2.6.2"));
+        Assertions.assertFalse(Version.isRelease263OrHigher("2.6.1.1"));
+        Assertions.assertTrue(Version.isRelease263OrHigher("2.6.3"));
+    }
 }

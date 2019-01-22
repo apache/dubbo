@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.bytecode;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.utils.ClassHelper;
 import org.apache.dubbo.common.utils.ReflectUtils;
 
@@ -77,7 +78,7 @@ public abstract class Proxy {
      * @return Proxy instance.
      */
     public static Proxy getProxy(ClassLoader cl, Class<?>... ics) {
-        if (ics.length > 65535) {
+        if (ics.length > Constants.MAX_PROXY_COUNT) {
             throw new IllegalArgumentException("interface limit exceeded");
         }
 

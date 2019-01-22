@@ -22,7 +22,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 public class RpcContextTest {
 
@@ -142,20 +141,14 @@ public class RpcContextTest {
     @Test
     public void testAsync() {
 
-        CompletableFuture<Object> future = new CompletableFuture<>();
-        AsyncContext asyncContext = new AsyncContextImpl(future);
-
         RpcContext rpcContext = RpcContext.getContext();
         Assertions.assertFalse(rpcContext.isAsyncStarted());
 
-        rpcContext.setAsyncContext(asyncContext);
-        Assertions.assertFalse(rpcContext.isAsyncStarted());
-
-        RpcContext.startAsync();
-        Assertions.assertTrue(rpcContext.isAsyncStarted());
+        AsyncContext asyncContext = RpcContext.startAsync();
+        Assert.assertTrue(rpcContext.isAsyncStarted());
 
         asyncContext.write(new Object());
-        Assertions.assertTrue(future.isDone());
+        Assert.assertTrue(((AsyncContextImpl)asyncContext).getInternalFuture().isDone());
 
         rpcContext.stopAsync();
         Assertions.assertTrue(rpcContext.isAsyncStarted());

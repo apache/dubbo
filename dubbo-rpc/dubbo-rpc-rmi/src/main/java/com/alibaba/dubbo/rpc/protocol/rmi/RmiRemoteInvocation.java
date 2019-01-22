@@ -14,33 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.convert.converter;
+package com.alibaba.dubbo.rpc.protocol.rmi;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.aopalliance.intercept.MethodInvocation;
 
 /**
- * {@link StringArrayToStringConverter} Test
+ *
  */
-public class StringArrayToStringConverterTest {
-
-    @Test
-    public void testConvert() {
-
-        StringArrayToStringConverter converter = new StringArrayToStringConverter();
-
-        String value = converter.convert(new String[]{"Hello", "World"});
-
-        Assertions.assertEquals("Hello,World", value);
-
-        value = converter.convert(new String[]{});
-
-        Assertions.assertNull(value);
-
-        value = converter.convert(null);
-
-        Assertions.assertNull(value);
-
+@Deprecated
+public class RmiRemoteInvocation extends org.apache.dubbo.rpc.protocol.rmi.RmiRemoteInvocation {
+    private static final long serialVersionUID = 1L;
+    /**
+     * executed on consumer side
+     *
+     * @param methodInvocation
+     */
+    public RmiRemoteInvocation(MethodInvocation methodInvocation) {
+        super(methodInvocation);
     }
-
 }
