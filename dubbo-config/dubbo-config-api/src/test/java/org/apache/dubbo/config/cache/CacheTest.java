@@ -31,10 +31,9 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.RpcInvocation;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import junit.framework.TestCase;
-import org.junit.After;
-import org.junit.Before;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -48,12 +47,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class CacheTest {
 
-    @Before
+    @BeforeEach
     public void setUp() {
         ConfigManager.getInstance().clear();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         ConfigManager.getInstance().clear();
     }
