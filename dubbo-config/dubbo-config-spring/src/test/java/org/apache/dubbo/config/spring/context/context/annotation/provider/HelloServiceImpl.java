@@ -14,24 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.convert.converter;
+package org.apache.dubbo.config.spring.context.context.annotation.provider;
 
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-
+import org.apache.dubbo.config.annotation.Service;
+import org.apache.dubbo.config.spring.api.HelloService;
 
 /**
- * String[] to String {@ConditionalGenericConverter}
+ * {@link HelloService} Implementation just annotating Dubbo's {@link Service}
  *
- * @see StringUtils#arrayToCommaDelimitedString(Object[])
- * @since 2.5.11
+ * @since 2.5.9
  */
-public class StringArrayToStringConverter implements Converter<String[], String> {
+@Service(interfaceName = "org.apache.dubbo.config.spring.api.HelloService")
+public class HelloServiceImpl implements HelloService {
 
     @Override
-    public String convert(String[] source) {
-        return ObjectUtils.isEmpty(source) ? null : StringUtils.arrayToCommaDelimitedString(source);
+    public String sayHello(String name) {
+        return "Hello, " + name;
     }
-
 }

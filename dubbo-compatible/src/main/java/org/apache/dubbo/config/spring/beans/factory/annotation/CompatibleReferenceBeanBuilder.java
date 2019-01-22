@@ -16,23 +16,24 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
-import org.apache.dubbo.config.ConsumerConfig;
-import org.apache.dubbo.config.spring.ReferenceBean;
-import org.apache.dubbo.config.spring.convert.converter.StringArrayToMapConverter;
-import org.apache.dubbo.config.spring.convert.converter.StringArrayToStringConverter;
-
 import com.alibaba.dubbo.config.annotation.Reference;
 
+import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.config.ConsumerConfig;
+import org.apache.dubbo.config.spring.ReferenceBean;
+import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.context.ApplicationContext;
-import org.springframework.core.convert.ConversionService;
-import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.DataBinder;
 
+import java.beans.PropertyEditorSupport;
+import java.util.Map;
+
 import static org.apache.dubbo.config.spring.util.BeanFactoryUtils.getOptionalBean;
 import static org.apache.dubbo.config.spring.util.ObjectUtils.of;
+import static org.springframework.util.StringUtils.commaDelimitedListToStringArray;
 
 /**
  * {@link ReferenceBean} Builder
@@ -42,6 +43,9 @@ import static org.apache.dubbo.config.spring.util.ObjectUtils.of;
 @Deprecated
 class CompatibleReferenceBeanBuilder extends AbstractAnnotationConfigBeanBuilder<Reference, ReferenceBean> {
 
+
+    // Ignore those fields
+    static final String[] IGNORE_FIELD_NAMES = of("application", "module", "consumer", "monitor", "registry");
 
     private CompatibleReferenceBeanBuilder(Reference annotation, ClassLoader classLoader, ApplicationContext applicationContext) {
         super(annotation, classLoader, applicationContext);
@@ -96,20 +100,30 @@ class CompatibleReferenceBeanBuilder extends AbstractAnnotationConfigBeanBuilder
     protected void preConfigureBean(Reference reference, ReferenceBean referenceBean) {
         Assert.notNull(interfaceClass, "The interface class must set first!");
         DataBinder dataBinder = new DataBinder(referenceBean);
-        // Set ConversionService
-        dataBinder.setConversionService(getConversionService());
-        // Ignore those fields
-        String[] ignoreAttributeNames = of("application", "module", "consumer", "monitor", "registry");
-//        dataBinder.setDisallowedFields(ignoreAttributeNames);
-        // Bind annotation attributes
-        dataBinder.bind(new AnnotationPropertyValuesAdapter(reference, applicationContext.getEnvironment(), ignoreAttributeNames));
-    }
+        // Register CustomEditors for special fields
+        dataBinder.registerCustomEditor(String.class, "filter", new StringTrimmerEditor(true));
+        dataBinder.registerCustomEditor(String.class, "listener", new StringTrimmerEditor(true));
+        dataBinder.registerCustomEditor(Map.class, "parameters", new PropertyEditorSupport() {
 
-    private ConversionService getConversionService() {
-        DefaultConversionService conversionService = new DefaultConversionService();
-        conversionService.addConverter(new StringArrayToStringConverter());
-        conversionService.addConverter(new StringArrayToMapConverter());
-        return conversionService;
+            public void setAsText(String text) throws java.lang.IllegalArgumentException {
+                // Trim all whitespace
+                String content = StringUtils.trimAllWhitespace(text);
+                if (!StringUtils.hasText(content)) { // No content , ignore directly
+                    return;
+                }
+                // replace "=" to ","
+                content = StringUtils.replace(content, "=", ",");
+                // replace ":" to ","
+                content = StringUtils.replace(content, ":", ",");
+                // String[] to Map
+                Map<String, String> parameters = CollectionUtils.toStringMap(commaDelimitedListToStringArray(content));
+                setValue(parameters);
+            }
+        });
+
+        // Bind annotation attributes
+        dataBinder.bind(new AnnotationPropertyValuesAdapter(reference, applicationContext.getEnvironment(), IGNORE_FIELD_NAMES));
+
     }
 
 
@@ -147,7 +161,7 @@ class CompatibleReferenceBeanBuilder extends AbstractAnnotationConfigBeanBuilder
     }
 
     public static CompatibleReferenceBeanBuilder create(Reference annotation, ClassLoader classLoader,
-                                                        ApplicationContext applicationContext) {
+                                              ApplicationContext applicationContext) {
         return new CompatibleReferenceBeanBuilder(annotation, classLoader, applicationContext);
     }
 

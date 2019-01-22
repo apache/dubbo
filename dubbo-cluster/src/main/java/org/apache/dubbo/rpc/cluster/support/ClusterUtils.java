@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.cluster.support;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -81,8 +82,14 @@ public class ClusterUtils {
             // So, generally, we don't need to care about the group value here.
             // But when comes to group merger, there is an exception, the consumer group may be '*' while the provider group can be empty or any other values.
             String remoteGroup = map.get(Constants.GROUP_KEY);
+            String remoteRelease = map.get(Constants.RELEASE_KEY);
             map.putAll(localMap);
             map.put(Constants.GROUP_KEY, remoteGroup);
+            // we should always keep the Provider RELEASE_KEY not overrode by the the value on Consumer side.
+            map.remove(Constants.RELEASE_KEY);
+            if (StringUtils.isNotEmpty(remoteRelease)) {
+                map.put(Constants.RELEASE_KEY, remoteRelease);
+            }
         }
         if (remoteMap != null && remoteMap.size() > 0) {
             // Use version passed from provider side

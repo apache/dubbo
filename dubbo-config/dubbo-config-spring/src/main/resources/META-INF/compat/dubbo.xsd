@@ -565,16 +565,16 @@
                 <xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <!--<xsd:attribute name="simple" type="xsd:boolean">-->
-            <!--<xsd:annotation>-->
-                <!--<xsd:documentation><![CDATA[ Is simple. ]]></xsd:documentation>-->
-            <!--</xsd:annotation>-->
-        <!--</xsd:attribute>-->
-        <!--<xsd:attribute name="plusparamkeys" type="xsd:string">-->
-            <!--<xsd:annotation>-->
-                <!--<xsd:documentation><![CDATA[ Addtional Parameter Keys. ]]></xsd:documentation>-->
-            <!--</xsd:annotation>-->
-        <!--</xsd:attribute>-->
+        <xsd:attribute name="simplified" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Is simple. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="extra-keys" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Extra Parameter Keys. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="metadataReportType">
@@ -604,6 +604,32 @@
         <xsd:attribute name="timeout" type="xsd:string" use="optional">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The request timeout. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="group" type="xsd:string" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The group of metadata-report. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
+        <xsd:attribute name="retry-times" type="xsd:integer" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ if fail, retry times. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="retry-period" type="xsd:integer" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ if fail, retry period. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="cycle-report" type="xsd:boolean" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ report cyclely. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="sync-report" type="xsd:boolean" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Sync or Async report. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
@@ -669,7 +695,7 @@
                     <![CDATA[ Whether the configs from config center has the highest priority. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="from-spring" type="xsd:boolean" use="optional">
+        <xsd:attribute name="include-spring-env" type="xsd:boolean" use="optional">
             <xsd:annotation>
                 <xsd:documentation>
                     <![CDATA[ Load the config items by Dubbo itself or Spring. ]]></xsd:documentation>
@@ -1284,31 +1310,6 @@
         </xsd:complexContent>
     </xsd:complexType>
 
-    <xsd:complexType name="annotationType">
-        <xsd:attribute name="id" type="xsd:ID">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[ The unique identifier for a bean. ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="package" type="xsd:string">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[ The scan package. ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-    </xsd:complexType>
-
-    <xsd:element name="annotation" type="annotationType">
-        <xsd:annotation>
-            <xsd:documentation><![CDATA[ The annotation config ]]></xsd:documentation>
-            <xsd:appinfo>
-                <tool:annotation>
-                    <tool:exports type="org.apache.dubbo.config.ServiceConfig"/>
-                    <tool:exports type="org.apache.dubbo.config.ReferenceConfig"/>
-                </tool:annotation>
-            </xsd:appinfo>
-        </xsd:annotation>
-    </xsd:element>
-
     <xsd:element name="application" type="applicationType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ The application config ]]></xsd:documentation>
@@ -1342,7 +1343,7 @@
         </xsd:annotation>
     </xsd:element>
 
-    <xsd:element name="metadata" type="metadataReportType">
+    <xsd:element name="metadata-report" type="metadataReportType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ The metadataReport config ]]></xsd:documentation>
             <xsd:appinfo>

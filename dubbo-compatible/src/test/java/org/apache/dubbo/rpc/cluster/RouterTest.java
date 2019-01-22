@@ -14,23 +14,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.condition.config.model;
+package org.apache.dubbo.rpc.cluster;
 
-import org.apache.dubbo.rpc.cluster.router.AbstractRouterRule;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
  *
  */
-public class BlackWhiteListRule extends AbstractRouterRule {
-    private List<String> conditions;
+public class RouterTest {
 
-    public List<String> getConditions() {
-        return conditions;
+    private static List<Router> routers = new ArrayList<>();
+
+    @BeforeClass
+    public static void setUp () {
+        CompatibleRouter compatibleRouter = new CompatibleRouter();
+        routers.add(compatibleRouter);
+        CompatibleRouter2 compatibleRouter2 = new CompatibleRouter2();
+        routers.add(compatibleRouter2);
+        NewRouter newRouter = new NewRouter();
+        routers.add(newRouter);
     }
 
-    public void setConditions(List<String> conditions) {
-        this.conditions = conditions;
+    @Test
+    public void testCompareTo () {
+        try {
+            Collections.sort(routers);
+            Assert.assertTrue(true);
+        } catch (Exception e) {
+            Assert.assertFalse(false);
+        }
     }
 }
