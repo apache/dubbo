@@ -489,12 +489,12 @@ public class Constants {
      */
     public static final String SIMPLE_CONSUMER_CONFIG_KEY = "simple.consumer.config";
     /**
-     * After simplify the registry, should add some paramter individually for provider.
+     * After simplify the registry, should add some parameter individually for provider.
      * @since 2.7.0
      */
     public static final String EXTRA_PROVIDER_CONFIG_KEYS_KEY = "extra.provider.keys";
     /**
-     * After simplify the registry, should add some paramter individually for consumer.
+     * After simplify the registry, should add some parameter individually for consumer.
      *
      * @since 2.7.0
      */

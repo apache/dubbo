@@ -55,7 +55,8 @@ public class RedisProtocolTest {
     @BeforeEach
     public void setUp(TestInfo testInfo) {
         int redisPort = NetUtils.getAvailablePort();
-        if (testInfo.getTestMethod().equals("testAuthRedis") || testInfo.getTestMethod().equals("testWrongAuthRedis")) {
+        String methodName = testInfo.getTestMethod().get().getName();
+        if ("testAuthRedis".equals(methodName) || ("testWrongAuthRedis".equals(methodName))) {
             String password = "123456";
             this.redisServer = RedisServer.builder().port(redisPort).setting("requirepass " + password).build();
             this.registryUrl = URL.valueOf("redis://username:" + password + "@localhost:" + redisPort + "?db.index=0");
@@ -135,7 +136,7 @@ public class RedisProtocolTest {
     public void testExport() {
         Assertions.assertThrows(UnsupportedOperationException.class, () -> protocol.export(protocol.refer(IDemoService.class, registryUrl)));
     }
-    @Disabled
+
     @Test
     public void testAuthRedis() {
         // default db.index=0
@@ -197,8 +198,8 @@ public class RedisProtocolTest {
 
         refer.destroy();
     }
-    @Disabled
-    //@Test
+
+    @Test
     public void testWrongAuthRedis() {
         String password = "1234567";
         this.registryUrl = this.registryUrl.setPassword(password);
