@@ -30,6 +30,7 @@ import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.registry.RegistryService;
 
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -62,7 +63,7 @@ public class AbstractInterfaceConfigTest {
         System.clearProperty(Constants.DUBBO_PROPERTIES_KEY);
     }
 
-    @After
+    @AfterEach
     public void tearMethodAfterEachUT() {
         ConfigManager.getInstance().clear();
     }

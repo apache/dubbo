@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.URL;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -145,10 +146,10 @@ public class RpcContextTest {
         Assertions.assertFalse(rpcContext.isAsyncStarted());
 
         AsyncContext asyncContext = RpcContext.startAsync();
-        Assert.assertTrue(rpcContext.isAsyncStarted());
+        Assertions.assertTrue(rpcContext.isAsyncStarted());
 
         asyncContext.write(new Object());
-        Assert.assertTrue(((AsyncContextImpl)asyncContext).getInternalFuture().isDone());
+        Assertions.assertTrue(((AsyncContextImpl)asyncContext).getInternalFuture().isDone());
 
         rpcContext.stopAsync();
         Assertions.assertTrue(rpcContext.isAsyncStarted());

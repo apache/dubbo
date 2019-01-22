@@ -21,8 +21,8 @@ import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.api.DemoService;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.mock.env.MockEnvironment;
 import org.springframework.util.ReflectionUtils;
@@ -53,14 +53,14 @@ public class ServiceBeanNameBuilderTest {
     @Test
     public void testRequiredAttributes() {
         ServiceBeanNameBuilder builder = ServiceBeanNameBuilder.create(INTERFACE_CLASS, environment);
-        Assert.assertEquals("ServiceBean:org.apache.dubbo.config.spring.api.DemoService", builder.build());
+        Assertions.assertEquals("ServiceBean:org.apache.dubbo.config.spring.api.DemoService", builder.build());
     }
 
     @Test
     public void testServiceAnnotation() {
         Service service = AnnotationUtils.getAnnotation(ServiceBeanNameBuilderTest.class, Service.class);
         ServiceBeanNameBuilder builder = ServiceBeanNameBuilder.create(service, INTERFACE_CLASS, environment);
-        Assert.assertEquals(BEAN_NAME,
+        Assertions.assertEquals(BEAN_NAME,
                 builder.build());
     }
 
@@ -68,7 +68,7 @@ public class ServiceBeanNameBuilderTest {
     public void testReferenceAnnotation() {
         Reference reference = AnnotationUtils.getAnnotation(ReflectionUtils.findField(ServiceBeanNameBuilderTest.class, "INTERFACE_CLASS"), Reference.class);
         ServiceBeanNameBuilder builder = ServiceBeanNameBuilder.create(reference, INTERFACE_CLASS, environment);
-        Assert.assertEquals(BEAN_NAME,
+        Assertions.assertEquals(BEAN_NAME,
                 builder.build());
     }
 

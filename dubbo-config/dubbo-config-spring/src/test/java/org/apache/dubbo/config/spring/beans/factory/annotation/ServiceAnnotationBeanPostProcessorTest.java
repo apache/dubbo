@@ -70,15 +70,15 @@ public class ServiceAnnotationBeanPostProcessorTest {
 
         Map<String, ServiceBean> serviceBeansMap = beanFactory.getBeansOfType(ServiceBean.class);
 
-        Assert.assertEquals(2, serviceBeansMap.size());
+        Assertions.assertEquals(2, serviceBeansMap.size());
 
         Map<String, ServiceAnnotationBeanPostProcessor> beanPostProcessorsMap =
                 beanFactory.getBeansOfType(ServiceAnnotationBeanPostProcessor.class);
 
-        Assert.assertEquals(2, beanPostProcessorsMap.size());
+        Assertions.assertEquals(2, beanPostProcessorsMap.size());
 
-        Assert.assertTrue(beanPostProcessorsMap.containsKey("serviceAnnotationBeanPostProcessor"));
-        Assert.assertTrue(beanPostProcessorsMap.containsKey("serviceAnnotationBeanPostProcessor2"));
+        Assertions.assertTrue(beanPostProcessorsMap.containsKey("serviceAnnotationBeanPostProcessor"));
+        Assertions.assertTrue(beanPostProcessorsMap.containsKey("serviceAnnotationBeanPostProcessor2"));
 
     }
 

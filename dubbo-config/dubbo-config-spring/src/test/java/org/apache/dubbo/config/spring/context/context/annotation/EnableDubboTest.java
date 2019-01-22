@@ -22,9 +22,9 @@ import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.context.annotation.consumer.test.TestConsumerConfiguration;
 import org.apache.dubbo.config.spring.context.annotation.provider.DemoServiceImpl;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -35,7 +35,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
@@ -50,7 +50,7 @@ import static org.springframework.core.annotation.AnnotationUtils.findAnnotation
  *
  * @since 2.5.8
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {EnableDubboTest.class})
 @TestPropertySource(locations = "classpath:/META-INF/dubbb-provider.properties",
         properties = "demo.service.version = 2.5.7")
@@ -69,15 +69,15 @@ public class EnableDubboTest {
 
         String value = demoService.sayName("Mercy");
 
-        Assert.assertEquals("Hello,Mercy", value);
+        Assertions.assertEquals("Hello,Mercy", value);
 
         Class<?> beanClass = AopUtils.getTargetClass(demoService);
 
         // DemoServiceImpl with @Transactional
-        Assert.assertEquals(DemoServiceImpl.class, beanClass);
+        Assertions.assertEquals(DemoServiceImpl.class, beanClass);
 
         // Test @Transactional is present or not
-        Assert.assertNotNull(findAnnotation(beanClass, Transactional.class));
+        Assertions.assertNotNull(findAnnotation(beanClass, Transactional.class));
 
         AnnotationConfigApplicationContext consumerContext = new AnnotationConfigApplicationContext(TestConsumerConfiguration.class);
 
@@ -87,7 +87,7 @@ public class EnableDubboTest {
 
         value = demoService.sayName("Mercy");
 
-        Assert.assertEquals("Hello,Mercy", value);
+        Assertions.assertEquals("Hello,Mercy", value);
 
         TestConsumerConfiguration.Child child = consumerContext.getBean(TestConsumerConfiguration.Child.class);
 
@@ -95,37 +95,37 @@ public class EnableDubboTest {
 
         demoService = child.getDemoServiceFromChild();
 
-        Assert.assertNotNull(demoService);
+        Assertions.assertNotNull(demoService);
 
         value = demoService.sayName("Mercy");
 
-        Assert.assertEquals("Hello,Mercy", value);
+        Assertions.assertEquals("Hello,Mercy", value);
 
         // From Parent
 
         demoService = child.getDemoServiceFromParent();
 
-        Assert.assertNotNull(demoService);
+        Assertions.assertNotNull(demoService);
 
         value = demoService.sayName("Mercy");
 
-        Assert.assertEquals("Hello,Mercy", value);
+        Assertions.assertEquals("Hello,Mercy", value);
 
         // From Ancestor
 
         demoService = child.getDemoServiceFromAncestor();
 
-        Assert.assertNotNull(demoService);
+        Assertions.assertNotNull(demoService);
 
         value = demoService.sayName("Mercy");
 
-        Assert.assertEquals("Hello,Mercy", value);
+        Assertions.assertEquals("Hello,Mercy", value);
 
         // Test my-registry2 bean presentation
         RegistryConfig registryConfig = consumerContext.getBean("my-registry2", RegistryConfig.class);
 
         // Test multiple binding
-        Assert.assertEquals("N/A", registryConfig.getAddress());
+        Assertions.assertEquals("N/A", registryConfig.getAddress());
 
     }
 

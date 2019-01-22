@@ -20,10 +20,10 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.Ignore;
 
-@Ignore("FIXME This is not a formal UT")
+@Disabled("FIXME This is not a formal UT")
 public class ConfigConditionRouterTest {
     private static CuratorFramework client;
 
