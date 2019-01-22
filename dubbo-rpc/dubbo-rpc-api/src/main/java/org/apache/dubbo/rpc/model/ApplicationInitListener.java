@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.rpc.model;
 
- import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.common.extension.SPI;
 
- @SPI
+@SPI
 public interface ApplicationInitListener {
     /**
      * init the application

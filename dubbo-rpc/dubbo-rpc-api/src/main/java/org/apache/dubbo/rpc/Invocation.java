@@ -87,5 +87,5 @@ public interface Invocation {
 
     Object get(Object key);
 
-
+    Map<Object, Object> getAttributes();
 }

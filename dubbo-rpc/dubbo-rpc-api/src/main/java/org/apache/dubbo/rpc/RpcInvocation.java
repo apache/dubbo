@@ -124,6 +124,11 @@ public class RpcInvocation implements Invocation, Serializable {
     }
 
     @Override
+    public Map<Object, Object> getAttributes() {
+        return attributes;
+    }
+
+    @Override
     public String getMethodName() {
         return methodName;
     }
