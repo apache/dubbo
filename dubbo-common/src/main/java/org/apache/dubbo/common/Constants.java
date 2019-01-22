@@ -163,6 +163,8 @@ public class Constants {
 
     public static final int DEFAULT_FAILBACK_TIMES = 3;
 
+    public static final int MAX_PROXY_COUNT = 65535;
+
     // default buffer size is 8k.
     public static final int DEFAULT_BUFFER_SIZE = 8 * 1024;
 
@@ -480,16 +482,19 @@ public class Constants {
 
     /**
      * simple the registry for provider.
+     *
      * @since 2.7.0
      */
     public static final String SIMPLE_PROVIDER_CONFIG_KEY = "simple.provider.config";
     /**
      * simple the registry for consumer.
+     *
      * @since 2.7.0
      */
     public static final String SIMPLE_CONSUMER_CONFIG_KEY = "simple.consumer.config";
     /**
      * After simplify the registry, should add some parameter individually for provider.
+     *
      * @since 2.7.0
      */
     public static final String EXTRA_PROVIDER_CONFIG_KEYS_KEY = "extra.provider.keys";
