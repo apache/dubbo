@@ -56,7 +56,7 @@ We have always keep compatibility in mind during the whole process of 2.7.0. We 
 
 2. Package renaming
 
-   com.alibaba.Dubbo -> org.apache.Dubbo
+   com.alibaba.dubbo -> org.apache.dubbo
 
 3. Simplification of registered URLs
 
