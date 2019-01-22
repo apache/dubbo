@@ -19,7 +19,9 @@ package org.apache.dubbo.remoting.exchange.support.header;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
+import org.apache.dubbo.common.timer.Timeout;
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Client;
@@ -30,7 +32,11 @@ import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.exchange.ResponseFuture;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -43,8 +49,10 @@ public class HeaderExchangeClient implements ExchangeClient {
     private int heartbeat;
     private int idleTimeout;
 
-    private static HashedWheelTimer idleCheckTimer = new HashedWheelTimer(new NamedThreadFactory("dubbo-client-idleCheck", true), 1,
+    private static final HashedWheelTimer IDLE_CHECK_TIMER = new HashedWheelTimer(new NamedThreadFactory("dubbo-client-idleCheck", true), 1,
             TimeUnit.SECONDS, Constants.TICKS_PER_WHEEL);
+
+    private static final Map<ExchangeClient, List<Timeout>> CLIENT_TASKS = new ConcurrentHashMap<>();
 
     public HeaderExchangeClient(Client client, boolean needHeartbeat) {
         Assert.notNull(client, "Client can't be null");
@@ -183,11 +191,21 @@ public class HeaderExchangeClient implements ExchangeClient {
         ReconnectTimerTask reconnectTimerTask = new ReconnectTimerTask(cp, heartbeatTimeoutTick, idleTimeout);
 
         // init task and start timer.
-        idleCheckTimer.newTimeout(heartBeatTimerTask, heartbeatTick, TimeUnit.MILLISECONDS);
-        idleCheckTimer.newTimeout(reconnectTimerTask, heartbeatTimeoutTick, TimeUnit.MILLISECONDS);
+        Timeout heartBeatTimeout = IDLE_CHECK_TIMER.newTimeout(heartBeatTimerTask, heartbeatTick, TimeUnit.MILLISECONDS);
+        Timeout reconnectTimeout = IDLE_CHECK_TIMER.newTimeout(reconnectTimerTask, heartbeatTimeoutTick, TimeUnit.MILLISECONDS);
+
+        List<Timeout> t = CLIENT_TASKS.computeIfAbsent(this, c -> new ArrayList<>());
+        t.add(heartBeatTimeout);
+        t.add(reconnectTimeout);
     }
 
     private void doClose() {
+        List<Timeout> t = CLIENT_TASKS.remove(this);
+        if (CollectionUtils.isNotEmpty(t)) {
+            for (Timeout timeout : t) {
+                timeout.cancel();
+            }
+        }
     }
 
     /**
