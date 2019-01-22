@@ -296,9 +296,9 @@ public class Constants {
     public static final long LEAST_HEARTBEAT_DURATION = 1000;
 
     /**
-     * ticks per wheel. Currently only contains two tasks, so 16 locations are enough
+     * ticks per wheel.
      */
-    public static final int TICKS_PER_WHEEL = 16;
+    public static final int TICKS_PER_WHEEL = 128;
 
     public static final String HEARTBEAT_TIMEOUT_KEY = "heartbeat.timeout";
 
