@@ -20,6 +20,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Cleanable;
 import org.apache.dubbo.common.serialize.ObjectInput;
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
@@ -124,9 +125,15 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
     private void handleValue(ObjectInput in) throws IOException {
         try {
             Type[] returnTypes = RpcUtils.getReturnTypes(invocation);
-            setValue(returnTypes == null || returnTypes.length == 0 ? in.readObject() :
-                    (returnTypes.length == 1 ? in.readObject((Class<?>) returnTypes[0])
-                            : in.readObject((Class<?>) returnTypes[0], returnTypes[1])));
+            Object value = null;
+            if (ArrayUtils.isEmpty(returnTypes)) {
+                value = in.readObject();
+            } else if (returnTypes.length == 1) {
+                value = in.readObject((Class<?>) returnTypes[0]);
+            } else {
+                value = in.readObject((Class<?>) returnTypes[0], returnTypes[1]);
+            }
+            setValue(value);
         } catch (ClassNotFoundException e) {
             rethrow(e);
         }
