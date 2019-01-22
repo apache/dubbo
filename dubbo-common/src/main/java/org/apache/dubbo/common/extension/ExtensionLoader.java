@@ -110,18 +110,16 @@ public class ExtensionLoader<T> {
             throw new IllegalArgumentException("Extension type == null");
         }
         if (!type.isInterface()) {
-            throw new IllegalArgumentException("Extension type(" + type + ") is not interface!");
+            throw new IllegalArgumentException("Extension type (" + type + ") is not interface!");
         }
         if (!withExtensionAnnotation(type)) {
-            throw new IllegalArgumentException("Extension type(" + type +
+            throw new IllegalArgumentException("Extension type (" + type +
                     ") is not extension, because WITHOUT @" + SPI.class.getSimpleName() + " Annotation!");
         }
 
-        ExtensionLoader<T> loader = (ExtensionLoader<T>) EXTENSION_LOADERS.get(type);
-        if (loader == null) {
-            EXTENSION_LOADERS.putIfAbsent(type, new ExtensionLoader<T>(type));
-            loader = (ExtensionLoader<T>) EXTENSION_LOADERS.get(type);
-        }
+        ExtensionLoader<T> loader = (ExtensionLoader<T>) EXTENSION_LOADERS.computeIfAbsent(type, k -> {
+            return new ExtensionLoader<>(type);
+        });
         return loader;
     }
 
@@ -296,11 +294,9 @@ public class ExtensionLoader<T> {
         if (StringUtils.isEmpty(name)) {
             throw new IllegalArgumentException("Extension name == null");
         }
-        Holder<Object> holder = cachedInstances.get(name);
-        if (holder == null) {
-            cachedInstances.putIfAbsent(name, new Holder<Object>());
-            holder = cachedInstances.get(name);
-        }
+        Holder<Object> holder = cachedInstances.computeIfAbsent(name, k -> {
+            return new Holder<>();
+        });
         return (T) holder.get();
     }
 
@@ -331,11 +327,9 @@ public class ExtensionLoader<T> {
         if ("true".equals(name)) {
             return getDefaultExtension();
         }
-        Holder<Object> holder = cachedInstances.get(name);
-        if (holder == null) {
-            cachedInstances.putIfAbsent(name, new Holder<Object>());
-            holder = cachedInstances.get(name);
-        }
+        Holder<Object> holder = cachedInstances.computeIfAbsent(name, k -> {
+            return new Holder<>();
+        });
         Object instance = holder.get();
         if (instance == null) {
             synchronized (holder) {
@@ -354,8 +348,7 @@ public class ExtensionLoader<T> {
      */
     public T getDefaultExtension() {
         getExtensionClasses();
-        if (null == cachedDefaultName || cachedDefaultName.length() == 0
-                || "true".equals(cachedDefaultName)) {
+        if (StringUtils.isBlank(cachedDefaultName) || "true".equals(cachedDefaultName)) {
             return null;
         }
         return getExtension(cachedDefaultName);
@@ -394,11 +387,11 @@ public class ExtensionLoader<T> {
 
         if (!type.isAssignableFrom(clazz)) {
             throw new IllegalStateException("Input type " +
-                    clazz + "not implement Extension " + type);
+                    clazz + " doesn't implement the Extension " + type);
         }
         if (clazz.isInterface()) {
             throw new IllegalStateException("Input type " +
-                    clazz + "can not be interface!");
+                    clazz + " can't be interface!");
         }
 
         if (!clazz.isAnnotationPresent(Adaptive.class)) {
@@ -407,14 +400,14 @@ public class ExtensionLoader<T> {
             }
             if (cachedClasses.get().containsKey(name)) {
                 throw new IllegalStateException("Extension name " +
-                        name + " already existed(Extension " + type + ")!");
+                        name + " already exists (Extension " + type + ")!");
             }
 
             cachedNames.put(clazz, name);
             cachedClasses.get().put(name, clazz);
         } else {
             if (cachedAdaptiveClass != null) {
-                throw new IllegalStateException("Adaptive Extension already existed(Extension " + type + ")!");
+                throw new IllegalStateException("Adaptive Extension already exists (Extension " + type + ")!");
             }
 
             cachedAdaptiveClass = clazz;
@@ -435,11 +428,11 @@ public class ExtensionLoader<T> {
 
         if (!type.isAssignableFrom(clazz)) {
             throw new IllegalStateException("Input type " +
-                    clazz + "not implement Extension " + type);
+                    clazz + " doesn't implement Extension " + type);
         }
         if (clazz.isInterface()) {
             throw new IllegalStateException("Input type " +
-                    clazz + "can not be interface!");
+                    clazz + " can't be interface!");
         }
 
         if (!clazz.isAnnotationPresent(Adaptive.class)) {
@@ -448,7 +441,7 @@ public class ExtensionLoader<T> {
             }
             if (!cachedClasses.get().containsKey(name)) {
                 throw new IllegalStateException("Extension name " +
-                        name + " not existed(Extension " + type + ")!");
+                        name + " doesn't exist (Extension " + type + ")!");
             }
 
             cachedNames.put(clazz, name);
@@ -456,7 +449,7 @@ public class ExtensionLoader<T> {
             cachedInstances.remove(name);
         } else {
             if (cachedAdaptiveClass == null) {
-                throw new IllegalStateException("Adaptive Extension not existed(Extension " + type + ")!");
+                throw new IllegalStateException("Adaptive Extension doesn't exist (Extension " + type + ")!");
             }
 
             cachedAdaptiveClass = clazz;
@@ -477,12 +470,12 @@ public class ExtensionLoader<T> {
                             cachedAdaptiveInstance.set(instance);
                         } catch (Throwable t) {
                             createAdaptiveInstanceError = t;
-                            throw new IllegalStateException("fail to create adaptive instance: " + t.toString(), t);
+                            throw new IllegalStateException("Failed to create adaptive instance: " + t.toString(), t);
                         }
                     }
                 }
             } else {
-                throw new IllegalStateException("fail to create adaptive instance: " + createAdaptiveInstanceError.toString(), createAdaptiveInstanceError);
+                throw new IllegalStateException("Failed to create adaptive instance: " + createAdaptiveInstanceError.toString(), createAdaptiveInstanceError);
             }
         }
 
@@ -535,8 +528,8 @@ public class ExtensionLoader<T> {
             }
             return instance;
         } catch (Throwable t) {
-            throw new IllegalStateException("Extension instance(name: " + name + ", class: " +
-                    type + ")  could not be instantiated: " + t.getMessage(), t);
+            throw new IllegalStateException("Extension instance (name: " + name + ", class: " +
+                    type + ") couldn't be instantiated: " + t.getMessage(), t);
         }
     }
 
@@ -564,7 +557,7 @@ public class ExtensionLoader<T> {
                                 method.invoke(instance, object);
                             }
                         } catch (Exception e) {
-                            logger.error("fail to inject via method " + method.getName()
+                            logger.error("Failed to inject via method " + method.getName()
                                     + " of interface " + type.getName() + ": " + e.getMessage(), e);
                         }
                     }
@@ -672,7 +665,7 @@ public class ExtensionLoader<T> {
                                 loadClass(extensionClasses, resourceURL, Class.forName(line, true, classLoader), name);
                             }
                         } catch (Throwable t) {
-                            IllegalStateException e = new IllegalStateException("Failed to load extension class(interface: " + type + ", class line: " + line + ") in " + resourceURL + ", cause: " + t.getMessage(), t);
+                            IllegalStateException e = new IllegalStateException("Failed to load extension class (interface: " + type + ", class line: " + line + ") in " + resourceURL + ", cause: " + t.getMessage(), t);
                             exceptions.put(line, e);
                         }
                     }
@@ -681,16 +674,16 @@ public class ExtensionLoader<T> {
                 reader.close();
             }
         } catch (Throwable t) {
-            logger.error("Exception when load extension class(interface: " +
+            logger.error("Exception occured when loading extension class (interface: " +
                     type + ", class file: " + resourceURL + ") in " + resourceURL, t);
         }
     }
 
     private void loadClass(Map<String, Class<?>> extensionClasses, java.net.URL resourceURL, Class<?> clazz, String name) throws NoSuchMethodException {
         if (!type.isAssignableFrom(clazz)) {
-            throw new IllegalStateException("Error when load extension class(interface: " +
+            throw new IllegalStateException("Error occured when loading extension class (interface: " +
                     type + ", class line: " + clazz.getName() + "), class "
-                    + clazz.getName() + "is not subtype of interface.");
+                    + clazz.getName() + " is not subtype of interface.");
         }
         if (clazz.isAnnotationPresent(Adaptive.class)) {
             if (cachedAdaptiveClass == null) {
@@ -703,7 +696,7 @@ public class ExtensionLoader<T> {
         } else if (isWrapperClass(clazz)) {
             Set<Class<?>> wrappers = cachedWrapperClasses;
             if (wrappers == null) {
-                cachedWrapperClasses = new ConcurrentHashSet<Class<?>>();
+                cachedWrapperClasses = new ConcurrentHashSet<>();
                 wrappers = cachedWrapperClasses;
             }
             wrappers.add(clazz);
@@ -800,7 +793,7 @@ public class ExtensionLoader<T> {
         }
         // no need to generate adaptive class since there's no adaptive method found.
         if (!hasAdaptiveAnnotation) {
-            throw new IllegalStateException("No adaptive method on extension " + type.getName() + ", refuse to create the adaptive class!");
+            throw new IllegalStateException("No adaptive method exists on extension " + type.getName() + ", refuse to create the adaptive class!");
         }
 
         codeBuilder.append("package ").append(type.getPackage().getName()).append(";");
@@ -815,7 +808,7 @@ public class ExtensionLoader<T> {
             Adaptive adaptiveAnnotation = method.getAnnotation(Adaptive.class);
             StringBuilder code = new StringBuilder(512);
             if (adaptiveAnnotation == null) {
-                code.append("throw new UnsupportedOperationException(\"method ")
+                code.append("throw new UnsupportedOperationException(\"The method ")
                         .append(method.toString()).append(" of interface ")
                         .append(type.getName()).append(" is not adaptive method!\");");
             } else {
@@ -858,7 +851,7 @@ public class ExtensionLoader<T> {
                         }
                     }
                     if (attribMethod == null) {
-                        throw new IllegalStateException("fail to create adaptive class for interface " + type.getName()
+                        throw new IllegalStateException("Failed to create adaptive class for interface " + type.getName()
                                 + ": not found url parameter or url attribute in parameters of method " + method.getName());
                     }
 
@@ -934,7 +927,7 @@ public class ExtensionLoader<T> {
                 code.append("\nString extName = ").append(getNameCode).append(";");
                 // check extName == null?
                 String s = String.format("\nif(extName == null) " +
-                                "throw new IllegalStateException(\"Fail to get extension(%s) name from url(\" + url.toString() + \") use keys(%s)\");",
+                                "throw new IllegalStateException(\"Failed to get extension (%s) name from url (\" + url.toString() + \") use keys(%s)\");",
                         type.getName(), Arrays.toString(value));
                 code.append(s);
 
