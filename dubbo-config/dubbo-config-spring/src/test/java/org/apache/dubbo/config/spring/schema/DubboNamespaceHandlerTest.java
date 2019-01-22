@@ -27,13 +27,13 @@ import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import java.io.IOException;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -42,12 +42,12 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class DubboNamespaceHandlerTest {
-    @Before
+    @BeforeEach
     public void setUp() {
         ConfigManager.getInstance().clear();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         ConfigManager.getInstance().clear();
     }

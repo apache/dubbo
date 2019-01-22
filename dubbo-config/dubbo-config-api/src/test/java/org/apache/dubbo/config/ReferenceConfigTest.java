@@ -21,17 +21,19 @@ import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class ReferenceConfigTest {
 
-    @Before
+    @BeforeEach
     public void setUp() {
         ConfigManager.getInstance().clear();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         ConfigManager.getInstance().clear();
     }

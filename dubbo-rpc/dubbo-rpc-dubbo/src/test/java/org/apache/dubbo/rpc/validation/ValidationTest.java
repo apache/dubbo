@@ -28,7 +28,9 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.service.GenericException;
 import org.apache.dubbo.rpc.service.GenericService;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.validation.ConstraintViolation;
@@ -46,12 +48,12 @@ public class ValidationTest {
     private RegistryConfig registryNA = new RegistryConfig("N/A");
     private ProtocolConfig protocolDubo29582 = new ProtocolConfig("dubbo", 29582);
 
-    @Before
+    @BeforeEach
     public void setUp() {
         ConfigManager.getInstance().clear();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         ConfigManager.getInstance().clear();
     }
