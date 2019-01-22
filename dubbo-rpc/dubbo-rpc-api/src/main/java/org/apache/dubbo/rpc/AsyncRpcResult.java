@@ -25,6 +25,34 @@ import java.util.concurrent.CompletionException;
 import java.util.function.Function;
 
 /**
+ * <b>NOTICE!!</b>
+ *
+ * <p>
+ * You should never rely on this class directly when using or extending Dubbo, the implementation of {@link AsyncRpcResult}
+ * is only a workaround for compatibility purpose. It may be changed or even get removed from the next major version.
+ * Please only use {@link Result} or {@link RpcResult}.
+ *
+ * Extending the {@link Filter} is one typical use case:
+ * <pre>
+ * {@code
+ * public class YourFilter implements Filter {
+ *     @Override
+ *     public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
+ *         System.out.println("Filter get the return value: " + result.getValue());
+ *         // Don't do this
+ *         // AsyncRpcResult asyncRpcResult = ((AsyncRpcResult)result;
+ *         // System.out.println("Filter get the return value: " + asyncRpcResult.getValue());
+ *         return result;
+ *     }
+ *
+ *     @Override
+ *     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+ *         return invoker.invoke(invocation);
+ *     }
+ * }
+ * }
+ * </pre>
+ * </p>
  * TODO RpcResult can be an instance of {@link java.util.concurrent.CompletionStage} instead of composing CompletionStage inside.
  */
 public class AsyncRpcResult extends AbstractResult {
@@ -119,15 +147,15 @@ public class AsyncRpcResult extends AbstractResult {
     }
 
     public Result getRpcResult() {
-        Result result;
         try {
-            result = resultFuture.get();
+            if (resultFuture.isDone()) {
+                return resultFuture.get();
+            }
         } catch (Exception e) {
             // This should never happen;
-            logger.error("", e);
-            result = new RpcResult();
+            logger.error("Got exception when trying to fetch the underlying result from AsyncRpcResult.", e);
         }
-        return result;
+        return new RpcResult();
     }
 
     @Override

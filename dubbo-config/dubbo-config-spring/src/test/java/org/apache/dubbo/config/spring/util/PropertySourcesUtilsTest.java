@@ -39,26 +39,30 @@ public class PropertySourcesUtilsTest {
         MutablePropertySources propertySources = new MutablePropertySources();
 
         Map<String, Object> source = new HashMap<String, Object>();
+        Map<String, Object> source2 = new HashMap<String, Object>();
 
-        MapPropertySource propertySource = new MapPropertySource("test", source);
+        MapPropertySource propertySource = new MapPropertySource("propertySource", source);
+        MapPropertySource propertySource2 = new MapPropertySource("propertySource2", source2);
 
-        propertySources.addFirst(propertySource);
+        propertySources.addLast(propertySource);
+        propertySources.addLast(propertySource2);
 
-        String KEY_PREFIX = "user";
-        String KEY_NAME = "name";
-        String KEY_AGE = "age";
-        Map<String, String> result = PropertySourcesUtils.getSubProperties(propertySources, KEY_PREFIX);
+        Map<String, Object> result = PropertySourcesUtils.getSubProperties(propertySources, "user");
 
         Assertions.assertEquals(Collections.emptyMap(), result);
 
-        source.put(KEY_PREFIX + "." + KEY_NAME, "Mercy");
-        source.put(KEY_PREFIX + "." + KEY_AGE, 31);
+        source.put("age", "31");
+        source.put("user.name", "Mercy");
+        source.put("user.age", "${age}");
+
+        source2.put("user.name", "mercyblitz");
+        source2.put("user.age", "32");
 
         Map<String, Object> expected = new HashMap<String, Object>();
-        expected.put(KEY_NAME, "Mercy");
-        expected.put(KEY_AGE, "31");
+        expected.put("name", "Mercy");
+        expected.put("age", "31");
 
-        result = PropertySourcesUtils.getSubProperties(propertySources, KEY_PREFIX);
+        result = PropertySourcesUtils.getSubProperties(propertySources, "user");
         Assertions.assertEquals(expected, result);
 
         result = PropertySourcesUtils.getSubProperties(propertySources, "");
@@ -68,15 +72,6 @@ public class PropertySourcesUtilsTest {
         result = PropertySourcesUtils.getSubProperties(propertySources, "no-exists");
 
         Assertions.assertEquals(Collections.emptyMap(), result);
-
-        source.put(KEY_PREFIX + ".app.name", "${info.name}");
-        source.put("info.name", "Hello app");
-
-        result = PropertySourcesUtils.getSubProperties(propertySources, KEY_PREFIX);
-
-        String appName = result.get("app.name");
-
-        Assertions.assertEquals("Hello app", appName);
 
     }
 

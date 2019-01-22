@@ -18,12 +18,23 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.config.api.DemoService;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class ReferenceConfigTest {
+
+    @Before
+    public void setUp() {
+        ConfigManager.getInstance().clear();
+    }
+
+    @After
+    public void tearDown() {
+        ConfigManager.getInstance().clear();
+    }
 
     @Test
     public void testInjvm() throws Exception {

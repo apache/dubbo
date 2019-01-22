@@ -21,6 +21,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.api.Greeting;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.mock.MockProtocol2;
 import org.apache.dubbo.config.mock.MockRegistryFactory2;
 import org.apache.dubbo.config.mock.TestProxyFactory;
@@ -101,6 +102,13 @@ public class ServiceConfigTest {
         service2.setRef(new DemoServiceImpl());
         service2.setMethods(Collections.singletonList(method));
         service2.setProxy("testproxyfactory");
+
+        ConfigManager.getInstance().clear();
+    }
+
+    @After
+    public void tearDown() {
+        ConfigManager.getInstance().clear();
     }
 
     @Test

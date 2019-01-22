@@ -21,6 +21,7 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.context.annotation.DubboComponentScan;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -35,15 +36,15 @@ public class ConsumerConfiguration {
     /**
      * Current application configuration, to replace XML config:
      * <prev>
-     * &lt;dubbo:application name="dubbo-annotation-consumer"/&gt;
+     * &lt;dubbo:application name="dubbo-demo-application"/&gt;
      * </prev>
      *
      * @return {@link ApplicationConfig} Bean
      */
-    @Bean("dubbo-annotation-consumer")
+    @Bean("dubbo-demo-application")
     public ApplicationConfig applicationConfig() {
         ApplicationConfig applicationConfig = new ApplicationConfig();
-        applicationConfig.setName("dubbo-annotation-consumer");
+        applicationConfig.setName("dubbo-demo-application");
         return applicationConfig;
     }
 
