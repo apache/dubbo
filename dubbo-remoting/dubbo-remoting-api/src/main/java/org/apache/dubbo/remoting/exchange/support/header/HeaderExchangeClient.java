@@ -35,8 +35,6 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -52,7 +50,7 @@ public class HeaderExchangeClient implements ExchangeClient {
     private static final HashedWheelTimer IDLE_CHECK_TIMER = new HashedWheelTimer(new NamedThreadFactory("dubbo-client-idleCheck", true), 1,
             TimeUnit.SECONDS, Constants.TICKS_PER_WHEEL);
 
-    private static final Map<ExchangeClient, List<Timeout>> CLIENT_TASKS = new ConcurrentHashMap<>();
+    private List<Timeout> tasks = new ArrayList<>();
 
     public HeaderExchangeClient(Client client, boolean needHeartbeat) {
         Assert.notNull(client, "Client can't be null");
@@ -194,17 +192,16 @@ public class HeaderExchangeClient implements ExchangeClient {
         Timeout heartBeatTimeout = IDLE_CHECK_TIMER.newTimeout(heartBeatTimerTask, heartbeatTick, TimeUnit.MILLISECONDS);
         Timeout reconnectTimeout = IDLE_CHECK_TIMER.newTimeout(reconnectTimerTask, heartbeatTimeoutTick, TimeUnit.MILLISECONDS);
 
-        List<Timeout> t = CLIENT_TASKS.computeIfAbsent(this, c -> new ArrayList<>());
-        t.add(heartBeatTimeout);
-        t.add(reconnectTimeout);
+        tasks.add(heartBeatTimeout);
+        tasks.add(reconnectTimeout);
     }
 
     private void doClose() {
-        List<Timeout> t = CLIENT_TASKS.remove(this);
-        if (CollectionUtils.isNotEmpty(t)) {
-            for (Timeout timeout : t) {
+        if (CollectionUtils.isNotEmpty(tasks)) {
+            for (Timeout timeout : tasks) {
                 timeout.cancel();
             }
+            tasks.clear();
         }
     }
 
