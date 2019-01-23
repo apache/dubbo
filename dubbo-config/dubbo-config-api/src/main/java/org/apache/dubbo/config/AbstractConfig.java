@@ -140,7 +140,7 @@ public abstract class AbstractConfig implements Serializable {
                 break;
             }
         }
-        return tag.substring(0, 1).toLowerCase() + tag.substring(1);
+        return StringUtils.camelToSplitName(tag, "-");
     }
 
     protected static void appendParameters(Map<String, String> parameters, Object config) {
@@ -638,4 +638,31 @@ public abstract class AbstractConfig implements Serializable {
         return true;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj.getClass().getName().equals(this.getClass().getName()))) {
+            return false;
+        }
+
+        Method[] methods = this.getClass().getMethods();
+        for (Method method1 : methods) {
+            if (ClassHelper.isGetter(method1) && ClassHelper.isPrimitive(method1.getReturnType())) {
+                Parameter parameter = method1.getAnnotation(Parameter.class);
+                if (parameter != null && parameter.excluded()) {
+                    continue;
+                }
+                try {
+                    Method method2 = obj.getClass().getMethod(method1.getName(), method1.getParameterTypes());
+                    Object value1 = method1.invoke(this, new Object[]{});
+                    Object value2 = method2.invoke(obj, new Object[]{});
+                    if ((value1 != null && value2 != null) && !value1.equals(value2)) {
+                        return false;
+                    }
+                } catch (Exception e) {
+                    return true;
+                }
+            }
+        }
+        return true;
+    }
 }

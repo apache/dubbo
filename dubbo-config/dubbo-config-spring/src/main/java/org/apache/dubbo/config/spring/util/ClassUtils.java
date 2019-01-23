@@ -14,23 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.condition.config.model;
+package org.apache.dubbo.config.spring.util;
 
-import org.apache.dubbo.rpc.cluster.router.AbstractRouterRule;
-
-import java.util.List;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
 /**
+ * {@link Class} Utilities
+ * <p>
+ * The source code is cloned from
+ * https://github.com/alibaba/spring-context-support/blob/1.0.2/src/main/java/com/alibaba/spring/util/ClassUtils.java
  *
+ * @since 2.6.6
  */
-public class BlackWhiteListRule extends AbstractRouterRule {
-    private List<String> conditions;
+public abstract class ClassUtils {
 
-    public List<String> getConditions() {
-        return conditions;
-    }
-
-    public void setConditions(List<String> conditions) {
-        this.conditions = conditions;
+    public static <T> Class<T> resolveGenericType(Class<?> declaredClass) {
+        ParameterizedType parameterizedType = (ParameterizedType) declaredClass.getGenericSuperclass();
+        Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+        return (Class<T>) actualTypeArguments[0];
     }
 }

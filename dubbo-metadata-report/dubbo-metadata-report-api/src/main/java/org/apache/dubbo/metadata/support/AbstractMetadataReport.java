@@ -332,6 +332,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
      * not private. just for unittest.
      */
     void publishAll() {
+        logger.info("start to publish all metadata.");
         this.doHandleMetadataCollection(allMetadataReports);
     }
 

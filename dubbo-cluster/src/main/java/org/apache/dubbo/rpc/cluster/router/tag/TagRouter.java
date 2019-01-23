@@ -42,13 +42,13 @@ import static org.apache.dubbo.common.Constants.FORCE_USE_TAG;
 import static org.apache.dubbo.common.Constants.TAG_KEY;
 
 /**
- * TagRouter
+ * TagRouter, "application.tag-router"
  */
 public class TagRouter extends AbstractRouter implements Comparable<Router>, ConfigurationListener {
     public static final String NAME = "TAG_ROUTER";
     private static final int DEFAULT_PRIORITY = 100;
     private static final Logger logger = LoggerFactory.getLogger(TagRouter.class);
-    private static final String RULE_PREFIX = ".tagrouters";
+    private static final String RULE_SUFFIX = ".tag-router";
 
     private TagRouterRule tagRouterRule;
     private String application;
@@ -88,7 +88,7 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
         }
 
         if (tagRouterRule == null || !tagRouterRule.isValid() || !tagRouterRule.isEnabled()) {
-            return invokers;
+            return filterUsingStaticTag(invokers, url, invocation);
         }
 
         List<Invoker<T>> result = invokers;
@@ -112,7 +112,7 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
             }
             // If there's no tagged providers that can match the current tagged request. force.tag is set by default
             // to false, which means it will invoke any providers without a tag unless it's explicitly disallowed.
-            if (CollectionUtils.isNotEmpty(result) || isForceUse(invocation)) {
+            if (CollectionUtils.isNotEmpty(result) || isForceUseTag(invocation)) {
                 return result;
             }
             // FAILOVER: return all Providers without any tags.
@@ -141,6 +141,37 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
         }
     }
 
+    /**
+     * If there's no dynamic tag rule being set, use static tag in URL.
+     *
+     * A typical scenario is a Consumer using version 2.7.x calls Providers using version 2.6.x or lower,
+     * the Consumer should always respect the tag in provider URL regardless of whether a dynamic tag rule has been set to it or not.
+     *
+     * TODO, to guarantee consistent behavior of interoperability between 2.6- and 2.7+, this method should has the same logic with the TagRouter in 2.6.x.
+     *
+     * @param invokers
+     * @param url
+     * @param invocation
+     * @param <T>
+     * @return
+     */
+    private <T> List<Invoker<T>> filterUsingStaticTag(List<Invoker<T>> invokers, URL url, Invocation invocation) {
+        List<Invoker<T>> result = invokers;
+        // Dynamic param
+        String tag = StringUtils.isEmpty(invocation.getAttachment(TAG_KEY)) ? url.getParameter(TAG_KEY) :
+                invocation.getAttachment(TAG_KEY);
+        // Tag request
+        if (!StringUtils.isEmpty(tag)) {
+            result = filterInvoker(invokers, invoker -> tag.equals(invoker.getUrl().getParameter(Constants.TAG_KEY)));
+            if (CollectionUtils.isEmpty(result) && !isForceUseTag(invocation)) {
+                result = filterInvoker(invokers, invoker -> StringUtils.isEmpty(invoker.getUrl().getParameter(Constants.TAG_KEY)));
+            }
+        } else {
+            result = filterInvoker(invokers, invoker -> StringUtils.isEmpty(invoker.getUrl().getParameter(Constants.TAG_KEY)));
+        }
+        return result;
+    }
+
     @Override
     public int getPriority() {
         return DEFAULT_PRIORITY;
@@ -157,7 +188,7 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
         return tagRouterRule != null && tagRouterRule.isForce();
     }
 
-    private boolean isForceUse(Invocation invocation) {
+    private boolean isForceUseTag(Invocation invocation) {
         return Boolean.valueOf(invocation.getAttachment(FORCE_USE_TAG, url.getParameter(FORCE_USE_TAG, "false")));
     }
 
@@ -198,9 +229,9 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
         synchronized (this) {
             if (!providerApplication.equals(application)) {
                 if (!StringUtils.isEmpty(application)) {
-                    configuration.removeListener(application + RULE_PREFIX, this);
+                    configuration.removeListener(application + RULE_SUFFIX, this);
                 }
-                String key = providerApplication + RULE_PREFIX;
+                String key = providerApplication + RULE_SUFFIX;
                 configuration.addListener(key, this);
                 application = providerApplication;
                 String rawRule = configuration.getConfig(key);

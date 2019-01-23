@@ -19,11 +19,11 @@
     <parent>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-parent</artifactId>
-        <version>2.7.0-SNAPSHOT</version>
+        <version>2.7.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>dubbo</artifactId>
-    <version>2.7.0-SNAPSHOT</version>
+    <version>2.7.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>dubbo-all</name>
     <description>The all in one project of dubbo</description>
@@ -395,6 +395,10 @@
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+        </dependency>
 
         <!-- Temporarily add this part to exclude transitive dependency -->
         <dependency>
@@ -488,7 +492,6 @@
                                     <include>org.apache.dubbo:dubbo-metadata-definition</include>
                                     <include>org.apache.dubbo:dubbo-metadata-report-redis</include>
                                     <include>org.apache.dubbo:dubbo-metadata-report-zookeeper</include>
-                                    <include>com.google.code.gson:gson</include>
                                 </includes>
                             </artifactSet>
                             <transformers>
@@ -606,9 +609,8 @@
                                     <resource>META-INF/dubbo/internal/org.apache.dubbo.qos.command.BaseCommand
                                     </resource>
                                 </transformer>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>META-INF/dubbo/internal/org.apache.dubbo.configcenter.DynamicConfiguration
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/dubbo/internal/org.apache.dubbo.configcenter.DynamicConfigurationFactory
                                     </resource>
                                 </transformer>
                             </transformers>

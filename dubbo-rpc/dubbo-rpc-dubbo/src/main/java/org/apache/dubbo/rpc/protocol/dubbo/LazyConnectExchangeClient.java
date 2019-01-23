@@ -40,14 +40,19 @@ import java.util.concurrent.locks.ReentrantLock;
 @SuppressWarnings("deprecation")
 final class LazyConnectExchangeClient implements ExchangeClient {
 
-    // when this warning rises from invocation, program probably have bug.
-    static final String REQUEST_WITH_WARNING_KEY = "lazyclient_request_with_warning";
+    /**
+     * when this warning rises from invocation, program probably have bug.
+     */
+    protected static final String REQUEST_WITH_WARNING_KEY = "lazyclient_request_with_warning";
     private final static Logger logger = LoggerFactory.getLogger(LazyConnectExchangeClient.class);
     protected final boolean requestWithWarning;
     private final URL url;
     private final ExchangeHandler requestHandler;
     private final Lock connectLock = new ReentrantLock();
-    // lazy connect, initial state for connection
+    private final int warning_period = 5000;
+    /**
+     * lazy connect, initial state for connection
+     */
     private final boolean initialState;
     private volatile ExchangeClient client;
     private AtomicLong warningcount = new AtomicLong(0);
@@ -81,7 +86,7 @@ final class LazyConnectExchangeClient implements ExchangeClient {
 
     @Override
     public ResponseFuture request(Object request) throws RemotingException {
-        warning(request);
+        warning();
         initClient();
         return client.request(request);
     }
@@ -102,19 +107,17 @@ final class LazyConnectExchangeClient implements ExchangeClient {
 
     @Override
     public ResponseFuture request(Object request, int timeout) throws RemotingException {
-        warning(request);
+        warning();
         initClient();
         return client.request(request, timeout);
     }
 
     /**
      * If {@link #REQUEST_WITH_WARNING_KEY} is configured, then warn once every 5000 invocations.
-     *
-     * @param request
      */
-    private void warning(Object request) {
+    private void warning() {
         if (requestWithWarning) {
-            if (warningcount.get() % 5000 == 0) {
+            if (warningcount.get() % warning_period == 0) {
                 logger.warn(new IllegalStateException("safe guard client , should not be called ,must have a bug."));
             }
             warningcount.incrementAndGet();

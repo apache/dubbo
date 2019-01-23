@@ -153,6 +153,8 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                 @Override
                 public void run() {
                     try {
+                        if (cancelFutureIfOffline()) return;
+
                         if (!isConnected()) {
                             connect();
                         } else {
@@ -173,7 +175,29 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                         }
                     }
                 }
+
+                private boolean cancelFutureIfOffline() {
+                    /**
+                     * If the provider service is detected offline,
+                     * the client should not attempt to connect again.
+                     *
+                     * issue: https://github.com/apache/incubator-dubbo/issues/3158
+                     */
+                    if(isClosed()) {
+                        ScheduledFuture<?> future = reconnectExecutorFuture;
+                        if(future != null && !future.isCancelled()){
+                            /**
+                             *  Client has been destroyed and
+                             *  scheduled task should be cancelled.
+                             */
+                            future.cancel(true);
+                        }
+                        return true;
+                    }
+                    return false;
+                }
             };
+
             reconnectExecutorFuture = reconnectExecutorService.scheduleWithFixedDelay(connectStatusCheckCommand, reconnect, reconnect, TimeUnit.MILLISECONDS);
         }
     }
@@ -345,14 +369,14 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     @Override
     public void close() {
         try {
-            if (executor != null) {
-                ExecutorUtil.shutdownNow(executor, 100);
-            }
+            super.close();
         } catch (Throwable e) {
             logger.warn(e.getMessage(), e);
         }
         try {
-            super.close();
+            if (executor != null) {
+                ExecutorUtil.shutdownNow(executor, 100);
+            }
         } catch (Throwable e) {
             logger.warn(e.getMessage(), e);
         }
