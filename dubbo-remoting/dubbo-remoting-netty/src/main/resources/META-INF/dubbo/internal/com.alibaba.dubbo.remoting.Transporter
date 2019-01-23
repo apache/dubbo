@@ -1,1 +1,1 @@
-netty=com.alibaba.dubbo.remoting.transport.netty.NettyTransporter
+netty3=com.alibaba.dubbo.remoting.transport.netty.NettyTransporter
