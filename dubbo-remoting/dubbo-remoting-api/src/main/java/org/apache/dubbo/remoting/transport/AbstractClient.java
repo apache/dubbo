@@ -153,7 +153,9 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                 @Override
                 public void run() {
                     try {
-                        if (cancelFutureIfOffline()) return;
+                        if (cancelFutureIfOffline()) {
+                            return;
+                        }
 
                         if (!isConnected()) {
                             connect();
