@@ -22,7 +22,6 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
-import org.apache.dubbo.common.timer.Timeout;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
@@ -37,7 +36,6 @@ import org.apache.dubbo.remoting.exchange.Request;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -58,7 +56,7 @@ public class HeaderExchangeServer implements ExchangeServer {
     private static final HashedWheelTimer IDLE_CHECK_TIMER = new HashedWheelTimer(new NamedThreadFactory("dubbo-server-idleCheck", true), 1,
             TimeUnit.SECONDS, Constants.TICKS_PER_WHEEL);
 
-    private List<Timeout> tasks = new ArrayList<>();
+    private CloseTimerTask closeTimerTask;
 
     public HeaderExchangeServer(Server server) {
         Assert.notNull(server, "server == null");
@@ -152,16 +150,11 @@ public class HeaderExchangeServer implements ExchangeServer {
         if (!closed.compareAndSet(false, true)) {
             return;
         }
-        cancelCloseTimeout();
+        cancelCloseTask();
     }
 
-    private void cancelCloseTimeout() {
-        if (CollectionUtils.isNotEmpty(tasks)) {
-            for (Timeout timeout : tasks) {
-                timeout.cancel();
-            }
-            tasks.clear();
-        }
+    private void cancelCloseTask() {
+        closeTimerTask.cancel();
     }
 
     @Override
@@ -229,7 +222,7 @@ public class HeaderExchangeServer implements ExchangeServer {
                     idleTimeout = t;
 
                     // we need cancel the exist closeTimeout first.
-                    cancelCloseTimeout();
+                    cancelCloseTask();
                     startIdleCheckTask();
                 }
             }
@@ -278,10 +271,10 @@ public class HeaderExchangeServer implements ExchangeServer {
 
         long idleTimeoutTick = calculateLeastDuration(idleTimeout);
         CloseTimerTask closeTimerTask = new CloseTimerTask(cp, idleTimeoutTick, idleTimeout);
+        this.closeTimerTask = closeTimerTask;
 
         // init task and start timer.
-        Timeout closeTimeout = IDLE_CHECK_TIMER.newTimeout(closeTimerTask, idleTimeoutTick, TimeUnit.MILLISECONDS);
-        tasks.add(closeTimeout);
+        IDLE_CHECK_TIMER.newTimeout(closeTimerTask, idleTimeoutTick, TimeUnit.MILLISECONDS);
     }
 
 }
