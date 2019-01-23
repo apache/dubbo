@@ -43,8 +43,12 @@ public class HeaderExchangeClient implements ExchangeClient {
     private int heartbeat;
     private int idleTimeout;
 
-    private static HashedWheelTimer idleCheckTimer = new HashedWheelTimer(new NamedThreadFactory("dubbo-client-idleCheck", true), 1,
+    private static final HashedWheelTimer IDLE_CHECK_TIMER = new HashedWheelTimer(new NamedThreadFactory("dubbo-client-idleCheck", true), 1,
             TimeUnit.SECONDS, Constants.TICKS_PER_WHEEL);
+
+    private HeartbeatTimerTask heartBeatTimerTask;
+
+    private ReconnectTimerTask reconnectTimerTask;
 
     public HeaderExchangeClient(Client client, boolean needHeartbeat) {
         Assert.notNull(client, "Client can't be null");
@@ -182,12 +186,17 @@ public class HeaderExchangeClient implements ExchangeClient {
         HeartbeatTimerTask heartBeatTimerTask = new HeartbeatTimerTask(cp, heartbeatTick, heartbeat);
         ReconnectTimerTask reconnectTimerTask = new ReconnectTimerTask(cp, heartbeatTimeoutTick, idleTimeout);
 
+        this.heartBeatTimerTask = heartBeatTimerTask;
+        this.reconnectTimerTask = reconnectTimerTask;
+
         // init task and start timer.
-        idleCheckTimer.newTimeout(heartBeatTimerTask, heartbeatTick, TimeUnit.MILLISECONDS);
-        idleCheckTimer.newTimeout(reconnectTimerTask, heartbeatTimeoutTick, TimeUnit.MILLISECONDS);
+        IDLE_CHECK_TIMER.newTimeout(heartBeatTimerTask, heartbeatTick, TimeUnit.MILLISECONDS);
+        IDLE_CHECK_TIMER.newTimeout(reconnectTimerTask, heartbeatTimeoutTick, TimeUnit.MILLISECONDS);
     }
 
     private void doClose() {
+        heartBeatTimerTask.cancel();
+        reconnectTimerTask.cancel();
     }
 
     /**
