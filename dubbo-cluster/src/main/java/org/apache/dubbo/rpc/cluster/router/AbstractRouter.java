@@ -20,9 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.rpc.cluster.Router;
 
-/**
- * TODO Extract more code to here if necessary
- */
 public abstract class AbstractRouter implements Router {
     protected int priority;
     protected boolean force = false;
@@ -65,12 +62,6 @@ public abstract class AbstractRouter implements Router {
         this.force = force;
     }
 
-    @Override
-    public int compareTo(Router o) {
-        return (this.getPriority() >= o.getPriority()) ? 1 : -1;
-    }
-
-    @Override
     public int getPriority() {
         return priority;
     }

@@ -22,7 +22,6 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
 
 import java.util.ArrayList;
@@ -95,15 +94,9 @@ public class MockInvokersSelector extends AbstractRouter {
         return hasMockProvider;
     }
 
-    /**
-     * Always stay on the top of the list
-     *
-     * @param o
-     * @return
-     */
     @Override
-    public int compareTo(Router o) {
-        return 1;
+    public int getPriority() {
+        return Integer.MAX_VALUE;
     }
 
 }

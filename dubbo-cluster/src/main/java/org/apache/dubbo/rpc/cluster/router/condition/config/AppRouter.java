@@ -21,7 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 
 /**
- * Application level router, "application.routers"
+ * Application level router, "application.condition-router"
  */
 public class AppRouter extends ListenableRouter {
     public static final String NAME = "APP_ROUTER";
