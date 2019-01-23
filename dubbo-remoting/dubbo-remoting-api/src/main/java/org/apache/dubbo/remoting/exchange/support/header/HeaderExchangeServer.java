@@ -53,8 +53,10 @@ public class HeaderExchangeServer implements ExchangeServer {
     private int idleTimeout;
     private AtomicBoolean closed = new AtomicBoolean(false);
 
-    private static HashedWheelTimer idleCheckTimer = new HashedWheelTimer(new NamedThreadFactory("dubbo-server-idleCheck", true), 1,
+    private static final HashedWheelTimer IDLE_CHECK_TIMER = new HashedWheelTimer(new NamedThreadFactory("dubbo-server-idleCheck", true), 1,
             TimeUnit.SECONDS, Constants.TICKS_PER_WHEEL);
+
+    private CloseTimerTask closeTimerTask;
 
     public HeaderExchangeServer(Server server) {
         Assert.notNull(server, "server == null");
@@ -148,6 +150,11 @@ public class HeaderExchangeServer implements ExchangeServer {
         if (!closed.compareAndSet(false, true)) {
             return;
         }
+        cancelCloseTask();
+    }
+
+    private void cancelCloseTask() {
+        closeTimerTask.cancel();
     }
 
     @Override
@@ -214,6 +221,8 @@ public class HeaderExchangeServer implements ExchangeServer {
                     heartbeat = h;
                     idleTimeout = t;
 
+                    // we need cancel the exist closeTimeout first.
+                    cancelCloseTask();
                     startIdleCheckTask();
                 }
             }
@@ -262,9 +271,10 @@ public class HeaderExchangeServer implements ExchangeServer {
 
         long idleTimeoutTick = calculateLeastDuration(idleTimeout);
         CloseTimerTask closeTimerTask = new CloseTimerTask(cp, idleTimeoutTick, idleTimeout);
+        this.closeTimerTask = closeTimerTask;
 
         // init task and start timer.
-        idleCheckTimer.newTimeout(closeTimerTask, idleTimeoutTick, TimeUnit.MILLISECONDS);
+        IDLE_CHECK_TIMER.newTimeout(closeTimerTask, idleTimeoutTick, TimeUnit.MILLISECONDS);
     }
 
 }
