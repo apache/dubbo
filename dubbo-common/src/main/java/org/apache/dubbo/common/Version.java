@@ -19,6 +19,7 @@ package org.apache.dubbo.common;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassHelper;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import java.net.URL;
 import java.security.CodeSource;
@@ -41,9 +42,10 @@ public final class Version {
 
     /**
      * For protocol compatibility purpose.
-     * Because {@link #isSupportResponseAttachment} is checked for every call, int compare expect to has higher performance than string.
+     * Because {@link #isSupportResponseAttachment} is checked for every call, int compare expect to has higher
+     * performance than string.
      */
-    private static final int LOWEST_VERSION_FOR_RESPONSE_ATTACHMENT = 20002; // 2.0.2
+    private static final int LOWEST_VERSION_FOR_RESPONSE_ATTACHMENT = 2000200; // 2.0.2
     private static final Map<String, Integer> VERSION2INT = new HashMap<String, Integer>();
 
     static {
@@ -62,13 +64,38 @@ public final class Version {
         return VERSION;
     }
 
-    public static boolean isSupportResponseAttachment(String version) {
-        if (version == null || version.length() == 0) {
+    /**
+     * Check the framework release version number to decide if it's 2.7.0 or higher
+     */
+    public static boolean isRelease270OrHigher(String version) {
+        if (StringUtils.isEmpty(version)) {
             return false;
         }
-        // for previous dubbo version(2.0.10/020010~2.6.2/020602), this version is the jar's version, so they need to be ignore
+        if (getIntVersion(version) >= 2070000) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Check the framework release version number to decide if it's 2.6.3 or higher
+     *
+     * Because response attachments feature is firstly introduced in 2.6.3
+     * and moreover we have no other approach to know the framework's version, so we use
+     * isSupportResponseAttachment to decide if it's v2.6.3.
+     */
+    public static boolean isRelease263OrHigher(String version) {
+        return isSupportResponseAttachment(version);
+    }
+
+    public static boolean isSupportResponseAttachment(String version) {
+        if (StringUtils.isEmpty(version)) {
+            return false;
+        }
+        // for previous dubbo version(2.0.10/020010~2.6.2/020602), this version is the jar's version, so they need to
+        // be ignore
         int iVersion = getIntVersion(version);
-        if (iVersion >= 20010 && iVersion <= 20602) {
+        if (iVersion >= 2001000 && iVersion <= 2060200) {
             return false;
         }
 
@@ -79,6 +106,10 @@ public final class Version {
         Integer v = VERSION2INT.get(version);
         if (v == null) {
             v = parseInt(version);
+            // e.g., version number 2.6.3 will convert to 2060300
+            if (version.split("\\.").length == 3) {
+                v = v * 100;
+            }
             VERSION2INT.put(version, v);
         }
         return v;
@@ -124,10 +155,10 @@ public final class Version {
         try {
             // find version info from MANIFEST.MF first
             String version = cls.getPackage().getImplementationVersion();
-            if (version == null || version.length() == 0) {
+            if (StringUtils.isEmpty(version)) {
                 version = cls.getPackage().getSpecificationVersion();
             }
-            if (version == null || version.length() == 0) {
+            if (StringUtils.isEmpty(version)) {
                 // guess version fro jar file name if nothing's found from MANIFEST.MF
                 CodeSource codeSource = cls.getProtectionDomain().getCodeSource();
                 if (codeSource == null) {
@@ -157,7 +188,7 @@ public final class Version {
                 }
             }
             // return default version if no version info is found
-            return version == null || version.length() == 0 ? defaultVersion : version;
+            return StringUtils.isEmpty(version) ? defaultVersion : version;
         } catch (Throwable e) {
             // return default version when any exception is thrown
             logger.error("return default version, ignore exception " + e.getMessage(), e);

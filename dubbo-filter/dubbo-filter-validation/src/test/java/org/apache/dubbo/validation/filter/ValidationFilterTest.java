@@ -17,11 +17,17 @@
 package org.apache.dubbo.validation.filter;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.*;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.validation.Validation;
 import org.apache.dubbo.validation.Validator;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -36,7 +42,7 @@ public class ValidationFilterTest {
 
     private ValidationFilter validationFilter;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         this.validationFilter = new ValidationFilter();
     }
@@ -112,18 +118,20 @@ public class ValidationFilterTest {
     }
 
 
-    @Test(expected = RpcException.class)
+    @Test
     public void testItWhileThrowoutRpcException() throws Exception {
-        URL url = URL.valueOf("test://test:11/test?default.validation=true");
+        Assertions.assertThrows(RpcException.class, () -> {
+            URL url = URL.valueOf("test://test:11/test?default.validation=true");
 
-        given(validation.getValidator(url)).willThrow(new RpcException("rpc exception"));
-        given(invoker.invoke(invocation)).willReturn(new RpcResult("success"));
-        given(invoker.getUrl()).willReturn(url);
-        given(invocation.getMethodName()).willReturn("echo1");
-        given(invocation.getParameterTypes()).willReturn(new Class<?>[]{String.class});
-        given(invocation.getArguments()).willReturn(new Object[]{"arg1"});
+            given(validation.getValidator(url)).willThrow(new RpcException("rpc exception"));
+            given(invoker.invoke(invocation)).willReturn(new RpcResult("success"));
+            given(invoker.getUrl()).willReturn(url);
+            given(invocation.getMethodName()).willReturn("echo1");
+            given(invocation.getParameterTypes()).willReturn(new Class<?>[]{String.class});
+            given(invocation.getArguments()).willReturn(new Object[]{"arg1"});
 
-        validationFilter.setValidation(validation);
-        validationFilter.invoke(invoker, invocation);
+            validationFilter.setValidation(validation);
+            validationFilter.invoke(invoker, invocation);
+        });
     }
 }

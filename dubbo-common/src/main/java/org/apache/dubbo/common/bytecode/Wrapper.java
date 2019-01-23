@@ -137,10 +137,10 @@ public abstract class Wrapper {
         c2.append(name).append(" w; try{ w = ((").append(name).append(")$1); }catch(Throwable e){ throw new IllegalArgumentException(e); }");
         c3.append(name).append(" w; try{ w = ((").append(name).append(")$1); }catch(Throwable e){ throw new IllegalArgumentException(e); }");
 
-        Map<String, Class<?>> pts = new HashMap<String, Class<?>>(); // <property name, property types>
-        Map<String, Method> ms = new LinkedHashMap<String, Method>(); // <method desc, Method instance>
-        List<String> mns = new ArrayList<String>(); // method names.
-        List<String> dmns = new ArrayList<String>(); // declaring method names.
+        Map<String, Class<?>> pts = new HashMap<>(); // <property name, property types>
+        Map<String, Method> ms = new LinkedHashMap<>(); // <method desc, Method instance>
+        List<String> mns = new ArrayList<>(); // method names.
+        List<String> dmns = new ArrayList<>(); // declaring method names.
 
         // get all public field.
         for (Field f : c.getFields()) {
@@ -160,51 +160,49 @@ public abstract class Wrapper {
         boolean hasMethod = hasMethods(methods);
         if (hasMethod) {
             c3.append(" try{");
-        }
-        for (Method m : methods) {
-            if (m.getDeclaringClass() == Object.class) //ignore Object's method.
-            {
-                continue;
-            }
-
-            String mn = m.getName();
-            c3.append(" if( \"").append(mn).append("\".equals( $2 ) ");
-            int len = m.getParameterTypes().length;
-            c3.append(" && ").append(" $3.length == ").append(len);
-
-            boolean override = false;
-            for (Method m2 : methods) {
-                if (m != m2 && m.getName().equals(m2.getName())) {
-                    override = true;
-                    break;
+            for (Method m : methods) {
+                //ignore Object's method.
+                if (m.getDeclaringClass() == Object.class) {
+                    continue;
                 }
-            }
-            if (override) {
-                if (len > 0) {
-                    for (int l = 0; l < len; l++) {
-                        c3.append(" && ").append(" $3[").append(l).append("].getName().equals(\"")
-                                .append(m.getParameterTypes()[l].getName()).append("\")");
+
+                String mn = m.getName();
+                c3.append(" if( \"").append(mn).append("\".equals( $2 ) ");
+                int len = m.getParameterTypes().length;
+                c3.append(" && ").append(" $3.length == ").append(len);
+
+                boolean override = false;
+                for (Method m2 : methods) {
+                    if (m != m2 && m.getName().equals(m2.getName())) {
+                        override = true;
+                        break;
                     }
                 }
+                if (override) {
+                    if (len > 0) {
+                        for (int l = 0; l < len; l++) {
+                            c3.append(" && ").append(" $3[").append(l).append("].getName().equals(\"")
+                                    .append(m.getParameterTypes()[l].getName()).append("\")");
+                        }
+                    }
+                }
+
+                c3.append(" ) { ");
+
+                if (m.getReturnType() == Void.TYPE) {
+                    c3.append(" w.").append(mn).append('(').append(args(m.getParameterTypes(), "$4")).append(");").append(" return null;");
+                } else {
+                    c3.append(" return ($w)w.").append(mn).append('(').append(args(m.getParameterTypes(), "$4")).append(");");
+                }
+
+                c3.append(" }");
+
+                mns.add(mn);
+                if (m.getDeclaringClass() == c) {
+                    dmns.add(mn);
+                }
+                ms.put(ReflectUtils.getDesc(m), m);
             }
-
-            c3.append(" ) { ");
-
-            if (m.getReturnType() == Void.TYPE) {
-                c3.append(" w.").append(mn).append('(').append(args(m.getParameterTypes(), "$4")).append(");").append(" return null;");
-            } else {
-                c3.append(" return ($w)w.").append(mn).append('(').append(args(m.getParameterTypes(), "$4")).append(");");
-            }
-
-            c3.append(" }");
-
-            mns.add(mn);
-            if (m.getDeclaringClass() == c) {
-                dmns.add(mn);
-            }
-            ms.put(ReflectUtils.getDesc(m), m);
-        }
-        if (hasMethod) {
             c3.append(" } catch(Throwable e) { ");
             c3.append("     throw new java.lang.reflect.InvocationTargetException(e); ");
             c3.append(" }");
@@ -216,7 +214,7 @@ public abstract class Wrapper {
         Matcher matcher;
         for (Map.Entry<String, Method> entry : ms.entrySet()) {
             String md = entry.getKey();
-            Method method = (Method) entry.getValue();
+            Method method = entry.getValue();
             if ((matcher = ReflectUtils.GETTER_METHOD_DESC_PATTERN.matcher(md)).matches()) {
                 String pn = propertyName(matcher.group(1));
                 c2.append(" if( $2.equals(\"").append(pn).append("\") ){ return ($w)w.").append(method.getName()).append("(); }");

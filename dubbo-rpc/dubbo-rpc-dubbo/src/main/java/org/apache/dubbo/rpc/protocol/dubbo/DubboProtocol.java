@@ -34,7 +34,6 @@ import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
-import org.apache.dubbo.rpc.AsyncContextImpl;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
@@ -66,14 +65,22 @@ public class DubboProtocol extends AbstractProtocol {
     public static final int DEFAULT_PORT = 20880;
     private static final String IS_CALLBACK_SERVICE_INVOKE = "_isCallBackServiceInvoke";
     private static DubboProtocol INSTANCE;
-    private final Map<String, ExchangeServer> serverMap = new ConcurrentHashMap<String, ExchangeServer>(); // <host:port,Exchanger>
-    private final Map<String, ReferenceCountExchangeClient> referenceClientMap = new ConcurrentHashMap<String, ReferenceCountExchangeClient>(); // <host:port,Exchanger>
-    private final ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap = new ConcurrentHashMap<String, LazyConnectExchangeClient>();
-    private final ConcurrentMap<String, Object> locks = new ConcurrentHashMap<String, Object>();
-    private final Set<String> optimizers = new ConcurrentHashSet<String>();
-    //consumer side export a stub service for dispatching event
-    //servicekey-stubmethods
-    private final ConcurrentMap<String, String> stubServiceMethodsMap = new ConcurrentHashMap<String, String>();
+    /**
+     * <host:port,Exchanger>
+     */
+    private final Map<String, ExchangeServer> serverMap = new ConcurrentHashMap<>();
+    /**
+     * <host:port,Exchanger>
+     */
+    private final Map<String, ReferenceCountExchangeClient> referenceClientMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Object> locks = new ConcurrentHashMap<>();
+    private final Set<String> optimizers = new ConcurrentHashSet<>();
+    /**
+     * consumer side export a stub service for dispatching event
+     * servicekey-stubmethods
+     */
+    private final ConcurrentMap<String, String> stubServiceMethodsMap = new ConcurrentHashMap<>();
     private ExchangeHandler requestHandler = new ExchangeHandlerAdapter() {
 
         @Override
@@ -105,11 +112,6 @@ public class DubboProtocol extends AbstractProtocol {
                     }
                 }
                 RpcContext rpcContext = RpcContext.getContext();
-                boolean supportServerAsync = invoker.getUrl().getMethodParameter(inv.getMethodName(), Constants.ASYNC_KEY, false);
-                if (supportServerAsync) {
-                    CompletableFuture<Object> future = new CompletableFuture<>();
-                    rpcContext.setAsyncContext(new AsyncContextImpl(future));
-                }
                 rpcContext.setRemoteAddress(channel.getRemoteAddress());
                 Result result = invoker.invoke(inv);
 
@@ -180,7 +182,8 @@ public class DubboProtocol extends AbstractProtocol {
 
     public static DubboProtocol getDubboProtocol() {
         if (INSTANCE == null) {
-            ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME); // load
+            // load
+            ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME);
         }
         return INSTANCE;
     }
@@ -218,7 +221,7 @@ public class DubboProtocol extends AbstractProtocol {
         //callback
         isCallBackServiceInvoke = isClientSide(channel) && !isStubServiceInvoke;
         if (isCallBackServiceInvoke) {
-            path = inv.getAttachments().get(Constants.PATH_KEY) + "." + inv.getAttachments().get(Constants.CALLBACK_SERVICE_KEY);
+            path += "." + inv.getAttachments().get(Constants.CALLBACK_SERVICE_KEY);
             inv.getAttachments().put(IS_CALLBACK_SERVICE_INVOKE, Boolean.TRUE.toString());
         }
         String serviceKey = serviceKey(port, path, inv.getAttachments().get(Constants.VERSION_KEY), inv.getAttachments().get(Constants.GROUP_KEY));
@@ -226,7 +229,8 @@ public class DubboProtocol extends AbstractProtocol {
         DubboExporter<?> exporter = (DubboExporter<?>) exporterMap.get(serviceKey);
 
         if (exporter == null) {
-            throw new RemotingException(channel, "Not found exported service: " + serviceKey + " in " + exporterMap.keySet() + ", may be version or group mismatch " + ", channel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress() + ", message:" + inv);
+            throw new RemotingException(channel, "Not found exported service: " + serviceKey + " in " +
+                    exporterMap.keySet() + ", may be version or group mismatch " + ", channel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress() + ", message:" + inv);
         }
 
         return exporter.getInvoker();
@@ -364,17 +368,17 @@ public class DubboProtocol extends AbstractProtocol {
 
     private ExchangeClient[] getClients(URL url) {
         // whether to share connection
-        boolean service_share_connect = false;
+        boolean serviceShareConnect = false;
         int connections = url.getParameter(Constants.CONNECTIONS_KEY, 0);
         // if not configured, connection is shared, otherwise, one connection for one service
         if (connections == 0) {
-            service_share_connect = true;
+            serviceShareConnect = true;
             connections = 1;
         }
 
         ExchangeClient[] clients = new ExchangeClient[connections];
         for (int i = 0; i < clients.length; i++) {
-            if (service_share_connect) {
+            if (serviceShareConnect) {
                 clients[i] = getSharedClient(url);
             } else {
                 clients[i] = initClient(url);
@@ -447,7 +451,7 @@ public class DubboProtocol extends AbstractProtocol {
 
     @Override
     public void destroy() {
-        for (String key : new ArrayList<String>(serverMap.keySet())) {
+        for (String key : new ArrayList<>(serverMap.keySet())) {
             ExchangeServer server = serverMap.remove(key);
             if (server != null) {
                 try {
@@ -461,7 +465,7 @@ public class DubboProtocol extends AbstractProtocol {
             }
         }
 
-        for (String key : new ArrayList<String>(referenceClientMap.keySet())) {
+        for (String key : new ArrayList<>(referenceClientMap.keySet())) {
             ExchangeClient client = referenceClientMap.remove(key);
             if (client != null) {
                 try {
@@ -475,7 +479,7 @@ public class DubboProtocol extends AbstractProtocol {
             }
         }
 
-        for (String key : new ArrayList<String>(ghostClientMap.keySet())) {
+        for (String key : new ArrayList<>(ghostClientMap.keySet())) {
             ExchangeClient client = ghostClientMap.remove(key);
             if (client != null) {
                 try {

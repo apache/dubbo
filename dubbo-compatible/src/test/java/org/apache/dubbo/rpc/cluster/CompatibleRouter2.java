@@ -14,33 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.convert.converter;
+package org.apache.dubbo.rpc.cluster;
 
-import org.junit.Assert;
-import org.junit.Test;
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.rpc.Invocation;
+import com.alibaba.dubbo.rpc.Invoker;
+import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.cluster.Router;
+
+import java.util.List;
 
 /**
- * {@link StringArrayToStringConverter} Test
+ *
  */
-public class StringArrayToStringConverterTest {
-
-    @Test
-    public void testConvert() {
-
-        StringArrayToStringConverter converter = new StringArrayToStringConverter();
-
-        String value = converter.convert(new String[]{"Hello", "World"});
-
-        Assert.assertEquals("Hello,World", value);
-
-        value = converter.convert(new String[]{});
-
-        Assert.assertNull(value);
-
-        value = converter.convert(null);
-
-        Assert.assertNull(value);
-
+public class CompatibleRouter2 implements Router {
+    @Override
+    public URL getUrl() {
+        return null;
     }
 
+    @Override
+    public <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
+        return null;
+    }
+
+    @Override
+    public int compareTo(Router o) {
+        return 0;
+    }
 }

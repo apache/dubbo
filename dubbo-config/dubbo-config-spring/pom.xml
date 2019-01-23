@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-config</artifactId>
-        <version>2.7.0-SNAPSHOT</version>
+        <version>2.7.1-SNAPSHOT</version>
     </parent>
     <artifactId>dubbo-config-spring</artifactId>
     <packaging>jar</packaging>
@@ -118,11 +118,16 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-core</artifactId>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
     <build>
         <plugins>

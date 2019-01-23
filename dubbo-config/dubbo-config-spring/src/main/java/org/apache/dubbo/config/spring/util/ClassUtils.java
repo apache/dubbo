@@ -14,26 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.convert.converter;
+package org.apache.dubbo.config.spring.util;
 
-import org.apache.dubbo.common.utils.CollectionUtils;
-
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.util.ObjectUtils;
-
-import java.util.Map;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
 /**
- * {@link String}[] to {@link Map} {@link Converter}
+ * {@link Class} Utilities
+ * <p>
+ * The source code is cloned from
+ * https://github.com/alibaba/spring-context-support/blob/1.0.2/src/main/java/com/alibaba/spring/util/ClassUtils.java
  *
- * @see CollectionUtils#toStringMap(String[])
- * @since 2.5.11
+ * @since 2.6.6
  */
-public class StringArrayToMapConverter implements Converter<String[], Map<String, String>> {
+public abstract class ClassUtils {
 
-    @Override
-    public Map<String, String> convert(String[] source) {
-        return ObjectUtils.isEmpty(source) ? null : CollectionUtils.toStringMap(source);
+    public static <T> Class<T> resolveGenericType(Class<?> declaredClass) {
+        ParameterizedType parameterizedType = (ParameterizedType) declaredClass.getGenericSuperclass();
+        Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+        return (Class<T>) actualTypeArguments[0];
     }
-
 }

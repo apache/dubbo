@@ -14,23 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.condition.config.model;
+package com.alibaba.dubbo.rpc.protocol.http;
 
-import org.apache.dubbo.rpc.cluster.router.AbstractRouterRule;
+import org.aopalliance.intercept.MethodInvocation;
 
-import java.util.List;
+@Deprecated
+public class HttpRemoteInvocation extends org.apache.dubbo.rpc.protocol.http.HttpRemoteInvocation {
+    private static final long serialVersionUID = 1L;
 
-/**
- *
- */
-public class BlackWhiteListRule extends AbstractRouterRule {
-    private List<String> conditions;
-
-    public List<String> getConditions() {
-        return conditions;
-    }
-
-    public void setConditions(List<String> conditions) {
-        this.conditions = conditions;
+    public HttpRemoteInvocation(MethodInvocation methodInvocation) {
+        super(methodInvocation);
     }
 }

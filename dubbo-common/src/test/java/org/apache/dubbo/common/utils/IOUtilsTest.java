@@ -17,11 +17,12 @@
 
 package org.apache.dubbo.common.utils;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.support.io.TempDirectory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -32,13 +33,13 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.file.Path;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
+@ExtendWith(TempDirectory.class)
 public class IOUtilsTest {
-    @Rule
-    public TemporaryFolder tmpDir = new TemporaryFolder();
 
     private static String TEXT = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
     private InputStream is;
@@ -46,7 +47,7 @@ public class IOUtilsTest {
     private Reader reader;
     private Writer writer;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         is = new ByteArrayInputStream(TEXT.getBytes("UTF-8"));
         os = new ByteArrayOutputStream();
@@ -54,7 +55,7 @@ public class IOUtilsTest {
         writer = new StringWriter();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         is.close();
         os.close();
@@ -88,12 +89,13 @@ public class IOUtilsTest {
     }
 
     @Test
-    public void testLines() throws Exception {
-        File file = tmpDir.newFile();
+    public void testLines(@TempDirectory.TempDir Path tmpDir) throws Exception {
+        File file = tmpDir.getFileName().toAbsolutePath().toFile();
         IOUtils.writeLines(file, new String[]{TEXT});
         String[] lines = IOUtils.readLines(file);
         assertThat(lines.length, equalTo(1));
         assertThat(lines[0], equalTo(TEXT));
+        tmpDir.getFileName().toAbsolutePath().toFile().delete();
     }
 
     @Test
@@ -116,13 +118,14 @@ public class IOUtilsTest {
     }
 
     @Test
-    public void testAppendLines() throws Exception {
-        File file = tmpDir.newFile();
+    public void testAppendLines(@TempDirectory.TempDir Path tmpDir) throws Exception {
+        File file = tmpDir.getFileName().toAbsolutePath().toFile();
         IOUtils.appendLines(file, new String[]{"a", "b", "c"});
         String[] lines = IOUtils.readLines(file);
         assertThat(lines.length, equalTo(3));
         assertThat(lines[0], equalTo("a"));
         assertThat(lines[1], equalTo("b"));
         assertThat(lines[2], equalTo("c"));
+        tmpDir.getFileName().toAbsolutePath().toFile().delete();
     }
 }

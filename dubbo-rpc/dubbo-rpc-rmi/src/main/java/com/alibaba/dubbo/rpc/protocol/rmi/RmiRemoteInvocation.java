@@ -14,39 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.convert.converter;
+package com.alibaba.dubbo.rpc.protocol.rmi;
 
-import org.junit.Assert;
-import org.junit.Test;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
+import org.aopalliance.intercept.MethodInvocation;
 
 /**
- * {@link StringArrayToMapConverter} Test
+ *
  */
-public class StringArrayToMapConverterTest {
-
-    @Test
-    public void testConvert() {
-
-        StringArrayToMapConverter converter = new StringArrayToMapConverter();
-
-        Map<String, String> value = converter.convert(new String[]{"Hello", "World"});
-
-        Map<String, String> expected = new LinkedHashMap<String, String>();
-
-        expected.put("Hello", "World");
-
-        Assert.assertEquals(expected, value);
-
-        value = converter.convert(new String[]{});
-
-        Assert.assertNull(value);
-
-        value = converter.convert(null);
-
-        Assert.assertNull(value);
-
+@Deprecated
+public class RmiRemoteInvocation extends org.apache.dubbo.rpc.protocol.rmi.RmiRemoteInvocation {
+    private static final long serialVersionUID = 1L;
+    /**
+     * executed on consumer side
+     *
+     * @param methodInvocation
+     */
+    public RmiRemoteInvocation(MethodInvocation methodInvocation) {
+        super(methodInvocation);
     }
 }
