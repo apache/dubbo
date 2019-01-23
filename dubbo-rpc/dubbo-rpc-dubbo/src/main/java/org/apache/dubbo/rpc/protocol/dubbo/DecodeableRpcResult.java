@@ -20,6 +20,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Cleanable;
 import org.apache.dubbo.common.serialize.ObjectInput;
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
@@ -73,61 +74,27 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
     public Object decode(Channel channel, InputStream input) throws IOException {
         ObjectInput in = CodecSupport.getSerialization(channel.getUrl(), serializationType)
                 .deserialize(channel.getUrl(), input);
-        
+
         byte flag = in.readByte();
         switch (flag) {
             case DubboCodec.RESPONSE_NULL_VALUE:
                 break;
             case DubboCodec.RESPONSE_VALUE:
-                try {
-                    Type[] returnType = RpcUtils.getReturnTypes(invocation);
-                    setValue(returnType == null || returnType.length == 0 ? in.readObject() :
-                            (returnType.length == 1 ? in.readObject((Class<?>) returnType[0])
-                                    : in.readObject((Class<?>) returnType[0], returnType[1])));
-                } catch (ClassNotFoundException e) {
-                    throw new IOException(StringUtils.toString("Read response data failed.", e));
-                }
+                handleValue(in);
                 break;
             case DubboCodec.RESPONSE_WITH_EXCEPTION:
-                try {
-                    Object obj = in.readObject();
-                    if (obj instanceof Throwable == false) {
-                        throw new IOException("Response data error, expect Throwable, but get " + obj);
-                    }
-                    setException((Throwable) obj);
-                } catch (ClassNotFoundException e) {
-                    throw new IOException(StringUtils.toString("Read response data failed.", e));
-                }
+                handleException(in);
                 break;
             case DubboCodec.RESPONSE_NULL_VALUE_WITH_ATTACHMENTS:
-                try {
-                    setAttachments((Map<String, String>) in.readObject(Map.class));
-                } catch (ClassNotFoundException e) {
-                    throw new IOException(StringUtils.toString("Read response data failed.", e));
-                }
+                handleAttachment(in);
                 break;
             case DubboCodec.RESPONSE_VALUE_WITH_ATTACHMENTS:
-                try {
-                    Type[] returnType = RpcUtils.getReturnTypes(invocation);
-                    setValue(returnType == null || returnType.length == 0 ? in.readObject() :
-                            (returnType.length == 1 ? in.readObject((Class<?>) returnType[0])
-                                    : in.readObject((Class<?>) returnType[0], returnType[1])));
-                    setAttachments((Map<String, String>) in.readObject(Map.class));
-                } catch (ClassNotFoundException e) {
-                    throw new IOException(StringUtils.toString("Read response data failed.", e));
-                }
+                handleValue(in);
+                handleAttachment(in);
                 break;
             case DubboCodec.RESPONSE_WITH_EXCEPTION_WITH_ATTACHMENTS:
-                try {
-                    Object obj = in.readObject();
-                    if (obj instanceof Throwable == false) {
-                        throw new IOException("Response data error, expect Throwable, but get " + obj);
-                    }
-                    setException((Throwable) obj);
-                    setAttachments((Map<String, String>) in.readObject(Map.class));
-                } catch (ClassNotFoundException e) {
-                    throw new IOException(StringUtils.toString("Read response data failed.", e));
-                }
+                handleException(in);
+                handleAttachment(in);
                 break;
             default:
                 throw new IOException("Unknown result flag, expect '0' '1' '2', get " + flag);
@@ -155,4 +122,44 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
         }
     }
 
+    private void handleValue(ObjectInput in) throws IOException {
+        try {
+            Type[] returnTypes = RpcUtils.getReturnTypes(invocation);
+            Object value = null;
+            if (ArrayUtils.isEmpty(returnTypes)) {
+                value = in.readObject();
+            } else if (returnTypes.length == 1) {
+                value = in.readObject((Class<?>) returnTypes[0]);
+            } else {
+                value = in.readObject((Class<?>) returnTypes[0], returnTypes[1]);
+            }
+            setValue(value);
+        } catch (ClassNotFoundException e) {
+            rethrow(e);
+        }
+    }
+
+    private void handleException(ObjectInput in) throws IOException {
+        try {
+            Object obj = in.readObject();
+            if (!(obj instanceof Throwable)) {
+                throw new IOException("Response data error, expect Throwable, but get " + obj);
+            }
+            setException((Throwable) obj);
+        } catch (ClassNotFoundException e) {
+            rethrow(e);
+        }
+    }
+
+    private void handleAttachment(ObjectInput in) throws IOException {
+        try {
+            setAttachments((Map<String, String>) in.readObject(Map.class));
+        } catch (ClassNotFoundException e) {
+            rethrow(e);
+        }
+    }
+
+    private void rethrow(Exception e) throws IOException {
+        throw new IOException(StringUtils.toString("Read response data failed.", e));
+    }
 }
