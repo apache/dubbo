@@ -24,15 +24,16 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MulticastRegistryTest {
@@ -217,6 +218,42 @@ public class MulticastRegistryTest {
             assertEquals(port, multicastSocket.getLocalPort());
         } finally {
             multicastRegistry.destroy();
+        }
+    }
+
+    @Test
+    public void testMulticastAddress() {
+        InetAddress multicastAddress = null;
+        MulticastSocket multicastSocket = null;
+        try {
+            // ipv4 multicast address
+            try {
+                multicastAddress = InetAddress.getByName("224.55.66.77");
+                multicastSocket = new MulticastSocket(2345);
+                multicastSocket.setLoopbackMode(false);
+                NetUtils.setInterface(multicastSocket, multicastAddress);
+                multicastSocket.joinGroup(multicastAddress);
+            } finally {
+                if (multicastSocket != null) {
+                    multicastSocket.close();
+                }
+            }
+
+            // multicast ipv6 address,
+            try {
+                multicastAddress = InetAddress.getByName("ff01::1");
+                multicastSocket = new MulticastSocket();
+                multicastSocket.setLoopbackMode(false);
+                NetUtils.setInterface(multicastSocket, multicastAddress);
+                multicastSocket.joinGroup(multicastAddress);
+            } finally {
+                if (multicastSocket != null) {
+                    multicastSocket.close();
+                }
+            }
+
+        } catch (Exception e) {
+            Assertions.fail(e);
         }
     }
 
