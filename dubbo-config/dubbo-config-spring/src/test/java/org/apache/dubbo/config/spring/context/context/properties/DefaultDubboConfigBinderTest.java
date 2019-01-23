@@ -25,18 +25,18 @@ import org.apache.dubbo.config.spring.beans.factory.config.YamlPropertySourceFac
 import org.apache.dubbo.config.spring.context.properties.DefaultDubboConfigBinder;
 import org.apache.dubbo.config.spring.context.properties.DubboConfigBinder;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.junit4.SpringRunner;
 
-@ExtendWith(SpringExtension.class)
+@RunWith(SpringRunner.class)
 @TestPropertySource(locations = "classpath:/dubbo.properties")
 @PropertySource(name = "yaml-source", value = {"classpath:/META-INF/dubbo.yml"}, factory = YamlPropertySourceFactory.class)
 @Configuration
@@ -69,26 +69,26 @@ public class DefaultDubboConfigBinderTest {
 
         ApplicationConfig applicationConfig = new ApplicationConfig();
         dubboConfigBinder.bind("dubbo.application", applicationConfig);
-        Assertions.assertEquals("hello", applicationConfig.getName());
-        Assertions.assertEquals("world", applicationConfig.getOwner());
+        Assert.assertEquals("hello", applicationConfig.getName());
+        Assert.assertEquals("world", applicationConfig.getOwner());
 
         RegistryConfig registryConfig = new RegistryConfig();
         dubboConfigBinder.bind("dubbo.registry", registryConfig);
-        Assertions.assertEquals("10.20.153.17", registryConfig.getAddress());
+        Assert.assertEquals("10.20.153.17", registryConfig.getAddress());
 
         ProtocolConfig protocolConfig = new ProtocolConfig();
         dubboConfigBinder.bind("dubbo.protocol", protocolConfig);
-        Assertions.assertEquals(Integer.valueOf(20881), protocolConfig.getPort());
+        Assert.assertEquals(Integer.valueOf(20881), protocolConfig.getPort());
 
         ConsumerConfig consumerConfig = new ConsumerConfig();
         dubboConfigBinder.bind("dubbo.consumer", consumerConfig);
 
-        Assertions.assertEquals(isDefault, consumerConfig.isDefault());
-        Assertions.assertEquals(client, consumerConfig.getClient());
-        Assertions.assertEquals(threadPool, consumerConfig.getThreadpool());
-        Assertions.assertEquals(coreThreads, consumerConfig.getCorethreads());
-        Assertions.assertEquals(threads, consumerConfig.getThreads());
-        Assertions.assertEquals(queues, consumerConfig.getQueues());
+        Assert.assertEquals(isDefault, consumerConfig.isDefault());
+        Assert.assertEquals(client, consumerConfig.getClient());
+        Assert.assertEquals(threadPool, consumerConfig.getThreadpool());
+        Assert.assertEquals(coreThreads, consumerConfig.getCorethreads());
+        Assert.assertEquals(threads, consumerConfig.getThreads());
+        Assert.assertEquals(queues, consumerConfig.getQueues());
     }
 }
 
