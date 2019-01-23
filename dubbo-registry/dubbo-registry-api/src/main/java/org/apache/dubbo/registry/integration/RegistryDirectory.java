@@ -23,10 +23,10 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
@@ -89,6 +89,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     private volatile boolean forbidden = false;
 
     private volatile URL overrideDirectoryUrl; // Initialization at construction time, assertion not null, and always assign non null value
+
+    private volatile URL registeredConsumerUrl;
 
     /**
      * override rules
@@ -157,6 +159,15 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     public void destroy() {
         if (isDestroyed()) {
             return;
+        }
+
+        // unregister.
+        try {
+            if (getRegisteredConsumerUrl() != null && registry != null && registry.isAvailable()) {
+                registry.unregister(getRegisteredConsumerUrl());
+            }
+        } catch (Throwable t) {
+            logger.warn("unexpected error when unregister service " + serviceKey + "from registry" + registry.getUrl(), t);
         }
         // unsubscribe.
         try {
@@ -563,6 +574,14 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     @Override
     public URL getUrl() {
         return this.overrideDirectoryUrl;
+    }
+
+    public URL getRegisteredConsumerUrl() {
+        return registeredConsumerUrl;
+    }
+
+    public void setRegisteredConsumerUrl(URL registeredConsumerUrl) {
+        this.registeredConsumerUrl = registeredConsumerUrl;
     }
 
     @Override
