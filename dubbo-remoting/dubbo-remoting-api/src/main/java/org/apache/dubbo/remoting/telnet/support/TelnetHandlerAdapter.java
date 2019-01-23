@@ -81,7 +81,6 @@ public class TelnetHandlerAdapter extends ChannelHandlerAdapter implements Telne
     }
 
     private boolean commandEnabled(URL url, String command) {
-
         String supportCommands = url.getParameter(Constants.TELNET);
         if (StringUtils.isEmpty(supportCommands)) {
             return true;
