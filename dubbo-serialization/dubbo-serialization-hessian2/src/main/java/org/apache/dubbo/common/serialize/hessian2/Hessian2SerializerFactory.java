@@ -22,6 +22,7 @@ import com.alibaba.com.caucho.hessian.io.SerializerFactory;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.Set;
 
@@ -47,7 +48,7 @@ public class Hessian2SerializerFactory extends SerializerFactory {
     @Override
     public Deserializer getDeserializer(String type)
             throws HessianProtocolException {
-        if (type == null || type.equals("") || typeNotFoundDeserializer.contains(type)) {
+        if (StringUtils.isEmpty(type) || typeNotFoundDeserializer.contains(type)) {
             return null;
         }
         Deserializer deserializer = super.getDeserializer(type);
