@@ -16,41 +16,20 @@
  */
 package com.alibaba.dubbo.rpc.protocol.rmi;
 
-import com.alibaba.dubbo.rpc.RpcContext;
 import org.aopalliance.intercept.MethodInvocation;
-import org.springframework.remoting.support.RemoteInvocation;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.Map;
-
-public class RmiRemoteInvocation extends RemoteInvocation {
+/**
+ *
+ */
+@Deprecated
+public class RmiRemoteInvocation extends org.apache.dubbo.rpc.protocol.rmi.RmiRemoteInvocation {
     private static final long serialVersionUID = 1L;
-    private static final String dubboAttachmentsAttrName = "dubbo.attachments";
-
     /**
      * executed on consumer side
+     *
+     * @param methodInvocation
      */
     public RmiRemoteInvocation(MethodInvocation methodInvocation) {
         super(methodInvocation);
-        addAttribute(dubboAttachmentsAttrName, new HashMap<String, String>(RpcContext.getContext().getAttachments()));
-    }
-
-    /**
-     * Need to restore context on provider side (Though context will be overridden by Invocation's attachment
-     * when ContextFilter gets executed, we will restore the attachment when Invocation is constructed, check more
-     * from {@link com.alibaba.dubbo.rpc.proxy.InvokerInvocationHandler}
-     */
-    @SuppressWarnings("unchecked")
-    @Override
-    public Object invoke(Object targetObject) throws NoSuchMethodException, IllegalAccessException,
-            InvocationTargetException {
-        RpcContext context = RpcContext.getContext();
-        context.setAttachments((Map<String, String>) getAttribute(dubboAttachmentsAttrName));
-        try {
-            return super.invoke(targetObject);
-        } finally {
-            context.setAttachments(null);
-        }
     }
 }
