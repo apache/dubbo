@@ -120,7 +120,7 @@ public class DubboProtocolTest {
         System.out.println(service.stringLength(buf.toString()));
 
         // cast to EchoService
-        EchoService echo = proxy.getProxy(protocol.refer(EchoService.class, URL.valueOf("dubbo://127.0.0.1:9011/" + DemoService.class.getName() + "?client=mina").addParameter("timeout", 3000l)));
+        EchoService echo = (EchoService) service;
         for (int i = 0; i < 10; i++) {
             assertEquals(echo.$echo(buf.toString()), buf.toString());
             assertEquals(echo.$echo("test"), "test");
