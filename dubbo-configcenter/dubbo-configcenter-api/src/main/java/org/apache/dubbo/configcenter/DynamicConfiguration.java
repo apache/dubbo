@@ -116,8 +116,8 @@ public interface DynamicConfiguration extends Configuration {
      *
      * This method are mostly used to get a compound config file, such as a complete dubbo.properties file.
      */
-    default String getConfigFile(String key, String group) throws IllegalStateException {
-        return getConfigFile(key, group, 0L);
+    default String getConfigs(String key, String group) throws IllegalStateException {
+        return getConfigs(key, group, 0L);
     }
 
     /**
@@ -125,7 +125,7 @@ public interface DynamicConfiguration extends Configuration {
      *
      * This method are mostly used to get a compound config file, such as a complete dubbo.properties file.
      */
-    String getConfigFile(String key, String group, long timeout) throws IllegalStateException;
+    String getConfigs(String key, String group, long timeout) throws IllegalStateException;
 
     /**
      * Find DynamicConfiguration instance

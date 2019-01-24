@@ -133,7 +133,7 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
-    public String getConfigFile(String key, String group, long timeout) throws IllegalStateException {
+    public String getConfigs(String key, String group, long timeout) throws IllegalStateException {
         return (String) getInternalProperty(rootPath + "/" + group + "/" + key);
     }
 
@@ -145,7 +145,6 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
         this.treeCache = new TreeCache(client, rootPath);
         // create the watcher for future configuration updates
         treeCache.getListenable().addListener(cacheListener, executor);
-
         // it's not blocking, so we use an extra latch 'initializedLatch' to make sure cache fully initialized before use.
         treeCache.start();
         initializedLatch.await();

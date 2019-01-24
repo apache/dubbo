@@ -87,7 +87,7 @@ public class ZookeeperDynamicConfigurationTest {
     @Test
     public void testGetConfig() throws Exception {
         Assert.assertEquals("Never change value from configurators", configuration.getConfig("never.change.DemoService.configurators"));
-        Assert.assertEquals("The content from dubbo.properties", configuration.getConfigFile("dubbo.properties", "dubbo"));
+        Assert.assertEquals("The content from dubbo.properties", configuration.getConfigs("dubbo.properties", "dubbo"));
     }
 
     @Test
