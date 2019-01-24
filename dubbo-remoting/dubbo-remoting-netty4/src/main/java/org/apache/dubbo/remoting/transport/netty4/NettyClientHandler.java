@@ -86,21 +86,21 @@ public class NettyClientHandler extends ChannelDuplexHandler {
         // If our out bound event has an error (in most cases the encoder fails),
         // we need to have the request return directly instead of blocking the invoke process.
         promise.addListener(future -> {
-            if (future.isSuccess()) {
-                // if our future is success, mark the future to sent.
-                try {
+            try {
+                if (future.isSuccess()) {
+                    // if our future is success, mark the future to sent.
                     handler.sent(channel, msg);
-                } finally {
-                    NettyChannel.removeChannelIfDisconnected(ctx.channel());
+                    return;
                 }
-                return;
-            }
 
-            Throwable t = future.cause();
-            if (t != null && isRequest) {
-                Request request = (Request) msg;
-                Response response = buildErrorResponse(request, t);
-                handler.received(channel, response);
+                Throwable t = future.cause();
+                if (t != null && isRequest) {
+                    Request request = (Request) msg;
+                    Response response = buildErrorResponse(request, t);
+                    handler.received(channel, response);
+                }
+            } finally {
+                NettyChannel.removeChannelIfDisconnected(ctx.channel());
             }
         });
     }
@@ -120,7 +120,7 @@ public class NettyClientHandler extends ChannelDuplexHandler {
      * build a bad request's response
      *
      * @param request the request
-     * @param t the throwable. In most cases, serialization fails.
+     * @param t       the throwable. In most cases, serialization fails.
      * @return the response
      */
     private static Response buildErrorResponse(Request request, Throwable t) {
