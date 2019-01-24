@@ -27,7 +27,7 @@
 
     <groupId>org.apache.dubbo</groupId>
     <artifactId>dubbo-parent</artifactId>
-    <version>2.7.0-SNAPSHOT</version>
+    <version>2.7.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>${project.artifactId}</name>
@@ -154,7 +154,7 @@
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-dependencies-bom</artifactId>
-                <version>2.7.0-SNAPSHOT</version>
+                <version>2.7.1-SNAPSHOT</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -300,7 +300,6 @@
                                     <goal>jar</goal>
                                 </goals>
                                 <configuration>
-                                    <doclint>none</doclint>
                                     <additionalDependencies>
                                         <additionalDependency>
                                             <groupId>org.apache.logging.log4j</groupId>
@@ -322,8 +321,9 @@
                             <encoding>UTF-8</encoding>
                             <docencoding>UTF-8</docencoding>
                             <links>
-                                <link>http://docs.oracle.com/javase/7/docs/api</link>
+                                <link>http://docs.oracle.com/javase/8/docs/api</link>
                             </links>
+                            <doclint>none</doclint>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -389,6 +389,7 @@
                             <Implementation-Version>${project.version}</Implementation-Version>
                         </manifestEntries>
                     </archive>
+                    <forceCreation>true</forceCreation>
                 </configuration>
             </plugin>
             <plugin>

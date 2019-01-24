@@ -23,11 +23,14 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.service.GenericException;
 import org.apache.dubbo.rpc.service.GenericService;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.validation.ConstraintViolation;
@@ -41,20 +44,33 @@ import java.util.Set;
  * GenericServiceTest
  */
 public class ValidationTest {
+    private ApplicationConfig application = new ApplicationConfig("validation-test");
+    private RegistryConfig registryNA = new RegistryConfig("N/A");
+    private ProtocolConfig protocolDubo29582 = new ProtocolConfig("dubbo", 29582);
+
+    @BeforeEach
+    public void setUp() {
+        ConfigManager.getInstance().clear();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        ConfigManager.getInstance().clear();
+    }
 
     @Test
     public void testValidation() {
         ServiceConfig<ValidationService> service = new ServiceConfig<ValidationService>();
-        service.setApplication(new ApplicationConfig("validation-provider"));
-        service.setRegistry(new RegistryConfig("N/A"));
-        service.setProtocol(new ProtocolConfig("dubbo", 29582));
+        service.setApplication(application);
+        service.setRegistry(registryNA);
+        service.setProtocol(protocolDubo29582);
         service.setInterface(ValidationService.class.getName());
         service.setRef(new ValidationServiceImpl());
         service.setValidation(String.valueOf(true));
         service.export();
         try {
             ReferenceConfig<ValidationService> reference = new ReferenceConfig<ValidationService>();
-            reference.setApplication(new ApplicationConfig("validation-consumer"));
+            reference.setApplication(application);
             reference.setInterface(ValidationService.class);
             reference.setUrl("dubbo://127.0.0.1:29582?scope=remote&validation=true");
             ValidationService validationService = reference.get();
@@ -171,16 +187,16 @@ public class ValidationTest {
     @Test
     public void testProviderValidation() {
         ServiceConfig<ValidationService> service = new ServiceConfig<ValidationService>();
-        service.setApplication(new ApplicationConfig("validation-provider"));
-        service.setRegistry(new RegistryConfig("N/A"));
-        service.setProtocol(new ProtocolConfig("dubbo", 29582));
+        service.setApplication(application);
+        service.setRegistry(registryNA);
+        service.setProtocol(protocolDubo29582);
         service.setInterface(ValidationService.class.getName());
         service.setRef(new ValidationServiceImpl());
         service.setValidation(String.valueOf(true));
         service.export();
         try {
             ReferenceConfig<ValidationService> reference = new ReferenceConfig<ValidationService>();
-            reference.setApplication(new ApplicationConfig("validation-consumer"));
+            reference.setApplication(application);
             reference.setInterface(ValidationService.class);
             reference.setUrl("dubbo://127.0.0.1:29582");
             ValidationService validationService = reference.get();
@@ -236,16 +252,16 @@ public class ValidationTest {
     @Test
     public void testGenericValidation() {
         ServiceConfig<ValidationService> service = new ServiceConfig<ValidationService>();
-        service.setApplication(new ApplicationConfig("validation-provider"));
-        service.setRegistry(new RegistryConfig("N/A"));
-        service.setProtocol(new ProtocolConfig("dubbo", 29582));
+        service.setApplication(application);
+        service.setRegistry(registryNA);
+        service.setProtocol(protocolDubo29582);
         service.setInterface(ValidationService.class.getName());
         service.setRef(new ValidationServiceImpl());
         service.setValidation(String.valueOf(true));
         service.export();
         try {
             ReferenceConfig<GenericService> reference = new ReferenceConfig<GenericService>();
-            reference.setApplication(new ApplicationConfig("validation-consumer"));
+            reference.setApplication(application);
             reference.setInterface(ValidationService.class.getName());
             reference.setUrl("dubbo://127.0.0.1:29582?scope=remote&validation=true&timeout=9000000");
             reference.setGeneric(true);

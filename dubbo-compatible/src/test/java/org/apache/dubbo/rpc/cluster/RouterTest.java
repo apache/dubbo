@@ -14,39 +14,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.convert.converter;
+package org.apache.dubbo.rpc.cluster;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
- * {@link StringArrayToMapConverter} Test
+ *
  */
-public class StringArrayToMapConverterTest {
+public class RouterTest {
+
+    private static List<Router> routers = new ArrayList<>();
+
+    @BeforeAll
+    public static void setUp () {
+        CompatibleRouter compatibleRouter = new CompatibleRouter();
+        routers.add(compatibleRouter);
+        CompatibleRouter2 compatibleRouter2 = new CompatibleRouter2();
+        routers.add(compatibleRouter2);
+        NewRouter newRouter = new NewRouter();
+        routers.add(newRouter);
+    }
 
     @Test
-    public void testConvert() {
-
-        StringArrayToMapConverter converter = new StringArrayToMapConverter();
-
-        Map<String, String> value = converter.convert(new String[]{"Hello", "World"});
-
-        Map<String, String> expected = new LinkedHashMap<String, String>();
-
-        expected.put("Hello", "World");
-
-        Assertions.assertEquals(expected, value);
-
-        value = converter.convert(new String[]{});
-
-        Assertions.assertNull(value);
-
-        value = converter.convert(null);
-
-        Assertions.assertNull(value);
-
+    public void testCompareTo () {
+        try {
+            Collections.sort(routers);
+            Assertions.assertTrue(true);
+        } catch (Exception e) {
+            Assertions.assertFalse(false);
+        }
     }
 }
