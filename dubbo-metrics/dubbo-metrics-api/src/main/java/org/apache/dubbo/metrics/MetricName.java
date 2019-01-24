@@ -144,7 +144,7 @@ public class MetricName implements Comparable<MetricName> {
      * @return A newly created metric name with the specified tags associated with it.
      */
     public MetricName tag(Map<String, String> add) {
-        final Map<String, String> tags = new HashMap<String, String>(add);
+        final Map<String, String> tags = new HashMap<>(add);
         tags.putAll(this.tags);
         return new MetricName(key, tags, level);
     }
@@ -167,7 +167,7 @@ public class MetricName implements Comparable<MetricName> {
             throw new IllegalArgumentException("Argument count must be even");
         }
 
-        final Map<String, String> add = new HashMap<String, String>();
+        final Map<String, String> add = new HashMap<>();
 
         for (int i = 0; i < pairs.length; i += 2) {
             add.put(pairs[i], pairs[i+1]);
@@ -185,7 +185,7 @@ public class MetricName implements Comparable<MetricName> {
      **/
     public static MetricName join(MetricName... parts) {
         final StringBuilder nameBuilder = new StringBuilder();
-        final Map<String, String> tags = new HashMap<String, String>();
+        final Map<String, String> tags = new HashMap<>();
 
         boolean first = true;
         MetricName firstName = null;
@@ -382,7 +382,7 @@ public class MetricName implements Comparable<MetricName> {
     }
 
     private Iterable<String> uniqueSortedKeys(Map<String, String> left, Map<String, String> right) {
-        final Set<String> set = new TreeSet<String>(left.keySet());
+        final Set<String> set = new TreeSet<>(left.keySet());
         set.addAll(right.keySet());
         return set;
     }

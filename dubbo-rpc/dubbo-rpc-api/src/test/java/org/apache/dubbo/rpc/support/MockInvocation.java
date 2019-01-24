@@ -41,7 +41,7 @@ public class MockInvocation implements Invocation {
     }
 
     public Map<String, String> getAttachments() {
-        Map<String, String> attachments = new HashMap<String, String>();
+        Map<String, String> attachments = new HashMap<>();
         attachments.put(Constants.PATH_KEY, "dubbo");
         attachments.put(Constants.GROUP_KEY, "dubbo");
         attachments.put(Constants.VERSION_KEY, "1.0.0");

@@ -47,7 +47,7 @@ import static org.mockito.Mockito.mock;
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class LoadBalanceBaseTest {
     Invocation invocation;
-    List<Invoker<LoadBalanceBaseTest>> invokers = new ArrayList<Invoker<LoadBalanceBaseTest>>();
+    List<Invoker<LoadBalanceBaseTest>> invokers = new ArrayList<>();
     Invoker<LoadBalanceBaseTest> invoker1;
     Invoker<LoadBalanceBaseTest> invoker2;
     Invoker<LoadBalanceBaseTest> invoker3;
@@ -117,7 +117,7 @@ public class LoadBalanceBaseTest {
     }
 
     public Map<Invoker, AtomicLong> getInvokeCounter(int runs, String loadbalanceName) {
-        Map<Invoker, AtomicLong> counter = new ConcurrentHashMap<Invoker, AtomicLong>();
+        Map<Invoker, AtomicLong> counter = new ConcurrentHashMap<>();
         LoadBalance lb = getLoadBalance(loadbalanceName);
         for (Invoker invoker : invokers) {
             counter.put(invoker, new AtomicLong(0));
@@ -203,7 +203,7 @@ public class LoadBalanceBaseTest {
         }
     }
 
-    protected List<Invoker<LoadBalanceBaseTest>> weightInvokers = new ArrayList<Invoker<LoadBalanceBaseTest>>();
+    protected List<Invoker<LoadBalanceBaseTest>> weightInvokers = new ArrayList<>();
     protected Invoker<LoadBalanceBaseTest> weightInvoker1;
     protected Invoker<LoadBalanceBaseTest> weightInvoker2;
     protected Invoker<LoadBalanceBaseTest> weightInvoker3;
@@ -253,7 +253,7 @@ public class LoadBalanceBaseTest {
     }
     
     protected Map<Invoker, InvokeResult> getWeightedInvokeResult(int runs, String loadbalanceName) {
-        Map<Invoker, InvokeResult> counter = new ConcurrentHashMap<Invoker, InvokeResult>();
+        Map<Invoker, InvokeResult> counter = new ConcurrentHashMap<>();
         AbstractLoadBalance lb = getLoadBalance(loadbalanceName);
         int totalWeight = 0;
         for (int i = 0; i < weightInvokers.size(); i ++) {

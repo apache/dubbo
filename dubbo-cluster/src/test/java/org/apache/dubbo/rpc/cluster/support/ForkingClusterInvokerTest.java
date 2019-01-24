@@ -43,7 +43,7 @@ import static org.mockito.Mockito.mock;
 @SuppressWarnings("unchecked")
 public class ForkingClusterInvokerTest {
 
-    private List<Invoker<ForkingClusterInvokerTest>> invokers = new ArrayList<Invoker<ForkingClusterInvokerTest>>();
+    private List<Invoker<ForkingClusterInvokerTest>> invokers = new ArrayList<>();
     private URL url = URL.valueOf("test://test:11/test?forks=2");
     private Invoker<ForkingClusterInvokerTest> invoker1 = mock(Invoker.class);
     private Invoker<ForkingClusterInvokerTest> invoker2 = mock(Invoker.class);

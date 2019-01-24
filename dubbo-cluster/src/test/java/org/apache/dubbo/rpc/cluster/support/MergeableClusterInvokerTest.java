@@ -151,21 +151,21 @@ public class MergeableClusterInvokerTest {
         given(directory.getUrl()).willReturn(url);
         given(directory.getInterface()).willReturn(MenuService.class);
 
-        mergeableClusterInvoker = new MergeableClusterInvoker<MenuService>(directory);
+        mergeableClusterInvoker = new MergeableClusterInvoker<>(directory);
 
         // invoke
         Result result = mergeableClusterInvoker.invoke(invocation);
         Assertions.assertTrue(result.getValue() instanceof Menu);
         Menu menu = (Menu) result.getValue();
-        Map<String, List<String>> expected = new HashMap<String, List<String>>();
+        Map<String, List<String>> expected = new HashMap<>();
         merge(expected, firstMenuMap);
         merge(expected, secondMenuMap);
         assertEquals(expected.keySet(), menu.getMenus().keySet());
         for (Map.Entry<String, List<String>> entry : expected.entrySet()) {
             // FIXME: cannot guarantee the sequence of the merge result, check implementation in
             // MergeableClusterInvoker#invoke
-            List<String> values1 = new ArrayList<String>(entry.getValue());
-            List<String> values2 = new ArrayList<String>(menu.getMenus().get(entry.getKey()));
+            List<String> values1 = new ArrayList<>(entry.getValue());
+            List<String> values2 = new ArrayList<>(menu.getMenus().get(entry.getKey()));
             Collections.sort(values1);
             Collections.sort(values2);
             assertEquals(values1, values2);
@@ -216,7 +216,7 @@ public class MergeableClusterInvokerTest {
         given(directory.getUrl()).willReturn(url);
         given(directory.getInterface()).willReturn(MenuService.class);
 
-        mergeableClusterInvoker = new MergeableClusterInvoker<MenuService>(directory);
+        mergeableClusterInvoker = new MergeableClusterInvoker<>(directory);
 
         Result result = mergeableClusterInvoker.invoke(invocation);
         Assertions.assertNull(result.getValue());

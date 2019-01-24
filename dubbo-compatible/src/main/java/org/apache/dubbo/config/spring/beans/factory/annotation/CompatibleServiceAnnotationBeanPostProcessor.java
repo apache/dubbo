@@ -221,7 +221,7 @@ public class CompatibleServiceAnnotationBeanPostProcessor implements BeanDefinit
 
         Set<BeanDefinition> beanDefinitions = scanner.findCandidateComponents(packageToScan);
 
-        Set<BeanDefinitionHolder> beanDefinitionHolders = new LinkedHashSet<BeanDefinitionHolder>(beanDefinitions.size());
+        Set<BeanDefinitionHolder> beanDefinitionHolders = new LinkedHashSet<>(beanDefinitions.size());
 
         for (BeanDefinition beanDefinition : beanDefinitions) {
 
@@ -370,7 +370,7 @@ public class CompatibleServiceAnnotationBeanPostProcessor implements BeanDefinit
     }
 
     private Set<String> resolvePackagesToScan(Set<String> packagesToScan) {
-        Set<String> resolvedPackagesToScan = new LinkedHashSet<String>(packagesToScan.size());
+        Set<String> resolvedPackagesToScan = new LinkedHashSet<>(packagesToScan.size());
         for (String packageToScan : packagesToScan) {
             if (StringUtils.hasText(packageToScan)) {
                 String resolvedPackageToScan = environment.resolvePlaceholders(packageToScan.trim());
@@ -460,7 +460,7 @@ public class CompatibleServiceAnnotationBeanPostProcessor implements BeanDefinit
 
     private ManagedList<RuntimeBeanReference> toRuntimeBeanReferences(String... beanNames) {
 
-        ManagedList<RuntimeBeanReference> runtimeBeanReferences = new ManagedList<RuntimeBeanReference>();
+        ManagedList<RuntimeBeanReference> runtimeBeanReferences = new ManagedList<>();
 
         if (!ObjectUtils.isEmpty(beanNames)) {
 

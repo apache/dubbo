@@ -160,7 +160,7 @@ public class DubboConfigBindingRegistrar implements ImportBeanDefinitionRegistra
 
     private Set<String> resolveMultipleBeanNames(Map<String, Object> properties) {
 
-        Set<String> beanNames = new LinkedHashSet<String>();
+        Set<String> beanNames = new LinkedHashSet<>();
 
         for (String propertyName : properties.keySet()) {
 

@@ -42,7 +42,7 @@ public class NettyServer extends BaseRestServer {
             server.setHostname(bindIp);
         }
         server.setPort(url.getParameter(Constants.BIND_PORT_KEY, url.getPort()));
-        Map<ChannelOption, Object> channelOption = new HashMap<ChannelOption, Object>();
+        Map<ChannelOption, Object> channelOption = new HashMap<>();
         channelOption.put(ChannelOption.SO_KEEPALIVE, url.getParameter(Constants.KEEP_ALIVE_KEY, Constants.DEFAULT_KEEP_ALIVE));
         server.setChildChannelOptions(channelOption);
         server.setExecutorThreadCount(url.getParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS));

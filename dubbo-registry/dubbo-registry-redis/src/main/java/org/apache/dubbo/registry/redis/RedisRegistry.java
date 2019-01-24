@@ -73,7 +73,7 @@ public class RedisRegistry extends FailbackRegistry {
 
     private final Map<String, JedisPool> jedisPools = new ConcurrentHashMap<>();
 
-    private final ConcurrentMap<String, Notifier> notifiers = new ConcurrentHashMap<String, Notifier>();
+    private final ConcurrentMap<String, Notifier> notifiers = new ConcurrentHashMap<>();
 
     private final int reconnectPeriod;
 
@@ -123,7 +123,7 @@ public class RedisRegistry extends FailbackRegistry {
         }
         replicate = "replicate".equals(cluster);
 
-        List<String> addresses = new ArrayList<String>();
+        List<String> addresses = new ArrayList<>();
         addresses.add(url.getAddress());
         String[] backups = url.getParameter(Constants.BACKUP_KEY, new String[0]);
         if (ArrayUtils.isNotEmpty(backups)) {

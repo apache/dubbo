@@ -56,8 +56,8 @@ import static org.mockito.Mockito.mock;
  */
 @SuppressWarnings("rawtypes")
 public class AbstractClusterInvokerTest {
-    List<Invoker<IHelloService>> invokers = new ArrayList<Invoker<IHelloService>>();
-    List<Invoker<IHelloService>> selectedInvokers = new ArrayList<Invoker<IHelloService>>();
+    List<Invoker<IHelloService>> invokers = new ArrayList<>();
+    List<Invoker<IHelloService>> selectedInvokers = new ArrayList<>();
     AbstractClusterInvoker<IHelloService> cluster;
     AbstractClusterInvoker<IHelloService> cluster_nocheck;
     StaticDirectory<IHelloService> dic;
@@ -120,7 +120,7 @@ public class AbstractClusterInvokerTest {
         given(mockedInvoker1.getUrl()).willReturn(turl.setPort(999).setProtocol("mock"));
 
         invokers.add(invoker1);
-        dic = new StaticDirectory<IHelloService>(url, invokers, null);
+        dic = new StaticDirectory<>(url, invokers, null);
         cluster = new AbstractClusterInvoker(dic) {
             @Override
             protected Result doInvoke(Invocation invocation, List invokers, LoadBalance loadbalance)
@@ -423,7 +423,7 @@ public class AbstractClusterInvokerTest {
         LoadBalance lb = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(RoundRobinLoadBalance.NAME);
         initlistsize5();
 
-        Map<Invoker, AtomicLong> counter = new ConcurrentHashMap<Invoker, AtomicLong>();
+        Map<Invoker, AtomicLong> counter = new ConcurrentHashMap<>();
         for (Invoker invoker : invokers) {
             counter.put(invoker, new AtomicLong(0));
         }
@@ -462,7 +462,7 @@ public class AbstractClusterInvokerTest {
 
     @Test()
     public void testTimeoutExceptionCode() {
-        List<Invoker<DemoService>> invokers = new ArrayList<Invoker<DemoService>>();
+        List<Invoker<DemoService>> invokers = new ArrayList<>();
         invokers.add(new Invoker<DemoService>() {
 
             @Override
@@ -487,22 +487,22 @@ public class AbstractClusterInvokerTest {
             public void destroy() {
             }
         });
-        Directory<DemoService> directory = new StaticDirectory<DemoService>(invokers);
-        FailoverClusterInvoker<DemoService> failoverClusterInvoker = new FailoverClusterInvoker<DemoService>(directory);
+        Directory<DemoService> directory = new StaticDirectory<>(invokers);
+        FailoverClusterInvoker<DemoService> failoverClusterInvoker = new FailoverClusterInvoker<>(directory);
         try {
             failoverClusterInvoker.invoke(new RpcInvocation("sayHello", new Class<?>[0], new Object[0]));
             Assertions.fail();
         } catch (RpcException e) {
             Assertions.assertEquals(RpcException.TIMEOUT_EXCEPTION, e.getCode());
         }
-        ForkingClusterInvoker<DemoService> forkingClusterInvoker = new ForkingClusterInvoker<DemoService>(directory);
+        ForkingClusterInvoker<DemoService> forkingClusterInvoker = new ForkingClusterInvoker<>(directory);
         try {
             forkingClusterInvoker.invoke(new RpcInvocation("sayHello", new Class<?>[0], new Object[0]));
             Assertions.fail();
         } catch (RpcException e) {
             Assertions.assertEquals(RpcException.TIMEOUT_EXCEPTION, e.getCode());
         }
-        FailfastClusterInvoker<DemoService> failfastClusterInvoker = new FailfastClusterInvoker<DemoService>(directory);
+        FailfastClusterInvoker<DemoService> failfastClusterInvoker = new FailfastClusterInvoker<>(directory);
         try {
             failfastClusterInvoker.invoke(new RpcInvocation("sayHello", new Class<?>[0], new Object[0]));
             Assertions.fail();

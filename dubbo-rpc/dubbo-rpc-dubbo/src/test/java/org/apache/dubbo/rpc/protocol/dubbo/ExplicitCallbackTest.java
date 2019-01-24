@@ -275,7 +275,7 @@ public class ExplicitCallbackTest {
     }
 
     class DemoServiceImpl implements IDemoService {
-        private List<IDemoCallback> callbacks = new ArrayList<IDemoCallback>();
+        private List<IDemoCallback> callbacks = new ArrayList<>();
         private volatile Thread t = null;
         private volatile Lock lock = new ReentrantLock();
 
@@ -322,7 +322,7 @@ public class ExplicitCallbackTest {
                         public void run() {
                             while (callbacks.size() > 0) {
                                 try {
-                                    List<IDemoCallback> callbacksCopy = new ArrayList<IDemoCallback>(callbacks);
+                                    List<IDemoCallback> callbacksCopy = new ArrayList<>(callbacks);
                                     for (IDemoCallback callback : callbacksCopy) {
                                         try {
                                             callback.yyy("this is callback msg,current time is :" + System.currentTimeMillis());

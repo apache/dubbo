@@ -42,9 +42,9 @@ public abstract class AbstractGroup implements Group {
 
     protected final URL url;
 
-    protected final Map<URL, Server> servers = new ConcurrentHashMap<URL, Server>();
+    protected final Map<URL, Server> servers = new ConcurrentHashMap<>();
 
-    protected final Map<URL, Client> clients = new ConcurrentHashMap<URL, Client>();
+    protected final Map<URL, Client> clients = new ConcurrentHashMap<>();
 
     protected final ChannelHandlerDispatcher dispatcher = new ChannelHandlerDispatcher();
 

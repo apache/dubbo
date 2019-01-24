@@ -98,7 +98,7 @@ public class ScriptRouter extends AbstractRouter {
             if (obj instanceof Invoker[]) {
                 invokersCopy = Arrays.asList((Invoker<T>[]) obj);
             } else if (obj instanceof Object[]) {
-                invokersCopy = new ArrayList<Invoker<T>>();
+                invokersCopy = new ArrayList<>();
                 for (Object inv : (Object[]) obj) {
                     invokersCopy.add((Invoker<T>) inv);
                 }

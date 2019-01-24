@@ -42,19 +42,19 @@ public abstract class AbstractRegistryService implements RegistryService {
 
     // registered services
     // Map<serviceName, Map<url, queryString>>
-    private final ConcurrentMap<String, List<URL>> registered = new ConcurrentHashMap<String, List<URL>>();
+    private final ConcurrentMap<String, List<URL>> registered = new ConcurrentHashMap<>();
 
     // subscribed services
     // Map<serviceName, queryString>
-    private final ConcurrentMap<String, Map<String, String>> subscribed = new ConcurrentHashMap<String, Map<String, String>>();
+    private final ConcurrentMap<String, Map<String, String>> subscribed = new ConcurrentHashMap<>();
 
     // notified services
     // Map<serviceName, Map<url, queryString>>
-    private final ConcurrentMap<String, List<URL>> notified = new ConcurrentHashMap<String, List<URL>>();
+    private final ConcurrentMap<String, List<URL>> notified = new ConcurrentHashMap<>();
 
     // notification listeners for the subscribed services
     // Map<serviceName, List<notificationListener>>
-    private final ConcurrentMap<String, List<NotifyListener>> notifyListeners = new ConcurrentHashMap<String, List<NotifyListener>>();
+    private final ConcurrentMap<String, List<NotifyListener>> notifyListeners = new ConcurrentHashMap<>();
 
     @Override
     public void register(URL url) {

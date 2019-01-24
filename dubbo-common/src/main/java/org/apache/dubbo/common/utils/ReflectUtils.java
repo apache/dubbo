@@ -116,11 +116,11 @@ public final class ReflectUtils {
 
     public static final Pattern IS_HAS_CAN_METHOD_DESC_PATTERN = Pattern.compile("(?:is|has|can)([A-Z][_a-zA-Z0-9]*)\\(\\)Z");
 
-    private static final ConcurrentMap<String, Class<?>> DESC_CLASS_CACHE = new ConcurrentHashMap<String, Class<?>>();
+    private static final ConcurrentMap<String, Class<?>> DESC_CLASS_CACHE = new ConcurrentHashMap<>();
 
-    private static final ConcurrentMap<String, Class<?>> NAME_CLASS_CACHE = new ConcurrentHashMap<String, Class<?>>();
+    private static final ConcurrentMap<String, Class<?>> NAME_CLASS_CACHE = new ConcurrentHashMap<>();
 
-    private static final ConcurrentMap<String, Method> Signature_METHODS_CACHE = new ConcurrentHashMap<String, Method>();
+    private static final ConcurrentMap<String, Method> Signature_METHODS_CACHE = new ConcurrentHashMap<>();
 
     private ReflectUtils() {
     }
@@ -833,7 +833,7 @@ public final class ReflectUtils {
             return EMPTY_CLASS_ARRAY;
         }
 
-        List<Class<?>> cs = new ArrayList<Class<?>>();
+        List<Class<?>> cs = new ArrayList<>();
         Matcher m = DESC_PATTERN.matcher(desc);
         while (m.find()) {
             cs.add(desc2class(cl, m.group()));
@@ -862,7 +862,7 @@ public final class ReflectUtils {
             return method;
         }
         if (parameterTypes == null) {
-            List<Method> finded = new ArrayList<Method>();
+            List<Method> finded = new ArrayList<>();
             for (Method m : clazz.getMethods()) {
                 if (m.getName().equals(methodName)) {
                     finded.add(m);
@@ -1063,7 +1063,7 @@ public final class ReflectUtils {
     }
 
     public static Map<String, Field> getBeanPropertyFields(Class cl) {
-        Map<String, Field> properties = new HashMap<String, Field>();
+        Map<String, Field> properties = new HashMap<>();
         for (; cl != null; cl = cl.getSuperclass()) {
             Field[] fields = cl.getDeclaredFields();
             for (Field field : fields) {
@@ -1082,7 +1082,7 @@ public final class ReflectUtils {
     }
 
     public static Map<String, Method> getBeanPropertyReadMethods(Class cl) {
-        Map<String, Method> properties = new HashMap<String, Method>();
+        Map<String, Method> properties = new HashMap<>();
         for (; cl != null; cl = cl.getSuperclass()) {
             Method[] methods = cl.getDeclaredMethods();
             for (Method method : methods) {

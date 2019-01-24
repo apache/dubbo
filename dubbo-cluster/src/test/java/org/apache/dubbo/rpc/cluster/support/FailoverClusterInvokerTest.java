@@ -48,7 +48,7 @@ import static org.mockito.Mockito.mock;
  */
 @SuppressWarnings("unchecked")
 public class FailoverClusterInvokerTest {
-    private List<Invoker<FailoverClusterInvokerTest>> invokers = new ArrayList<Invoker<FailoverClusterInvokerTest>>();
+    private List<Invoker<FailoverClusterInvokerTest>> invokers = new ArrayList<>();
     private int retries = 5;
     private URL url = URL.valueOf("test://test:11/test?retries=" + retries);
     private Invoker<FailoverClusterInvokerTest> invoker1 = mock(Invoker.class);
@@ -88,7 +88,7 @@ public class FailoverClusterInvokerTest {
         given(invoker2.getUrl()).willReturn(url);
         given(invoker2.getInterface()).willReturn(FailoverClusterInvokerTest.class);
 
-        FailoverClusterInvoker<FailoverClusterInvokerTest> invoker = new FailoverClusterInvoker<FailoverClusterInvokerTest>(dic);
+        FailoverClusterInvoker<FailoverClusterInvokerTest> invoker = new FailoverClusterInvoker<>(dic);
         try {
             invoker.invoke(invocation);
             fail();
@@ -110,7 +110,7 @@ public class FailoverClusterInvokerTest {
         given(invoker2.getUrl()).willReturn(url);
         given(invoker2.getInterface()).willReturn(FailoverClusterInvokerTest.class);
 
-        FailoverClusterInvoker<FailoverClusterInvokerTest> invoker = new FailoverClusterInvoker<FailoverClusterInvokerTest>(dic);
+        FailoverClusterInvoker<FailoverClusterInvokerTest> invoker = new FailoverClusterInvoker<>(dic);
         for (int i = 0; i < 100; i++) {
             Result ret = invoker.invoke(invocation);
             assertSame(result, ret);
@@ -129,7 +129,7 @@ public class FailoverClusterInvokerTest {
         given(invoker2.getUrl()).willReturn(url);
         given(invoker2.getInterface()).willReturn(FailoverClusterInvokerTest.class);
 
-        FailoverClusterInvoker<FailoverClusterInvokerTest> invoker = new FailoverClusterInvoker<FailoverClusterInvokerTest>(dic);
+        FailoverClusterInvoker<FailoverClusterInvokerTest> invoker = new FailoverClusterInvoker<>(dic);
         try {
             Result ret = invoker.invoke(invocation);
             assertSame(result, ret);
@@ -152,7 +152,7 @@ public class FailoverClusterInvokerTest {
         invokers.add(invoker1);
 
 
-        FailoverClusterInvoker<FailoverClusterInvokerTest> invoker = new FailoverClusterInvoker<FailoverClusterInvokerTest>(dic);
+        FailoverClusterInvoker<FailoverClusterInvokerTest> invoker = new FailoverClusterInvoker<>(dic);
         try {
             invoker.invoke(invocation);
             fail();
@@ -169,13 +169,13 @@ public class FailoverClusterInvokerTest {
     public void testInvokerDestroyAndReList() {
         final URL url = URL.valueOf("test://localhost/" + Demo.class.getName() + "?loadbalance=roundrobin&retries=" + retries);
         RpcException exception = new RpcException(RpcException.TIMEOUT_EXCEPTION);
-        MockInvoker<Demo> invoker1 = new MockInvoker<Demo>(Demo.class, url);
+        MockInvoker<Demo> invoker1 = new MockInvoker<>(Demo.class, url);
         invoker1.setException(exception);
 
-        MockInvoker<Demo> invoker2 = new MockInvoker<Demo>(Demo.class, url);
+        MockInvoker<Demo> invoker2 = new MockInvoker<>(Demo.class, url);
         invoker2.setException(exception);
 
-        final List<Invoker<Demo>> invokers = new ArrayList<Invoker<Demo>>();
+        final List<Invoker<Demo>> invokers = new ArrayList<>();
         invokers.add(invoker1);
         invokers.add(invoker2);
 
@@ -186,7 +186,7 @@ public class FailoverClusterInvokerTest {
                     invoker.destroy();
                 }
                 invokers.clear();
-                MockInvoker<Demo> invoker3 = new MockInvoker<Demo>(Demo.class, url);
+                MockInvoker<Demo> invoker3 = new MockInvoker<>(Demo.class, url);
                 invokers.add(invoker3);
                 return null;
             }
@@ -197,9 +197,9 @@ public class FailoverClusterInvokerTest {
         RpcInvocation inv = new RpcInvocation();
         inv.setMethodName("test");
 
-        Directory<Demo> dic = new MockDirectory<Demo>(url, invokers);
+        Directory<Demo> dic = new MockDirectory<>(url, invokers);
 
-        FailoverClusterInvoker<Demo> clusterinvoker = new FailoverClusterInvoker<Demo>(dic);
+        FailoverClusterInvoker<Demo> clusterinvoker = new FailoverClusterInvoker<>(dic);
         clusterinvoker.invoke(inv);
     }
 

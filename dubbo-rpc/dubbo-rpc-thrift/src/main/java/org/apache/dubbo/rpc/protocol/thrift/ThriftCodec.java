@@ -86,10 +86,10 @@ public class ThriftCodec implements Codec2 {
     public static final byte VERSION = (byte) 1;
     public static final short MAGIC = (short) 0xdabc;
     static final ConcurrentMap<Long, RequestData> cachedRequest =
-            new ConcurrentHashMap<Long, RequestData>();
+            new ConcurrentHashMap<>();
     private static final AtomicInteger THRIFT_SEQ_ID = new AtomicInteger(0);
     private static final ConcurrentMap<String, Class<?>> cachedClass =
-            new ConcurrentHashMap<String, Class<?>>();
+            new ConcurrentHashMap<>();
 
     private static int nextSeqId() {
         return THRIFT_SEQ_ID.incrementAndGet();
@@ -225,8 +225,8 @@ public class ThriftCodec implements Codec2 {
                 throw new RpcException(RpcException.SERIALIZATION_EXCEPTION, e.getMessage(), e);
             }
 
-            List<Object> parameters = new ArrayList<Object>();
-            List<Class<?>> parameterTypes = new ArrayList<Class<?>>();
+            List<Object> parameters = new ArrayList<>();
+            List<Class<?>> parameterTypes = new ArrayList<>();
             int index = 1;
 
             while (true) {

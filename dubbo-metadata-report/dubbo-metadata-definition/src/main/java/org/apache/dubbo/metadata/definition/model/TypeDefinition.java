@@ -48,7 +48,7 @@ public class TypeDefinition {
 
     public List<String> getEnums() {
         if (enums == null) {
-            enums = new ArrayList<String>();
+            enums = new ArrayList<>();
         }
         return enums;
     }
@@ -59,14 +59,14 @@ public class TypeDefinition {
 
     public List<TypeDefinition> getItems() {
         if (items == null) {
-            items = new ArrayList<TypeDefinition>();
+            items = new ArrayList<>();
         }
         return items;
     }
 
     public Map<String, TypeDefinition> getProperties() {
         if (properties == null) {
-            properties = new HashMap<String, TypeDefinition>();
+            properties = new HashMap<>();
         }
         return properties;
     }

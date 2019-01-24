@@ -55,7 +55,7 @@ public class Main {
                 args = Constants.COMMA_SPLIT_PATTERN.split(config);
             }
 
-            final List<Container> containers = new ArrayList<Container>();
+            final List<Container> containers = new ArrayList<>();
             for (int i = 0; i < args.length; i++) {
                 containers.add(loader.getExtension(args[i]));
             }

@@ -80,7 +80,7 @@ public class MockRegistry implements Registry {
     @Override
     public void subscribe(URL url, NotifyListener listener) {
         this.subscribedUrl = url;
-        List<URL> urls = new ArrayList<URL>();
+        List<URL> urls = new ArrayList<>();
 
         urls.add(url.setProtocol("mockprotocol")
                 .removeParameter(Constants.CATEGORY_KEY)

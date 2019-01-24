@@ -65,10 +65,10 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     // Local disk cache, where the special key value.registies records the list of registry centers, and the others are the list of notified service providers
     final Properties properties = new Properties();
     private final ExecutorService reportCacheExecutor = Executors.newFixedThreadPool(1, new NamedThreadFactory("DubboSaveMetadataReport", true));
-    final Map<MetadataIdentifier, Object> allMetadataReports = new ConcurrentHashMap<MetadataIdentifier, Object>(4);
+    final Map<MetadataIdentifier, Object> allMetadataReports = new ConcurrentHashMap<>(4);
 
     private final AtomicLong lastCacheChanged = new AtomicLong();
-    final Map<MetadataIdentifier, Object> failedReports = new ConcurrentHashMap<MetadataIdentifier, Object>(4);
+    final Map<MetadataIdentifier, Object> failedReports = new ConcurrentHashMap<>(4);
     private URL reportURL;
     boolean syncReport;
     // Local disk cache file

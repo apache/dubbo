@@ -35,9 +35,9 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
 
     private final URL url;
 
-    private final Set<StateListener> stateListeners = new CopyOnWriteArraySet<StateListener>();
+    private final Set<StateListener> stateListeners = new CopyOnWriteArraySet<>();
 
-    private final ConcurrentMap<String, ConcurrentMap<ChildListener, TargetChildListener>> childListeners = new ConcurrentHashMap<String, ConcurrentMap<ChildListener, TargetChildListener>>();
+    private final ConcurrentMap<String, ConcurrentMap<ChildListener, TargetChildListener>> childListeners = new ConcurrentHashMap<>();
 
     private volatile boolean closed = false;
 

@@ -303,12 +303,12 @@ public class JavaBeanSerializeUtilTest {
         bean.setType(Bean.class);
         bean.setArray(new Phone[]{});
 
-        Collection<Phone> collection = new ArrayList<Phone>();
+        Collection<Phone> collection = new ArrayList<>();
         bean.setCollection(collection);
         Phone phone = new Phone();
         collection.add(phone);
 
-        Map<String, FullAddress> map = new HashMap<String, FullAddress>();
+        Map<String, FullAddress> map = new HashMap<>();
         FullAddress address = new FullAddress();
         map.put("first", address);
         bean.setAddresses(map);
@@ -353,12 +353,12 @@ public class JavaBeanSerializeUtilTest {
         bean.setType(Bean.class);
         bean.setArray(new Phone[]{});
 
-        Collection<Phone> collection = new ArrayList<Phone>();
+        Collection<Phone> collection = new ArrayList<>();
         bean.setCollection(collection);
         Phone phone = new Phone();
         collection.add(phone);
 
-        Map<String, FullAddress> map = new HashMap<String, FullAddress>();
+        Map<String, FullAddress> map = new HashMap<>();
         FullAddress address = new FullAddress();
         map.put("first", address);
         bean.setAddresses(map);
@@ -493,7 +493,7 @@ public class JavaBeanSerializeUtilTest {
         bigPerson.setEmail("sm@1.com");
         bigPerson.setPenName("pname");
 
-        ArrayList<Phone> phones = new ArrayList<Phone>();
+        ArrayList<Phone> phones = new ArrayList<>();
         Phone phone1 = new Phone("86", "0571", "87654321", "001");
         Phone phone2 = new Phone("86", "0571", "87654322", "002");
         phones.add(phone1);

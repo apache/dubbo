@@ -54,7 +54,7 @@ import static org.mockito.Mockito.mock;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class FailbackClusterInvokerTest {
 
-    List<Invoker<FailbackClusterInvokerTest>> invokers = new ArrayList<Invoker<FailbackClusterInvokerTest>>();
+    List<Invoker<FailbackClusterInvokerTest>> invokers = new ArrayList<>();
     URL url = URL.valueOf("test://test:11/test?retries=2&failbacktasks=2");
     Invoker<FailbackClusterInvokerTest> invoker = mock(Invoker.class);
     RpcInvocation invocation = new RpcInvocation();

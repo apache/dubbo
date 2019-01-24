@@ -80,9 +80,9 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
     private final Class<A> annotationType;
 
     private final ConcurrentMap<String, AnnotationInjectedBeanPostProcessor.AnnotatedInjectionMetadata> injectionMetadataCache =
-            new ConcurrentHashMap<String, AnnotationInjectedBeanPostProcessor.AnnotatedInjectionMetadata>(CACHE_SIZE);
+            new ConcurrentHashMap<>(CACHE_SIZE);
 
-    private final ConcurrentMap<String, Object> injectedObjectsCache = new ConcurrentHashMap<String, Object>(CACHE_SIZE);
+    private final ConcurrentMap<String, Object> injectedObjectsCache = new ConcurrentHashMap<>(CACHE_SIZE);
 
     private ConfigurableListableBeanFactory beanFactory;
 
@@ -97,7 +97,7 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
     }
 
     private static <T> Collection<T> combine(Collection<? extends T>... elements) {
-        List<T> allElements = new ArrayList<T>();
+        List<T> allElements = new ArrayList<>();
         for (Collection<? extends T> e : elements) {
             allElements.addAll(e);
         }
@@ -145,7 +145,7 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
      */
     private List<AnnotationInjectedBeanPostProcessor.AnnotatedFieldElement> findFieldAnnotationMetadata(final Class<?> beanClass) {
 
-        final List<AnnotationInjectedBeanPostProcessor.AnnotatedFieldElement> elements = new LinkedList<AnnotationInjectedBeanPostProcessor.AnnotatedFieldElement>();
+        final List<AnnotationInjectedBeanPostProcessor.AnnotatedFieldElement> elements = new LinkedList<>();
 
         ReflectionUtils.doWithFields(beanClass, new ReflectionUtils.FieldCallback() {
             @Override
@@ -180,7 +180,7 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
      */
     private List<AnnotationInjectedBeanPostProcessor.AnnotatedMethodElement> findAnnotatedMethodMetadata(final Class<?> beanClass) {
 
-        final List<AnnotationInjectedBeanPostProcessor.AnnotatedMethodElement> elements = new LinkedList<AnnotationInjectedBeanPostProcessor.AnnotatedMethodElement>();
+        final List<AnnotationInjectedBeanPostProcessor.AnnotatedMethodElement> elements = new LinkedList<>();
 
         ReflectionUtils.doWithMethods(beanClass, new ReflectionUtils.MethodCallback() {
             @Override
@@ -396,7 +396,7 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
     protected Map<InjectionMetadata.InjectedElement, Object> getInjectedFieldObjectsMap() {
 
         Map<InjectionMetadata.InjectedElement, Object> injectedElementBeanMap =
-                new LinkedHashMap<InjectionMetadata.InjectedElement, Object>();
+                new LinkedHashMap<>();
 
         for (AnnotationInjectedBeanPostProcessor.AnnotatedInjectionMetadata metadata : injectionMetadataCache.values()) {
 
@@ -422,7 +422,7 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
     protected Map<InjectionMetadata.InjectedElement, Object> getInjectedMethodObjectsMap() {
 
         Map<InjectionMetadata.InjectedElement, Object> injectedElementBeanMap =
-                new LinkedHashMap<InjectionMetadata.InjectedElement, Object>();
+                new LinkedHashMap<>();
 
         for (AnnotationInjectedBeanPostProcessor.AnnotatedInjectionMetadata metadata : injectionMetadataCache.values()) {
 

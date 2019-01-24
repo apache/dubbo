@@ -286,7 +286,7 @@ public class JSON {
 
         byte state = START;
         Object value = null, tmp;
-        Stack<Entry> stack = new Stack<Entry>();
+        Stack<Entry> stack = new Stack<>();
 
         do {
             switch (state) {
@@ -458,7 +458,7 @@ public class JSON {
 
         Object value = null;
         int state = START, index = 0;
-        Stack<int[]> states = new Stack<int[]>();
+        Stack<int[]> states = new Stack<>();
         boolean pv = false;
 
         handler.begin();

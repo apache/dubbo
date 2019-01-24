@@ -52,14 +52,14 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
     /**
      * The monitor centers Map<RegistryAddress, Registry>
      */
-    private static final Map<String, Monitor> MONITORS = new ConcurrentHashMap<String, Monitor>();
+    private static final Map<String, Monitor> MONITORS = new ConcurrentHashMap<>();
 
-    private static final Map<String, CompletableFuture<Monitor>> FUTURES = new ConcurrentHashMap<String, CompletableFuture<Monitor>>();
+    private static final Map<String, CompletableFuture<Monitor>> FUTURES = new ConcurrentHashMap<>();
 
     /**
      * The monitor create executor
      */
-    private static final ExecutorService executor = new ThreadPoolExecutor(0, 10, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new NamedThreadFactory("DubboMonitorCreator", true));
+    private static final ExecutorService executor = new ThreadPoolExecutor(0, 10, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), new NamedThreadFactory("DubboMonitorCreator", true));
 
     public static Collection<Monitor> getMonitors() {
         return Collections.unmodifiableCollection(MONITORS.values());

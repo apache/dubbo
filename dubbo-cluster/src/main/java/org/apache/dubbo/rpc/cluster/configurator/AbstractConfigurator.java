@@ -103,7 +103,7 @@ public abstract class AbstractConfigurator implements Configurator {
                 String currentApplication = url.getParameter(Constants.APPLICATION_KEY, url.getUsername());
                 if (configApplication == null || Constants.ANY_VALUE.equals(configApplication)
                         || configApplication.equals(currentApplication)) {
-                    Set<String> conditionKeys = new HashSet<String>();
+                    Set<String> conditionKeys = new HashSet<>();
                     conditionKeys.add(Constants.CATEGORY_KEY);
                     conditionKeys.add(Constants.CHECK_KEY);
                     conditionKeys.add(Constants.DYNAMIC_KEY);

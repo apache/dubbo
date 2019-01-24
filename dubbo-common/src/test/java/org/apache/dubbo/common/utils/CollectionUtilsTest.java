@@ -44,12 +44,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class CollectionUtilsTest {
     @Test
     public void testSort() throws Exception {
-        List<Integer> list = new ArrayList<Integer>();
+        List<Integer> list = new ArrayList<>();
         list.add(100);
         list.add(10);
         list.add(20);
 
-        List<Integer> expected = new ArrayList<Integer>();
+        List<Integer> expected = new ArrayList<>();
         expected.add(10);
         expected.add(20);
         expected.add(100);
@@ -66,7 +66,7 @@ public class CollectionUtilsTest {
 
     @Test
     public void testSortSimpleName() throws Exception {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         list.add("aaa.z");
         list.add("b");
         list.add(null);
@@ -93,13 +93,13 @@ public class CollectionUtilsTest {
 
         assertTrue(CollectionUtils.splitAll(new HashMap<String, List<String>>(), "-").isEmpty());
 
-        Map<String, List<String>> input = new HashMap<String, List<String>>();
+        Map<String, List<String>> input = new HashMap<>();
         input.put("key1", Arrays.asList("1:a", "2:b", "3:c"));
         input.put("key2", Arrays.asList("1:a", "2:b"));
         input.put("key3", null);
         input.put("key4", new ArrayList<String>());
 
-        Map<String, Map<String, String>> expected = new HashMap<String, Map<String, String>>();
+        Map<String, Map<String, String>> expected = new HashMap<>();
         expected.put("key1", CollectionUtils.toStringMap("1", "a", "2", "b", "3", "c"));
         expected.put("key2", CollectionUtils.toStringMap("1", "a", "2", "b"));
         expected.put("key3", null);
@@ -113,13 +113,13 @@ public class CollectionUtilsTest {
         assertNull(CollectionUtils.joinAll(null, null));
         assertNull(CollectionUtils.joinAll(null, "-"));
 
-        Map<String, List<String>> expected = new HashMap<String, List<String>>();
+        Map<String, List<String>> expected = new HashMap<>();
         expected.put("key1", Arrays.asList("1:a", "2:b", "3:c"));
         expected.put("key2", Arrays.asList("1:a", "2:b"));
         expected.put("key3", null);
         expected.put("key4", new ArrayList<String>());
 
-        Map<String, Map<String, String>> input = new HashMap<String, Map<String, String>>();
+        Map<String, Map<String, String>> input = new HashMap<>();
         input.put("key1", CollectionUtils.toStringMap("1", "a", "2", "b", "3", "c"));
         input.put("key2", CollectionUtils.toStringMap("1", "a", "2", "b"));
         input.put("key3", null);
@@ -171,7 +171,7 @@ public class CollectionUtilsTest {
     public void testToMap1() throws Exception {
         assertTrue(CollectionUtils.toMap().isEmpty());
 
-        Map<String, Integer> expected = new HashMap<String, Integer>();
+        Map<String, Integer> expected = new HashMap<>();
         expected.put("a", 1);
         expected.put("b", 2);
         expected.put("c", 3);

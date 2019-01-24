@@ -34,8 +34,8 @@ import java.util.Set;
 public class CodecSupport {
 
     private static final Logger logger = LoggerFactory.getLogger(CodecSupport.class);
-    private static Map<Byte, Serialization> ID_SERIALIZATION_MAP = new HashMap<Byte, Serialization>();
-    private static Map<Byte, String> ID_SERIALIZATIONNAME_MAP = new HashMap<Byte, String>();
+    private static Map<Byte, Serialization> ID_SERIALIZATION_MAP = new HashMap<>();
+    private static Map<Byte, String> ID_SERIALIZATIONNAME_MAP = new HashMap<>();
 
     static {
         Set<String> supportedExtensions = ExtensionLoader.getExtensionLoader(Serialization.class).getSupportedExtensions();

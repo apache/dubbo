@@ -65,7 +65,7 @@ public class MulticastRegistry extends FailbackRegistry {
 
     private final int multicastPort;
 
-    private final ConcurrentMap<URL, Set<URL>> received = new ConcurrentHashMap<URL, Set<URL>>();
+    private final ConcurrentMap<URL, Set<URL>> received = new ConcurrentHashMap<>();
 
     private final ScheduledExecutorService cleanExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("DubboMulticastRegistryCleanTimer", true));
 
@@ -347,7 +347,7 @@ public class MulticastRegistry extends FailbackRegistry {
                 }
                 if (urls == null || urls.isEmpty()) {
                     if (urls == null) {
-                        urls = new ConcurrentHashSet<URL>();
+                        urls = new ConcurrentHashSet<>();
                     }
                     URL empty = url.setProtocol(Constants.EMPTY_PROTOCOL);
                     urls.add(empty);
@@ -366,7 +366,7 @@ public class MulticastRegistry extends FailbackRegistry {
     }
 
     private List<URL> toList(Set<URL> urls) {
-        List<URL> list = new ArrayList<URL>();
+        List<URL> list = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(urls)) {
             for (URL url : urls) {
                 list.add(url);

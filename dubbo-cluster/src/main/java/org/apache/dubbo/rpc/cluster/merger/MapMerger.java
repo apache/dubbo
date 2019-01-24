@@ -30,7 +30,7 @@ public class MapMerger implements Merger<Map<?, ?>> {
         if (ArrayUtils.isEmpty(items)) {
             return Collections.emptyMap();
         }
-        Map<Object, Object> result = new HashMap<Object, Object>();
+        Map<Object, Object> result = new HashMap<>();
         for (Map<?, ?> item : items) {
             if (item != null) {
                 result.putAll(item);

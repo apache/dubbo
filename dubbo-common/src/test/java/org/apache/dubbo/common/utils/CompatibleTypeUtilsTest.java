@@ -136,11 +136,11 @@ public class CompatibleTypeUtilsTest {
         }
 
         {
-            List<String> list = new ArrayList<String>();
+            List<String> list = new ArrayList<>();
             list.add("a");
             list.add("b");
 
-            Set<String> set = new HashSet<String>();
+            Set<String> set = new HashSet<>();
             set.add("a");
             set.add("b");
 

@@ -84,7 +84,7 @@ public class PerformanceServerTest  {
                     return CompletableFuture.completedFuture(PerformanceUtils.getEnvironment());
                 }
                 if ("scene".equals(request)) {
-                    List<String> scene = new ArrayList<String>();
+                    List<String> scene = new ArrayList<>();
                     scene.add("Transporter: " + transporter);
                     scene.add("Service Threads: " + threads);
                     return CompletableFuture.completedFuture(scene);

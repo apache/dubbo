@@ -24,7 +24,7 @@ import java.util.Map;
 
 public class Menu {
 
-    private Map<String, List<String>> menus = new HashMap<String, List<String>>();
+    private Map<String, List<String>> menus = new HashMap<>();
 
     public Menu() {
     }
@@ -38,7 +38,7 @@ public class Menu {
     public void putMenuItem(String menu, String item) {
         List<String> items = menus.get(menu);
         if (item == null) {
-            items = new ArrayList<String>();
+            items = new ArrayList<>();
             menus.put(menu, items);
         }
         items.add(item);

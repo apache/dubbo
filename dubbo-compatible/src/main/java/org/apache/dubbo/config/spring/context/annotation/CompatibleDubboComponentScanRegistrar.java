@@ -96,7 +96,7 @@ public class CompatibleDubboComponentScanRegistrar implements ImportBeanDefiniti
         Class<?>[] basePackageClasses = attributes.getClassArray("basePackageClasses");
         String[] value = attributes.getStringArray("value");
         // Appends value array attributes
-        Set<String> packagesToScan = new LinkedHashSet<String>(Arrays.asList(value));
+        Set<String> packagesToScan = new LinkedHashSet<>(Arrays.asList(value));
         packagesToScan.addAll(Arrays.asList(basePackages));
         for (Class<?> basePackageClass : basePackageClasses) {
             packagesToScan.add(ClassUtils.getPackageName(basePackageClass));

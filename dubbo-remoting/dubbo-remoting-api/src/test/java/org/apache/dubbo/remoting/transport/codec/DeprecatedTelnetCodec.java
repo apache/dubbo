@@ -309,7 +309,7 @@ public class DeprecatedTelnetCodec implements Codec {
         String result = toString(message, getCharset(channel));
         if (result != null && result.trim().length() > 0) {
             if (history == null) {
-                history = new LinkedList<String>();
+                history = new LinkedList<>();
                 channel.setAttribute(HISTORY_LIST_KEY, history);
             }
             if (history.size() == 0) {

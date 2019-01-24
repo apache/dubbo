@@ -30,7 +30,7 @@ public class ProviderModel {
     private final String serviceName;
     private final Object serviceInstance;
     private final Class<?> serviceInterfaceClass;
-    private final Map<String, List<ProviderMethodModel>> methods = new HashMap<String, List<ProviderMethodModel>>();
+    private final Map<String, List<ProviderMethodModel>> methods = new HashMap<>();
 
     public ProviderModel(String serviceName, Object serviceInstance, Class<?> serviceInterfaceClass) {
         if (null == serviceInstance) {
@@ -58,7 +58,7 @@ public class ProviderModel {
     }
 
     public List<ProviderMethodModel> getAllMethods() {
-        List<ProviderMethodModel> result = new ArrayList<ProviderMethodModel>();
+        List<ProviderMethodModel> result = new ArrayList<>();
         for (List<ProviderMethodModel> models : methods.values()) {
             result.addAll(models);
         }
@@ -86,7 +86,7 @@ public class ProviderModel {
 
             List<ProviderMethodModel> methodModels = methods.get(method.getName());
             if (methodModels == null) {
-                methodModels = new ArrayList<ProviderMethodModel>(1);
+                methodModels = new ArrayList<>(1);
                 methods.put(method.getName(), methodModels);
             }
             methodModels.add(new ProviderMethodModel(method, serviceName));

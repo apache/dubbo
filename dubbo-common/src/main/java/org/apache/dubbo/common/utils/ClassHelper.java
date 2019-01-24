@@ -40,12 +40,12 @@ public class ClassHelper {
      * Map with primitive type name as key and corresponding primitive type as
      * value, for example: "int" -> "int.class".
      */
-    private static final Map<String, Class<?>> primitiveTypeNameMap = new HashMap<String, Class<?>>(16);
+    private static final Map<String, Class<?>> primitiveTypeNameMap = new HashMap<>(16);
     /**
      * Map with primitive wrapper type as key and corresponding primitive type
      * as value, for example: Integer.class -> int.class.
      */
-    private static final Map<Class<?>, Class<?>> primitiveWrapperTypeMap = new HashMap<Class<?>, Class<?>>(8);
+    private static final Map<Class<?>, Class<?>> primitiveWrapperTypeMap = new HashMap<>(8);
 
     private static final char PACKAGE_SEPARATOR_CHAR = '.';
 
@@ -59,7 +59,7 @@ public class ClassHelper {
         primitiveWrapperTypeMap.put(Long.class, long.class);
         primitiveWrapperTypeMap.put(Short.class, short.class);
 
-        Set<Class<?>> primitiveTypeNames = new HashSet<Class<?>>(16);
+        Set<Class<?>> primitiveTypeNames = new HashSet<>(16);
         primitiveTypeNames.addAll(primitiveWrapperTypeMap.values());
         primitiveTypeNames.addAll(Arrays
                 .asList(new Class<?>[]{boolean[].class, byte[].class, char[].class, double[].class,

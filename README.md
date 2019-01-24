@@ -113,7 +113,7 @@ import java.io.IOException;
 public class Application {
 
     public static void main(String[] args) throws IOException {
-        ServiceConfig<GreetingService> serviceConfig = new ServiceConfig<GreetingService>();
+        ServiceConfig<GreetingService> serviceConfig = new ServiceConfig<>();
         serviceConfig.setApplication(new ApplicationConfig("first-dubbo-provider"));
         serviceConfig.setRegistry(new RegistryConfig("multicast://224.5.6.7:1234"));
         serviceConfig.setInterface(GreetingService.class);
@@ -145,7 +145,7 @@ import org.apache.dubbo.samples.api.GreetingService;
 
 public class Application {
     public static void main(String[] args) {
-        ReferenceConfig<GreetingService> referenceConfig = new ReferenceConfig<GreetingService>();
+        ReferenceConfig<GreetingService> referenceConfig = new ReferenceConfig<>();
         referenceConfig.setApplication(new ApplicationConfig("first-dubbo-consumer"));
         referenceConfig.setRegistry(new RegistryConfig("multicast://224.5.6.7:1234"));
         referenceConfig.setInterface(GreetingService.class);

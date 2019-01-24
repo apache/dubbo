@@ -251,7 +251,7 @@ public class DubboProtocol extends AbstractProtocol {
 
         // export service.
         String key = serviceKey(url);
-        DubboExporter<T> exporter = new DubboExporter<T>(invoker, key, exporterMap);
+        DubboExporter<T> exporter = new DubboExporter<>(invoker, key, exporterMap);
         exporterMap.put(key, exporter);
 
         //export an stub service for dispatching event
@@ -361,7 +361,7 @@ public class DubboProtocol extends AbstractProtocol {
     public <T> Invoker<T> refer(Class<T> serviceType, URL url) throws RpcException {
         optimizeSerialization(url);
         // create rpc invoker.
-        DubboInvoker<T> invoker = new DubboInvoker<T>(serviceType, url, getClients(url), invokers);
+        DubboInvoker<T> invoker = new DubboInvoker<>(serviceType, url, getClients(url), invokers);
         invokers.add(invoker);
         return invoker;
     }

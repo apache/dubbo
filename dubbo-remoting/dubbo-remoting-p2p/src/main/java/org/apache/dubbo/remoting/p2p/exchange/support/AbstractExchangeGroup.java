@@ -46,9 +46,9 @@ public abstract class AbstractExchangeGroup implements ExchangeGroup {
 
     protected final URL url;
 
-    protected final Map<URL, ExchangeServer> servers = new ConcurrentHashMap<URL, ExchangeServer>();
+    protected final Map<URL, ExchangeServer> servers = new ConcurrentHashMap<>();
 
-    protected final Map<URL, ExchangeClient> clients = new ConcurrentHashMap<URL, ExchangeClient>();
+    protected final Map<URL, ExchangeClient> clients = new ConcurrentHashMap<>();
 
     protected final ExchangeHandlerDispatcher dispatcher = new ExchangeHandlerDispatcher();
 

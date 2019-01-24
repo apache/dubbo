@@ -44,12 +44,12 @@ public class StaticDirectoryTest {
     @Test
     public void testStaticDirectory() {
         Router router = new ConditionRouterFactory().getRouter(getRouteUrl(" => " + " host = " + NetUtils.getLocalHost()));
-        List<Router> routers = new ArrayList<Router>();
+        List<Router> routers = new ArrayList<>();
         routers.add(router);
-        List<Invoker<String>> invokers = new ArrayList<Invoker<String>>();
-        Invoker<String> invoker1 = new MockInvoker<String>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"));
-        Invoker<String> invoker2 = new MockInvoker<String>(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880/com.foo.BarService"));
-        Invoker<String> invoker3 = new MockInvoker<String>(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880/com.foo.BarService"));
+        List<Invoker<String>> invokers = new ArrayList<>();
+        Invoker<String> invoker1 = new MockInvoker<>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"));
+        Invoker<String> invoker2 = new MockInvoker<>(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880/com.foo.BarService"));
+        Invoker<String> invoker3 = new MockInvoker<>(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880/com.foo.BarService"));
         invokers.add(invoker1);
         invokers.add(invoker2);
         invokers.add(invoker3);

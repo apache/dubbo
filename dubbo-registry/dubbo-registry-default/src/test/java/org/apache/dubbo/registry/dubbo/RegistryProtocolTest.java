@@ -102,11 +102,11 @@ public class RegistryProtocolTest {
     @Test
     public void testNotifyOverride() throws Exception {
         URL newRegistryUrl = registryUrl.addParameter(Constants.EXPORT_KEY, serviceUrl);
-        Invoker<RegistryProtocolTest> invoker = new MockInvoker<RegistryProtocolTest>(RegistryProtocolTest.class, newRegistryUrl);
+        Invoker<RegistryProtocolTest> invoker = new MockInvoker<>(RegistryProtocolTest.class, newRegistryUrl);
         Exporter<?> exporter = protocol.export(invoker);
         RegistryProtocol rprotocol = RegistryProtocol.getRegistryProtocol();
         NotifyListener listener = getListener(rprotocol);
-        List<URL> urls = new ArrayList<URL>();
+        List<URL> urls = new ArrayList<>();
         urls.add(URL.valueOf("override://0.0.0.0/?timeout=1000"));
         urls.add(URL.valueOf("override://0.0.0.0/" + service + "?timeout=100"));
         urls.add(URL.valueOf("override://0.0.0.0/" + service + "?x=y"));
@@ -132,11 +132,11 @@ public class RegistryProtocolTest {
     @Test
     public void testNotifyOverride_notmatch() throws Exception {
         URL newRegistryUrl = registryUrl.addParameter(Constants.EXPORT_KEY, serviceUrl);
-        Invoker<RegistryProtocolTest> invoker = new MockInvoker<RegistryProtocolTest>(RegistryProtocolTest.class, newRegistryUrl);
+        Invoker<RegistryProtocolTest> invoker = new MockInvoker<>(RegistryProtocolTest.class, newRegistryUrl);
         Exporter<?> exporter = protocol.export(invoker);
         RegistryProtocol rprotocol = RegistryProtocol.getRegistryProtocol();
         NotifyListener listener = getListener(rprotocol);
-        List<URL> urls = new ArrayList<URL>();
+        List<URL> urls = new ArrayList<>();
         urls.add(URL.valueOf("override://0.0.0.0/org.apache.dubbo.registry.protocol.HackService?timeout=100"));
         listener.notify(urls);
         assertEquals(true, exporter.getInvoker().isAvailable());
@@ -151,7 +151,7 @@ public class RegistryProtocolTest {
     @Test
     public void testDestoryRegistry() {
         URL newRegistryUrl = registryUrl.addParameter(Constants.EXPORT_KEY, serviceUrl);
-        Invoker<RegistryProtocolTest> invoker = new MockInvoker<RegistryProtocolTest>(RegistryProtocolTest.class, newRegistryUrl);
+        Invoker<RegistryProtocolTest> invoker = new MockInvoker<>(RegistryProtocolTest.class, newRegistryUrl);
         Exporter<?> exporter = protocol.export(invoker);
         destroyRegistryProtocol();
         try {

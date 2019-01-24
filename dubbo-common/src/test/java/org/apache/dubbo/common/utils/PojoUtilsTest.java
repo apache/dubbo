@@ -60,7 +60,7 @@ public class PojoUtilsTest {
         bigPerson.setEmail("abc@123.com");
         bigPerson.setPenName("pname");
 
-        ArrayList<Phone> phones = new ArrayList<Phone>();
+        ArrayList<Phone> phones = new ArrayList<>();
         Phone phone1 = new Phone("86", "0571", "11223344", "001");
         Phone phone2 = new Phone("86", "0571", "11223344", "002");
         phones.add(phone1);
@@ -134,9 +134,9 @@ public class PojoUtilsTest {
 
     @Test
     public void test_Map_List_pojo() throws Exception {
-        Map<String, List<Object>> map = new HashMap<String, List<Object>>();
+        Map<String, List<Object>> map = new HashMap<>();
 
-        List<Object> list = new ArrayList<Object>();
+        List<Object> list = new ArrayList<>();
         list.add(new Person());
         list.add(new SerializablePerson());
 
@@ -224,7 +224,7 @@ public class PojoUtilsTest {
         person1.setName("person1");
         Person person2 = new Person();
         person2.setName("person2");
-        List<Person> list = new LinkedList<Person>();
+        List<Person> list = new LinkedList<>();
         list.add(person1);
         list.add(person2);
         Object o = PojoUtils.realize(PojoUtils.generalize(list), Person[].class);
@@ -309,7 +309,7 @@ public class PojoUtilsTest {
     @Test
     public void test_simpleCollection() throws Exception {
         Type gtype = getType("returnListPersonMethod");
-        List<Person> list = new ArrayList<Person>();
+        List<Person> list = new ArrayList<>();
         list.add(new Person());
         {
             Person person = new Person();
@@ -360,7 +360,7 @@ public class PojoUtilsTest {
 
     @Test
     public void test_Loop_Map() throws Exception {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
 
         map.put("k", "v");
         map.put("m", map);
@@ -388,7 +388,7 @@ public class PojoUtilsTest {
         p.setChild(c);
         c.setParent(p);
 
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         map.put("k", p);
 
         Object generalize = PojoUtils.generalize(map);
@@ -416,7 +416,7 @@ public class PojoUtilsTest {
         p.setChild(c);
         c.setParent(p);
 
-        List<Object> list = new ArrayList<Object>();
+        List<Object> list = new ArrayList<>();
         list.add(p);
 
         Object generalize = PojoUtils.generalize(list);
@@ -441,7 +441,7 @@ public class PojoUtilsTest {
         p.setAge(10);
         p.setName("jerry");
 
-        List<Object> list = new ArrayList<Object>();
+        List<Object> list = new ArrayList<>();
         list.add(p);
 
         Object generalize = PojoUtils.generalize(list);
@@ -575,7 +575,7 @@ public class PojoUtilsTest {
 
     @Test
     public void testRealize() throws Exception {
-        Map<String, String> map = new LinkedHashMap<String, String>();
+        Map<String, String> map = new LinkedHashMap<>();
         map.put("key", "value");
         Object obj = PojoUtils.generalize(map);
         assertTrue(obj instanceof LinkedHashMap);
@@ -588,7 +588,7 @@ public class PojoUtilsTest {
 
     @Test
     public void testRealizeLinkedList() throws Exception {
-        LinkedList<Person> input = new LinkedList<Person>();
+        LinkedList<Person> input = new LinkedList<>();
         Person person = new Person();
         person.setAge(37);
         input.add(person);
@@ -601,8 +601,8 @@ public class PojoUtilsTest {
 
     @Test
     public void testPojoList() throws Exception {
-        ListResult<Parent> result = new ListResult<Parent>();
-        List<Parent> list = new ArrayList<Parent>();
+        ListResult<Parent> result = new ListResult<>();
+        List<Parent> list = new ArrayList<>();
         Parent parent = new Parent();
         parent.setAge(Integer.MAX_VALUE);
         parent.setName("zhangsan");
@@ -623,13 +623,13 @@ public class PojoUtilsTest {
 
     @Test
     public void testListPojoListPojo() throws Exception {
-        InnerPojo<Parent> parentList = new InnerPojo<Parent>();
+        InnerPojo<Parent> parentList = new InnerPojo<>();
         Parent parent = new Parent();
         parent.setName("zhangsan");
         parent.setAge(Integer.MAX_VALUE);
         parentList.setList(Arrays.asList(parent));
 
-        ListResult<InnerPojo<Parent>> list = new ListResult<InnerPojo<Parent>>();
+        ListResult<InnerPojo<Parent>> list = new ListResult<>();
         list.setResult(Arrays.asList(parentList));
 
         Object generializeObject = PojoUtils.generalize(list);
@@ -766,8 +766,8 @@ public class PojoUtilsTest {
     }
 
     public static class TestData {
-        private Map<String, Child> children = new HashMap<String, Child>();
-        private List<Child> list = new ArrayList<Child>();
+        private Map<String, Child> children = new HashMap<>();
+        private List<Child> list = new ArrayList<>();
 
         public List<Child> getList() {
             return list;

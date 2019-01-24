@@ -36,8 +36,8 @@ import java.util.concurrent.atomic.AtomicLong;
 @Deprecated
 public class GenericJSONConverter implements JSONConverter {
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
-    private static final Map<Class<?>, Encoder> GlobalEncoderMap = new HashMap<Class<?>, Encoder>();
-    private static final Map<Class<?>, Decoder> GlobalDecoderMap = new HashMap<Class<?>, Decoder>();
+    private static final Map<Class<?>, Encoder> GlobalEncoderMap = new HashMap<>();
+    private static final Map<Class<?>, Decoder> GlobalDecoderMap = new HashMap<>();
 
     static {
         // init encoder map.

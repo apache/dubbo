@@ -54,7 +54,7 @@ public class GenericImplFilterTest {
                 "accesslog=true&group=dubbo&version=1.1&generic=true");
         Invoker invoker = Mockito.mock(Invoker.class);
 
-        Map<String, Object> person = new HashMap<String, Object>();
+        Map<String, Object> person = new HashMap<>();
         person.put("name", "dubbo");
         person.put("age", 10);
 
@@ -93,7 +93,7 @@ public class GenericImplFilterTest {
 
         Method genericInvoke = GenericService.class.getMethods()[0];
 
-        Map<String, Object> person = new HashMap<String, Object>();
+        Map<String, Object> person = new HashMap<>();
         person.put("name", "dubbo");
         person.put("age", 10);
 

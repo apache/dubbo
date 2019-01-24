@@ -107,7 +107,7 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
      * @return such as 127.0.0.1:2181,127.0.0.1:8989,127.0.0.1:9999
      */
     List<String> getURLBackupAddress(URL url) {
-        List<String> addressList = new ArrayList<String>();
+        List<String> addressList = new ArrayList<>();
         addressList.add(url.getAddress());
 
         addressList.addAll(url.getParameter(Constants.BACKUP_KEY, Collections.EMPTY_LIST));

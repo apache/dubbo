@@ -63,7 +63,7 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
         }
     }
 
-    private ConcurrentMap<String, ConcurrentMap<String, WeightedRoundRobin>> methodWeightMap = new ConcurrentHashMap<String, ConcurrentMap<String, WeightedRoundRobin>>();
+    private ConcurrentMap<String, ConcurrentMap<String, WeightedRoundRobin>> methodWeightMap = new ConcurrentHashMap<>();
     private AtomicBoolean updateLock = new AtomicBoolean();
     
     /**
@@ -124,7 +124,7 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
             if (updateLock.compareAndSet(false, true)) {
                 try {
                     // copy -> modify -> update reference
-                    ConcurrentMap<String, WeightedRoundRobin> newMap = new ConcurrentHashMap<String, WeightedRoundRobin>();
+                    ConcurrentMap<String, WeightedRoundRobin> newMap = new ConcurrentHashMap<>();
                     newMap.putAll(map);
                     Iterator<Entry<String, WeightedRoundRobin>> it = newMap.entrySet().iterator();
                     while (it.hasNext()) {

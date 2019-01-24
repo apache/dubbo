@@ -64,7 +64,7 @@ public final class ClassUtils {
      * @return field list
      */
     public static List<Field> getNonStaticFields(final Class<?> clazz) {
-        List<Field> result = new ArrayList<Field>();
+        List<Field> result = new ArrayList<>();
         Class<?> target = clazz;
         while (target != null) {
             if (JaketConfigurationUtils.isExcludedType(target)) {
@@ -94,7 +94,7 @@ public final class ClassUtils {
      * @return methods list
      */
     public static List<Method> getPublicNonStaticMethods(final Class<?> clazz) {
-        List<Method> result = new ArrayList<Method>();
+        List<Method> result = new ArrayList<>();
 
         Method[] methods = clazz.getMethods();
         for (Method method : methods) {

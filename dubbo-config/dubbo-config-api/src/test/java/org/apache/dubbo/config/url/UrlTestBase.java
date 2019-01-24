@@ -146,7 +146,7 @@ public class UrlTestBase {
         protoConfForProvider = new ProtocolConfig("mockprotocol");
         protoConfForService = new ProtocolConfig("mockprotocol");
         methodConfForService = new MethodConfig();
-        servConf = new ServiceConfig<DemoService>();
+        servConf = new ServiceConfig<>();
 
 //        provConf.setApplication(appConfForProvider);
         servConf.setApplication(application);

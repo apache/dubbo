@@ -81,10 +81,10 @@ public class CompatibleReferenceAnnotationBeanPostProcessor extends Instantiatio
     private ClassLoader classLoader;
 
     private final ConcurrentMap<String, ReferenceInjectionMetadata> injectionMetadataCache =
-            new ConcurrentHashMap<String, ReferenceInjectionMetadata>(256);
+            new ConcurrentHashMap<>(256);
 
     private final ConcurrentMap<String, ReferenceBean<?>> referenceBeansCache =
-            new ConcurrentHashMap<String, ReferenceBean<?>>();
+            new ConcurrentHashMap<>();
 
     @Override
     public PropertyValues postProcessPropertyValues(
@@ -110,7 +110,7 @@ public class CompatibleReferenceAnnotationBeanPostProcessor extends Instantiatio
      */
     private List<ReferenceFieldElement> findFieldReferenceMetadata(final Class<?> beanClass) {
 
-        final List<ReferenceFieldElement> elements = new LinkedList<ReferenceFieldElement>();
+        final List<ReferenceFieldElement> elements = new LinkedList<>();
 
         ReflectionUtils.doWithFields(beanClass, new ReflectionUtils.FieldCallback() {
             @Override
@@ -145,7 +145,7 @@ public class CompatibleReferenceAnnotationBeanPostProcessor extends Instantiatio
      */
     private List<ReferenceMethodElement> findMethodReferenceMetadata(final Class<?> beanClass) {
 
-        final List<ReferenceMethodElement> elements = new LinkedList<ReferenceMethodElement>();
+        final List<ReferenceMethodElement> elements = new LinkedList<>();
 
         ReflectionUtils.doWithMethods(beanClass, new ReflectionUtils.MethodCallback() {
             @Override
@@ -293,7 +293,7 @@ public class CompatibleReferenceAnnotationBeanPostProcessor extends Instantiatio
         }
 
         private static <T> Collection<T> combine(Collection<? extends T>... elements) {
-            List<T> allElements = new ArrayList<T>();
+            List<T> allElements = new ArrayList<>();
             for (Collection<? extends T> e : elements) {
                 allElements.addAll(e);
             }
@@ -449,7 +449,7 @@ public class CompatibleReferenceAnnotationBeanPostProcessor extends Instantiatio
     public Map<InjectionMetadata.InjectedElement, ReferenceBean<?>> getInjectedFieldReferenceBeanMap() {
 
         Map<InjectionMetadata.InjectedElement, ReferenceBean<?>> injectedElementReferenceBeanMap =
-                new LinkedHashMap<InjectionMetadata.InjectedElement, ReferenceBean<?>>();
+                new LinkedHashMap<>();
 
         for (ReferenceInjectionMetadata metadata : injectionMetadataCache.values()) {
 
@@ -476,7 +476,7 @@ public class CompatibleReferenceAnnotationBeanPostProcessor extends Instantiatio
     public Map<InjectionMetadata.InjectedElement, ReferenceBean<?>> getInjectedMethodReferenceBeanMap() {
 
         Map<InjectionMetadata.InjectedElement, ReferenceBean<?>> injectedElementReferenceBeanMap =
-                new LinkedHashMap<InjectionMetadata.InjectedElement, ReferenceBean<?>>();
+                new LinkedHashMap<>();
 
         for (ReferenceInjectionMetadata metadata : injectionMetadataCache.values()) {
 

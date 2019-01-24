@@ -47,7 +47,7 @@ import static org.mockito.Mockito.mock;
 @SuppressWarnings("unchecked")
 public class FileRouterEngineTest {
     private static boolean isScriptUnsupported = new ScriptEngineManager().getEngineByName("javascript") == null;
-    List<Invoker<FileRouterEngineTest>> invokers = new ArrayList<Invoker<FileRouterEngineTest>>();
+    List<Invoker<FileRouterEngineTest>> invokers = new ArrayList<>();
     Invoker<FileRouterEngineTest> invoker1 = mock(Invoker.class);
     Invoker<FileRouterEngineTest> invoker2 = mock(Invoker.class);
     Invocation invocation;

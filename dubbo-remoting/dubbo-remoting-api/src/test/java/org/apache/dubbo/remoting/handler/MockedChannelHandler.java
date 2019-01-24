@@ -25,8 +25,8 @@ import java.util.Collections;
 import java.util.Set;
 
 public class MockedChannelHandler implements ChannelHandler {
-    //    ConcurrentMap<String, Channel> channels = new ConcurrentHashMap<String, Channel>();
-    ConcurrentHashSet<Channel> channels = new ConcurrentHashSet<Channel>();
+    //    ConcurrentMap<String, Channel> channels = new ConcurrentHashMap<>();
+    ConcurrentHashSet<Channel> channels = new ConcurrentHashSet<>();
 
     @Override
     public void connected(Channel channel) throws RemotingException {

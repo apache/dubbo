@@ -49,9 +49,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class HessianProtocol extends AbstractProxyProtocol {
 
-    private final Map<String, HttpServer> serverMap = new ConcurrentHashMap<String, HttpServer>();
+    private final Map<String, HttpServer> serverMap = new ConcurrentHashMap<>();
 
-    private final Map<String, HessianSkeleton> skeletonMap = new ConcurrentHashMap<String, HessianSkeleton>();
+    private final Map<String, HessianSkeleton> skeletonMap = new ConcurrentHashMap<>();
 
     private HttpBinder httpBinder;
 
