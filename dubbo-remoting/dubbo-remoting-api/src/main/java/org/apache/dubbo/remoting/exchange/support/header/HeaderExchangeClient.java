@@ -40,31 +40,21 @@ public class HeaderExchangeClient implements ExchangeClient {
 
     private final Client client;
     private final ExchangeChannel channel;
-    private int heartbeat;
-    private int idleTimeout;
 
-    private static final HashedWheelTimer IDLE_CHECK_TIMER = new HashedWheelTimer(new NamedThreadFactory("dubbo-client-idleCheck", true), 1,
-            TimeUnit.SECONDS, Constants.TICKS_PER_WHEEL);
-
+    private static final HashedWheelTimer IDLE_CHECK_TIMER = new HashedWheelTimer(
+            new NamedThreadFactory("dubbo-client-idleCheck", true), 1, TimeUnit.SECONDS, Constants.TICKS_PER_WHEEL);
     private HeartbeatTimerTask heartBeatTimerTask;
-
     private ReconnectTimerTask reconnectTimerTask;
 
-    public HeaderExchangeClient(Client client, boolean needHeartbeat) {
+    public HeaderExchangeClient(Client client, boolean startTimer) {
         Assert.notNull(client, "Client can't be null");
         this.client = client;
         this.channel = new HeaderExchangeChannel(client);
-        String dubbo = client.getUrl().getParameter(Constants.DUBBO_VERSION_KEY);
 
-        this.heartbeat = client.getUrl().getParameter(Constants.HEARTBEAT_KEY, dubbo != null &&
-                dubbo.startsWith("1.0.") ? Constants.DEFAULT_HEARTBEAT : 0);
-        this.idleTimeout = client.getUrl().getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartbeat * 3);
-        if (idleTimeout < heartbeat * 2) {
-            throw new IllegalStateException("idleTimeout < heartbeatInterval * 2");
-        }
-
-        if (needHeartbeat) {
-            startIdleCheckTask();
+        if (startTimer) {
+            URL url = client.getUrl();
+            startReconnectTask(url);
+            startHeartBeatTask(url);
         }
     }
 
@@ -178,25 +168,35 @@ public class HeaderExchangeClient implements ExchangeClient {
         return channel.hasAttribute(key);
     }
 
-    private void startIdleCheckTask() {
-        AbstractTimerTask.ChannelProvider cp = () -> Collections.singletonList(HeaderExchangeClient.this);
+    private void startHeartBeatTask(URL url) {
+        String transporter = url.getParameter(Constants.CLIENT_KEY, url.getParameter(Constants.TRANSPORTER_KEY, "netty"));
+        if (!transporter.startsWith("netty")) {
+            AbstractTimerTask.ChannelProvider cp = () -> Collections.singletonList(HeaderExchangeClient.this);
+            int heartbeat = getHeartbeat(url);
+            long heartbeatTick = calculateLeastDuration(heartbeat);
+            this.heartBeatTimerTask = new HeartbeatTimerTask(cp, heartbeatTick, heartbeat);
+            IDLE_CHECK_TIMER.newTimeout(heartBeatTimerTask, heartbeatTick, TimeUnit.MILLISECONDS);
+        }
+    }
 
-        long heartbeatTick = calculateLeastDuration(heartbeat);
-        long heartbeatTimeoutTick = calculateLeastDuration(idleTimeout);
-        HeartbeatTimerTask heartBeatTimerTask = new HeartbeatTimerTask(cp, heartbeatTick, heartbeat);
-        ReconnectTimerTask reconnectTimerTask = new ReconnectTimerTask(cp, heartbeatTimeoutTick, idleTimeout);
-
-        this.heartBeatTimerTask = heartBeatTimerTask;
-        this.reconnectTimerTask = reconnectTimerTask;
-
-        // init task and start timer.
-        IDLE_CHECK_TIMER.newTimeout(heartBeatTimerTask, heartbeatTick, TimeUnit.MILLISECONDS);
-        IDLE_CHECK_TIMER.newTimeout(reconnectTimerTask, heartbeatTimeoutTick, TimeUnit.MILLISECONDS);
+    private void startReconnectTask(URL url) {
+        if (shouldReconnect(url)) {
+            AbstractTimerTask.ChannelProvider cp = () -> Collections.singletonList(HeaderExchangeClient.this);
+            int idleTimeout = getIdleTimeout(url);
+            long heartbeatTimeoutTick = calculateLeastDuration(idleTimeout);
+            this.reconnectTimerTask = new ReconnectTimerTask(cp, heartbeatTimeoutTick, idleTimeout);
+            IDLE_CHECK_TIMER.newTimeout(reconnectTimerTask, heartbeatTimeoutTick, TimeUnit.MILLISECONDS);
+        }
     }
 
     private void doClose() {
-        heartBeatTimerTask.cancel();
-        reconnectTimerTask.cancel();
+        if (heartBeatTimerTask != null) {
+            heartBeatTimerTask.cancel();
+        }
+
+        if (reconnectTimerTask != null) {
+            reconnectTimerTask.cancel();
+        }
     }
 
     /**
@@ -208,6 +208,48 @@ public class HeaderExchangeClient implements ExchangeClient {
         } else {
             return time / Constants.HEARTBEAT_CHECK_TICK;
         }
+    }
+
+    private int getHeartbeat(URL url) {
+        String dubbo = url.getParameter(Constants.DUBBO_VERSION_KEY);
+        return url.getParameter(Constants.HEARTBEAT_KEY, dubbo != null &&
+                dubbo.startsWith("1.0.") ? Constants.DEFAULT_HEARTBEAT : 0);
+    }
+
+    private int getIdleTimeout(URL url) {
+        int heartBeat = getHeartbeat(url);
+        int idleTimeout = url.getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartBeat * 3);
+        if (idleTimeout < heartBeat * 2) {
+            throw new IllegalStateException("idleTimeout < heartbeatInterval * 2");
+        }
+        return idleTimeout;
+    }
+
+    private boolean shouldReconnect(URL url) {
+        boolean reconnect = url.getParameter(Constants.SEND_RECONNECT_KEY, false);
+        if (!reconnect) {
+            String param = url.getParameter(Constants.RECONNECT_KEY, "true");
+            if ("false".equalsIgnoreCase(param)) {
+                reconnect = false;
+            } else if ("true".equalsIgnoreCase(param)) {
+                reconnect = true;
+            } else {
+                int value;
+                try {
+                    value = Integer.parseInt(param);
+                } catch (Exception e) {
+                    throw new IllegalArgumentException("reconnect param must be non-negative integer or false/true, " +
+                            "input is:" + param);
+                }
+
+                if (value < 0) {
+                    throw new IllegalArgumentException("reconnect param must be non-negative integer or false/true, " +
+                            "input is:" + param);
+                }
+                reconnect = true;
+            }
+        }
+        return reconnect;
     }
 
     @Override

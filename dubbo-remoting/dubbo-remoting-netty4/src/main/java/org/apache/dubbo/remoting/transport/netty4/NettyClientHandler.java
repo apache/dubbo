@@ -16,15 +16,19 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 
 import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
+import io.netty.handler.timeout.IdleStateEvent;
 
 /**
  * NettyClientHandler
@@ -98,6 +102,23 @@ public class NettyClientHandler extends ChannelDuplexHandler {
             }
         } finally {
             NettyChannel.removeChannelIfDisconnected(ctx.channel());
+        }
+    }
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof IdleStateEvent) {
+            Request req = new Request();
+            req.setVersion(Version.getProtocolVersion());
+            req.setTwoWay(true);
+            req.setEvent(Request.HEARTBEAT_EVENT);
+            int timeout = url.getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+            ChannelFuture future = ctx.writeAndFlush(req);
+            if (future.awaitUninterruptibly(timeout)) {
+                // TODO: log
+            }
+        } else {
+            super.userEventTriggered(ctx, evt);
         }
     }
 
