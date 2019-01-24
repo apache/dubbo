@@ -473,10 +473,10 @@ public class AbstractConfigTest {
         ApplicationConfig application2 = new ApplicationConfig();
         application1.setName("app1");
         application2.setName("app2");
-        Assert.assertNotEquals(application1, application2);
+        Assertions.assertNotEquals(application1, application2);
         application1.setName("sameName");
         application2.setName("sameName");
-        Assert.assertEquals(application1, application2);
+        Assertions.assertEquals(application1, application2);
 
         ProtocolConfig protocol1 = new ProtocolConfig();
         protocol1.setHost("127.0.0.1");// excluded
@@ -484,7 +484,7 @@ public class AbstractConfigTest {
         ProtocolConfig protocol2 = new ProtocolConfig();
         protocol2.setHost("127.0.0.2");// excluded
         protocol2.setName("dubbo");
-        Assert.assertEquals(protocol1, protocol2);
+        Assertions.assertEquals(protocol1, protocol2);
     }
 
     @Retention(RetentionPolicy.RUNTIME)
