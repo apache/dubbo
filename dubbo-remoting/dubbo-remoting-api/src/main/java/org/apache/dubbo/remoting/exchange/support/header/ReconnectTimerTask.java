@@ -29,11 +29,11 @@ public class ReconnectTimerTask extends AbstractTimerTask {
 
     private static final Logger logger = LoggerFactory.getLogger(ReconnectTimerTask.class);
 
-    private final int heartbeatTimeout;
+    private final int idleTimeout;
 
-    ReconnectTimerTask(ChannelProvider channelProvider, Long heartbeatTimeoutTick, int heartbeatTimeout1) {
+    public ReconnectTimerTask(ChannelProvider channelProvider, Long heartbeatTimeoutTick, int idleTimeout) {
         super(channelProvider, heartbeatTimeoutTick);
-        this.heartbeatTimeout = heartbeatTimeout1;
+        this.idleTimeout = idleTimeout;
     }
 
     @Override
@@ -41,17 +41,14 @@ public class ReconnectTimerTask extends AbstractTimerTask {
         try {
             Long lastRead = lastRead(channel);
             Long now = now();
-            if (lastRead != null && now - lastRead > heartbeatTimeout) {
+            // check pong at client
+            if (lastRead != null && now - lastRead > idleTimeout) {
                 logger.warn("Close channel " + channel + ", because heartbeat read idle time out: "
-                        + heartbeatTimeout + "ms");
-                if (channel instanceof Client) {
-                    try {
-                        ((Client) channel).reconnect();
-                    } catch (Exception e) {
-                        //do nothing
-                    }
-                } else {
-                    channel.close();
+                        + idleTimeout + "ms");
+                try {
+                    ((Client) channel).reconnect();
+                } catch (Exception e) {
+                    logger.error(channel + "reconnect failed during idle time.", e);
                 }
             }
         } catch (Throwable t) {

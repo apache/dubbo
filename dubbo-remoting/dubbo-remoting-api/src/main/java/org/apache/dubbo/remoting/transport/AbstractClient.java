@@ -26,6 +26,7 @@ import org.apache.dubbo.common.store.DataStore;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Client;
@@ -124,7 +125,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     private static int getReconnectParam(URL url) {
         int reconnect;
         String param = url.getParameter(Constants.RECONNECT_KEY);
-        if (param == null || param.length() == 0 || "true".equalsIgnoreCase(param)) {
+        if (StringUtils.isEmpty(param) || "true".equalsIgnoreCase(param)) {
             reconnect = Constants.DEFAULT_RECONNECT_PERIOD;
         } else if ("false".equalsIgnoreCase(param)) {
             reconnect = 0;
@@ -152,6 +153,8 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                 @Override
                 public void run() {
                     try {
+                        if (cancelFutureIfOffline()) return;
+
                         if (!isConnected()) {
                             connect();
                         } else {
@@ -172,7 +175,29 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                         }
                     }
                 }
+
+                private boolean cancelFutureIfOffline() {
+                    /**
+                     * If the provider service is detected offline,
+                     * the client should not attempt to connect again.
+                     *
+                     * issue: https://github.com/apache/incubator-dubbo/issues/3158
+                     */
+                    if(isClosed()) {
+                        ScheduledFuture<?> future = reconnectExecutorFuture;
+                        if(future != null && !future.isCancelled()){
+                            /**
+                             *  Client has been destroyed and
+                             *  scheduled task should be cancelled.
+                             */
+                            future.cancel(true);
+                        }
+                        return true;
+                    }
+                    return false;
+                }
             };
+
             reconnectExecutorFuture = reconnectExecutorService.scheduleWithFixedDelay(connectStatusCheckCommand, reconnect, reconnect, TimeUnit.MILLISECONDS);
         }
     }
@@ -344,14 +369,14 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     @Override
     public void close() {
         try {
-            if (executor != null) {
-                ExecutorUtil.shutdownNow(executor, 100);
-            }
+            super.close();
         } catch (Throwable e) {
             logger.warn(e.getMessage(), e);
         }
         try {
-            super.close();
+            if (executor != null) {
+                ExecutorUtil.shutdownNow(executor, 100);
+            }
         } catch (Throwable e) {
             logger.warn(e.getMessage(), e);
         }

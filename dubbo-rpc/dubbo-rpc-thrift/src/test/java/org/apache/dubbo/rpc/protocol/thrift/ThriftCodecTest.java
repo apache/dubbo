@@ -37,8 +37,8 @@ import org.apache.thrift.protocol.TMessageType;
 import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TIOStreamTransport;
 import org.apache.thrift.transport.TTransport;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 
@@ -81,20 +81,20 @@ public class ThriftCodecTest {
         }
 
         // magic
-        Assert.assertEquals(ThriftCodec.MAGIC, protocol.readI16());
+        Assertions.assertEquals(ThriftCodec.MAGIC, protocol.readI16());
 
         // message length
         int messageLength = protocol.readI32();
-        Assert.assertEquals(messageLength + 4, bytes.length);
+        Assertions.assertEquals(messageLength + 4, bytes.length);
 
         // header length
         short headerLength = protocol.readI16();
         // version
-        Assert.assertEquals(ThriftCodec.VERSION, protocol.readByte());
+        Assertions.assertEquals(ThriftCodec.VERSION, protocol.readByte());
         // service name
-        Assert.assertEquals(Demo.Iface.class.getName(), protocol.readString());
+        Assertions.assertEquals(Demo.Iface.class.getName(), protocol.readString());
         // dubbo request id
-        Assert.assertEquals(request.getId(), protocol.readI64());
+        Assertions.assertEquals(request.getId(), protocol.readI64());
 
         // test message header length
         if (bis.markSupported()) {
@@ -110,11 +110,11 @@ public class ThriftCodecTest {
 
         protocol.readMessageEnd();
 
-        Assert.assertEquals("echoString", message.name);
+        Assertions.assertEquals("echoString", message.name);
 
-        Assert.assertEquals(TMessageType.CALL, message.type);
+        Assertions.assertEquals(TMessageType.CALL, message.type);
 
-        Assert.assertEquals("Hello, World!", args.getArg());
+        Assertions.assertEquals("Hello, World!", args.getArg());
 
     }
 
@@ -175,21 +175,21 @@ public class ThriftCodecTest {
 
         Object obj = codec.decode((Channel) null, bis);
 
-        Assert.assertNotNull(obj);
+        Assertions.assertNotNull(obj);
 
-        Assert.assertEquals(true, obj instanceof Response);
+        Assertions.assertEquals(true, obj instanceof Response);
 
         Response response = (Response) obj;
 
-        Assert.assertEquals(request.getId(), response.getId());
+        Assertions.assertEquals(request.getId(), response.getId());
 
-        Assert.assertTrue(response.getResult() instanceof RpcResult);
+        Assertions.assertTrue(response.getResult() instanceof RpcResult);
 
         RpcResult result = (RpcResult) response.getResult();
 
-        Assert.assertTrue(result.getResult() instanceof String);
+        Assertions.assertTrue(result.getResult() instanceof String);
 
-        Assert.assertEquals(methodResult.success, result.getResult());
+        Assertions.assertEquals(methodResult.success, result.getResult());
 
     }
 
@@ -245,19 +245,19 @@ public class ThriftCodecTest {
 
         Object obj = codec.decode((Channel) null, bis);
 
-        Assert.assertNotNull(obj);
+        Assertions.assertNotNull(obj);
 
-        Assert.assertTrue(obj instanceof Response);
+        Assertions.assertTrue(obj instanceof Response);
 
         Response response = (Response) obj;
 
-        Assert.assertTrue(response.getResult() instanceof RpcResult);
+        Assertions.assertTrue(response.getResult() instanceof RpcResult);
 
         RpcResult result = (RpcResult) response.getResult();
 
-        Assert.assertTrue(result.hasException());
+        Assertions.assertTrue(result.hasException());
 
-        Assert.assertTrue(result.getException() instanceof RpcException);
+        Assertions.assertTrue(result.getException() instanceof RpcException);
 
     }
 
@@ -295,13 +295,13 @@ public class ThriftCodecTest {
         TIOStreamTransport transport = new TIOStreamTransport(bis);
         TBinaryProtocol protocol = new TBinaryProtocol(transport);
 
-        Assert.assertEquals(ThriftCodec.MAGIC, protocol.readI16());
-        Assert.assertEquals(protocol.readI32() + 4, bos.writerIndex());
+        Assertions.assertEquals(ThriftCodec.MAGIC, protocol.readI16());
+        Assertions.assertEquals(protocol.readI32() + 4, bos.writerIndex());
         int headerLength = protocol.readI16();
 
-        Assert.assertEquals(ThriftCodec.VERSION, protocol.readByte());
-        Assert.assertEquals(Demo.Iface.class.getName(), protocol.readString());
-        Assert.assertEquals(request.getId(), protocol.readI64());
+        Assertions.assertEquals(ThriftCodec.VERSION, protocol.readByte());
+        Assertions.assertEquals(Demo.Iface.class.getName(), protocol.readString());
+        Assertions.assertEquals(request.getId(), protocol.readI64());
 
         if (bis.markSupported()) {
             bis.reset();
@@ -309,14 +309,14 @@ public class ThriftCodecTest {
         }
 
         TMessage message = protocol.readMessageBegin();
-        Assert.assertEquals("echoString", message.name);
-        Assert.assertEquals(TMessageType.REPLY, message.type);
-        //Assert.assertEquals(ThriftCodec.getSeqId(), message.seqid);
+        Assertions.assertEquals("echoString", message.name);
+        Assertions.assertEquals(TMessageType.REPLY, message.type);
+        //Assertions.assertEquals(ThriftCodec.getSeqId(), message.seqid);
         Demo.echoString_result result = new Demo.echoString_result();
         result.read(protocol);
         protocol.readMessageEnd();
 
-        Assert.assertEquals(rpcResult.getValue(), result.getSuccess());
+        Assertions.assertEquals(rpcResult.getValue(), result.getSuccess());
     }
 
     @Test
@@ -353,13 +353,13 @@ public class ThriftCodecTest {
         TIOStreamTransport transport = new TIOStreamTransport(bis);
         TBinaryProtocol protocol = new TBinaryProtocol(transport);
 
-        Assert.assertEquals(ThriftCodec.MAGIC, protocol.readI16());
-        Assert.assertEquals(protocol.readI32() + 4, bos.writerIndex());
+        Assertions.assertEquals(ThriftCodec.MAGIC, protocol.readI16());
+        Assertions.assertEquals(protocol.readI32() + 4, bos.writerIndex());
         int headerLength = protocol.readI16();
 
-        Assert.assertEquals(ThriftCodec.VERSION, protocol.readByte());
-        Assert.assertEquals(Demo.Iface.class.getName(), protocol.readString());
-        Assert.assertEquals(request.getId(), protocol.readI64());
+        Assertions.assertEquals(ThriftCodec.VERSION, protocol.readByte());
+        Assertions.assertEquals(Demo.Iface.class.getName(), protocol.readString());
+        Assertions.assertEquals(request.getId(), protocol.readI64());
 
         if (bis.markSupported()) {
             bis.reset();
@@ -367,13 +367,13 @@ public class ThriftCodecTest {
         }
 
         TMessage message = protocol.readMessageBegin();
-        Assert.assertEquals("echoString", message.name);
-        Assert.assertEquals(TMessageType.EXCEPTION, message.type);
-        Assert.assertEquals(ThriftCodec.getSeqId(), message.seqid);
+        Assertions.assertEquals("echoString", message.name);
+        Assertions.assertEquals(TMessageType.EXCEPTION, message.type);
+        Assertions.assertEquals(ThriftCodec.getSeqId(), message.seqid);
         TApplicationException exception = TApplicationException.read(protocol);
         protocol.readMessageEnd();
 
-        Assert.assertEquals(exceptionMessage, exception.getMessage());
+        Assertions.assertEquals(exceptionMessage, exception.getMessage());
 
     }
 
@@ -423,17 +423,17 @@ public class ThriftCodecTest {
         Object obj = codec.decode((Channel) null, ChannelBuffers.wrappedBuffer(
                 encodeFrame(bos.toByteArray())));
 
-        Assert.assertTrue(obj instanceof Request);
+        Assertions.assertTrue(obj instanceof Request);
 
         obj = ((Request) obj).getData();
 
-        Assert.assertTrue(obj instanceof RpcInvocation);
+        Assertions.assertTrue(obj instanceof RpcInvocation);
 
         RpcInvocation invocation = (RpcInvocation) obj;
 
-        Assert.assertEquals("echoString", invocation.getMethodName());
-        Assert.assertArrayEquals(new Class[]{String.class}, invocation.getParameterTypes());
-        Assert.assertArrayEquals(new Object[]{args.getArg()}, invocation.getArguments());
+        Assertions.assertEquals("echoString", invocation.getMethodName());
+        Assertions.assertArrayEquals(new Class[]{String.class}, invocation.getParameterTypes());
+        Assertions.assertArrayEquals(new Object[]{args.getArg()}, invocation.getArguments());
 
     }
 

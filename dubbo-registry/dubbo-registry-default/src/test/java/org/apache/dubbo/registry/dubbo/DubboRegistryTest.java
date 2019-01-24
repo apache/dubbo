@@ -28,10 +28,10 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.mock;
@@ -52,7 +52,7 @@ public class DubboRegistryTest {
 
     private RegistryService registryService;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         registryURL = new URL(Constants.REGISTRY_PROTOCOL, NetUtils.getLocalHost(), NetUtils.getAvailablePort())
                 .addParameter(Constants.CHECK_KEY, false)

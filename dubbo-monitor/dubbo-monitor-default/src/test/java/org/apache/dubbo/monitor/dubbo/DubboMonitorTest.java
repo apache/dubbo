@@ -29,8 +29,8 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.hamcrest.CustomMatcher;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import java.util.Arrays;
@@ -40,7 +40,7 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.atLeastOnce;
@@ -106,19 +106,19 @@ public class DubboMonitorTest {
         while (lastStatistics == null) {
             Thread.sleep(10);
         }
-        Assert.assertEquals(lastStatistics.getParameter(MonitorService.APPLICATION), "morgan");
-        Assert.assertEquals(lastStatistics.getProtocol(), "dubbo");
-        Assert.assertEquals(lastStatistics.getHost(), "10.20.153.10");
-        Assert.assertEquals(lastStatistics.getParameter(MonitorService.APPLICATION), "morgan");
-        Assert.assertEquals(lastStatistics.getParameter(MonitorService.INTERFACE), "MemberService");
-        Assert.assertEquals(lastStatistics.getParameter(MonitorService.METHOD), "findPerson");
-        Assert.assertEquals(lastStatistics.getParameter(MonitorService.CONSUMER), "10.20.153.11");
-        Assert.assertEquals(lastStatistics.getParameter(MonitorService.SUCCESS), "1");
-        Assert.assertEquals(lastStatistics.getParameter(MonitorService.FAILURE), "0");
-        Assert.assertEquals(lastStatistics.getParameter(MonitorService.ELAPSED), "3");
-        Assert.assertEquals(lastStatistics.getParameter(MonitorService.MAX_ELAPSED), "3");
-        Assert.assertEquals(lastStatistics.getParameter(MonitorService.CONCURRENT), "1");
-        Assert.assertEquals(lastStatistics.getParameter(MonitorService.MAX_CONCURRENT), "1");
+        Assertions.assertEquals(lastStatistics.getParameter(MonitorService.APPLICATION), "morgan");
+        Assertions.assertEquals(lastStatistics.getProtocol(), "dubbo");
+        Assertions.assertEquals(lastStatistics.getHost(), "10.20.153.10");
+        Assertions.assertEquals(lastStatistics.getParameter(MonitorService.APPLICATION), "morgan");
+        Assertions.assertEquals(lastStatistics.getParameter(MonitorService.INTERFACE), "MemberService");
+        Assertions.assertEquals(lastStatistics.getParameter(MonitorService.METHOD), "findPerson");
+        Assertions.assertEquals(lastStatistics.getParameter(MonitorService.CONSUMER), "10.20.153.11");
+        Assertions.assertEquals(lastStatistics.getParameter(MonitorService.SUCCESS), "1");
+        Assertions.assertEquals(lastStatistics.getParameter(MonitorService.FAILURE), "0");
+        Assertions.assertEquals(lastStatistics.getParameter(MonitorService.ELAPSED), "3");
+        Assertions.assertEquals(lastStatistics.getParameter(MonitorService.MAX_ELAPSED), "3");
+        Assertions.assertEquals(lastStatistics.getParameter(MonitorService.CONCURRENT), "1");
+        Assertions.assertEquals(lastStatistics.getParameter(MonitorService.MAX_CONCURRENT), "1");
         monitor.destroy();
     }
 
@@ -158,14 +158,14 @@ public class DubboMonitorTest {
                         Thread.sleep(10);
                     }
                     URL result = monitorService.getStatistics();
-                    Assert.assertEquals(1, result.getParameter(MonitorService.SUCCESS, 0));
-                    Assert.assertEquals(3, result.getParameter(MonitorService.ELAPSED, 0));
+                    Assertions.assertEquals(1, result.getParameter(MonitorService.SUCCESS, 0));
+                    Assertions.assertEquals(3, result.getParameter(MonitorService.ELAPSED, 0));
                 } finally {
                     monitor.destroy();
                 }
                 break;
             }
-            Assert.assertNotNull(monitor);
+            Assertions.assertNotNull(monitor);
         } finally {
             exporter.unexport();
         }

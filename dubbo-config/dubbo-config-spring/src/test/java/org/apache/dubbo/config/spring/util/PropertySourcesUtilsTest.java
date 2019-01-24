@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.config.spring.util;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.MutablePropertySources;
 
@@ -49,7 +49,7 @@ public class PropertySourcesUtilsTest {
 
         Map<String, Object> result = PropertySourcesUtils.getSubProperties(propertySources, "user");
 
-        Assert.assertEquals(Collections.emptyMap(), result);
+        Assertions.assertEquals(Collections.emptyMap(), result);
 
         source.put("age", "31");
         source.put("user.name", "Mercy");
@@ -63,16 +63,15 @@ public class PropertySourcesUtilsTest {
         expected.put("age", "31");
 
         result = PropertySourcesUtils.getSubProperties(propertySources, "user");
-
-        Assert.assertEquals(expected, result);
+        Assertions.assertEquals(expected, result);
 
         result = PropertySourcesUtils.getSubProperties(propertySources, "");
 
-        Assert.assertEquals(Collections.emptyMap(), result);
+        Assertions.assertEquals(Collections.emptyMap(), result);
 
         result = PropertySourcesUtils.getSubProperties(propertySources, "no-exists");
 
-        Assert.assertEquals(Collections.emptyMap(), result);
+        Assertions.assertEquals(Collections.emptyMap(), result);
 
     }
 

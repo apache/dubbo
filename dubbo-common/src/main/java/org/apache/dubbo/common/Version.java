@@ -89,7 +89,7 @@ public final class Version {
     }
 
     public static boolean isSupportResponseAttachment(String version) {
-        if (version == null || version.length() == 0) {
+        if (StringUtils.isEmpty(version)) {
             return false;
         }
         // for previous dubbo version(2.0.10/020010~2.6.2/020602), this version is the jar's version, so they need to
@@ -155,10 +155,10 @@ public final class Version {
         try {
             // find version info from MANIFEST.MF first
             String version = cls.getPackage().getImplementationVersion();
-            if (version == null || version.length() == 0) {
+            if (StringUtils.isEmpty(version)) {
                 version = cls.getPackage().getSpecificationVersion();
             }
-            if (version == null || version.length() == 0) {
+            if (StringUtils.isEmpty(version)) {
                 // guess version fro jar file name if nothing's found from MANIFEST.MF
                 CodeSource codeSource = cls.getProtectionDomain().getCodeSource();
                 if (codeSource == null) {
@@ -188,7 +188,7 @@ public final class Version {
                 }
             }
             // return default version if no version info is found
-            return version == null || version.length() == 0 ? defaultVersion : version;
+            return StringUtils.isEmpty(version) ? defaultVersion : version;
         } catch (Throwable e) {
             // return default version when any exception is thrown
             logger.error("return default version, ignore exception " + e.getMessage(), e);

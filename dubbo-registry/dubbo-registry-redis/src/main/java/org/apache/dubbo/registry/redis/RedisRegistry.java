@@ -24,6 +24,8 @@ import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.support.FailbackRegistry;
 import org.apache.dubbo.rpc.RpcException;
@@ -53,7 +55,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * RedisRegistry
- *
  */
 public class RedisRegistry extends FailbackRegistry {
 
@@ -69,7 +70,7 @@ public class RedisRegistry extends FailbackRegistry {
 
     private final String root;
 
-    private final Map<String, JedisPool> jedisPools = new ConcurrentHashMap<String, JedisPool>();
+    private final Map<String, JedisPool> jedisPools = new ConcurrentHashMap<>();
 
     private final ConcurrentMap<String, Notifier> notifiers = new ConcurrentHashMap<String, Notifier>();
 
@@ -124,7 +125,7 @@ public class RedisRegistry extends FailbackRegistry {
         List<String> addresses = new ArrayList<String>();
         addresses.add(url.getAddress());
         String[] backups = url.getParameter(Constants.BACKUP_KEY, new String[0]);
-        if (backups != null && backups.length > 0) {
+        if (ArrayUtils.isNotEmpty(backups)) {
             addresses.addAll(Arrays.asList(backups));
         }
 
@@ -199,10 +200,10 @@ public class RedisRegistry extends FailbackRegistry {
     // The monitoring center is responsible for deleting outdated dirty data
     private void clean(Jedis jedis) {
         Set<String> keys = jedis.keys(root + Constants.ANY_VALUE);
-        if (keys != null && !keys.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(keys)) {
             for (String key : keys) {
                 Map<String, String> values = jedis.hgetAll(key);
-                if (values != null && values.size() > 0) {
+                if (CollectionUtils.isNotEmptyMap(values)) {
                     boolean delete = false;
                     long now = System.currentTimeMillis();
                     for (Map.Entry<String, String> entry : values.entrySet()) {
@@ -359,13 +360,13 @@ public class RedisRegistry extends FailbackRegistry {
                     if (service.endsWith(Constants.ANY_VALUE)) {
                         admin = true;
                         Set<String> keys = jedis.keys(service);
-                        if (keys != null && !keys.isEmpty()) {
-                            Map<String, Set<String>> serviceKeys = new HashMap<String, Set<String>>();
+                        if (CollectionUtils.isNotEmpty(keys)) {
+                            Map<String, Set<String>> serviceKeys = new HashMap<>();
                             for (String key : keys) {
                                 String serviceKey = toServicePath(key);
                                 Set<String> sk = serviceKeys.get(serviceKey);
                                 if (sk == null) {
-                                    sk = new HashSet<String>();
+                                    sk = new HashSet<>();
                                     serviceKeys.put(serviceKey, sk);
                                 }
                                 sk.add(key);
@@ -400,8 +401,8 @@ public class RedisRegistry extends FailbackRegistry {
     }
 
     private void doNotify(Jedis jedis, String key) {
-        for (Map.Entry<URL, Set<NotifyListener>> entry : new HashMap<URL, Set<NotifyListener>>(getSubscribed()).entrySet()) {
-            doNotify(jedis, Arrays.asList(key), entry.getKey(), new HashSet<NotifyListener>(entry.getValue()));
+        for (Map.Entry<URL, Set<NotifyListener>> entry : new HashMap<>(getSubscribed()).entrySet()) {
+            doNotify(jedis, Arrays.asList(key), entry.getKey(), new HashSet<>(entry.getValue()));
         }
     }
 
@@ -411,7 +412,7 @@ public class RedisRegistry extends FailbackRegistry {
             return;
         }
         long now = System.currentTimeMillis();
-        List<URL> result = new ArrayList<URL>();
+        List<URL> result = new ArrayList<>();
         List<String> categories = Arrays.asList(url.getParameter(Constants.CATEGORY_KEY, new String[0]));
         String consumerService = url.getServiceInterface();
         for (String key : keys) {
@@ -425,9 +426,9 @@ public class RedisRegistry extends FailbackRegistry {
             if (!categories.contains(Constants.ANY_VALUE) && !categories.contains(category)) {
                 continue;
             }
-            List<URL> urls = new ArrayList<URL>();
+            List<URL> urls = new ArrayList<>();
             Map<String, String> values = jedis.hgetAll(key);
-            if (values != null && values.size() > 0) {
+            if (CollectionUtils.isEmptyMap(values)) {
                 for (Map.Entry<String, String> entry : values.entrySet()) {
                     URL u = URL.valueOf(entry.getKey());
                     if (!u.getParameter(Constants.DYNAMIC_KEY, true)
@@ -591,7 +592,7 @@ public class RedisRegistry extends FailbackRegistry {
                                             if (!first) {
                                                 first = false;
                                                 Set<String> keys = jedis.keys(service);
-                                                if (keys != null && !keys.isEmpty()) {
+                                                if (CollectionUtils.isNotEmpty(keys)) {
                                                     for (String s : keys) {
                                                         doNotify(jedis, s);
                                                     }

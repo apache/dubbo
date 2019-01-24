@@ -29,6 +29,7 @@ import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.configcenter.DynamicConfigurationFactory;
@@ -90,7 +91,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected String cluster;
 
     /**
-     * The {@link Filter} when the provicer side exposed a service or the customer side references a remote service used,
+     * The {@link Filter} when the provider side exposed a service or the customer side references a remote service used,
      * if there are more than one, you can use commas to separate them
      */
     protected String filter;
@@ -102,7 +103,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected String listener;
 
     /**
-     * The owner of zhe service providers
+     * The owner of the service providers
      */
     protected String owner;
 
@@ -286,7 +287,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected List<URL> loadRegistries(boolean provider) {
         // check && override if necessary
         List<URL> registryList = new ArrayList<URL>();
-        if (registries != null && !registries.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(registries)) {
             for (RegistryConfig config : registries) {
                 String address = config.getAddress();
                 if (StringUtils.isEmpty(address)) {
@@ -331,7 +332,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         appendRuntimeParameters(map);
         //set ip
         String hostToRegistry = ConfigUtils.getSystemProperty(Constants.DUBBO_IP_TO_REGISTRY);
-        if (hostToRegistry == null || hostToRegistry.length() == 0) {
+        if (StringUtils.isEmpty(hostToRegistry)) {
             hostToRegistry = NetUtils.getLocalHost();
         } else if (NetUtils.isInvalidLocalHost(hostToRegistry)) {
             throw new IllegalArgumentException("Specified invalid registry ip from property:" +
@@ -371,7 +372,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     private URL loadMetadataReporterURL() {
         String address = metadataReportConfig.getAddress();
-        if (address == null || address.length() == 0) {
+        if (StringUtils.isEmpty(address)) {
             return null;
         }
         Map<String, String> map = new HashMap<String, String>();
@@ -403,13 +404,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
         }
         // check if methods exist in the remote service interface
-        if (methods != null && !methods.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(methods)) {
             for (MethodConfig methodBean : methods) {
                 methodBean.setService(interfaceClass.getName());
                 methodBean.setServiceId(this.getId());
                 methodBean.refresh();
                 String methodName = methodBean.getName();
-                if (methodName == null || methodName.length() == 0) {
+                if (StringUtils.isEmpty(methodName)) {
                     throw new IllegalStateException("<dubbo:method> name attribute is required! Please check: " +
                             "<dubbo:service interface=\"" + interfaceClass.getName() + "\" ... >" +
                             "<dubbo:method name=\"\" ... /></<dubbo:reference>");
@@ -489,7 +490,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
 
         try {
-            //Check if the localClass a contructor with parameter who's type is interfaceClass
+            //Check if the localClass a constructor with parameter who's type is interfaceClass
             ReflectUtils.findConstructor(localClass, interfaceClass);
         } catch (NoSuchMethodException e) {
             throw new IllegalStateException("No such constructor \"public " + localClass.getSimpleName() +
@@ -722,7 +723,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public RegistryConfig getRegistry() {
-        return registries == null || registries.isEmpty() ? null : registries.get(0);
+        return CollectionUtils.isEmpty(registries) ? null : registries.get(0);
     }
 
     public void setRegistry(RegistryConfig registry) {

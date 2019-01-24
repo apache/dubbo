@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.compiler.support;
 
+import org.apache.dubbo.common.utils.StringUtils;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Array;
@@ -56,12 +58,12 @@ public class ClassUtils {
 
     public static Class<?> forName(String[] packages, String className) {
         try {
-            return _forName(className);
+            return classForName(className);
         } catch (ClassNotFoundException e) {
             if (packages != null && packages.length > 0) {
                 for (String pkg : packages) {
                     try {
-                        return _forName(pkg + "." + className);
+                        return classForName(pkg + "." + className);
                     } catch (ClassNotFoundException e2) {
                     }
                 }
@@ -72,14 +74,14 @@ public class ClassUtils {
 
     public static Class<?> forName(String className) {
         try {
-            return _forName(className);
+            return classForName(className);
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
-    public static Class<?> _forName(String className) throws ClassNotFoundException {
-        switch(className){
+    public static Class<?> classForName(String className) throws ClassNotFoundException {
+        switch (className) {
             case "boolean":
                 return boolean.class;
             case "byte":
@@ -112,6 +114,7 @@ public class ClassUtils {
                 return float[].class;
             case "double[]":
                 return double[].class;
+            default:
         }
         try {
             return arrayForName(className);
@@ -290,7 +293,7 @@ public class ClassUtils {
     }
 
     public static boolean isBeforeJava5(String javaVersion) {
-        return (javaVersion == null || javaVersion.length() == 0 || "1.0".equals(javaVersion)
+        return (StringUtils.isEmpty(javaVersion) || "1.0".equals(javaVersion)
                 || "1.1".equals(javaVersion) || "1.2".equals(javaVersion)
                 || "1.3".equals(javaVersion) || "1.4".equals(javaVersion));
     }

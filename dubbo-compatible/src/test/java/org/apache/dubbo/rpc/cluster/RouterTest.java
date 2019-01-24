@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.rpc.cluster;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,7 +31,7 @@ public class RouterTest {
 
     private static List<Router> routers = new ArrayList<>();
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp () {
         CompatibleRouter compatibleRouter = new CompatibleRouter();
         routers.add(compatibleRouter);
@@ -45,9 +45,9 @@ public class RouterTest {
     public void testCompareTo () {
         try {
             Collections.sort(routers);
-            Assert.assertTrue(true);
+            Assertions.assertTrue(true);
         } catch (Exception e) {
-            Assert.assertFalse(false);
+            Assertions.assertFalse(false);
         }
     }
 }
