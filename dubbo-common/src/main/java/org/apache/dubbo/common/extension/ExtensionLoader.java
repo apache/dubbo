@@ -117,9 +117,11 @@ public class ExtensionLoader<T> {
                     ") is not extension, because WITHOUT @" + SPI.class.getSimpleName() + " Annotation!");
         }
 
-        ExtensionLoader<T> loader = (ExtensionLoader<T>) EXTENSION_LOADERS.computeIfAbsent(type, k -> {
-            return new ExtensionLoader<>(type);
-        });
+        ExtensionLoader<T> loader = (ExtensionLoader<T>) EXTENSION_LOADERS.get(type);
+        if (loader == null) {
+            EXTENSION_LOADERS.putIfAbsent(type, new ExtensionLoader<T>(type));
+            loader = (ExtensionLoader<T>) EXTENSION_LOADERS.get(type);
+        }
         return loader;
     }
 
@@ -294,9 +296,11 @@ public class ExtensionLoader<T> {
         if (StringUtils.isEmpty(name)) {
             throw new IllegalArgumentException("Extension name == null");
         }
-        Holder<Object> holder = cachedInstances.computeIfAbsent(name, k -> {
-            return new Holder<>();
-        });
+        Holder<Object> holder = cachedInstances.get(name);
+        if (holder == null) {
+            cachedInstances.putIfAbsent(name, new Holder<Object>());
+            holder = cachedInstances.get(name);
+        }
         return (T) holder.get();
     }
 
@@ -327,9 +331,11 @@ public class ExtensionLoader<T> {
         if ("true".equals(name)) {
             return getDefaultExtension();
         }
-        Holder<Object> holder = cachedInstances.computeIfAbsent(name, k -> {
-            return new Holder<>();
-        });
+        Holder<Object> holder = cachedInstances.get(name);
+        if (holder == null) {
+            cachedInstances.putIfAbsent(name, new Holder<Object>());
+            holder = cachedInstances.get(name);
+        }
         Object instance = holder.get();
         if (instance == null) {
             synchronized (holder) {
