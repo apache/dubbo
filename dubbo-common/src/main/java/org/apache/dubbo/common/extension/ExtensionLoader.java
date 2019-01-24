@@ -601,7 +601,7 @@ public class ExtensionLoader<T> {
             if ((value = value.trim()).length() > 0) {
                 String[] names = NAME_SEPARATOR.split(value);
                 if (names.length > 1) {
-                    throw new IllegalStateException("more than 1 default extension name on extension " + type.getName()
+                    throw new IllegalStateException("More than 1 default extension name on extension " + type.getName()
                             + ": " + Arrays.toString(names));
                 }
                 if (names.length == 1) {
@@ -637,7 +637,7 @@ public class ExtensionLoader<T> {
                 }
             }
         } catch (Throwable t) {
-            logger.error("Exception when load extension class(interface: " +
+            logger.error("Exception occured when loading extension class (interface: " +
                     type + ", description file: " + fileName + ").", t);
         }
     }
