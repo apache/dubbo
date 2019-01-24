@@ -47,6 +47,7 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
      * @param url
      * @return
      */
+    @Override
     public ZookeeperClient connect(URL url) {
         ZookeeperClient zookeeperClient;
         List<String> addressList = getURLBackupAddress(url);
