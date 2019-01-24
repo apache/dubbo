@@ -21,7 +21,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
-import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
 
 import java.util.Map;
@@ -75,8 +74,6 @@ public class ConfigCenterConfig extends AbstractConfig {
      */
     private Map<String, String> parameters;
 
-    protected ApplicationConfig application;
-
     public ConfigCenterConfig() {
     }
 
@@ -86,9 +83,6 @@ public class ConfigCenterConfig extends AbstractConfig {
             address = Constants.ANYHOST_VALUE;
         }
         map.put(Constants.PATH_KEY, ConfigCenterConfig.class.getSimpleName());
-        if (getApplication() != null) {
-            map.put(Constants.APPLICATION_KEY, getApplication().getName());
-        }
         // use 'zookeeper' as the default configcenter.
         if (StringUtils.isEmpty(map.get(Constants.PROTOCOL_KEY))) {
             map.put(Constants.PROTOCOL_KEY, Constants.ZOOKEEPER_PROTOCOL);
@@ -211,18 +205,6 @@ public class ConfigCenterConfig extends AbstractConfig {
 
     public void setAppConfigFile(String appConfigFile) {
         this.appConfigFile = appConfigFile;
-    }
-
-    public ApplicationConfig getApplication() {
-        if (application != null && !application.isValid()) {
-            throw new IllegalStateException("Name is required for ApplicationConfig, for example, in XML it looks like <dubbo:application name=\"...\" />.");
-        }
-        return application;
-    }
-
-    public void setApplication(ApplicationConfig application) {
-        ConfigManager.getInstance().setApplication(application);
-        this.application = application;
     }
 
     public Map<String, String> getParameters() {
