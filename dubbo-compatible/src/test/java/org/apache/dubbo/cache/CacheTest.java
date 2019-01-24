@@ -93,5 +93,10 @@ public class CacheTest {
         public Object get(Object key) {
             return null;
         }
+
+        @Override
+        public Map<Object, Object> getAttributes() {
+            return null;
+        }
     }
 }
