@@ -163,10 +163,12 @@ public class Environment {
     // For test
     public void clearExternalConfigs() {
         this.externalConfigs.clear();
+        this.externalConfigurationMap.clear();
     }
 
     // For test
     public void clearAppExternalConfigs() {
         this.appExternalConfigs.clear();
+        this.appExternalConfigurationMap.clear();
     }
 }
