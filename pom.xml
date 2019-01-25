@@ -389,7 +389,6 @@
                             <Implementation-Version>${project.version}</Implementation-Version>
                         </manifestEntries>
                     </archive>
-                    <forceCreation>true</forceCreation>
                 </configuration>
             </plugin>
             <plugin>

@@ -47,7 +47,6 @@
                             <mainClass>org.apache.dubbo.container.Main</mainClass>
                         </manifest>
                     </archive>
-                    <forceCreation>true</forceCreation>
                 </configuration>
             </plugin>
         </plugins>
