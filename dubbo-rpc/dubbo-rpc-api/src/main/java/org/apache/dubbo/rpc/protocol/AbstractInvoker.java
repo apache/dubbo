@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -75,7 +76,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
     }
 
     private static Map<String, String> convertAttachment(URL url, String[] keys) {
-        if (keys == null || keys.length == 0) {
+        if (ArrayUtils.isEmpty(keys)) {
             return null;
         }
         Map<String, String> attachment = new HashMap<String, String>();
@@ -150,7 +151,6 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
             invocation.setAttachment(Constants.ASYNC_KEY, Boolean.TRUE.toString());
         }
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
-
 
         try {
             return doInvoke(invocation);

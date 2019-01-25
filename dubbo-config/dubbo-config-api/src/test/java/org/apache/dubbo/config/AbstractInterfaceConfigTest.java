@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.api.Greeting;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.mock.GreetingLocal1;
 import org.apache.dubbo.config.mock.GreetingLocal2;
 import org.apache.dubbo.config.mock.GreetingLocal3;
@@ -29,6 +30,7 @@ import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.registry.RegistryService;
 
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -59,6 +61,11 @@ public class AbstractInterfaceConfigTest {
     @AfterAll
     public static void tearDown() {
         System.clearProperty(Constants.DUBBO_PROPERTIES_KEY);
+    }
+
+    @AfterEach
+    public void tearMethodAfterEachUT() {
+        ConfigManager.getInstance().clear();
     }
 
     @Test
@@ -123,6 +130,8 @@ public class AbstractInterfaceConfigTest {
     public void testLoadRegistries() {
         System.setProperty("dubbo.registry.address", "addr1");
         InterfaceConfig interfaceConfig = new InterfaceConfig();
+        // FIXME: now we need to check first, then load
+        interfaceConfig.checkRegistry();
         List<URL> urls = interfaceConfig.loadRegistries(true);
         Assertions.assertEquals(1, urls.size());
         URL url = urls.get(0);

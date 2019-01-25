@@ -17,6 +17,8 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 
 import java.util.ArrayList;
@@ -81,7 +83,7 @@ public class ModuleConfig extends AbstractConfig {
     public void setName(String name) {
         checkName(Constants.NAME, name);
         this.name = name;
-        if (id == null || id.length() == 0) {
+        if (StringUtils.isEmpty(id)) {
             id = name;
         }
     }
@@ -114,7 +116,7 @@ public class ModuleConfig extends AbstractConfig {
     }
 
     public RegistryConfig getRegistry() {
-        return registries == null || registries.isEmpty() ? null : registries.get(0);
+        return CollectionUtils.isEmpty(registries) ? null : registries.get(0);
     }
 
     public void setRegistry(RegistryConfig registry) {

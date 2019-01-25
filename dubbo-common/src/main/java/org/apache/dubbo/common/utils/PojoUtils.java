@@ -520,7 +520,14 @@ public class PojoUtils {
         } catch (Throwable t) {
             try {
                 Constructor<?>[] constructors = cls.getDeclaredConstructors();
-                if (constructors != null && constructors.length == 0) {
+                /**
+                 * From Javadoc java.lang.Class#getDeclaredConstructors
+                 * This method returns an array of Constructor objects reflecting all the constructors
+                 * declared by the class represented by this Class object.
+                 * This method returns an array of length 0,
+                 * if this Class object represents an interface, a primitive type, an array class, or void.
+                 */
+                if (constructors.length == 0) {
                     throw new RuntimeException("Illegal constructor: " + cls.getName());
                 }
                 Constructor<?> constructor = constructors[0];

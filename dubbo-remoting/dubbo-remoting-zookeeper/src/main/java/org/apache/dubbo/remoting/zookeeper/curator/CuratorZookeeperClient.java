@@ -16,19 +16,18 @@
  */
 package org.apache.dubbo.remoting.zookeeper.curator;
 
-import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.remoting.zookeeper.ChildListener;
-import org.apache.dubbo.remoting.zookeeper.StateListener;
-import org.apache.dubbo.remoting.zookeeper.support.AbstractZookeeperClient;
-
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.api.CuratorWatcher;
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.framework.state.ConnectionStateListener;
 import org.apache.curator.retry.RetryNTimes;
+import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.zookeeper.ChildListener;
+import org.apache.dubbo.remoting.zookeeper.StateListener;
+import org.apache.dubbo.remoting.zookeeper.support.AbstractZookeeperClient;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException.NoNodeException;
 import org.apache.zookeeper.KeeperException.NodeExistsException;
@@ -42,6 +41,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
 
     private final Charset charset = Charset.forName("UTF-8");
     private final CuratorFramework client;
+
 
     public CuratorZookeeperClient(URL url) {
         super(url);
@@ -147,6 +147,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
         }
         return false;
     }
+
     @Override
     public boolean isConnected() {
         return client.getZookeeperClient().isConnected();
@@ -156,12 +157,9 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
     public String doGetContent(String path) {
         try {
             byte[] dataBytes = client.getData().forPath(path);
-            if(dataBytes == null || dataBytes.length == 0){
-                return null;
-            }
-            return new String(dataBytes, charset);
-        } catch (NodeExistsException e) {
+            return (dataBytes == null || dataBytes.length == 0) ? null : new String(dataBytes, charset);
         } catch (NoNodeException e) {
+            // ignore NoNode Exception.
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

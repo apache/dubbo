@@ -23,6 +23,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
@@ -88,6 +89,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     private volatile boolean forbidden = false;
 
     private volatile URL overrideDirectoryUrl; // Initialization at construction time, assertion not null, and always assign non null value
+
+    private volatile URL registeredConsumerUrl;
 
     /**
      * override rules
@@ -157,6 +160,15 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         if (isDestroyed()) {
             return;
         }
+
+        // unregister.
+        try {
+            if (getRegisteredConsumerUrl() != null && registry != null && registry.isAvailable()) {
+                registry.unregister(getRegisteredConsumerUrl());
+            }
+        } catch (Throwable t) {
+            logger.warn("unexpected error when unregister service " + serviceKey + "from registry" + registry.getUrl(), t);
+        }
         // unsubscribe.
         try {
             if (getConsumerUrl() != null && registry != null && registry.isAvailable()) {
@@ -216,9 +228,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     private void refreshInvoker(List<URL> invokerUrls) {
         Assert.notNull(invokerUrls, "invokerUrls should not be null");
 
-        if (invokerUrls.size() == 1 && invokerUrls.get(0) != null && Constants.EMPTY_PROTOCOL.equals(invokerUrls
-                .get(0)
-                .getProtocol())) {
+        if (invokerUrls.size() == 1
+                && invokerUrls.get(0) != null
+                && Constants.EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
             this.forbidden = true; // Forbid to access
             this.invokers = Collections.emptyList();
             routerChain.setInvokers(this.invokers);
@@ -240,9 +252,15 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }
             Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls);// Translate url list to Invoker map
 
-            // state change
-            // If the calculation is wrong, it is not processed.
-            if (newUrlInvokerMap == null || newUrlInvokerMap.size() == 0) {
+            /**
+             * If the calculation is wrong, it is not processed.
+             *
+             * 1. The protocol configured by the client is inconsistent with the protocol of the server.
+             *    eg: consumer protocol = dubbo, provider only has other protocol services(rest).
+             * 2. The registration center is not robust and pushes illegal specification data.
+             *
+             */
+            if (CollectionUtils.isEmptyMap(newUrlInvokerMap)) {
                 logger.error(new IllegalStateException("urls to invokers error .invokerUrls.size :" + invokerUrls.size() + ", invoker.size :0. urls :" + invokerUrls
                         .toString()));
                 return;
@@ -442,7 +460,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
 
     private URL overrideWithConfigurators(List<Configurator> configurators, URL url) {
-        if (configurators != null && !configurators.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(configurators)) {
             for (Configurator configurator : configurators) {
                 url = configurator.configure(url);
             }
@@ -564,6 +582,14 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         return this.overrideDirectoryUrl;
     }
 
+    public URL getRegisteredConsumerUrl() {
+        return registeredConsumerUrl;
+    }
+
+    public void setRegisteredConsumerUrl(URL registeredConsumerUrl) {
+        this.registeredConsumerUrl = registeredConsumerUrl;
+    }
+
     @Override
     public boolean isAvailable() {
         if (isDestroyed()) {
@@ -626,7 +652,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
 
     private void doOverrideUrl(List<Configurator> configurators) {
-        if (configurators != null && !configurators.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(configurators)) {
             for (Configurator configurator : configurators) {
                 this.overrideDirectoryUrl = configurator.configure(overrideDirectoryUrl);
             }

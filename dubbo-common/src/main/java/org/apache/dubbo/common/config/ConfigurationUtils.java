@@ -17,11 +17,22 @@
 package org.apache.dubbo.common.config;
 
 import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Utilities for manipulating configurations from different sources
  */
 public class ConfigurationUtils {
+    private static final Logger logger = LoggerFactory.getLogger(ConfigurationUtils.class);
+
     // FIXME
     @SuppressWarnings("deprecation")
     public static int getServerShutdownTimeout() {
@@ -54,6 +65,20 @@ public class ConfigurationUtils {
 
     public static String getProperty(String property, String defaultValue) {
         return Environment.getInstance().getConfiguration().getString(property, defaultValue);
+    }
+
+    public static Map<String, String> parseProperties(String content) throws IOException {
+        Map<String, String> map = new HashMap<>();
+        if (StringUtils.isEmpty(content)) {
+            logger.warn("You specified the config centre, but there's not even one single config item in it.");
+        } else {
+            Properties properties = new Properties();
+            properties.load(new StringReader(content));
+            properties.stringPropertyNames().forEach(
+                    k -> map.put(k, properties.getProperty(k))
+            );
+        }
+        return map;
     }
 
 }

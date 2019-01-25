@@ -20,10 +20,12 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
 
 import javax.script.Bindings;
@@ -58,10 +60,10 @@ public class ScriptRouter extends AbstractRouter {
         String type = url.getParameter(Constants.TYPE_KEY);
         this.priority = url.getParameter(Constants.PRIORITY_KEY, 0);
         String rule = url.getParameterAndDecoded(Constants.RULE_KEY);
-        if (type == null || type.length() == 0) {
+        if (StringUtils.isEmpty(type)) {
             type = Constants.DEFAULT_SCRIPT_TYPE_KEY;
         }
-        if (rule == null || rule.length() == 0) {
+        if (StringUtils.isEmpty(rule)) {
             throw new IllegalStateException("route rule can not be empty. rule:" + rule);
         }
         ScriptEngine engine = engines.get(type);
@@ -119,5 +121,14 @@ public class ScriptRouter extends AbstractRouter {
     @Override
     public boolean isForce() {
         return url.getParameter(Constants.FORCE_KEY, false);
+    }
+
+    @Override
+    public int compareTo(Router o) {
+        if (o == null || o.getClass() != ScriptRouter.class) {
+            return 1;
+        }
+        ScriptRouter c = (ScriptRouter) o;
+        return this.priority == c.priority ? rule.compareTo(c.rule) : (this.priority > c.priority ? 1 : -1);
     }
 }

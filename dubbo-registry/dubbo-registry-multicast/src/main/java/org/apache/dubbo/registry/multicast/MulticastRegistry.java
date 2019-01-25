@@ -25,6 +25,7 @@ import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.support.FailbackRegistry;
 
@@ -204,7 +205,7 @@ public class MulticastRegistry extends FailbackRegistry {
         } else if (msg.startsWith(Constants.SUBSCRIBE)) {
             URL url = URL.valueOf(msg.substring(Constants.SUBSCRIBE.length()).trim());
             Set<URL> urls = getRegistered();
-            if (urls != null && !urls.isEmpty()) {
+            if (CollectionUtils.isNotEmpty(urls)) {
                 for (URL u : urls) {
                     if (UrlUtils.isMatch(url, u)) {
                         String host = remoteAddress != null && remoteAddress.getAddress() != null
@@ -297,9 +298,7 @@ public class MulticastRegistry extends FailbackRegistry {
     public void destroy() {
         super.destroy();
         try {
-            if (cleanFuture != null) {
-                cleanFuture.cancel(true);
-            }
+            ExecutorUtil.cancelScheduledFuture(cleanFuture);
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
         }
@@ -341,8 +340,8 @@ public class MulticastRegistry extends FailbackRegistry {
                 if (urls != null) {
                     urls.remove(url);
                 }
-                if (urls == null || urls.isEmpty()){
-                    if (urls == null){
+                if (urls == null || urls.isEmpty()) {
+                    if (urls == null) {
                         urls = new ConcurrentHashSet<URL>();
                     }
                     URL empty = url.setProtocol(Constants.EMPTY_PROTOCOL);
@@ -363,7 +362,7 @@ public class MulticastRegistry extends FailbackRegistry {
 
     private List<URL> toList(Set<URL> urls) {
         List<URL> list = new ArrayList<URL>();
-        if (urls != null && !urls.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(urls)) {
             for (URL url : urls) {
                 list.add(url);
             }
@@ -397,7 +396,7 @@ public class MulticastRegistry extends FailbackRegistry {
 
     @Override
     public List<URL> lookup(URL url) {
-        List<URL> urls = new ArrayList<URL>();
+        List<URL> urls = new ArrayList<>();
         Map<String, List<URL>> notifiedUrls = getNotified().get(url);
         if (notifiedUrls != null && notifiedUrls.size() > 0) {
             for (List<URL> values : notifiedUrls.values()) {
@@ -406,7 +405,7 @@ public class MulticastRegistry extends FailbackRegistry {
         }
         if (urls.isEmpty()) {
             List<URL> cacheUrls = getCacheUrls(url);
-            if (cacheUrls != null && !cacheUrls.isEmpty()) {
+            if (CollectionUtils.isNotEmpty(cacheUrls)) {
                 urls.addAll(cacheUrls);
             }
         }
