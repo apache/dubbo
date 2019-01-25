@@ -24,6 +24,7 @@ import org.apache.dubbo.remoting.ChannelHandler;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
+import io.netty.handler.timeout.IdleStateEvent;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
@@ -97,6 +98,19 @@ public class NettyServerHandler extends ChannelDuplexHandler {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
         try {
             handler.sent(channel, msg);
+        } finally {
+            NettyChannel.removeChannelIfDisconnected(ctx.channel());
+        }
+    }
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
+        try {
+            if (evt instanceof IdleStateEvent) {
+                channel.close();
+            }
+            super.userEventTriggered(ctx, evt);
         } finally {
             NettyChannel.removeChannelIfDisconnected(ctx.channel());
         }

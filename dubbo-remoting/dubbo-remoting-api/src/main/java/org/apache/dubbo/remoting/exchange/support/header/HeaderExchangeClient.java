@@ -33,6 +33,11 @@ import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.Constants.CLIENT_KEY;
+import static org.apache.dubbo.common.Constants.TRANSPORTER_KEY;
+import static org.apache.dubbo.common.utils.UrlUtils.getHeartbeat;
+import static org.apache.dubbo.common.utils.UrlUtils.getIdleTimeout;
+
 /**
  * DefaultMessageClient
  */
@@ -135,6 +140,7 @@ public class HeaderExchangeClient implements ExchangeClient {
     @Override
     public void reset(URL url) {
         client.reset(url);
+        // FIXME, should cancel and restart timer tasks if parameters in the new URL are different?
     }
 
     @Override
@@ -169,8 +175,7 @@ public class HeaderExchangeClient implements ExchangeClient {
     }
 
     private void startHeartBeatTask(URL url) {
-        String transporter = url.getParameter(Constants.CLIENT_KEY, url.getParameter(Constants.TRANSPORTER_KEY, "netty"));
-        if (!transporter.startsWith("netty")) {
+        if (shouldHeartbeat(url)) {
             AbstractTimerTask.ChannelProvider cp = () -> Collections.singletonList(HeaderExchangeClient.this);
             int heartbeat = getHeartbeat(url);
             long heartbeatTick = calculateLeastDuration(heartbeat);
@@ -210,19 +215,9 @@ public class HeaderExchangeClient implements ExchangeClient {
         }
     }
 
-    private int getHeartbeat(URL url) {
-        String dubbo = url.getParameter(Constants.DUBBO_VERSION_KEY);
-        return url.getParameter(Constants.HEARTBEAT_KEY, dubbo != null &&
-                dubbo.startsWith("1.0.") ? Constants.DEFAULT_HEARTBEAT : 0);
-    }
-
-    private int getIdleTimeout(URL url) {
-        int heartBeat = getHeartbeat(url);
-        int idleTimeout = url.getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartBeat * 3);
-        if (idleTimeout < heartBeat * 2) {
-            throw new IllegalStateException("idleTimeout < heartbeatInterval * 2");
-        }
-        return idleTimeout;
+    private boolean shouldHeartbeat(URL url) {
+        String transporter = url.getParameter(CLIENT_KEY, url.getParameter(TRANSPORTER_KEY, "netty"));
+        return !transporter.startsWith("netty");
     }
 
     private boolean shouldReconnect(URL url) {

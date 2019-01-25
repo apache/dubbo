@@ -22,6 +22,7 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.transport.AbstractClient;
@@ -38,6 +39,8 @@ import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
 import java.util.concurrent.TimeUnit;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * NettyClient.
@@ -73,20 +76,16 @@ public class NettyClient extends AbstractClient {
             bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getConnectTimeout());
         }
 
-        String dubbo = getUrl().getParameter(Constants.DUBBO_VERSION_KEY);
-        int heartbeat = getUrl().getParameter(Constants.HEARTBEAT_KEY, dubbo != null &&
-                dubbo.startsWith("1.0.") ? Constants.DEFAULT_HEARTBEAT : 0);
-        int heartbeatInterval = getUrl().getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartbeat * 3);
-
         bootstrap.handler(new ChannelInitializer() {
 
             @Override
             protected void initChannel(Channel ch) throws Exception {
+                int heartbeatInterval = UrlUtils.getIdleTimeout(getUrl());
                 NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyClient.this);
                 ch.pipeline()//.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
                         .addLast("decoder", adapter.getDecoder())
                         .addLast("encoder", adapter.getEncoder())
-                        .addLast("client-idle-handler", new IdleStateHandler(heartbeatInterval, 0, 0, TimeUnit.MILLISECONDS))
+                        .addLast("client-idle-handler", new IdleStateHandler(heartbeatInterval, 0, 0, MILLISECONDS))
                         .addLast("handler", nettyClientHandler);
             }
         });
@@ -97,7 +96,7 @@ public class NettyClient extends AbstractClient {
         long start = System.currentTimeMillis();
         ChannelFuture future = bootstrap.connect(getConnectAddress());
         try {
-            boolean ret = future.awaitUninterruptibly(getConnectTimeout(), TimeUnit.MILLISECONDS);
+            boolean ret = future.awaitUninterruptibly(getConnectTimeout(), MILLISECONDS);
 
             if (ret && future.isSuccess()) {
                 Channel newChannel = future.channel();
