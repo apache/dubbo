@@ -38,8 +38,6 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
-import java.util.concurrent.TimeUnit;
-
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
