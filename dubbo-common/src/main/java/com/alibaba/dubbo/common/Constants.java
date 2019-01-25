@@ -637,6 +637,10 @@ public class Constants {
 
     public static final String SERVICE_IMPL_CLASS = "service.classimpl";
 
+    public static final String TAG_KEY = "dubbo.tag";
+
+    public static final String FORCE_USE_TAG = "dubbo.force.tag";
+
     /*
      * private Constants(){ }
      */
