@@ -270,6 +270,6 @@ public class HeaderExchangeServer implements ExchangeServer {
 
     private boolean shouldStartCloseTimer(URL url) {
         String transporter = url.getParameter(SERVER_KEY, url.getParameter(TRANSPORTER_KEY, "netty"));
-        return !transporter.startsWith("netty");
+        return !transporter.equalsIgnoreCase("netty") && !transporter.equalsIgnoreCase("netty4");
     }
 }

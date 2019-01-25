@@ -217,7 +217,7 @@ public class HeaderExchangeClient implements ExchangeClient {
 
     private boolean shouldHeartbeat(URL url) {
         String transporter = url.getParameter(CLIENT_KEY, url.getParameter(TRANSPORTER_KEY, "netty"));
-        return !transporter.startsWith("netty");
+        return !transporter.equalsIgnoreCase("netty") && !transporter.equalsIgnoreCase("netty4");
     }
 
     private boolean shouldReconnect(URL url) {

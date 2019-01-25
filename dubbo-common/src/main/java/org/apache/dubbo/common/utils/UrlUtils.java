@@ -479,6 +479,16 @@ public class UrlUtils {
         if (idleTimeout < heartBeat * 2) {
             throw new IllegalStateException("idleTimeout < heartbeatInterval * 2");
         }
+        if (idleTimeout == 0) {
+            String reconnect = url.getParameter(Constants.RECONNECT_KEY);
+            if (StringUtils.isNotEmpty(reconnect)) {
+                try {
+                    idleTimeout = Integer.parseInt(reconnect);
+                } catch (NumberFormatException e) {
+                    // ignore
+                }
+            }
+        }
         return idleTimeout;
     }
 
