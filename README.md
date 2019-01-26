@@ -73,7 +73,7 @@ There's a [README](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samp
 ### Define service interfaces
 
 ```java
-package org.apache.dubbo.demo.api;
+package org.apache.dubbo.samples.api;
 
 public interface GreetingService {
     String sayHello(String name);
@@ -85,9 +85,9 @@ public interface GreetingService {
 ### Implement service interface for the provider
 
 ```java
-package org.apache.dubbo.demo.provider;
+package org.apache.dubbo.samples.provider;
  
-import org.apache.dubbo.demo.GreetingService;
+import org.apache.dubbo.samples.api.GreetingService;
  
 public class GreetingServiceImpl implements GreetingService {
     public String sayHello(String name) {
@@ -106,7 +106,7 @@ package org.apache.dubbo.demo.provider;
 import com.alibaba.dubbo.config.ApplicationConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.ServiceConfig;
-import org.apache.dubbo.demo.GreetingService;
+import org.apache.dubbo.samples.api.GreetingService;
 
 import java.io.IOException;
  
@@ -141,7 +141,7 @@ package org.apache.dubbo.demo.consumer;
 import com.alibaba.dubbo.config.ApplicationConfig;
 import com.alibaba.dubbo.config.ReferenceConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
-import org.apache.dubbo.demo.GreetingService;
+import org.apache.dubbo.samples.api.GreetingService;
 
 public class Application {
     public static void main(String[] args) {
