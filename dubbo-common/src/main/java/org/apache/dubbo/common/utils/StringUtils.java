@@ -489,7 +489,17 @@ public final class StringUtils {
                 } else {
                     String left = str.substring(0, index);
                     String right = str.substring(index + 1);
-                    return StringUtils.isNumeric(left, false) && StringUtils.isNumeric(right, false);
+                    for (int i = 0; i < left.length(); i++) {
+                        if (!Character.isDigit(left.charAt(i))) {
+                            return false;
+                        }
+                    }
+                    for (int i = 0; i < right.length(); i++) {
+                        if (!Character.isDigit(right.charAt(i))) {
+                            return false;
+                        }
+                    }
+                    return true;
                 }
             }
 
