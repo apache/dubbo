@@ -66,7 +66,10 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
         final String uri = serviceKey(invoker.getUrl());
         Exporter<T> exporter = (Exporter<T>) exporterMap.get(uri);
         if (exporter != null) {
-            return exporter;
+            // When modifying the configuration through override, you need to re-expose the newly modified service.
+            if (exporter.getInvoker().getUrl().equals(invoker.getUrl())) {
+                return exporter;
+            }
         }
         final Runnable runnable = doExport(proxyFactory.getProxy(invoker, true), invoker.getInterface(), invoker.getUrl());
         exporter = new AbstractExporter<T>(invoker) {
