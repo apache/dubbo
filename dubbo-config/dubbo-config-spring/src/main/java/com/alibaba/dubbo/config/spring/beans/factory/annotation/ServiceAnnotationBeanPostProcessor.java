@@ -289,11 +289,11 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
      */
     private String generateServiceBeanName(Service service, Class<?> interfaceClass, String annotatedServiceBeanName) {
 
-        ServiceBeanNameBuilder builder = ServiceBeanNameBuilder.create(service, interfaceClass, environment);
+        AnnotationBeanNameBuilder builder = AnnotationBeanNameBuilder.create(service, interfaceClass);
 
+        builder.environment(environment);
 
         return builder.build();
-
     }
 
     private Class<?> resolveServiceInterfaceClass(Class<?> annotatedServiceBeanClass, Service service) {

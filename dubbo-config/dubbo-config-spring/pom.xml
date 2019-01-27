@@ -52,80 +52,166 @@
             <artifactId>javax.servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
+
+        <!-- Test -->
+        <!-- Netty -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- REST support dependencies -->
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-jaxrs</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-netty4</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-jackson-provider</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-jaxb-provider</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo-registry-default</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-registry-zookeeper</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo-monitor-default</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo-rpc-dubbo</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-rpc-rest</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo-rpc-rmi</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo-rpc-injvm</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo-remoting-netty</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo-serialization-hessian2</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-validator</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>javax.el</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-tx</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-core</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Zookeeper -->
+        <dependency>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-framework</artifactId>
             <scope>test</scope>
         </dependency>
 
