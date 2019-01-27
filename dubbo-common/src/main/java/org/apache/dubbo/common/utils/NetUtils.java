@@ -117,7 +117,7 @@ public class NetUtils {
                 new InetSocketAddress(port) : new InetSocketAddress(host, port);
     }
 
-    static boolean isValidAddress(InetAddress address) {
+    static boolean isValidV4Address(InetAddress address) {
         if (address == null || address.isLoopbackAddress()) {
             return false;
         }
@@ -223,7 +223,7 @@ public class NetUtils {
                 return Optional.ofNullable(normalizeV6Address(v6Address));
             }
         }
-        if (isValidAddress(address)) {
+        if (isValidV4Address(address)) {
             return Optional.of(address);
         }
         return Optional.empty();
