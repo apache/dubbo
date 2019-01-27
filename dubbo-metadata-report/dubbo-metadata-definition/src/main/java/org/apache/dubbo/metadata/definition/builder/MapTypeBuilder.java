@@ -34,12 +34,7 @@ public class MapTypeBuilder implements TypeBuilder {
         if (clazz == null) {
             return false;
         }
-
-        if (Map.class.isAssignableFrom(clazz)) {
-            return true;
-        }
-
-        return false;
+        return Map.class.isAssignableFrom(clazz);
     }
 
     @Override

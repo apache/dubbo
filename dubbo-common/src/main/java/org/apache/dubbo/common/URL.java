@@ -500,6 +500,15 @@ class URL implements Serializable {
         return Constants.COMMA_SPLIT_PATTERN.split(value);
     }
 
+    public List<String> getParameter(String key, List<String> defaultValue) {
+        String value = getParameter(key);
+        if (value == null || value.length() == 0) {
+            return defaultValue;
+        }
+        String[] strArray = Constants.COMMA_SPLIT_PATTERN.split(value);
+        return Arrays.asList(strArray);
+    }
+
     private Map<String, Number> getNumbers() {
         if (numbers == null) { // concurrent initialization is tolerant
             numbers = new ConcurrentHashMap<String, Number>();
@@ -727,7 +736,7 @@ class URL implements Serializable {
         String methodKey = method + "." + key;
         Number n = getNumbers().get(methodKey);
         if (n != null) {
-            return n.intValue();
+            return n.doubleValue();
         }
         String value = getMethodParameter(method, key);
         if (StringUtils.isEmpty(value)) {
@@ -742,7 +751,7 @@ class URL implements Serializable {
         String methodKey = method + "." + key;
         Number n = getNumbers().get(methodKey);
         if (n != null) {
-            return n.intValue();
+            return n.floatValue();
         }
         String value = getMethodParameter(method, key);
         if (StringUtils.isEmpty(value)) {
@@ -757,7 +766,7 @@ class URL implements Serializable {
         String methodKey = method + "." + key;
         Number n = getNumbers().get(methodKey);
         if (n != null) {
-            return n.intValue();
+            return n.longValue();
         }
         String value = getMethodParameter(method, key);
         if (StringUtils.isEmpty(value)) {
@@ -1269,6 +1278,7 @@ class URL implements Serializable {
             buf.append("/");
             buf.append(path);
         }
+
         if (appendParameter) {
             buildParameters(buf, true, parameters);
         }

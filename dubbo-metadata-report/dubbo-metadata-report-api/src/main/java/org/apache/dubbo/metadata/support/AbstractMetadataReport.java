@@ -332,6 +332,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
      * not private. just for unittest.
      */
     void publishAll() {
+        logger.info("start to publish all metadata.");
         this.doHandleMetadataCollection(allMetadataReports);
     }
 
@@ -356,7 +357,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         protected final Logger logger = LoggerFactory.getLogger(getClass());
 
         final ScheduledExecutorService retryExecutor = Executors.newScheduledThreadPool(0, new NamedThreadFactory("DubboRegistryFailedRetryTimer", true));
-        ScheduledFuture retryScheduledFuture;
+        volatile ScheduledFuture retryScheduledFuture;
         AtomicInteger retryCounter = new AtomicInteger(0);
         // retry task schedule period
         long retryPeriod;

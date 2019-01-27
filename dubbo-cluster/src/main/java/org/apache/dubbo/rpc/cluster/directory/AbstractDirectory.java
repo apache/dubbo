@@ -64,7 +64,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
         if (url.getProtocol().equals(Constants.REGISTRY_PROTOCOL)) {
             Map<String, String> queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(Constants.REFER_KEY));
-            this.url = url.clearParameters().addParameters(queryMap).removeParameter(Constants.MONITOR_KEY);
+            this.url = url.addParameters(queryMap).removeParameter(Constants.MONITOR_KEY);
         } else {
             this.url = url;
         }

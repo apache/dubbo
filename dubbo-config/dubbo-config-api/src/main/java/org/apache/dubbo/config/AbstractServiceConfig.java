@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.ExporterListener;
@@ -200,6 +201,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
     @SuppressWarnings({"unchecked"})
     public void setProtocols(List<? extends ProtocolConfig> protocols) {
+        ConfigManager.getInstance().addProtocols((List<ProtocolConfig>) protocols);
         this.protocols = (List<ProtocolConfig>) protocols;
     }
 
@@ -208,7 +210,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     }
 
     public void setProtocol(ProtocolConfig protocol) {
-        this.protocols = Arrays.asList(protocol);
+        setProtocols(Arrays.asList(protocol));
     }
 
     @Parameter(excluded = true)
@@ -286,7 +288,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
         this.serialization = serialization;
     }
 
-    @Parameter(key = "dubbo.tag", useKeyAsProperty = false)
+    @Parameter(key = Constants.TAG_KEY, useKeyAsProperty = false)
     public String getTag() {
         return tag;
     }
