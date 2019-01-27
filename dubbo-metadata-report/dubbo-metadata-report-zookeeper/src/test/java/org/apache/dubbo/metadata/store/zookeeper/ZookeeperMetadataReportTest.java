@@ -38,7 +38,6 @@ import java.util.Map;
 /**
  * 2018/10/9
  */
-@Disabled("Keeps fail on Travis")
 public class ZookeeperMetadataReportTest {
     private TestingServer zkServer;
     private ZookeeperMetadataReport zookeeperMetadataReport;
