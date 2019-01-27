@@ -230,6 +230,7 @@ public class RedisRegistry extends FailbackRegistry {
                 if (jedis.isConnected()) {
                     return true; // At least one single machine is available.
                 }
+            } catch (Throwable t) {
             }
         }
         return false;
