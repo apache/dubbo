@@ -481,29 +481,20 @@ public final class StringUtils {
         if (str == null || str.isEmpty()) {
             return false;
         }
-        int index = str.indexOf(".");
-        if (allowDot && index >= 0) {
-            if (str.indexOf(".", index) == -1) {
-                return false;
-            } else {
-                int sz = str.length();
-                for (int i = 0; i < sz; i++) {
-                    if (i != index) {
-                        if (!Character.isDigit(str.charAt(i))) {
-                            return false;
-                        }
-                    }
-                }
-            }
-        } else {
-            int sz = str.length();
-            for (int i = 0; i < sz; i++) {
-                if (!Character.isDigit(str.charAt(i))) {
+        boolean hasDot = false;
+        int sz = str.length();
+        for (int i = 0; i < sz; i++) {
+            if (str.charAt(i) == '.') {
+                if (hasDot || !allowDot) {
                     return false;
                 }
+                hasDot = true;
+                continue;
+            }
+            if (!Character.isDigit(str.charAt(i))) {
+                return false;
             }
         }
-
         return true;
     }
 
