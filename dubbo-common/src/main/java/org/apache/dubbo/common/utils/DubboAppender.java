@@ -16,13 +16,18 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.FileAppender;
 import org.apache.log4j.spi.LoggingEvent;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DubboAppender extends ConsoleAppender {
+public class DubboAppender extends FileAppender {
+
+    public DubboAppender() {
+        super();
+        setFile("dubbo.log");
+    }
 
     public static boolean available = false;
 
