@@ -250,6 +250,12 @@ public class StringUtilsTest {
         assertThat(StringUtils.isNumeric("", true), is(false));
         assertThat(StringUtils.isNumeric(" ", true), is(false));
         assertThat(StringUtils.isNumeric("   ", true), is(false));
+
+        assertThat(StringUtils.isNumeric("123.3.3", true), is(false));
+        assertThat(StringUtils.isNumeric("123.", true), is(true));
+        assertThat(StringUtils.isNumeric(".123", true), is(true));
+        assertThat(StringUtils.isNumeric("..123", true), is(false));
+
     }
 
     @Test
