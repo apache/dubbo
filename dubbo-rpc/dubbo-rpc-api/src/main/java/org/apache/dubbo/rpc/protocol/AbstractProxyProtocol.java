@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -68,7 +69,7 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
         if (exporter != null) {
             // When modifying the configuration through override, you need to re-expose the newly modified service.
             if ("hessian".equals(invoker.getUrl().getProtocol())) {
-                if (exporter.getInvoker().getUrl().equals(invoker.getUrl())) {
+                if (Objects.equals(exporter.getInvoker().getUrl(), invoker.getUrl())) {
                     return exporter;
                 }
             } else {
