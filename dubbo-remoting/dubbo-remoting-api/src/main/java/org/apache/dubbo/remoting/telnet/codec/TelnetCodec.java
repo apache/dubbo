@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
@@ -72,7 +73,7 @@ public class TelnetCodec extends TransportCodec {
             URL url = channel.getUrl();
             if (url != null) {
                 String parameter = url.getParameter(Constants.CHARSET_KEY);
-                if (parameter != null && parameter.length() > 0) {
+                if (StringUtils.isNotEmpty(parameter)) {
                     try {
                         return Charset.forName(parameter);
                     } catch (Throwable t) {
@@ -196,7 +197,7 @@ public class TelnetCodec extends TransportCodec {
         boolean down = endsWith(message, DOWN);
         if (up || down) {
             LinkedList<String> history = (LinkedList<String>) channel.getAttribute(HISTORY_LIST_KEY);
-            if (history == null || history.isEmpty()) {
+            if (CollectionUtils.isEmpty(history)) {
                 return DecodeResult.NEED_MORE_INPUT;
             }
             Integer index = (Integer) channel.getAttribute(HISTORY_INDEX_KEY);
@@ -263,7 +264,7 @@ public class TelnetCodec extends TransportCodec {
         LinkedList<String> history = (LinkedList<String>) channel.getAttribute(HISTORY_LIST_KEY);
         Integer index = (Integer) channel.getAttribute(HISTORY_INDEX_KEY);
         channel.removeAttribute(HISTORY_INDEX_KEY);
-        if (history != null && !history.isEmpty() && index != null && index >= 0 && index < history.size()) {
+        if (CollectionUtils.isNotEmpty(history) && index != null && index >= 0 && index < history.size()) {
             String value = history.get(index);
             if (value != null) {
                 byte[] b1 = value.getBytes();

@@ -14,26 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.convert.converter;
+package org.apache.dubbo.rpc.cluster;
 
-import org.apache.dubbo.common.utils.CollectionUtils;
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.rpc.Invocation;
+import com.alibaba.dubbo.rpc.Invoker;
+import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.cluster.Router;
 
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.util.ObjectUtils;
-
-import java.util.Map;
+import java.util.List;
 
 /**
- * {@link String}[] to {@link Map} {@link Converter}
  *
- * @see CollectionUtils#toStringMap(String[])
- * @since 2.5.11
  */
-public class StringArrayToMapConverter implements Converter<String[], Map<String, String>> {
-
+public class CompatibleRouter2 implements Router {
     @Override
-    public Map<String, String> convert(String[] source) {
-        return ObjectUtils.isEmpty(source) ? null : CollectionUtils.toStringMap(source);
+    public URL getUrl() {
+        return null;
     }
 
+    @Override
+    public <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
+        return null;
+    }
+
+    @Override
+    public int compareTo(Router o) {
+        return 0;
+    }
 }

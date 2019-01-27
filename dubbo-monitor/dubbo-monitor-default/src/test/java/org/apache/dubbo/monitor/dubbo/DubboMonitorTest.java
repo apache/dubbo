@@ -103,22 +103,23 @@ public class DubboMonitorTest {
                 .addParameter(MonitorService.CONCURRENT, 1)
                 .addParameter(MonitorService.MAX_CONCURRENT, 1);
         monitor.collect(statistics);
+        monitor.send();
         while (lastStatistics == null) {
             Thread.sleep(10);
         }
-        Assertions.assertEquals(lastStatistics.getParameter(MonitorService.APPLICATION), "morgan");
-        Assertions.assertEquals(lastStatistics.getProtocol(), "dubbo");
-        Assertions.assertEquals(lastStatistics.getHost(), "10.20.153.10");
-        Assertions.assertEquals(lastStatistics.getParameter(MonitorService.APPLICATION), "morgan");
-        Assertions.assertEquals(lastStatistics.getParameter(MonitorService.INTERFACE), "MemberService");
-        Assertions.assertEquals(lastStatistics.getParameter(MonitorService.METHOD), "findPerson");
-        Assertions.assertEquals(lastStatistics.getParameter(MonitorService.CONSUMER), "10.20.153.11");
-        Assertions.assertEquals(lastStatistics.getParameter(MonitorService.SUCCESS), "1");
-        Assertions.assertEquals(lastStatistics.getParameter(MonitorService.FAILURE), "0");
-        Assertions.assertEquals(lastStatistics.getParameter(MonitorService.ELAPSED), "3");
-        Assertions.assertEquals(lastStatistics.getParameter(MonitorService.MAX_ELAPSED), "3");
-        Assertions.assertEquals(lastStatistics.getParameter(MonitorService.CONCURRENT), "1");
-        Assertions.assertEquals(lastStatistics.getParameter(MonitorService.MAX_CONCURRENT), "1");
+        Assertions.assertEquals("morgan", lastStatistics.getParameter(MonitorService.APPLICATION));
+        Assertions.assertEquals("dubbo", lastStatistics.getProtocol());
+        Assertions.assertEquals("10.20.153.10", lastStatistics.getHost());
+        Assertions.assertEquals("morgan", lastStatistics.getParameter(MonitorService.APPLICATION));
+        Assertions.assertEquals("MemberService", lastStatistics.getParameter(MonitorService.INTERFACE));
+        Assertions.assertEquals("findPerson", lastStatistics.getParameter(MonitorService.METHOD));
+        Assertions.assertEquals("10.20.153.11", lastStatistics.getParameter(MonitorService.CONSUMER));
+        Assertions.assertEquals("1", lastStatistics.getParameter(MonitorService.SUCCESS));
+        Assertions.assertEquals("0", lastStatistics.getParameter(MonitorService.FAILURE));
+        Assertions.assertEquals("3", lastStatistics.getParameter(MonitorService.ELAPSED));
+        Assertions.assertEquals("3", lastStatistics.getParameter(MonitorService.MAX_ELAPSED));
+        Assertions.assertEquals("1", lastStatistics.getParameter(MonitorService.CONCURRENT));
+        Assertions.assertEquals("1", lastStatistics.getParameter(MonitorService.MAX_CONCURRENT));
         monitor.destroy();
     }
 

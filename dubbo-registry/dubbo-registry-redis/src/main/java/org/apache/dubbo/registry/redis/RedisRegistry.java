@@ -16,10 +16,13 @@
  */
 package org.apache.dubbo.registry.redis;
 
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ArrayUtils;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -27,8 +30,6 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.support.FailbackRegistry;
 import org.apache.dubbo.rpc.RpcException;
-
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPubSub;
@@ -36,6 +37,7 @@ import redis.clients.jedis.JedisPubSub;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -53,7 +55,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * RedisRegistry
- *
  */
 public class RedisRegistry extends FailbackRegistry {
 
@@ -124,7 +125,7 @@ public class RedisRegistry extends FailbackRegistry {
         List<String> addresses = new ArrayList<String>();
         addresses.add(url.getAddress());
         String[] backups = url.getParameter(Constants.BACKUP_KEY, new String[0]);
-        if (backups != null && backups.length > 0) {
+        if (ArrayUtils.isNotEmpty(backups)) {
             addresses.addAll(Arrays.asList(backups));
         }
 
@@ -155,14 +156,11 @@ public class RedisRegistry extends FailbackRegistry {
         this.root = group;
 
         this.expirePeriod = url.getParameter(Constants.SESSION_TIMEOUT_KEY, Constants.DEFAULT_SESSION_TIMEOUT);
-        this.expireFuture = expireExecutor.scheduleWithFixedDelay(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    deferExpired(); // Extend the expiration time
-                } catch (Throwable t) { // Defensive fault tolerance
-                    logger.error("Unexpected exception occur at defer expire time, cause: " + t.getMessage(), t);
-                }
+        this.expireFuture = expireExecutor.scheduleWithFixedDelay(() -> {
+            try {
+                deferExpired(); // Extend the expiration time
+            } catch (Throwable t) { // Defensive fault tolerance
+                logger.error("Unexpected exception occur at defer expire time, cause: " + t.getMessage(), t);
             }
         }, expirePeriod / 2, expirePeriod / 2, TimeUnit.MILLISECONDS);
     }
@@ -172,7 +170,7 @@ public class RedisRegistry extends FailbackRegistry {
             JedisPool jedisPool = entry.getValue();
             try {
                 try (Jedis jedis = jedisPool.getResource()) {
-                    for (URL url : new HashSet<URL>(getRegistered())) {
+                    for (URL url : new HashSet<>(getRegistered())) {
                         if (url.getParameter(Constants.DYNAMIC_KEY, true)) {
                             String key = toCategoryPath(url);
                             if (jedis.hset(key, url.toFullString(), String.valueOf(System.currentTimeMillis() + expirePeriod)) == 1) {
@@ -196,10 +194,10 @@ public class RedisRegistry extends FailbackRegistry {
     // The monitoring center is responsible for deleting outdated dirty data
     private void clean(Jedis jedis) {
         Set<String> keys = jedis.keys(root + Constants.ANY_VALUE);
-        if (keys != null && !keys.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(keys)) {
             for (String key : keys) {
                 Map<String, String> values = jedis.hgetAll(key);
-                if (values != null && values.size() > 0) {
+                if (CollectionUtils.isNotEmptyMap(values)) {
                     boolean delete = false;
                     long now = System.currentTimeMillis();
                     for (Map.Entry<String, String> entry : values.entrySet()) {
@@ -344,23 +342,19 @@ public class RedisRegistry extends FailbackRegistry {
                     if (service.endsWith(Constants.ANY_VALUE)) {
                         admin = true;
                         Set<String> keys = jedis.keys(service);
-                        if (keys != null && !keys.isEmpty()) {
+                        if (CollectionUtils.isNotEmpty(keys)) {
                             Map<String, Set<String>> serviceKeys = new HashMap<>();
                             for (String key : keys) {
                                 String serviceKey = toServicePath(key);
-                                Set<String> sk = serviceKeys.get(serviceKey);
-                                if (sk == null) {
-                                    sk = new HashSet<>();
-                                    serviceKeys.put(serviceKey, sk);
-                                }
+                                Set<String> sk = serviceKeys.computeIfAbsent(serviceKey, k -> new HashSet<>());
                                 sk.add(key);
                             }
                             for (Set<String> sk : serviceKeys.values()) {
-                                doNotify(jedis, sk, url, Arrays.asList(listener));
+                                doNotify(jedis, sk, url, Collections.singletonList(listener));
                             }
                         }
                     } else {
-                        doNotify(jedis, jedis.keys(service + Constants.PATH_SEPARATOR + Constants.ANY_VALUE), url, Arrays.asList(listener));
+                        doNotify(jedis, jedis.keys(service + Constants.PATH_SEPARATOR + Constants.ANY_VALUE), url, Collections.singletonList(listener));
                     }
                     success = true;
                     break; // Just read one server's data
@@ -384,7 +378,7 @@ public class RedisRegistry extends FailbackRegistry {
 
     private void doNotify(Jedis jedis, String key) {
         for (Map.Entry<URL, Set<NotifyListener>> entry : new HashMap<>(getSubscribed()).entrySet()) {
-            doNotify(jedis, Arrays.asList(key), entry.getKey(), new HashSet<>(entry.getValue()));
+            doNotify(jedis, Collections.singletonList(key), entry.getKey(), new HashSet<>(entry.getValue()));
         }
     }
 
@@ -410,7 +404,7 @@ public class RedisRegistry extends FailbackRegistry {
             }
             List<URL> urls = new ArrayList<>();
             Map<String, String> values = jedis.hgetAll(key);
-            if (values != null && values.size() > 0) {
+            if (CollectionUtils.isEmptyMap(values)) {
                 for (Map.Entry<String, String> entry : values.entrySet()) {
                     URL u = URL.valueOf(entry.getKey());
                     if (!u.getParameter(Constants.DYNAMIC_KEY, true)
@@ -432,7 +426,7 @@ public class RedisRegistry extends FailbackRegistry {
                 logger.info("redis notify: " + key + " = " + urls);
             }
         }
-        if (result == null || result.isEmpty()) {
+        if (CollectionUtils.isEmpty(result)) {
             return;
         }
         for (NotifyListener listener : listeners) {
@@ -574,7 +568,7 @@ public class RedisRegistry extends FailbackRegistry {
                                             if (!first) {
                                                 first = false;
                                                 Set<String> keys = jedis.keys(service);
-                                                if (keys != null && !keys.isEmpty()) {
+                                                if (CollectionUtils.isNotEmpty(keys)) {
                                                     for (String s : keys) {
                                                         doNotify(jedis, s);
                                                     }

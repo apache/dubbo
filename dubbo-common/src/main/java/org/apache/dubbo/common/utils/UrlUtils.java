@@ -126,7 +126,7 @@ public class UrlUtils {
                 String defaultValue = entry.getValue();
                 if (defaultValue != null && defaultValue.length() > 0) {
                     String value = parameters.get(key);
-                    if (value == null || value.length() == 0) {
+                    if (StringUtils.isEmpty(value)) {
                         changed = true;
                         parameters.put(key, defaultValue);
                     }
@@ -318,7 +318,7 @@ public class UrlUtils {
 
     //compatible for dubbo-2.0.0
     public static List<String> revertForbid(List<String> forbid, Set<URL> subscribed) {
-        if (forbid != null && !forbid.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(forbid)) {
             List<String> newForbid = new ArrayList<String>();
             for (String serviceName : forbid) {
                 if (!serviceName.contains(":") && !serviceName.contains("/")) {
@@ -410,12 +410,10 @@ public class UrlUtils {
         if ("*".equals(pattern)) {
             return true;
         }
-        if ((pattern == null || pattern.length() == 0)
-                && (value == null || value.length() == 0)) {
+        if (StringUtils.isEmpty(pattern) && StringUtils.isEmpty(value)) {
             return true;
         }
-        if ((pattern == null || pattern.length() == 0)
-                || (value == null || value.length() == 0)) {
+        if (StringUtils.isEmpty(pattern) || StringUtils.isEmpty(value)) {
             return false;
         }
 

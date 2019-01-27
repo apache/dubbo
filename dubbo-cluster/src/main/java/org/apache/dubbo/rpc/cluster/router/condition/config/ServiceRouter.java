@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 
 /**
- * Service level router, "server-uniq-name.routers"
+ * Service level router, "server-unique-name.condition-router"
  */
 public class ServiceRouter extends ListenableRouter {
     public static final String NAME = "SERVICE_ROUTER";

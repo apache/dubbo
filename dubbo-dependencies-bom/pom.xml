@@ -6,11 +6,12 @@
         <groupId>org.apache</groupId>
         <artifactId>apache</artifactId>
         <version>19</version>
+        <relativePath></relativePath>
     </parent>
 
     <groupId>org.apache.dubbo</groupId>
     <artifactId>dubbo-dependencies-bom</artifactId>
-    <version>2.7.0-SNAPSHOT</version>
+    <version>2.7.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>dubbo-dependencies-bom</name>
@@ -120,6 +121,8 @@
         <activation_version>1.2.0</activation_version>
         <hessian_lite_version>3.2.3</hessian_lite_version>
         <swagger_version>1.5.19</swagger_version>
+        <spring_test_version>4.3.16.RELEASE</spring_test_version>
+
         <gson_version>2.8.5</gson_version>
     </properties>
 
@@ -457,6 +460,13 @@
                 <version>${embedded_redis_version}</version>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-test</artifactId>
+                <version>${spring_test_version}</version>
+                <scope>test</scope>
+            </dependency>
+
             <dependency>
                 <groupId>com.google.code.gson</groupId>
                 <artifactId>gson</artifactId>

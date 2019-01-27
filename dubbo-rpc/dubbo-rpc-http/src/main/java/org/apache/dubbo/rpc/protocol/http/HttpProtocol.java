@@ -18,6 +18,8 @@ package org.apache.dubbo.rpc.protocol.http;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.Version;
 import org.apache.dubbo.remoting.http.HttpBinder;
 import org.apache.dubbo.remoting.http.HttpHandler;
 import org.apache.dubbo.remoting.http.HttpServer;
@@ -116,7 +118,27 @@ public class HttpProtocol extends AbstractProxyProtocol {
         httpProxyFactoryBean.setRemoteInvocationFactory(new RemoteInvocationFactory() {
             @Override
             public RemoteInvocation createRemoteInvocation(MethodInvocation methodInvocation) {
-                RemoteInvocation invocation = new HttpRemoteInvocation(methodInvocation);
+                RemoteInvocation invocation;
+                /*
+                  package was renamed to 'org.apache.dubbo' in v2.7.0, so only provider versions after v2.7.0 can
+                  recognize org.apache.xxx.HttpRemoteInvocation'.
+                 */
+                if (Version.isRelease270OrHigher(url.getParameter(Constants.RELEASE_KEY))) {
+                    invocation = new HttpRemoteInvocation(methodInvocation);
+                } else {
+                    /*
+                      The customized 'com.alibaba.dubbo.rpc.protocol.http.HttpRemoteInvocation' was firstly introduced
+                      in v2.6.3. The main purpose is to support transformation of attachments in HttpProtocol, see
+                      https://github.com/apache/incubator-dubbo/pull/1827. To guarantee interoperability with lower
+                      versions, we need to check if the provider is v2.6.3 or higher before sending customized
+                      HttpRemoteInvocation.
+                     */
+                    if (Version.isRelease263OrHigher(url.getParameter(Constants.DUBBO_VERSION_KEY))) {
+                        invocation = new com.alibaba.dubbo.rpc.protocol.http.HttpRemoteInvocation(methodInvocation);
+                    } else {
+                        invocation = new RemoteInvocation(methodInvocation);
+                    }
+                }
                 if (isGeneric) {
                     invocation.addAttribute(Constants.GENERIC_KEY, generic);
                 }
@@ -132,7 +154,7 @@ public class HttpProtocol extends AbstractProxyProtocol {
         httpProxyFactoryBean.setServiceUrl(key);
         httpProxyFactoryBean.setServiceInterface(serviceType);
         String client = url.getParameter(Constants.CLIENT_KEY);
-        if (client == null || client.length() == 0 || "simple".equals(client)) {
+        if (StringUtils.isEmpty(client) || "simple".equals(client)) {
             SimpleHttpInvokerRequestExecutor httpInvokerRequestExecutor = new SimpleHttpInvokerRequestExecutor() {
                 @Override
                 protected void prepareConnection(HttpURLConnection con,

@@ -18,22 +18,26 @@ package org.apache.dubbo.config.spring.context.annotation;
 
 import org.apache.dubbo.config.AbstractConfig;
 
-import org.springframework.context.annotation.ImportSelector;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
 
+import static org.apache.dubbo.config.spring.util.AnnotatedBeanDefinitionRegistryUtils.registerBeans;
+
 /**
- * Dubbo {@link AbstractConfig Config} Registrar
+ * Dubbo {@link AbstractConfig Config} {@link ImportBeanDefinitionRegistrar register}, which order can be configured
  *
  * @see EnableDubboConfig
  * @see DubboConfigConfiguration
+ * @see Ordered
  * @since 2.5.8
  */
-public class DubboConfigConfigurationSelector implements ImportSelector, Ordered {
+public class DubboConfigConfigurationRegistrar implements ImportBeanDefinitionRegistrar {
 
     @Override
-    public String[] selectImports(AnnotationMetadata importingClassMetadata) {
+    public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
 
         AnnotationAttributes attributes = AnnotationAttributes.fromMap(
                 importingClassMetadata.getAnnotationAttributes(EnableDubboConfig.class.getName()));
@@ -41,20 +45,10 @@ public class DubboConfigConfigurationSelector implements ImportSelector, Ordered
         boolean multiple = attributes.getBoolean("multiple");
 
         if (multiple) {
-            return of(DubboConfigConfiguration.Multiple.class.getName());
+            registerBeans(registry, DubboConfigConfiguration.Multiple.class);
         } else {
-            return of(DubboConfigConfiguration.Single.class.getName());
+            registerBeans(registry, DubboConfigConfiguration.Single.class);
         }
     }
-
-    private static <T> T[] of(T... values) {
-        return values;
-    }
-
-    @Override
-    public int getOrder() {
-        return HIGHEST_PRECEDENCE;
-    }
-
 
 }

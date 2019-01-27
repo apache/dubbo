@@ -38,7 +38,7 @@ public class MetadataReportService {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private static MetadataReportService metadataReportService;
+    private static volatile MetadataReportService metadataReportService;
     private static Object lock = new Object();
 
     private MetadataReportFactory metadataReportFactory = ExtensionLoader.getExtensionLoader(MetadataReportFactory.class).getAdaptiveExtension();
