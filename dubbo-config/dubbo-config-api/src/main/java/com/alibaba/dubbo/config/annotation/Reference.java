@@ -16,11 +16,15 @@
  */
 package com.alibaba.dubbo.config.annotation;
 
+import com.alibaba.dubbo.common.Constants;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import static com.alibaba.dubbo.common.Constants.DEFAULT_PROTOCOL;
 
 /**
  * Reference
@@ -111,5 +115,14 @@ public @interface Reference {
     String monitor() default "";
 
     String[] registry() default {};
+
+    /**
+     * The communication protocol of Dubbo Service
+     *
+     * @return the default value is "dubbo"
+     * @see Constants#DEFAULT_PROTOCOL
+     * @since 2.6.6
+     */
+    String protocol() default DEFAULT_PROTOCOL;
 
 }
