@@ -234,7 +234,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             boolean check = getUrl().getParameter(Constants.CHECK_KEY, true)
                     && url.getParameter(Constants.CHECK_KEY, true)
                     && !Constants.CONSUMER_PROTOCOL.equals(url.getProtocol());
-            if (check ) {
+            if (check) {
                 throw new IllegalStateException("Failed to register " + url + " to registry " + getUrl().getAddress() + ", cause: " + e.getMessage(), e);
             } else {
                 logger.error("Failed to register " + url + ", waiting for retry, cause: " + e.getMessage(), e);
