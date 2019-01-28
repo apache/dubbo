@@ -107,20 +107,20 @@ public class GenericServiceTest {
 
         FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(DemoService.class);
         MethodDefinition methodDefinition = getMethod("complexCompute", fullServiceDefinition.getMethods());
-        Map parm2= createComplexObject(fullServiceDefinition,var1, var2, l, var3, var4, testEnum);
-        ComplexObject complexObject = map2bean(parm2);
+        Map mapObject = createComplexObject(fullServiceDefinition,var1, var2, l, var3, var4, testEnum);
+        ComplexObject complexObject = map2bean(mapObject);
 
         Invoker<GenericService> invoker = protocol.refer(GenericService.class, url);
 
 
         GenericService client = proxyFactory.getProxy(invoker, true);
-        Object result = client.$invoke(methodDefinition.getName(), methodDefinition.getParameterTypes(), new Object[]{"haha", parm2});
+        Object result = client.$invoke(methodDefinition.getName(), methodDefinition.getParameterTypes(), new Object[]{"haha", mapObject});
         Assertions.assertEquals("haha###" + complexObject.toString(), result);
 
 
         Invoker<DemoService> invoker2 = protocol.refer(DemoService.class, url);
         GenericService client2 = (GenericService) proxyFactory.getProxy(invoker2, true);
-        Object result2 = client2.$invoke("complexCompute", methodDefinition.getParameterTypes(), new Object[]{"haha2", parm2});
+        Object result2 = client2.$invoke("complexCompute", methodDefinition.getParameterTypes(), new Object[]{"haha2", mapObject});
         Assertions.assertEquals("haha2###" + complexObject.toString(), result2);
 
         invoker.destroy();
