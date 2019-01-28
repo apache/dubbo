@@ -614,6 +614,18 @@
                                     </resource>
                                 </transformer>
                             </transformers>
+                            <filters>
+                                <filter>
+                                    <artifact>org.apache.dubbo:dubbo</artifact>
+                                    <excludes>
+                                        <!-- These two line is optional, it can remove some warn log -->
+                                        <exclude>com/**</exclude>
+                                        <exclude>org/**</exclude>
+                                        <!-- This one is required -->
+                                        <exclude>META-INF/dubbo/**</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
                         </configuration>
                     </execution>
                 </executions>

@@ -32,12 +32,7 @@ public class EnumTypeBuilder implements TypeBuilder {
         if (clazz == null) {
             return false;
         }
-
-        if (clazz.isEnum()) {
-            return true;
-        }
-
-        return false;
+        return clazz.isEnum();
     }
 
     @Override
