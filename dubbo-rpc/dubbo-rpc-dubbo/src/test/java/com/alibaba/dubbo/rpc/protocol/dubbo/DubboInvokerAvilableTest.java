@@ -29,6 +29,7 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
@@ -80,7 +81,7 @@ public class DubboInvokerAvilableTest {
         getClients(invoker)[0].removeAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY);
     }
 
-    @Test
+    @Ignore
     public void test_normal_channel_close_wait_gracefully() throws Exception {
 
         URL url = URL.valueOf("dubbo://127.0.0.1:20883/hi?scope=true&lazy=false");

@@ -29,11 +29,11 @@ import com.alibaba.dubbo.remoting.exchange.support.Replier;
 public class NettyClientToServerTest extends ClientToServerTest {
 
     protected ExchangeServer newServer(int port, Replier<?> receiver) throws RemotingException {
-        return Exchangers.bind(URL.valueOf("exchange://localhost:" + port + "?server=netty"), receiver);
+        return Exchangers.bind(URL.valueOf("exchange://localhost:" + port + "?server=netty3"), receiver);
     }
 
     protected ExchangeChannel newClient(int port) throws RemotingException {
-        return Exchangers.connect(URL.valueOf("exchange://localhost:" + port + "?client=netty&timeout=3000"));
+        return Exchangers.connect(URL.valueOf("exchange://localhost:" + port + "?client=netty3&timeout=3000"));
     }
 
 }
