@@ -26,7 +26,9 @@ import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.exchange.ResponseFuture;
 
 import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -38,12 +40,12 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     private final URL url;
     private final AtomicInteger referenceCount = new AtomicInteger(0);
 
-    //    private final ExchangeHandler handler;
-    private final ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap;
+    private final ConcurrentMap<String, List<LazyConnectExchangeClient>> ghostClientMap;
+    private LazyConnectExchangeClient lazyConnectExchangeClient;
     private ExchangeClient client;
 
 
-    public ReferenceCountExchangeClient(ExchangeClient client, ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap) {
+    public ReferenceCountExchangeClient(ExchangeClient client, ConcurrentMap<String, List<LazyConnectExchangeClient>> ghostClientMap) {
         this.client = client;
         referenceCount.incrementAndGet();
         this.url = client.getUrl();
@@ -174,13 +176,24 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
                 .addParameter("_client_memo", "referencecounthandler.replacewithlazyclient");
 
         String key = url.getAddress();
-        // in worst case there's only one ghost connection.
-        LazyConnectExchangeClient gclient = ghostClientMap.get(key);
-        if (gclient == null || gclient.isClosed()) {
-            gclient = new LazyConnectExchangeClient(lazyUrl, client.getExchangeHandler());
-            ghostClientMap.put(key, gclient);
+
+        if (lazyConnectExchangeClient == null || lazyConnectExchangeClient.isClosed()) {
+
+            ghostClientMap.putIfAbsent(key, new CopyOnWriteArrayList<>());
+            List<LazyConnectExchangeClient> lazyConnectExchangeClients = ghostClientMap.get(key);
+
+            int index = lazyConnectExchangeClients.indexOf(lazyConnectExchangeClient);
+            lazyConnectExchangeClient = new LazyConnectExchangeClient(lazyUrl, client.getExchangeHandler());
+
+            if (index >= 0) {
+                lazyConnectExchangeClients.set(index, lazyConnectExchangeClient);
+
+            } else {
+                lazyConnectExchangeClients.add(lazyConnectExchangeClient);
+            }
         }
-        return gclient;
+
+        return lazyConnectExchangeClient;
     }
 
     @Override

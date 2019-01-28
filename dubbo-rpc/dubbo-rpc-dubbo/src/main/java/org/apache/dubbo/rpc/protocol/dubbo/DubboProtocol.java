@@ -78,7 +78,7 @@ public class DubboProtocol extends AbstractProtocol {
      * <host:port,Exchanger>
      */
     private final Map<String, List<ReferenceCountExchangeClient>> referenceClientMap = new ConcurrentHashMap<>();
-    private final ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, List<LazyConnectExchangeClient>> ghostClientMap = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, Object> locks = new ConcurrentHashMap<>();
     private final Set<String> optimizers = new ConcurrentHashSet<>();
     /**
@@ -604,18 +604,26 @@ public class DubboProtocol extends AbstractProtocol {
         }
 
         for (String key : new ArrayList<>(ghostClientMap.keySet())) {
-            ExchangeClient client = ghostClientMap.remove(key);
-            if (client != null) {
-                try {
-                    if (logger.isInfoEnabled()) {
-                        logger.info("Close dubbo connect: " + client.getLocalAddress() + "-->" + client.getRemoteAddress());
+            List<LazyConnectExchangeClient> removeClients = ghostClientMap.remove(key);
+            if (CollectionUtils.isNotEmpty(removeClients)) {
+
+                for (LazyConnectExchangeClient client : removeClients) {
+
+                    try {
+                        if (logger.isInfoEnabled()) {
+                            logger.info("Close dubbo connect: " + client.getLocalAddress() + "-->" + client.getRemoteAddress());
+                        }
+
+                        client.close(ConfigurationUtils.getServerShutdownTimeout());
+
+                    } catch (Throwable t) {
+                        logger.warn(t.getMessage(), t);
                     }
-                    client.close(ConfigurationUtils.getServerShutdownTimeout());
-                } catch (Throwable t) {
-                    logger.warn(t.getMessage(), t);
+
                 }
             }
         }
+
         stubServiceMethodsMap.clear();
         super.destroy();
     }
