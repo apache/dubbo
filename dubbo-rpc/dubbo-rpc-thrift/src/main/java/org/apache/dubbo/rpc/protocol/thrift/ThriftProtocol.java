@@ -54,7 +54,7 @@ public class ThriftProtocol extends AbstractProtocol {
 
     // ip:port -> ExchangeServer
     private final ConcurrentMap<String, ExchangeServer> serverMap =
-            new ConcurrentHashMap<String, ExchangeServer>();
+            new ConcurrentHashMap<>();
 
     private ExchangeHandler handler = new ExchangeHandlerAdapter() {
 
@@ -126,7 +126,7 @@ public class ThriftProtocol extends AbstractProtocol {
         }
         // export service.
         key = serviceKey(url);
-        DubboExporter<T> exporter = new DubboExporter<T>(invoker, key, exporterMap);
+        DubboExporter<T> exporter = new DubboExporter<>(invoker, key, exporterMap);
         exporterMap.put(key, exporter);
 
         return exporter;
@@ -137,7 +137,7 @@ public class ThriftProtocol extends AbstractProtocol {
 
         super.destroy();
 
-        for (String key : new ArrayList<String>(serverMap.keySet())) {
+        for (String key : new ArrayList<>(serverMap.keySet())) {
 
             ExchangeServer server = serverMap.remove(key);
 
@@ -159,7 +159,7 @@ public class ThriftProtocol extends AbstractProtocol {
     @Override
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
 
-        ThriftInvoker<T> invoker = new ThriftInvoker<T>(type, url, getClients(url), invokers);
+        ThriftInvoker<T> invoker = new ThriftInvoker<>(type, url, getClients(url), invokers);
 
         invokers.add(invoker);
 

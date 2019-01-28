@@ -48,7 +48,7 @@ public class MonitorFilter implements Filter {
     /**
      * The Concurrent counter
      */
-    private final ConcurrentMap<String, AtomicInteger> concurrents = new ConcurrentHashMap<String, AtomicInteger>();
+    private final ConcurrentMap<String, AtomicInteger> concurrents = new ConcurrentHashMap<>();
 
     /**
      * The MonitorFactory

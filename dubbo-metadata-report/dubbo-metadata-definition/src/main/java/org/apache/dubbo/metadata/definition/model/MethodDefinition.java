@@ -37,7 +37,7 @@ public class MethodDefinition {
 
     public List<TypeDefinition> getParameters() {
         if (parameters == null) {
-            parameters = new ArrayList<TypeDefinition>();
+            parameters = new ArrayList<>();
         }
         return parameters;
     }

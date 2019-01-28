@@ -42,7 +42,7 @@ import static org.mockito.Mockito.mock;
  */
 @SuppressWarnings("unchecked")
 public class FailfastClusterInvokerTest {
-    List<Invoker<FailfastClusterInvokerTest>> invokers = new ArrayList<Invoker<FailfastClusterInvokerTest>>();
+    List<Invoker<FailfastClusterInvokerTest>> invokers = new ArrayList<>();
     URL url = URL.valueOf("test://test:11/test");
     Invoker<FailfastClusterInvokerTest> invoker1 = mock(Invoker.class);
     RpcInvocation invocation = new RpcInvocation();
@@ -83,7 +83,7 @@ public class FailfastClusterInvokerTest {
     public void testInvokeExceptoin() {
         Assertions.assertThrows(RpcException.class, () -> {
             resetInvoker1ToException();
-            FailfastClusterInvoker<FailfastClusterInvokerTest> invoker = new FailfastClusterInvoker<FailfastClusterInvokerTest>(dic);
+            FailfastClusterInvoker<FailfastClusterInvokerTest> invoker = new FailfastClusterInvoker<>(dic);
             invoker.invoke(invocation);
             Assertions.assertSame(invoker1, RpcContext.getContext().getInvoker());
         });
@@ -94,7 +94,7 @@ public class FailfastClusterInvokerTest {
 
         resetInvoker1ToNoException();
 
-        FailfastClusterInvoker<FailfastClusterInvokerTest> invoker = new FailfastClusterInvoker<FailfastClusterInvokerTest>(dic);
+        FailfastClusterInvoker<FailfastClusterInvokerTest> invoker = new FailfastClusterInvoker<>(dic);
         Result ret = invoker.invoke(invocation);
         Assertions.assertSame(result, ret);
     }
@@ -113,7 +113,7 @@ public class FailfastClusterInvokerTest {
 
         resetInvoker1ToNoException();
 
-        FailfastClusterInvoker<FailfastClusterInvokerTest> invoker = new FailfastClusterInvoker<FailfastClusterInvokerTest>(dic);
+        FailfastClusterInvoker<FailfastClusterInvokerTest> invoker = new FailfastClusterInvoker<>(dic);
         try {
             invoker.invoke(invocation);
             fail();

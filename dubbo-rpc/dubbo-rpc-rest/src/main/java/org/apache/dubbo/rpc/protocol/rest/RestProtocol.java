@@ -65,12 +65,12 @@ public class RestProtocol extends AbstractProxyProtocol {
     private static final int HTTPCLIENTCONNECTIONMANAGER_CLOSEWAITTIME_MS = 1000;
     private static final int HTTPCLIENTCONNECTIONMANAGER_CLOSEIDLETIME_S = 30;
 
-    private final Map<String, RestServer> servers = new ConcurrentHashMap<String, RestServer>();
+    private final Map<String, RestServer> servers = new ConcurrentHashMap<>();
 
     private final RestServerFactory serverFactory = new RestServerFactory();
 
     // TODO in the future maybe we can just use a single rest client and connection manager
-    private final List<ResteasyClient> clients = Collections.synchronizedList(new LinkedList<ResteasyClient>());
+    private final List<ResteasyClient> clients = Collections.synchronizedList(new LinkedList<>());
 
     private volatile ConnectionMonitor connectionMonitor;
 
@@ -244,7 +244,7 @@ public class RestProtocol extends AbstractProxyProtocol {
 
     protected class ConnectionMonitor extends Thread {
         private volatile boolean shutdown;
-        private final List<PoolingHttpClientConnectionManager> connectionManagers = Collections.synchronizedList(new LinkedList<PoolingHttpClientConnectionManager>());
+        private final List<PoolingHttpClientConnectionManager> connectionManagers = Collections.synchronizedList(new LinkedList<>());
 
         public void addConnectionManager(PoolingHttpClientConnectionManager connectionManager) {
             connectionManagers.add(connectionManager);

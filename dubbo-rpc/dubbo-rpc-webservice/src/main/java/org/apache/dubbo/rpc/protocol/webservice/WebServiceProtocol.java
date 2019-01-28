@@ -55,7 +55,7 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
 
     public static final int DEFAULT_PORT = 80;
 
-    private final Map<String, HttpServer> serverMap = new ConcurrentHashMap<String, HttpServer>();
+    private final Map<String, HttpServer> serverMap = new ConcurrentHashMap<>();
 
     private final ExtensionManagerBus bus = new ExtensionManagerBus();
 

@@ -45,7 +45,7 @@ public class SpringStatusCheckerTest {
     public void setUp() throws Exception {
         initMocks(this);
         this.springStatusChecker = new SpringStatusChecker();
-        new ServiceBean<Object>().setApplicationContext(applicationContext);
+        new ServiceBean<>().setApplicationContext(applicationContext);
     }
 
     @AfterEach
@@ -65,7 +65,7 @@ public class SpringStatusCheckerTest {
     public void testWithLifeCycleRunning() {
         SpringExtensionFactory.clearContexts();
         ApplicationLifeCycle applicationLifeCycle = mock(ApplicationLifeCycle.class);
-        new ServiceBean<Object>().setApplicationContext(applicationLifeCycle);
+        new ServiceBean<>().setApplicationContext(applicationLifeCycle);
         given(applicationLifeCycle.getConfigLocations()).willReturn(new String[]{"test1", "test2"});
         given(applicationLifeCycle.isRunning()).willReturn(true);
 
@@ -79,7 +79,7 @@ public class SpringStatusCheckerTest {
     public void testWithoutLifeCycleRunning() {
         SpringExtensionFactory.clearContexts();
         ApplicationLifeCycle applicationLifeCycle = mock(ApplicationLifeCycle.class);
-        new ServiceBean<Object>().setApplicationContext(applicationLifeCycle);
+        new ServiceBean<>().setApplicationContext(applicationLifeCycle);
         given(applicationLifeCycle.isRunning()).willReturn(false);
 
         Status status = springStatusChecker.check();

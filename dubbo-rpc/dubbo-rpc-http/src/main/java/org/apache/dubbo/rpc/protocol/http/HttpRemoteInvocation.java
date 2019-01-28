@@ -35,7 +35,7 @@ public class HttpRemoteInvocation extends RemoteInvocation {
 
     public HttpRemoteInvocation(MethodInvocation methodInvocation) {
         super(methodInvocation);
-        addAttribute(dubboAttachmentsAttrName, new HashMap<String, String>(RpcContext.getContext().getAttachments()));
+        addAttribute(dubboAttachmentsAttrName, new HashMap<>(RpcContext.getContext().getAttachments()));
     }
 
     @Override

@@ -106,7 +106,7 @@ public class AbstractConfigTest {
 
     @Test
     public void testAppendParameters1() throws Exception {
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         parameters.put("default.num", "one");
         parameters.put("num", "ONE");
         AbstractConfig.appendParameters(parameters, new ParameterConfig(1, "hello/world", 30, "password"), "prefix");
@@ -122,21 +122,21 @@ public class AbstractConfigTest {
     @Test
     public void testAppendParameters2() throws Exception {
         Assertions.assertThrows(IllegalStateException.class, () -> {
-            Map<String, String> parameters = new HashMap<String, String>();
+            Map<String, String> parameters = new HashMap<>();
             AbstractConfig.appendParameters(parameters, new ParameterConfig());
         });
     }
 
     @Test
     public void testAppendParameters3() throws Exception {
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         AbstractConfig.appendParameters(parameters, null);
         assertTrue(parameters.isEmpty());
     }
 
     @Test
     public void testAppendParameters4() throws Exception {
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         AbstractConfig.appendParameters(parameters, new ParameterConfig(1, "hello/world", 30, "password"));
         Assertions.assertEquals("one", parameters.get("key.1"));
         Assertions.assertEquals("two", parameters.get("key.2"));
@@ -147,7 +147,7 @@ public class AbstractConfigTest {
 
     @Test
     public void testAppendAttributes1() throws Exception {
-        Map<String, Object> parameters = new HashMap<String, Object>();
+        Map<String, Object> parameters = new HashMap<>();
         AbstractConfig.appendAttributes(parameters, new AttributeConfig('l', true, (byte) 0x01), "prefix");
         Assertions.assertEquals('l', parameters.get("prefix.let"));
         Assertions.assertEquals(true, parameters.get("prefix.activate"));
@@ -156,7 +156,7 @@ public class AbstractConfigTest {
 
     @Test
     public void testAppendAttributes2() throws Exception {
-        Map<String, Object> parameters = new HashMap<String, Object>();
+        Map<String, Object> parameters = new HashMap<>();
         AbstractConfig.appendAttributes(parameters, new AttributeConfig('l', true, (byte) 0x01));
         Assertions.assertEquals('l', parameters.get("let"));
         Assertions.assertEquals(true, parameters.get("activate"));
@@ -685,7 +685,7 @@ public class AbstractConfigTest {
         }
 
         public Map getParameters() {
-            Map<String, String> map = new HashMap<String, String>();
+            Map<String, String> map = new HashMap<>();
             map.put("key.1", "one");
             map.put("key-2", "two");
             return map;

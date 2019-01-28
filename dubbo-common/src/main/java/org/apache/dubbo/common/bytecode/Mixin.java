@@ -114,7 +114,7 @@ public abstract class Mixin {
             ccp.addConstructor(Modifier.PUBLIC, new Class<?>[]{Object[].class}, code.toString());
 
             // impl methods.
-            Set<String> worked = new HashSet<String>();
+            Set<String> worked = new HashSet<>();
             for (int i = 0; i < ics.length; i++) {
                 if (!Modifier.isPublic(ics[i].getModifiers())) {
                     String npkg = ics[i].getPackage().getName();

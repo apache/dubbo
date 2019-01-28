@@ -48,7 +48,7 @@ public class InjvmProtocolTest {
 
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
     private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-    private List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
+    private List<Exporter<?>> exporters = new ArrayList<>();
 
     @AfterEach
     public void after() throws Exception {
@@ -69,7 +69,7 @@ public class InjvmProtocolTest {
         assertEquals(service.getSize(new String[]{"", "", ""}), 3);
         service.invoke("injvm://127.0.0.1/TestService", "invoke");
 
-        InjvmInvoker injvmInvoker = new InjvmInvoker(DemoService.class, URL.valueOf("injvm://127.0.0.1/TestService"),null,new HashMap<String, Exporter<?>>());
+        InjvmInvoker injvmInvoker = new InjvmInvoker(DemoService.class, URL.valueOf("injvm://127.0.0.1/TestService"),null, new HashMap<>());
         assertFalse(injvmInvoker.isAvailable());
 
     }

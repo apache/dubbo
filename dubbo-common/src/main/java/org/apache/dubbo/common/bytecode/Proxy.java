@@ -48,7 +48,7 @@ public abstract class Proxy {
     };
     private static final AtomicLong PROXY_CLASS_COUNTER = new AtomicLong(0);
     private static final String PACKAGE_NAME = Proxy.class.getPackage().getName();
-    private static final Map<ClassLoader, Map<String, Object>> ProxyCacheMap = new WeakHashMap<ClassLoader, Map<String, Object>>();
+    private static final Map<ClassLoader, Map<String, Object>> ProxyCacheMap = new WeakHashMap<>();
 
     private static final Object PendingGenerationMarker = new Object();
 
@@ -216,7 +216,7 @@ public abstract class Proxy {
                 if (proxy == null) {
                     cache.remove(key);
                 } else {
-                    cache.put(key, new WeakReference<Proxy>(proxy));
+                    cache.put(key, new WeakReference<>(proxy));
                 }
                 cache.notifyAll();
             }

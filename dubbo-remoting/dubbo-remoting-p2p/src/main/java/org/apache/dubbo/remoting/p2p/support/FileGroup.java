@@ -117,7 +117,7 @@ public class FileGroup extends AbstractGroup {
         try {
             String full = url.toFullString();
             String[] lines = IOUtils.readLines(file);
-            List<String> saves = new ArrayList<String>();
+            List<String> saves = new ArrayList<>();
             for (String line : lines) {
                 if (full.equals(line)) {
                     return;

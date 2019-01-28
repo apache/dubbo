@@ -27,7 +27,7 @@ public enum ThriftType {
     BOOL, BYTE, I16, I32, I64, DOUBLE, STRING;
 
     private static final Map<Class<?>, ThriftType> types =
-            new HashMap<Class<?>, ThriftType>();
+            new HashMap<>();
 
     static {
         put(boolean.class, BOOL);

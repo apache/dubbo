@@ -62,10 +62,10 @@ public class ReferenceConfigCache {
             return ret.toString();
         }
     };
-    static final ConcurrentMap<String, ReferenceConfigCache> cacheHolder = new ConcurrentHashMap<String, ReferenceConfigCache>();
+    static final ConcurrentMap<String, ReferenceConfigCache> cacheHolder = new ConcurrentHashMap<>();
     private final String name;
     private final KeyGenerator generator;
-    ConcurrentMap<String, ReferenceConfig<?>> cache = new ConcurrentHashMap<String, ReferenceConfig<?>>();
+    ConcurrentMap<String, ReferenceConfig<?>> cache = new ConcurrentHashMap<>();
 
     private ReferenceConfigCache(String name, KeyGenerator generator) {
         this.name = name;
@@ -137,7 +137,7 @@ public class ReferenceConfigCache {
      * clear and destroy all {@link ReferenceConfig} in the cache.
      */
     public void destroyAll() {
-        Set<String> set = new HashSet<String>(cache.keySet());
+        Set<String> set = new HashSet<>(cache.keySet());
         for (String key : set) {
             destroyKey(key);
         }

@@ -51,7 +51,7 @@ public final class ExecutionList {
 
     private boolean executed;
 
-    private static final Executor DEFAULT_EXECUTOR = new ThreadPoolExecutor(1, 10, 60000L, TimeUnit.MILLISECONDS, new SynchronousQueue<Runnable>(), new NamedThreadFactory("DubboFutureCallbackDefault", true));
+    private static final Executor DEFAULT_EXECUTOR = new ThreadPoolExecutor(1, 10, 60000L, TimeUnit.MILLISECONDS, new SynchronousQueue<>(), new NamedThreadFactory("DubboFutureCallbackDefault", true));
 
     /**
      * Creates a new, empty {@link ExecutionList}.

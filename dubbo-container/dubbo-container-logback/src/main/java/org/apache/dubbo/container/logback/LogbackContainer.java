@@ -74,14 +74,14 @@ public class LogbackContainer implements Container {
         rootLogger.detachAndStopAllAppenders();
 
         // appender
-        RollingFileAppender<ILoggingEvent> fileAppender = new RollingFileAppender<ILoggingEvent>();
+        RollingFileAppender<ILoggingEvent> fileAppender = new RollingFileAppender<>();
         fileAppender.setContext(loggerContext);
         fileAppender.setName("application");
         fileAppender.setFile(file);
         fileAppender.setAppend(true);
 
         // policy
-        TimeBasedRollingPolicy<ILoggingEvent> policy = new TimeBasedRollingPolicy<ILoggingEvent>();
+        TimeBasedRollingPolicy<ILoggingEvent> policy = new TimeBasedRollingPolicy<>();
         policy.setContext(loggerContext);
         policy.setMaxHistory(maxHistory);
         policy.setFileNamePattern(file + ".%d{yyyy-MM-dd}");

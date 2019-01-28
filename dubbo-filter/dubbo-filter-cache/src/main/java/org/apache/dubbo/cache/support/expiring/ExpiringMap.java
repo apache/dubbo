@@ -60,7 +60,7 @@ public class ExpiringMap<K, V> implements Map<K, V> {
     }
 
     public ExpiringMap(int timeToLive, int expirationInterval) {
-        this(new ConcurrentHashMap<K, ExpiryObject>(), timeToLive, expirationInterval);
+        this(new ConcurrentHashMap<>(), timeToLive, expirationInterval);
     }
 
     private ExpiringMap(ConcurrentHashMap<K, ExpiryObject> delegateMap, int timeToLive, int expirationInterval) {
@@ -148,7 +148,7 @@ public class ExpiringMap<K, V> implements Map<K, V> {
 
     @Override
     public Collection<V> values() {
-        List<V> list = new ArrayList<V>();
+        List<V> list = new ArrayList<>();
         Set<Entry<K, ExpiryObject>> delegatedSet = delegateMap.entrySet();
         for (Entry<K, ExpiryObject> entry : delegatedSet) {
             ExpiryObject value = entry.getValue();

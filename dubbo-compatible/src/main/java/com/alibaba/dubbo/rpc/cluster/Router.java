@@ -41,7 +41,7 @@ public interface Router extends org.apache.dubbo.rpc.cluster.Router{
     // Add since 2.7.0
     @Override
     default <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
-        List<com.alibaba.dubbo.rpc.Invoker<T>> invs = invokers.stream().map(invoker -> new com.alibaba.dubbo.rpc.Invoker.CompatibleInvoker<T>(invoker)).
+        List<com.alibaba.dubbo.rpc.Invoker<T>> invs = invokers.stream().map(invoker -> new com.alibaba.dubbo.rpc.Invoker.CompatibleInvoker<>(invoker)).
                 collect(Collectors.toList());
 
         List<com.alibaba.dubbo.rpc.Invoker<T>> res = this.route(invs, new com.alibaba.dubbo.common.URL(url), new com.alibaba.dubbo.rpc.Invocation.CompatibleInvocation(invocation));

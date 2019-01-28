@@ -68,7 +68,7 @@ public class ServerPeer extends ServerDelegate implements Peer {
     public Collection<Channel> getChannels() {
         Collection<Channel> channels = super.getChannels();
         if (clients.size() > 0) {
-            channels = channels == null ? new ArrayList<Channel>() : new ArrayList<Channel>(channels);
+            channels = channels == null ? new ArrayList<>() : new ArrayList<>(channels);
             channels.addAll(clients.values());
         }
         return channels;

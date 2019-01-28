@@ -37,8 +37,8 @@ import java.util.concurrent.ConcurrentMap;
 public class SimpleRegistryService extends AbstractRegistryService {
 
     private final static Logger logger = LoggerFactory.getLogger(SimpleRegistryService.class);
-    private final ConcurrentMap<String, ConcurrentMap<String, URL>> remoteRegistered = new ConcurrentHashMap<String, ConcurrentMap<String, URL>>();
-    private final ConcurrentMap<String, ConcurrentMap<String, NotifyListener>> remoteListeners = new ConcurrentHashMap<String, ConcurrentMap<String, NotifyListener>>();
+    private final ConcurrentMap<String, ConcurrentMap<String, URL>> remoteRegistered = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ConcurrentMap<String, NotifyListener>> remoteListeners = new ConcurrentHashMap<>();
     private List<String> registries;
 
     @Override
@@ -47,7 +47,7 @@ public class SimpleRegistryService extends AbstractRegistryService {
         String client = RpcContext.getContext().getRemoteAddressString();
         Map<String, URL> urls = remoteRegistered.get(client);
         if (urls == null) {
-            remoteRegistered.putIfAbsent(client, new ConcurrentHashMap<String, URL>());
+            remoteRegistered.putIfAbsent(client, new ConcurrentHashMap<>());
             urls = remoteRegistered.get(client);
         }
         urls.put(service, url);
@@ -90,7 +90,7 @@ public class SimpleRegistryService extends AbstractRegistryService {
 
         Map<String, NotifyListener> listeners = remoteListeners.get(client);
         if (listeners == null) {
-            remoteListeners.putIfAbsent(client, new ConcurrentHashMap<String, NotifyListener>());
+            remoteListeners.putIfAbsent(client, new ConcurrentHashMap<>());
             listeners = remoteListeners.get(client);
         }
         listeners.put(service, listener);

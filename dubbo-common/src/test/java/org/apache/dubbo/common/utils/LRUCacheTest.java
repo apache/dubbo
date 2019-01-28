@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class LRUCacheTest {
     @Test
     public void testCache() throws Exception {
-        LRUCache<String, Integer> cache = new LRUCache<String, Integer>(3);
+        LRUCache<String, Integer> cache = new LRUCache<>(3);
         cache.put("one", 1);
         cache.put("two", 2);
         cache.put("three", 3);
@@ -53,7 +53,7 @@ public class LRUCacheTest {
 
     @Test
     public void testCapacity() throws Exception {
-        LRUCache<String, Integer> cache = new LRUCache<String, Integer>();
+        LRUCache<String, Integer> cache = new LRUCache<>();
         assertThat(cache.getMaxCapacity(), equalTo(1000));
         cache.setMaxCapacity(10);
         assertThat(cache.getMaxCapacity(), equalTo(10));

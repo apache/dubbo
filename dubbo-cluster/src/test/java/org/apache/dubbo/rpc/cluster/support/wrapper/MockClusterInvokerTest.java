@@ -41,7 +41,7 @@ import java.util.List;
 
 public class MockClusterInvokerTest {
 
-    List<Invoker<IHelloService>> invokers = new ArrayList<Invoker<IHelloService>>();
+    List<Invoker<IHelloService>> invokers = new ArrayList<>();
 
     @BeforeEach
     public void beforeMethod() {
@@ -651,7 +651,7 @@ public class MockClusterInvokerTest {
             invokers.add(mockInvoker);
         }
 
-        StaticDirectory<IHelloService> dic = new StaticDirectory<IHelloService>(durl, invokers, null);
+        StaticDirectory<IHelloService> dic = new StaticDirectory<>(durl, invokers, null);
         dic.buildRouterChain();
         AbstractClusterInvoker<IHelloService> cluster = new AbstractClusterInvoker(dic) {
             @Override
@@ -664,7 +664,7 @@ public class MockClusterInvokerTest {
                 }
             }
         };
-        return new MockClusterInvoker<IHelloService>(dic, cluster);
+        return new MockClusterInvoker<>(dic, cluster);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})

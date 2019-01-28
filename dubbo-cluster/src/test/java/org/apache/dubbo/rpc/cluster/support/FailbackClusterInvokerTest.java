@@ -54,7 +54,7 @@ import static org.mockito.Mockito.mock;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class FailbackClusterInvokerTest {
 
-    List<Invoker<FailbackClusterInvokerTest>> invokers = new ArrayList<Invoker<FailbackClusterInvokerTest>>();
+    List<Invoker<FailbackClusterInvokerTest>> invokers = new ArrayList<>();
     URL url = URL.valueOf("test://test:11/test?retries=2&failbacktasks=2");
     Invoker<FailbackClusterInvokerTest> invoker = mock(Invoker.class);
     RpcInvocation invocation = new RpcInvocation();
@@ -103,7 +103,7 @@ public class FailbackClusterInvokerTest {
     @Order(1)
     public void testInvokeException() {
         resetInvokerToException();
-        FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<FailbackClusterInvokerTest>(
+        FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<>(
                 dic);
         invoker.invoke(invocation);
         Assertions.assertNull(RpcContext.getContext().getInvoker());
@@ -116,7 +116,7 @@ public class FailbackClusterInvokerTest {
 
         resetInvokerToNoException();
 
-        FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<FailbackClusterInvokerTest>(
+        FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<>(
                 dic);
         Result ret = invoker.invoke(invocation);
         Assertions.assertSame(result, ret);
@@ -137,7 +137,7 @@ public class FailbackClusterInvokerTest {
 
         resetInvokerToNoException();
 
-        FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<FailbackClusterInvokerTest>(
+        FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<>(
                 dic);
         LogUtil.start();
         DubboAppender.clear();
@@ -154,7 +154,7 @@ public class FailbackClusterInvokerTest {
 
         resetInvokerToException();
 
-        FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<FailbackClusterInvokerTest>(
+        FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<>(
                 dic);
         LogUtil.start();
         DubboAppender.clear();

@@ -195,7 +195,7 @@ public class TTree implements TComponent {
         /**
          * child nodes
          */
-        final List<Node> children = new ArrayList<Node>();
+        final List<Node> children = new ArrayList<>();
 
         /**
          * begin timestamp

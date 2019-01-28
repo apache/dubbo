@@ -126,7 +126,7 @@ public class AnnotationPropertyValuesAdapterTest {
         Assert.assertEquals("default,default", referenceBean.getFilter());
         Assert.assertEquals("default,default", referenceBean.getListener());
 
-        Map<String, String> data = new LinkedHashMap<String, String>();
+        Map<String, String> data = new LinkedHashMap<>();
         data.put("key1", "value1");
 
         Assert.assertEquals(data, referenceBean.getParameters());

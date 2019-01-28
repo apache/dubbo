@@ -158,12 +158,12 @@ public class CompatibleTypeUtils {
                 try {
                     collection = (Collection) type.newInstance();
                 } catch (Throwable e) {
-                    collection = new ArrayList<Object>();
+                    collection = new ArrayList<>();
                 }
             } else if (type == Set.class) {
-                collection = new HashSet<Object>();
+                collection = new HashSet<>();
             } else {
-                collection = new ArrayList<Object>();
+                collection = new ArrayList<>();
             }
             int length = Array.getLength(value);
             for (int i = 0; i < length; i++) {

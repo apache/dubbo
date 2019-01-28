@@ -162,7 +162,7 @@ public class URLTest {
         assertEquals(0, url.getPort());
         assertEquals("home/user1/router.js", url.getPath());
         assertEquals(2, url.getParameters().size());
-        Map<String, String> params = new HashMap<String, String>();
+        Map<String, String> params = new HashMap<>();
         params.put("p1", "v1");
         params.put("p2", "v2");
         assertEquals(params, url.getParameters());
@@ -175,7 +175,7 @@ public class URLTest {
         assertEquals(0, url.getPort());
         assertEquals("home/user1/router.js", url.getPath());
         assertEquals(2, url.getParameters().size());
-        params = new HashMap<String, String>();
+        params = new HashMap<>();
         params.put("p1", "v1");
         params.put("p2", "v2");
         assertEquals(params, url.getParameters());
@@ -291,7 +291,7 @@ public class URLTest {
     public void test_equals() throws Exception {
         URL url1 = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
 
-        Map<String, String> params = new HashMap<String, String>();
+        Map<String, String> params = new HashMap<>();
         params.put("version", "1.0.0");
         params.put("application", "morgan");
         URL url2 = new URL("dubbo", "admin", "hello1234", "10.20.130.230", 20880, "context/path", params);
@@ -633,7 +633,7 @@ public class URLTest {
     @Test
     public void testAddParameters() throws Exception {
         URL url = URL.valueOf("dubbo://127.0.0.1:20880");
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         parameters.put("version", null);
         url.addParameters(parameters);
     }

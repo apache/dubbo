@@ -68,8 +68,8 @@ public class RpcContext {
         }
     };
 
-    private final Map<String, String> attachments = new HashMap<String, String>();
-    private final Map<String, Object> values = new HashMap<String, Object>();
+    private final Map<String, String> attachments = new HashMap<>();
+    private final Map<String, Object> values = new HashMap<>();
     private Future<?> future;
 
     private List<URL> urls;
@@ -607,7 +607,7 @@ public class RpcContext {
     public RpcContext setInvokers(List<Invoker<?>> invokers) {
         this.invokers = invokers;
         if (CollectionUtils.isNotEmpty(invokers)) {
-            List<URL> urls = new ArrayList<URL>(invokers.size());
+            List<URL> urls = new ArrayList<>(invokers.size());
             for (Invoker<?> invoker : invokers) {
                 urls.add(invoker.getUrl());
             }

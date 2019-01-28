@@ -30,7 +30,7 @@ public class SetMerger implements Merger<Set<?>> {
         if (ArrayUtils.isEmpty(items)) {
             return Collections.emptySet();
         }
-        Set<Object> result = new HashSet<Object>();
+        Set<Object> result = new HashSet<>();
 
         for (Set<?> item : items) {
             if (item != null) {

@@ -77,7 +77,7 @@ public class UrlUtilsTest {
     @Test
     public void testParseFromParameter() {
         String address = "127.0.0.1";
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         parameters.put("username", "root");
         parameters.put("password", "alibaba");
         parameters.put("port", "10000");
@@ -102,7 +102,7 @@ public class UrlUtilsTest {
         String backupAddress1 = "192.168.0.2";
         String backupAddress2 = "192.168.0.3";
 
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         parameters.put("username", "root");
         parameters.put("password", "alibaba");
         parameters.put("port", "10000");
@@ -119,7 +119,7 @@ public class UrlUtilsTest {
     @Test
     public void testParseUrls() {
         String addresses = "192.168.0.1|192.168.0.2|192.168.0.3";
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         parameters.put("username", "root");
         parameters.put("password", "alibaba");
         parameters.put("port", "10000");
@@ -137,7 +137,7 @@ public class UrlUtilsTest {
     @Test
     public void testConvertRegister() {
         String key = "perf/dubbo.test.api.HelloService:1.0.0";
-        Map<String, Map<String, String>> register = new HashMap<String, Map<String, String>>();
+        Map<String, Map<String, String>> register = new HashMap<>();
         register.put(key, null);
         Map<String, Map<String, String>> newRegister = UrlUtils.convertRegister(register);
         assertEquals(register, newRegister);
@@ -146,12 +146,12 @@ public class UrlUtilsTest {
     @Test
     public void testConvertRegister2() {
         String key = "dubbo.test.api.HelloService";
-        Map<String, Map<String, String>> register = new HashMap<String, Map<String, String>>();
-        Map<String, String> service = new HashMap<String, String>();
+        Map<String, Map<String, String>> register = new HashMap<>();
+        Map<String, String> service = new HashMap<>();
         service.put("dubbo://127.0.0.1:20880/com.xxx.XxxService", "version=1.0.0&group=test&dubbo.version=2.0.0");
         register.put(key, service);
         Map<String, Map<String, String>> newRegister = UrlUtils.convertRegister(register);
-        Map<String, String> newService = new HashMap<String, String>();
+        Map<String, String> newService = new HashMap<>();
         newService.put("dubbo://127.0.0.1:20880/com.xxx.XxxService", "dubbo.version=2.0.0&group=test&version=1.0.0");
         assertEquals(newService, newRegister.get("test/dubbo.test.api.HelloService:1.0.0"));
     }
@@ -159,7 +159,7 @@ public class UrlUtilsTest {
     @Test
     public void testSubscribe() {
         String key = "perf/dubbo.test.api.HelloService:1.0.0";
-        Map<String, String> subscribe = new HashMap<String, String>();
+        Map<String, String> subscribe = new HashMap<>();
         subscribe.put(key, null);
         Map<String, String> newSubscribe = UrlUtils.convertSubscribe(subscribe);
         assertEquals(subscribe, newSubscribe);
@@ -168,7 +168,7 @@ public class UrlUtilsTest {
     @Test
     public void testSubscribe2() {
         String key = "dubbo.test.api.HelloService";
-        Map<String, String> subscribe = new HashMap<String, String>();
+        Map<String, String> subscribe = new HashMap<>();
         subscribe.put(key, "version=1.0.0&group=test&dubbo.version=2.0.0");
         Map<String, String> newSubscribe = UrlUtils.convertSubscribe(subscribe);
         assertEquals("dubbo.version=2.0.0&group=test&version=1.0.0", newSubscribe.get("test/dubbo.test.api.HelloService:1.0.0"));
@@ -177,12 +177,12 @@ public class UrlUtilsTest {
     @Test
     public void testRevertRegister() {
         String key = "perf/dubbo.test.api.HelloService:1.0.0";
-        Map<String, Map<String, String>> register = new HashMap<String, Map<String, String>>();
-        Map<String, String> service = new HashMap<String, String>();
+        Map<String, Map<String, String>> register = new HashMap<>();
+        Map<String, String> service = new HashMap<>();
         service.put("dubbo://127.0.0.1:20880/com.xxx.XxxService", null);
         register.put(key, service);
         Map<String, Map<String, String>> newRegister = UrlUtils.revertRegister(register);
-        Map<String, Map<String, String>> expectedRegister = new HashMap<String, Map<String, String>>();
+        Map<String, Map<String, String>> expectedRegister = new HashMap<>();
         service.put("dubbo://127.0.0.1:20880/com.xxx.XxxService", "group=perf&version=1.0.0");
         expectedRegister.put("dubbo.test.api.HelloService", service);
         assertEquals(expectedRegister, newRegister);
@@ -191,12 +191,12 @@ public class UrlUtilsTest {
     @Test
     public void testRevertRegister2() {
         String key = "dubbo.test.api.HelloService";
-        Map<String, Map<String, String>> register = new HashMap<String, Map<String, String>>();
-        Map<String, String> service = new HashMap<String, String>();
+        Map<String, Map<String, String>> register = new HashMap<>();
+        Map<String, String> service = new HashMap<>();
         service.put("dubbo://127.0.0.1:20880/com.xxx.XxxService", null);
         register.put(key, service);
         Map<String, Map<String, String>> newRegister = UrlUtils.revertRegister(register);
-        Map<String, Map<String, String>> expectedRegister = new HashMap<String, Map<String, String>>();
+        Map<String, Map<String, String>> expectedRegister = new HashMap<>();
         service.put("dubbo://127.0.0.1:20880/com.xxx.XxxService", null);
         expectedRegister.put("dubbo.test.api.HelloService", service);
         assertEquals(expectedRegister, newRegister);
@@ -205,10 +205,10 @@ public class UrlUtilsTest {
     @Test
     public void testRevertSubscribe() {
         String key = "perf/dubbo.test.api.HelloService:1.0.0";
-        Map<String, String> subscribe = new HashMap<String, String>();
+        Map<String, String> subscribe = new HashMap<>();
         subscribe.put(key, null);
         Map<String, String> newSubscribe = UrlUtils.revertSubscribe(subscribe);
-        Map<String, String> expectSubscribe = new HashMap<String, String>();
+        Map<String, String> expectSubscribe = new HashMap<>();
         expectSubscribe.put("dubbo.test.api.HelloService", "group=perf&version=1.0.0");
         assertEquals(expectSubscribe, newSubscribe);
     }
@@ -216,7 +216,7 @@ public class UrlUtilsTest {
     @Test
     public void testRevertSubscribe2() {
         String key = "dubbo.test.api.HelloService";
-        Map<String, String> subscribe = new HashMap<String, String>();
+        Map<String, String> subscribe = new HashMap<>();
         subscribe.put(key, null);
         Map<String, String> newSubscribe = UrlUtils.revertSubscribe(subscribe);
         assertEquals(subscribe, newSubscribe);
@@ -225,12 +225,12 @@ public class UrlUtilsTest {
     @Test
     public void testRevertNotify() {
         String key = "dubbo.test.api.HelloService";
-        Map<String, Map<String, String>> notify = new HashMap<String, Map<String, String>>();
-        Map<String, String> service = new HashMap<String, String>();
+        Map<String, Map<String, String>> notify = new HashMap<>();
+        Map<String, String> service = new HashMap<>();
         service.put("dubbo://127.0.0.1:20880/com.xxx.XxxService", "group=perf&version=1.0.0");
         notify.put(key, service);
         Map<String, Map<String, String>> newRegister = UrlUtils.revertNotify(notify);
-        Map<String, Map<String, String>> expectedRegister = new HashMap<String, Map<String, String>>();
+        Map<String, Map<String, String>> expectedRegister = new HashMap<>();
         service.put("dubbo://127.0.0.1:20880/com.xxx.XxxService", "group=perf&version=1.0.0");
         expectedRegister.put("perf/dubbo.test.api.HelloService:1.0.0", service);
         assertEquals(expectedRegister, newRegister);
@@ -239,12 +239,12 @@ public class UrlUtilsTest {
     @Test
     public void testRevertNotify2() {
         String key = "perf/dubbo.test.api.HelloService:1.0.0";
-        Map<String, Map<String, String>> notify = new HashMap<String, Map<String, String>>();
-        Map<String, String> service = new HashMap<String, String>();
+        Map<String, Map<String, String>> notify = new HashMap<>();
+        Map<String, String> service = new HashMap<>();
         service.put("dubbo://127.0.0.1:20880/com.xxx.XxxService", "group=perf&version=1.0.0");
         notify.put(key, service);
         Map<String, Map<String, String>> newRegister = UrlUtils.revertNotify(notify);
-        Map<String, Map<String, String>> expectedRegister = new HashMap<String, Map<String, String>>();
+        Map<String, Map<String, String>> expectedRegister = new HashMap<>();
         service.put("dubbo://127.0.0.1:20880/com.xxx.XxxService", "group=perf&version=1.0.0");
         expectedRegister.put("perf/dubbo.test.api.HelloService:1.0.0", service);
         assertEquals(expectedRegister, newRegister);
@@ -254,12 +254,12 @@ public class UrlUtilsTest {
     @Test
     public void testRevertForbid() {
         String service = "dubbo.test.api.HelloService";
-        List<String> forbid = new ArrayList<String>();
+        List<String> forbid = new ArrayList<>();
         forbid.add(service);
-        Set<URL> subscribed = new HashSet<URL>();
+        Set<URL> subscribed = new HashSet<>();
         subscribed.add(URL.valueOf("dubbo://127.0.0.1:20880/" + service + "?group=perf&version=1.0.0"));
         List<String> newForbid = UrlUtils.revertForbid(forbid, subscribed);
-        List<String> expectForbid = new ArrayList<String>();
+        List<String> expectForbid = new ArrayList<>();
         expectForbid.add("perf/" + service + ":1.0.0");
         assertEquals(expectForbid, newForbid);
     }
@@ -274,7 +274,7 @@ public class UrlUtilsTest {
     public void testRevertForbid3() {
         String service1 = "dubbo.test.api.HelloService:1.0.0";
         String service2 = "dubbo.test.api.HelloService:2.0.0";
-        List<String> forbid = new ArrayList<String>();
+        List<String> forbid = new ArrayList<>();
         forbid.add(service1);
         forbid.add(service2);
         List<String> newForbid = UrlUtils.revertForbid(forbid, null);

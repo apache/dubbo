@@ -365,9 +365,9 @@ public class ImplicitCallBackTest {
     }
 
     class NofifyImpl implements Nofify {
-        public List<Integer> inv = new ArrayList<Integer>();
-        public Map<Integer, Person> ret = new HashMap<Integer, Person>();
-        public Map<Integer, Throwable> errors = new HashMap<Integer, Throwable>();
+        public List<Integer> inv = new ArrayList<>();
+        public Map<Integer, Person> ret = new HashMap<>();
+        public Map<Integer, Throwable> errors = new HashMap<>();
         public boolean exd = false;
 
         public void onreturn(Person msg, Integer id) {

@@ -81,7 +81,7 @@ public class ExchangeServerPeer extends ExchangeServerDelegate implements Exchan
     public Collection<ExchangeChannel> getExchangeChannels() {
         Collection<ExchangeChannel> channels = super.getExchangeChannels();
         if (clients.size() > 0) {
-            channels = channels == null ? new ArrayList<ExchangeChannel>() : new ArrayList<ExchangeChannel>(channels);
+            channels = channels == null ? new ArrayList<>() : new ArrayList<>(channels);
             channels.addAll(clients.values());
         }
         return channels;

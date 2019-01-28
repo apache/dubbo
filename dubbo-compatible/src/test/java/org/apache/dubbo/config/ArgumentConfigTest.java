@@ -57,7 +57,7 @@ public class ArgumentConfigTest {
         argument.setIndex(1);
         argument.setType("int");
         argument.setCallback(true);
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         AbstractServiceConfig.appendParameters(parameters, argument);
         assertThat(parameters, hasEntry("callback", "true"));
         assertThat(parameters.size(), is(1));

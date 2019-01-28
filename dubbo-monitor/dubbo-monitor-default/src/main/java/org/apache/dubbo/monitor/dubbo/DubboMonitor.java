@@ -67,7 +67,7 @@ public class DubboMonitor implements Monitor {
      */
     private final long monitorInterval;
 
-    private final ConcurrentMap<Statistics, AtomicReference<long[]>> statisticsMap = new ConcurrentHashMap<Statistics, AtomicReference<long[]>>();
+    private final ConcurrentMap<Statistics, AtomicReference<long[]>> statisticsMap = new ConcurrentHashMap<>();
 
     public DubboMonitor(Invoker<MonitorService> monitorInvoker, MonitorService monitorService) {
         this.monitorInvoker = monitorInvoker;
@@ -158,7 +158,7 @@ public class DubboMonitor implements Monitor {
         Statistics statistics = new Statistics(url);
         AtomicReference<long[]> reference = statisticsMap.get(statistics);
         if (reference == null) {
-            statisticsMap.putIfAbsent(statistics, new AtomicReference<long[]>());
+            statisticsMap.putIfAbsent(statistics, new AtomicReference<>());
             reference = statisticsMap.get(statistics);
         }
         // use CompareAndSet to sum

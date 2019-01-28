@@ -74,7 +74,7 @@ public class MetricNameTest {
 
     @Test
     public void testAddTagsVarious() {
-        final Map<String, String> refTags = new HashMap<String, String>();
+        final Map<String, String> refTags = new HashMap<>();
         refTags.put("foo", "bar");
         final MetricName test = MetricName.EMPTY.tag("foo", "bar");
         final MetricName test2 = MetricName.EMPTY.tag(refTags);
@@ -88,7 +88,7 @@ public class MetricNameTest {
 
     @Test
     public void testTaggedMoreArguments() {
-        final Map<String, String> refTags = new HashMap<String, String>();
+        final Map<String, String> refTags = new HashMap<>();
         refTags.put("foo", "bar");
         refTags.put("baz", "biz");
         Assertions.assertEquals(MetricName.EMPTY.tag("foo", "bar", "baz", "biz").getTags(), refTags);

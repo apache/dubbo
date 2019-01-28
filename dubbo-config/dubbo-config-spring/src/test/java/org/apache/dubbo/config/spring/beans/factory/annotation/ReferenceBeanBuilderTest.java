@@ -110,7 +110,7 @@ public class ReferenceBeanBuilderTest {
         Assert.assertEquals("deprecated", referenceBean.getListener());
 
         // parameters
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         parameters.put("n1", "v1");
         parameters.put("n2", "v2");
         parameters.put("n3", "v3");

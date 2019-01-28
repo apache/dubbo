@@ -63,7 +63,7 @@ public class EagerThreadPoolExecutorTest {
         long alive = 1000;
 
         //init queue and executor
-        TaskQueue<Runnable> taskQueue = new TaskQueue<Runnable>(queues);
+        TaskQueue<Runnable> taskQueue = new TaskQueue<>(queues);
         final EagerThreadPoolExecutor executor = new EagerThreadPoolExecutor(cores,
                 threads,
                 alive,

@@ -54,9 +54,9 @@ public class HttpProtocol extends AbstractProxyProtocol {
 
     public static final int DEFAULT_PORT = 80;
 
-    private final Map<String, HttpServer> serverMap = new ConcurrentHashMap<String, HttpServer>();
+    private final Map<String, HttpServer> serverMap = new ConcurrentHashMap<>();
 
-    private final Map<String, HttpInvokerServiceExporter> skeletonMap = new ConcurrentHashMap<String, HttpInvokerServiceExporter>();
+    private final Map<String, HttpInvokerServiceExporter> skeletonMap = new ConcurrentHashMap<>();
 
     private HttpBinder httpBinder;
 

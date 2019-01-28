@@ -58,11 +58,11 @@ public class InternalThreadLocalTest {
 
     @Test
     public void testRemoveAll() throws InterruptedException {
-        final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
+        final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<>();
         internalThreadLocal.set(1);
         Assertions.assertTrue(internalThreadLocal.get() == 1, "set failed");
 
-        final InternalThreadLocal<String> internalThreadLocalString = new InternalThreadLocal<String>();
+        final InternalThreadLocal<String> internalThreadLocalString = new InternalThreadLocal<>();
         internalThreadLocalString.set("value");
         Assertions.assertTrue("value".equals(internalThreadLocalString.get()), "set failed");
 
@@ -73,11 +73,11 @@ public class InternalThreadLocalTest {
 
     @Test
     public void testSize() throws InterruptedException {
-        final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
+        final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<>();
         internalThreadLocal.set(1);
         Assertions.assertTrue(InternalThreadLocal.size() == 1, "size method is wrong!");
 
-        final InternalThreadLocal<String> internalThreadLocalString = new InternalThreadLocal<String>();
+        final InternalThreadLocal<String> internalThreadLocalString = new InternalThreadLocal<>();
         internalThreadLocalString.set("value");
         Assertions.assertTrue(InternalThreadLocal.size() == 2, "size method is wrong!");
     }
@@ -85,7 +85,7 @@ public class InternalThreadLocalTest {
     @Test
     public void testSetAndGet() {
         final Integer testVal = 10;
-        final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
+        final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<>();
         internalThreadLocal.set(testVal);
         Assertions.assertTrue(
                 Objects.equals(testVal, internalThreadLocal.get()), "set is not equals get");
@@ -93,7 +93,7 @@ public class InternalThreadLocalTest {
 
     @Test
     public void testRemove() {
-        final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
+        final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<>();
         internalThreadLocal.set(1);
         Assertions.assertTrue(internalThreadLocal.get() == 1, "get method false!");
 
@@ -122,7 +122,7 @@ public class InternalThreadLocalTest {
     public void testMultiThreadSetAndGet() throws InterruptedException {
         final Integer testVal1 = 10;
         final Integer testVal2 = 20;
-        final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
+        final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<>();
         final CountDownLatch countDownLatch = new CountDownLatch(2);
         Thread t1 = new Thread(new Runnable() {
             @Override
@@ -160,7 +160,7 @@ public class InternalThreadLocalTest {
         final ThreadLocal<String>[] caches1 = new ThreadLocal[PERFORMANCE_THREAD_COUNT];
         final Thread mainThread = Thread.currentThread();
         for (int i = 0; i < PERFORMANCE_THREAD_COUNT; i++) {
-            caches1[i] = new ThreadLocal<String>();
+            caches1[i] = new ThreadLocal<>();
         }
         Thread t1 = new Thread(new Runnable() {
             @Override
@@ -195,7 +195,7 @@ public class InternalThreadLocalTest {
         final InternalThreadLocal<String>[] caches = new InternalThreadLocal[PERFORMANCE_THREAD_COUNT];
         final Thread mainThread = Thread.currentThread();
         for (int i = 0; i < PERFORMANCE_THREAD_COUNT; i++) {
-            caches[i] = new InternalThreadLocal<String>();
+            caches[i] = new InternalThreadLocal<>();
         }
         Thread t = new InternalThread(new Runnable() {
             @Override

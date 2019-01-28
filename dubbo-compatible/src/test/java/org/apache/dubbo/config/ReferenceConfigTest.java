@@ -55,14 +55,14 @@ public class ReferenceConfigTest {
         protocol.setName("dubbo");
 
         ServiceConfig<DemoService> demoService;
-        demoService = new ServiceConfig<DemoService>();
+        demoService = new ServiceConfig<>();
         demoService.setInterface(DemoService.class);
         demoService.setRef(new DemoServiceImpl());
         demoService.setApplication(application);
         demoService.setRegistry(registry);
         demoService.setProtocol(protocol);
 
-        ReferenceConfig<DemoService> rc = new ReferenceConfig<DemoService>();
+        ReferenceConfig<DemoService> rc = new ReferenceConfig<>();
         rc.setApplication(application);
         rc.setRegistry(registry);
         rc.setInterface(DemoService.class.getName());

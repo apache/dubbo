@@ -35,7 +35,7 @@ public class StatusUtilsTest {
         Status status1 = new Status(Status.Level.ERROR);
         Status status2 = new Status(Status.Level.WARN);
         Status status3 = new Status(Status.Level.OK);
-        Map<String, Status> statuses = new HashMap<String, Status>();
+        Map<String, Status> statuses = new HashMap<>();
         statuses.put("status1", status1);
         statuses.put("status2", status2);
         statuses.put("status3", status3);
@@ -50,7 +50,7 @@ public class StatusUtilsTest {
     public void testGetSummaryStatus2() throws Exception {
         Status status1 = new Status(Status.Level.WARN);
         Status status2 = new Status(Status.Level.OK);
-        Map<String, Status> statuses = new HashMap<String, Status>();
+        Map<String, Status> statuses = new HashMap<>();
         statuses.put("status1", status1);
         statuses.put("status2", status2);
         Status status = StatusUtils.getSummaryStatus(statuses);
@@ -62,7 +62,7 @@ public class StatusUtilsTest {
     @Test
     public void testGetSummaryStatus3() throws Exception {
         Status status1 = new Status(Status.Level.OK);
-        Map<String, Status> statuses = new HashMap<String, Status>();
+        Map<String, Status> statuses = new HashMap<>();
         statuses.put("status1", status1);
         Status status = StatusUtils.getSummaryStatus(statuses);
         assertThat(status.getLevel(), is(Status.Level.OK));

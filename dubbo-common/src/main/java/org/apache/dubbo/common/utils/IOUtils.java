@@ -162,7 +162,7 @@ public class IOUtils {
      * @throws IOException
      */
     public static String[] readLines(InputStream is) throws IOException {
-        List<String> lines = new ArrayList<String>();
+        List<String> lines = new ArrayList<>();
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         try {
             String line;

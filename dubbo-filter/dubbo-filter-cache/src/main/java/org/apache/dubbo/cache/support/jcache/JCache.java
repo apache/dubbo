@@ -57,7 +57,7 @@ public class JCache implements org.apache.dubbo.cache.Cache {
             try {
                 //configure the cache
                 MutableConfiguration config =
-                        new MutableConfiguration<Object, Object>()
+                        new MutableConfiguration<>()
                                 .setTypes(Object.class, Object.class)
                                 .setExpiryPolicyFactory(CreatedExpiryPolicy.factoryOf(new Duration(TimeUnit.MILLISECONDS, url.getMethodParameter(method, "cache.write.expire", 60 * 1000))))
                                 .setStoreByValue(false)

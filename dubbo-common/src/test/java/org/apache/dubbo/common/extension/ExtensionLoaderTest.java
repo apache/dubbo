@@ -210,7 +210,7 @@ public class ExtensionLoaderTest {
     public void test_getSupportedExtensions() throws Exception {
         Set<String> exts = ExtensionLoader.getExtensionLoader(SimpleExt.class).getSupportedExtensions();
 
-        Set<String> expected = new HashSet<String>();
+        Set<String> expected = new HashSet<>();
         expected.add("impl1");
         expected.add("impl2");
         expected.add("impl3");
@@ -222,7 +222,7 @@ public class ExtensionLoaderTest {
     public void test_getSupportedExtensions_wrapperIsNotExt() throws Exception {
         Set<String> exts = ExtensionLoader.getExtensionLoader(WrappedExt.class).getSupportedExtensions();
 
-        Set<String> expected = new HashSet<String>();
+        Set<String> expected = new HashSet<>();
         expected.add("impl1");
         expected.add("impl2");
 

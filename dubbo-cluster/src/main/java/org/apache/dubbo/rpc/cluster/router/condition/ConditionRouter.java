@@ -77,7 +77,7 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
             int i = rule.indexOf("=>");
             String whenRule = i < 0 ? null : rule.substring(0, i).trim();
             String thenRule = i < 0 ? rule.trim() : rule.substring(i + 2).trim();
-            Map<String, MatchPair> when = StringUtils.isBlank(whenRule) || "true".equals(whenRule) ? new HashMap<String, MatchPair>() : parseRule(whenRule);
+            Map<String, MatchPair> when = StringUtils.isBlank(whenRule) || "true".equals(whenRule) ? new HashMap<>() : parseRule(whenRule);
             Map<String, MatchPair> then = StringUtils.isBlank(thenRule) || "false".equals(thenRule) ? null : parseRule(thenRule);
             // NOTE: It should be determined on the business level whether the `When condition` can be empty or not.
             this.whenCondition = when;
@@ -89,7 +89,7 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
 
     private static Map<String, MatchPair> parseRule(String rule)
             throws ParseException {
-        Map<String, MatchPair> condition = new HashMap<String, MatchPair>();
+        Map<String, MatchPair> condition = new HashMap<>();
         if (StringUtils.isBlank(rule)) {
             return condition;
         }
@@ -171,7 +171,7 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
             if (!matchWhen(url, invocation)) {
                 return invokers;
             }
-            List<Invoker<T>> result = new ArrayList<Invoker<T>>();
+            List<Invoker<T>> result = new ArrayList<>();
             if (thenCondition == null) {
                 logger.warn("The current consumer in the service blacklist. consumer: " + NetUtils.getLocalHost() + ", service: " + url.getServiceKey());
                 return result;
@@ -251,8 +251,8 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
     }
 
     protected static final class MatchPair {
-        final Set<String> matches = new HashSet<String>();
-        final Set<String> mismatches = new HashSet<String>();
+        final Set<String> matches = new HashSet<>();
+        final Set<String> mismatches = new HashSet<>();
 
         private boolean isMatch(String value, URL param) {
             if (!matches.isEmpty() && mismatches.isEmpty()) {

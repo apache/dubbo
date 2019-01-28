@@ -46,7 +46,7 @@ public class DubboSwaggerApiListingResourceTest {
 
         app = mock(Application.class);
         sc = mock(ServletConfig.class);
-        Set<Class<?>> sets = new HashSet<Class<?>>();
+        Set<Class<?>> sets = new HashSet<>();
         sets.add(SwaggerService.class);
 
         when(sc.getServletContext()).thenReturn(mock(ServletContext.class));

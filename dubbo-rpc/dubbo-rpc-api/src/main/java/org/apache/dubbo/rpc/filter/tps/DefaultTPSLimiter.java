@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentMap;
 public class DefaultTPSLimiter implements TPSLimiter {
 
     private final ConcurrentMap<String, StatItem> stats
-            = new ConcurrentHashMap<String, StatItem>();
+            = new ConcurrentHashMap<>();
 
     @Override
     public boolean isAllowable(URL url, Invocation invocation) {

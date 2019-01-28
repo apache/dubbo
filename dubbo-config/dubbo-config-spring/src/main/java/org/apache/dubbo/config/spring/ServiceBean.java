@@ -123,7 +123,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                 Map<String, ProtocolConfig> protocolConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProtocolConfig.class, false, false);
                 if (CollectionUtils.isEmptyMap(protocolConfigMap)
                         && providerConfigMap.size() > 1) { // backward compatibility
-                    List<ProviderConfig> providerConfigs = new ArrayList<ProviderConfig>();
+                    List<ProviderConfig> providerConfigs = new ArrayList<>();
                     for (ProviderConfig config : providerConfigMap.values()) {
                         if (config.isDefault() != null && config.isDefault()) {
                             providerConfigs.add(config);
@@ -266,7 +266,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                 && (getProvider() == null || CollectionUtils.isEmpty(getProvider().getProtocols()))) {
             Map<String, ProtocolConfig> protocolConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProtocolConfig.class, false, false);
             if (protocolConfigMap != null && protocolConfigMap.size() > 0) {
-                List<ProtocolConfig> protocolConfigs = new ArrayList<ProtocolConfig>();
+                List<ProtocolConfig> protocolConfigs = new ArrayList<>();
                 if (StringUtils.isNotEmpty(getProtocolIds())) {
                     Arrays.stream(Constants.COMMA_SPLIT_PATTERN.split(getProtocolIds()))
                             .forEach(id -> {

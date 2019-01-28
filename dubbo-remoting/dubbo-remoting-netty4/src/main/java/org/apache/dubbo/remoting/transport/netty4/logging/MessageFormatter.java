@@ -208,13 +208,13 @@ final class MessageFormatter {
                         // itself escaped: "abc x:\\{}"
                         // we have to consume one backward slash
                         sbuf.append(messagePattern.substring(i, j - 1));
-                        deeplyAppendParameter(sbuf, argArray[l], new HashMap<Object[], Void>());
+                        deeplyAppendParameter(sbuf, argArray[l], new HashMap<>());
                         i = j + 2;
                     }
                 } else {
                     // normal case
                     sbuf.append(messagePattern.substring(i, j));
-                    deeplyAppendParameter(sbuf, argArray[l], new HashMap<Object[], Void>());
+                    deeplyAppendParameter(sbuf, argArray[l], new HashMap<>());
                     i = j + 2;
                 }
             }

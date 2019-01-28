@@ -54,8 +54,8 @@ public class JavassistCompiler extends AbstractCompiler {
         ClassPool pool = new ClassPool(true);
         pool.appendClassPath(new LoaderClassPath(ClassHelper.getCallerClassLoader(getClass())));
         Matcher matcher = IMPORT_PATTERN.matcher(source);
-        List<String> importPackages = new ArrayList<String>();
-        Map<String, String> fullNames = new HashMap<String, String>();
+        List<String> importPackages = new ArrayList<>();
+        Map<String, String> fullNames = new HashMap<>();
         while (matcher.find()) {
             String pkg = matcher.group(1);
             if (pkg.endsWith(".*")) {

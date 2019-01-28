@@ -106,7 +106,7 @@ public class BeanFactoryUtils {
 
         String[] allBeanNames = beanNamesForTypeIncludingAncestors(beanFactory, beanType);
 
-        List<T> beans = new ArrayList<T>(beanNames.length);
+        List<T> beans = new ArrayList<>(beanNames.length);
 
         for (String beanName : beanNames) {
             if (containsElement(allBeanNames, beanName)) {

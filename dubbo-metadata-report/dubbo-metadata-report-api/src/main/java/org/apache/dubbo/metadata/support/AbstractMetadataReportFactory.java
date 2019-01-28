@@ -33,7 +33,7 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
     private static final ReentrantLock LOCK = new ReentrantLock();
 
     // Registry Collection Map<RegistryAddress, Registry>
-    private static final Map<String, MetadataReport> SERVICE_STORE_MAP = new ConcurrentHashMap<String, MetadataReport>();
+    private static final Map<String, MetadataReport> SERVICE_STORE_MAP = new ConcurrentHashMap<>();
 
     @Override
     public MetadataReport getMetadataReport(URL url) {

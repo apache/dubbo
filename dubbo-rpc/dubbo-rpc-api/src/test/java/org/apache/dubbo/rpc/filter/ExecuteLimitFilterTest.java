@@ -96,7 +96,7 @@ public class ExecuteLimitFilterTest {
         when(invocation.getMethodName()).thenReturn("testMoreThanExecuteLimitInvoke");
 
         URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&executes=" + maxExecute);
-        final Invoker<ExecuteLimitFilter> invoker = new BlockMyInvoker<ExecuteLimitFilter>(url, 1000);
+        final Invoker<ExecuteLimitFilter> invoker = new BlockMyInvoker<>(url, 1000);
 
         final CountDownLatch latch = new CountDownLatch(1);
         for (int i = 0; i < totalExecute; i++) {

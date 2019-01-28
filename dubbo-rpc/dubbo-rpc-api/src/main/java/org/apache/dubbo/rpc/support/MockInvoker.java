@@ -42,8 +42,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 final public class MockInvoker<T> implements Invoker<T> {
     private final static ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-    private final static Map<String, Invoker<?>> mocks = new ConcurrentHashMap<String, Invoker<?>>();
-    private final static Map<String, Throwable> throwables = new ConcurrentHashMap<String, Throwable>();
+    private final static Map<String, Invoker<?>> mocks = new ConcurrentHashMap<>();
+    private final static Map<String, Throwable> throwables = new ConcurrentHashMap<>();
 
     private final URL url;
 

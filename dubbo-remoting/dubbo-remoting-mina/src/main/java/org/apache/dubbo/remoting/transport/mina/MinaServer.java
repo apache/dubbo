@@ -82,7 +82,7 @@ public class MinaServer extends AbstractServer {
     @Override
     public Collection<Channel> getChannels() {
         Set<IoSession> sessions = acceptor.getManagedSessions(getBindAddress());
-        Collection<Channel> channels = new HashSet<Channel>();
+        Collection<Channel> channels = new HashSet<>();
         for (IoSession session : sessions) {
             if (session.isConnected()) {
                 channels.add(MinaChannel.getOrAddChannel(session, getUrl(), this));

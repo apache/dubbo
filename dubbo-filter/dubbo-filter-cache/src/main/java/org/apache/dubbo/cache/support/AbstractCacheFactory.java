@@ -41,7 +41,7 @@ public abstract class AbstractCacheFactory implements CacheFactory {
     /**
      * This is used to store factory level-1 cached data.
      */
-    private final ConcurrentMap<String, Cache> caches = new ConcurrentHashMap<String, Cache>();
+    private final ConcurrentMap<String, Cache> caches = new ConcurrentHashMap<>();
 
     /**
      *  Takes URL and invocation instance and return cache instance for a given url.

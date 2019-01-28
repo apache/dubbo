@@ -43,7 +43,7 @@ import static org.mockito.Mockito.mock;
  */
 @SuppressWarnings("unchecked")
 public class FailSafeClusterInvokerTest {
-    List<Invoker<DemoService>> invokers = new ArrayList<Invoker<DemoService>>();
+    List<Invoker<DemoService>> invokers = new ArrayList<>();
     URL url = URL.valueOf("test://test:11/test");
     Invoker<DemoService> invoker = mock(Invoker.class);
     RpcInvocation invocation = new RpcInvocation();
@@ -83,7 +83,7 @@ public class FailSafeClusterInvokerTest {
     @Test
     public void testInvokeExceptoin() {
         resetInvokerToException();
-        FailsafeClusterInvoker<DemoService> invoker = new FailsafeClusterInvoker<DemoService>(dic);
+        FailsafeClusterInvoker<DemoService> invoker = new FailsafeClusterInvoker<>(dic);
         invoker.invoke(invocation);
         Assertions.assertNull(RpcContext.getContext().getInvoker());
     }
@@ -93,7 +93,7 @@ public class FailSafeClusterInvokerTest {
 
         resetInvokerToNoException();
 
-        FailsafeClusterInvoker<DemoService> invoker = new FailsafeClusterInvoker<DemoService>(dic);
+        FailsafeClusterInvoker<DemoService> invoker = new FailsafeClusterInvoker<>(dic);
         Result ret = invoker.invoke(invocation);
         Assertions.assertSame(result, ret);
     }
@@ -110,7 +110,7 @@ public class FailSafeClusterInvokerTest {
 
         resetInvokerToNoException();
 
-        FailsafeClusterInvoker<DemoService> invoker = new FailsafeClusterInvoker<DemoService>(dic);
+        FailsafeClusterInvoker<DemoService> invoker = new FailsafeClusterInvoker<>(dic);
         LogUtil.start();
         invoker.invoke(invocation);
         assertTrue(LogUtil.findMessage("No provider") > 0);

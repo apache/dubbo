@@ -39,7 +39,7 @@ public class MultiServiceProcessor implements TProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(MultiServiceProcessor.class);
 
-    private ConcurrentMap<String, TProcessor> processorMap = new ConcurrentHashMap<String, TProcessor>();
+    private ConcurrentMap<String, TProcessor> processorMap = new ConcurrentHashMap<>();
 
     private TProtocolFactory protocolFactory = new TBinaryProtocol.Factory();
 
