@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.webservice;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 
@@ -37,9 +38,10 @@ public class WebserviceProtocolTest {
     @Test
     public void testDemoProtocol() throws Exception {
         DemoService service = new DemoServiceImpl();
-        protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("webservice://127.0.0.1:9019/" + DemoService.class.getName() + "?codec=exchange")));
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("webservice://127.0.0.1:9019/" + DemoService.class.getName() + "?codec=exchange")));
         service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("webservice://127.0.0.1:9019/" + DemoService.class.getName() + "?codec=exchange&timeout=3000")));
         assertEquals(service.getSize(new String[]{"", "", ""}), 3);
+        exporter.unexport();
     }
 
     @Test
