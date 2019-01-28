@@ -52,7 +52,7 @@ public class ReconnectTimerTask extends AbstractTimerTask {
                 }
             // check pong at client
             } else if (lastRead != null && now - lastRead > idleTimeout) {
-                logger.warn("Close channel " + channel + ", because heartbeat read idle time out: "
+                logger.warn("Reconnect to channel " + channel + ", because heartbeat read idle time out: "
                         + idleTimeout + "ms");
                 try {
                     ((Client) channel).reconnect();

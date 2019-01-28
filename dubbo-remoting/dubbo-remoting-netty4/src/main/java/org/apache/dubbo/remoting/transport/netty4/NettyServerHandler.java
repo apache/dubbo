@@ -17,6 +17,8 @@
 package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
@@ -35,6 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @io.netty.channel.ChannelHandler.Sharable
 public class NettyServerHandler extends ChannelDuplexHandler {
+    private static final Logger logger = LoggerFactory.getLogger(NettyServerHandler.class);
 
     private final Map<String, Channel> channels = new ConcurrentHashMap<String, Channel>(); // <ip:port, channel>
 
@@ -108,6 +111,7 @@ public class NettyServerHandler extends ChannelDuplexHandler {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
         try {
             if (evt instanceof IdleStateEvent) {
+                logger.info("IdleStateEvent triggered, close channel " + channel);
                 channel.close();
             }
             super.userEventTriggered(ctx, evt);
