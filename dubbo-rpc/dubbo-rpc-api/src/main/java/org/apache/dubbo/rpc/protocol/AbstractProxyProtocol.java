@@ -68,11 +68,7 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
         Exporter<T> exporter = (Exporter<T>) exporterMap.get(uri);
         if (exporter != null) {
             // When modifying the configuration through override, you need to re-expose the newly modified service.
-            if ("hessian".equals(invoker.getUrl().getProtocol())) {
-                if (Objects.equals(exporter.getInvoker().getUrl(), invoker.getUrl())) {
-                    return exporter;
-                }
-            } else {
+            if (Objects.equals(exporter.getInvoker().getUrl(), invoker.getUrl())) {
                 return exporter;
             }
         }
