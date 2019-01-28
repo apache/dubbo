@@ -572,54 +572,70 @@ public class DubboProtocol extends AbstractProtocol {
     public void destroy() {
         for (String key : new ArrayList<>(serverMap.keySet())) {
             ExchangeServer server = serverMap.remove(key);
-            if (server != null) {
+
+            if (server == null) {
+                continue;
+            }
+
+            try {
+                if (logger.isInfoEnabled()) {
+                    logger.info("Close dubbo server: " + server.getLocalAddress());
+                }
+
+                server.close(ConfigurationUtils.getServerShutdownTimeout());
+
+            } catch (Throwable t) {
+                logger.warn(t.getMessage(), t);
+            }
+        }
+
+        for (String key : new ArrayList<>(referenceClientMap.keySet())) {
+            List<ReferenceCountExchangeClient> clients = referenceClientMap.remove(key);
+
+            if (CollectionUtils.isEmpty(clients)) {
+                continue;
+            }
+
+            for (ReferenceCountExchangeClient client : clients) {
+                if (client == null) {
+                    continue;
+                }
+
                 try {
                     if (logger.isInfoEnabled()) {
-                        logger.info("Close dubbo server: " + server.getLocalAddress());
+                        logger.info("Close dubbo connect: " + client.getLocalAddress() + "-->" + client.getRemoteAddress());
                     }
-                    server.close(ConfigurationUtils.getServerShutdownTimeout());
+
+                    client.close(ConfigurationUtils.getServerShutdownTimeout());
+
                 } catch (Throwable t) {
                     logger.warn(t.getMessage(), t);
                 }
             }
         }
 
-        for (String key : new ArrayList<String>(referenceClientMap.keySet())) {
-            List<ReferenceCountExchangeClient> clients = referenceClientMap.remove(key);
-
-            if (CollectionUtils.isNotEmpty(clients)) {
-                for (ReferenceCountExchangeClient client : clients) {
-                    if (client != null) {
-                        try {
-                            if (logger.isInfoEnabled()) {
-                                logger.info("Close dubbo connect: " + client.getLocalAddress() + "-->" + client.getRemoteAddress());
-                            }
-                            client.close(ConfigurationUtils.getServerShutdownTimeout());
-                        } catch (Throwable t) {
-                            logger.warn(t.getMessage(), t);
-                        }
-                    }
-                }
-            }
-        }
-
         for (String key : new ArrayList<>(ghostClientMap.keySet())) {
             List<LazyConnectExchangeClient> removeClients = ghostClientMap.remove(key);
-            if (CollectionUtils.isNotEmpty(removeClients)) {
 
-                for (LazyConnectExchangeClient client : removeClients) {
+            if (CollectionUtils.isEmpty(removeClients)) {
+                continue;
+            }
 
-                    try {
-                        if (logger.isInfoEnabled()) {
-                            logger.info("Close dubbo connect: " + client.getLocalAddress() + "-->" + client.getRemoteAddress());
-                        }
+            for (LazyConnectExchangeClient client : removeClients) {
 
-                        client.close(ConfigurationUtils.getServerShutdownTimeout());
+                if (client == null) {
+                    continue;
+                }
 
-                    } catch (Throwable t) {
-                        logger.warn(t.getMessage(), t);
+                try {
+                    if (logger.isInfoEnabled()) {
+                        logger.info("Close dubbo connect: " + client.getLocalAddress() + "-->" + client.getRemoteAddress());
                     }
 
+                    client.close(ConfigurationUtils.getServerShutdownTimeout());
+
+                } catch (Throwable t) {
+                    logger.warn(t.getMessage(), t);
                 }
             }
         }
