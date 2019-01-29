@@ -38,12 +38,11 @@ import com.alibaba.fastjson.JSON;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class GenericServiceTest {
 
@@ -108,20 +107,20 @@ public class GenericServiceTest {
 
         FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(DemoService.class);
         MethodDefinition methodDefinition = getMethod("complexCompute", fullServiceDefinition.getMethods());
-        Map parm2= createComplextObject(fullServiceDefinition,var1, var2, l, var3, var4, testEnum);
-        ComplexObject complexObject = map2bean(parm2);
+        Map mapObject = createComplexObject(fullServiceDefinition,var1, var2, l, var3, var4, testEnum);
+        ComplexObject complexObject = map2bean(mapObject);
 
         Invoker<GenericService> invoker = protocol.refer(GenericService.class, url);
 
 
         GenericService client = proxyFactory.getProxy(invoker, true);
-        Object result = client.$invoke(methodDefinition.getName(), methodDefinition.getParameterTypes(), new Object[]{"haha", parm2});
+        Object result = client.$invoke(methodDefinition.getName(), methodDefinition.getParameterTypes(), new Object[]{"haha", mapObject});
         Assertions.assertEquals("haha###" + complexObject.toString(), result);
 
 
         Invoker<DemoService> invoker2 = protocol.refer(DemoService.class, url);
         GenericService client2 = (GenericService) proxyFactory.getProxy(invoker2, true);
-        Object result2 = client2.$invoke("complexCompute", methodDefinition.getParameterTypes(), new Object[]{"haha2", parm2});
+        Object result2 = client2.$invoke("complexCompute", methodDefinition.getParameterTypes(), new Object[]{"haha2", mapObject});
         Assertions.assertEquals("haha2###" + complexObject.toString(), result2);
 
         invoker.destroy();
@@ -167,7 +166,7 @@ public class GenericServiceTest {
         return null;
     }
 
-    Map<String, Object> createComplextObject(FullServiceDefinition fullServiceDefinition, String var1, int var2, long l, String[] var3, List<Integer> var4, ComplexObject.TestEnum testEnum) {
+    Map<String, Object> createComplexObject(FullServiceDefinition fullServiceDefinition, String var1, int var2, long l, String[] var3, List<Integer> var4, ComplexObject.TestEnum testEnum) {
         List<TypeDefinition> typeDefinitions = fullServiceDefinition.getTypes();
         TypeDefinition topTypeDefinition = null;
         TypeDefinition innerTypeDefinition = null;
@@ -191,7 +190,7 @@ public class GenericServiceTest {
         Assertions.assertEquals(topTypeDefinition.getProperties().get("strArrays").getType(), "java.lang.String[]");
         Assertions.assertEquals(topTypeDefinition.getProperties().get("innerObject3").getType(), "org.apache.dubbo.service.ComplexObject.InnerObject3[]");
         Assertions.assertEquals(topTypeDefinition.getProperties().get("testEnum").getType(), "org.apache.dubbo.service.ComplexObject.TestEnum");
-        Assertions.assertEquals(topTypeDefinition.getProperties().get("innerObject2").getType(), "java.util.Set<org.apache.dubbo.service.ComplexObject$InnerObject2>");
+        Assertions.assertEquals(topTypeDefinition.getProperties().get("innerObject2").getType(), "java.util.List<org.apache.dubbo.service.ComplexObject$InnerObject2>");
 
         Assertions.assertSame(innerTypeDefinition.getProperties().get("innerA").getType(), "java.lang.String");
         Assertions.assertSame(innerTypeDefinition.getProperties().get("innerB").getType(), "int");
@@ -216,16 +215,16 @@ public class GenericServiceTest {
         innerObjectMap.put("innerA", var1);
         innerObjectMap.put("innerB", var2);
 
-        Set<Map> innerObject2Set = new HashSet<>(4);
-        result.put("innerObject2", innerObject2Set);
+        List<Map> innerObject2List = new ArrayList<>();
+        result.put("innerObject2", innerObject2List);
         Map innerObject2Tmp1 = new HashMap<>(4);
         innerObject2Tmp1.put("innerA2", var1 + "_21");
         innerObject2Tmp1.put("innerB2", var2 + 100000);
         Map innerObject2Tmp2 = new HashMap<>(4);
         innerObject2Tmp2.put("innerA2", var1 + "_22");
         innerObject2Tmp2.put("innerB2", var2 + 200000);
-        innerObject2Set.add(innerObject2Tmp1);
-        innerObject2Set.add(innerObject2Tmp2);
+        innerObject2List.add(innerObject2Tmp1);
+        innerObject2List.add(innerObject2Tmp2);
 
         Map innerObject3Tmp1 = new HashMap<>(4);
         innerObject3Tmp1.put("innerA3", var1 + "_31");
