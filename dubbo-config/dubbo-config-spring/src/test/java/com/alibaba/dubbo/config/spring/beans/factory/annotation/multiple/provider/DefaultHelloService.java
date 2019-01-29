@@ -20,17 +20,11 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.dubbo.config.spring.api.HelloService;
 import com.alibaba.dubbo.rpc.RpcContext;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
-
-@Service(version = "${hello.service.version}", protocol = {"dubbo"})
-@Path("/hello-service")
+@Service(version = "${hello.service.version}", protocol = {"dubbo", "rest"})
 public class DefaultHelloService implements HelloService {
 
     @Override
-    @GET
-    public String sayHello(@QueryParam("name") String name) {
+    public String sayHello(String name) {
         return String.format("[%s] Hello , %s", RpcContext.getContext().getUrl(), name);
     }
 }

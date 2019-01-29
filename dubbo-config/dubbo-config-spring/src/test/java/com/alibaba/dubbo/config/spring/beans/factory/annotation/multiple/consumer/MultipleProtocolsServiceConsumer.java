@@ -41,10 +41,25 @@ public class MultipleProtocolsServiceConsumer {
         @Reference(version = "${hello.service.version}", protocol = "dubbo")
         private HelloService dubboHelloService;
 
-//        @Reference(version = "${hello.service.version}", protocol = "rest")
-//        private HelloService restHelloService;
+        @Reference(version = "${hello.service.version}", protocol = "rest")
+        private HelloService restHelloService;
+
+//        @Bean
+//        public ReferenceBean<HelloService> restReferenceBean(@Value("${hello.service.version}") String version) {
+//            ReferenceBean<HelloService> referenceBean = new ReferenceBean<HelloService>();
+//            referenceBean.setVersion(version);
+//            referenceBean.setProtocol("rest");
+//            referenceBean.setInterface(HelloService.class);
+//            return referenceBean;
+//        }
 
     }
+
+//    @ImportResource("classpath:/META-INF/spring/dubbo-rest-consumer.xml")
+//    @Configuration
+//    static class ConsumerXMLConfiguration {
+//    }
+
 
     public static void main(String[] args) {
 
@@ -54,7 +69,7 @@ public class MultipleProtocolsServiceConsumer {
 
         ConsumerConfiguration configuration = context.getBean(ConsumerConfiguration.class);
         System.out.println(configuration.dubboHelloService.sayHello("mercyblitz"));
-//        System.out.println(configuration.restHelloService.sayHello("mercyblitz"));
+        System.out.println(configuration.restHelloService.sayHello("mercyblitz"));
 
         context.close();
     }

@@ -16,7 +16,6 @@
  */
 package com.alibaba.dubbo.config.spring.beans.factory.annotation.multiple.provider;
 
-import com.alibaba.dubbo.config.spring.beans.factory.annotation.multiple.EmbeddedZooKeeper;
 import com.alibaba.dubbo.config.spring.context.annotation.EnableDubbo;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -35,8 +34,8 @@ import java.io.IOException;
 public class MultipleProtocolsServiceProvider {
 
     public static void main(String[] args) throws IOException {
-        EmbeddedZooKeeper embeddedZooKeeper = new EmbeddedZooKeeper(2181, false);
-        embeddedZooKeeper.start();
+//        EmbeddedZooKeeper embeddedZooKeeper = new EmbeddedZooKeeper(2181, false);
+//        embeddedZooKeeper.start();
 
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
         context.register(MultipleProtocolsServiceProvider.class);
@@ -46,6 +45,6 @@ public class MultipleProtocolsServiceProvider {
         System.in.read();
 
         context.close();
-        embeddedZooKeeper.stop();
+//        embeddedZooKeeper.stop();
     }
 }
