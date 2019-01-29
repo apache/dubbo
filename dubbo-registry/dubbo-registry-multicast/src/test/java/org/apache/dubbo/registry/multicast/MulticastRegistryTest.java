@@ -17,8 +17,6 @@
 package org.apache.dubbo.registry.multicast;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
 
@@ -39,7 +37,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MulticastRegistryTest {
-    private static final Logger logger = LoggerFactory.getLogger(MulticastRegistryTest.class);
 
     private String service = "org.apache.dubbo.test.injvmServie";
     private URL registryUrl = URL.valueOf("multicast://239.255.255.255/");
@@ -230,39 +227,35 @@ public class MulticastRegistryTest {
         MulticastSocket multicastSocket = null;
         try {
             // ipv4 multicast address
-            try {
-                multicastAddress = InetAddress.getByName("224.55.66.77");
-                multicastSocket = new MulticastSocket(2345);
-                multicastSocket.setLoopbackMode(false);
-                NetUtils.setInterface(multicastSocket, false);
-                multicastSocket.joinGroup(multicastAddress);
-            } finally {
-                if (multicastSocket != null) {
-                    multicastSocket.close();
-                }
-            }
-
-            // multicast ipv6 address,
-            try {
-                try {
-                    multicastAddress = InetAddress.getByName("ff01::1");
-
-                    multicastSocket = new MulticastSocket();
-                    multicastSocket.setLoopbackMode(false);
-                    NetUtils.setInterface(multicastSocket, true);
-                    multicastSocket.joinGroup(multicastAddress);
-                } finally {
-                    if (multicastSocket != null) {
-                        multicastSocket.close();
-                    }
-                }
-            } catch (Throwable t) {
-                logger.info("ipv6 test fails but ignore it by now", t);
-            }
-
+            multicastAddress = InetAddress.getByName("224.55.66.77");
+            multicastSocket = new MulticastSocket(2345);
+            multicastSocket.setLoopbackMode(false);
+            NetUtils.setInterface(multicastSocket, false);
+            multicastSocket.joinGroup(multicastAddress);
         } catch (Exception e) {
             Assertions.fail(e);
+        } finally {
+            if (multicastSocket != null) {
+                multicastSocket.close();
+            }
         }
+
+        // multicast ipv6 address,
+        try {
+            multicastAddress = InetAddress.getByName("ff01::1");
+
+            multicastSocket = new MulticastSocket();
+            multicastSocket.setLoopbackMode(false);
+            NetUtils.setInterface(multicastSocket, true);
+            multicastSocket.joinGroup(multicastAddress);
+        } catch (Throwable t) {
+            t.printStackTrace();
+        } finally {
+            if (multicastSocket != null) {
+                multicastSocket.close();
+            }
+        }
+
     }
 
 }
