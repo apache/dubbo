@@ -140,7 +140,7 @@ public class MulticastRegistry extends FailbackRegistry {
                         "ipv4 multicast address scope: 224.0.0.0 - 239.255.255.255.");
             } else {
                 throw new IllegalArgumentException(message + ", " + "ipv6 multicast address must start with ff, " +
-                        "for example: ffx3::/16");
+                        "for example: ff01::1");
             }
         }
     }
