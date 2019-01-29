@@ -42,13 +42,13 @@ There's a [README](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samp
 
 ```xml
 <properties>
-    <dubbo.version>2.6.5</dubbo.version>
+    <dubbo.version>2.7.0</dubbo.version>
 </properties>
     
 <dependencyManagement>
     <dependencies>
         <dependency>
-            <groupId>com.alibaba</groupId>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-dependencies-bom</artifactId>
             <version>${dubbo.version}</version>
             <type>pom</type>
@@ -59,8 +59,8 @@ There's a [README](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samp
 
 <dependencies>
     <dependency>
-        <groupId>com.alibaba</groupId>
-        <artifactId>dubbo</artifactId>
+        <groupId>org.apache.dubbo</groupId>
+        <artifactId>dubbo-parent</artifactId>
         <version>${dubbo.version}</version>
     </dependency>
     <dependency>
@@ -103,9 +103,9 @@ public class GreetingServiceImpl implements GreetingService {
 ```java
 package org.apache.dubbo.demo.provider;
 
-import com.alibaba.dubbo.config.ApplicationConfig;
-import com.alibaba.dubbo.config.RegistryConfig;
-import com.alibaba.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.samples.api.GreetingService;
 
 import java.io.IOException;
@@ -138,9 +138,9 @@ public class Application {
 ```java
 package org.apache.dubbo.demo.consumer;
 
-import com.alibaba.dubbo.config.ApplicationConfig;
-import com.alibaba.dubbo.config.ReferenceConfig;
-import com.alibaba.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.samples.api.GreetingService;
 
 public class Application {

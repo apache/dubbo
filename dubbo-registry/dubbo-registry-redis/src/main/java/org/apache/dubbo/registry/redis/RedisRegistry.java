@@ -404,7 +404,7 @@ public class RedisRegistry extends FailbackRegistry {
             }
             List<URL> urls = new ArrayList<>();
             Map<String, String> values = jedis.hgetAll(key);
-            if (CollectionUtils.isEmptyMap(values)) {
+            if (CollectionUtils.isNotEmptyMap(values)) {
                 for (Map.Entry<String, String> entry : values.entrySet()) {
                     URL u = URL.valueOf(entry.getKey());
                     if (!u.getParameter(Constants.DYNAMIC_KEY, true)
