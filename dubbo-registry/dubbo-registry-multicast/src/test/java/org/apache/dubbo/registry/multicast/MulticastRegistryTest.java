@@ -17,6 +17,8 @@
 package org.apache.dubbo.registry.multicast;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
 
@@ -37,6 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MulticastRegistryTest {
+    private static final Logger logger = LoggerFactory.getLogger(MulticastRegistryTest.class);
 
     private String service = "org.apache.dubbo.test.injvmServie";
     private URL registryUrl = URL.valueOf("multicast://239.255.255.255/");
@@ -231,7 +234,7 @@ public class MulticastRegistryTest {
                 multicastAddress = InetAddress.getByName("224.55.66.77");
                 multicastSocket = new MulticastSocket(2345);
                 multicastSocket.setLoopbackMode(false);
-                NetUtils.setInterface(multicastSocket, multicastAddress);
+                NetUtils.setInterface(multicastSocket, false);
                 multicastSocket.joinGroup(multicastAddress);
             } finally {
                 if (multicastSocket != null) {
@@ -240,17 +243,23 @@ public class MulticastRegistryTest {
             }
 
             // multicast ipv6 address,
-            /*try {
-                multicastAddress = InetAddress.getByName("ff01::1");
+            try {
+                try {
+                    multicastAddress = InetAddress.getByName("ff01::1");
+                } catch (Throwable t) {
+                    logger.info("bypass ipv6 test, possibly because the current network stack doesn't support ipv6");
+                    return;
+                }
+
                 multicastSocket = new MulticastSocket();
                 multicastSocket.setLoopbackMode(false);
-                NetUtils.setInterface(multicastSocket, multicastAddress);
+                NetUtils.setInterface(multicastSocket, true);
                 multicastSocket.joinGroup(multicastAddress);
             } finally {
                 if (multicastSocket != null) {
                     multicastSocket.close();
                 }
-            }*/
+            }
 
         } catch (Exception e) {
             Assertions.fail(e);

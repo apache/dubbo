@@ -31,6 +31,7 @@ import org.apache.dubbo.registry.support.FailbackRegistry;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
@@ -81,9 +82,8 @@ public class MulticastRegistry extends FailbackRegistry {
         }
         try {
             multicastAddress = InetAddress.getByName(url.getHost());
-            if (!multicastAddress.isMulticastAddress()) {
-                throw new IllegalArgumentException("Invalid multicast address " + url.getHost() + ", ipv4 multicast address scope: 224.0.0.0 - 239.255.255.255.");
-            }
+            checkMulticastAddress(multicastAddress);
+
             multicastPort = url.getPort() <= 0 ? DEFAULT_MULTICAST_PORT : url.getPort();
             multicastSocket = new MulticastSocket(multicastPort);
             NetUtils.joinMulticastGroup(multicastSocket, multicastAddress);
@@ -129,6 +129,19 @@ public class MulticastRegistry extends FailbackRegistry {
             }, cleanPeriod, cleanPeriod, TimeUnit.MILLISECONDS);
         } else {
             this.cleanFuture = null;
+        }
+    }
+
+    private void checkMulticastAddress(InetAddress multicastAddress) {
+        if (!multicastAddress.isMulticastAddress()) {
+            String message = "Invalid multicast address " + multicastAddress;
+            if (!(multicastAddress instanceof Inet4Address)) {
+                throw new IllegalArgumentException(message + ", " +
+                        "ipv4 multicast address scope: 224.0.0.0 - 239.255.255.255.");
+            } else {
+                throw new IllegalArgumentException(message + ", " + "ipv6 multicast address must start with ff, " +
+                        "for example: ffx3::/16");
+            }
         }
     }
 
