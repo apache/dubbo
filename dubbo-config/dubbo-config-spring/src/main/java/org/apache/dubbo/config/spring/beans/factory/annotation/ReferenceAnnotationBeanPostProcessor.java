@@ -60,16 +60,16 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
     private static final int CACHE_SIZE = Integer.getInteger(BEAN_NAME + ".cache.size", 32);
 
     private final ConcurrentMap<String, ReferenceBean<?>> referenceBeanCache =
-            new ConcurrentHashMap<String, ReferenceBean<?>>(CACHE_SIZE);
+            new ConcurrentHashMap<>(CACHE_SIZE);
 
     private final ConcurrentHashMap<String, ReferenceBeanInvocationHandler> localReferenceBeanInvocationHandlerCache =
-            new ConcurrentHashMap<String, ReferenceBeanInvocationHandler>(CACHE_SIZE);
+            new ConcurrentHashMap<>(CACHE_SIZE);
 
     private final ConcurrentMap<InjectionMetadata.InjectedElement, ReferenceBean<?>> injectedFieldReferenceBeanCache =
-            new ConcurrentHashMap<InjectionMetadata.InjectedElement, ReferenceBean<?>>(CACHE_SIZE);
+            new ConcurrentHashMap<>(CACHE_SIZE);
 
     private final ConcurrentMap<InjectionMetadata.InjectedElement, ReferenceBean<?>> injectedMethodReferenceBeanCache =
-            new ConcurrentHashMap<InjectionMetadata.InjectedElement, ReferenceBean<?>>(CACHE_SIZE);
+            new ConcurrentHashMap<>(CACHE_SIZE);
 
     private ApplicationContext applicationContext;
 

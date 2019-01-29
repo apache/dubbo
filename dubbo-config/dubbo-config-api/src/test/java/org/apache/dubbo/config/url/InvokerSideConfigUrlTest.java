@@ -177,7 +177,7 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
         regConfForReference = new RegistryConfig();
         methodConfForReference = new MethodConfig();
 
-        refConf = new ReferenceConfig<DemoService>();
+        refConf = new ReferenceConfig<>();
         consumerConf = new ConsumerConfig();
 
         methodConfForReference.setName("sayName");

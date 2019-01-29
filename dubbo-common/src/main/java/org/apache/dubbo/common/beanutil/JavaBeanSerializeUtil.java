@@ -34,7 +34,7 @@ import java.util.Map;
 public final class JavaBeanSerializeUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(JavaBeanSerializeUtil.class);
-    private static final Map<String, Class<?>> TYPES = new HashMap<String, Class<?>>();
+    private static final Map<String, Class<?>> TYPES = new HashMap<>();
     private static final String ARRAY_PREFIX = "[";
     private static final String REFERENCE_TYPE_PREFIX = "L";
     private static final String REFERENCE_TYPE_SUFFIX = ";";
@@ -73,7 +73,7 @@ public final class JavaBeanSerializeUtil {
         if (obj instanceof JavaBeanDescriptor) {
             return (JavaBeanDescriptor) obj;
         }
-        IdentityHashMap<Object, JavaBeanDescriptor> cache = new IdentityHashMap<Object, JavaBeanDescriptor>();
+        IdentityHashMap<Object, JavaBeanDescriptor> cache = new IdentityHashMap<>();
         JavaBeanDescriptor result = createDescriptorIfAbsent(obj, accessor, cache);
         return result;
     }
@@ -199,7 +199,7 @@ public final class JavaBeanSerializeUtil {
         if (beanDescriptor == null) {
             return null;
         }
-        IdentityHashMap<JavaBeanDescriptor, Object> cache = new IdentityHashMap<JavaBeanDescriptor, Object>();
+        IdentityHashMap<JavaBeanDescriptor, Object> cache = new IdentityHashMap<>();
         Object result = instantiateForDeserialize(beanDescriptor, loader, cache);
         deserializeInternal(result, beanDescriptor, loader, cache);
         return result;

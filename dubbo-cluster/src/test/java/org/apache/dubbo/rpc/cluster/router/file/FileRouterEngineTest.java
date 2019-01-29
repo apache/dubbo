@@ -47,7 +47,7 @@ import static org.mockito.Mockito.mock;
 @SuppressWarnings("unchecked")
 public class FileRouterEngineTest {
     private static boolean isScriptUnsupported = new ScriptEngineManager().getEngineByName("javascript") == null;
-    List<Invoker<FileRouterEngineTest>> invokers = new ArrayList<Invoker<FileRouterEngineTest>>();
+    List<Invoker<FileRouterEngineTest>> invokers = new ArrayList<>();
     Invoker<FileRouterEngineTest> invoker1 = mock(Invoker.class);
     Invoker<FileRouterEngineTest> invoker2 = mock(Invoker.class);
     Invocation invocation;
@@ -73,7 +73,7 @@ public class FileRouterEngineTest {
         initInvokers(url, true, false);
         initDic(url);
 
-        MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(
+        MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<>(
                 dic, url);
         for (int i = 0; i < 100; i++) {
             sinvoker.invoke(invocation);
@@ -90,7 +90,7 @@ public class FileRouterEngineTest {
         initInvokers(url);
         initDic(url);
 
-        MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(
+        MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<>(
                 dic, url);
         for (int i = 0; i < 100; i++) {
             sinvoker.invoke(invocation);
@@ -108,7 +108,7 @@ public class FileRouterEngineTest {
             initInvokers(url, true, true);
             initDic(url);
 
-            MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(
+            MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<>(
                     dic, url);
             for (int i = 0; i < 100; i++) {
                 sinvoker.invoke(invocation);
@@ -120,7 +120,7 @@ public class FileRouterEngineTest {
             initInvocation("method2");
             initInvokers(url, true, true);
             initDic(url);
-            MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(
+            MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<>(
                     dic, url);
             for (int i = 0; i < 100; i++) {
                 sinvoker.invoke(invocation);

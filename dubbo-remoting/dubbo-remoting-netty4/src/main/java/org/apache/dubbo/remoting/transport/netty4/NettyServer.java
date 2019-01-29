@@ -141,7 +141,7 @@ public class NettyServer extends AbstractServer implements Server {
 
     @Override
     public Collection<Channel> getChannels() {
-        Collection<Channel> chs = new HashSet<Channel>();
+        Collection<Channel> chs = new HashSet<>();
         for (Channel channel : this.channels.values()) {
             if (channel.isConnected()) {
                 chs.add(channel);

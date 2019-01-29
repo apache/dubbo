@@ -42,7 +42,7 @@ public class EagerThreadPool implements ThreadPool {
         int alive = url.getParameter(Constants.ALIVE_KEY, Constants.DEFAULT_ALIVE);
 
         // init queue and executor
-        TaskQueue<Runnable> taskQueue = new TaskQueue<Runnable>(queues <= 0 ? 1 : queues);
+        TaskQueue<Runnable> taskQueue = new TaskQueue<>(queues <= 0 ? 1 : queues);
         EagerThreadPoolExecutor executor = new EagerThreadPoolExecutor(cores,
                 threads,
                 alive,

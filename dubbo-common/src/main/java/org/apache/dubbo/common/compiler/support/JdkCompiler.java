@@ -57,7 +57,7 @@ public class JdkCompiler extends AbstractCompiler {
 
     private final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
-    private final DiagnosticCollector<JavaFileObject> diagnosticCollector = new DiagnosticCollector<JavaFileObject>();
+    private final DiagnosticCollector<JavaFileObject> diagnosticCollector = new DiagnosticCollector<>();
 
     private final ClassLoaderImpl classLoader;
 
@@ -66,7 +66,7 @@ public class JdkCompiler extends AbstractCompiler {
     private volatile List<String> options;
 
     public JdkCompiler() {
-        options = new ArrayList<String>();
+        options = new ArrayList<>();
         options.add("-source");
         options.add("1.6");
         options.add("-target");
@@ -77,7 +77,7 @@ public class JdkCompiler extends AbstractCompiler {
                 && (!loader.getClass().getName().equals("sun.misc.Launcher$AppClassLoader"))) {
             try {
                 URLClassLoader urlClassLoader = (URLClassLoader) loader;
-                List<File> files = new ArrayList<File>();
+                List<File> files = new ArrayList<>();
                 for (URL url : urlClassLoader.getURLs()) {
                     files.add(new File(url.getFile()));
                 }
@@ -158,7 +158,7 @@ public class JdkCompiler extends AbstractCompiler {
 
         private final ClassLoaderImpl classLoader;
 
-        private final Map<URI, JavaFileObject> fileObjects = new HashMap<URI, JavaFileObject>();
+        private final Map<URI, JavaFileObject> fileObjects = new HashMap<>();
 
         public JavaFileManagerImpl(JavaFileManager fileManager, ClassLoaderImpl classLoader) {
             super(fileManager);
@@ -209,13 +209,13 @@ public class JdkCompiler extends AbstractCompiler {
             Iterable<JavaFileObject> result = super.list(location, packageName, kinds, recurse);
 
             ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-            List<URL> urlList = new ArrayList<URL>();
+            List<URL> urlList = new ArrayList<>();
             Enumeration<URL> e = contextClassLoader.getResources("com");
             while (e.hasMoreElements()) {
                 urlList.add(e.nextElement());
             }
 
-            ArrayList<JavaFileObject> files = new ArrayList<JavaFileObject>();
+            ArrayList<JavaFileObject> files = new ArrayList<>();
 
             if (location == StandardLocation.CLASS_PATH && kinds.contains(JavaFileObject.Kind.CLASS)) {
                 for (JavaFileObject file : fileObjects.values()) {
@@ -243,7 +243,7 @@ public class JdkCompiler extends AbstractCompiler {
 
     private final class ClassLoaderImpl extends ClassLoader {
 
-        private final Map<String, JavaFileObject> classes = new HashMap<String, JavaFileObject>();
+        private final Map<String, JavaFileObject> classes = new HashMap<>();
 
         ClassLoaderImpl(final ClassLoader parentClassLoader) {
             super(parentClassLoader);

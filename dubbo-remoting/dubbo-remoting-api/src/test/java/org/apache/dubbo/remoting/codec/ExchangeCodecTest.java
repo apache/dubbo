@@ -110,7 +110,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
 
     @Test
     public void test_Decode_Error_MagicNum() throws IOException {
-        HashMap<byte[], Object> inputBytes = new HashMap<byte[], Object>();
+        HashMap<byte[], Object> inputBytes = new HashMap<>();
         inputBytes.put(new byte[]{0}, TelnetCodec.DecodeResult.NEED_MORE_INPUT);
         inputBytes.put(new byte[]{MAGIC_HIGH, 0}, TelnetCodec.DecodeResult.NEED_MORE_INPUT);
         inputBytes.put(new byte[]{0, MAGIC_LOW}, TelnetCodec.DecodeResult.NEED_MORE_INPUT);

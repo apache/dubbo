@@ -41,9 +41,9 @@ public class Bytes {
 
     private static final int MASK4 = 0x0f, MASK6 = 0x3f, MASK8 = 0xff;
 
-    private static final Map<Integer, byte[]> DECODE_TABLE_MAP = new ConcurrentHashMap<Integer, byte[]>();
+    private static final Map<Integer, byte[]> DECODE_TABLE_MAP = new ConcurrentHashMap<>();
 
-    private static ThreadLocal<MessageDigest> MD = new ThreadLocal<MessageDigest>();
+    private static ThreadLocal<MessageDigest> MD = new ThreadLocal<>();
 
     private Bytes() {
     }

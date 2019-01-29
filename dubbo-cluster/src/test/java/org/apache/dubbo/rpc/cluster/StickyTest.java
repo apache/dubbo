@@ -41,7 +41,7 @@ import static org.mockito.Mockito.mock;
 @SuppressWarnings("unchecked")
 public class StickyTest {
 
-    private List<Invoker<StickyTest>> invokers = new ArrayList<Invoker<StickyTest>>();
+    private List<Invoker<StickyTest>> invokers = new ArrayList<>();
 
 
     private Invoker<StickyTest> invoker1 = mock(Invoker.class);
@@ -68,7 +68,7 @@ public class StickyTest {
         invokers.add(invoker1);
         invokers.add(invoker2);
 
-        clusterinvoker = new StickyClusterInvoker<StickyTest>(dic);
+        clusterinvoker = new StickyClusterInvoker<>(dic);
 
         ExtensionLoader.resetExtensionLoader(LoadBalance.class);
     }

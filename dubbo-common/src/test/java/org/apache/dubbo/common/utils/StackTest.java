@@ -29,7 +29,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class StackTest {
     @Test
     public void testOps() throws Exception {
-        Stack<String> stack = new Stack<String>();
+        Stack<String> stack = new Stack<>();
         stack.push("one");
         assertThat(stack.get(0), equalTo("one"));
         assertThat(stack.peek(), equalTo("one"));
@@ -50,7 +50,7 @@ public class StackTest {
 
     @Test
     public void testClear() throws Exception {
-        Stack<String> stack = new Stack<String>();
+        Stack<String> stack = new Stack<>();
         stack.push("one");
         stack.push("two");
         assertThat(stack.isEmpty(), is(false));
@@ -61,7 +61,7 @@ public class StackTest {
     @Test
     public void testIllegalPop() throws Exception {
         Assertions.assertThrows(EmptyStackException.class, () -> {
-            Stack<String> stack = new Stack<String>();
+            Stack<String> stack = new Stack<>();
             stack.pop();
         });
     }
@@ -69,7 +69,7 @@ public class StackTest {
     @Test
     public void testIllegalPeek() throws Exception {
         Assertions.assertThrows(EmptyStackException.class, () -> {
-            Stack<String> stack = new Stack<String>();
+            Stack<String> stack = new Stack<>();
             stack.peek();
         });
     }
@@ -77,7 +77,7 @@ public class StackTest {
     @Test
     public void testIllegalGet() throws Exception {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
-            Stack<String> stack = new Stack<String>();
+            Stack<String> stack = new Stack<>();
             stack.get(1);
         });
     }
@@ -85,7 +85,7 @@ public class StackTest {
     @Test
     public void testIllegalSet() throws Exception {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
-            Stack<String> stack = new Stack<String>();
+            Stack<String> stack = new Stack<>();
             stack.set(1, "illegal");
         });
     }
@@ -93,7 +93,7 @@ public class StackTest {
     @Test
     public void testIllegalRemove() throws Exception {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
-            Stack<String> stack = new Stack<String>();
+            Stack<String> stack = new Stack<>();
             stack.remove(1);
         });
     }

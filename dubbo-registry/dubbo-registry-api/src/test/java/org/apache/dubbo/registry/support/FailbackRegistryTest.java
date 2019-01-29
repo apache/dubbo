@@ -59,7 +59,7 @@ public class FailbackRegistryTest {
     @Test
     public void testDoRetry() throws Exception {
 
-        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+        final AtomicReference<Boolean> notified = new AtomicReference<>(false);
 
         // the latest latch just for 3. Because retry method has been removed.
         final CountDownLatch latch = new CountDownLatch(2);
@@ -119,7 +119,7 @@ public class FailbackRegistryTest {
     @Test
     public void testDoRetry_register() throws Exception {
 
-        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+        final AtomicReference<Boolean> notified = new AtomicReference<>(false);
         final CountDownLatch latch = new CountDownLatch(1);//All of them are called 4 times. A successful attempt to lose 1. subscribe will not be done
 
         NotifyListener listner = new NotifyListener() {
@@ -184,7 +184,7 @@ public class FailbackRegistryTest {
     @Test
     public void testRecover() throws Exception {
         CountDownLatch countDownLatch = new CountDownLatch(4);
-        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+        final AtomicReference<Boolean> notified = new AtomicReference<>(false);
         NotifyListener listener = new NotifyListener() {
             @Override
             public void notify(List<URL> urls) {

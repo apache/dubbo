@@ -46,7 +46,7 @@ public class ComplexObject {
         InnerObject2 io22 = new InnerObject2();
         io22.setInnerA2(var1 + "_22");
         io22.setInnerB2(var2 + 200000);
-        this.setInnerObject2(new HashSet<InnerObject2>(Arrays.asList(io21, io22)));
+        this.setInnerObject2(new HashSet<>(Arrays.asList(io21, io22)));
 
         InnerObject3 io31 = new InnerObject3();
         io31.setInnerA3(var1 + "_31");

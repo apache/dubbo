@@ -51,10 +51,10 @@ public class ScriptRouterTest {
     @Test
     public void testRouteReturnAll() {
         Router router = new ScriptRouterFactory().getRouter(getRouteUrl("function route(op1,op2){return op1} route(invokers)"));
-        List<Invoker<String>> invokers = new ArrayList<Invoker<String>>();
-        invokers.add(new MockInvoker<String>());
-        invokers.add(new MockInvoker<String>());
-        invokers.add(new MockInvoker<String>());
+        List<Invoker<String>> invokers = new ArrayList<>();
+        invokers.add(new MockInvoker<>());
+        invokers.add(new MockInvoker<>());
+        invokers.add(new MockInvoker<>());
         List<Invoker<String>> filteredInvokers = router.route(invokers, invokers.get(0).getUrl(), new RpcInvocation());
         Assertions.assertEquals(invokers, filteredInvokers);
     }
@@ -71,10 +71,10 @@ public class ScriptRouterTest {
         String script = "function route(invokers,invocation,context){" + rule + "} route(invokers,invocation,context)";
         Router router = new ScriptRouterFactory().getRouter(getRouteUrl(script));
 
-        List<Invoker<String>> invokers = new ArrayList<Invoker<String>>();
-        Invoker<String> invoker1 = new MockInvoker<String>(false);
-        Invoker<String> invoker2 = new MockInvoker<String>(true);
-        Invoker<String> invoker3 = new MockInvoker<String>(true);
+        List<Invoker<String>> invokers = new ArrayList<>();
+        Invoker<String> invoker1 = new MockInvoker<>(false);
+        Invoker<String> invoker2 = new MockInvoker<>(true);
+        Invoker<String> invoker3 = new MockInvoker<>(true);
         invokers.add(invoker1);
         invokers.add(invoker2);
         invokers.add(invoker3);
@@ -86,10 +86,10 @@ public class ScriptRouterTest {
 
     @Test
     public void testRouteHostFilter() {
-        List<Invoker<String>> invokers = new ArrayList<Invoker<String>>();
-        MockInvoker<String> invoker1 = new MockInvoker<String>(URL.valueOf("dubbo://10.134.108.1:20880/com.dubbo.HelloService"));
-        MockInvoker<String> invoker2 = new MockInvoker<String>(URL.valueOf("dubbo://10.134.108.2:20880/com.dubbo.HelloService"));
-        MockInvoker<String> invoker3 = new MockInvoker<String>(URL.valueOf("dubbo://10.134.108.3:20880/com.dubbo.HelloService"));
+        List<Invoker<String>> invokers = new ArrayList<>();
+        MockInvoker<String> invoker1 = new MockInvoker<>(URL.valueOf("dubbo://10.134.108.1:20880/com.dubbo.HelloService"));
+        MockInvoker<String> invoker2 = new MockInvoker<>(URL.valueOf("dubbo://10.134.108.2:20880/com.dubbo.HelloService"));
+        MockInvoker<String> invoker3 = new MockInvoker<>(URL.valueOf("dubbo://10.134.108.3:20880/com.dubbo.HelloService"));
         invokers.add(invoker1);
         invokers.add(invoker2);
         invokers.add(invoker3);
@@ -115,10 +115,10 @@ public class ScriptRouterTest {
 
     @Test
     public void testRoute_throwException() {
-        List<Invoker<String>> invokers = new ArrayList<Invoker<String>>();
-        MockInvoker<String> invoker1 = new MockInvoker<String>(URL.valueOf("dubbo://10.134.108.1:20880/com.dubbo.HelloService"));
-        MockInvoker<String> invoker2 = new MockInvoker<String>(URL.valueOf("dubbo://10.134.108.2:20880/com.dubbo.HelloService"));
-        MockInvoker<String> invoker3 = new MockInvoker<String>(URL.valueOf("dubbo://10.134.108.3:20880/com.dubbo.HelloService"));
+        List<Invoker<String>> invokers = new ArrayList<>();
+        MockInvoker<String> invoker1 = new MockInvoker<>(URL.valueOf("dubbo://10.134.108.1:20880/com.dubbo.HelloService"));
+        MockInvoker<String> invoker2 = new MockInvoker<>(URL.valueOf("dubbo://10.134.108.2:20880/com.dubbo.HelloService"));
+        MockInvoker<String> invoker3 = new MockInvoker<>(URL.valueOf("dubbo://10.134.108.3:20880/com.dubbo.HelloService"));
         invokers.add(invoker1);
         invokers.add(invoker2);
         invokers.add(invoker3);

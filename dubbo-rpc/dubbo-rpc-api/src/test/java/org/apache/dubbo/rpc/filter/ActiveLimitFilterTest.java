@@ -46,7 +46,7 @@ public class ActiveLimitFilterTest {
     @Test
     public void testInvokeNoActives() {
         URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives=0");
-        Invoker<ActiveLimitFilterTest> invoker = new MyInvoker<ActiveLimitFilterTest>(url);
+        Invoker<ActiveLimitFilterTest> invoker = new MyInvoker<>(url);
         Invocation invocation = new MockInvocation();
         activeLimitFilter.invoke(invoker, invocation);
     }
@@ -54,7 +54,7 @@ public class ActiveLimitFilterTest {
     @Test
     public void testInvokeLessActives() {
         URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives=10");
-        Invoker<ActiveLimitFilterTest> invoker = new MyInvoker<ActiveLimitFilterTest>(url);
+        Invoker<ActiveLimitFilterTest> invoker = new MyInvoker<>(url);
         Invocation invocation = new MockInvocation();
         activeLimitFilter.invoke(invoker, invocation);
     }
@@ -63,7 +63,7 @@ public class ActiveLimitFilterTest {
     public void testInvokeGreaterActives() {
         AtomicInteger count = new AtomicInteger(0);
         URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives=1&timeout=1");
-        final Invoker<ActiveLimitFilterTest> invoker = new BlockMyInvoker<ActiveLimitFilterTest>(url, 100);
+        final Invoker<ActiveLimitFilterTest> invoker = new BlockMyInvoker<>(url, 100);
         final Invocation invocation = new MockInvocation();
         final CountDownLatch latch = new CountDownLatch(1);
         for (int i = 0; i < 100; i++) {
@@ -106,7 +106,7 @@ public class ActiveLimitFilterTest {
         final CountDownLatch latch = new CountDownLatch(1);
         final CountDownLatch latchBlocking = new CountDownLatch(totalThread);
         URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives=" + maxActives + "&timeout=" + timeout);
-        final Invoker<ActiveLimitFilterTest> invoker = new BlockMyInvoker<ActiveLimitFilterTest>(url, blockTime);
+        final Invoker<ActiveLimitFilterTest> invoker = new BlockMyInvoker<>(url, blockTime);
         final Invocation invocation = new MockInvocation();
         RpcStatus.removeStatus(url);
         RpcStatus.removeStatus(url, invocation.getMethodName());
@@ -151,7 +151,7 @@ public class ActiveLimitFilterTest {
         final CountDownLatch latch = new CountDownLatch(1);
         final CountDownLatch latchBlocking = new CountDownLatch(totalThread);
         URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives=" + maxActives + "&timeout=" + timeout);
-        final Invoker<ActiveLimitFilterTest> invoker = new BlockMyInvoker<ActiveLimitFilterTest>(url, blockTime);
+        final Invoker<ActiveLimitFilterTest> invoker = new BlockMyInvoker<>(url, blockTime);
         final Invocation invocation = new MockInvocation();
         for (int i = 0; i < totalThread; i++) {
             Thread thread = new Thread(new Runnable() {

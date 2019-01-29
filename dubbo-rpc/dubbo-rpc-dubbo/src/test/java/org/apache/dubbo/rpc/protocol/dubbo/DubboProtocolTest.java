@@ -71,7 +71,7 @@ public class DubboProtocolTest {
         assertEquals(service.enumlength(new Type[]{}), Type.Lower);
         assertEquals(service.getSize(null), -1);
         assertEquals(service.getSize(new String[]{"", "", ""}), 3);
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         map.put("aa", "bb");
         Set<String> set = service.keys(map);
         assertEquals(set.size(), 1);
@@ -103,7 +103,7 @@ public class DubboProtocolTest {
             assertEquals(service.getSize(null), -1);
             assertEquals(service.getSize(new String[]{"", "", ""}), 3);
         }
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         map.put("aa", "bb");
         for (int i = 0; i < 10; i++) {
             Set<String> set = service.keys(map);

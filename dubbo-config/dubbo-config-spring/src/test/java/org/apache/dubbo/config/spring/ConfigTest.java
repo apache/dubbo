@@ -115,7 +115,7 @@ public class ConfigTest {
 
         providerContext.refresh();
 
-        ReferenceConfig<HelloService> reference = new ReferenceConfig<HelloService>();
+        ReferenceConfig<HelloService> reference = new ReferenceConfig<>();
         reference.setApplication(new ApplicationConfig("consumer"));
         reference.setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
         reference.setInterface(HelloService.class);
@@ -145,7 +145,7 @@ public class ConfigTest {
     }
 
     private DemoService refer(String url) {
-        ReferenceConfig<DemoService> reference = new ReferenceConfig<DemoService>();
+        ReferenceConfig<DemoService> reference = new ReferenceConfig<>();
         reference.setApplication(new ApplicationConfig("consumer"));
         reference.setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
         reference.setInterface(DemoService.class);
@@ -155,7 +155,7 @@ public class ConfigTest {
 
     @Test
     public void testToString() {
-        ReferenceConfig<DemoService> reference = new ReferenceConfig<DemoService>();
+        ReferenceConfig<DemoService> reference = new ReferenceConfig<>();
         reference.setApplication(new ApplicationConfig("consumer"));
         reference.setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
         reference.setInterface(DemoService.class);
@@ -169,7 +169,7 @@ public class ConfigTest {
 
     @Test
     public void testForks() {
-        ReferenceConfig<DemoService> reference = new ReferenceConfig<DemoService>();
+        ReferenceConfig<DemoService> reference = new ReferenceConfig<>();
         reference.setApplication(new ApplicationConfig("consumer"));
         reference.setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
         reference.setInterface(DemoService.class);
@@ -357,7 +357,7 @@ public class ConfigTest {
     public void testAppendFilter() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setFilter("classloader,monitor");
-        ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
+        ServiceConfig<DemoService> service = new ServiceConfig<>();
         service.setFilter("accesslog,trace");
         service.setProvider(provider);
         service.setProtocol(new ProtocolConfig("dubbo", 20880));
@@ -374,7 +374,7 @@ public class ConfigTest {
 
             ConsumerConfig consumer = new ConsumerConfig();
             consumer.setFilter("classloader,monitor");
-            ReferenceConfig<DemoService> reference = new ReferenceConfig<DemoService>();
+            ReferenceConfig<DemoService> reference = new ReferenceConfig<>();
             reference.setFilter("accesslog,trace");
             reference.setConsumer(consumer);
             reference.setApplication(new ApplicationConfig("consumer"));
@@ -556,7 +556,7 @@ public class ConfigTest {
         protocol.setName("dubbo");
         protocol.setPort(13123);
 
-        ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
+        ServiceConfig<DemoService> service = new ServiceConfig<>();
         service.setInterface(DemoService.class);
         service.setRef(new DemoServiceImpl());
         service.setApplication(application);
@@ -570,7 +570,7 @@ public class ConfigTest {
             assertEquals("world", url.getParameter("owner"));
             assertEquals(13123, url.getPort());
 
-            ReferenceConfig<DemoService> reference = new ReferenceConfig<DemoService>();
+            ReferenceConfig<DemoService> reference = new ReferenceConfig<>();
             reference.setApplication(new ApplicationConfig("consumer"));
             reference.setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
             reference.setInterface(DemoService.class);
@@ -687,7 +687,7 @@ public class ConfigTest {
         System.setProperty("dubbo.reference.retries", "5");
 
         try {
-            ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
+            ServiceConfig<DemoService> service = new ServiceConfig<>();
             service.setInterface(DemoService.class);
             service.setRef(new DemoServiceImpl());
             service.setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
@@ -695,7 +695,7 @@ public class ConfigTest {
             service.setProtocol(protocolConfig);
             service.export();
 
-            ReferenceConfig<DemoService> reference = new ReferenceConfig<DemoService>();
+            ReferenceConfig<DemoService> reference = new ReferenceConfig<>();
             reference.setInterface(DemoService.class);
             reference.setInjvm(true);
             reference.setRetries(2);
@@ -714,7 +714,7 @@ public class ConfigTest {
         System.setProperty("dubbo.protocol.name", "dubbo");
         System.setProperty("dubbo.protocol.port", "20834");
         try {
-            ServiceConfig<DemoService> serviceConfig = new ServiceConfig<DemoService>();
+            ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
             serviceConfig.setInterface(DemoService.class);
             serviceConfig.setRef(new DemoServiceImpl());
             serviceConfig.export();
@@ -754,7 +754,7 @@ public class ConfigTest {
             protocol.setName("rmi");
             protocol.setPort(1099);
 
-            ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
+            ServiceConfig<DemoService> service = new ServiceConfig<>();
             service.setInterface(DemoService.class);
             service.setRef(new DemoServiceImpl());
             service.setApplication(application);
@@ -796,7 +796,7 @@ public class ConfigTest {
             ProtocolConfig protocol = new ProtocolConfig();
             protocol.setName("rmi");
 
-            ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
+            ServiceConfig<DemoService> service = new ServiceConfig<>();
             service.setInterface(DemoService.class);
             service.setRef(new DemoServiceImpl());
             service.setApplication(application);
@@ -836,7 +836,7 @@ public class ConfigTest {
 
     @Test
     public void testPath() throws Exception {
-        ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
+        ServiceConfig<DemoService> service = new ServiceConfig<>();
         service.setPath("a/b$c");
         try {
             service.setPath("a?b");
@@ -888,7 +888,7 @@ public class ConfigTest {
 
             ProtocolConfig protocol = new ProtocolConfig();
 
-            service = new ServiceConfig<DemoService>();
+            service = new ServiceConfig<>();
             service.setInterface(DemoService.class);
             service.setRef(new DemoServiceImpl());
             service.setApplication(application);
@@ -922,14 +922,14 @@ public class ConfigTest {
         protocol.setName("dubbo");
         protocol.setPort(-1);
 
-        demoService = new ServiceConfig<DemoService>();
+        demoService = new ServiceConfig<>();
         demoService.setInterface(DemoService.class);
         demoService.setRef(new DemoServiceImpl());
         demoService.setApplication(application);
         demoService.setRegistry(registry);
         demoService.setProtocol(protocol);
 
-        helloService = new ServiceConfig<HelloService>();
+        helloService = new ServiceConfig<>();
         helloService.setInterface(HelloService.class);
         helloService.setRef(new HelloServiceImpl());
         helloService.setApplication(application);
@@ -954,7 +954,7 @@ public class ConfigTest {
         RegistryConfig rc = new RegistryConfig();
         rc.setAddress(RegistryConfig.NO_AVAILABLE);
 
-        ServiceConfig<GenericService> sc = new ServiceConfig<GenericService>();
+        ServiceConfig<GenericService> sc = new ServiceConfig<>();
         sc.setApplication(ac);
         sc.setRegistry(rc);
         sc.setInterface(DemoService.class.getName());
@@ -965,7 +965,7 @@ public class ConfigTest {
             }
         });
 
-        ReferenceConfig<DemoService> ref = new ReferenceConfig<DemoService>();
+        ReferenceConfig<DemoService> ref = new ReferenceConfig<>();
         ref.setApplication(ac);
         ref.setRegistry(rc);
         ref.setInterface(DemoService.class.getName());
@@ -984,7 +984,7 @@ public class ConfigTest {
 
     @Test
     public void testGenericServiceConfig() throws Exception {
-        ServiceConfig<GenericService> service = new ServiceConfig<GenericService>();
+        ServiceConfig<GenericService> service = new ServiceConfig<>();
         service.setApplication(new ApplicationConfig("test"));
         service.setRegistry(new RegistryConfig("mock://localhost"));
         service.setInterface(DemoService.class.getName());

@@ -58,10 +58,10 @@ public class RoundRobinLoadBalanceTest extends LoadBalanceBaseTest {
 
     @Test
     public void testSelectByWeight() {
-        final Map<Invoker, InvokeResult> totalMap = new HashMap<Invoker, InvokeResult>();
+        final Map<Invoker, InvokeResult> totalMap = new HashMap<>();
         final AtomicBoolean shouldBegin = new AtomicBoolean(false);
         final int runs = 10000;
-        List<Thread> threads = new ArrayList<Thread>();
+        List<Thread> threads = new ArrayList<>();
         int threadNum = 10;
         for (int i = 0; i < threadNum; i++) {
             threads.add(new Thread() {

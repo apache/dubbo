@@ -65,7 +65,7 @@ class J2oVisitor implements JSONVisitor {
 
     private JSONConverter mConverter;
 
-    private Stack<Object> mStack = new Stack<Object>();
+    private Stack<Object> mStack = new Stack<>();
 
     J2oVisitor(Class<?> type, JSONConverter jc) {
         mType = type;
@@ -347,13 +347,13 @@ class J2oVisitor implements JSONVisitor {
                         throw new IllegalStateException(e.getMessage(), e);
                     }
                 } else if (mType.isAssignableFrom(ArrayList.class)) { // List
-                    items = new ArrayList<Object>(count);
+                    items = new ArrayList<>(count);
                 } else if (mType.isAssignableFrom(HashSet.class)) { // Set
-                    items = new HashSet<Object>(count);
+                    items = new HashSet<>(count);
                 } else if (mType.isAssignableFrom(LinkedList.class)) { // Queue
-                    items = new LinkedList<Object>();
+                    items = new LinkedList<>();
                 } else { // Other
-                    items = new ArrayList<Object>(count);
+                    items = new ArrayList<>(count);
                 }
             } else {
                 throw new ParseException("Convert error, can not load json array data into class [" + mType.getName() + "].");

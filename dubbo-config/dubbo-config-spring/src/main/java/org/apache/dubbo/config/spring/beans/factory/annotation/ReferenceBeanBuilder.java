@@ -91,7 +91,7 @@ class ReferenceBeanBuilder extends AbstractAnnotationConfigBeanBuilder<Reference
 
     @Override
     protected ReferenceBean doBuild() {
-        return new ReferenceBean<Object>();
+        return new ReferenceBean<>();
     }
 
     @Override

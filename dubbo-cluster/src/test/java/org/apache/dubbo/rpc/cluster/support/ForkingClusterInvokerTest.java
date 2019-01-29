@@ -43,7 +43,7 @@ import static org.mockito.Mockito.mock;
 @SuppressWarnings("unchecked")
 public class ForkingClusterInvokerTest {
 
-    private List<Invoker<ForkingClusterInvokerTest>> invokers = new ArrayList<Invoker<ForkingClusterInvokerTest>>();
+    private List<Invoker<ForkingClusterInvokerTest>> invokers = new ArrayList<>();
     private URL url = URL.valueOf("test://test:11/test?forks=2");
     private Invoker<ForkingClusterInvokerTest> invoker1 = mock(Invoker.class);
     private Invoker<ForkingClusterInvokerTest> invoker2 = mock(Invoker.class);
@@ -106,7 +106,7 @@ public class ForkingClusterInvokerTest {
     @Test
     public void testInvokeException() {
         resetInvokerToException();
-        ForkingClusterInvoker<ForkingClusterInvokerTest> invoker = new ForkingClusterInvoker<ForkingClusterInvokerTest>(
+        ForkingClusterInvoker<ForkingClusterInvokerTest> invoker = new ForkingClusterInvoker<>(
                 dic);
 
         try {
@@ -121,7 +121,7 @@ public class ForkingClusterInvokerTest {
     @Test
     public void testClearRpcContext() {
         resetInvokerToException();
-        ForkingClusterInvoker<ForkingClusterInvokerTest> invoker = new ForkingClusterInvoker<ForkingClusterInvokerTest>(
+        ForkingClusterInvoker<ForkingClusterInvokerTest> invoker = new ForkingClusterInvoker<>(
                 dic);
 
         String attachKey = "attach";
@@ -147,7 +147,7 @@ public class ForkingClusterInvokerTest {
 
         resetInvokerToNoException();
 
-        ForkingClusterInvoker<ForkingClusterInvokerTest> invoker = new ForkingClusterInvoker<ForkingClusterInvokerTest>(
+        ForkingClusterInvoker<ForkingClusterInvokerTest> invoker = new ForkingClusterInvoker<>(
                 dic);
         Result ret = invoker.invoke(invocation);
         Assertions.assertSame(result, ret);

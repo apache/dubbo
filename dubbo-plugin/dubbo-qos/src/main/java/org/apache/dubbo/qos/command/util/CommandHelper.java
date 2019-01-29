@@ -39,7 +39,7 @@ public class CommandHelper {
 
     public static List<Class<?>> getAllCommandClass(){
         final Set<String> commandList = ExtensionLoader.getExtensionLoader(BaseCommand.class).getSupportedExtensions();
-        final List<Class<?>> classes = new ArrayList<Class<?>>();
+        final List<Class<?>> classes = new ArrayList<>();
 
         for (String commandName : commandList) {
             BaseCommand command = ExtensionLoader.getExtensionLoader(BaseCommand.class).getExtension(commandName);

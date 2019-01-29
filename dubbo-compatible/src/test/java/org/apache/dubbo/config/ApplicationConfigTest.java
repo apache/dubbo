@@ -45,7 +45,7 @@ public class ApplicationConfigTest {
         assertThat(application.getName(), equalTo("app"));
         application = new ApplicationConfig("app2");
         assertThat(application.getName(), equalTo("app2"));
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         ApplicationConfig.appendParameters(parameters, application);
         assertThat(parameters, hasEntry(Constants.APPLICATION_KEY, "app2"));
     }
@@ -55,7 +55,7 @@ public class ApplicationConfigTest {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setVersion("1.0.0");
         assertThat(application.getVersion(), equalTo("1.0.0"));
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         ApplicationConfig.appendParameters(parameters, application);
         assertThat(parameters, hasEntry("application.version", "1.0.0"));
     }
@@ -139,7 +139,7 @@ public class ApplicationConfigTest {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setDumpDirectory("/dump");
         assertThat(application.getDumpDirectory(), equalTo("/dump"));
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         ApplicationConfig.appendParameters(parameters, application);
         assertThat(parameters, hasEntry(Constants.DUMP_DIRECTORY, "/dump"));
     }
@@ -149,7 +149,7 @@ public class ApplicationConfigTest {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setQosEnable(true);
         assertThat(application.getQosEnable(), is(true));
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         ApplicationConfig.appendParameters(parameters, application);
         assertThat(parameters, hasEntry(Constants.QOS_ENABLE, "true"));
     }
@@ -166,7 +166,7 @@ public class ApplicationConfigTest {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setQosAcceptForeignIp(true);
         assertThat(application.getQosAcceptForeignIp(), is(true));
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         ApplicationConfig.appendParameters(parameters, application);
         assertThat(parameters, hasEntry(Constants.ACCEPT_FOREIGN_IP, "true"));
     }
@@ -175,7 +175,7 @@ public class ApplicationConfigTest {
     public void testParameters() throws Exception {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setQosAcceptForeignIp(true);
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         parameters.put("k1", "v1");
         ApplicationConfig.appendParameters(parameters, application);
         assertThat(parameters, hasEntry("k1", "v1"));

@@ -51,7 +51,7 @@ public class MinaClient extends AbstractClient {
 
     private static final Logger logger = LoggerFactory.getLogger(MinaClient.class);
 
-    private static final Map<String, SocketConnector> connectors = new ConcurrentHashMap<String, SocketConnector>();
+    private static final Map<String, SocketConnector> connectors = new ConcurrentHashMap<>();
 
     private String connectorKey;
 
@@ -90,7 +90,7 @@ public class MinaClient extends AbstractClient {
     protected void doConnect() throws Throwable {
         ConnectFuture future = connector.connect(getConnectAddress(), new MinaHandler(getUrl(), this));
         long start = System.currentTimeMillis();
-        final AtomicReference<Throwable> exception = new AtomicReference<Throwable>();
+        final AtomicReference<Throwable> exception = new AtomicReference<>();
         final CountDownLatch finish = new CountDownLatch(1); // resolve future.awaitUninterruptibly() dead lock
         future.addListener(new IoFutureListener() {
             @Override

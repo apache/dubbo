@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentMap;
 public class MergerFactory {
 
     private static final ConcurrentMap<Class<?>, Merger<?>> mergerCache =
-            new ConcurrentHashMap<Class<?>, Merger<?>>();
+            new ConcurrentHashMap<>();
 
     /**
      * Find the merger according to the returnType class, the merger will

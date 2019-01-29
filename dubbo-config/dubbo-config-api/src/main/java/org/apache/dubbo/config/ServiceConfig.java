@@ -100,7 +100,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     /**
      * A random port cache, the different protocols who has no port specified have different random port
      */
-    private static final Map<String, Integer> RANDOM_PORT_MAP = new HashMap<String, Integer>();
+    private static final Map<String, Integer> RANDOM_PORT_MAP = new HashMap<>();
 
     /**
      * A delayed exposure service timer
@@ -110,12 +110,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     /**
      * The urls of the services exported
      */
-    private final List<URL> urls = new ArrayList<URL>();
+    private final List<URL> urls = new ArrayList<>();
 
     /**
      * The exported services
      */
-    private final List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
+    private final List<Exporter<?>> exporters = new ArrayList<>();
 
     /**
      * The interface name of the exported service
@@ -179,7 +179,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (CollectionUtils.isEmpty(providers)) {
             return null;
         }
-        List<ProtocolConfig> protocols = new ArrayList<ProtocolConfig>(providers.size());
+        List<ProtocolConfig> protocols = new ArrayList<>(providers.size());
         for (ProviderConfig provider : providers) {
             protocols.add(convertProviderToProtocol(provider));
         }
@@ -191,7 +191,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (CollectionUtils.isEmpty(protocols)) {
             return null;
         }
-        List<ProviderConfig> providers = new ArrayList<ProviderConfig>(protocols.size());
+        List<ProviderConfig> providers = new ArrayList<>(protocols.size());
         for (ProtocolConfig provider : protocols) {
             providers.add(convertProtocolToProvider(provider));
         }
@@ -410,7 +410,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             name = Constants.DUBBO;
         }
 
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         map.put(Constants.SIDE_KEY, Constants.PROVIDER_SIDE);
         appendRuntimeParameters(map);
         appendParameters(map, application);
@@ -488,7 +488,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 logger.warn("No method found in service interface " + interfaceClass.getName());
                 map.put(Constants.METHODS_KEY, Constants.ANY_VALUE);
             } else {
-                map.put(Constants.METHODS_KEY, StringUtils.join(new HashSet<String>(Arrays.asList(methods)), ","));
+                map.put(Constants.METHODS_KEY, StringUtils.join(new HashSet<>(Arrays.asList(methods)), ","));
             }
         }
         if (!ConfigUtils.isEmpty(token)) {

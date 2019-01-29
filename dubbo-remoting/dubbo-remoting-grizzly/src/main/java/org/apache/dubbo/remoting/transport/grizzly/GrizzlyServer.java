@@ -46,7 +46,7 @@ public class GrizzlyServer extends AbstractServer {
 
     private static final Logger logger = LoggerFactory.getLogger(GrizzlyServer.class);
 
-    private final Map<String, Channel> channels = new ConcurrentHashMap<String, Channel>(); // <ip:port, channel>
+    private final Map<String, Channel> channels = new ConcurrentHashMap<>(); // <ip:port, channel>
 
     private TCPNIOTransport transport;
 

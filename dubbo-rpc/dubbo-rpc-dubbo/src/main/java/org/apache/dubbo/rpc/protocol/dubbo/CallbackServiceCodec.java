@@ -153,7 +153,7 @@ class CallbackServiceCodec {
                     //ignore concurrent problem.
                     Set<Invoker<?>> callbackInvokers = (Set<Invoker<?>>) channel.getAttribute(Constants.CHANNEL_CALLBACK_KEY);
                     if (callbackInvokers == null) {
-                        callbackInvokers = new ConcurrentHashSet<Invoker<?>>(1);
+                        callbackInvokers = new ConcurrentHashSet<>(1);
                         callbackInvokers.add(invoker);
                         channel.setAttribute(Constants.CHANNEL_CALLBACK_KEY, callbackInvokers);
                     }

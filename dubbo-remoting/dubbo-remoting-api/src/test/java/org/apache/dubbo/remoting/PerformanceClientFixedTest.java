@@ -53,7 +53,7 @@ public class PerformanceClientFixedTest  {
 
         //int idx = server.indexOf(':');
         Random rd = new Random(connectionCount);
-        ArrayList<ExchangeClient> arrays = new ArrayList<ExchangeClient>();
+        ArrayList<ExchangeClient> arrays = new ArrayList<>();
         String oneKBlock = null;
         String messageBlock = null;
         int s = 0;

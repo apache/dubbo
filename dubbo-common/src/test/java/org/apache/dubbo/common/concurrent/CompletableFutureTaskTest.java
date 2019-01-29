@@ -38,7 +38,7 @@ import org.junit.jupiter.api.Test;
 
 public class CompletableFutureTaskTest {
 
-    private static final ExecutorService executor = new ThreadPoolExecutor(0, 10, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new NamedThreadFactory("DubboMonitorCreator", true));
+    private static final ExecutorService executor = new ThreadPoolExecutor(0, 10, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), new NamedThreadFactory("DubboMonitorCreator", true));
 
     @Test
     public void testCreate() throws InterruptedException {

@@ -92,7 +92,7 @@ class CompatibleReferenceBeanBuilder extends AbstractAnnotationConfigBeanBuilder
 
     @Override
     protected ReferenceBean doBuild() {
-        return new ReferenceBean<Object>();
+        return new ReferenceBean<>();
     }
 
     @Override

@@ -37,7 +37,7 @@ public class FilterTest {
     @Test
     public void testInvokeException() {
         try {
-            Invoker<FilterTest> invoker = new MyInvoker<FilterTest>(null);
+            Invoker<FilterTest> invoker = new MyInvoker<>(null);
             Invocation invocation = new MockInvocation("aa");
             myFilter.invoke(invoker, invocation);
             fail();
@@ -48,7 +48,7 @@ public class FilterTest {
 
     @Test
     public void testDefault() {
-        Invoker<FilterTest> invoker = new MyInvoker<FilterTest>(null);
+        Invoker<FilterTest> invoker = new MyInvoker<>(null);
         Invocation invocation = new MockInvocation("bbb");
         Result res = myFilter.invoke(invoker, invocation);
         System.out.println(res);

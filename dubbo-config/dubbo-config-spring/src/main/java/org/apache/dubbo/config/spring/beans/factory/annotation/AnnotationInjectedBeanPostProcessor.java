@@ -82,7 +82,7 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
     private final ConcurrentMap<String, AnnotationInjectedBeanPostProcessor.AnnotatedInjectionMetadata> injectionMetadataCache =
             new ConcurrentHashMap<String, AnnotationInjectedBeanPostProcessor.AnnotatedInjectionMetadata>(CACHE_SIZE);
 
-    private final ConcurrentMap<String, Object> injectedObjectsCache = new ConcurrentHashMap<String, Object>(CACHE_SIZE);
+    private final ConcurrentMap<String, Object> injectedObjectsCache = new ConcurrentHashMap<>(CACHE_SIZE);
 
     private ConfigurableListableBeanFactory beanFactory;
 
@@ -97,7 +97,7 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
     }
 
     private static <T> Collection<T> combine(Collection<? extends T>... elements) {
-        List<T> allElements = new ArrayList<T>();
+        List<T> allElements = new ArrayList<>();
         for (Collection<? extends T> e : elements) {
             allElements.addAll(e);
         }
@@ -396,7 +396,7 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
     protected Map<InjectionMetadata.InjectedElement, Object> getInjectedFieldObjectsMap() {
 
         Map<InjectionMetadata.InjectedElement, Object> injectedElementBeanMap =
-                new LinkedHashMap<InjectionMetadata.InjectedElement, Object>();
+                new LinkedHashMap<>();
 
         for (AnnotationInjectedBeanPostProcessor.AnnotatedInjectionMetadata metadata : injectionMetadataCache.values()) {
 
@@ -422,7 +422,7 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
     protected Map<InjectionMetadata.InjectedElement, Object> getInjectedMethodObjectsMap() {
 
         Map<InjectionMetadata.InjectedElement, Object> injectedElementBeanMap =
-                new LinkedHashMap<InjectionMetadata.InjectedElement, Object>();
+                new LinkedHashMap<>();
 
         for (AnnotationInjectedBeanPostProcessor.AnnotatedInjectionMetadata metadata : injectionMetadataCache.values()) {
 

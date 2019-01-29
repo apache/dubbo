@@ -32,7 +32,7 @@ public class CompositeConfiguration implements Configuration {
     /**
      * List holding all the configuration
      */
-    private List<Configuration> configList = new LinkedList<Configuration>();
+    private List<Configuration> configList = new LinkedList<>();
 
     public CompositeConfiguration() {
 

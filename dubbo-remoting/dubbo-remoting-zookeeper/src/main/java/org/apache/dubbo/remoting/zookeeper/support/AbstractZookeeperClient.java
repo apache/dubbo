@@ -35,9 +35,9 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
 
     private final URL url;
 
-    private final Set<StateListener> stateListeners = new CopyOnWriteArraySet<StateListener>();
+    private final Set<StateListener> stateListeners = new CopyOnWriteArraySet<>();
 
-    private final ConcurrentMap<String, ConcurrentMap<ChildListener, TargetChildListener>> childListeners = new ConcurrentHashMap<String, ConcurrentMap<ChildListener, TargetChildListener>>();
+    private final ConcurrentMap<String, ConcurrentMap<ChildListener, TargetChildListener>> childListeners = new ConcurrentHashMap<>();
 
     private volatile boolean closed = false;
 
@@ -86,7 +86,7 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
     public List<String> addChildListener(String path, final ChildListener listener) {
         ConcurrentMap<ChildListener, TargetChildListener> listeners = childListeners.get(path);
         if (listeners == null) {
-            childListeners.putIfAbsent(path, new ConcurrentHashMap<ChildListener, TargetChildListener>());
+            childListeners.putIfAbsent(path, new ConcurrentHashMap<>());
             listeners = childListeners.get(path);
         }
         TargetChildListener targetListener = listeners.get(listener);

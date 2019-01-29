@@ -38,10 +38,10 @@ public abstract class AbstractProtocol implements Protocol {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    protected final Map<String, Exporter<?>> exporterMap = new ConcurrentHashMap<String, Exporter<?>>();
+    protected final Map<String, Exporter<?>> exporterMap = new ConcurrentHashMap<>();
 
     //TODO SOFEREFENCE
-    protected final Set<Invoker<?>> invokers = new ConcurrentHashSet<Invoker<?>>();
+    protected final Set<Invoker<?>> invokers = new ConcurrentHashSet<>();
 
     protected static String serviceKey(URL url) {
         int port = url.getParameter(Constants.BIND_PORT_KEY, url.getPort());
@@ -68,7 +68,7 @@ public abstract class AbstractProtocol implements Protocol {
                 }
             }
         }
-        for (String key : new ArrayList<String>(exporterMap.keySet())) {
+        for (String key : new ArrayList<>(exporterMap.keySet())) {
             Exporter<?> exporter = exporterMap.remove(key);
             if (exporter != null) {
                 try {

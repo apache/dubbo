@@ -37,7 +37,7 @@ public class ModuleConfigTest {
     public void testName1() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             ModuleConfig module = new ModuleConfig();
-            Map<String, String> parameters = new HashMap<String, String>();
+            Map<String, String> parameters = new HashMap<>();
             ModuleConfig.appendParameters(parameters, module);
         });
 
@@ -49,7 +49,7 @@ public class ModuleConfigTest {
         module.setName("module-name");
         assertThat(module.getName(), equalTo("module-name"));
         assertThat(module.getId(), equalTo("module-name"));
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         ModuleConfig.appendParameters(parameters, module);
         assertThat(parameters, hasEntry("module", "module-name"));
     }
@@ -60,7 +60,7 @@ public class ModuleConfigTest {
         module.setName("module-name");
         module.setVersion("1.0.0");
         assertThat(module.getVersion(), equalTo("1.0.0"));
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         ModuleConfig.appendParameters(parameters, module);
         assertThat(parameters, hasEntry("module.version", "1.0.0"));
     }
