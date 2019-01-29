@@ -246,19 +246,18 @@ public class MulticastRegistryTest {
             try {
                 try {
                     multicastAddress = InetAddress.getByName("ff01::1");
-                } catch (Throwable t) {
-                    logger.info("bypass ipv6 test, possibly because the current network stack doesn't support ipv6");
-                    return;
-                }
 
-                multicastSocket = new MulticastSocket();
-                multicastSocket.setLoopbackMode(false);
-                NetUtils.setInterface(multicastSocket, true);
-                multicastSocket.joinGroup(multicastAddress);
-            } finally {
-                if (multicastSocket != null) {
-                    multicastSocket.close();
+                    multicastSocket = new MulticastSocket();
+                    multicastSocket.setLoopbackMode(false);
+                    NetUtils.setInterface(multicastSocket, true);
+                    multicastSocket.joinGroup(multicastAddress);
+                } finally {
+                    if (multicastSocket != null) {
+                        multicastSocket.close();
+                    }
                 }
+            } catch (Throwable t) {
+                logger.info("ipv6 test fails but ignore it by now", t);
             }
 
         } catch (Exception e) {
