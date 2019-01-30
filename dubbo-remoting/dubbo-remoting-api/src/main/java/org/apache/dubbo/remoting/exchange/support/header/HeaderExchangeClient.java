@@ -33,8 +33,6 @@ import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.common.Constants.CLIENT_KEY;
-import static org.apache.dubbo.common.Constants.TRANSPORTER_KEY;
 import static org.apache.dubbo.common.utils.UrlUtils.getHeartbeat;
 import static org.apache.dubbo.common.utils.UrlUtils.getIdleTimeout;
 
@@ -175,7 +173,7 @@ public class HeaderExchangeClient implements ExchangeClient {
     }
 
     private void startHeartBeatTask(URL url) {
-        if (shouldHeartbeat(url)) {
+        if (!client.canHandleIdle()) {
             AbstractTimerTask.ChannelProvider cp = () -> Collections.singletonList(HeaderExchangeClient.this);
             int heartbeat = getHeartbeat(url);
             long heartbeatTick = calculateLeastDuration(heartbeat);
@@ -213,11 +211,6 @@ public class HeaderExchangeClient implements ExchangeClient {
         } else {
             return time / Constants.HEARTBEAT_CHECK_TICK;
         }
-    }
-
-    private boolean shouldHeartbeat(URL url) {
-        String transporter = url.getParameter(CLIENT_KEY, url.getParameter(TRANSPORTER_KEY, "netty"));
-        return !transporter.equalsIgnoreCase("netty") && !transporter.equalsIgnoreCase("netty4");
     }
 
     private boolean shouldReconnect(URL url) {

@@ -41,8 +41,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.unmodifiableCollection;
-import static org.apache.dubbo.common.Constants.SERVER_KEY;
-import static org.apache.dubbo.common.Constants.TRANSPORTER_KEY;
 
 /**
  * ExchangeServerImpl
@@ -256,7 +254,7 @@ public class HeaderExchangeServer implements ExchangeServer {
     }
 
     private void startIdleCheckTask(URL url) {
-        if (shouldStartCloseTimer(url)) {
+        if (!server.canHandleIdle()) {
             AbstractTimerTask.ChannelProvider cp = () -> unmodifiableCollection(HeaderExchangeServer.this.getChannels());
             int idleTimeout = UrlUtils.getIdleTimeout(url);
             long idleTimeoutTick = calculateLeastDuration(idleTimeout);
@@ -266,10 +264,5 @@ public class HeaderExchangeServer implements ExchangeServer {
             // init task and start timer.
             IDLE_CHECK_TIMER.newTimeout(closeTimerTask, idleTimeoutTick, TimeUnit.MILLISECONDS);
         }
-    }
-
-    private boolean shouldStartCloseTimer(URL url) {
-        String transporter = url.getParameter(SERVER_KEY, url.getParameter(TRANSPORTER_KEY, "netty"));
-        return !transporter.equalsIgnoreCase("netty") && !transporter.equalsIgnoreCase("netty4");
     }
 }

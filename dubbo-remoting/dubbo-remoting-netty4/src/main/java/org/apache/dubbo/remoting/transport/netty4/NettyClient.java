@@ -166,4 +166,8 @@ public class NettyClient extends AbstractClient {
         return NettyChannel.getOrAddChannel(c, getUrl(), this);
     }
 
+    @Override
+    public boolean canHandleIdle() {
+        return true;
+    }
 }

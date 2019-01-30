@@ -165,6 +165,11 @@ public class NettyServer extends AbstractServer implements Server {
     }
 
     @Override
+    public boolean canHandleIdle() {
+        return true;
+    }
+
+    @Override
     public boolean isBound() {
         return channel.isActive();
     }
