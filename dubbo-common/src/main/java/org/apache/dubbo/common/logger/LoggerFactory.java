@@ -108,7 +108,7 @@ public class LoggerFactory {
      * @return logger
      */
     public static Logger getLogger(Class<?> key) {
-        return LOGGERS.computeIfAbsent(key.getName(), name -> new FailsafeLogger(LOGGER_ADAPTER.getLogger(key)));
+        return getLogger(key.getName());
     }
 
     /**
