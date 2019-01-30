@@ -89,12 +89,12 @@ public class NettyServer extends AbstractServer implements Server {
                     @Override
                     protected void initChannel(NioSocketChannel ch) throws Exception {
                         // FIXME: should we use getTimeout()?
-                        int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
+                        int idleTimeout = UrlUtils.getIdleTimeout(getUrl());
                         NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyServer.this);
                         ch.pipeline()//.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
                                 .addLast("decoder", adapter.getDecoder())
                                 .addLast("encoder", adapter.getEncoder())
-                                .addLast("server-idle-handler", new IdleStateHandler(0, 0, heartbeatInterval, MILLISECONDS))
+                                .addLast("server-idle-handler", new IdleStateHandler(0, 0, idleTimeout, MILLISECONDS))
                                 .addLast("handler", nettyServerHandler);
                     }
                 });
