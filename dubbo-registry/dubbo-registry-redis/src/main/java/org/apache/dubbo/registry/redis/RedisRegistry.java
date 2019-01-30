@@ -16,21 +16,20 @@
  */
 package org.apache.dubbo.registry.redis;
 
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
-import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.support.FailbackRegistry;
 import org.apache.dubbo.rpc.RpcException;
-
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPubSub;
@@ -225,11 +224,9 @@ public class RedisRegistry extends FailbackRegistry {
     @Override
     public boolean isAvailable() {
         for (JedisPool jedisPool : jedisPools.values()) {
-            try {
-                try (Jedis jedis = jedisPool.getResource()) {
-                    if (jedis.isConnected()) {
-                        return true; // At least one single machine is available.
-                    }
+            try (Jedis jedis = jedisPool.getResource()) {
+                if (jedis.isConnected()) {
+                    return true; // At least one single machine is available.
                 }
             } catch (Throwable t) {
             }

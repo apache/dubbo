@@ -593,21 +593,12 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
             if (resolveFile != null && resolveFile.length() > 0) {
                 Properties properties = new Properties();
-                FileInputStream fis = null;
-                try {
-                    fis = new FileInputStream(new File(resolveFile));
+                try (FileInputStream fis = new FileInputStream(new File(resolveFile))) {
                     properties.load(fis);
                 } catch (IOException e) {
                     throw new IllegalStateException("Failed to load " + resolveFile + ", cause: " + e.getMessage(), e);
-                } finally {
-                    try {
-                        if (null != fis) {
-                            fis.close();
-                        }
-                    } catch (IOException e) {
-                        logger.warn(e.getMessage(), e);
-                    }
                 }
+
                 resolve = properties.getProperty(interfaceName);
             }
         }

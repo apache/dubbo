@@ -40,13 +40,7 @@ public class MetadataReportServiceTest {
 
     @BeforeEach
     public void before() {
-
-        metadataReportService1 = MetadataReportService.instance(new Supplier<URL>() {
-            @Override
-            public URL get() {
-                return url;
-            }
-        });
+        metadataReportService1 = MetadataReportService.instance(() -> url);
     }
 
     @Test
