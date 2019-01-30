@@ -32,8 +32,8 @@ We are now collecting dubbo user info in order to help us to improve Dubbo bette
 The following code snippet comes from [Dubbo Samples](https://github.com/dubbo/dubbo-samples/tree/master/dubbo-samples-api). You may clone the sample project and step into `dubbo-samples-api` sub directory before read on.
 
 ```bash
-# git clone https://github.com/dubbo/dubbo-samples.git
-# cd dubbo-samples/dubbo-samples-api
+# git clone https://github.com/apache/incubator-dubbo-samples.git
+# cd incubator-dubbo-samples/dubbo-samples-api
 ```
 
 There's a [README](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samples-api/README.md) file under `dubbo-samples-api` directory. Read it and try this sample out by following the instructions.
