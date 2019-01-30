@@ -73,7 +73,6 @@ public class LoggerFactory {
                     } catch (Throwable ignored) {
                     }
                 }
-                break;
         }
     }
 
