@@ -31,7 +31,6 @@ import org.springframework.validation.DataBinder;
 import java.beans.PropertyEditorSupport;
 import java.util.Map;
 
-import static com.alibaba.dubbo.common.Constants.DEFAULT_PROTOCOL;
 import static com.alibaba.dubbo.config.spring.util.BeanFactoryUtils.getOptionalBean;
 import static com.alibaba.dubbo.config.spring.util.ObjectUtils.of;
 import static org.springframework.util.StringUtils.commaDelimitedListToStringArray;
@@ -123,22 +122,6 @@ class ReferenceBeanBuilder extends AbstractAnnotationConfigBeanBuilder<Reference
         // Bind annotation attributes
         dataBinder.bind(new AnnotationPropertyValuesAdapter(reference, applicationContext.getEnvironment(), IGNORE_FIELD_NAMES));
 
-        setProtocolIfAbsent(reference, referenceBean);
-    }
-
-    /**
-     * If ReferenceBean.protocol is empty and @Reference.protocol() is the default value,
-     * ReferenceBean.protocol is about to set the default protocol forcibly.
-     *
-     * @param reference     {@link Reference} annotation
-     * @param referenceBean {@link ReferenceBean} Object
-     * @since 2.6.6
-     */
-    private void setProtocolIfAbsent(Reference reference, ReferenceBean referenceBean) {
-        if (!StringUtils.hasText(referenceBean.getProtocol())
-                && DEFAULT_PROTOCOL.equals(reference.protocol())) {
-            referenceBean.setProtocol(DEFAULT_PROTOCOL);
-        }
     }
 
 
