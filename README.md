@@ -42,13 +42,13 @@ There's a [README](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samp
 
 ```xml
 <properties>
-    <dubbo.version>2.6.5</dubbo.version>
+    <dubbo.version>2.7.0</dubbo.version>
 </properties>
     
 <dependencyManagement>
     <dependencies>
         <dependency>
-            <groupId>org.apache</groupId>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-dependencies-bom</artifactId>
             <version>${dubbo.version}</version>
             <type>pom</type>
@@ -59,8 +59,8 @@ There's a [README](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samp
 
 <dependencies>
     <dependency>
-        <groupId>org.apache</groupId>
-        <artifactId>dubbo</artifactId>
+        <groupId>org.apache.dubbo</groupId>
+        <artifactId>dubbo-parent</artifactId>
         <version>${dubbo.version}</version>
     </dependency>
     <dependency>

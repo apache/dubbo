@@ -626,19 +626,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                                 // skip multicast registry since we cannot connect to it via Socket
                                 continue;
                             }
-                            try {
-                                Socket socket = new Socket();
-                                try {
-                                    SocketAddress addr = new InetSocketAddress(registryURL.getHost(), registryURL.getPort());
-                                    socket.connect(addr, 1000);
-                                    hostToBind = socket.getLocalAddress().getHostAddress();
-                                    break;
-                                } finally {
-                                    try {
-                                        socket.close();
-                                    } catch (Throwable e) {
-                                    }
-                                }
+                            try (Socket socket = new Socket()) {
+                                SocketAddress addr = new InetSocketAddress(registryURL.getHost(), registryURL.getPort());
+                                socket.connect(addr, 1000);
+                                hostToBind = socket.getLocalAddress().getHostAddress();
+                                break;
                             } catch (Exception e) {
                                 logger.warn(e.getMessage(), e);
                             }
