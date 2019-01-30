@@ -108,16 +108,16 @@ public class NettyServerHandler extends ChannelDuplexHandler {
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
-        try {
-            if (evt instanceof IdleStateEvent) {
+        if (evt instanceof IdleStateEvent) {
+            NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
+            try {
                 logger.info("IdleStateEvent triggered, close channel " + channel);
                 channel.close();
+            } finally {
+                NettyChannel.removeChannelIfDisconnected(ctx.channel());
             }
-            super.userEventTriggered(ctx, evt);
-        } finally {
-            NettyChannel.removeChannelIfDisconnected(ctx.channel());
         }
+        super.userEventTriggered(ctx, evt);
     }
 
     @Override
