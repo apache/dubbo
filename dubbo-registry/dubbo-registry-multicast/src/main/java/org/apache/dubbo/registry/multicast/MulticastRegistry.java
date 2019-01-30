@@ -167,33 +167,15 @@ public class MulticastRegistry extends FailbackRegistry {
         if (!url.getParameter(Constants.DYNAMIC_KEY, true) || url.getPort() <= 0 || Constants.CONSUMER_PROTOCOL.equals(url.getProtocol()) || Constants.ROUTE_PROTOCOL.equals(url.getProtocol()) || Constants.OVERRIDE_PROTOCOL.equals(url.getProtocol())) {
             return false;
         }
-        Socket socket = null;
-        try {
-            socket = new Socket(url.getHost(), url.getPort());
+        try (Socket socket = new Socket(url.getHost(), url.getPort())) {
         } catch (Throwable e) {
             try {
                 Thread.sleep(100);
             } catch (Throwable e2) {
             }
-            Socket socket2 = null;
-            try {
-                socket2 = new Socket(url.getHost(), url.getPort());
+            try (Socket socket2 = new Socket(url.getHost(), url.getPort())) {
             } catch (Throwable e2) {
                 return true;
-            } finally {
-                if (socket2 != null) {
-                    try {
-                        socket2.close();
-                    } catch (Throwable e2) {
-                    }
-                }
-            }
-        } finally {
-            if (socket != null) {
-                try {
-                    socket.close();
-                } catch (Throwable e) {
-                }
             }
         }
         return false;
