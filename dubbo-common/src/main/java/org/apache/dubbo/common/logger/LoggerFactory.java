@@ -41,7 +41,7 @@ public class LoggerFactory {
 
     // search common-used logging frameworks
     static {
-        String logger = System.getProperty("dubbo.application.logger");
+        String logger = System.getProperty("dubbo.application.logger", "");
         switch (logger) {
             case "slf4j":
                 setLoggerAdapter(new Slf4jLoggerAdapter());
@@ -69,7 +69,8 @@ public class LoggerFactory {
                 for (Class<? extends LoggerAdapter> clazz : candidates) {
                     try {
                         setLoggerAdapter(clazz.newInstance());
-                    } catch (Exception ignored) {
+                        break;
+                    } catch (Throwable ignored) {
                     }
                 }
                 break;
