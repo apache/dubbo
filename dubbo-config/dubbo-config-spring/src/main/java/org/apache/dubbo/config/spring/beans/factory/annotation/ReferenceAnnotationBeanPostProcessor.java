@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
@@ -149,13 +151,27 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
 
         private Object bean;
 
+        private final Logger logger = LoggerFactory.getLogger(ReferenceBeanInvocationHandler.class);
+
+
         private ReferenceBeanInvocationHandler(ReferenceBean referenceBean) {
             this.referenceBean = referenceBean;
         }
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            return method.invoke(bean, args);
+            try {
+                return method.invoke(bean, args);
+            } catch (Throwable e) {
+                logger.error("Convert RpcException to real exception");
+
+                Throwable t;
+                while ((t = e.getCause()) != null) {
+                    e = t;
+                }
+
+                throw e;
+            }
         }
 
         private void init() {
