@@ -468,7 +468,7 @@ public class UrlUtils {
     }
 
     public static int getHeartbeat(URL url) {
-        return url.getParameter(Constants.HEARTBEAT_KEY, Constants.DEFAULT_HEARTBEAT);
+        return url.getParameter(Constants.HEARTBEAT_KEY, 0);
     }
 
     public static int getIdleTimeout(URL url) {
