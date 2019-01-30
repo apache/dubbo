@@ -468,9 +468,7 @@ public class UrlUtils {
     }
 
     public static int getHeartbeat(URL url) {
-        String dubbo = url.getParameter(Constants.DUBBO_VERSION_KEY);
-        return url.getParameter(Constants.HEARTBEAT_KEY, dubbo != null &&
-                dubbo.startsWith("1.0.") ? Constants.DEFAULT_HEARTBEAT : 0);
+        return url.getParameter(Constants.HEARTBEAT_KEY, Constants.DEFAULT_HEARTBEAT);
     }
 
     public static int getIdleTimeout(URL url) {
