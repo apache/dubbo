@@ -214,30 +214,7 @@ public class HeaderExchangeClient implements ExchangeClient {
     }
 
     private boolean shouldReconnect(URL url) {
-        boolean reconnect = url.getParameter(Constants.SEND_RECONNECT_KEY, false);
-        if (!reconnect) {
-            String param = url.getParameter(Constants.RECONNECT_KEY, "true");
-            if ("false".equalsIgnoreCase(param)) {
-                reconnect = false;
-            } else if ("true".equalsIgnoreCase(param)) {
-                reconnect = true;
-            } else {
-                int value;
-                try {
-                    value = Integer.parseInt(param);
-                } catch (Exception e) {
-                    throw new IllegalArgumentException("reconnect param must be non-negative integer or false/true, " +
-                            "input is:" + param);
-                }
-
-                if (value < 0) {
-                    throw new IllegalArgumentException("reconnect param must be non-negative integer or false/true, " +
-                            "input is:" + param);
-                }
-                reconnect = true;
-            }
-        }
-        return reconnect;
+        return url.getParameter(Constants.RECONNECT_KEY, true);
     }
 
     @Override

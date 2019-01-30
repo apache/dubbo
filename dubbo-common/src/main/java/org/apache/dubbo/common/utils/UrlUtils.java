@@ -468,7 +468,7 @@ public class UrlUtils {
     }
 
     public static int getHeartbeat(URL url) {
-        return url.getParameter(Constants.HEARTBEAT_KEY, 0);
+        return url.getParameter(Constants.HEARTBEAT_KEY, Constants.DEFAULT_HEARTBEAT);
     }
 
     public static int getIdleTimeout(URL url) {
@@ -476,16 +476,6 @@ public class UrlUtils {
         int idleTimeout = url.getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartBeat * 3);
         if (idleTimeout < heartBeat * 2) {
             throw new IllegalStateException("idleTimeout < heartbeatInterval * 2");
-        }
-        if (idleTimeout == 0) {
-            String reconnect = url.getParameter(Constants.RECONNECT_KEY);
-            if (StringUtils.isNotEmpty(reconnect)) {
-                try {
-                    idleTimeout = Integer.parseInt(reconnect);
-                } catch (NumberFormatException e) {
-                    // ignore
-                }
-            }
         }
         return idleTimeout;
     }
