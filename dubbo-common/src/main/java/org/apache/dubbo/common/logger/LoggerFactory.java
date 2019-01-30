@@ -20,7 +20,6 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.jcl.JclLoggerAdapter;
 import org.apache.dubbo.common.logger.jdk.JdkLoggerAdapter;
 import org.apache.dubbo.common.logger.log4j.Log4jLoggerAdapter;
-import org.apache.dubbo.common.logger.log4j2.Log4j2Logger;
 import org.apache.dubbo.common.logger.log4j2.Log4j2LoggerAdapter;
 import org.apache.dubbo.common.logger.slf4j.Slf4jLoggerAdapter;
 import org.apache.dubbo.common.logger.support.FailsafeLogger;
@@ -37,7 +36,7 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class LoggerFactory {
 
-    private static final ConcurrentMap<String, FailsafeLogger> LOGGERS = new ConcurrentHashMap<String, FailsafeLogger>();
+    private static final ConcurrentMap<String, FailsafeLogger> LOGGERS = new ConcurrentHashMap<>();
     private static volatile LoggerAdapter LOGGER_ADAPTER;
 
     // search common-used logging frameworks
@@ -109,12 +108,7 @@ public class LoggerFactory {
      * @return logger
      */
     public static Logger getLogger(Class<?> key) {
-        FailsafeLogger logger = LOGGERS.get(key.getName());
-        if (logger == null) {
-            LOGGERS.putIfAbsent(key.getName(), new FailsafeLogger(LOGGER_ADAPTER.getLogger(key)));
-            logger = LOGGERS.get(key.getName());
-        }
-        return logger;
+        return LOGGERS.computeIfAbsent(key.getName(), name -> new FailsafeLogger(LOGGER_ADAPTER.getLogger(key)));
     }
 
     /**
@@ -124,12 +118,7 @@ public class LoggerFactory {
      * @return logger provider
      */
     public static Logger getLogger(String key) {
-        FailsafeLogger logger = LOGGERS.get(key);
-        if (logger == null) {
-            LOGGERS.putIfAbsent(key, new FailsafeLogger(LOGGER_ADAPTER.getLogger(key)));
-            logger = LOGGERS.get(key);
-        }
-        return logger;
+        return LOGGERS.computeIfAbsent(key, k -> new FailsafeLogger(LOGGER_ADAPTER.getLogger(k)));
     }
 
     /**
