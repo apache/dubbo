@@ -21,7 +21,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.ConfigChangeType;
 import org.apache.dubbo.configcenter.ConfigurationListener;
-
+import org.apache.dubbo.configcenter.DefaultConfigChangeEvent;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
@@ -83,7 +83,7 @@ public class CacheListener implements TreeCacheListener {
                     return;
             }
 
-            ConfigChangeEvent configChangeEvent = new ConfigChangeEvent(key, new String(value, StandardCharsets.UTF_8), changeType);
+            ConfigChangeEvent configChangeEvent = new DefaultConfigChangeEvent(key, new String(value, StandardCharsets.UTF_8), changeType);
             Set<ConfigurationListener> listeners = keyListeners.get(key);
             if (CollectionUtils.isNotEmpty(listeners)) {
                 listeners.forEach(listener -> listener.process(configChangeEvent));

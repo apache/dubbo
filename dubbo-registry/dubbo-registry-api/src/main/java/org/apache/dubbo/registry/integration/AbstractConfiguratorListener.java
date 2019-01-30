@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.ConfigChangeType;
 import org.apache.dubbo.configcenter.ConfigurationListener;
+import org.apache.dubbo.configcenter.DefaultConfigChangeEvent;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.configurator.parser.ConfigParser;
@@ -43,7 +44,7 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
         dynamicConfiguration.addListener(key, this);
         String rawConfig = dynamicConfiguration.getConfig(key);
         if (!StringUtils.isEmpty(rawConfig)) {
-            process(new ConfigChangeEvent(key, rawConfig));
+            process(new DefaultConfigChangeEvent(key, rawConfig));
         }
     }
 

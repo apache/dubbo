@@ -17,47 +17,15 @@
 package org.apache.dubbo.configcenter;
 
 /**
- * Config change event.
+ * This interface only has getters, so it is immutable.
  *
  * @see ConfigChangeType
  */
-public class ConfigChangeEvent {
-    private String key;
+public interface ConfigChangeEvent {
 
-    private String value;
-    private ConfigChangeType changeType;
+    String getKey();
 
-    public ConfigChangeEvent(String key, String value) {
-        this(key, value, ConfigChangeType.MODIFIED);
-    }
+    String getValue();
 
-    public ConfigChangeEvent(String key, String value, ConfigChangeType changeType) {
-        this.key = key;
-        this.value = value;
-        this.changeType = changeType;
-    }
-
-    public String getKey() {
-        return key;
-    }
-
-    public void setKey(String key) {
-        this.key = key;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    public ConfigChangeType getChangeType() {
-        return changeType;
-    }
-
-    public void setChangeType(ConfigChangeType changeType) {
-        this.changeType = changeType;
-    }
+    ConfigChangeType getChangeType(); 
 }
