@@ -24,14 +24,16 @@ import java.util.List;
 
 public class DubboAppender extends FileAppender {
 
+    private static final String DEFAULT_FILE_NAME = "dubbo.log";
+
     public DubboAppender() {
         super();
-        setFile("dubbo.log");
+        setFile(DEFAULT_FILE_NAME);
     }
 
     public static boolean available = false;
 
-    public static List<Log> logList = new ArrayList<Log>();
+    public static List<Log> logList = new ArrayList<>();
 
     public static void doStart() {
         available = true;
