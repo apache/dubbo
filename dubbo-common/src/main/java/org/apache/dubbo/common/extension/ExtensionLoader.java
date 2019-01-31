@@ -643,7 +643,7 @@ public class ExtensionLoader<T> {
                 }
             }
         } catch (Throwable t) {
-            logger.error("Exception occured when loading extension class (interface: " +
+            logger.error("Exception occurred when loading extension class (interface: " +
                     type + ", description file: " + fileName + ").", t);
         }
     }
@@ -680,14 +680,14 @@ public class ExtensionLoader<T> {
                 reader.close();
             }
         } catch (Throwable t) {
-            logger.error("Exception occured when loading extension class (interface: " +
+            logger.error("Exception occurred when loading extension class (interface: " +
                     type + ", class file: " + resourceURL + ") in " + resourceURL, t);
         }
     }
 
     private void loadClass(Map<String, Class<?>> extensionClasses, java.net.URL resourceURL, Class<?> clazz, String name) throws NoSuchMethodException {
         if (!type.isAssignableFrom(clazz)) {
-            throw new IllegalStateException("Error occured when loading extension class (interface: " +
+            throw new IllegalStateException("Error occurred when loading extension class (interface: " +
                     type + ", class line: " + clazz.getName() + "), class "
                     + clazz.getName() + " is not subtype of interface.");
         }

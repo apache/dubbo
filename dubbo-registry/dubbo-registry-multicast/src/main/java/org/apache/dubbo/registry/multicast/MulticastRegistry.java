@@ -31,6 +31,7 @@ import org.apache.dubbo.registry.support.FailbackRegistry;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
@@ -81,9 +82,8 @@ public class MulticastRegistry extends FailbackRegistry {
         }
         try {
             multicastAddress = InetAddress.getByName(url.getHost());
-            if (!multicastAddress.isMulticastAddress()) {
-                throw new IllegalArgumentException("Invalid multicast address " + url.getHost() + ", ipv4 multicast address scope: 224.0.0.0 - 239.255.255.255.");
-            }
+            checkMulticastAddress(multicastAddress);
+
             multicastPort = url.getPort() <= 0 ? DEFAULT_MULTICAST_PORT : url.getPort();
             multicastSocket = new MulticastSocket(multicastPort);
             NetUtils.joinMulticastGroup(multicastSocket, multicastAddress);
@@ -132,6 +132,19 @@ public class MulticastRegistry extends FailbackRegistry {
         }
     }
 
+    private void checkMulticastAddress(InetAddress multicastAddress) {
+        if (!multicastAddress.isMulticastAddress()) {
+            String message = "Invalid multicast address " + multicastAddress;
+            if (!(multicastAddress instanceof Inet4Address)) {
+                throw new IllegalArgumentException(message + ", " +
+                        "ipv4 multicast address scope: 224.0.0.0 - 239.255.255.255.");
+            } else {
+                throw new IllegalArgumentException(message + ", " + "ipv6 multicast address must start with ff, " +
+                        "for example: ff01::1");
+            }
+        }
+    }
+
     /**
      * Remove the expired providers, only when "clean" parameter is true.
      */
@@ -154,33 +167,15 @@ public class MulticastRegistry extends FailbackRegistry {
         if (!url.getParameter(Constants.DYNAMIC_KEY, true) || url.getPort() <= 0 || Constants.CONSUMER_PROTOCOL.equals(url.getProtocol()) || Constants.ROUTE_PROTOCOL.equals(url.getProtocol()) || Constants.OVERRIDE_PROTOCOL.equals(url.getProtocol())) {
             return false;
         }
-        Socket socket = null;
-        try {
-            socket = new Socket(url.getHost(), url.getPort());
+        try (Socket socket = new Socket(url.getHost(), url.getPort())) {
         } catch (Throwable e) {
             try {
                 Thread.sleep(100);
             } catch (Throwable e2) {
             }
-            Socket socket2 = null;
-            try {
-                socket2 = new Socket(url.getHost(), url.getPort());
+            try (Socket socket2 = new Socket(url.getHost(), url.getPort())) {
             } catch (Throwable e2) {
                 return true;
-            } finally {
-                if (socket2 != null) {
-                    try {
-                        socket2.close();
-                    } catch (Throwable e2) {
-                    }
-                }
-            }
-        } finally {
-            if (socket != null) {
-                try {
-                    socket.close();
-                } catch (Throwable e) {
-                }
             }
         }
         return false;

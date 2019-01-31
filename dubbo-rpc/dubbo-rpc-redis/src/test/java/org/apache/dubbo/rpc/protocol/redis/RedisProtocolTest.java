@@ -175,9 +175,7 @@ public class RedisProtocolTest {
 
         // jedis gets the result comparison
         JedisPool pool = new JedisPool(new GenericObjectPoolConfig(), "localhost", registryUrl.getPort(), 2000, password, database, (String) null);
-        Jedis jedis = null;
-        try {
-            jedis = pool.getResource();
+        try (Jedis jedis = pool.getResource()) {
             byte[] valueByte = jedis.get("key".getBytes());
             Serialization serialization = ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(this.registryUrl.getParameter(Constants.SERIALIZATION_KEY, "java"));
             ObjectInput oin = serialization.deserialize(this.registryUrl, new ByteArrayInputStream(valueByte));
@@ -186,9 +184,6 @@ public class RedisProtocolTest {
         } catch (Exception e) {
             Assertions.fail("jedis gets the result comparison is error!");
         } finally {
-            if (jedis != null) {
-                jedis.close();
-            }
             pool.destroy();
         }
 

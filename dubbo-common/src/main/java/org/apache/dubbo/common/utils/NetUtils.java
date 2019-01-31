@@ -346,25 +346,24 @@ public class NetUtils {
     }
 
     public static void joinMulticastGroup (MulticastSocket multicastSocket, InetAddress multicastAddress) throws IOException {
-        setInterface(multicastSocket, multicastAddress);
+        setInterface(multicastSocket, multicastAddress instanceof Inet6Address);
         multicastSocket.setLoopbackMode(false);
         multicastSocket.joinGroup(multicastAddress);
     }
 
-    public static void setInterface (MulticastSocket multicastSocket, InetAddress multicastAddress) throws IOException{
+    public static void setInterface (MulticastSocket multicastSocket, boolean preferIpv6) throws IOException{
         boolean interfaceSet = false;
-        boolean ipV6 = multicastAddress instanceof Inet6Address;
         Enumeration interfaces = NetworkInterface.getNetworkInterfaces();
         while (interfaces.hasMoreElements()) {
             NetworkInterface i = (NetworkInterface) interfaces.nextElement();
             Enumeration addresses = i.getInetAddresses();
             while (addresses.hasMoreElements()) {
                 InetAddress address = (InetAddress) addresses.nextElement();
-                if (ipV6 && address instanceof Inet6Address) {
+                if (preferIpv6 && address instanceof Inet6Address) {
                     multicastSocket.setInterface(address);
                     interfaceSet = true;
                     break;
-                } else if (!ipV6 && address instanceof Inet4Address) {
+                } else if (!preferIpv6 && address instanceof Inet4Address) {
                     multicastSocket.setInterface(address);
                     interfaceSet = true;
                     break;
