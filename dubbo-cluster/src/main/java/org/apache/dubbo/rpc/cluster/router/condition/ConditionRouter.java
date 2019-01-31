@@ -200,11 +200,6 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
         return this.url.getParameter(Constants.RUNTIME_KEY, false);
     }
 
-    @Override
-    public URL getUrl() {
-        return url;
-    }
-
     boolean matchWhen(URL url, Invocation invocation) {
         return CollectionUtils.isEmptyMap(whenCondition) || matchCondition(whenCondition, url, null, invocation);
     }
@@ -214,40 +209,45 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
     }
 
     private boolean matchCondition(Map<String, MatchPair> condition, URL url, URL param, Invocation invocation) {
-        Map<String, String> sample = url.toMap();
-        boolean result = false;
+        Map<String, String> paramMap = url.toMap();
         for (Map.Entry<String, MatchPair> matchPair : condition.entrySet()) {
             String key = matchPair.getKey();
-            String sampleValue;
-            //get real invoked method name from invocation
-            if (invocation != null && (Constants.METHOD_KEY.equals(key) || Constants.METHODS_KEY.equals(key))) {
-                sampleValue = invocation.getMethodName();
-            } else if (Constants.ADDRESS_KEY.equals(key)) {
-                sampleValue = url.getAddress();
-            } else if (Constants.HOST_KEY.equals(key)) {
-                sampleValue = url.getHost();
-            } else {
-                sampleValue = sample.get(key);
-                if (sampleValue == null) {
-                    sampleValue = sample.get(Constants.DEFAULT_KEY_PREFIX + key);
-                }
-            }
-            if (sampleValue != null) {
-                if (!matchPair.getValue().isMatch(sampleValue, param)) {
+            String conditionValue = getConditionValue(key, url, invocation, paramMap);
+            
+            if (conditionValue != null) {
+                if (!matchPair.getValue().isMatch(conditionValue, param)) {
                     return false;
-                } else {
-                    result = true;
                 }
-            } else {
+            } else if (!matchPair.getValue().matches.isEmpty()) {
                 //not pass the condition
-                if (!matchPair.getValue().matches.isEmpty()) {
-                    return false;
-                } else {
-                    result = true;
-                }
+                return false;
             }
         }
-        return result;
+        return true;
+    }
+
+    /**
+     * get condition value from host, address, method, or url parameter map
+     */
+    protected String getConditionValue(String key, URL url, Invocation invocation, Map<String, String> paramMap) {
+        //get real invoked method name from invocation
+        if (invocation != null && (Constants.METHOD_KEY.equals(key) || Constants.METHODS_KEY.equals(key))) {
+            return invocation.getMethodName();
+        } 
+        
+        if (Constants.ADDRESS_KEY.equals(key)) {
+            return url.getAddress();
+        } 
+
+        if (Constants.HOST_KEY.equals(key)) {
+            return url.getHost();
+        } 
+        
+        if (paramMap.containsKey(key)) {
+            return paramMap.get(key);
+        }
+        
+        return paramMap.get(Constants.DEFAULT_KEY_PREFIX + key);
     }
 
     protected static final class MatchPair {
