@@ -29,14 +29,14 @@ We are now collecting dubbo user info in order to help us to improve Dubbo bette
 
 ## Getting started
 
-The following code snippet comes from [Dubbo Samples](https://github.com/dubbo/dubbo-samples/tree/master/dubbo-samples-api). You may clone the sample project and step into `dubbo-samples-api` sub directory before read on.
+The following code snippet comes from [Dubbo Samples](https://github.com/apache/incubator-dubbo-samples/tree/master/dubbo-samples-api). You may clone the sample project and step into `dubbo-samples-api` sub directory before read on.
 
 ```bash
-# git clone https://github.com/dubbo/dubbo-samples.git
-# cd dubbo-samples/dubbo-samples-api
+# git clone https://github.com/apache/incubator-dubbo-samples.git
+# cd incubator-dubbo-samples/dubbo-samples-api
 ```
 
-There's a [README](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samples-api/README.md) file under `dubbo-samples-api` directory. Read it and try this sample out by following the instructions.
+There's a [README](https://github.com/apache/incubator-dubbo-samples/tree/master/dubbo-samples-api/README.md) file under `dubbo-samples-api` directory. Read it and try this sample out by following the instructions.
 
 ### Maven dependency
 
@@ -80,7 +80,7 @@ public interface GreetingService {
 }
 ```
 
-*See [api/GreetingService.java](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/api/GreetingsService.java) on GitHub.*
+*See [api/GreetingService.java](https://github.com/apache/incubator-dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/api/GreetingsService.java) on GitHub.*
 
 ### Implement service interface for the provider
 
@@ -96,7 +96,7 @@ public class GreetingServiceImpl implements GreetingService {
 }
 ```
 
-*See [provider/GreetingServiceImpl.java](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/provider/GreetingsServiceImpl.java) on GitHub.*
+*See [provider/GreetingServiceImpl.java](https://github.com/apache/incubator-dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/provider/GreetingsServiceImpl.java) on GitHub.*
 
 ### Start service provider
 
@@ -124,7 +124,7 @@ public class Application {
 }
 ```
 
-*See [provider/Application.java](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/provider/Application.java) on GitHub.*
+*See [provider/Application.java](https://github.com/apache/incubator-dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/provider/Application.java) on GitHub.*
 
 ### Build and run the provider
 
@@ -164,7 +164,7 @@ public class Application {
 
 The consumer will print out `Hello world` on the screen.
 
-*See [consumer/Application.java](https://github.com/dubbo/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/consumer/Application.java) on GitHub.*
+*See [consumer/Application.java](https://github.com/apache/incubator-dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/consumer/Application.java) on GitHub.*
 
 ### Next steps
 
@@ -210,11 +210,11 @@ Please follow the [template](https://github.com/apache/incubator-dubbo/issues/ne
 
 Please report security vulnerability to [us](security@dubbo.incubator.apache.org) privately.
 
-## Dubbo eco system
+## Dubbo ecosystem
 
 * [Dubbo Ecosystem Entry](https://github.com/dubbo) - A GitHub group `dubbo` to gather all Dubbo relevant projects not appropriate in [apache](https://github.com/apache) group yet
 * [Dubbo Website](https://github.com/apache/incubator-dubbo-website) - Apache Dubbo (incubating) official website
-* [Dubbo Samples](https://github.com/dubbo/dubbo-samples) - samples for Apache Dubbo (incubating)
+* [Dubbo Samples](https://github.com/apache/incubator-dubbo-samples) - samples for Apache Dubbo (incubating)
 * [Dubbo Spring Boot](https://github.com/apache/incubator-dubbo-spring-boot-project) - Spring Boot Project for Dubbo
 * [Dubbo OPS](https://github.com/apache/incubator-dubbo-ops) - The reference implementation for Dubbo admin
 
