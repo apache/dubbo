@@ -493,6 +493,15 @@
                                 <!-- exclude the internal threadlocal files -->
                                 <exclude>**/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java</exclude>
                                 <exclude>**/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java</exclude>
+                                <!-- exclude the common lang3 FastDateFormat related files -->
+                                <exclude>**/org/apache/dubbo/common/time/DateParser.java</exclude>
+                                <exclude>**/org/apache/dubbo/common/time/DatePrinter.java</exclude>
+                                <exclude>**/org/apache/dubbo/common/time/FastDateFormat.java</exclude>
+                                <exclude>**/org/apache/dubbo/common/time/FastDateParser.java</exclude>
+                                <exclude>**/org/apache/dubbo/common/time/FastDatePrinter.java</exclude>
+                                <exclude>**/org/apache/dubbo/common/time/FastTimeZone.java</exclude>
+                                <exclude>**/org/apache/dubbo/common/time/FormatCache.java</exclude>
+                                <exclude>**/org/apache/dubbo/common/time/GmtTimeZone.java</exclude>
                             </excludes>
                         </configuration>
                     </execution>
