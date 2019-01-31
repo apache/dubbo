@@ -32,47 +32,41 @@ import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.Map;
-import java.util.Random;
+import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
 
 /**
  * IP and Port Helper for RPC
  */
 public class NetUtils {
-
     private static final Logger logger = LoggerFactory.getLogger(NetUtils.class);
-    private static final int RND_PORT_START = 30000;
 
+    // returned port range is [30000, 39999]
+    private static final int RND_PORT_START = 30000;
     private static final int RND_PORT_RANGE = 10000;
 
-    private static final Random RANDOM = new Random(System.currentTimeMillis());
+    // valid port range is (0, 65535]
     private static final int MIN_PORT = 0;
     private static final int MAX_PORT = 65535;
+
     private static final Pattern ADDRESS_PATTERN = Pattern.compile("^\\d{1,3}(\\.\\d{1,3}){3}\\:\\d{1,5}$");
     private static final Pattern LOCAL_IP_PATTERN = Pattern.compile("127(\\.\\d{1,3}){3}$");
     private static final Pattern IP_PATTERN = Pattern.compile("\\d{1,3}(\\.\\d{1,3}){3,5}$");
-    private static final Map<String, String> hostNameCache = new LRUCache<String, String>(1000);
+
+    private static final Map<String, String> hostNameCache = new LRUCache<>(1000);
     private static volatile InetAddress LOCAL_ADDRESS = null;
 
     public static int getRandomPort() {
-        return RND_PORT_START + RANDOM.nextInt(RND_PORT_RANGE);
+        return RND_PORT_START + ThreadLocalRandom.current().nextInt(RND_PORT_RANGE);
     }
 
     public static int getAvailablePort() {
-        ServerSocket ss = null;
-        try {
-            ss = new ServerSocket();
+        try (ServerSocket ss = new ServerSocket()) {
             ss.bind(null);
             return ss.getLocalPort();
         } catch (IOException e) {
             return getRandomPort();
-        } finally {
-            if (ss != null) {
-                try {
-                    ss.close();
-                } catch (IOException e) {
-                }
-            }
         }
     }
 
@@ -81,19 +75,10 @@ public class NetUtils {
             return getAvailablePort();
         }
         for (int i = port; i < MAX_PORT; i++) {
-            ServerSocket ss = null;
-            try {
-                ss = new ServerSocket(i);
+            try (ServerSocket ss = new ServerSocket(i)) {
                 return i;
             } catch (IOException e) {
                 // continue
-            } finally {
-                if (ss != null) {
-                    try {
-                        ss.close();
-                    } catch (IOException e) {
-                    }
-                }
             }
         }
         return port;
@@ -134,7 +119,7 @@ public class NetUtils {
                 new InetSocketAddress(port) : new InetSocketAddress(host, port);
     }
 
-    static boolean isValidAddress(InetAddress address) {
+    static boolean isValidV4Address(InetAddress address) {
         if (address == null || address.isLoopbackAddress()) {
             return false;
         }
@@ -233,21 +218,31 @@ public class NetUtils {
         return localAddress;
     }
 
+    private static Optional<InetAddress> toValidAddress(InetAddress address) {
+        if (address instanceof Inet6Address) {
+            Inet6Address v6Address = (Inet6Address) address;
+            if (isValidV6Address(v6Address)) {
+                return Optional.ofNullable(normalizeV6Address(v6Address));
+            }
+        }
+        if (isValidV4Address(address)) {
+            return Optional.of(address);
+        }
+        return Optional.empty();
+    }
+
     private static InetAddress getLocalAddress0() {
         InetAddress localAddress = null;
         try {
             localAddress = InetAddress.getLocalHost();
-            if (localAddress instanceof Inet6Address) {
-                Inet6Address address = (Inet6Address) localAddress;
-                if (isValidV6Address(address)) {
-                    return normalizeV6Address(address);
-                }
-            } else if (isValidAddress(localAddress)) {
-                return localAddress;
+            Optional<InetAddress> addressOp = toValidAddress(localAddress);
+            if (addressOp.isPresent()) {
+                return addressOp.get();
             }
         } catch (Throwable e) {
             logger.warn(e);
         }
+
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
             if (null == interfaces) {
@@ -259,14 +254,9 @@ public class NetUtils {
                     Enumeration<InetAddress> addresses = network.getInetAddresses();
                     while (addresses.hasMoreElements()) {
                         try {
-                            InetAddress address = addresses.nextElement();
-                            if (address instanceof Inet6Address) {
-                                Inet6Address v6Address = (Inet6Address) address;
-                                if (isValidV6Address(v6Address)) {
-                                    return normalizeV6Address(v6Address);
-                                }
-                            } else if (isValidAddress(address)) {
-                                return address;
+                            Optional<InetAddress> addressOp = toValidAddress(addresses.nextElement());
+                            if (addressOp.isPresent()) {
+                                return addressOp.get();
                             }
                         } catch (Throwable e) {
                             logger.warn(e);
