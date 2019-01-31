@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.rpc.filter;
 
-import static org.apache.dubbo.common.utils.DateUtil.format;
-
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
@@ -36,6 +34,8 @@ import org.apache.dubbo.rpc.support.AccessLogData;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
@@ -71,6 +71,9 @@ public class AccessLogFilter implements Filter {
     private static final long LOG_OUTPUT_INTERVAL = 5000;
 
     private static final String FILE_DATE_FORMAT = "yyyyMMdd";
+
+    // It's safe to declare it as singleton since it runs on single thread only
+    private static final DateFormat FILE_NAME_FORMATTER = new SimpleDateFormat(FILE_DATE_FORMAT);
 
     private static final Map<String, Set<AccessLogData>> logEntries = new ConcurrentHashMap<String, Set<AccessLogData>>();
 
@@ -185,8 +188,8 @@ public class AccessLogFilter implements Filter {
 
     private void renameFile(File file) {
         if (file.exists()) {
-            String now = format(new Date(), FILE_DATE_FORMAT);
-            String last = format(new Date(file.lastModified()), FILE_DATE_FORMAT);
+            String now = FILE_NAME_FORMATTER.format(new Date());
+            String last = FILE_NAME_FORMATTER.format(new Date(file.lastModified()));
             if (!now.equals(last)) {
                 File archive = new File(file.getAbsolutePath() + "." + last);
                 file.renameTo(archive);

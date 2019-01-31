@@ -21,20 +21,24 @@ import org.apache.dubbo.rpc.RpcContext;
 
 import com.alibaba.fastjson.JSON;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.common.utils.DateUtil.format;
-
 /**
- * AccessLogData is a container for log event data. In internally uses map and store each filed of log as value. It does not generate any
- * dynamic value e.g. time stamp, local jmv machine host address etc. It does not allow any null or empty key.
+ * AccessLogData is a container for log event data. In internally uses map and store each filed of log as value. It
+ * does not generate any dynamic value e.g. time stamp, local jmv machine host address etc. It does not allow any null
+ * or empty key.
+ *
+ * Note: since its date formatter is a singleton, make sure to run it in single thread only.
  */
 public final class AccessLogData {
 
     private static final String MESSAGE_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    private static final DateFormat MESSAGE_DATE_FORMATTER = new SimpleDateFormat(MESSAGE_DATE_FORMAT);
 
     private static final String VERSION = "version";
     private static final String GROUP = "group";
@@ -188,7 +192,7 @@ public final class AccessLogData {
         StringBuilder sn = new StringBuilder();
 
         sn.append("[")
-                .append(format(getInvocationTime(), MESSAGE_DATE_FORMAT))
+                .append(MESSAGE_DATE_FORMATTER.format(getInvocationTime()))
                 .append("] ")
                 .append(get(REMOTE_HOST))
                 .append(":")
