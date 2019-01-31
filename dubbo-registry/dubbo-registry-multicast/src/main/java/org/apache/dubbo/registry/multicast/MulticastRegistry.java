@@ -197,9 +197,16 @@ public class MulticastRegistry extends FailbackRegistry {
             if (CollectionUtils.isNotEmpty(urls)) {
                 for (URL u : urls) {
                     if (UrlUtils.isMatch(url, u)) {
+                        boolean isLocalhost = false;
+                        if (remoteAddress != null && remoteAddress.getAddress() != null && NetUtils.getLocalHost().equals(remoteAddress.getAddress().getHostAddress())) {
+                            isLocalhost = true;
+                        }
+                        if (!isLocalhost && NetUtils.getLocalHost().equals(url.getIp())) {
+                            isLocalhost = true;
+                        }
                         String host = remoteAddress != null && remoteAddress.getAddress() != null ? remoteAddress.getAddress().getHostAddress() : url.getIp();
                         if (url.getParameter("unicast", true) // Whether the consumer's machine has only one process
-                                && !NetUtils.getLocalHost().equals(host)) { // Multiple processes in the same machine cannot be unicast with unicast or there will be only one process receiving information
+                                && !isLocalhost) { // Multiple processes in the same machine cannot be unicast with unicast or there will be only one process receiving information
                             unicast(Constants.REGISTER + " " + u.toFullString(), host);
                         } else {
                             multicast(Constants.REGISTER + " " + u.toFullString());
