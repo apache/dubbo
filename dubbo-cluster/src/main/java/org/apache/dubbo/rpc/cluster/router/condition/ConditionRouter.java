@@ -251,41 +251,22 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
     }
 
     protected static final class MatchPair {
-        final Set<String> matches = new HashSet<String>();
-        final Set<String> mismatches = new HashSet<String>();
+        final Set<String> matches = new HashSet<>();
+        final Set<String> mismatches = new HashSet<>();
 
         private boolean isMatch(String value, URL param) {
             if (!matches.isEmpty() && mismatches.isEmpty()) {
-                for (String match : matches) {
-                    if (UrlUtils.isMatchGlobPattern(match, value, param)) {
-                        return true;
-                    }
-                }
-                return false;
+                return matches.stream().anyMatch(m -> UrlUtils.isMatchGlobPattern(m, value, param));
             }
 
             if (!mismatches.isEmpty() && matches.isEmpty()) {
-                for (String mismatch : mismatches) {
-                    if (UrlUtils.isMatchGlobPattern(mismatch, value, param)) {
-                        return false;
-                    }
-                }
-                return true;
+                return mismatches.stream().noneMatch(m -> UrlUtils.isMatchGlobPattern(m, value, param));
             }
 
             if (!matches.isEmpty() && !mismatches.isEmpty()) {
                 //when both mismatches and matches contain the same value, then using mismatches first
-                for (String mismatch : mismatches) {
-                    if (UrlUtils.isMatchGlobPattern(mismatch, value, param)) {
-                        return false;
-                    }
-                }
-                for (String match : matches) {
-                    if (UrlUtils.isMatchGlobPattern(match, value, param)) {
-                        return true;
-                    }
-                }
-                return false;
+                return mismatches.stream().noneMatch(m -> UrlUtils.isMatchGlobPattern(m, value, param)) 
+                                && matches.stream().anyMatch(m -> UrlUtils.isMatchGlobPattern(m, value, param));
             }
             return false;
         }
