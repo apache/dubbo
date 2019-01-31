@@ -40,12 +40,12 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -62,13 +62,13 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     // Log output
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    // Local disk cache, where the special key value.registies records the list of registry centers, and the others are the list of notified service providers
+    // Local disk cache, where the special key value.registries records the list of registry centers, and the others are the list of notified service providers
     final Properties properties = new Properties();
     private final ExecutorService reportCacheExecutor = Executors.newFixedThreadPool(1, new NamedThreadFactory("DubboSaveMetadataReport", true));
-    final Map<MetadataIdentifier, Object> allMetadataReports = new ConcurrentHashMap<MetadataIdentifier, Object>(4);
+    final Map<MetadataIdentifier, Object> allMetadataReports = new ConcurrentHashMap<>(4);
 
     private final AtomicLong lastCacheChanged = new AtomicLong();
-    final Map<MetadataIdentifier, Object> failedReports = new ConcurrentHashMap<MetadataIdentifier, Object>(4);
+    final Map<MetadataIdentifier, Object> failedReports = new ConcurrentHashMap<>(4);
     private URL reportURL;
     boolean syncReport;
     // Local disk cache file
@@ -101,12 +101,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         // cycle report the data switch
         if (reportServerURL.getParameter(Constants.CYCLE_REPORT_KEY, Constants.DEFAULT_METADATA_REPORT_CYCLE_REPORT)) {
             ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboMetadataReportTimer", true));
-            scheduler.scheduleAtFixedRate(new Runnable() {
-                @Override
-                public void run() {
-                    publishAll();
-                }
-            }, calculateStartTime(), ONE_DAY_IN_MIll, TimeUnit.MILLISECONDS);
+            scheduler.scheduleAtFixedRate(this::publishAll, calculateStartTime(), ONE_DAY_IN_MIll, TimeUnit.MILLISECONDS);
         }
     }
 
@@ -335,8 +330,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
         long subtract = calendar.getTimeInMillis() + ONE_DAY_IN_MIll - nowMill;
-        Random r = new Random();
-        return subtract + (FOUR_HOURS_IN_MIll / 2) + r.nextInt(FOUR_HOURS_IN_MIll);
+        return subtract + (FOUR_HOURS_IN_MIll / 2) + ThreadLocalRandom.current().nextInt(FOUR_HOURS_IN_MIll);
     }
 
     class MetadataReportRetry {
