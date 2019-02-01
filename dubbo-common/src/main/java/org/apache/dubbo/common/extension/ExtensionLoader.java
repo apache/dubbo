@@ -720,9 +720,7 @@ public class ExtensionLoader<T> {
      * cache name
      */
     private void cacheName(Class<?> clazz, String name) {
-        if (!cachedNames.containsKey(clazz)) {
-            cachedNames.put(clazz, name);
-        }
+        cachedNames.putIfAbsent(clazz, name);
     }
 
     /**
