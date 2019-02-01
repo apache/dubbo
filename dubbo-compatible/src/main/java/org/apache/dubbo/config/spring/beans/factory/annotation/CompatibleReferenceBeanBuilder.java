@@ -17,7 +17,6 @@
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 import com.alibaba.dubbo.config.annotation.Reference;
-
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.spring.ReferenceBean;
@@ -104,7 +103,7 @@ class CompatibleReferenceBeanBuilder extends AbstractAnnotationConfigBeanBuilder
         dataBinder.registerCustomEditor(String.class, "filter", new StringTrimmerEditor(true));
         dataBinder.registerCustomEditor(String.class, "listener", new StringTrimmerEditor(true));
         dataBinder.registerCustomEditor(Map.class, "parameters", new PropertyEditorSupport() {
-
+            @Override
             public void setAsText(String text) throws java.lang.IllegalArgumentException {
                 // Trim all whitespace
                 String content = StringUtils.trimAllWhitespace(text);
@@ -161,7 +160,7 @@ class CompatibleReferenceBeanBuilder extends AbstractAnnotationConfigBeanBuilder
     }
 
     public static CompatibleReferenceBeanBuilder create(Reference annotation, ClassLoader classLoader,
-                                              ApplicationContext applicationContext) {
+                                                        ApplicationContext applicationContext) {
         return new CompatibleReferenceBeanBuilder(annotation, classLoader, applicationContext);
     }
 

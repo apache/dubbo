@@ -6,6 +6,7 @@
         <groupId>org.apache</groupId>
         <artifactId>apache</artifactId>
         <version>19</version>
+        <relativePath></relativePath>
     </parent>
 
     <groupId>org.apache.dubbo</groupId>

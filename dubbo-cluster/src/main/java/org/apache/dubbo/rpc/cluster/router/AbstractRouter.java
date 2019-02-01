@@ -62,6 +62,7 @@ public abstract class AbstractRouter implements Router {
         this.force = force;
     }
 
+    @Override
     public int getPriority() {
         return priority;
     }
