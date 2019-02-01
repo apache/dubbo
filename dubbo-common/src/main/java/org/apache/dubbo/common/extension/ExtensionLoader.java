@@ -705,7 +705,14 @@ public class ExtensionLoader<T> {
             }
             
             String[] names = NAME_SEPARATOR.split(name);
-            cacheActivateClass(clazz, names[0]);
+            String[] names = NAME_SEPARATOR.split(name);
+            if (ArrayUtils.isNotEmpty(names)) {
+                cacheActivateClass(clazz, names[0]);
+                for (String n : names) {
+                    cacheName(clazz, n);
+                    saveInExtensionClass(extensionClasses, clazz, name);
+                }
+            }
             cacheNames(clazz, names);
             saveInExtensionClasses(extensionClasses, clazz, names);
         }
