@@ -46,7 +46,7 @@ public class ActivateComparator implements Comparator<Object> {
         Activate a1 = o1.getClass().getAnnotation(Activate.class);
         Activate a2 = o2.getClass().getAnnotation(Activate.class);
         Class<?> spiClass = null;
-        if(o1.getClass().getInterfaces().length > 0){
+        if (o1.getClass().getInterfaces().length > 0) {
             for (Class<?> item : o1.getClass().getInterfaces()) {
                 if (item.isAnnotationPresent(SPI.class)) {
                     spiClass = item;
