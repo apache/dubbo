@@ -33,7 +33,7 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
 
     public static final String NAME = "roundrobin";
 
-    private final ConcurrentMap<String, AtomicPositiveInteger> sequences = new ConcurrentHashMap<String, AtomicPositiveInteger>();
+    private final ConcurrentMap<String, AtomicPositiveInteger> sequences = new ConcurrentHashMap<String, AtomicPositiveInteger>(); //保存不同的调用次数
 
     private final ConcurrentMap<String, AtomicPositiveInteger> indexSeqs = new ConcurrentHashMap<String, AtomicPositiveInteger>();
 
@@ -43,7 +43,7 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
         int length = invokers.size(); // Number of invokers
         int maxWeight = 0; // The maximum weight
         int minWeight = Integer.MAX_VALUE; // The minimum weight
-        final List<Invoker<T>> nonZeroWeightedInvokers = new ArrayList<>();
+        final List<Invoker<T>> nonZeroWeightedInvokers = new ArrayList<>(); //保存所有的链路
         for (int i = 0; i < length; i++) {
             int weight = getWeight(invokers.get(i), invocation);
             maxWeight = Math.max(maxWeight, weight); // Choose the maximum weight

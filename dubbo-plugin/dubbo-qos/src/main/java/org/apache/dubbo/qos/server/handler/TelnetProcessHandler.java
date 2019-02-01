@@ -17,6 +17,11 @@
 package org.apache.dubbo.qos.server.handler;
 
 
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -26,10 +31,6 @@ import org.apache.dubbo.qos.command.DefaultCommandExecutor;
 import org.apache.dubbo.qos.command.NoSuchCommandException;
 import org.apache.dubbo.qos.command.decoder.TelnetCommandDecoder;
 import org.apache.dubbo.qos.common.QosConstants;
-
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
 
 /**
  * Telnet process handler
@@ -57,6 +58,7 @@ public class TelnetProcessHandler extends SimpleChannelInboundHandler<String> {
                 }
             } catch (NoSuchCommandException ex) {
                 ctx.writeAndFlush(msg + " :no such command");
+                //ctx.writeAndFlush(QosConstants.BR_STR + QosProcessHandler.prompt).addListener(ChannelFutureListener.CLOSE);
                 ctx.writeAndFlush(QosConstants.BR_STR + QosProcessHandler.prompt);
                 log.error("can not found command " + commandContext, ex);
             } catch (Exception ex) {
@@ -65,6 +67,20 @@ public class TelnetProcessHandler extends SimpleChannelInboundHandler<String> {
                 log.error("execute commandContext got exception " + commandContext, ex);
             }
         }
+    }
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof IdleStateEvent){
+            IdleStateEvent idleStateEvent = (IdleStateEvent) evt ;
+            System.out.println(idleStateEvent.state());
+            if (idleStateEvent.state() == IdleState.ALL_IDLE){
+                System.out.println("已经 10 秒没有发送信息！");
+                //向服务端发送消息
+                ctx.writeAndFlush("time out").addListener(ChannelFutureListener.CLOSE) ;
+            }
+        }
+        super.userEventTriggered(ctx, evt);
     }
 
     private String getByeLabel() {

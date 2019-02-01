@@ -22,13 +22,20 @@
        http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
 
     <!-- provider's application name, used for tracing dependency relationship -->
-    <dubbo:application name="demo-provider"/>
+    <dubbo:application name="demo-provider">
+        <dubbo:parameter key="qos.enable" value="true"/>
+        <dubbo:parameter key="qos.accept.foreign.ip" value="false"/>
+        <dubbo:parameter key="qos.port" value="22222"/>
+    </dubbo:application>
 
     <!-- use multicast registry center to export service -->
-    <dubbo:registry address="multicast://224.5.6.7:1234"/>
+    <!--<dubbo:registry address="multicast://224.5.6.7:1234"/>-->
+    <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
 
     <!-- use dubbo protocol to export service on port 20880 -->
     <dubbo:protocol name="dubbo" port="20880"/>
+
+    <!--<dubbo:protocol name="qos" port="22222" />-->
 
     <!-- service implementation, as same as regular local bean -->
     <bean id="demoService" class="org.apache.dubbo.demo.provider.DemoServiceImpl"/>
