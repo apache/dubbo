@@ -109,7 +109,7 @@ public class AdaptiveClassCodeGenerator {
     }
     
     /**
-     * generate class declaration
+     * generate method not annotated with Adaptive with throwing unsupported exception 
      */
     private String generateUnsupported(Method method) {
         return String.format(CODE_UNSUPPORTED, method, type.getName());
