@@ -163,6 +163,7 @@ public class ThriftCodec implements Codec2 {
 
         // version
         String serviceName;
+        String path;
         long id;
 
         TMessage message;
@@ -171,6 +172,7 @@ public class ThriftCodec implements Codec2 {
             protocol.readI16();
             protocol.readByte();
             serviceName = protocol.readString();
+            path = protocol.readString();
             id = protocol.readI64();
             message = protocol.readMessageBegin();
         } catch (TException e) {
@@ -181,6 +183,7 @@ public class ThriftCodec implements Codec2 {
 
             RpcInvocation result = new RpcInvocation();
             result.setAttachment(Constants.INTERFACE_KEY, serviceName);
+            result.setAttachment(Constants.PATH_KEY, path);
             result.setMethodName(message.name);
 
             String argsClassName = ExtensionLoader.getExtensionLoader(ClassNameGenerator.class)
@@ -496,6 +499,8 @@ public class ThriftCodec implements Codec2 {
             protocol.writeByte(VERSION);
             // service name
             protocol.writeString(serviceName);
+            // path
+            protocol.writeString(inv.getAttachment(Constants.PATH_KEY));
             // dubbo request id
             protocol.writeI64(request.getId());
             protocol.getTransport().flush();

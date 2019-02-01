@@ -113,6 +113,7 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
         return annotationType;
     }
 
+    @Override
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
         Assert.isInstanceOf(ConfigurableListableBeanFactory.class, beanFactory,
                 "AnnotationInjectedBeanPostProcessor requires a ConfigurableListableBeanFactory");
@@ -293,6 +294,7 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
         this.classLoader = classLoader;
     }
 
+    @Override
     public void setEnvironment(Environment environment) {
         this.environment = environment;
     }
