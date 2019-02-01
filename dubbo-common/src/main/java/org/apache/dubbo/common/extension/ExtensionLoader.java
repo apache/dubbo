@@ -706,7 +706,6 @@ public class ExtensionLoader<T> {
             }
             
             String[] names = NAME_SEPARATOR.split(name);
-            String[] names = NAME_SEPARATOR.split(name);
             if (ArrayUtils.isNotEmpty(names)) {
                 cacheActivateClass(clazz, names[0]);
                 for (String n : names) {
@@ -714,33 +713,27 @@ public class ExtensionLoader<T> {
                     saveInExtensionClass(extensionClasses, clazz, name);
                 }
             }
-            cacheNames(clazz, names);
-            saveInExtensionClasses(extensionClasses, clazz, names);
         }
     }
 
     /**
-     * cache names
+     * cache name
      */
-    private void cacheNames(Class<?> clazz, String[] names) {
-        for (String name : names) {
-            if (!cachedNames.containsKey(clazz)) {
-                cachedNames.put(clazz, name);
-            }
+    private void cacheName(Class<?> clazz, String name) {
+        if (!cachedNames.containsKey(clazz)) {
+            cachedNames.put(clazz, name);
         }
     }
 
     /**
      * put clazz in extensionClasses
      */
-    private void saveInExtensionClasses(Map<String, Class<?>> extensionClasses, Class<?> clazz, String[] names) {
-        for (String name : names) {
-            Class<?> c = extensionClasses.get(name);
-            if (c == null) {
-                extensionClasses.put(name, clazz);
-            } else if (c != clazz) {
-                throw new IllegalStateException("Duplicate extension " + type.getName() + " name " + name + " on " + c.getName() + " and " + clazz.getName());
-            }
+    private void saveInExtensionClass(Map<String, Class<?>> extensionClasses, Class<?> clazz, String name) {
+        Class<?> c = extensionClasses.get(name);
+        if (c == null) {
+            extensionClasses.put(name, clazz);
+        } else if (c != clazz) {
+            throw new IllegalStateException("Duplicate extension " + type.getName() + " name " + name + " on " + c.getName() + " and " + clazz.getName());
         }
     }
 
