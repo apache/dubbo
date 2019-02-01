@@ -78,16 +78,14 @@ public class TTree implements TComponent {
                     treeSB.append(costPrefix);
                 }
 
-                final Scanner scanner = new Scanner(new StringReader(node.data.toString()));
-                try {
+                try (Scanner scanner = new Scanner(new StringReader(node.data.toString()))) {
                     boolean isFirst = true;
                     while (scanner.hasNextLine()) {
                         if (isFirst) {
                             treeSB.append(scanner.nextLine()).append("\n");
                             isFirst = false;
                         } else {
-                            treeSB
-                                    .append(prefix)
+                            treeSB.append(prefix)
                                     .append(repeat(' ', stepStringLength))
                                     .append(hasChild ? "|" : EMPTY)
                                     .append(repeat(' ', costPrefixLength))
@@ -95,8 +93,6 @@ public class TTree implements TComponent {
                                     .append(System.lineSeparator());
                         }
                     }
-                } finally {
-                    scanner.close();
                 }
 
             }

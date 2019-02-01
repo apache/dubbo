@@ -208,15 +208,6 @@ Apache Dubbo includes a number of submodules with separate copyright notices
 and license terms. Your use of these submodules is subject to the terms and
 conditions of the following licenses.
 
-For the org.apache.dubbo.common.concurrent package:
-
-This product bundles and repackages the following code in Google Guava 16.0.1, which is available under a
-"Apache License 2.0" license. For details, see https://github.com/google/guava/blob/v16.0.1/COPYING.
-
- * com.google.common.util.concurrent.ExecutionList
- * com.google.common.util.concurrent.ListenableFuture
- * com.google.common.util.concurrent.ListenableFutureTask
-
 For the package org.apache.dubbo.common.threadlocal and org.apache.dubbo.common.timer:
 
 This product contains a modified portion of 'Netty', an event-driven asynchronous network application framework also
@@ -228,16 +219,4 @@ This product contains a modified portion of 'Netty', an event-driven asynchronou
  * io.netty.util.TimerTask
  * io.netty.util.Timeout
  * io.netty.util.HashedWheelTimer
-
- This product contains modified portion of common-lang3 org.apache.commons.lang3.time package java file, an thread safe date format utility, which
- is under a "Apache License 2.0" license, see https://github.com/apache/commons-lang/blob/master/LICENSE.txt
-
- * org.apache.commons.lang3.time.DateParser
- * org.apache.commons.lang3.time.DatePrinter
- * org.apache.commons.lang3.time.FastDateFormat
- * org.apache.commons.lang3.FastDateParser
- * org.apache.commons.lang3.FastDatePrinter
- * org.apache.commons.lang3.FastTimeZone
- * org.apache.commons.lang3.FormatCache
- * org.apache.commons.lang3.GmtTimeZone
 

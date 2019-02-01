@@ -134,27 +134,23 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             if (!lockfile.exists()) {
                 lockfile.createNewFile();
             }
-            RandomAccessFile raf = new RandomAccessFile(lockfile, "rw");
-            try {
-                try (FileChannel channel = raf.getChannel()) {
-                    FileLock lock = channel.tryLock();
-                    if (lock == null) {
-                        throw new IOException("Can not lock the metadataReport cache file " + file.getAbsolutePath() + ", ignore and retry later, maybe multi java process use the file, please config: dubbo.metadata.file=xxx.properties");
-                    }
-                    // Save
-                    try {
-                        if (!file.exists()) {
-                            file.createNewFile();
-                        }
-                        try (FileOutputStream outputFile = new FileOutputStream(file)) {
-                            properties.store(outputFile, "Dubbo metadataReport Cache");
-                        }
-                    } finally {
-                        lock.release();
-                    }
+            try (RandomAccessFile raf = new RandomAccessFile(lockfile, "rw");
+                 FileChannel channel = raf.getChannel()) {
+                FileLock lock = channel.tryLock();
+                if (lock == null) {
+                    throw new IOException("Can not lock the metadataReport cache file " + file.getAbsolutePath() + ", ignore and retry later, maybe multi java process use the file, please config: dubbo.metadata.file=xxx.properties");
                 }
-            } finally {
-                raf.close();
+                // Save
+                try {
+                    if (!file.exists()) {
+                        file.createNewFile();
+                    }
+                    try (FileOutputStream outputFile = new FileOutputStream(file)) {
+                        properties.store(outputFile, "Dubbo metadataReport Cache");
+                    }
+                } finally {
+                    lock.release();
+                }
             }
         } catch (Throwable e) {
             if (version < lastCacheChanged.get()) {
@@ -168,23 +164,13 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
     void loadProperties() {
         if (file != null && file.exists()) {
-            InputStream in = null;
-            try {
-                in = new FileInputStream(file);
+            try (InputStream in = new FileInputStream(file)) {
                 properties.load(in);
                 if (logger.isInfoEnabled()) {
                     logger.info("Load service store file " + file + ", data: " + properties);
                 }
             } catch (Throwable e) {
                 logger.warn("Failed to load service store file " + file, e);
-            } finally {
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (IOException e) {
-                        logger.warn(e.getMessage(), e);
-                    }
-                }
             }
         }
     }
@@ -332,6 +318,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
      * not private. just for unittest.
      */
     void publishAll() {
+        logger.info("start to publish all metadata.");
         this.doHandleMetadataCollection(allMetadataReports);
     }
 
@@ -356,7 +343,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         protected final Logger logger = LoggerFactory.getLogger(getClass());
 
         final ScheduledExecutorService retryExecutor = Executors.newScheduledThreadPool(0, new NamedThreadFactory("DubboRegistryFailedRetryTimer", true));
-        ScheduledFuture retryScheduledFuture;
+        volatile ScheduledFuture retryScheduledFuture;
         AtomicInteger retryCounter = new AtomicInteger(0);
         // retry task schedule period
         long retryPeriod;

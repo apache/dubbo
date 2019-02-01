@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.support.Parameter;
 
@@ -31,6 +32,7 @@ import java.lang.annotation.Target;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -353,13 +355,17 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void testRefreshProperties() {
+    public void testRefreshProperties() throws Exception{
         try {
             Environment.getInstance().setExternalConfigMap(new HashMap<>());
             OverrideConfig overrideConfig = new OverrideConfig();
             overrideConfig.setAddress("override-config://127.0.0.1:2181");
             overrideConfig.setProtocol("override-config");
             overrideConfig.setEscape("override-config://");
+
+            Properties properties = new Properties();
+            properties.load(this.getClass().getResourceAsStream("/dubbo.properties"));
+            ConfigUtils.setProperties(properties);
 
             overrideConfig.refresh();
 
@@ -369,6 +375,7 @@ public class AbstractConfigTest {
             //Assertions.assertEquals("properties", overrideConfig.getUseKeyAsProperty());
         } finally {
             Environment.getInstance().clearExternalConfigs();
+            ConfigUtils.setProperties(null);
         }
     }
 
@@ -407,7 +414,7 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void testRefreshId() {
+    public void testRefreshById() {
         try {
             OverrideConfig overrideConfig = new OverrideConfig();
             overrideConfig.setId("override-id");
@@ -428,8 +435,7 @@ public class AbstractConfigTest {
             Environment.getInstance().setExternalConfigMap(external);
 
             ConfigCenterConfig configCenter = new ConfigCenterConfig();
-            configCenter.init();
-
+            overrideConfig.setConfigCenter(configCenter);
             // Load configuration from  system properties -> externalConfiguration -> RegistryConfig -> dubbo.properties
             overrideConfig.refresh();
 
@@ -475,7 +481,7 @@ public class AbstractConfigTest {
         String[] parameters() default {};
     }
 
-    private static class OverrideConfig extends AbstractConfig {
+    private static class OverrideConfig extends AbstractInterfaceConfig {
         public String address;
         public String protocol;
         public String exclude;
