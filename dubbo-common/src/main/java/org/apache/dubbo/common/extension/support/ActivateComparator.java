@@ -44,75 +44,85 @@ public class ActivateComparator implements Comparator<Object> {
             return 0;
         }
 
-        // to support com.alibab.dubbo.common.extension.Activate
-        String[] a1Before, a2Before, a1After, a2After;
-        int a1Order, a2Order;
-        Class<?> inf = null;
-        if (o1.getClass().getInterfaces().length > 0) {
-            inf = o1.getClass().getInterfaces()[0];
+        Class<?> inf = findSpi(o1.getClass());
 
-            if (inf.getInterfaces().length > 0) {
-                inf = inf.getInterfaces()[0];
-            }
-        }
+        ActivateInfo a1 = parseActivate(o1.getClass());
+        ActivateInfo a2 = parseActivate(o2.getClass());
 
-        Activate a1 = o1.getClass().getAnnotation(Activate.class);
-        if (a1 != null) {
-            a1Before = a1.before();
-            a1After = a1.after();
-            a1Order = a1.order();
-        } else {
-            com.alibaba.dubbo.common.extension.Activate oa1 = o1.getClass().getAnnotation(com.alibaba.dubbo.common.extension.Activate.class);
-            a1Before = oa1.before();
-            a1After = oa1.after();
-            a1Order = oa1.order();
-        }
-        Activate a2 = o2.getClass().getAnnotation(Activate.class);
-        if (a2 != null) {
-            a2Before = a2.before();
-            a2After = a2.after();
-            a2Order = a2.order();
-        } else {
-            com.alibaba.dubbo.common.extension.Activate oa2 = o2.getClass().getAnnotation(com.alibaba.dubbo.common.extension.Activate.class);
-            a2Before = oa2.before();
-            a2After = oa2.after();
-            a2Order = oa2.order();
-        }
-        if ((a1Before.length > 0 || a1After.length > 0
-                || a2Before.length > 0 || a2After.length > 0)
-                && inf != null && inf.isAnnotationPresent(SPI.class)) {
+        if ((a1.before.length > 0 || a1.after.length > 0 || a2.before.length > 0 || a2.after.length > 0) && inf != null) {
             ExtensionLoader<?> extensionLoader = ExtensionLoader.getExtensionLoader(inf);
-            if (a1Before.length > 0 || a1After.length > 0) {
+            if (a1.before.length > 0 || a1.after.length > 0) {
                 String n2 = extensionLoader.getExtensionName(o2.getClass());
-                for (String before : a1Before) {
+                for (String before : a1.before) {
                     if (before.equals(n2)) {
                         return -1;
                     }
                 }
-                for (String after : a1After) {
+            for (String after : a1.after) {
                     if (after.equals(n2)) {
                         return 1;
                     }
                 }
             }
-            if (a2Before.length > 0 || a2After.length > 0) {
+            if (a2.before.length > 0 || a2.after.length > 0) {
                 String n1 = extensionLoader.getExtensionName(o1.getClass());
-                for (String before : a2Before) {
+                for (String before : a2.before) {
                     if (before.equals(n1)) {
                         return 1;
                     }
                 }
-                for (String after : a2After) {
+                for (String after : a2.after) {
                     if (after.equals(n1)) {
                         return -1;
                     }
                 }
             }
         }
-        int n1 = a1 == null ? 0 : a1Order;
-        int n2 = a2 == null ? 0 : a2Order;
+        int n1 = a1 == null ? 0 : a1.order;
+        int n2 = a2 == null ? 0 : a2.order;
         // never return 0 even if n1 equals n2, otherwise, o1 and o2 will override each other in collection like HashSet
         return n1 > n2 ? 1 : -1;
     }
 
+    private Class<?> findSpi(Class clazz) {
+        if (clazz.getInterfaces().length <= 0) {
+            return null;
+        }
+
+        for (Class<?> intf : clazz.getInterfaces()) {
+            if (intf.isAnnotationPresent(SPI.class)) {
+                return intf;
+            } else {
+                Class result = findSpi(intf);
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private ActivateInfo parseActivate(Class<?> clazz) {
+        ActivateInfo info = new ActivateInfo();
+        if (clazz.isAnnotationPresent(Activate.class)) {
+            Activate activate = clazz.getAnnotation(Activate.class);
+            info.before = activate.before();
+            info.after = activate.after();
+            info.order = activate.order();
+        } else {
+            com.alibaba.dubbo.common.extension.Activate activate = clazz.getAnnotation(
+                    com.alibaba.dubbo.common.extension.Activate.class);
+            info.before = activate.before();
+            info.after = activate.after();
+            info.order = activate.order();
+        }
+        return info;
+    }
+
+    private static class ActivateInfo {
+        private String[] before;
+        private String[] after;
+        private int order;
+    }
 }
