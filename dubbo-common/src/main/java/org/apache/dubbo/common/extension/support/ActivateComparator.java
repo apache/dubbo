@@ -19,7 +19,9 @@ package org.apache.dubbo.common.extension.support;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.common.utils.ArrayUtils;
 
+import java.util.Arrays;
 import java.util.Comparator;
 
 /**
@@ -49,32 +51,27 @@ public class ActivateComparator implements Comparator<Object> {
         ActivateInfo a1 = parseActivate(o1.getClass());
         ActivateInfo a2 = parseActivate(o2.getClass());
 
-        if ((a1.before.length > 0 || a1.after.length > 0 || a2.before.length > 0 || a2.after.length > 0) && inf != null) {
+        if ((a1.applicableToCompare() || a2.applicableToCompare()) && inf != null) {
             ExtensionLoader<?> extensionLoader = ExtensionLoader.getExtensionLoader(inf);
-            if (a1.before.length > 0 || a1.after.length > 0) {
+            if (a1.applicableToCompare()) {
                 String n2 = extensionLoader.getExtensionName(o2.getClass());
-                for (String before : a1.before) {
-                    if (before.equals(n2)) {
-                        return -1;
-                    }
+                if (a1.isLess(n2)) {
+                    return -1;
                 }
-            for (String after : a1.after) {
-                    if (after.equals(n2)) {
-                        return 1;
-                    }
+
+                if (a1.isMore(n2)) {
+                    return 1;
                 }
             }
-            if (a2.before.length > 0 || a2.after.length > 0) {
+
+            if (a2.applicableToCompare()) {
                 String n1 = extensionLoader.getExtensionName(o1.getClass());
-                for (String before : a2.before) {
-                    if (before.equals(n1)) {
-                        return 1;
-                    }
+                if (a2.isLess(n1)) {
+                    return 1;
                 }
-                for (String after : a2.after) {
-                    if (after.equals(n1)) {
-                        return -1;
-                    }
+
+                if (a2.isMore(n1)) {
+                    return -1;
                 }
             }
         }
@@ -124,5 +121,17 @@ public class ActivateComparator implements Comparator<Object> {
         private String[] before;
         private String[] after;
         private int order;
+
+        private boolean applicableToCompare() {
+            return ArrayUtils.isNotEmpty(before) || ArrayUtils.isNotEmpty(after);
+        }
+
+        private boolean isLess(String name) {
+            return Arrays.asList(before).contains(name);
+        }
+
+        private boolean isMore(String name) {
+            return Arrays.asList(after).contains(name);
+        }
     }
 }
