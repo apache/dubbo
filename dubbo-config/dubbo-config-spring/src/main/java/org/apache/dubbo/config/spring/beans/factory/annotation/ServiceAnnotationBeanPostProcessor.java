@@ -380,7 +380,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         builder.addPropertyValue("interface", interfaceClass.getName());
 
         /**
-         * Add {@link com.alibaba.dubbo.config.ProviderConfig} Bean reference
+         * Add {@link org.apache.dubbo.config.ProviderConfig} Bean reference
          */
         String providerConfigBeanName = service.provider();
         if (StringUtils.hasText(providerConfigBeanName)) {
@@ -388,7 +388,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         }
 
         /**
-         * Add {@link com.alibaba.dubbo.config.MonitorConfig} Bean reference
+         * Add {@link org.apache.dubbo.config.MonitorConfig} Bean reference
          */
         String monitorConfigBeanName = service.monitor();
         if (StringUtils.hasText(monitorConfigBeanName)) {
@@ -396,7 +396,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         }
 
         /**
-         * Add {@link com.alibaba.dubbo.config.ApplicationConfig} Bean reference
+         * Add {@link org.apache.dubbo.config.ApplicationConfig} Bean reference
          */
         String applicationConfigBeanName = service.application();
         if (StringUtils.hasText(applicationConfigBeanName)) {
@@ -404,7 +404,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         }
 
         /**
-         * Add {@link com.alibaba.dubbo.config.ModuleConfig} Bean reference
+         * Add {@link org.apache.dubbo.config.ModuleConfig} Bean reference
          */
         String moduleConfigBeanName = service.module();
         if (StringUtils.hasText(moduleConfigBeanName)) {
@@ -413,7 +413,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
 
         /**
-         * Add {@link com.alibaba.dubbo.config.RegistryConfig} Bean reference
+         * Add {@link org.apache.dubbo.config.RegistryConfig} Bean reference
          */
         String[] registryConfigBeanNames = service.registry();
 
@@ -424,7 +424,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         }
 
         /**
-         * Add {@link com.alibaba.dubbo.config.ProtocolConfig} Bean reference
+         * Add {@link org.apache.dubbo.config.ProtocolConfig} Bean reference
          */
         String[] protocolConfigBeanNames = service.protocol();
 
