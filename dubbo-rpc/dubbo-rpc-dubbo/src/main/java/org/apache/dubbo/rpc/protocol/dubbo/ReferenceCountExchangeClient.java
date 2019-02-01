@@ -38,7 +38,6 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     private final AtomicInteger referenceCount = new AtomicInteger(0);
 
     private ExchangeClient client;
-    private LazyConnectExchangeClient lazyConnectExchangeClient;
 
     public ReferenceCountExchangeClient(ExchangeClient client) {
         this.client = client;
@@ -144,9 +143,11 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
         if (referenceCount.decrementAndGet() <= 0) {
             if (timeout == 0) {
                 client.close();
+
             } else {
                 client.close(timeout);
             }
+
             client = replaceWithLazyClient();
         }
     }
@@ -165,11 +166,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
                 .addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true)
                 .addParameter("_client_memo", "referencecounthandler.replacewithlazyclient");
 
-        if (lazyConnectExchangeClient == null || lazyConnectExchangeClient.isClosed()) {
-            lazyConnectExchangeClient = new LazyConnectExchangeClient(lazyUrl, client.getExchangeHandler());
-        }
-
-        return lazyConnectExchangeClient;
+        return new LazyConnectExchangeClient(lazyUrl, client.getExchangeHandler());
     }
 
     @Override
@@ -179,9 +176,5 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
 
     public void incrementAndGetCount() {
         referenceCount.incrementAndGet();
-    }
-
-    public LazyConnectExchangeClient getLazyConnectExchangeClient() {
-        return lazyConnectExchangeClient;
     }
 }

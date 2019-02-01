@@ -632,32 +632,5 @@ public class DubboProtocol extends AbstractProtocol {
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
         }
-
-        /**
-         * When you need to completely close the ReferenceCountExchangeClient, don't forget to close the LazyConnectExchangeClient (if any) it is bound to.
-         */
-        closeLazyConnectExchangeClient(client.getLazyConnectExchangeClient());
-    }
-
-    /**
-     * close LazyConnectExchangeClient
-     *
-     * @param lazyConnectExchangeClient
-     */
-    private void closeLazyConnectExchangeClient(LazyConnectExchangeClient lazyConnectExchangeClient) {
-        if (lazyConnectExchangeClient == null) {
-            return;
-        }
-
-        try {
-            if (logger.isInfoEnabled()) {
-                logger.info("Close dubbo lazy connect: " + lazyConnectExchangeClient.getLocalAddress() + "-->" + lazyConnectExchangeClient.getRemoteAddress());
-            }
-
-            lazyConnectExchangeClient.close(ConfigurationUtils.getServerShutdownTimeout());
-
-        } catch (Throwable t) {
-            logger.warn(t.getMessage(), t);
-        }
     }
 }
