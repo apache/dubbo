@@ -70,7 +70,7 @@ final public class MockInvoker<T> implements Invoker<T> {
             value = mock.subSequence(1, mock.length() - 1);
         } else if (returnTypes != null && returnTypes.length > 0 && returnTypes[0] == String.class) {
             value = mock;
-        } else if (StringUtils.isNumeric(mock)) {
+        } else if (StringUtils.isNumeric(mock, false)) {
             value = JSON.parse(mock);
         } else if (mock.startsWith("{")) {
             value = JSON.parseObject(mock, Map.class);
