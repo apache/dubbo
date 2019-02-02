@@ -431,5 +431,13 @@ public class ClassUtils {
         }
         return map;
     }
+    
+    /**
+     * get classname from qualified name
+     */
+    public static String getSimpleClassName(String qualifiedName) {
+        int i = qualifiedName.lastIndexOf('.');
+        return i < 0 ? qualifiedName : qualifiedName.substring(i + 1);
+    }
 
 }
