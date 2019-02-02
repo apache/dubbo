@@ -142,16 +142,16 @@ public class JavassistClassInfo {
             ctClass.addInterface(context.get(iface));
         }
         
-        for (String iface: constructors) {
-            ctClass.addConstructor(CtNewConstructor.make("public " + iface, ctClass));
+        for (String constructor: constructors) {
+            ctClass.addConstructor(CtNewConstructor.make("public " + constructor, ctClass));
         }
         
-        for (String iface: fields) {
-            ctClass.addField(CtField.make("private " + iface, ctClass));
+        for (String field: fields) {
+            ctClass.addField(CtField.make("private " + field, ctClass));
         }
         
-        for (String iface: methods) {
-            ctClass.addMethod(CtNewMethod.make("public " + iface, ctClass));
+        for (String method: methods) {
+            ctClass.addMethod(CtNewMethod.make("public " + method, ctClass));
         }
         
         return ctClass;
