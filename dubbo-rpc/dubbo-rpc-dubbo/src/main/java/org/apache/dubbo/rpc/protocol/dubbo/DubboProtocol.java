@@ -630,6 +630,12 @@ public class DubboProtocol extends AbstractProtocol {
 
             client.close(ConfigurationUtils.getServerShutdownTimeout());
 
+            // TODO
+            /**
+             * At this time, ReferenceCountExchangeClient#client has been replaced with LazyConnectExchangeClient.
+             * Do you need to call client.close again to ensure that LazyConnectExchangeClient is also closed?
+             */
+
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
         }
