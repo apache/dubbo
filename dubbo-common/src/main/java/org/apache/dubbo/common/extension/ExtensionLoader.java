@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.support.ActivateComparator;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.ClassHelper;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ConfigUtils;
@@ -692,20 +693,9 @@ public class ExtensionLoader<T> {
                     + clazz.getName() + " is not subtype of interface.");
         }
         if (clazz.isAnnotationPresent(Adaptive.class)) {
-            if (cachedAdaptiveClass == null) {
-                cachedAdaptiveClass = clazz;
-            } else if (!cachedAdaptiveClass.equals(clazz)) {
-                throw new IllegalStateException("More than 1 adaptive class found: "
-                        + cachedAdaptiveClass.getClass().getName()
-                        + ", " + clazz.getClass().getName());
-            }
+            cacheAdaptiveClass(clazz);
         } else if (isWrapperClass(clazz)) {
-            Set<Class<?>> wrappers = cachedWrapperClasses;
-            if (wrappers == null) {
-                cachedWrapperClasses = new ConcurrentHashSet<>();
-                wrappers = cachedWrapperClasses;
-            }
-            wrappers.add(clazz);
+            cacheWrapperClass(clazz);
         } else {
             clazz.getConstructor();
             if (StringUtils.isEmpty(name)) {
@@ -714,33 +704,87 @@ public class ExtensionLoader<T> {
                     throw new IllegalStateException("No such extension name for the class " + clazz.getName() + " in the config " + resourceURL);
                 }
             }
+            
             String[] names = NAME_SEPARATOR.split(name);
-            if (names != null && names.length > 0) {
-                Activate activate = clazz.getAnnotation(Activate.class);
-                if (activate != null) {
-                    cachedActivates.put(names[0], activate);
-                } else {
-                    // support com.alibaba.dubbo.common.extension.Activate
-                    com.alibaba.dubbo.common.extension.Activate oldActivate = clazz.getAnnotation(com.alibaba.dubbo.common.extension.Activate.class);
-                    if (oldActivate != null) {
-                        cachedActivates.put(names[0], oldActivate);
-                    }
-                }
+            if (ArrayUtils.isNotEmpty(names)) {
+                cacheActivateClass(clazz, names[0]);
                 for (String n : names) {
-                    if (!cachedNames.containsKey(clazz)) {
-                        cachedNames.put(clazz, n);
-                    }
-                    Class<?> c = extensionClasses.get(n);
-                    if (c == null) {
-                        extensionClasses.put(n, clazz);
-                    } else if (c != clazz) {
-                        throw new IllegalStateException("Duplicate extension " + type.getName() + " name " + n + " on " + c.getName() + " and " + clazz.getName());
-                    }
+                    cacheName(clazz, n);
+                    saveInExtensionClass(extensionClasses, clazz, name);
                 }
             }
         }
     }
 
+    /**
+     * cache name
+     */
+    private void cacheName(Class<?> clazz, String name) {
+        if (!cachedNames.containsKey(clazz)) {
+            cachedNames.put(clazz, name);
+        }
+    }
+
+    /**
+     * put clazz in extensionClasses
+     */
+    private void saveInExtensionClass(Map<String, Class<?>> extensionClasses, Class<?> clazz, String name) {
+        Class<?> c = extensionClasses.get(name);
+        if (c == null) {
+            extensionClasses.put(name, clazz);
+        } else if (c != clazz) {
+            throw new IllegalStateException("Duplicate extension " + type.getName() + " name " + name + " on " + c.getName() + " and " + clazz.getName());
+        }
+    }
+
+    /**
+     * cache Activate class which is annotated with <code>Activate</code>
+     * <p>
+     * for compatibility, also cache class with old alibaba Activate annotation
+     */
+    private void cacheActivateClass(Class<?> clazz, String name) {
+        Activate activate = clazz.getAnnotation(Activate.class);
+        if (activate != null) {
+            cachedActivates.put(name, activate);
+        } else {
+            // support com.alibaba.dubbo.common.extension.Activate
+            com.alibaba.dubbo.common.extension.Activate oldActivate = clazz.getAnnotation(com.alibaba.dubbo.common.extension.Activate.class);
+            if (oldActivate != null) {
+                cachedActivates.put(name, oldActivate);
+            }
+        }
+    }
+
+    /**
+     * cache Adaptive class which is annotated with <code>Adaptive</code>
+     */
+    private void cacheAdaptiveClass(Class<?> clazz) {
+        if (cachedAdaptiveClass == null) {
+            cachedAdaptiveClass = clazz;
+        } else if (!cachedAdaptiveClass.equals(clazz)) {
+            throw new IllegalStateException("More than 1 adaptive class found: "
+                    + cachedAdaptiveClass.getClass().getName()
+                    + ", " + clazz.getClass().getName());
+        }
+    }
+
+    /**
+     * cache wrapper class 
+     * <p>
+     * like: ProtocolFilterWrapper, ProtocolListenerWrapper
+     */
+    private void cacheWrapperClass(Class<?> clazz) {
+        if (cachedWrapperClasses == null) {
+            cachedWrapperClasses = new ConcurrentHashSet<>();
+        }
+        cachedWrapperClasses.add(clazz);
+    }
+
+    /**
+     * test if clazz is a wrapper class 
+     * <p>
+     * which has Constructor with given class type as its only argument
+     */
     private boolean isWrapperClass(Class<?> clazz) {
         try {
             clazz.getConstructor(type);
