@@ -255,7 +255,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     @Override
     public void close() {
 
-//        connectLock.lock();
+        connectLock.lock();
 
         try {
             try {
@@ -285,7 +285,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
             }
 
         } finally {
-//            connectLock.unlock();
+            connectLock.unlock();
         }
     }
 
