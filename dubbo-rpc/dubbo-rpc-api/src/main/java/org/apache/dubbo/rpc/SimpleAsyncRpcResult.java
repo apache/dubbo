@@ -44,6 +44,6 @@ public class SimpleAsyncRpcResult extends AsyncRpcResult {
 
     @Override
     public Object recreate() throws Throwable {
-        return getRpcResult().getValue();
+        return valueFuture.get();
      }
 }

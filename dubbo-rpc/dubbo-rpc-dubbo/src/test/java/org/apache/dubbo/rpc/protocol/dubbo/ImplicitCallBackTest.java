@@ -173,15 +173,9 @@ public class ImplicitCallBackTest {
 
 
         int requestId = 2;
-        Person ret = demoProxy.get(requestId);
-        Assertions.assertEquals(null, ret);
-        for (int i = 0; i < 10; i++) {
-            if (!notify.errors.containsKey(requestId)) {
-                Thread.sleep(200);
-            } else {
-                break;
-            }
-        }
+        Assertions.assertThrows(ExecutionException.class,() ->{
+            demoProxy.get(requestId);
+        });
         Assertions.assertTrue(!notify.errors.containsKey(requestId));
         destroyService();
     }
@@ -193,15 +187,9 @@ public class ImplicitCallBackTest {
         initImplicitCallBackURL_onlyOninvoke();
 
         int requestId = 2;
-        Person ret = demoProxy.get(requestId);
-        Assertions.assertEquals(null, ret);
-        for (int i = 0; i < 10; i++) {
-            if (!notify.inv.contains(requestId)) {
-                Thread.sleep(200);
-            } else {
-                break;
-            }
-        }
+        Assertions.assertThrows(ExecutionException.class,() ->{
+            demoProxy.get(requestId);
+        });
         Assertions.assertTrue(notify.inv.contains(requestId));
         destroyService();
     }
@@ -213,15 +201,9 @@ public class ImplicitCallBackTest {
         initImplicitCallBackURL_onlyOnthrow();
 
         int requestId = 2;
-        Person ret = demoProxy.get(requestId);
-        Assertions.assertEquals(null, ret);
-        for (int i = 0; i < 10; i++) {
-            if (!notify.errors.containsKey(requestId)) {
-                Thread.sleep(200);
-            } else {
-                break;
-            }
-        }
+        Assertions.assertThrows(ExecutionException.class,() ->{
+            demoProxy.get(requestId);
+        });
         Assertions.assertTrue(notify.errors.containsKey(requestId));
         Assertions.assertTrue(notify.errors.get(requestId) instanceof Throwable);
         destroyService();
