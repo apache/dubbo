@@ -41,7 +41,6 @@ import java.util.Set;
  * GenericServiceTest
  */
 public class ValidationTest {
-
     @Test
     public void testValidation() {
         ServiceConfig<ValidationService> service = new ServiceConfig<ValidationService>();
