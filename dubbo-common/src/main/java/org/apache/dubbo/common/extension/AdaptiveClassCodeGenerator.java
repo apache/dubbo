@@ -378,8 +378,4 @@ public class AdaptiveClassCodeGenerator {
         return code.toString();
     }
     
-    
-    public static void main(String[] args) {
-        System.err.println(new AdaptiveClassCodeGenerator(org.apache.dubbo.common.threadpool.ThreadPool.class, "fixed").generate());
-    }
 }
