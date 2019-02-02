@@ -97,7 +97,10 @@ public class Constants {
 
     public static final String DEFAULT_PROXY = "javassist";
 
-    public static final int DEFAULT_PAYLOAD = 8 * 1024 * 1024;                      // 8M
+    /**
+     * 8M
+     */
+    public static final int DEFAULT_PAYLOAD = 8 * 1024 * 1024;
 
     public static final String DEFAULT_CLUSTER = "failover";
 
@@ -155,8 +158,9 @@ public class Constants {
 
     public static final int DEFAULT_CONNECT_TIMEOUT = 3000;
 
-//    public static final int DEFAULT_REGISTRY_CONNECT_TIMEOUT = 5000;
-
+    /**
+     * public static final int DEFAULT_REGISTRY_CONNECT_TIMEOUT = 5000;
+     */
     public static final int DEFAULT_RETRIES = 2;
 
     public static final int DEFAULT_FAILBACK_TASKS = 100;
@@ -165,7 +169,9 @@ public class Constants {
 
     public static final int MAX_PROXY_COUNT = 65535;
 
-    // default buffer size is 8k.
+    /**
+     * default buffer size is 8k.
+     */
     public static final int DEFAULT_BUFFER_SIZE = 8 * 1024;
 
     public static final Integer DEFAULT_METADATA_REPORT_RETRY_TIMES = 100;
@@ -188,7 +194,9 @@ public class Constants {
 
     public static final String LOADBALANCE_KEY = "loadbalance";
 
-    // key for router type, for e.g., "script"/"file",  corresponding to ScriptRouterFactory.NAME, FileRouterFactory.NAME
+    /**
+     * key for router type, for e.g., "script"/"file",  corresponding to ScriptRouterFactory.NAME, FileRouterFactory.NAME
+     */
     public static final String ROUTER_KEY = "router";
 
     public static final String CLUSTER_KEY = "cluster";
@@ -752,7 +760,9 @@ public class Constants {
     public static final String CONFIG_VERSION_KEY = "configVersion";
 
     public static final String COMPATIBLE_CONFIG_KEY = "compatible_config";
-    // package version in the manifest
+    /**
+     * package version in the manifest
+     */
     public static final String RELEASE_KEY = "release";
 
     public static final String OVERRIDE_PROVIDERS_KEY = "providerAddresses";
