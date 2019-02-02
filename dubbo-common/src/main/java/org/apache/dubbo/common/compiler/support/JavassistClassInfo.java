@@ -35,21 +35,21 @@ import javassist.NotFoundException;
  * class name, imported packages, super class name, implemented interfaces, constructors, fields, methods.
  */
 public class JavassistClassInfo {
-    
+
     private String className;
-    
+
     private String superClassName = "java.lang.Object";
 
     private List<String> imports = new ArrayList<>();
-    
+
     private Map<String, String> fullNames = new HashMap<>();
-    
+
     private List<String> ifaces = new ArrayList<>();
-    
+
     private List<String> constructors = new ArrayList<>();
-    
+
     private List<String> fields = new ArrayList<>();
-    
+
     private List<String> methods = new ArrayList<>();
 
     public String getClassName() {
@@ -94,7 +94,7 @@ public class JavassistClassInfo {
     public List<String> getConstructors() {
         return constructors;
     }
-    
+
     public void addConstructor(String constructor) {
         this.constructors.add(constructor);
     }
@@ -102,7 +102,7 @@ public class JavassistClassInfo {
     public List<String> getFields() {
         return fields;
     }
-    
+
     public void addField(String field) {
         this.fields.add(field);
     }
@@ -110,7 +110,7 @@ public class JavassistClassInfo {
     public List<String> getMethods() {
         return methods;
     }
-    
+
     public void addMethod(String method) {
         this.methods.add(method);
     }
@@ -123,37 +123,37 @@ public class JavassistClassInfo {
     protected String getQualifiedClassName(String className) {
         if (className.contains(".")) {
             return className;
-        } 
-        
+        }
+
         if (fullNames.containsKey(className)) {
             return fullNames.get(className);
-        } 
+        }
 
         return ClassUtils.forName(imports.toArray(new String[0]), className).getName();
     }
-    
+
     /**
      * build CtClass object
      */
     public CtClass build(ClassPool context) throws NotFoundException, CannotCompileException {
         CtClass ctClass = context.makeClass(className, context.get(superClassName));
         imports.stream().forEach(context::importPackage);
-        for (String iface: ifaces) {
+        for (String iface : ifaces) {
             ctClass.addInterface(context.get(iface));
         }
-        
-        for (String constructor: constructors) {
+
+        for (String constructor : constructors) {
             ctClass.addConstructor(CtNewConstructor.make("public " + constructor, ctClass));
         }
-        
-        for (String field: fields) {
+
+        for (String field : fields) {
             ctClass.addField(CtField.make("private " + field, ctClass));
         }
-        
-        for (String method: methods) {
+
+        for (String method : methods) {
             ctClass.addMethod(CtNewMethod.make("public " + method, ctClass));
         }
-        
+
         return ctClass;
     }
 
