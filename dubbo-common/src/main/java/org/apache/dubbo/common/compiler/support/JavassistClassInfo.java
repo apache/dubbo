@@ -27,6 +27,7 @@ import javassist.CtClass;
 import javassist.CtField;
 import javassist.CtNewConstructor;
 import javassist.CtNewMethod;
+import javassist.LoaderClassPath;
 import javassist.NotFoundException;
 
 /**
@@ -135,23 +136,34 @@ public class JavassistClassInfo {
     /**
      * build CtClass object
      */
-    public CtClass build(ClassPool context) throws NotFoundException, CannotCompileException {
-        CtClass ctClass = context.makeClass(className, context.get(superClassName));
-        imports.stream().forEach(context::importPackage);
+    public CtClass build(ClassLoader classLoader) throws NotFoundException, CannotCompileException {
+        ClassPool pool = new ClassPool(true);
+        pool.appendClassPath(new LoaderClassPath(classLoader));
+        
+        // create class
+        CtClass ctClass = pool.makeClass(className, pool.get(superClassName));
+
+        // add imported packages
+        imports.stream().forEach(pool::importPackage);
+
+        // add implemented interfaces
         for (String iface : ifaces) {
-            ctClass.addInterface(context.get(iface));
+            ctClass.addInterface(pool.get(iface));
         }
 
+        // add constructors
         for (String constructor : constructors) {
-            ctClass.addConstructor(CtNewConstructor.make("public " + constructor, ctClass));
+            ctClass.addConstructor(CtNewConstructor.make(constructor, ctClass));
         }
 
+        // add fields
         for (String field : fields) {
-            ctClass.addField(CtField.make("private " + field, ctClass));
+            ctClass.addField(CtField.make(field, ctClass));
         }
 
+        // add methods
         for (String method : methods) {
-            ctClass.addMethod(CtNewMethod.make("public " + method, ctClass));
+            ctClass.addMethod(CtNewMethod.make(method, ctClass));
         }
 
         return ctClass;

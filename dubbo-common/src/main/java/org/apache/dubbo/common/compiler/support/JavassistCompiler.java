@@ -18,9 +18,7 @@ package org.apache.dubbo.common.compiler.support;
 
 import org.apache.dubbo.common.utils.ClassHelper;
 
-import javassist.ClassPool;
 import javassist.CtClass;
-import javassist.LoaderClassPath;
 
 import java.util.Arrays;
 import java.util.regex.Matcher;
@@ -71,19 +69,17 @@ public class JavassistCompiler extends AbstractCompiler {
         String className = ClassUtils.getSimpleClassName(name);
         Arrays.stream(methods).map(String::trim).filter(m -> !m.isEmpty()).forEach(method-> {
             if (method.startsWith(className)) {
-                info.addConstructor(method);
+                info.addConstructor("public " + method);
             } else if (FIELD_PATTERN.matcher(method).matches()) {
-                info.addField(method);
+                info.addField("private " + method);
             } else {
-                info.addMethod(method);
+                info.addMethod("public " + method);
             }
         });
         
         // compile
         ClassLoader classLoader = ClassHelper.getCallerClassLoader(getClass());
-        ClassPool pool = new ClassPool(true);
-        pool.appendClassPath(new LoaderClassPath(classLoader));
-        CtClass cls = info.build(pool);
+        CtClass cls = info.build(classLoader);
         return cls.toClass(classLoader, JavassistCompiler.class.getProtectionDomain());
     }
 
