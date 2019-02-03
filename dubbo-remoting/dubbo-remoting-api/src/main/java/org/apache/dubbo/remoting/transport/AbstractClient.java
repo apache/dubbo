@@ -179,6 +179,12 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
         try {
 
+            if (isClosed()) {
+                throw new RemotingException(this, "No need to connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
+                        + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
+                        + ", cause: client status is closed.");
+            }
+
             if (isConnected()) {
                 return;
             }
@@ -250,30 +256,37 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     @Override
     public void close() {
 
-        try {
-            super.close();
-        } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
-        }
+        connectLock.lock();
 
         try {
-            if (executor != null) {
-                ExecutorUtil.shutdownNow(executor, 100);
+            try {
+                super.close();
+            } catch (Throwable e) {
+                logger.warn(e.getMessage(), e);
             }
-        } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
-        }
 
-        try {
-            disconnect();
-        } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
-        }
+            try {
+                if (executor != null) {
+                    ExecutorUtil.shutdownNow(executor, 100);
+                }
+            } catch (Throwable e) {
+                logger.warn(e.getMessage(), e);
+            }
 
-        try {
-            doClose();
-        } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
+            try {
+                disconnect();
+            } catch (Throwable e) {
+                logger.warn(e.getMessage(), e);
+            }
+
+            try {
+                doClose();
+            } catch (Throwable e) {
+                logger.warn(e.getMessage(), e);
+            }
+
+        } finally {
+            connectLock.unlock();
         }
     }
 
