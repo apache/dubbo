@@ -1539,13 +1539,4 @@ class URL implements Serializable {
         return true;
     }
 
-    public static void main(String[] args) {
-        Matcher matcher = USER_PATTERN.matcher("sda1231237:wi@sakdsak@2");
-        if (matcher.find()) {
-            
-        System.out.println(matcher.group(1));
-        System.out.println(matcher.group(2));
-//        System.out.println(matcher.group(3));
-        };
-    }
 }
