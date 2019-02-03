@@ -65,7 +65,6 @@ final class LazyConnectExchangeClient implements ExchangeClient {
         this.requestWithWarning = url.getParameter(REQUEST_WITH_WARNING_KEY, false);
     }
 
-
     private void initClient() throws RemotingException {
         if (client != null) {
             return;
