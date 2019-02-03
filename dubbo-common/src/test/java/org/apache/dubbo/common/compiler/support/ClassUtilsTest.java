@@ -149,6 +149,7 @@ public class ClassUtilsTest {
     
     @Test
     public void testGetSimpleClassName() {
+        Assertions.assertNull(ClassUtils.getSimpleClassName(null));
         Assertions.assertEquals("Map", ClassUtils.getSimpleClassName(Map.class.getName()));
         Assertions.assertEquals("Map", ClassUtils.getSimpleClassName(Map.class.getSimpleName()));
     }
