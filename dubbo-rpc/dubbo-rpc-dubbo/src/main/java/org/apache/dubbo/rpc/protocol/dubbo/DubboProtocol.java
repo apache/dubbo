@@ -196,6 +196,7 @@ public class DubboProtocol extends AbstractProtocol {
             // load
             ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME);
         }
+
         return INSTANCE;
     }
 
@@ -285,6 +286,7 @@ public class DubboProtocol extends AbstractProtocol {
 
         openServer(url);
         optimizeSerialization(url);
+
         return exporter;
     }
 
@@ -379,9 +381,11 @@ public class DubboProtocol extends AbstractProtocol {
     @Override
     public <T> Invoker<T> refer(Class<T> serviceType, URL url) throws RpcException {
         optimizeSerialization(url);
+
         // create rpc invoker.
         DubboInvoker<T> invoker = new DubboInvoker<T>(serviceType, url, getClients(url), invokers);
         invokers.add(invoker);
+
         return invoker;
     }
 
@@ -414,6 +418,7 @@ public class DubboProtocol extends AbstractProtocol {
                 clients[i] = initClient(url);
             }
         }
+
         return clients;
     }
 

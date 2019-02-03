@@ -178,11 +178,6 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         connectLock.lock();
 
         try {
-            if (isClosed()) {
-                throw new RemotingException(this, "No need to connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
-                        + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
-                        + ", cause: client status is closed.");
-            }
 
             if (isConnected()) {
                 return;
@@ -255,37 +250,30 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     @Override
     public void close() {
 
-        connectLock.lock();
+        try {
+            super.close();
+        } catch (Throwable e) {
+            logger.warn(e.getMessage(), e);
+        }
 
         try {
-            try {
-                super.close();
-            } catch (Throwable e) {
-                logger.warn(e.getMessage(), e);
+            if (executor != null) {
+                ExecutorUtil.shutdownNow(executor, 100);
             }
+        } catch (Throwable e) {
+            logger.warn(e.getMessage(), e);
+        }
 
-            try {
-                if (executor != null) {
-                    ExecutorUtil.shutdownNow(executor, 100);
-                }
-            } catch (Throwable e) {
-                logger.warn(e.getMessage(), e);
-            }
+        try {
+            disconnect();
+        } catch (Throwable e) {
+            logger.warn(e.getMessage(), e);
+        }
 
-            try {
-                disconnect();
-            } catch (Throwable e) {
-                logger.warn(e.getMessage(), e);
-            }
-
-            try {
-                doClose();
-            } catch (Throwable e) {
-                logger.warn(e.getMessage(), e);
-            }
-
-        } finally {
-            connectLock.unlock();
+        try {
+            doClose();
+        } catch (Throwable e) {
+            logger.warn(e.getMessage(), e);
         }
     }
 

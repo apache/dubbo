@@ -38,7 +38,6 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     private final AtomicInteger referenceCount = new AtomicInteger(0);
 
     private ExchangeClient client;
-    private LazyConnectExchangeClient lazyConnectExchangeClient;
 
     public ReferenceCountExchangeClient(ExchangeClient client) {
         this.client = client;
@@ -149,7 +148,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
                 client.close(timeout);
             }
 
-            client = replaceWithLazyClient();
+            replaceWithLazyClient();
         }
     }
 
@@ -159,11 +158,12 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     }
 
     /**
-     * close client
+     * when closing the client, the client needs to be set to LazyConnectExchangeClient, and if a new call is made,
+     * the client will "resurrect".
      *
      * @return
      */
-    private LazyConnectExchangeClient replaceWithLazyClient() {
+    private void replaceWithLazyClient() {
         // this is a defensive operation to avoid client is closed by accident, the initial state of the client is false
         URL lazyUrl = url.addParameter(Constants.LAZY_CONNECT_INITIAL_STATE_KEY, Boolean.FALSE)
                 .addParameter(Constants.RECONNECT_KEY, Boolean.FALSE)
@@ -172,11 +172,12 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
                 .addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true)
                 .addParameter("_client_memo", "referencecounthandler.replacewithlazyclient");
 
-        if (lazyConnectExchangeClient == null || lazyConnectExchangeClient.isClosed()) {
-            lazyConnectExchangeClient = new LazyConnectExchangeClient(lazyUrl, client.getExchangeHandler());
+        /**
+         * the order of judgment in the if statement cannot be changed.
+         */
+        if (!(client instanceof LazyConnectExchangeClient) || client.isClosed()) {
+            client = new LazyConnectExchangeClient(lazyUrl, client.getExchangeHandler());
         }
-
-        return lazyConnectExchangeClient;
     }
 
     @Override
