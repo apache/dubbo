@@ -96,7 +96,9 @@ public class AbstractRegistryTest {
         abstractRegistry.register(mockUrl);
         assert abstractRegistry.getRegistered().contains(mockUrl);
         //test multiple urls
-        abstractRegistry.getRegistered().clear();
+        for (URL url : abstractRegistry.getRegistered()) {
+            abstractRegistry.unregister(url);
+        }
         List<URL> urlList = getList();
         for (URL url : urlList) {
             abstractRegistry.register(url);
@@ -122,14 +124,16 @@ public class AbstractRegistryTest {
     public void testUnregister() throws Exception {
         //test one unregister
         URL url = new URL("dubbo", "192.168.0.1", 2200);
-        abstractRegistry.getRegistered().add(url);
+        abstractRegistry.register(url);
         abstractRegistry.unregister(url);
         MatcherAssert.assertThat(false, Matchers.equalTo(abstractRegistry.getRegistered().contains(url)));
         //test multiple unregisters
-        abstractRegistry.getRegistered().clear();
+        for (URL u : abstractRegistry.getRegistered()) {
+            abstractRegistry.unregister(u);
+        }
         List<URL> urlList = getList();
         for (URL urlSub : urlList) {
-            abstractRegistry.getRegistered().add(urlSub);
+            abstractRegistry.register(urlSub);
         }
         for (URL urlSub : urlList) {
             abstractRegistry.unregister(urlSub);
