@@ -146,7 +146,13 @@ public class Constants {
 
     public static final int DEFAULT_ALIVE = 60 * 1000;
 
-    public static final int DEFAULT_CONNECTIONS = 0;
+    /**
+     * By default, a consumer JVM instance and a provider JVM instance share a long TCP connection (except when connections are set),
+     * which can set the number of long TCP connections shared to avoid the bottleneck of sharing a single long TCP connection.
+     */
+    public static final String DEFAULT_SHARE_CONNECTIONS = "1";
+
+    public static final String SHARE_CONNECTIONS_KEY = "shareconnections";
 
     public static final int DEFAULT_ACCEPTS = 0;
 
