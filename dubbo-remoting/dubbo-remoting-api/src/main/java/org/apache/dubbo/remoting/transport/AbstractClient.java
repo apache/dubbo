@@ -176,6 +176,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     }
 
     protected void connect() throws RemotingException {
+
         connectLock.lock();
 
         try {
@@ -191,10 +192,12 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
             }
 
             doConnect();
+
             if (!isConnected()) {
                 throw new RemotingException(this, "Failed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
                         + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
                         + ", cause: Connect wait timeout: " + getConnectTimeout() + "ms.");
+
             } else {
                 if (logger.isInfoEnabled()) {
                     logger.info("Successed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
@@ -337,5 +340,4 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
      * @return channel
      */
     protected abstract Channel getChannel();
-
 }

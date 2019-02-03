@@ -57,6 +57,12 @@ public class ConsumerConfig extends AbstractReferenceConfig {
      */
     private Integer queues;
 
+    /**
+     * By default, a TCP long-connection communication is shared between the consumer process and the provider process.
+     * This property can be set to share multiple TCP long-connection communications. Note that only the dubbo protocol takes effect.
+     */
+    private Integer shareconnections;
+
     @Override
     public void setTimeout(Integer timeout) {
         super.setTimeout(timeout);
@@ -117,5 +123,13 @@ public class ConsumerConfig extends AbstractReferenceConfig {
 
     public void setQueues(Integer queues) {
         this.queues = queues;
+    }
+
+    public Integer getShareconnections() {
+        return shareconnections;
+    }
+
+    public void setShareconnections(Integer shareconnections) {
+        this.shareconnections = shareconnections;
     }
 }
