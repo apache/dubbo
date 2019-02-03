@@ -23,6 +23,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.util.List;
 import java.util.Map;
@@ -30,9 +31,9 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
 
 public class MulticastRegistryTest {
 
@@ -123,5 +124,44 @@ public class MulticastRegistryTest {
             multicastRegistry.destroy();
         }
     }
+
+    @Test
+    public void testMulticastAddress() {
+        InetAddress multicastAddress = null;
+        MulticastSocket multicastSocket = null;
+        try {
+            // ipv4 multicast address
+            multicastAddress = InetAddress.getByName("224.55.66.77");
+            multicastSocket = new MulticastSocket(2345);
+            multicastSocket.setLoopbackMode(false);
+            NetUtils.setInterface(multicastSocket, false);
+            multicastSocket.joinGroup(multicastAddress);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        } finally {
+            if (multicastSocket != null) {
+                multicastSocket.close();
+            }
+        }
+
+        // multicast ipv6 address,
+        try {
+            multicastAddress = InetAddress.getByName("ff01::1");
+
+            multicastSocket = new MulticastSocket();
+            multicastSocket.setLoopbackMode(false);
+            NetUtils.setInterface(multicastSocket, true);
+            multicastSocket.joinGroup(multicastAddress);
+        } catch (Throwable t) {
+            t.printStackTrace();
+        } finally {
+            if (multicastSocket != null) {
+                multicastSocket.close();
+            }
+        }
+
+    }
+
 
 }
