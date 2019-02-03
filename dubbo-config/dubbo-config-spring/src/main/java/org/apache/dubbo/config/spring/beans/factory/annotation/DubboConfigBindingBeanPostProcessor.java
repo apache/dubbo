@@ -128,7 +128,7 @@ public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, A
         this.applicationContext = applicationContext;
     }
 
-    public void init() {
+    private void init() {
 
         if (dubboConfigBinder == null) {
             try {
