@@ -277,26 +277,23 @@ class URL implements Serializable {
     }
 
     public static URL valueOf(URL url, String[] reserveParams, String[] reserveParamPrefixs) {
-        Map<String, String> newMap = new HashMap<String, String>();
+        Map<String, String> newMap = new HashMap<>();
         Map<String, String> oldMap = url.getParameters();
-        if (reserveParamPrefixs != null && reserveParamPrefixs.length != 0) {
-            for (Map.Entry<String, String> entry : oldMap.entrySet()) {
-                for (String reserveParamPrefix : reserveParamPrefixs) {
-                    if (entry.getKey().startsWith(reserveParamPrefix) && StringUtils.isNotEmpty(entry.getValue())) {
-                        newMap.put(entry.getKey(), entry.getValue());
-                    }
-                }
+        
+        if (ArrayUtils.isNotEmpty(reserveParamPrefixs)) {
+            for (String reserveParamPrefix : reserveParamPrefixs) {
+                oldMap.keySet().stream().filter(k -> k.startsWith(reserveParamPrefix))
+                                .filter(k -> StringUtils.isNotEmpty(oldMap.get(k)))
+                                .forEach(k -> newMap.put(k, oldMap.get(k)));
             }
         }
 
         if (reserveParams != null) {
-            for (String reserveParam : reserveParams) {
-                String tmp = oldMap.get(reserveParam);
-                if (StringUtils.isNotEmpty(tmp)) {
-                    newMap.put(reserveParam, tmp);
-                }
-            }
+            Arrays.stream(reserveParams).filter(oldMap::containsKey)
+                            .filter(k -> StringUtils.isNotEmpty(oldMap.get(k)))
+                            .forEach(k -> newMap.put(k, oldMap.get(k)));
         }
+        
         return new URL(url.getProtocol(), url.getUsername(), url.getPassword(), 
                         url.getHost(), url.getPort(), url.getPath(), newMap);
     }
