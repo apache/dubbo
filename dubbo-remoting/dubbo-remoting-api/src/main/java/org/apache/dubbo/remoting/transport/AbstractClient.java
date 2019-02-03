@@ -165,17 +165,27 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         if (needReconnect && !isConnected()) {
             connect();
         }
+
         Channel channel = getChannel();
         //TODO Can the value returned by getChannel() be null? need improvement.
         if (channel == null || !channel.isConnected()) {
             throw new RemotingException(this, "message can not send, because channel is closed . url:" + getUrl());
         }
+
         channel.send(message, sent);
     }
 
     protected void connect() throws RemotingException {
         connectLock.lock();
+
         try {
+
+            if (isClosed()) {
+                throw new RemotingException(this, "No need to connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
+                        + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
+                        + ", cause: client status is closed.");
+            }
+
             if (isConnected()) {
                 return;
             }
@@ -192,12 +202,15 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                             + ", channel is " + this.getChannel());
                 }
             }
+
         } catch (RemotingException e) {
             throw e;
+
         } catch (Throwable e) {
             throw new RemotingException(this, "Failed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
                     + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
                     + ", cause: " + e.getMessage(), e);
+
         } finally {
             connectLock.unlock();
         }
@@ -205,6 +218,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
     public void disconnect() {
         connectLock.lock();
+
         try {
             try {
                 Channel channel = getChannel();
@@ -214,11 +228,13 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
             } catch (Throwable e) {
                 logger.warn(e.getMessage(), e);
             }
+
             try {
                 doDisConnect();
             } catch (Throwable e) {
                 logger.warn(e.getMessage(), e);
             }
+
         } finally {
             connectLock.unlock();
         }
@@ -241,27 +257,38 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
     @Override
     public void close() {
+
+        connectLock.lock();
+
         try {
-            super.close();
-        } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
-        }
-        try {
-            if (executor != null) {
-                ExecutorUtil.shutdownNow(executor, 100);
+            try {
+                super.close();
+            } catch (Throwable e) {
+                logger.warn(e.getMessage(), e);
             }
-        } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
-        }
-        try {
-            disconnect();
-        } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
-        }
-        try {
-            doClose();
-        } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
+
+            try {
+                if (executor != null) {
+                    ExecutorUtil.shutdownNow(executor, 100);
+                }
+            } catch (Throwable e) {
+                logger.warn(e.getMessage(), e);
+            }
+
+            try {
+                disconnect();
+            } catch (Throwable e) {
+                logger.warn(e.getMessage(), e);
+            }
+
+            try {
+                doClose();
+            } catch (Throwable e) {
+                logger.warn(e.getMessage(), e);
+            }
+
+        } finally {
+            connectLock.unlock();
         }
     }
 
