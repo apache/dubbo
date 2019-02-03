@@ -38,6 +38,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * URL - Uniform Resource Locator (Immutable, ThreadSafe)
@@ -75,7 +77,19 @@ public /**final**/
 class URL implements Serializable {
 
     private static final long serialVersionUID = -1985165475234910535L;
+    
+    private static final Pattern PROTOCOL_PATTERN = Pattern.compile("(.*?)://(.*)");
 
+    private static final Pattern PROTOCOL_PATTERN2 = Pattern.compile("(file):(/.*)");
+    
+    private static final Pattern PARAMETERS_PATTERN = Pattern.compile("(.*)\\?(.*)");
+
+    private static final Pattern PATH_PATTERN = Pattern.compile("([^/]*?)/(.*)$");
+    
+    private static final Pattern USER_PATTERN = Pattern.compile("(.*):(.*?)@([^@]*)$");
+    
+    private static final Pattern PORT_PATTERN = Pattern.compile("(.*?):([^:]*)$");
+    
     private final String protocol;
 
     private final String username;
@@ -172,6 +186,27 @@ class URL implements Serializable {
         }
         this.parameters = Collections.unmodifiableMap(parameters);
     }
+    
+    /**
+     * find parameters from query String
+     * @param queryString
+     */
+    public static Map<String, String> findParameters(String queryString) {
+        String[] parts = queryString.split("\\&");
+        Map<String, String> parameters = new HashMap<>();
+        for (String part : parts) {
+            part = part.trim();
+            if (part.length() > 0) {
+                int j = part.indexOf('=');
+                if (j >= 0) {
+                    parameters.put(part.substring(0, j), part.substring(j + 1));
+                } else {
+                    parameters.put(part, part);
+                }
+            }
+        }
+        return parameters;
+    }
 
     /**
      * Parse url string
@@ -191,72 +226,62 @@ class URL implements Serializable {
         int port = 0;
         String path = null;
         Map<String, String> parameters = null;
-        int i = url.indexOf("?"); // seperator between body and parameters
-        if (i >= 0) {
-            String[] parts = url.substring(i + 1).split("\\&");
-            parameters = new HashMap<String, String>();
-            for (String part : parts) {
-                part = part.trim();
-                if (part.length() > 0) {
-                    int j = part.indexOf('=');
-                    if (j >= 0) {
-                        parameters.put(part.substring(0, j), part.substring(j + 1));
-                    } else {
-                        parameters.put(part, part);
-                    }
-                }
-            }
-            url = url.substring(0, i);
+        
+        // parse parameters
+        Matcher matcher = PARAMETERS_PATTERN.matcher(url);
+        if (matcher.find()) {
+            String queryString = matcher.group(2);
+            parameters = findParameters(queryString);
+            url = matcher.group(1);
         }
-        i = url.indexOf("://");
-        if (i >= 0) {
-            if (i == 0) {
+        
+        // parse protocol
+        matcher = PROTOCOL_PATTERN.matcher(url);
+        if (matcher.find()) {
+            protocol = matcher.group(1);
+            if (protocol.isEmpty()) {
                 throw new IllegalStateException("url missing protocol: \"" + url + "\"");
             }
-            protocol = url.substring(0, i);
-            url = url.substring(i + 3);
-        } else {
-            // case: file:/path/to/file.txt
-            i = url.indexOf(":/");
-            if (i >= 0) {
-                if (i == 0) {
-                    throw new IllegalStateException("url missing protocol: \"" + url + "\"");
-                }
-                protocol = url.substring(0, i);
-                url = url.substring(i + 1);
+            url = matcher.group(2);
+        }
+        
+        // for file protocol, try another way
+        matcher = PROTOCOL_PATTERN2.matcher(url);
+        if (matcher.find()) {
+            protocol = matcher.group(1);
+            if (protocol.isEmpty()) {
+                throw new IllegalStateException("url missing protocol: \"" + url + "\"");
             }
+            url = matcher.group(2);
+        }
+        
+        // parse path
+        matcher = PATH_PATTERN.matcher(url);
+        if (matcher.find()) {
+            path = matcher.group(2);
+            url = matcher.group(1);
+        }
+        
+        // parse username, password
+        matcher = USER_PATTERN.matcher(url);
+        if (matcher.find()) {
+            username = matcher.group(1);
+            password = matcher.group(2);
+            url = matcher.group(3);
+        }
+        
+        // parse port
+        matcher = PORT_PATTERN.matcher(url);
+        if (matcher.find() && matcher.group(2).indexOf('%') == -1) {
+            port = Integer.parseInt(matcher.group(2));
+            url = matcher.group(1);
         }
 
-        i = url.indexOf("/");
-        if (i >= 0) {
-            path = url.substring(i + 1);
-            url = url.substring(0, i);
-        }
-        i = url.lastIndexOf("@");
-        if (i >= 0) {
-            username = url.substring(0, i);
-            int j = username.indexOf(":");
-            if (j >= 0) {
-                password = username.substring(j + 1);
-                username = username.substring(0, j);
-            }
-            url = url.substring(i + 1);
-        }
-        i = url.lastIndexOf(":");
-        if (i >= 0 && i < url.length() - 1) {
-            if (url.lastIndexOf("%") > i) {
-                // ipv6 address with scope id
-                // e.g. fe80:0:0:0:894:aeec:f37d:23e1%en0
-                // see https://howdoesinternetwork.com/2013/ipv6-zone-id
-                // ignore
-            } else {
-                port = Integer.parseInt(url.substring(i + 1));
-                url = url.substring(0, i);
-            }
-        }
-        if (url.length() > 0) {
+        // parse host
+        if (!url.isEmpty()) {
             host = url;
         }
+        
         return new URL(protocol, username, password, host, port, path, parameters);
     }
 
@@ -1514,4 +1539,13 @@ class URL implements Serializable {
         return true;
     }
 
+    public static void main(String[] args) {
+        Matcher matcher = USER_PATTERN.matcher("sda1231237:wi@sakdsak@2");
+        if (matcher.find()) {
+            
+        System.out.println(matcher.group(1));
+        System.out.println(matcher.group(2));
+//        System.out.println(matcher.group(3));
+        };
+    }
 }
