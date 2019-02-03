@@ -297,8 +297,8 @@ class URL implements Serializable {
                 }
             }
         }
-        return newMap.isEmpty() ? new URL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath())
-                : new URL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(), newMap);
+        return new URL(url.getProtocol(), url.getUsername(), url.getPassword(), 
+                        url.getHost(), url.getPort(), url.getPath(), newMap);
     }
 
     public static String encode(String value) {
