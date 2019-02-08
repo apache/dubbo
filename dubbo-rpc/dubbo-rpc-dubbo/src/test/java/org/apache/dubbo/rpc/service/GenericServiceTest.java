@@ -58,6 +58,7 @@ public class GenericServiceTest {
         service.setInterface(DemoService.class.getName());
         service.setRef(new GenericService() {
 
+            @Override
             public Object $invoke(String method, String[] parameterTypes, Object[] args)
                     throws GenericException {
                 if ("sayName".equals(method)) {
@@ -252,6 +253,7 @@ public class GenericServiceTest {
         service.setInterface(DemoService.class.getName());
         service.setRef(new GenericService() {
 
+            @Override
             public Object $invoke(String method, String[] parameterTypes, Object[] args) throws GenericException {
                 if ("getUsers".equals(method)) {
                     GenericParameter arg = new GenericParameter();

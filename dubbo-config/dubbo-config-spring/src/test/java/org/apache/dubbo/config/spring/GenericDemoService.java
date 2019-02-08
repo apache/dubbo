@@ -21,6 +21,7 @@ import org.apache.dubbo.rpc.service.GenericService;
 
 public class GenericDemoService implements GenericService {
 
+    @Override
     public Object $invoke(String method, String[] parameterTypes, Object[] args) throws GenericException {
         return null;
     }

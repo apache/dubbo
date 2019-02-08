@@ -50,6 +50,7 @@ import java.io.Serializable;
  *be backed by <b>lru</b>
  *</pre>
  *
+ * @author 王金龙(wangjinlong)
  * @see org.apache.dubbo.rpc.Filter
  * @see org.apache.dubbo.cache.support.lru.LruCacheFactory
  * @see org.apache.dubbo.cache.support.lru.LruCache

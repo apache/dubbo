@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.service;
 /**
  * Generic service interface
  *
+ * @author 王金龙(wangjinlong)
  * @export
  */
 public interface GenericService {

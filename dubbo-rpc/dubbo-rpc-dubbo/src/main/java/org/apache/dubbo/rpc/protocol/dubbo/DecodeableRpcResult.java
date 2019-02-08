@@ -38,6 +38,9 @@ import java.io.OutputStream;
 import java.lang.reflect.Type;
 import java.util.Map;
 
+/**
+ * @author 王金龙(wangjinlong)
+ */
 public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable {
 
     private static final Logger log = LoggerFactory.getLogger(DecodeableRpcResult.class);
