@@ -68,6 +68,18 @@ public class LoggerTest {
         logger.info("info", new Exception("info"));
         logger.debug("debug", new Exception("debug"));
         logger.trace("trace", new Exception("trace"));
+
+        logger.error("error level enabled: %s", logger.isErrorEnabled());
+        logger.warn("warn level enabled: %s", logger.isWarnEnabled());
+        logger.info("info level enabled: %s", logger.isInfoEnabled());
+        logger.debug("debug level enabled: %s", logger.isDebugEnabled());
+        logger.trace("trace level enabled: %s", logger.isTraceEnabled());
+
+        logger.error(new Exception("error"), "error level enabled: %s", logger.isErrorEnabled());
+        logger.warn(new Exception("warn"), "warn level enabled: %s", logger.isWarnEnabled());
+        logger.info(new Exception("info"), "info level enabled: %s", logger.isInfoEnabled());
+        logger.debug(new Exception("debug"), "debug level enabled: %s", logger.isDebugEnabled());
+        logger.trace(new Exception("trace"), "trace level enabled: %s", logger.isTraceEnabled());
     }
 
     @ParameterizedTest

@@ -29,6 +29,18 @@ public interface Logger {
      * @param msg log this message
      */
     void trace(String msg);
+    
+    /**
+     * Logs a message with trace log level.
+     * 
+     * @param format    the format string
+     * @param arguments arguments
+     */
+    default void trace(String format, Object... arguments) {
+    	if (isTraceEnabled()) {
+    		trace(String.format(format, arguments));
+    	}
+    }
 
     /**
      * Logs an error with trace log level.
@@ -44,6 +56,19 @@ public interface Logger {
      * @param e   log this cause
      */
     void trace(String msg, Throwable e);
+    
+    /**
+     * Logs an error with trace log level.
+     * 
+     * @param e         log this cause
+     * @param format    the format string
+     * @param arguments arguments
+     */
+    default void trace(Throwable e, String format, Object... arguments) {
+    	if (isTraceEnabled()) {
+    		trace(String.format(format, arguments), e);
+    	}
+    }
 
     /**
      * Logs a message with debug log level.
@@ -51,7 +76,19 @@ public interface Logger {
      * @param msg log this message
      */
     void debug(String msg);
-
+    
+    /**
+     * Logs a message with debug log level.
+     * 
+     * @param format    the format string
+     * @param arguments arguments
+     */
+    default void debug(String format, Object... arguments) {
+    	if (isTraceEnabled()) {
+    		debug(String.format(format, arguments));
+    	}
+    }
+    
     /**
      * Logs an error with debug log level.
      *
@@ -66,13 +103,38 @@ public interface Logger {
      * @param e   log this cause
      */
     void debug(String msg, Throwable e);
-
+    
+    /**
+     * Logs an error with debug log level.
+     * 
+     * @param e         log this cause
+     * @param format    the format string
+     * @param arguments arguments
+     */
+    default void debug(Throwable e, String format, Object... arguments) {
+    	if (isDebugEnabled()) {
+    		debug(String.format(format, arguments), e);
+    	}
+    }
+    
     /**
      * Logs a message with info log level.
      *
      * @param msg log this message
      */
     void info(String msg);
+    
+    /**
+     * Logs a message with info log level.
+     * 
+     * @param format    the format string
+     * @param arguments arguments
+     */
+    default void info(String format, Object... arguments) {
+    	if (isInfoEnabled()) {
+    		info(String.format(format, arguments));
+    	}
+    }
 
     /**
      * Logs an error with info log level.
@@ -88,13 +150,38 @@ public interface Logger {
      * @param e   log this cause
      */
     void info(String msg, Throwable e);
-
+    
+    /**
+     * Logs an error with info log level.
+     * 
+     * @param e         log this cause
+     * @param format    the format string
+     * @param arguments arguments
+     */
+    default void info(Throwable e, String format, Object... arguments) {
+    	if (isInfoEnabled()) {
+    		info(String.format(format, arguments), e);
+    	}
+    }
+    
     /**
      * Logs a message with warn log level.
      *
      * @param msg log this message
      */
     void warn(String msg);
+    
+    /**
+     * Logs a message with warn log level.
+     * 
+     * @param format    the format string
+     * @param arguments arguments
+     */
+    default void warn(String format, Object... arguments) {
+    	if (isWarnEnabled()) {
+    		warn(String.format(format, arguments));
+    	}
+    }
 
     /**
      * Logs a message with warn log level.
@@ -110,13 +197,38 @@ public interface Logger {
      * @param e   log this cause
      */
     void warn(String msg, Throwable e);
-
+    
+    /**
+     * Logs an error with warn log level.
+     * 
+     * @param e         log this cause
+     * @param format    the format string
+     * @param arguments arguments
+     */
+    default void warn(Throwable e, String format, Object... arguments) {
+    	if (isWarnEnabled()) {
+    		warn(String.format(format, arguments), e);
+    	}
+    }
+    
     /**
      * Logs a message with error log level.
      *
      * @param msg log this message
      */
     void error(String msg);
+    
+    /**
+     * Logs a message with error log level.
+     * 
+     * @param format    the format string
+     * @param arguments arguments
+     */
+    default void error(String format, Object... arguments) {
+    	if (isErrorEnabled()) {
+    		error(String.format(format, arguments));
+    	}
+    }
 
     /**
      * Logs an error with error log level.
@@ -132,7 +244,20 @@ public interface Logger {
      * @param e   log this cause
      */
     void error(String msg, Throwable e);
-
+    
+    /**
+     * Logs an error with error log level.
+     * 
+     * @param e         log this cause
+     * @param format    the format string
+     * @param arguments arguments
+     */
+    default void error(Throwable e, String format, Object... arguments) {
+    	if (isErrorEnabled()) {
+    		error(String.format(format, arguments), e);
+    	}
+    }
+    
     /**
      * Is trace logging currently enabled?
      *
