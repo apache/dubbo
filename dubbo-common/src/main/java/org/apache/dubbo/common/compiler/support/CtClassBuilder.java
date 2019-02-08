@@ -31,11 +31,13 @@ import javassist.LoaderClassPath;
 import javassist.NotFoundException;
 
 /**
- * Javassist class info contains all the information used for JavassistCompiler, including:
+ * CtClassBuilder is builder for CtClass
+ * <p>
+ * contains all the information, including:
  * <p>
  * class name, imported packages, super class name, implemented interfaces, constructors, fields, methods.
  */
-public class JavassistClassInfo {
+public class CtClassBuilder {
 
     private String className;
 

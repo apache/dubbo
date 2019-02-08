@@ -41,26 +41,26 @@ public class JavassistCompiler extends AbstractCompiler {
 
     @Override
     public Class<?> doCompile(String name, String source) throws Throwable {
-        JavassistClassInfo info = new JavassistClassInfo();
-        info.setClassName(name);
+        CtClassBuilder builder = new CtClassBuilder();
+        builder.setClassName(name);
 
         // process imported classes
         Matcher matcher = IMPORT_PATTERN.matcher(source);
         while (matcher.find()) {
-            info.addImports(matcher.group(1).trim());
+            builder.addImports(matcher.group(1).trim());
         }
         
         // process extended super class
         matcher = EXTENDS_PATTERN.matcher(source);
         if (matcher.find()) {
-            info.setSuperClassName(matcher.group(1).trim());
+            builder.setSuperClassName(matcher.group(1).trim());
         }
         
         // process implemented interfaces
         matcher = IMPLEMENTS_PATTERN.matcher(source);
         if (matcher.find()) {
             String[] ifaces = matcher.group(1).trim().split("\\,");
-            Arrays.stream(ifaces).forEach(i -> info.addInterface(i.trim()));
+            Arrays.stream(ifaces).forEach(i -> builder.addInterface(i.trim()));
         }
         
         // process constructors, fields, methods
@@ -69,17 +69,17 @@ public class JavassistCompiler extends AbstractCompiler {
         String className = ClassUtils.getSimpleClassName(name);
         Arrays.stream(methods).map(String::trim).filter(m -> !m.isEmpty()).forEach(method-> {
             if (method.startsWith(className)) {
-                info.addConstructor("public " + method);
+                builder.addConstructor("public " + method);
             } else if (FIELD_PATTERN.matcher(method).matches()) {
-                info.addField("private " + method);
+                builder.addField("private " + method);
             } else {
-                info.addMethod("public " + method);
+                builder.addMethod("public " + method);
             }
         });
         
         // compile
         ClassLoader classLoader = ClassHelper.getCallerClassLoader(getClass());
-        CtClass cls = info.build(classLoader);
+        CtClass cls = builder.build(classLoader);
         return cls.toClass(classLoader, JavassistCompiler.class.getProtectionDomain());
     }
 
