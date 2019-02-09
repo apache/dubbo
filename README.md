@@ -21,6 +21,23 @@ We are now collecting dubbo user info in order to help us to improve dubbo bette
 * [Dubbo developer guide](http://dubbo.io/books/dubbo-dev-book/)
 * [Dubbo admin manual](http://dubbo.io/books/dubbo-admin-book/)
 
+# 个人博客
+
+[http://www.iocoder.cn](http://www.iocoder.cn/?github)
+
+-------
+
+![](http://www.iocoder.cn/images/common/wechat_mp.jpeg)
+
+> 🙂🙂🙂关注**微信公众号：【芋艿的后端小屋】**有福利：  
+> 1. RocketMQ / MyCAT / Sharding-JDBC **所有**源码分析文章列表  
+> 2. RocketMQ / MyCAT / Sharding-JDBC **中文注释源码 GitHub 地址**  
+> 3. 您对于源码的疑问每条留言**都**将得到**认真**回复。**甚至不知道如何读源码也可以请教噢**。  
+> 4. **新的**源码解析文章**实时**收到通知。**每周更新一篇左右**。
+
+-------
+
+* 知识星球：![知识星球](http://www.iocoder.cn/images/Architecture/2017_12_29/01.png)
 ## 精尽 Dubbo 源码解析
 
 * [《精尽 Dubbo 源码分析 —— 调试环境搭建》](http://www.iocoder.cn/Dubbo/good-collection?github&1610)
