@@ -20,6 +20,7 @@
         <module name="NoLineWrap"/>
         <module name="OuterTypeFilename"/>
         <module name="UnusedImports"/>
+        <module name="RedundantImport"/>
 
         <!--<module name="CustomImportOrder">-->
         <!--<property name="specialImportsRegExp" value="org.apache.dubbo.*"/>-->
