@@ -27,7 +27,6 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
@@ -56,8 +55,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.Constants.LOCALHOST_VALUE;
@@ -101,11 +98,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
      * A random port cache, the different protocols who has no port specified have different random port
      */
     private static final Map<String, Integer> RANDOM_PORT_MAP = new HashMap<String, Integer>();
-
-    /**
-     * A delayed exposure service timer
-     */
-    private static final ScheduledExecutorService delayExportExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboServiceDelayExporter", true));
 
     /**
      * The urls of the services exported
@@ -341,7 +333,15 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
 
         if (delay != null && delay > 0) {
-            delayExportExecutor.schedule(this::doExport, delay, TimeUnit.MILLISECONDS);
+            new NamedThreadFactory("DubboServiceDelayExporter", true).newThread(() -> {
+                try {
+                    logger.info("Dubbo service " + interfaceClass.getName() + " will delay export for " + delay + " ms");
+                    TimeUnit.MILLISECONDS.sleep(delay);
+                    doExport();
+                } catch (InterruptedException e) {
+                    logger.error("Expected error occured when export " + interfaceClass.getName(), e);
+                }
+            }).start();
         } else {
             doExport();
         }
@@ -779,7 +779,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (provider != null) {
             return;
         }
-        setProvider (
+        setProvider(
                 ConfigManager.getInstance()
                         .getDefaultProvider()
                         .orElseGet(() -> {
@@ -810,15 +810,15 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
         if (StringUtils.isEmpty(protocolIds)) {
             if (CollectionUtils.isEmpty(protocols)) {
-               setProtocols(
-                       ConfigManager.getInstance().getDefaultProtocols()
-                        .filter(CollectionUtils::isNotEmpty)
-                        .orElseGet(() -> {
-                            ProtocolConfig protocolConfig = new ProtocolConfig();
-                            protocolConfig.refresh();
-                            return Arrays.asList(protocolConfig);
-                        })
-               );
+                setProtocols(
+                        ConfigManager.getInstance().getDefaultProtocols()
+                                .filter(CollectionUtils::isNotEmpty)
+                                .orElseGet(() -> {
+                                    ProtocolConfig protocolConfig = new ProtocolConfig();
+                                    protocolConfig.refresh();
+                                    return Arrays.asList(protocolConfig);
+                                })
+                );
             }
         } else {
             String[] arr = Constants.COMMA_SPLIT_PATTERN.split(protocolIds);
