@@ -26,7 +26,6 @@ import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.exchange.ResponseFuture;
 
 import java.net.InetSocketAddress;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -38,19 +37,12 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     private final URL url;
     private final AtomicInteger referenceCount = new AtomicInteger(0);
 
-    //    private final ExchangeHandler handler;
-    private final ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap;
     private ExchangeClient client;
 
-
-    public ReferenceCountExchangeClient(ExchangeClient client, ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap) {
+    public ReferenceCountExchangeClient(ExchangeClient client) {
         this.client = client;
         referenceCount.incrementAndGet();
         this.url = client.getUrl();
-        if (ghostClientMap == null) {
-            throw new IllegalStateException("ghostClientMap can not be null, url: " + url);
-        }
-        this.ghostClientMap = ghostClientMap;
     }
 
     @Override
@@ -151,10 +143,12 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
         if (referenceCount.decrementAndGet() <= 0) {
             if (timeout == 0) {
                 client.close();
+
             } else {
                 client.close(timeout);
             }
-            client = replaceWithLazyClient();
+
+            replaceWithLazyClient();
         }
     }
 
@@ -163,8 +157,13 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
         client.startClose();
     }
 
-    // ghost client
-    private LazyConnectExchangeClient replaceWithLazyClient() {
+    /**
+     * when closing the client, the client needs to be set to LazyConnectExchangeClient, and if a new call is made,
+     * the client will "resurrect".
+     *
+     * @return
+     */
+    private void replaceWithLazyClient() {
         // this is a defensive operation to avoid client is closed by accident, the initial state of the client is false
         URL lazyUrl = url.addParameter(Constants.LAZY_CONNECT_INITIAL_STATE_KEY, Boolean.FALSE)
                 .addParameter(Constants.RECONNECT_KEY, Boolean.FALSE)
@@ -173,14 +172,12 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
                 .addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true)
                 .addParameter("_client_memo", "referencecounthandler.replacewithlazyclient");
 
-        String key = url.getAddress();
-        // in worst case there's only one ghost connection.
-        LazyConnectExchangeClient gclient = ghostClientMap.get(key);
-        if (gclient == null || gclient.isClosed()) {
-            gclient = new LazyConnectExchangeClient(lazyUrl, client.getExchangeHandler());
-            ghostClientMap.put(key, gclient);
+        /**
+         * the order of judgment in the if statement cannot be changed.
+         */
+        if (!(client instanceof LazyConnectExchangeClient) || client.isClosed()) {
+            client = new LazyConnectExchangeClient(lazyUrl, client.getExchangeHandler());
         }
-        return gclient;
     }
 
     @Override
@@ -192,3 +189,4 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
         referenceCount.incrementAndGet();
     }
 }
+

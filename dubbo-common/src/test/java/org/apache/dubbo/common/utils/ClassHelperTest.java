@@ -25,6 +25,7 @@ import static org.apache.dubbo.common.utils.ClassHelper.getCallerClassLoader;
 import static org.apache.dubbo.common.utils.ClassHelper.getClassLoader;
 import static org.apache.dubbo.common.utils.ClassHelper.resolvePrimitiveClassName;
 import static org.apache.dubbo.common.utils.ClassHelper.toShortString;
+import static org.apache.dubbo.common.utils.ClassHelper.convertPrimitive;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
@@ -118,4 +119,43 @@ public class ClassHelperTest {
         assertThat(toShortString(null), equalTo("null"));
         assertThat(toShortString(new ClassHelperTest()), startsWith("ClassHelperTest@"));
     }
+
+    @Test
+    public void testConvertPrimitive() throws Exception {
+
+        assertThat(convertPrimitive(char.class, ""), equalTo('\0'));
+        assertThat(convertPrimitive(char.class, null), equalTo(null));
+        assertThat(convertPrimitive(char.class, "6"), equalTo('6'));
+
+        assertThat(convertPrimitive(boolean.class, ""), equalTo(Boolean.FALSE));
+        assertThat(convertPrimitive(boolean.class, null), equalTo(null));
+        assertThat(convertPrimitive(boolean.class, "true"), equalTo(Boolean.TRUE));
+
+
+        assertThat(convertPrimitive(byte.class, ""), equalTo(null));
+        assertThat(convertPrimitive(byte.class, null), equalTo(null));
+        assertThat(convertPrimitive(byte.class, "127"), equalTo(Byte.MAX_VALUE));
+
+
+        assertThat(convertPrimitive(short.class, ""), equalTo(null));
+        assertThat(convertPrimitive(short.class, null), equalTo(null));
+        assertThat(convertPrimitive(short.class, "32767"), equalTo(Short.MAX_VALUE));
+
+        assertThat(convertPrimitive(int.class, ""), equalTo(null));
+        assertThat(convertPrimitive(int.class, null), equalTo(null));
+        assertThat(convertPrimitive(int.class, "6"), equalTo(6));
+
+        assertThat(convertPrimitive(long.class, ""), equalTo(null));
+        assertThat(convertPrimitive(long.class, null), equalTo(null));
+        assertThat(convertPrimitive(long.class, "6"), equalTo(new Long(6)));
+
+        assertThat(convertPrimitive(float.class, ""), equalTo(null));
+        assertThat(convertPrimitive(float.class, null), equalTo(null));
+        assertThat(convertPrimitive(float.class, "1.1"), equalTo(new Float(1.1)));
+
+        assertThat(convertPrimitive(double.class, ""), equalTo(null));
+        assertThat(convertPrimitive(double.class, null), equalTo(null));
+        assertThat(convertPrimitive(double.class, "10.1"), equalTo(new Double(10.1)));
+    }
+
 }
