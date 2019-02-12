@@ -136,9 +136,6 @@ public class RestProtocol extends AbstractProxyProtocol {
 
     @Override
     protected <T> T doRefer(Class<T> serviceType, URL url) throws RpcException {
-        if (connectionMonitor == null) {
-            connectionMonitor = new ConnectionMonitor();
-        }
 
         // TODO more configs to add
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
@@ -146,8 +143,11 @@ public class RestProtocol extends AbstractProxyProtocol {
         connectionManager.setMaxTotal(url.getParameter(Constants.CONNECTIONS_KEY, HTTPCLIENTCONNECTIONMANAGER_MAXTOTAL));
         connectionManager.setDefaultMaxPerRoute(url.getParameter(Constants.CONNECTIONS_KEY, HTTPCLIENTCONNECTIONMANAGER_MAXPERROUTE));
 
+        if (connectionMonitor == null) {
+            connectionMonitor = new ConnectionMonitor();
+            connectionMonitor.start();
+        }
         connectionMonitor.addConnectionManager(connectionManager);
-        connectionMonitor.start();
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(url.getParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT))
                 .setSocketTimeout(url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT))
