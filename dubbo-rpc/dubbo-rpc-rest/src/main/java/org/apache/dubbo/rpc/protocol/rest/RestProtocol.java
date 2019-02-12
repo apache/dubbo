@@ -147,7 +147,7 @@ public class RestProtocol extends AbstractProxyProtocol {
         connectionManager.setDefaultMaxPerRoute(url.getParameter(Constants.CONNECTIONS_KEY, HTTPCLIENTCONNECTIONMANAGER_MAXPERROUTE));
 
         connectionMonitor.addConnectionManager(connectionManager);
-        connectionMonitor.run();
+        connectionMonitor.start();
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(url.getParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT))
                 .setSocketTimeout(url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT))
