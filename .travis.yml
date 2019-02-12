@@ -16,6 +16,12 @@ script:
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
-
+  - '[[ $TRAVIS_BRANCH == "master" ]] && [[ ${TRAVIS_PULL_REQUEST} == ''false'' ]] &&
+    [[ ${TRAVIS_TAG} == '''' ]] && mvn clean deploy --settings .travis.settings.xml'
 after_failure:
-  - if [ -f dubbo.log ]; then echo "------TAIL of dubbo.log------"; tail -n 1000 dubbo.log; echo "------END of dubbo.log------"; fi
+  - if [ -f dubbo.log ]; then echo "------TAIL of dubbo.log------"; tail -n 1000 dubbo.log;
+    echo "------END of dubbo.log------"; fi
+env:
+  global:
+  - secure: V00SmqT1+NOuhU7l4JnrywGyqFv09/xcpxuIrxHwyKvLuvKBSaAyauDPiOChT3vMZbqs6YJCxc2GuzXJv3dxJ78aQ0GFke1SsfkPXi+Fi+/lMzL0k1gQ/QcmupSJoBYyVgQGu0weECmKFqVcIgIFsMTWhjVAXIfQZYPJSKNmnrE=
+  - secure: J8YiOI+kE1WvFjsV7dlpb9OK+wZqbXsHvDgJhVPUKBxguvOZhuQnFK3erOIoCsxSaP+VJsYKw7ORBpqWt0/nIOD/AROtFDP+VEsR7HU2C3mGAa8Kvt+rC5hwk2KQcvVwIvThvrdBpOpv/Frcgod6fc2DLZho8MrxwX3nYrACTnA=
