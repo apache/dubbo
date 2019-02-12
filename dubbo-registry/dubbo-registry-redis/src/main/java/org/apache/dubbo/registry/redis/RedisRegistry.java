@@ -75,7 +75,7 @@ public class RedisRegistry extends FailbackRegistry {
     private final ScheduledFuture<?> expireFuture;
 
     /**
-     * The actual root，if there has not a root configured, it will specifiy a default root automatically
+     * The actual root，if there has no root configured, it will specifiy a default root automatically
      */
     private final String root;
 
@@ -106,8 +106,7 @@ public class RedisRegistry extends FailbackRegistry {
         GenericObjectPoolConfig config = configRedisPool(url);
 
         String cluster = url.getParameter("cluster", Constants.DEFAULT_CLUSTER);
-        replicate = isReplicate(cluster);
-        if (!isDefaultCluster(cluster) && !replicate) {
+        if (!Constants.DEFAULT_CLUSTER.equals(cluster) && !(replicate = Constants.REDIS_REPLICATE_KEY.equals(cluster))) {
             throw new IllegalArgumentException("Unsupported redis cluster: " + cluster + ". The redis cluster only supports failover or replicate.");
         }
 
@@ -324,7 +323,6 @@ public class RedisRegistry extends FailbackRegistry {
             try (Jedis jedis = jedisPool.getResource()) {
                 if (service.endsWith(Constants.ANY_VALUE)) {
                     admin = true;
-                    //TODO replace keys with scan
                     Set<String> keys = jedis.keys(service);
                     if (CollectionUtils.isNotEmpty(keys)) {
                         Map<String, Set<String>> serviceKeys = new HashMap<>();
@@ -620,13 +618,5 @@ public class RedisRegistry extends FailbackRegistry {
         }
 
         return config;
-    }
-
-    private static boolean isDefaultCluster(String cluster) {
-        return Constants.DEFAULT_CLUSTER.equals(cluster);
-    }
-
-    private static boolean isReplicate(String cluster) {
-        return Constants.REDIS_REPLICATE_KEY.equals(cluster);
     }
 }

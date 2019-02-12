@@ -56,7 +56,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     private final static String DEFAULT_ROOT = "dubbo";
 
     /**
-     * The actual root, If there is no configuration, it will be the default root
+     * The actual root, If there has no configuration, it will specifiy a default root automatically
      */
     private final String root;
 

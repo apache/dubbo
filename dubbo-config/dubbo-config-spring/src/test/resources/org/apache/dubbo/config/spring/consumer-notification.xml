@@ -26,9 +26,7 @@
 
     <!-- service reference configuration -->
     <dubbo:reference id="demoService" interface="org.apache.dubbo.config.spring.api.DemoService">
-        <dubbo:method name="sayName" onreturn="notify.getBox" onthrow="notify.getBox" oninvoke="notify.getBox">
-            <dubbo:argument callback="true"></dubbo:argument>
-        </dubbo:method>
+        <dubbo:method name="sayName" onreturn="notify.getBox" onthrow="notify.getBox" oninvoke="notify.getBox"/>
     </dubbo:reference>
 
 </beans>

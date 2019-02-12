@@ -379,8 +379,7 @@ public abstract class AbstractRegistry implements Registry {
         Map<String, List<URL>> result = new HashMap<>();
         urls.stream().filter(u -> UrlUtils.isMatch(url, u)).forEach(u -> {
             String category = u.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY);
-            List<URL> categoryList = result.computeIfAbsent(category, k -> new ArrayList<>());
-            categoryList.add(u);
+            result.computeIfAbsent(category, k -> new ArrayList<>()).add(u);
         });
 
         if (result.size() == 0) {
