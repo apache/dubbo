@@ -436,6 +436,7 @@
                                 <exclude>CODE_OF_CONDUCT.md</exclude>
                                 <exclude>.codecov.yml</exclude>
                                 <exclude>.travis.yml</exclude>
+                                <exclude>.travis.settings.xml</exclude>
                                 <exclude>PULL_REQUEST_TEMPLATE.md</exclude>
                                 <exclude>CONTRIBUTING.md</exclude>
                                 <exclude>README.md</exclude>
