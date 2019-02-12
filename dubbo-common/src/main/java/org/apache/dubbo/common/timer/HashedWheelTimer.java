@@ -109,8 +109,8 @@ public class HashedWheelTimer implements Timer {
     private final HashedWheelBucket[] wheel;
     private final int mask;
     private final CountDownLatch startTimeInitialized = new CountDownLatch(1);
-    private final Queue<HashedWheelTimeout> timeouts = new LinkedBlockingQueue<>(1024);
-    private final Queue<HashedWheelTimeout> cancelledTimeouts = new LinkedBlockingQueue<>(1024);
+    private final Queue<HashedWheelTimeout> timeouts = new LinkedBlockingQueue<>();
+    private final Queue<HashedWheelTimeout> cancelledTimeouts = new LinkedBlockingQueue<>();
     private final AtomicLong pendingTimeouts = new AtomicLong(0);
     private final long maxPendingTimeouts;
 
