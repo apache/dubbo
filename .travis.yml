@@ -23,5 +23,5 @@ after_failure:
     echo "------END of dubbo.log------"; fi
 env:
   global:
-  - secure: dDd1Bw6M2Xyi42El3SUX8ZZLQzjwsLc/fEhED/7k+GVOLi4XvqVCwCQCTHWbgLQ0anFPyOoB+wvO+dxwjJ++eYIgZ4V7IDRar8lQwURfIwXpVc3sQzhWYJEOUqWJznUDbIsyQ9yjnfwjcbqUD34HoadBcAk8AMWiQFErx38J/ok=
-  - secure: AmcdSdqB+AEbi7F2SqpJwFdlZegVr5Lfxh4TOheoaiwPI1IOkJuDuuZ6KEnYzZZVCnXpT6n9Z5kEJ6haL/s2LadCjBvnPsUXxTveVoIeAIwgP8oUyo87jWiPdiMBj14Hj7xWSb0cD9lE25VIUzhvwXBZuM62PAJ4bwAesW3Xz9w=
+  - secure: cXKA9/6CBBLbNLGN49i7ka4rhetDIbiCidbfcFV1A0owrnYjv3AuVn/sVVEA/V8JhsrEPXUpj6e+gkBlKj7cECS6Gxd4SbOgAcGEss8VoTDUMlyxMI1Ope80oGFkpmvnM5ZZMSrFJBdFvlCg3ndppCafnf+74vNQrO3R6YcvyXM=
+  - secure: NpBwgZg6jEpv3I4/vGmbsGORaMk6eyPBsiLSgWudW0RMfxRLG/UuwoxnS3GVcjtFFzbCp3EFxzoLOpfic6IxoZW8RTC657poP0TAkHA0np5ITXbXSYUBlGrnAWYD2gVPGbePyXQ/+x9Y1msTPF5jAc+AVpdlIXC847kL0Yovk94=
