@@ -825,8 +825,10 @@ public class Constants {
      * Production environment key.
      */
     public static final String PRODUCTION_ENVIRONMENT = "product";
-    /*
-     * private Constants(){ }
+
+    /**
+     * The redis replicate key
      */
+    public static final String REDIS_REPLICATE_KEY = "replicate";
 
 }

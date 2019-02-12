@@ -60,18 +60,33 @@ public class RedisRegistry extends FailbackRegistry {
 
     private static final Logger logger = LoggerFactory.getLogger(RedisRegistry.class);
 
+    /**
+     * The default redis port
+     */
     private static final int DEFAULT_REDIS_PORT = 6379;
 
+    /**
+     * The default root node's name
+     */
     private final static String DEFAULT_ROOT = "dubbo";
 
     private final ScheduledExecutorService expireExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("DubboRegistryExpireTimer", true));
 
     private final ScheduledFuture<?> expireFuture;
 
+    /**
+     * The actual root，if there has not a root configured, it will specifiy a default root automatically
+     */
     private final String root;
 
+    /**
+     * The mapping the cluster address with a jedisPool
+     */
     private final Map<String, JedisPool> jedisPools = new ConcurrentHashMap<>();
 
+    /**
+     * The mapping the cluster address with the Listener
+     */
     private final ConcurrentMap<String, Notifier> notifiers = new ConcurrentHashMap<>();
 
     private final int reconnectPeriod;
@@ -87,40 +102,14 @@ public class RedisRegistry extends FailbackRegistry {
         if (url.isAnyHost()) {
             throw new IllegalStateException("registry address == null");
         }
-        GenericObjectPoolConfig config = new GenericObjectPoolConfig();
-        config.setTestOnBorrow(url.getParameter("test.on.borrow", true));
-        config.setTestOnReturn(url.getParameter("test.on.return", false));
-        config.setTestWhileIdle(url.getParameter("test.while.idle", false));
-        if (url.getParameter("max.idle", 0) > 0) {
-            config.setMaxIdle(url.getParameter("max.idle", 0));
-        }
-        if (url.getParameter("min.idle", 0) > 0) {
-            config.setMinIdle(url.getParameter("min.idle", 0));
-        }
-        if (url.getParameter("max.active", 0) > 0) {
-            config.setMaxTotal(url.getParameter("max.active", 0));
-        }
-        if (url.getParameter("max.total", 0) > 0) {
-            config.setMaxTotal(url.getParameter("max.total", 0));
-        }
-        if (url.getParameter("max.wait", url.getParameter("timeout", 0)) > 0) {
-            config.setMaxWaitMillis(url.getParameter("max.wait", url.getParameter("timeout", 0)));
-        }
-        if (url.getParameter("num.tests.per.eviction.run", 0) > 0) {
-            config.setNumTestsPerEvictionRun(url.getParameter("num.tests.per.eviction.run", 0));
-        }
-        if (url.getParameter("time.between.eviction.runs.millis", 0) > 0) {
-            config.setTimeBetweenEvictionRunsMillis(url.getParameter("time.between.eviction.runs.millis", 0));
-        }
-        if (url.getParameter("min.evictable.idle.time.millis", 0) > 0) {
-            config.setMinEvictableIdleTimeMillis(url.getParameter("min.evictable.idle.time.millis", 0));
-        }
 
-        String cluster = url.getParameter("cluster", "failover");
-        if (!"failover".equals(cluster) && !"replicate".equals(cluster)) {
-            throw new IllegalArgumentException("Unsupported redis cluster: " + cluster + ". The redis cluster only supported failover or replicate.");
+        GenericObjectPoolConfig config = configRedisPool(url);
+
+        String cluster = url.getParameter("cluster", Constants.DEFAULT_CLUSTER);
+        replicate = isReplicate(cluster);
+        if (!isDefaultCluster(cluster) && !replicate) {
+            throw new IllegalArgumentException("Unsupported redis cluster: " + cluster + ". The redis cluster only supports failover or replicate.");
         }
-        replicate = "replicate".equals(cluster);
 
         List<String> addresses = new ArrayList<>();
         addresses.add(url.getAddress());
@@ -160,7 +149,7 @@ public class RedisRegistry extends FailbackRegistry {
             try {
                 deferExpired(); // Extend the expiration time
             } catch (Throwable t) { // Defensive fault tolerance
-                logger.error("Unexpected exception occur at defer expire time, cause: " + t.getMessage(), t);
+                logger.error("Unexpected exception occurred at defer expire time, cause: " + t.getMessage(), t);
             }
         }, expirePeriod / 2, expirePeriod / 2, TimeUnit.MILLISECONDS);
     }
@@ -168,22 +157,19 @@ public class RedisRegistry extends FailbackRegistry {
     private void deferExpired() {
         for (Map.Entry<String, JedisPool> entry : jedisPools.entrySet()) {
             JedisPool jedisPool = entry.getValue();
-            try {
-                try (Jedis jedis = jedisPool.getResource()) {
-                    for (URL url : new HashSet<>(getRegistered())) {
-                        if (url.getParameter(Constants.DYNAMIC_KEY, true)) {
-                            String key = toCategoryPath(url);
-                            if (jedis.hset(key, url.toFullString(), String.valueOf(System.currentTimeMillis() + expirePeriod)) == 1) {
-                                jedis.publish(key, Constants.REGISTER);
-                            }
-                        }
+            try (Jedis jedis = jedisPool.getResource()) {
+                Set<URL> registered = getRegistered();
+                registered.stream().filter(url -> url.getParameter(Constants.DYNAMIC_KEY, true)).forEach(url -> {
+                    String key = toCategoryPath(url);
+                    if (jedis.hset(key, url.toFullString(), String.valueOf(System.currentTimeMillis() + expirePeriod)) == 1) {
+                        jedis.publish(key, Constants.REGISTER);
                     }
-                    if (admin) {
-                        clean(jedis);
-                    }
-                    if (!replicate) {
-                        break;//  If the server side has synchronized data, just write a single machine
-                    }
+                });
+                if (admin) {
+                    clean(jedis);
+                }
+                if (!replicate) {
+                    break;//  If the server side has synchronized data, just write a single machine
                 }
             } catch (Throwable t) {
                 logger.warn("Failed to write provider heartbeat to redis registry. registry: " + entry.getKey() + ", cause: " + t.getMessage(), t);
@@ -229,6 +215,7 @@ public class RedisRegistry extends FailbackRegistry {
                     return true; // At least one single machine is available.
                 }
             } catch (Throwable t) {
+                logger.warn(t.getMessage(), t);
             }
         }
         return false;
@@ -249,14 +236,15 @@ public class RedisRegistry extends FailbackRegistry {
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
         }
-        for (Map.Entry<String, JedisPool> entry : jedisPools.entrySet()) {
-            JedisPool jedisPool = entry.getValue();
+
+        jedisPools.forEach((address, jedisPool) -> {
             try {
                 jedisPool.destroy();
             } catch (Throwable t) {
-                logger.warn("Failed to destroy the redis registry client. registry: " + entry.getKey() + ", cause: " + t.getMessage(), t);
+                logger.warn("Failed to destroy the redis registry client. registry: " + address + ", cause: " + t.getMessage(), t);
             }
-        }
+        });
+
         ExecutorUtil.gracefulShutdown(expireExecutor, expirePeriod);
     }
 
@@ -269,14 +257,12 @@ public class RedisRegistry extends FailbackRegistry {
         RpcException exception = null;
         for (Map.Entry<String, JedisPool> entry : jedisPools.entrySet()) {
             JedisPool jedisPool = entry.getValue();
-            try {
-                try (Jedis jedis = jedisPool.getResource()) {
-                    jedis.hset(key, value, expire);
-                    jedis.publish(key, Constants.REGISTER);
-                    success = true;
-                    if (!replicate) {
-                        break; //  If the server side has synchronized data, just write a single machine
-                    }
+            try (Jedis jedis = jedisPool.getResource()) {
+                jedis.hset(key, value, expire);
+                jedis.publish(key, Constants.REGISTER);
+                success = true;
+                if (!replicate) {
+                    break; //  If the server side has synchronized data, just write a single machine
                 }
             } catch (Throwable t) {
                 exception = new RpcException("Failed to register service to redis registry. registry: " + entry.getKey() + ", service: " + url + ", cause: " + t.getMessage(), t);
@@ -299,14 +285,12 @@ public class RedisRegistry extends FailbackRegistry {
         boolean success = false;
         for (Map.Entry<String, JedisPool> entry : jedisPools.entrySet()) {
             JedisPool jedisPool = entry.getValue();
-            try {
-                try (Jedis jedis = jedisPool.getResource()) {
-                    jedis.hdel(key, value);
-                    jedis.publish(key, Constants.UNREGISTER);
-                    success = true;
-                    if (!replicate) {
-                        break; //  If the server side has synchronized data, just write a single machine
-                    }
+            try (Jedis jedis = jedisPool.getResource()) {
+                jedis.hdel(key, value);
+                jedis.publish(key, Constants.UNREGISTER);
+                success = true;
+                if (!replicate) {
+                    break; //  If the server side has synchronized data, just write a single machine
                 }
             } catch (Throwable t) {
                 exception = new RpcException("Failed to unregister service to redis registry. registry: " + entry.getKey() + ", service: " + url + ", cause: " + t.getMessage(), t);
@@ -337,28 +321,27 @@ public class RedisRegistry extends FailbackRegistry {
         RpcException exception = null;
         for (Map.Entry<String, JedisPool> entry : jedisPools.entrySet()) {
             JedisPool jedisPool = entry.getValue();
-            try {
-                try (Jedis jedis = jedisPool.getResource()) {
-                    if (service.endsWith(Constants.ANY_VALUE)) {
-                        admin = true;
-                        Set<String> keys = jedis.keys(service);
-                        if (CollectionUtils.isNotEmpty(keys)) {
-                            Map<String, Set<String>> serviceKeys = new HashMap<>();
-                            for (String key : keys) {
-                                String serviceKey = toServicePath(key);
-                                Set<String> sk = serviceKeys.computeIfAbsent(serviceKey, k -> new HashSet<>());
-                                sk.add(key);
-                            }
-                            for (Set<String> sk : serviceKeys.values()) {
-                                doNotify(jedis, sk, url, Collections.singletonList(listener));
-                            }
+            try (Jedis jedis = jedisPool.getResource()) {
+                if (service.endsWith(Constants.ANY_VALUE)) {
+                    admin = true;
+                    //TODO replace keys with scan
+                    Set<String> keys = jedis.keys(service);
+                    if (CollectionUtils.isNotEmpty(keys)) {
+                        Map<String, Set<String>> serviceKeys = new HashMap<>();
+                        for (String key : keys) {
+                            String serviceKey = toServicePath(key);
+                            Set<String> sk = serviceKeys.computeIfAbsent(serviceKey, k -> new HashSet<>());
+                            sk.add(key);
                         }
-                    } else {
-                        doNotify(jedis, jedis.keys(service + Constants.PATH_SEPARATOR + Constants.ANY_VALUE), url, Collections.singletonList(listener));
+                        for (Set<String> sk : serviceKeys.values()) {
+                            doNotify(jedis, sk, url, Collections.singletonList(listener));
+                        }
                     }
-                    success = true;
-                    break; // Just read one server's data
+                } else {
+                    doNotify(jedis, jedis.keys(service + Constants.PATH_SEPARATOR + Constants.ANY_VALUE), url, Collections.singletonList(listener));
                 }
+                success = true;
+                break; // Just read one server's data
             } catch (Throwable t) { // Try the next server
                 exception = new RpcException("Failed to subscribe service from redis registry. registry: " + entry.getKey() + ", service: " + url + ", cause: " + t.getMessage(), t);
             }
@@ -383,8 +366,7 @@ public class RedisRegistry extends FailbackRegistry {
     }
 
     private void doNotify(Jedis jedis, Collection<String> keys, URL url, Collection<NotifyListener> listeners) {
-        if (keys == null || keys.isEmpty()
-                || listeners == null || listeners.isEmpty()) {
+        if (CollectionUtils.isEmpty(keys) || CollectionUtils.isEmpty(listeners)) {
             return;
         }
         long now = System.currentTimeMillis();
@@ -405,15 +387,14 @@ public class RedisRegistry extends FailbackRegistry {
             List<URL> urls = new ArrayList<>();
             Map<String, String> values = jedis.hgetAll(key);
             if (CollectionUtils.isNotEmptyMap(values)) {
-                for (Map.Entry<String, String> entry : values.entrySet()) {
-                    URL u = URL.valueOf(entry.getKey());
-                    if (!u.getParameter(Constants.DYNAMIC_KEY, true)
-                            || Long.parseLong(entry.getValue()) >= now) {
-                        if (UrlUtils.isMatch(url, u)) {
-                            urls.add(u);
-                        }
+                values.forEach((address, expire) -> {
+                    URL u = URL.valueOf(address);
+                    if ((!u.getParameter(Constants.DYNAMIC_KEY, true)
+                            || Long.parseLong(expire) >= now)
+                            && UrlUtils.isMatch(url, u)) {
+                        urls.add(u);
                     }
-                }
+                });
             }
             if (urls.isEmpty()) {
                 urls.add(url.setProtocol(Constants.EMPTY_PROTOCOL)
@@ -423,7 +404,7 @@ public class RedisRegistry extends FailbackRegistry {
             }
             result.addAll(urls);
             if (logger.isInfoEnabled()) {
-                logger.info("redis notify: " + key + " = " + urls);
+                logger.info("Redis notify: " + key + " = " + urls);
             }
         }
         if (CollectionUtils.isEmpty(result)) {
@@ -473,17 +454,11 @@ public class RedisRegistry extends FailbackRegistry {
         @Override
         public void onMessage(String key, String msg) {
             if (logger.isInfoEnabled()) {
-                logger.info("redis event: " + key + " = " + msg);
+                logger.info("Redis event: " + key + " = " + msg);
             }
-            if (msg.equals(Constants.REGISTER)
-                    || msg.equals(Constants.UNREGISTER)) {
-                try {
-                    Jedis jedis = jedisPool.getResource();
-                    try {
-                        doNotify(jedis, key);
-                    } finally {
-                        jedis.close();
-                    }
+            if (Constants.REGISTER.equals(msg) || Constants.UNREGISTER.equals(msg)) {
+                try (Jedis jedis = jedisPool.getResource()) {
+                    doNotify(jedis, key);
                 } catch (Throwable t) { // TODO Notification failure does not restore mechanism guarantee
                     logger.error(t.getMessage(), t);
                 }
@@ -612,7 +587,46 @@ public class RedisRegistry extends FailbackRegistry {
                 logger.warn(t.getMessage(), t);
             }
         }
-
     }
 
+    private static GenericObjectPoolConfig configRedisPool(final URL url) {
+        GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+        config.setTestOnBorrow(url.getParameter("test.on.borrow", true));
+        config.setTestOnReturn(url.getParameter("test.on.return", false));
+        config.setTestWhileIdle(url.getParameter("test.while.idle", false));
+        if (url.getParameter("max.idle", 0) > 0) {
+            config.setMaxIdle(url.getParameter("max.idle", 0));
+        }
+        if (url.getParameter("min.idle", 0) > 0) {
+            config.setMinIdle(url.getParameter("min.idle", 0));
+        }
+        if (url.getParameter("max.active", 0) > 0) {
+            config.setMaxTotal(url.getParameter("max.active", 0));
+        }
+        if (url.getParameter("max.total", 0) > 0) {
+            config.setMaxTotal(url.getParameter("max.total", 0));
+        }
+        if (url.getParameter("max.wait", url.getParameter("timeout", 0)) > 0) {
+            config.setMaxWaitMillis(url.getParameter("max.wait", url.getParameter("timeout", 0)));
+        }
+        if (url.getParameter("num.tests.per.eviction.run", 0) > 0) {
+            config.setNumTestsPerEvictionRun(url.getParameter("num.tests.per.eviction.run", 0));
+        }
+        if (url.getParameter("time.between.eviction.runs.millis", 0) > 0) {
+            config.setTimeBetweenEvictionRunsMillis(url.getParameter("time.between.eviction.runs.millis", 0));
+        }
+        if (url.getParameter("min.evictable.idle.time.millis", 0) > 0) {
+            config.setMinEvictableIdleTimeMillis(url.getParameter("min.evictable.idle.time.millis", 0));
+        }
+
+        return config;
+    }
+
+    private static boolean isDefaultCluster(String cluster) {
+        return Constants.DEFAULT_CLUSTER.equals(cluster);
+    }
+
+    private static boolean isReplicate(String cluster) {
+        return Constants.REDIS_REPLICATE_KEY.equals(cluster);
+    }
 }
