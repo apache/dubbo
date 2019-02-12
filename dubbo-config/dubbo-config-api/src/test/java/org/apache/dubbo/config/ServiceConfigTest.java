@@ -52,6 +52,7 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.withSettings;
 
 public class ServiceConfigTest {
@@ -155,6 +156,7 @@ public class ServiceConfigTest {
     @Test
     public void testDelayExport() throws Exception {
         delayService.export();
+        assertTrue(delayService.getExportedUrls().isEmpty());
         //add 300ms to ensure that the delayService has been exported
         TimeUnit.MILLISECONDS.sleep(delayService.getDelay() + 300);
         assertThat(delayService.getExportedUrls(), hasSize(1));
