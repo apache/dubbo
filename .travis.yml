@@ -16,12 +16,12 @@ script:
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
-  - '[[ $TRAVIS_BRANCH == "master" ]] && [[ ${TRAVIS_PULL_REQUEST} == ''false'' ]] &&
-    [[ ${TRAVIS_TAG} == '''' ]] && mvn clean deploy --settings .travis.settings.xml'
+  - "[[ $TRAVIS_BRANCH == 'master' ]] && [[ ${TRAVIS_PULL_REQUEST} == 'false' ]] &&
+    [[ ${TRAVIS_TAG} == '' ]] && mvn clean deploy --settings .travis.settings.xml"
 after_failure:
   - if [ -f dubbo.log ]; then echo "------TAIL of dubbo.log------"; tail -n 1000 dubbo.log;
     echo "------END of dubbo.log------"; fi
 env:
   global:
-  - secure: V00SmqT1+NOuhU7l4JnrywGyqFv09/xcpxuIrxHwyKvLuvKBSaAyauDPiOChT3vMZbqs6YJCxc2GuzXJv3dxJ78aQ0GFke1SsfkPXi+Fi+/lMzL0k1gQ/QcmupSJoBYyVgQGu0weECmKFqVcIgIFsMTWhjVAXIfQZYPJSKNmnrE=
-  - secure: J8YiOI+kE1WvFjsV7dlpb9OK+wZqbXsHvDgJhVPUKBxguvOZhuQnFK3erOIoCsxSaP+VJsYKw7ORBpqWt0/nIOD/AROtFDP+VEsR7HU2C3mGAa8Kvt+rC5hwk2KQcvVwIvThvrdBpOpv/Frcgod6fc2DLZho8MrxwX3nYrACTnA=
+  - secure: dDd1Bw6M2Xyi42El3SUX8ZZLQzjwsLc/fEhED/7k+GVOLi4XvqVCwCQCTHWbgLQ0anFPyOoB+wvO+dxwjJ++eYIgZ4V7IDRar8lQwURfIwXpVc3sQzhWYJEOUqWJznUDbIsyQ9yjnfwjcbqUD34HoadBcAk8AMWiQFErx38J/ok=
+  - secure: AmcdSdqB+AEbi7F2SqpJwFdlZegVr5Lfxh4TOheoaiwPI1IOkJuDuuZ6KEnYzZZVCnXpT6n9Z5kEJ6haL/s2LadCjBvnPsUXxTveVoIeAIwgP8oUyo87jWiPdiMBj14Hj7xWSb0cD9lE25VIUzhvwXBZuM62PAJ4bwAesW3Xz9w=
