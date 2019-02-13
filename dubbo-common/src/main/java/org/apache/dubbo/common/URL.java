@@ -191,11 +191,19 @@ class URL implements Serializable {
         int port = 0;
         String path = null;
         Map<String, String> parameters = null;
-        int i = url.indexOf("?"); // seperator between body and parameters
+        
+        // extract parameter map, query string is separated by '?'
+        int i = url.indexOf("?"); // 
         if (i >= 0) {
             parameters = getParameterMap(url.substring(i + 1));
             url = url.substring(0, i);
         }
+        
+        /*
+         * extract protocol, maybe in the following style: 
+         * http://xxx.com
+         * file:/path/to/file.txt
+         */
         i = url.indexOf("://");
         if (i >= 0) {
             if (i == 0) {
@@ -215,11 +223,18 @@ class URL implements Serializable {
             }
         }
 
+        // extract path
         i = url.indexOf("/");
         if (i >= 0) {
             path = url.substring(i + 1);
             url = url.substring(0, i);
         }
+        
+        /* extract username password, password if optional, both could include '@':
+         * http://username@xxx.com
+         * http://username:password@xxx.com
+         * http://username@:pass@word@xxx.com
+         */
         i = url.lastIndexOf("@");
         if (i >= 0) {
             username = url.substring(0, i);
@@ -230,6 +245,12 @@ class URL implements Serializable {
             }
             url = url.substring(i + 1);
         }
+        
+        /*
+         * extract port, with caution for ipv6 address with scope id:
+         * http://username@xxx.com:80
+         * http://fe80:0:0:0:894:aeec:f37d:23e1%en0
+         */
         i = url.lastIndexOf(":");
         if (i >= 0 && i < url.length() - 1) {
             if (url.lastIndexOf("%") > i) {
@@ -247,7 +268,7 @@ class URL implements Serializable {
         }
         return new URL(protocol, username, password, host, port, path, parameters);
     }
-
+    
     /**
      * get parameter map from URL query string
      */
