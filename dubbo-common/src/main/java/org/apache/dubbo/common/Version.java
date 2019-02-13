@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassHelper;
 import org.apache.dubbo.common.utils.StringUtils;
 
+import java.io.IOException;
 import java.net.URL;
 import java.security.CodeSource;
 import java.util.Enumeration;
@@ -210,17 +211,7 @@ public final class Version {
     public static void checkDuplicate(String path, boolean failOnError) {
         try {
             // search in caller's classloader
-            Enumeration<URL> urls = ClassHelper.getCallerClassLoader(Version.class).getResources(path);
-            Set<String> files = new HashSet<String>();
-            while (urls.hasMoreElements()) {
-                URL url = urls.nextElement();
-                if (url != null) {
-                    String file = url.getFile();
-                    if (file != null && file.length() > 0) {
-                        files.add(file);
-                    }
-                }
-            }
+            Set<String> files = getResources(path);
             // duplicated jar is found
             if (files.size() > 1) {
                 String error = "Duplicate class " + path + " in " + files.size() + " jar " + files;
@@ -233,6 +224,24 @@ public final class Version {
         } catch (Throwable e) {
             logger.error(e.getMessage(), e);
         }
+    }
+
+    /**
+     * search resources in caller's classloader
+     */
+    private static Set<String> getResources(String path) throws IOException {
+        Enumeration<URL> urls = ClassHelper.getCallerClassLoader(Version.class).getResources(path);
+        Set<String> files = new HashSet<String>();
+        while (urls.hasMoreElements()) {
+            URL url = urls.nextElement();
+            if (url != null) {
+                String file = url.getFile();
+                if (file != null && file.length() > 0) {
+                    files.add(file);
+                }
+            }
+        }
+        return files;
     }
 
 }
