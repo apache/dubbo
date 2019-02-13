@@ -32,10 +32,7 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import java.lang.reflect.*;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -162,15 +159,14 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             try {
                 return method.invoke(bean, args);
-            } catch (Throwable e) {
+            } catch (UndeclaredThrowableException e) {
                 logger.error("Convert RpcException to real exception");
-
-                Throwable t;
-                while ((t = e.getCause()) != null) {
-                    e = t;
+                // Only care InvocationTargetException in UndeclaredThrowableException
+                if (e.getCause() instanceof InvocationTargetException) {
+                    throw e.getCause().getCause();
+                } else {
+                    throw e;
                 }
-
-                throw e;
             }
         }
 
