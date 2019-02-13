@@ -193,19 +193,7 @@ class URL implements Serializable {
         Map<String, String> parameters = null;
         int i = url.indexOf("?"); // seperator between body and parameters
         if (i >= 0) {
-            String[] parts = url.substring(i + 1).split("\\&");
-            parameters = new HashMap<String, String>();
-            for (String part : parts) {
-                part = part.trim();
-                if (part.length() > 0) {
-                    int j = part.indexOf('=');
-                    if (j >= 0) {
-                        parameters.put(part.substring(0, j), part.substring(j + 1));
-                    } else {
-                        parameters.put(part, part);
-                    }
-                }
-            }
+            parameters = getParameterMap(url.substring(i + 1));
             url = url.substring(0, i);
         }
         i = url.indexOf("://");
@@ -258,6 +246,27 @@ class URL implements Serializable {
             host = url;
         }
         return new URL(protocol, username, password, host, port, path, parameters);
+    }
+
+    /**
+     * get parameter map from URL query string
+     */
+    private static Map<String, String> getParameterMap(String queryString) {
+        Map<String, String> parameters;
+        String[] parts = queryString.split("\\&");
+        parameters = new HashMap<>();
+        for (String part : parts) {
+            part = part.trim();
+            if (part.length() > 0) {
+                int j = part.indexOf('=');
+                if (j >= 0) {
+                    parameters.put(part.substring(0, j), part.substring(j + 1));
+                } else {
+                    parameters.put(part, part);
+                }
+            }
+        }
+        return parameters;
     }
 
     public static URL valueOf(String url, String... reserveParams) {
