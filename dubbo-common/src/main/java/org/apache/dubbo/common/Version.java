@@ -145,21 +145,27 @@ public final class Version {
         try {
             // find version info from MANIFEST.MF first
             String version = cls.getPackage().getImplementationVersion();
-            if (StringUtils.isEmpty(version)) {
-                version = cls.getPackage().getSpecificationVersion();
+            if (!StringUtils.isEmpty(version)) {
+                return version;
             }
-            if (StringUtils.isEmpty(version)) {
-                // guess version fro jar file name if nothing's found from MANIFEST.MF
-                CodeSource codeSource = cls.getProtectionDomain().getCodeSource();
-                if (codeSource == null) {
-                    logger.info("No codeSource for class " + cls.getName() + " when getVersion, use default version " + defaultVersion);
-                } else {
-                    String file = codeSource.getLocation().getFile();
-                    if (file != null && file.length() > 0 && file.endsWith(".jar")) {
-                        version = getFromFile(file);
-                    }
-                }
+            
+            version = cls.getPackage().getSpecificationVersion();
+            if (!StringUtils.isEmpty(version)) {
+                return version;
             }
+            
+            // guess version fro jar file name if nothing's found from MANIFEST.MF
+            CodeSource codeSource = cls.getProtectionDomain().getCodeSource();
+            if (codeSource == null) {
+                logger.info("No codeSource for class " + cls.getName() + " when getVersion, use default version " + defaultVersion);
+                return defaultVersion;
+            } 
+            
+            String file = codeSource.getLocation().getFile();
+            if (!StringUtils.isEmpty(file) && file.endsWith(".jar")) {
+                version = getFromFile(file);
+            }
+            
             // return default version if no version info is found
             return StringUtils.isEmpty(version) ? defaultVersion : version;
         } catch (Throwable e) {
