@@ -28,12 +28,16 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Version
  */
 public final class Version {
     private static final Logger logger = LoggerFactory.getLogger(Version.class);
+    
+    private static final Pattern PREFIX_DIGITS_PATTERN = Pattern.compile("^([0-9]*).*");
 
     // Dubbo RPC protocol version, for compatibility, it must not be between 2.0.10 ~ 2.6.2
     public static final String DEFAULT_DUBBO_PROTOCOL_VERSION = "2.0.2";
@@ -125,22 +129,15 @@ public final class Version {
         return v;
     }
 
+    /**
+     * get prefix digits from given version string
+     */
     private static String getPrefixDigits(String v) {
-        int index = 0;
-        for (int i = 0; i < v.length(); i++) {
-            char c = v.charAt(i);
-            if (Character.isDigit(c)) {
-                if (i == v.length() - 1) {
-                    index = i + 1;
-                } else {
-                    index = i;
-                }
-            } else {
-                index = i;
-                break;
-            }
+        Matcher matcher = PREFIX_DIGITS_PATTERN.matcher(v);
+        if (matcher.find()) {
+            return matcher.group(1);
         }
-        return v.substring(0, index);
+        return "";
     }
 
     public static String getVersion(Class<?> cls, String defaultVersion) {
