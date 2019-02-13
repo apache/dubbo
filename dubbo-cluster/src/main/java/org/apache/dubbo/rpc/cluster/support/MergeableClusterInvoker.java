@@ -114,7 +114,7 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
                     resultList.add(r);
                 }
             } catch (Exception e) {
-                throw new RpcException("Failed to invoke service " + entry.getKey() + ": " + e.getMessage(), e);
+                log.error("Failed to invoke service " + entry.getKey() + ": " + e.getMessage(), e);
             }
         }
 
