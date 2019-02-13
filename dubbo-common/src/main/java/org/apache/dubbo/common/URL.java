@@ -349,7 +349,7 @@ class URL implements Serializable {
 
     public String getAuthority() {
         if (StringUtils.isEmpty(username)
-                && StringUtils.isEmpty(parameter)) {
+                && StringUtils.isEmpty(password)) {
             return null;
         }
         return (username == null ? "" : username)
