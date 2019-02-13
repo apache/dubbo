@@ -143,14 +143,6 @@ public final class Version {
         return v.substring(0, index);
     }
 
-    private static boolean hasResource(String path) {
-        try {
-            return Version.class.getClassLoader().getResource(path) != null;
-        } catch (Throwable t) {
-            return false;
-        }
-    }
-
     public static String getVersion(Class<?> cls, String defaultVersion) {
         try {
             // find version info from MANIFEST.MF first
