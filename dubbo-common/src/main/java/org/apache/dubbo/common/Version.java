@@ -166,24 +166,7 @@ public final class Version {
                 } else {
                     String file = codeSource.getLocation().getFile();
                     if (file != null && file.length() > 0 && file.endsWith(".jar")) {
-                        file = file.substring(0, file.length() - 4);
-                        int i = file.lastIndexOf('/');
-                        if (i >= 0) {
-                            file = file.substring(i + 1);
-                        }
-                        i = file.indexOf("-");
-                        if (i >= 0) {
-                            file = file.substring(i + 1);
-                        }
-                        while (file.length() > 0 && !Character.isDigit(file.charAt(0))) {
-                            i = file.indexOf("-");
-                            if (i >= 0) {
-                                file = file.substring(i + 1);
-                            } else {
-                                break;
-                            }
-                        }
-                        version = file;
+                        version = getFromFile(file);
                     }
                 }
             }
@@ -194,6 +177,37 @@ public final class Version {
             logger.error("return default version, ignore exception " + e.getMessage(), e);
             return defaultVersion;
         }
+    }
+
+    /**
+     * get version from file: path/to/group-module-x.y.z.jar, returns x.y.z
+     */
+    private static String getFromFile(String file) {
+        // remove suffix ".jar": "path/to/group-module-x.y.z"
+        file = file.substring(0, file.length() - 4);
+        
+        // remove path: "group-module-x.y.z"
+        int i = file.lastIndexOf('/');
+        if (i >= 0) {
+            file = file.substring(i + 1);
+        }
+        
+        // remove group: "module-x.y.z"
+        i = file.indexOf("-");
+        if (i >= 0) {
+            file = file.substring(i + 1);
+        }
+        
+        // remove module: "x.y.z"
+        while (file.length() > 0 && !Character.isDigit(file.charAt(0))) {
+            i = file.indexOf("-");
+            if (i >= 0) {
+                file = file.substring(i + 1);
+            } else {
+                break;
+            }
+        }
+        return file;
     }
 
     public static void checkDuplicate(Class<?> cls, boolean failOnError) {
