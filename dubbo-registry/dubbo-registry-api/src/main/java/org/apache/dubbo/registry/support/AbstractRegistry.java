@@ -25,7 +25,6 @@ import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.UrlUtils;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 
@@ -155,33 +154,23 @@ public abstract class AbstractRegistry implements Registry {
             if (!lockfile.exists()) {
                 lockfile.createNewFile();
             }
-            RandomAccessFile raf = new RandomAccessFile(lockfile, "rw");
-            try {
-                FileChannel channel = raf.getChannel();
+            try (RandomAccessFile raf = new RandomAccessFile(lockfile, "rw");
+                 FileChannel channel = raf.getChannel()) {
+                FileLock lock = channel.tryLock();
+                if (lock == null) {
+                    throw new IOException("Can not lock the registry cache file " + file.getAbsolutePath() + ", ignore and retry later, maybe multi java process use the file, please config: dubbo.registry.file=xxx.properties");
+                }
+                // Save
                 try {
-                    FileLock lock = channel.tryLock();
-                    if (lock == null) {
-                        throw new IOException("Can not lock the registry cache file " + file.getAbsolutePath() + ", ignore and retry later, maybe multi java process use the file, please config: dubbo.registry.file=xxx.properties");
+                    if (!file.exists()) {
+                        file.createNewFile();
                     }
-                    // Save
-                    try {
-                        if (!file.exists()) {
-                            file.createNewFile();
-                        }
-                        FileOutputStream outputFile = new FileOutputStream(file);
-                        try {
-                            properties.store(outputFile, "Dubbo Registry Cache");
-                        } finally {
-                            outputFile.close();
-                        }
-                    } finally {
-                        lock.release();
+                    try (FileOutputStream outputFile = new FileOutputStream(file)) {
+                        properties.store(outputFile, "Dubbo Registry Cache");
                     }
                 } finally {
-                    channel.close();
+                    lock.release();
                 }
-            } finally {
-                raf.close();
             }
         } catch (Throwable e) {
             if (version < lastCacheChanged.get()) {

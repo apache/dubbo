@@ -419,13 +419,10 @@ public class TTable implements TComponent {
      */
     private static int width(String string) {
         int maxWidth = 0;
-        final Scanner scanner = new Scanner(new StringReader(string));
-        try {
+        try (Scanner scanner = new Scanner(new StringReader(string))) {
             while (scanner.hasNextLine()) {
                 maxWidth = max(length(scanner.nextLine()), maxWidth);
             }
-        } finally {
-            scanner.close();
         }
         return maxWidth;
     }
