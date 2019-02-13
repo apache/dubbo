@@ -120,12 +120,12 @@ public final class Version {
         String[] vArr = version.split("\\.");
         int len = vArr.length;
         for (int i = 0; i < len; i++) {
-            v += Integer.parseInt(getDigital(vArr[i])) * Math.pow(10, (len - i - 1) * 2);
+            v += Integer.parseInt(getPrefixDigits(vArr[i])) * Math.pow(10, (len - i - 1) * 2);
         }
         return v;
     }
 
-    private static String getDigital(String v) {
+    private static String getPrefixDigits(String v) {
         int index = 0;
         for (int i = 0; i < v.length(); i++) {
             char c = v.charAt(i);
