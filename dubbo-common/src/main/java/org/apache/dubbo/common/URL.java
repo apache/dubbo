@@ -193,7 +193,7 @@ class URL implements Serializable {
         Map<String, String> parameters = null;
         
         // extract parameter map, query string is separated by '?'
-        int i = url.indexOf("?"); // 
+        int i = url.indexOf("?");
         if (i >= 0) {
             parameters = getParameterMap(url.substring(i + 1));
             url = url.substring(0, i);
