@@ -22,10 +22,10 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.bytecode.Wrapper;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ClassHelper;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
@@ -305,8 +305,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
         ref = createProxy(map);
 
-        ConsumerModel consumerModel = new ConsumerModel(getUniqueServiceName(), interfaceClass, ref, interfaceClass.getMethods(), attributes);
-        ApplicationModel.initConsumerModel(getUniqueServiceName(), consumerModel);
+        String serviceKey = URL.buildKey(interfaceName, group, version);
+        ConsumerModel consumerModel = new ConsumerModel(serviceKey, interfaceClass, ref, interfaceClass.getMethods(), attributes);
+        ApplicationModel.initConsumerModel(serviceKey, consumerModel);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
@@ -559,19 +560,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     // just for test
     Invoker<?> getInvoker() {
         return invoker;
-    }
-
-    @Parameter(excluded = true)
-    public String getUniqueServiceName() {
-        StringBuilder buf = new StringBuilder();
-        if (group != null && group.length() > 0) {
-            buf.append(group).append("/");
-        }
-        buf.append(interfaceName);
-        if (StringUtils.isNotEmpty(version)) {
-            buf.append(":").append(version);
-        }
-        return buf.toString();
     }
 
     @Override

@@ -90,7 +90,7 @@ public class RestProtocol extends AbstractProxyProtocol {
     @Override
     protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
         String addr = getAddr(url);
-        Class implClass = ApplicationModel.getProviderModel(url.getServiceKey()).getServiceInstance().getClass();
+        Class implClass = ApplicationModel.getProviderModel(url.getPathKey()).getServiceInstance().getClass();
         RestServer server = servers.get(addr);
         if (server == null) {
             server = serverFactory.createServer(url.getParameter(Constants.SERVER_KEY, DEFAULT_SERVER));
@@ -238,8 +238,21 @@ public class RestProtocol extends AbstractProxyProtocol {
         clients.clear();
     }
 
+    /**
+     *  getPath() will return: [contextpath + "/" +] path
+     *  1. contextpath is empty if user does not set through ProtocolConfig or ProviderConfig
+     *  2. path will never be empty, it's default value is the interface name.
+     *
+     * @return return path only if user has explicitly gave then a value.
+     */
     protected String getContextPath(URL url) {
         String contextPath = url.getPath();
+        if (contextPath.equalsIgnoreCase(url.getParameter(Constants.INTERFACE_KEY))) {
+            return "";
+        }
+        if (contextPath.endsWith(url.getParameter(Constants.INTERFACE_KEY))) {
+            contextPath = contextPath.substring(0, contextPath.lastIndexOf(url.getParameter(Constants.INTERFACE_KEY)));
+        }
         return contextPath.endsWith("/") ? contextPath.substring(0, contextPath.length() - 1) : contextPath;
     }
 
