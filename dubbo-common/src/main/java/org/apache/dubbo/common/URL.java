@@ -1059,33 +1059,27 @@ class URL implements Serializable {
      * @return A new URL
      */
     public URL addParameters(Map<String, String> parameters) {
-        if (CollectionUtils.isEmptyMap(parameters)) {
-            return this;
-        }
-
-        boolean hasAndEqual = true;
-        for (Map.Entry<String, String> entry : parameters.entrySet()) {
-            String value = getParameters().get(entry.getKey());
-            if (value == null) {
-                if (entry.getValue() != null) {
-                    hasAndEqual = false;
-                    break;
-                }
-            } else {
-                if (!value.equals(entry.getValue())) {
-                    hasAndEqual = false;
-                    break;
-                }
-            }
-        }
         // return immediately if there's no change
-        if (hasAndEqual) {
+        if (CollectionUtils.isEmptyMap(parameters) || this.contains(parameters)) {
             return this;
         }
 
         Map<String, String> map = new HashMap<String, String>(getParameters());
         map.putAll(parameters);
         return new URL(protocol, username, password, host, port, path, map);
+    }
+
+    /**
+     * test if parameters are already contained in the url
+     */
+    private boolean contains(Map<String, String> parameters) {
+        for (Map.Entry<String, String> entry : parameters.entrySet()) {
+            String value = getParameters().get(entry.getKey());
+            if (!StringUtils.isEquals(value, entry.getValue())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public URL addParametersIfAbsent(Map<String, String> parameters) {
