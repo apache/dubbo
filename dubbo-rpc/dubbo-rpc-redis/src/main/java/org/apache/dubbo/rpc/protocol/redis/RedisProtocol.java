@@ -98,84 +98,85 @@ public class RedisProtocol extends AbstractProtocol {
             if (url.getParameter("min.evictable.idle.time.millis", 0) > 0) {
                 config.setMinEvictableIdleTimeMillis(url.getParameter("min.evictable.idle.time.millis", 0));
             }
-            final JedisPool jedisPool = new JedisPool(config, url.getHost(), url.getPort(DEFAULT_PORT),
-                    url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT),
-                    StringUtils.isBlank(url.getPassword()) ? null : url.getPassword(),
-                    url.getParameter("db.index", 0));
-            final int expiry = url.getParameter("expiry", 0);
-            final String get = url.getParameter("get", "get");
-            final String set = url.getParameter("set", Map.class.equals(type) ? "put" : "set");
-            final String delete = url.getParameter("delete", Map.class.equals(type) ? "remove" : "delete");
-            return new AbstractInvoker<T>(type, url) {
-                @Override
-                protected Result doInvoke(Invocation invocation) throws Throwable {
-                    Jedis jedis = null;
-                    try {
-                        jedis = jedisPool.getResource();
+            try (JedisPool jedisPool = new JedisPool(config, url.getHost(), url.getPort(DEFAULT_PORT),
+                url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT),
+                StringUtils.isBlank(url.getPassword()) ? null : url.getPassword(),
+                url.getParameter("db.index", 0))) {
+                final int expiry = url.getParameter("expiry", 0);
+                final String get = url.getParameter("get", "get");
+                final String set = url.getParameter("set", Map.class.equals(type) ? "put" : "set");
+                final String delete = url.getParameter("delete", Map.class.equals(type) ? "remove" : "delete");
+                return new AbstractInvoker<T>(type, url) {
+                    @Override
+                    protected Result doInvoke(Invocation invocation) throws Throwable {
+                        Jedis jedis = null;
+                        try {
+                            jedis = jedisPool.getResource();
 
-                        if (get.equals(invocation.getMethodName())) {
-                            if (invocation.getArguments().length != 1) {
-                                throw new IllegalArgumentException("The redis get method arguments mismatch, must only one arguments. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url);
-                            }
-                            byte[] value = jedis.get(String.valueOf(invocation.getArguments()[0]).getBytes());
-                            if (value == null) {
+                            if (get.equals(invocation.getMethodName())) {
+                                if (invocation.getArguments().length != 1) {
+                                    throw new IllegalArgumentException("The redis get method arguments mismatch, must only one arguments. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url);
+                                }
+                                byte[] value = jedis.get(String.valueOf(invocation.getArguments()[0]).getBytes());
+                                if (value == null) {
+                                    return new RpcResult();
+                                }
+                                ObjectInput oin = getSerialization(url).deserialize(url, new ByteArrayInputStream(value));
+                                return new RpcResult(oin.readObject());
+                            } else if (set.equals(invocation.getMethodName())) {
+                                if (invocation.getArguments().length != 2) {
+                                    throw new IllegalArgumentException("The redis set method arguments mismatch, must be two arguments. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url);
+                                }
+                                byte[] key = String.valueOf(invocation.getArguments()[0]).getBytes();
+                                ByteArrayOutputStream output = new ByteArrayOutputStream();
+                                ObjectOutput value = getSerialization(url).serialize(url, output);
+                                value.writeObject(invocation.getArguments()[1]);
+                                jedis.set(key, output.toByteArray());
+                                if (expiry > 1000) {
+                                    jedis.expire(key, expiry / 1000);
+                                }
                                 return new RpcResult();
+                            } else if (delete.equals(invocation.getMethodName())) {
+                                if (invocation.getArguments().length != 1) {
+                                    throw new IllegalArgumentException("The redis delete method arguments mismatch, must only one arguments. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url);
+                                }
+                                jedis.del(String.valueOf(invocation.getArguments()[0]).getBytes());
+                                return new RpcResult();
+                            } else {
+                                throw new UnsupportedOperationException("Unsupported method " + invocation.getMethodName() + " in redis service.");
                             }
-                            ObjectInput oin = getSerialization(url).deserialize(url, new ByteArrayInputStream(value));
-                            return new RpcResult(oin.readObject());
-                        } else if (set.equals(invocation.getMethodName())) {
-                            if (invocation.getArguments().length != 2) {
-                                throw new IllegalArgumentException("The redis set method arguments mismatch, must be two arguments. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url);
+                        } catch (Throwable t) {
+                            RpcException re = new RpcException("Failed to invoke redis service method. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url + ", cause: " + t.getMessage(), t);
+                            if (t instanceof TimeoutException || t instanceof SocketTimeoutException) {
+                                re.setCode(RpcException.TIMEOUT_EXCEPTION);
+                            } else if (t instanceof JedisConnectionException || t instanceof IOException) {
+                                re.setCode(RpcException.NETWORK_EXCEPTION);
+                            } else if (t instanceof JedisDataException) {
+                                re.setCode(RpcException.SERIALIZATION_EXCEPTION);
                             }
-                            byte[] key = String.valueOf(invocation.getArguments()[0]).getBytes();
-                            ByteArrayOutputStream output = new ByteArrayOutputStream();
-                            ObjectOutput value = getSerialization(url).serialize(url, output);
-                            value.writeObject(invocation.getArguments()[1]);
-                            jedis.set(key, output.toByteArray());
-                            if (expiry > 1000) {
-                                jedis.expire(key, expiry / 1000);
-                            }
-                            return new RpcResult();
-                        } else if (delete.equals(invocation.getMethodName())) {
-                            if (invocation.getArguments().length != 1) {
-                                throw new IllegalArgumentException("The redis delete method arguments mismatch, must only one arguments. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url);
-                            }
-                            jedis.del(String.valueOf(invocation.getArguments()[0]).getBytes());
-                            return new RpcResult();
-                        } else {
-                            throw new UnsupportedOperationException("Unsupported method " + invocation.getMethodName() + " in redis service.");
-                        }
-                    } catch (Throwable t) {
-                        RpcException re = new RpcException("Failed to invoke redis service method. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url + ", cause: " + t.getMessage(), t);
-                        if (t instanceof TimeoutException || t instanceof SocketTimeoutException) {
-                            re.setCode(RpcException.TIMEOUT_EXCEPTION);
-                        } else if (t instanceof JedisConnectionException || t instanceof IOException) {
-                            re.setCode(RpcException.NETWORK_EXCEPTION);
-                        } else if (t instanceof JedisDataException) {
-                            re.setCode(RpcException.SERIALIZATION_EXCEPTION);
-                        }
-                        throw re;
-                    } finally {
-                        if (jedis != null) {
-                            try {
-                                jedis.close();
-                            } catch (Throwable t) {
-                                logger.warn("returnResource error: " + t.getMessage(), t);
+                            throw re;
+                        } finally {
+                            if (jedis != null) {
+                                try {
+                                    jedis.close();
+                                } catch (Throwable t) {
+                                    logger.warn("returnResource error: " + t.getMessage(), t);
+                                }
                             }
                         }
                     }
-                }
 
-                @Override
-                public void destroy() {
-                    super.destroy();
-                    try {
-                        jedisPool.destroy();
-                    } catch (Throwable e) {
-                        logger.warn(e.getMessage(), e);
+                    @Override
+                    public void destroy() {
+                        super.destroy();
+                        try {
+                            jedisPool.destroy();
+                        } catch (Throwable e) {
+                            logger.warn(e.getMessage(), e);
+                        }
                     }
-                }
-            };
+                };
+            }
         } catch (Throwable t) {
             throw new RpcException("Failed to refer redis service. interface: " + type.getName() + ", url: " + url + ", cause: " + t.getMessage(), t);
         }
