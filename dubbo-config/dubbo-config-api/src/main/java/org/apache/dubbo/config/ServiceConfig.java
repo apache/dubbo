@@ -84,7 +84,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
      *
      * <li>when the url is dubbo://224.5.6.7:1234/org.apache.dubbo.config.api.DemoService?application=dubbo-sample, then
      * the protocol is <b>DubboProtocol</b></li>
-     *
+     * <p>
      * Actually，when the {@link ExtensionLoader} init the {@link Protocol} instants,it will automatically wraps two
      * layers, and eventually will get a <b>ProtocolFilterWrapper</b> or <b>ProtocolListenerWrapper</b>
      */
@@ -358,7 +358,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (path == null || path.length() == 0) {
             path = interfaceName;
         }
-        ProviderModel providerModel = new ProviderModel(getUniqueServiceName(), ref, interfaceClass);
+        ProviderModel providerModel = new ProviderModel(interfaceName, group, version, ref, interfaceClass);
         ApplicationModel.initProviderModel(getUniqueServiceName(), providerModel);
         doExportUrls();
     }
@@ -790,7 +790,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (provider != null) {
             return;
         }
-        setProvider (
+        setProvider(
                 ConfigManager.getInstance()
                         .getDefaultProvider()
                         .orElseGet(() -> {
@@ -821,15 +821,15 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
         if (StringUtils.isEmpty(protocolIds)) {
             if (CollectionUtils.isEmpty(protocols)) {
-               setProtocols(
-                       ConfigManager.getInstance().getDefaultProtocols()
-                        .filter(CollectionUtils::isNotEmpty)
-                        .orElseGet(() -> {
-                            ProtocolConfig protocolConfig = new ProtocolConfig();
-                            protocolConfig.refresh();
-                            return Arrays.asList(protocolConfig);
-                        })
-               );
+                setProtocols(
+                        ConfigManager.getInstance().getDefaultProtocols()
+                                .filter(CollectionUtils::isNotEmpty)
+                                .orElseGet(() -> {
+                                    ProtocolConfig protocolConfig = new ProtocolConfig();
+                                    protocolConfig.refresh();
+                                    return Arrays.asList(protocolConfig);
+                                })
+                );
             }
         } else {
             String[] arr = Constants.COMMA_SPLIT_PATTERN.split(protocolIds);

@@ -26,6 +26,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ServiceMetadata {
 
     private final String serviceKey;
+    private final String serviceInterfaceName;
+    private final String group;
+    private final String version;
     private final Class<?> serviceType;
 
     /* will be transferred to remote side */
@@ -33,8 +36,11 @@ public class ServiceMetadata {
     /* used locally*/
     private final Map<String, Object> attributeMap = new ConcurrentHashMap<String, Object>();
 
-    public ServiceMetadata(String serviceKey, Class<?> serviceType) {
-        this.serviceKey = serviceKey;
+    public ServiceMetadata(String serviceInterfaceName, String group, String version, Class<?> serviceType) {
+        this.serviceInterfaceName = serviceInterfaceName;
+        this.group = group;
+        this.version = version;
+        this.serviceKey = serviceInterfaceName + ":" + version;
         this.serviceType = serviceType;
     }
 
@@ -61,4 +67,17 @@ public class ServiceMetadata {
     public Class<?> getServiceType() {
         return serviceType;
     }
+
+    public String getServiceInterfaceName() {
+        return serviceInterfaceName;
+    }
+
+    public String getGroup() {
+        return group;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
 }

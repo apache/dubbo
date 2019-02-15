@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -112,7 +113,7 @@ public class ImplicitCallBackTest {
         asyncMethodInfo.setOnthrowInstance(notify);
         asyncMethodInfo.setOnthrowMethod(onThrowMethod);
         attitudes.put("get", asyncMethodInfo);
-        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceKey(), IDemoService.class, IDemoService.class.getMethods(), attitudes));
+        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceInterface(), "Dubbo", "1.0.0", IDemoService.class, IDemoService.class.getMethods(), attitudes));
     }
 
     //================================================================================================
@@ -123,7 +124,7 @@ public class ImplicitCallBackTest {
         asyncMethodInfo.setOnreturnInstance(notify);
         asyncMethodInfo.setOnreturnMethod(onReturnMethod);
         attitudes.put("get", asyncMethodInfo);
-        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceKey(), IDemoService.class, IDemoService.class.getMethods(), attitudes));
+        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceInterface(), "Dubbo", "1.0.0", IDemoService.class, IDemoService.class.getMethods(), attitudes));
     }
 
     public void initImplicitCallBackURL_onlyOninvoke() throws Exception {
@@ -132,7 +133,7 @@ public class ImplicitCallBackTest {
         asyncMethodInfo.setOninvokeInstance(notify);
         asyncMethodInfo.setOninvokeMethod(onInvokeMethod);
         attitudes.put("get", asyncMethodInfo);
-        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceKey(), IDemoService.class, IDemoService.class.getMethods(), attitudes));
+        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceInterface(), "Dubbo", "1.0.0", IDemoService.class, IDemoService.class.getMethods(), attitudes));
     }
 
     @Test

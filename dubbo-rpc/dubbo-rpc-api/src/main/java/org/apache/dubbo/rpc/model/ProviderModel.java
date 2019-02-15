@@ -31,13 +31,13 @@ public class ProviderModel {
     private final ServiceMetadata serviceMetadata;
     private final Map<String, List<ProviderMethodModel>> methods = new HashMap<String, List<ProviderMethodModel>>();
 
-    public ProviderModel(String serviceName, Object serviceInstance, Class<?> serviceInterfaceClass) {
+    public ProviderModel(String serviceName, String group, String version, Object serviceInstance, Class<?> serviceInterfaceClass) {
         if (null == serviceInstance) {
             throw new IllegalArgumentException("Service[" + serviceName + "]Target is NULL.");
         }
 
         this.serviceInstance = serviceInstance;
-        this.serviceMetadata = new ServiceMetadata(serviceName, serviceInterfaceClass);
+        this.serviceMetadata = new ServiceMetadata(serviceName, group, version, serviceInterfaceClass);
         initMethod(serviceInterfaceClass);
     }
 

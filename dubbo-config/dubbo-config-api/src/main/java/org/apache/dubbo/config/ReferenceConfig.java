@@ -300,7 +300,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
         ref = createProxy(map);
 
-        ConsumerModel consumerModel = new ConsumerModel(getUniqueServiceName(), interfaceClass, interfaceClass.getMethods(), attributes);
+        ConsumerModel consumerModel = new ConsumerModel(interfaceName, group, version, interfaceClass, interfaceClass.getMethods(), attributes);
         ApplicationModel.initConsumerModel(getUniqueServiceName(), consumerModel);
     }
 

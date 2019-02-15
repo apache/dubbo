@@ -66,7 +66,7 @@ public class ListTelnetHandlerTest {
         mockChannel = mock(Channel.class);
         given(mockChannel.getAttribute("telnet.service")).willReturn("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService");
 
-        ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", new DemoServiceImpl(), DemoService.class);
+        ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", "Dubbo", "1.0.0", new DemoServiceImpl(), DemoService.class);
         ApplicationModel.initProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", providerModel);
 
         String result = list.telnet(mockChannel, "-l DemoService");
@@ -80,7 +80,7 @@ public class ListTelnetHandlerTest {
         mockChannel = mock(Channel.class);
         given(mockChannel.getAttribute("telnet.service")).willReturn("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService");
 
-        ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", new DemoServiceImpl(), DemoService.class);
+        ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", "Dubbo", "1.0.0", new DemoServiceImpl(), DemoService.class);
         ApplicationModel.initProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", providerModel);
 
         String result = list.telnet(mockChannel, "DemoService");
@@ -94,7 +94,7 @@ public class ListTelnetHandlerTest {
         mockChannel = mock(Channel.class);
         given(mockChannel.getAttribute("telnet.service")).willReturn(null);
 
-        ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", new DemoServiceImpl(), DemoService.class);
+        ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", "Dubbo", "1.0.0", new DemoServiceImpl(), DemoService.class);
         ApplicationModel.initProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", providerModel);
 
         String result = list.telnet(mockChannel, "");
@@ -106,7 +106,7 @@ public class ListTelnetHandlerTest {
         mockChannel = mock(Channel.class);
         given(mockChannel.getAttribute("telnet.service")).willReturn(null);
 
-        ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", new DemoServiceImpl(), DemoService.class);
+        ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", "Dubbo", "1.0.0", new DemoServiceImpl(), DemoService.class);
         ApplicationModel.initProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", providerModel);
 
         String result = list.telnet(mockChannel, "-l");
@@ -118,7 +118,7 @@ public class ListTelnetHandlerTest {
         mockChannel = mock(Channel.class);
         given(mockChannel.getAttribute("telnet.service")).willReturn("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService");
 
-        ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", new DemoServiceImpl(), DemoService.class);
+        ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", "Dubbo", "1.0.0", new DemoServiceImpl(), DemoService.class);
         ApplicationModel.initProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", providerModel);
 
         String result = list.telnet(mockChannel, "");
