@@ -55,7 +55,6 @@ import static org.apache.dubbo.common.Constants.VALIDATION_KEY;
 
 /**
  * RegistryProtocol
- *
  */
 public class RegistryProtocol implements Protocol {
 
@@ -305,12 +304,14 @@ public class RegistryProtocol implements Protocol {
             registry.register(subscribeUrl.addParameters(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY,
                     Constants.CHECK_KEY, String.valueOf(false)));
         }
+        // 去注册中心订阅
         directory.subscribe(subscribeUrl.addParameter(Constants.CATEGORY_KEY,
                 Constants.PROVIDERS_CATEGORY
                         + "," + Constants.CONFIGURATORS_CATEGORY
                         + "," + Constants.ROUTERS_CATEGORY));
 
         Invoker invoker = cluster.join(directory);
+        // 注册表中注册消费者
         ProviderConsumerRegTable.registerConsumer(invoker, url, subscribeUrl, directory);
         return invoker;
     }

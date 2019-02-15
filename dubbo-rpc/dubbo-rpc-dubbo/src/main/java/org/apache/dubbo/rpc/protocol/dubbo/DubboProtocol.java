@@ -264,11 +264,13 @@ public class DubboProtocol extends AbstractProtocol {
             }
         }
 
+        // 开启通信服务器
         openServer(url);
         optimizeSerialization(url);
         return exporter;
     }
 
+    // 启动通信服务器，绑定服务端口，提供远程调用.
     private void openServer(URL url) {
         // find server.
         String key = url.getAddress();
@@ -290,6 +292,7 @@ public class DubboProtocol extends AbstractProtocol {
         }
     }
 
+    //
     private ExchangeServer createServer(URL url) {
         // send readonly event when server closes, it's enabled by default
         url = url.addParameterIfAbsent(Constants.CHANNEL_READONLYEVENT_SENT_KEY, Boolean.TRUE.toString());

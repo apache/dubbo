@@ -482,10 +482,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (!Constants.SCOPE_NONE.equalsIgnoreCase(scope)) {
 
             // export to local if the config is not remote (export to remote only when config is remote)
+            // 暴露本地接口
             if (!Constants.SCOPE_REMOTE.equalsIgnoreCase(scope)) {
                 exportLocal(url);
             }
             // export to remote if the config is not local (export to local only when config is local)
+            // 暴露远程接口
             if (!Constants.SCOPE_LOCAL.equalsIgnoreCase(scope)) {
                 if (logger.isInfoEnabled()) {
                     logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
@@ -533,6 +535,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     .setHost(LOCALHOST)
                     .setPort(0);
             ServiceClassHolder.getInstance().pushServiceClass(getServiceClass(ref));
+            // 使用 ProxyFactory 创建 Invoker 对象
+            // 使用 Protocol 暴露 Invoker 对象
             Exporter<?> exporter = protocol.export(
                     proxyFactory.getInvoker(ref, (Class) interfaceClass, local));
             exporters.add(exporter);

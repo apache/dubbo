@@ -46,6 +46,7 @@ import java.util.regex.Pattern;
 
 /**
  * Load dubbo extensions
+ * Dubbo的SPI的核心实现
  * <ul>
  * <li>auto inject dependency extension </li>
  * <li>auto wrap extension in wrapper </li>
@@ -69,6 +70,9 @@ public class ExtensionLoader<T> {
 
     private static final Pattern NAME_SEPARATOR = Pattern.compile("\\s*[,]+\\s*");
 
+    /**
+     * 拓展加载器集合
+     **/
     private static final ConcurrentMap<Class<?>, ExtensionLoader<?>> EXTENSION_LOADERS = new ConcurrentHashMap<Class<?>, ExtensionLoader<?>>();
 
     private static final ConcurrentMap<Class<?>, Object> EXTENSION_INSTANCES = new ConcurrentHashMap<Class<?>, Object>();
@@ -319,6 +323,7 @@ public class ExtensionLoader<T> {
             synchronized (holder) {
                 instance = holder.get();
                 if (instance == null) {
+                    // 缓存未命中，则创建拓展对象，并且设置到holder中
                     instance = createExtension(name);
                     holder.set(instance);
                 }
@@ -575,6 +580,7 @@ public class ExtensionLoader<T> {
 
     // synchronized in getExtensionClasses
     private Map<String, Class<?>> loadExtensionClasses() {
+        // 通过SPI注解，获取默认的拓展实现类名
         final SPI defaultAnnotation = type.getAnnotation(SPI.class);
         if (defaultAnnotation != null) {
             String value = defaultAnnotation.value();
@@ -656,11 +662,13 @@ public class ExtensionLoader<T> {
     }
 
     private void loadClass(Map<String, Class<?>> extensionClasses, java.net.URL resourceURL, Class<?> clazz, String name) throws NoSuchMethodException {
+        // 判断class是否是type的子类
         if (!type.isAssignableFrom(clazz)) {
             throw new IllegalStateException("Error when load extension class(interface: " +
                     type + ", class line: " + clazz.getName() + "), class "
                     + clazz.getName() + "is not subtype of interface.");
         }
+        // 缓存自适应拓展对象的类到 `cachedAdaptiveClass`
         if (clazz.isAnnotationPresent(Adaptive.class)) {
             if (cachedAdaptiveClass == null) {
                 cachedAdaptiveClass = clazz;
@@ -670,6 +678,7 @@ public class ExtensionLoader<T> {
                         + ", " + clazz.getClass().getName());
             }
         } else if (isWrapperClass(clazz)) {
+
             Set<Class<?>> wrappers = cachedWrapperClasses;
             if (wrappers == null) {
                 cachedWrapperClasses = new ConcurrentHashSet<Class<?>>();
