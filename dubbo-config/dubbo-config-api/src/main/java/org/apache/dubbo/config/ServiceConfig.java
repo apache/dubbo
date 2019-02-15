@@ -358,8 +358,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (StringUtils.isEmpty(path)) {
             path = interfaceName;
         }
-        ProviderModel providerModel = new ProviderModel(getUniqueServiceName(), ref, interfaceClass);
-        ApplicationModel.initProviderModel(getUniqueServiceName(), providerModel);
+        String uniqueServiceName = getUniqueServiceName();
+        ProviderModel providerModel = new ProviderModel(uniqueServiceName, ref, interfaceClass);
+        ApplicationModel.initProviderModel(uniqueServiceName, providerModel);
         doExportUrls();
     }
 
