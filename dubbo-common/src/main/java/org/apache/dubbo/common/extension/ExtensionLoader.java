@@ -229,7 +229,7 @@ public class ExtensionLoader<T> {
                     }
                 }
             }
-            Collections.sort(exts, ActivateComparator.COMPARATOR);
+            exts.sort(ActivateComparator.COMPARATOR);
         }
         List<T> usrs = new ArrayList<T>();
         for (int i = 0; i < names.size(); i++) {
