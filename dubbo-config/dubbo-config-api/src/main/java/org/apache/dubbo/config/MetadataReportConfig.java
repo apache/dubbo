@@ -25,7 +25,7 @@ import java.util.Map;
 import static org.apache.dubbo.common.Constants.PROPERTIES_CHAR_SEPERATOR;
 
 /**
- * RegistryConfig
+ * MetadataReportConfig
  *
  * @export
  */
