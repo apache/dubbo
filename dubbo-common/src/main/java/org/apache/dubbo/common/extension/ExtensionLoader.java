@@ -202,7 +202,7 @@ public class ExtensionLoader<T> {
      * @see org.apache.dubbo.common.extension.Activate
      */
     public List<T> getActivateExtension(URL url, String[] values, String group) {
-        List<T> exts = new ArrayList<T>();
+        List<T> exts = new ArrayList<>();
         List<String> names = values == null ? new ArrayList<>(0) : Arrays.asList(values);
         if (!names.contains(Constants.REMOVE_VALUE_PREFIX + Constants.DEFAULT_KEY)) {
             getExtensionClasses();
@@ -232,7 +232,7 @@ public class ExtensionLoader<T> {
             }
             exts.sort(ActivateComparator.COMPARATOR);
         }
-        List<T> usrs = new ArrayList<T>();
+        List<T> usrs = new ArrayList<>();
         for (int i = 0; i < names.size(); i++) {
             String name = names.get(i);
             if (!name.startsWith(Constants.REMOVE_VALUE_PREFIX)
