@@ -248,7 +248,7 @@ public class AdaptiveClassCodeGenerator {
             } else if (hasInvocation) {
                 getNameCode = String.format("url.getMethodParameter(methodName, \"%s\", \"%s\")", value[i], defaultExtName);
             } else {
-                getNameCode = String.format("url.getParameter(\"%s\", %s)", value[i], getNameCode);
+                getNameCode = String.format("url.getParameter(\"%s\", (String) %s)", value[i], getNameCode);
             }
         }
         
