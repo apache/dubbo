@@ -64,7 +64,6 @@ import static org.apache.dubbo.common.Constants.DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.Constants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.Constants.ROUTERS_CATEGORY;
 import static org.apache.dubbo.common.Constants.ROUTE_PROTOCOL;
-import static org.apache.dubbo.common.utils.UrlUtils.classifyUrls;
 
 
 /**
