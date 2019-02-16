@@ -123,7 +123,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         this.queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(Constants.REFER_KEY));
         this.overrideDirectoryUrl = this.directoryUrl = turnRegistryUrlToConsumerUrl(url);
         String group = directoryUrl.getParameter(Constants.GROUP_KEY, "");
-        this.multiGroup = group != null && ("*".equals(group) || group.contains(","));
+        this.multiGroup = group != null && (Constants.ANY_VALUE.equals(group) || group.contains(","));
     }
 
     private URL turnRegistryUrlToConsumerUrl(URL url) {
@@ -433,7 +433,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         this.overrideDirectoryUrl = this.overrideDirectoryUrl.addParametersIfAbsent(providerUrl.getParameters()); // Merge the provider side parameters
 
         if ((providerUrl.getPath() == null || providerUrl.getPath()
-                .length() == 0) && "dubbo".equals(providerUrl.getProtocol())) { // Compatible version 1.0
+                .length() == 0) && Constants.DOBBO_PROTOCOL.equals(providerUrl.getProtocol())) { // Compatible version 1.0
             //fix by tony.chenl DUBBO-44
             String path = directoryUrl.getParameter(Constants.INTERFACE_KEY);
             if (path != null) {
