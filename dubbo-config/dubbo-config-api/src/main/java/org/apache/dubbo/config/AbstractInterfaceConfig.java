@@ -350,12 +350,12 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 if (getExtensionLoader(MonitorFactory.class).hasExtension("logstat")) {
                     map.put(Constants.PROTOCOL_KEY, "logstat");
                 } else {
-                    map.put(Constants.PROTOCOL_KEY, Constants.DOBBO_PROTOCOL);
+                    map.put(Constants.PROTOCOL_KEY, Constants.DUBBO_PROTOCOL);
                 }
             }
             return UrlUtils.parseURL(address, map);
         } else if (Constants.REGISTRY_PROTOCOL.equals(monitor.getProtocol()) && registryURL != null) {
-          return registryURL.setProtocol(Constants.DOBBO_PROTOCOL).addParameter(Constants.PROTOCOL_KEY, Constants.REGISTRY_PROTOCOL).addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map));
+          return registryURL.setProtocol(Constants.DUBBO_PROTOCOL).addParameter(Constants.PROTOCOL_KEY, Constants.REGISTRY_PROTOCOL).addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map));
         }
         return null;
     }
