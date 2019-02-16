@@ -189,21 +189,29 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     @Override
     public synchronized void notify(List<URL> urls) {
-        List<URL> categoryUrls = urls.stream()
+        Map<String, List<URL>> categoryUrls = urls.stream()
                 .filter(this::isValidCategory)
                 .filter(this::isNotCompatibleFor26x)
-                .collect(Collectors.toList());
+                .collect(Collectors.groupingBy(url -> {
+                    if (UrlUtils.isConfigurator(url)) {
+                        return CONFIGURATORS_CATEGORY;
+                    } else if (UrlUtils.isRoute(url)) {
+                        return ROUTERS_CATEGORY;
+                    } else if (UrlUtils.isProvider(url)) {
+                        return PROVIDERS_CATEGORY;
+                    }
+                    return "";
+                }));
 
-        /**
-         * TODO Try to refactor the processing of these three type of urls using Collectors.groupBy()?
-         */
-        this.configurators = Configurator.toConfigurators(classifyUrls(categoryUrls, UrlUtils::isConfigurator))
-                .orElse(configurators);
+        List<URL> configuratorURLs = categoryUrls.getOrDefault(CONFIGURATORS_CATEGORY, Collections.emptyList());
+        this.configurators = Configurator.toConfigurators(configuratorURLs).orElse(this.configurators);
 
-        toRouters(classifyUrls(categoryUrls, UrlUtils::isRoute)).ifPresent(this::addRouters);
+        List<URL> routerURLs = categoryUrls.getOrDefault(ROUTERS_CATEGORY, Collections.emptyList());
+        toRouters(routerURLs).ifPresent(this::addRouters);
 
         // providers
-        refreshOverrideAndInvoker(classifyUrls(categoryUrls, UrlUtils::isProvider));
+        List<URL> providerURLs = categoryUrls.getOrDefault(PROVIDERS_CATEGORY, Collections.emptyList());
+        refreshOverrideAndInvoker(providerURLs);
     }
 
     private void refreshOverrideAndInvoker(List<URL> urls) {
