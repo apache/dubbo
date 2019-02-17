@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -243,7 +244,7 @@ public class AdaptiveClassCodeGenerator {
     private String generateExtNameAssignment(String[] value, boolean hasInvocation) {
         String getNameCode = defaultExtName == null ? null : String.format("\"%s\"", defaultExtName);
         for (int i = value.length - 1; i >= 0; --i) {
-            if ("protocol".equals(value[i])) {
+            if (Constants.PROTOCOL_KEY.equals(value[i])) {
                 getNameCode = String.format("url.getProtocol() == null ? (%s) : url.getProtocol()", getNameCode);
             } else if (hasInvocation) {
                 getNameCode = String.format("url.getMethodParameter(methodName, \"%s\", \"%s\")", value[i], defaultExtName);
