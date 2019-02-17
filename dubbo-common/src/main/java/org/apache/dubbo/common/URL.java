@@ -349,7 +349,7 @@ class URL implements Serializable {
 
     public String getAuthority() {
         if (StringUtils.isEmpty(username)
-                && StringUtils.isEmpty(parameter)) {
+                && StringUtils.isEmpty(password)) {
             return null;
         }
         return (username == null ? "" : username)
@@ -436,9 +436,8 @@ class URL implements Serializable {
         return urls;
     }
 
-    private String appendDefaultPort(String address, int defaultPort) {
-        if (address != null && address.length() > 0
-                && defaultPort > 0) {
+    static String appendDefaultPort(String address, int defaultPort) {
+        if (address != null && address.length() > 0 && defaultPort > 0) {
             int i = address.indexOf(':');
             if (i < 0) {
                 return address + ":" + defaultPort;

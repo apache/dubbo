@@ -27,7 +27,6 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
@@ -359,8 +358,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (StringUtils.isEmpty(path)) {
             path = interfaceName;
         }
-        ProviderModel providerModel = new ProviderModel(getUniqueServiceName(), ref, interfaceClass);
-        ApplicationModel.initProviderModel(getUniqueServiceName(), providerModel);
+        String uniqueServiceName = getUniqueServiceName();
+        ProviderModel providerModel = new ProviderModel(uniqueServiceName, ref, interfaceClass);
+        ApplicationModel.initProviderModel(uniqueServiceName, providerModel);
         doExportUrls();
     }
 

@@ -174,17 +174,22 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     }
 
     protected void connect() throws RemotingException {
+
         connectLock.lock();
+
         try {
+
             if (isConnected()) {
                 return;
             }
 
             doConnect();
+
             if (!isConnected()) {
                 throw new RemotingException(this, "Failed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
                         + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
                         + ", cause: Connect wait timeout: " + getConnectTimeout() + "ms.");
+
             } else {
                 if (logger.isInfoEnabled()) {
                     logger.info("Successed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
@@ -192,12 +197,15 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                             + ", channel is " + this.getChannel());
                 }
             }
+
         } catch (RemotingException e) {
             throw e;
+
         } catch (Throwable e) {
             throw new RemotingException(this, "Failed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
                     + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
                     + ", cause: " + e.getMessage(), e);
+
         } finally {
             connectLock.unlock();
         }
@@ -241,11 +249,13 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
     @Override
     public void close() {
+
         try {
             super.close();
         } catch (Throwable e) {
             logger.warn(e.getMessage(), e);
         }
+
         try {
             if (executor != null) {
                 ExecutorUtil.shutdownNow(executor, 100);
@@ -253,11 +263,13 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         } catch (Throwable e) {
             logger.warn(e.getMessage(), e);
         }
+
         try {
             disconnect();
         } catch (Throwable e) {
             logger.warn(e.getMessage(), e);
         }
+
         try {
             doClose();
         } catch (Throwable e) {
@@ -310,5 +322,4 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
      * @return channel
      */
     protected abstract Channel getChannel();
-
 }
