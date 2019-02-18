@@ -185,4 +185,9 @@ public class RestProtocolTest {
     public void testDefaultPort() {
         assertThat(protocol.getDefaultPort(), is(80));
     }
+
+    @Test
+    public void testGetContextPath() {
+        new RestProtocol().getContextPath(URL.valueOf(""));
+    }
 }
