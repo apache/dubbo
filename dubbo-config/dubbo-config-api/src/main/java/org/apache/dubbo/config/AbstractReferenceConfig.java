@@ -213,6 +213,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         checkExtension(Merger.class,Constants.MERGER_KEY, merger);
         super.setMerger(merger);
     }
+
     public String getGroup() {
         return group;
     }
