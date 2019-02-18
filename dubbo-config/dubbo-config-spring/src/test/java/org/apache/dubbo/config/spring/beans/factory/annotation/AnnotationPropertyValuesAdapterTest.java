@@ -125,6 +125,7 @@ public class AnnotationPropertyValuesAdapterTest {
         Assert.assertEquals("cache", referenceBean.getCache());
         Assert.assertEquals("default,default", referenceBean.getFilter());
         Assert.assertEquals("default,default", referenceBean.getListener());
+        Assert.assertEquals("int", referenceBean.getMerger());
 
         Map<String, String> data = new LinkedHashMap<String, String>();
         data.put("key1", "value1");
@@ -151,7 +152,7 @@ public class AnnotationPropertyValuesAdapterTest {
                 loadbalance = "random", async = true, actives = 1, sent = true,
                 mock = "mock", validation = "validation", timeout = 2, cache = "cache",
                 filter = {"default", "default"}, listener = {"default", "default"}, parameters = {"key1", "value1"}, application = "application",
-                module = "module", consumer = "consumer", monitor = "monitor", registry = {"registry1", "registry2"}
+                module = "module", consumer = "consumer", monitor = "monitor", registry = {"registry1", "registry2"},merger = "int"
         )
         private DemoService demoService;
 

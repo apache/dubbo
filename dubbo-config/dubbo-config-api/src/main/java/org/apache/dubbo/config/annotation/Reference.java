@@ -256,4 +256,9 @@ public @interface Reference {
      * Protocol spring bean names
      */
     String protocol() default "";
+
+    /**
+     * Cluster mod support merge multiple results
+     */
+    String merger() default "";
 }

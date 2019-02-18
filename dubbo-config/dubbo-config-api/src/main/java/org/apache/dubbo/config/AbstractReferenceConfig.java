@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.InvokerListener;
+import org.apache.dubbo.rpc.cluster.Merger;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 /**
@@ -77,6 +78,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
      * The remote service group the customer side will reference
      */
     protected String group;
+
 
     public Boolean isCheck() {
         return check;
@@ -206,6 +208,11 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         this.version = version;
     }
 
+    @Override
+    public void setMerger(String merger) {
+        checkExtension(Merger.class,Constants.MERGER_KEY, merger);
+        super.setMerger(merger);
+    }
     public String getGroup() {
         return group;
     }
