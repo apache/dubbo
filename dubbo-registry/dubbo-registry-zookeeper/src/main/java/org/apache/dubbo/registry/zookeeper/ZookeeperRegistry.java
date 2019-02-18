@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
@@ -50,7 +51,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
 
     private final String root;
 
-    private final Set<String> anyServices = new ConcurrentHashSet<String>();
+    private final Set<String> anyServices = new ConcurrentHashSet<>();
 
     private final ConcurrentMap<URL, ConcurrentMap<NotifyListener, ChildListener>> zkListeners = new ConcurrentHashMap<URL, ConcurrentMap<NotifyListener, ChildListener>>();
 
@@ -67,30 +68,15 @@ public class ZookeeperRegistry extends FailbackRegistry {
         }
         this.root = group;
         zkClient = zookeeperTransporter.connect(url);
-        zkClient.addStateListener(new StateListener() {
-            @Override
-            public void stateChanged(int state) {
-                if (state == RECONNECTED) {
-                    try {
-                        recover();
-                    } catch (Exception e) {
-                        logger.error(e.getMessage(), e);
-                    }
+        zkClient.addStateListener(state -> {
+            if (state == StateListener.RECONNECTED) {
+                try {
+                    recover();
+                } catch (Exception e) {
+                    logger.error(e.getMessage(), e);
                 }
             }
         });
-    }
-
-    static String appendDefaultPort(String address) {
-        if (address != null && address.length() > 0) {
-            int i = address.indexOf(':');
-            if (i < 0) {
-                return address + ":" + DEFAULT_ZOOKEEPER_PORT;
-            } else if (Integer.parseInt(address.substring(i + 1)) == 0) {
-                return address.substring(0, i + 1) + DEFAULT_ZOOKEEPER_PORT;
-            }
-        }
-        return address;
     }
 
     @Override
@@ -109,7 +95,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     }
 
     @Override
-    protected void doRegister(URL url) {
+    public void doRegister(URL url) {
         try {
             zkClient.create(toUrlPath(url), url.getParameter(Constants.DYNAMIC_KEY, true));
         } catch (Throwable e) {
@@ -118,7 +104,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     }
 
     @Override
-    protected void doUnregister(URL url) {
+    public void doUnregister(URL url) {
         try {
             zkClient.delete(toUrlPath(url));
         } catch (Throwable e) {
@@ -127,27 +113,24 @@ public class ZookeeperRegistry extends FailbackRegistry {
     }
 
     @Override
-    protected void doSubscribe(final URL url, final NotifyListener listener) {
+    public void doSubscribe(final URL url, final NotifyListener listener) {
         try {
             if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
                 String root = toRootPath();
                 ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
                 if (listeners == null) {
-                    zkListeners.putIfAbsent(url, new ConcurrentHashMap<NotifyListener, ChildListener>());
+                    zkListeners.putIfAbsent(url, new ConcurrentHashMap<>());
                     listeners = zkListeners.get(url);
                 }
                 ChildListener zkListener = listeners.get(listener);
                 if (zkListener == null) {
-                    listeners.putIfAbsent(listener, new ChildListener() {
-                        @Override
-                        public void childChanged(String parentPath, List<String> currentChilds) {
-                            for (String child : currentChilds) {
-                                child = URL.decode(child);
-                                if (!anyServices.contains(child)) {
-                                    anyServices.add(child);
-                                    subscribe(url.setPath(child).addParameters(Constants.INTERFACE_KEY, child,
-                                            Constants.CHECK_KEY, String.valueOf(false)), listener);
-                                }
+                    listeners.putIfAbsent(listener, (parentPath, currentChilds) -> {
+                        for (String child : currentChilds) {
+                            child = URL.decode(child);
+                            if (!anyServices.contains(child)) {
+                                anyServices.add(child);
+                                subscribe(url.setPath(child).addParameters(Constants.INTERFACE_KEY, child,
+                                        Constants.CHECK_KEY, String.valueOf(false)), listener);
                             }
                         }
                     });
@@ -155,7 +138,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 }
                 zkClient.create(root, false);
                 List<String> services = zkClient.addChildListener(root, zkListener);
-                if (services != null && !services.isEmpty()) {
+                if (CollectionUtils.isNotEmpty(services)) {
                     for (String service : services) {
                         service = URL.decode(service);
                         anyServices.add(service);
@@ -164,21 +147,16 @@ public class ZookeeperRegistry extends FailbackRegistry {
                     }
                 }
             } else {
-                List<URL> urls = new ArrayList<URL>();
+                List<URL> urls = new ArrayList<>();
                 for (String path : toCategoriesPath(url)) {
                     ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
                     if (listeners == null) {
-                        zkListeners.putIfAbsent(url, new ConcurrentHashMap<NotifyListener, ChildListener>());
+                        zkListeners.putIfAbsent(url, new ConcurrentHashMap<>());
                         listeners = zkListeners.get(url);
                     }
                     ChildListener zkListener = listeners.get(listener);
                     if (zkListener == null) {
-                        listeners.putIfAbsent(listener, new ChildListener() {
-                            @Override
-                            public void childChanged(String parentPath, List<String> currentChilds) {
-                                ZookeeperRegistry.this.notify(url, listener, toUrlsWithEmpty(url, parentPath, currentChilds));
-                            }
-                        });
+                        listeners.putIfAbsent(listener, (parentPath, currentChilds) -> ZookeeperRegistry.this.notify(url, listener, toUrlsWithEmpty(url, parentPath, currentChilds)));
                         zkListener = listeners.get(listener);
                     }
                     zkClient.create(path, false);
@@ -195,7 +173,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     }
 
     @Override
-    protected void doUnsubscribe(URL url, NotifyListener listener) {
+    public void doUnsubscribe(URL url, NotifyListener listener) {
         ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
         if (listeners != null) {
             ChildListener zkListener = listeners.get(listener);
@@ -218,7 +196,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
             throw new IllegalArgumentException("lookup url == null");
         }
         try {
-            List<String> providers = new ArrayList<String>();
+            List<String> providers = new ArrayList<>();
             for (String path : toCategoriesPath(url)) {
                 List<String> children = zkClient.getChildren(path);
                 if (children != null) {
@@ -274,8 +252,8 @@ public class ZookeeperRegistry extends FailbackRegistry {
     }
 
     private List<URL> toUrlsWithoutEmpty(URL consumer, List<String> providers) {
-        List<URL> urls = new ArrayList<URL>();
-        if (providers != null && !providers.isEmpty()) {
+        List<URL> urls = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(providers)) {
             for (String provider : providers) {
                 provider = URL.decode(provider);
                 if (provider.contains(Constants.PROTOCOL_SEPARATOR)) {

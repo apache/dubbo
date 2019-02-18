@@ -16,12 +16,10 @@
  */
 package org.apache.dubbo.rpc;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -46,12 +44,6 @@ public class RpcStatus {
     private final AtomicLong maxElapsed = new AtomicLong();
     private final AtomicLong failedMaxElapsed = new AtomicLong();
     private final AtomicLong succeededMaxElapsed = new AtomicLong();
-
-    /**
-     * Semaphore used to control concurrency limit set by `executes`
-     */
-    private volatile Semaphore executesLimit;
-    private volatile int executesPermits;
 
     private RpcStatus() {
     }
@@ -109,16 +101,24 @@ public class RpcStatus {
         }
     }
 
+    public static void beginCount(URL url, String methodName) {
+        beginCount(url, methodName, Integer.MAX_VALUE);
+    }
+
     /**
      * @param url
      */
-    public static void beginCount(URL url, String methodName) {
-        beginCount(getStatus(url));
-        beginCount(getStatus(url, methodName));
-    }
-
-    private static void beginCount(RpcStatus status) {
-        status.active.incrementAndGet();
+    public static boolean beginCount(URL url, String methodName, int max) {
+        max = (max <= 0) ? Integer.MAX_VALUE : max;
+        RpcStatus appStatus = getStatus(url);
+        RpcStatus methodStatus = getStatus(url, methodName);
+        if (methodStatus.active.incrementAndGet() > max) {
+            methodStatus.active.decrementAndGet();
+            return false;
+        } else {
+            appStatus.active.incrementAndGet();
+            return true;
+        }
     }
 
     /**
@@ -312,26 +312,5 @@ public class RpcStatus {
         return getTotal();
     }
 
-    /**
-     * Get the semaphore for thread number. Semaphore's permits is decided by {@link Constants#EXECUTES_KEY}
-     *
-     * @param maxThreadNum value of {@link Constants#EXECUTES_KEY}
-     * @return thread number semaphore
-     */
-    public Semaphore getSemaphore(int maxThreadNum) {
-        if(maxThreadNum <= 0) {
-            return null;
-        }
 
-        if (executesLimit == null || executesPermits != maxThreadNum) {
-            synchronized (this) {
-                if (executesLimit == null || executesPermits != maxThreadNum) {
-                    executesLimit = new Semaphore(maxThreadNum);
-                    executesPermits = maxThreadNum;
-                }
-            }
-        }
-
-        return executesLimit;
-    }
 }

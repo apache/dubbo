@@ -17,18 +17,45 @@
 
 package org.apache.dubbo.common.utils;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
+import static org.apache.dubbo.common.utils.Assert.notEmptyString;
 import static org.apache.dubbo.common.utils.Assert.notNull;
 
 public class AssertTest {
-    @Test(expected = IllegalArgumentException.class)
-    public void testNotNull1() throws Exception {
-        notNull(null, "null object");
+    @Test
+    public void testNotNull1() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> notNull(null, "null object"));
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testNotNull2() throws Exception {
-        notNull(null, new IllegalStateException("null object"));
+    @Test
+    public void testNotNull2() {
+        Assertions.assertThrows(IllegalStateException.class, () -> notNull(null, new IllegalStateException("null object")));
+    }
+
+    @Test
+    public void testNotNullWhenInputNotNull1() {
+        notNull(new Object(), "null object");
+    }
+
+    @Test
+    public void testNotNullWhenInputNotNull2() {
+        notNull(new Object(), new IllegalStateException("null object"));
+    }
+
+    @Test
+    public void testNotNullString() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> notEmptyString(null, "Message can't be null"));
+    }
+
+    @Test
+    public void testNotEmptyString() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> notEmptyString("", "Message can't be null or empty"));
+    }
+
+    @Test
+    public void testNotNullNotEmptyString() {
+        notEmptyString("abcd", "Message can'be null or empty");
     }
 }

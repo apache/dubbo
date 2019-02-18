@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -86,12 +87,12 @@ public class MockClusterInvoker<T> implements Invoker<T> {
             } catch (RpcException e) {
                 if (e.isBiz()) {
                     throw e;
-                } else {
-                    if (logger.isWarnEnabled()) {
-                        logger.warn("fail-mock: " + invocation.getMethodName() + " fail-mock enabled , url : " + directory.getUrl(), e);
-                    }
-                    result = doMockInvoke(invocation, e);
                 }
+                
+                if (logger.isWarnEnabled()) {
+                    logger.warn("fail-mock: " + invocation.getMethodName() + " fail-mock enabled , url : " + directory.getUrl(), e);
+                }
+                result = doMockInvoke(invocation, e);
             }
         }
         return result;
@@ -103,7 +104,7 @@ public class MockClusterInvoker<T> implements Invoker<T> {
         Invoker<T> minvoker;
 
         List<Invoker<T>> mockInvokers = selectMockInvoker(invocation);
-        if (mockInvokers == null || mockInvokers.isEmpty()) {
+        if (CollectionUtils.isEmpty(mockInvokers)) {
             minvoker = (Invoker<T>) new MockInvoker(directory.getUrl());
         } else {
             minvoker = mockInvokers.get(0);
@@ -143,7 +144,7 @@ public class MockClusterInvoker<T> implements Invoker<T> {
         List<Invoker<T>> invokers = null;
         //TODO generic invoker？
         if (invocation instanceof RpcInvocation) {
-            //Note the implicit contract (although the description is added to the interface declaration, but extensibility is a problem. The practice placed in the attachement needs to be improved)
+            //Note the implicit contract (although the description is added to the interface declaration, but extensibility is a problem. The practice placed in the attachment needs to be improved)
             ((RpcInvocation) invocation).setAttachment(Constants.INVOCATION_NEED_MOCK, Boolean.TRUE.toString());
             //directory will return a list of normal invokers if Constants.INVOCATION_NEED_MOCK is present in invocation, otherwise, a list of mock invokers will return.
             try {

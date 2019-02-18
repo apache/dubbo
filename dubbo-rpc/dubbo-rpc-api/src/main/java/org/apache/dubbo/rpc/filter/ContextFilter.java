@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.AbstractPostProcessFilter;
+import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -30,23 +30,30 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * ContextInvokerFilter
+ * ContextFilter set the provider RpcContext with invoker, invocation, local port it is using and host for
+ * current execution thread.
+ *
+ * @see RpcContext
  */
 @Activate(group = Constants.PROVIDER, order = -10000)
-public class ContextFilter extends AbstractPostProcessFilter {
+public class ContextFilter implements Filter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         Map<String, String> attachments = invocation.getAttachments();
         if (attachments != null) {
-            attachments = new HashMap<String, String>(attachments);
+            attachments = new HashMap<>(attachments);
             attachments.remove(Constants.PATH_KEY);
+            attachments.remove(Constants.INTERFACE_KEY);
             attachments.remove(Constants.GROUP_KEY);
             attachments.remove(Constants.VERSION_KEY);
             attachments.remove(Constants.DUBBO_VERSION_KEY);
             attachments.remove(Constants.TOKEN_KEY);
             attachments.remove(Constants.TIMEOUT_KEY);
-            attachments.remove(Constants.ASYNC_KEY);// Remove async property to avoid being passed to the following invoke chain.
+            // Remove async property to avoid being passed to the following invoke chain.
+            attachments.remove(Constants.ASYNC_KEY);
+            attachments.remove(Constants.TAG_KEY);
+            attachments.remove(Constants.FORCE_USE_TAG);
         }
         RpcContext.getContext()
                 .setInvoker(invoker)
@@ -57,7 +64,6 @@ public class ContextFilter extends AbstractPostProcessFilter {
 
         // merged from dubbox
         // we may already added some attachments into RpcContext before this filter (e.g. in rest protocol)
-        // TODO
         if (attachments != null) {
             if (RpcContext.getContext().getAttachments() != null) {
                 RpcContext.getContext().getAttachments().putAll(attachments);
@@ -70,7 +76,7 @@ public class ContextFilter extends AbstractPostProcessFilter {
             ((RpcInvocation) invocation).setInvoker(invoker);
         }
         try {
-            return postProcessResult(invoker.invoke(invocation), invoker, invocation);
+            return invoker.invoke(invocation);
         } finally {
             // IMPORTANT! For async scenario, we must remove context from current thread, so we always create a new RpcContext for the next invoke for the same thread.
             RpcContext.removeContext();
@@ -79,7 +85,7 @@ public class ContextFilter extends AbstractPostProcessFilter {
     }
 
     @Override
-    protected Result doPostProcess(Result result, Invoker<?> invoker, Invocation invocation) {
+    public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
         // pass attachments to result
         result.addAttachments(RpcContext.getServerContext().getAttachments());
         return result;

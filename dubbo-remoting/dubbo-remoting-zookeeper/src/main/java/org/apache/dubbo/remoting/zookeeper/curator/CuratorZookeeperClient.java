@@ -16,30 +16,32 @@
  */
 package org.apache.dubbo.remoting.zookeeper.curator;
 
-import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.remoting.zookeeper.ChildListener;
-import org.apache.dubbo.remoting.zookeeper.StateListener;
-import org.apache.dubbo.remoting.zookeeper.support.AbstractZookeeperClient;
-
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.api.CuratorWatcher;
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.framework.state.ConnectionStateListener;
 import org.apache.curator.retry.RetryNTimes;
+import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.zookeeper.ChildListener;
+import org.apache.dubbo.remoting.zookeeper.StateListener;
+import org.apache.dubbo.remoting.zookeeper.support.AbstractZookeeperClient;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException.NoNodeException;
 import org.apache.zookeeper.KeeperException.NodeExistsException;
 import org.apache.zookeeper.WatchedEvent;
 
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 
 public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatcher> {
 
+    private final Charset charset = Charset.forName("UTF-8");
     private final CuratorFramework client;
+
 
     public CuratorZookeeperClient(URL url) {
         super(url);
@@ -93,6 +95,28 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
     }
 
     @Override
+    protected void createPersistent(String path, String data) {
+        try {
+            byte[] dataBytes = data.getBytes(charset);
+            client.create().forPath(path, dataBytes);
+        } catch (NodeExistsException e) {
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    protected void createEphemeral(String path, String data) {
+        try {
+            byte[] dataBytes = data.getBytes(charset);
+            client.create().withMode(CreateMode.EPHEMERAL).forPath(path, dataBytes);
+        } catch (NodeExistsException e) {
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    @Override
     public void delete(String path) {
         try {
             client.delete().forPath(path);
@@ -123,9 +147,23 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
         }
         return false;
     }
+
     @Override
     public boolean isConnected() {
         return client.getZookeeperClient().isConnected();
+    }
+
+    @Override
+    public String doGetContent(String path) {
+        try {
+            byte[] dataBytes = client.getData().forPath(path);
+            return (dataBytes == null || dataBytes.length == 0) ? null : new String(dataBytes, charset);
+        } catch (NoNodeException e) {
+            // ignore NoNode Exception.
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+        return null;
     }
 
     @Override

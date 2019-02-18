@@ -27,7 +27,16 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcStatus;
 
 /**
- * LimitInvokerFilter
+ * ActiveLimitFilter restrict the concurrent client invocation for a service or service's method from client side.
+ * To use active limit filter, configured url with <b>actives</b> and provide valid >0 integer value.
+ * <pre>
+ *     e.g. <dubbo:reference id="demoService" check="false" interface="org.apache.dubbo.demo.DemoService" "actives"="2"/>
+ *      In the above example maximum 2 concurrent invocation is allowed.
+ *      If there are more than configured (in this example 2) is trying to invoke remote method, then rest of invocation
+ *      will wait for configured timeout(default is 0 second) before invocation gets kill by dubbo.
+ * </pre>
+ *
+ * @see Filter
  */
 @Activate(group = Constants.CONSUMER, value = Constants.ACTIVES_KEY)
 public class ActiveLimitFilter implements Filter {
@@ -38,49 +47,44 @@ public class ActiveLimitFilter implements Filter {
         String methodName = invocation.getMethodName();
         int max = invoker.getUrl().getMethodParameter(methodName, Constants.ACTIVES_KEY, 0);
         RpcStatus count = RpcStatus.getStatus(invoker.getUrl(), invocation.getMethodName());
-        if (max > 0) {
+        if (!RpcStatus.beginCount(url, methodName, max)) {
             long timeout = invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.TIMEOUT_KEY, 0);
             long start = System.currentTimeMillis();
             long remain = timeout;
-            int active = count.getActive();
-            if (active >= max) {
-                synchronized (count) {
-                    while ((active = count.getActive()) >= max) {
-                        try {
-                            count.wait(remain);
-                        } catch (InterruptedException e) {
-                        }
-                        long elapsed = System.currentTimeMillis() - start;
-                        remain = timeout - elapsed;
-                        if (remain <= 0) {
-                            throw new RpcException("Waiting concurrent invoke timeout in client-side for service:  "
-                                    + invoker.getInterface().getName() + ", method: "
-                                    + invocation.getMethodName() + ", elapsed: " + elapsed
-                                    + ", timeout: " + timeout + ". concurrent invokes: " + active
-                                    + ". max concurrent invoke limit: " + max);
-                        }
+            synchronized (count) {
+                while (!RpcStatus.beginCount(url, methodName, max)) {
+                    try {
+                        count.wait(remain);
+                    } catch (InterruptedException e) {
+                        // ignore
+                    }
+                    long elapsed = System.currentTimeMillis() - start;
+                    remain = timeout - elapsed;
+                    if (remain <= 0) {
+                        throw new RpcException("Waiting concurrent invoke timeout in client-side for service:  "
+                                + invoker.getInterface().getName() + ", method: "
+                                + invocation.getMethodName() + ", elapsed: " + elapsed
+                                + ", timeout: " + timeout + ". concurrent invokes: " + count.getActive()
+                                + ". max concurrent invoke limit: " + max);
                     }
                 }
             }
         }
+
+        boolean isSuccess = true;
+        long begin = System.currentTimeMillis();
         try {
-            long begin = System.currentTimeMillis();
-            RpcStatus.beginCount(url, methodName);
-            try {
-                Result result = invoker.invoke(invocation);
-                RpcStatus.endCount(url, methodName, System.currentTimeMillis() - begin, true);
-                return result;
-            } catch (RuntimeException t) {
-                RpcStatus.endCount(url, methodName, System.currentTimeMillis() - begin, false);
-                throw t;
-            }
+            return invoker.invoke(invocation);
+        } catch (RuntimeException t) {
+            isSuccess = false;
+            throw t;
         } finally {
+            RpcStatus.endCount(url, methodName, System.currentTimeMillis() - begin, isSuccess);
             if (max > 0) {
                 synchronized (count) {
-                    count.notify();
+                    count.notifyAll();
                 }
             }
         }
     }
-
 }

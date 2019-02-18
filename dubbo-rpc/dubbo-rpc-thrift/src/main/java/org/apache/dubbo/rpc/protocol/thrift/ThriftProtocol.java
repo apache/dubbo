@@ -18,8 +18,8 @@ package org.apache.dubbo.rpc.protocol.thrift;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.Transporter;
@@ -63,9 +63,9 @@ public class ThriftProtocol extends AbstractProtocol {
 
             if (msg instanceof Invocation) {
                 Invocation inv = (Invocation) msg;
-                String serviceName = inv.getAttachments().get(Constants.INTERFACE_KEY);
+                String path = inv.getAttachments().get(Constants.PATH_KEY);
                 String serviceKey = serviceKey(channel.getLocalAddress().getPort(),
-                        serviceName, null, null);
+                        path, null, null);
                 DubboExporter<?> exporter = (DubboExporter<?>) exporterMap.get(serviceKey);
                 if (exporter == null) {
                     throw new RemotingException(channel,
@@ -146,7 +146,7 @@ public class ThriftProtocol extends AbstractProtocol {
                     if (logger.isInfoEnabled()) {
                         logger.info("Close dubbo server: " + server.getLocalAddress());
                     }
-                    server.close(ConfigUtils.getServerShutdownTimeout());
+                    server.close(ConfigurationUtils.getServerShutdownTimeout());
                 } catch (Throwable t) {
                     logger.warn(t.getMessage(), t);
                 }

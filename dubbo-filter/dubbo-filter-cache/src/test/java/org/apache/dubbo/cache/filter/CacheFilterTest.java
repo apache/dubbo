@@ -25,20 +25,17 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcResult;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
-import java.util.Arrays;
-import java.util.List;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import static org.junit.runners.Parameterized.Parameters;
+import java.util.stream.Stream;
+
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-@RunWith(Parameterized.class)
 public class CacheFilterTest {
     private RpcInvocation invocation;
     private CacheFilter cacheFilter = new CacheFilter();
@@ -47,30 +44,21 @@ public class CacheFilterTest {
     private Invoker<?> invoker2 = mock(Invoker.class);
     private Invoker<?> invoker3 = mock(Invoker.class);
     private Invoker<?> invoker4 = mock(Invoker.class);
-    private String cacheType;
-    private CacheFactory cacheFactory;
 
-    public CacheFilterTest(String cacheType, CacheFactory cacheFactory) {
-        this.cacheType = cacheType;
-        this.cacheFactory = cacheFactory;
+    static Stream<Arguments> cacheFactories() {
+        return Stream.of(
+                Arguments.of("lru", new LruCacheFactory()),
+                Arguments.of("jcache", new JCacheFactory()),
+                Arguments.of("threadlocal", new ThreadLocalCacheFactory()),
+                Arguments.of("expiring", new ExpiringCacheFactory())
+        );
     }
 
-    @Parameters
-    public static List<Object[]> cacheFactories() {
-        return Arrays.asList(new Object[][]{
-                {"lru", new LruCacheFactory()},
-                {"jcache", new JCacheFactory()},
-                {"threadlocal", new ThreadLocalCacheFactory()},
-                {"expiring", new ExpiringCacheFactory()}
-        });
-    }
-
-    @Before
-    public void setUp() throws Exception {
+    public void setUp(String cacheType, CacheFactory cacheFactory) {
         invocation = new RpcInvocation();
-        cacheFilter.setCacheFactory(this.cacheFactory);
+        cacheFilter.setCacheFactory(cacheFactory);
 
-        URL url = URL.valueOf("test://test:11/test?cache=" + this.cacheType);
+        URL url = URL.valueOf("test://test:11/test?cache=" + cacheType);
 
         given(invoker.invoke(invocation)).willReturn(new RpcResult("value"));
         given(invoker.getUrl()).willReturn(url);
@@ -88,8 +76,10 @@ public class CacheFilterTest {
         given(invoker4.getUrl()).willReturn(url);
     }
 
-    @Test
-    public void testNonArgsMethod() {
+    @ParameterizedTest
+    @MethodSource("cacheFactories")
+    public void testNonArgsMethod(String cacheType, CacheFactory cacheFactory) {
+        setUp(cacheType, cacheFactory);
         invocation.setMethodName("echo");
         invocation.setParameterTypes(new Class<?>[]{});
         invocation.setArguments(new Object[]{});
@@ -97,12 +87,14 @@ public class CacheFilterTest {
         cacheFilter.invoke(invoker, invocation);
         RpcResult rpcResult1 = (RpcResult) cacheFilter.invoke(invoker1, invocation);
         RpcResult rpcResult2 = (RpcResult) cacheFilter.invoke(invoker2, invocation);
-        Assert.assertEquals(rpcResult1.getValue(), rpcResult2.getValue());
-        Assert.assertEquals(rpcResult1.getValue(), "value");
+        Assertions.assertEquals(rpcResult1.getValue(), rpcResult2.getValue());
+        Assertions.assertEquals(rpcResult1.getValue(), "value");
     }
 
-    @Test
-    public void testMethodWithArgs() {
+    @ParameterizedTest
+    @MethodSource("cacheFactories")
+    public void testMethodWithArgs(String cacheType, CacheFactory cacheFactory) {
+        setUp(cacheType, cacheFactory);
         invocation.setMethodName("echo1");
         invocation.setParameterTypes(new Class<?>[]{String.class});
         invocation.setArguments(new Object[]{"arg1"});
@@ -110,23 +102,27 @@ public class CacheFilterTest {
         cacheFilter.invoke(invoker, invocation);
         RpcResult rpcResult1 = (RpcResult) cacheFilter.invoke(invoker1, invocation);
         RpcResult rpcResult2 = (RpcResult) cacheFilter.invoke(invoker2, invocation);
-        Assert.assertEquals(rpcResult1.getValue(), rpcResult2.getValue());
-        Assert.assertEquals(rpcResult1.getValue(), "value");
+        Assertions.assertEquals(rpcResult1.getValue(), rpcResult2.getValue());
+        Assertions.assertEquals(rpcResult1.getValue(), "value");
     }
 
-    @Test
-    public void testException() {
+    @ParameterizedTest
+    @MethodSource("cacheFactories")
+    public void testException(String cacheType, CacheFactory cacheFactory) {
+        setUp(cacheType, cacheFactory);
         invocation.setMethodName("echo1");
         invocation.setParameterTypes(new Class<?>[]{String.class});
         invocation.setArguments(new Object[]{"arg2"});
 
         cacheFilter.invoke(invoker3, invocation);
         RpcResult rpcResult = (RpcResult) cacheFilter.invoke(invoker2, invocation);
-        Assert.assertEquals(rpcResult.getValue(), "value2");
+        Assertions.assertEquals(rpcResult.getValue(), "value2");
     }
 
-    @Test
-    public void testNull() {
+    @ParameterizedTest
+    @MethodSource("cacheFactories")
+    public void testNull(String cacheType, CacheFactory cacheFactory) {
+        setUp(cacheType, cacheFactory);
         invocation.setMethodName("echo1");
         invocation.setParameterTypes(new Class<?>[]{String.class});
         invocation.setArguments(new Object[]{"arg3"});
@@ -134,7 +130,7 @@ public class CacheFilterTest {
         cacheFilter.invoke(invoker4, invocation);
         RpcResult rpcResult1 = (RpcResult) cacheFilter.invoke(invoker1, invocation);
         RpcResult rpcResult2 = (RpcResult) cacheFilter.invoke(invoker2, invocation);
-        Assert.assertEquals(rpcResult1.getValue(), null);
-        Assert.assertEquals(rpcResult2.getValue(), null);
+        Assertions.assertEquals(rpcResult1.getValue(), null);
+        Assertions.assertEquals(rpcResult2.getValue(), null);
     }
 }

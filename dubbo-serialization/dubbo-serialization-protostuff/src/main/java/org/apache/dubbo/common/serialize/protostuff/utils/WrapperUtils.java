@@ -43,6 +43,9 @@ import java.util.TreeSet;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Use WrapperUtils to wrap object to {@link Wrapper}
+ */
 public class WrapperUtils {
     private static final Set<Class<?>> WRAPPER_SET = new HashSet<>();
 
@@ -82,10 +85,22 @@ public class WrapperUtils {
 
     }
 
+    /**
+     * Determine if the object needs wrap
+     *
+     * @param clazz object type
+     * @return need wrap
+     */
     public static boolean needWrapper(Class<?> clazz) {
         return WrapperUtils.WRAPPER_SET.contains(clazz) || clazz.isArray() || clazz.isEnum();
     }
 
+    /**
+     * Determine if the object needs wrap
+     *
+     * @param obj object
+     * @return need wrap
+     */
     public static boolean needWrapper(Object obj) {
         return needWrapper(obj.getClass());
     }

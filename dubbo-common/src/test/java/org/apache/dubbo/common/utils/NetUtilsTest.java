@@ -17,22 +17,22 @@
 package org.apache.dubbo.common.utils;
 
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -104,22 +104,22 @@ public class NetUtilsTest {
 
     @Test
     public void testIsValidAddress() throws Exception {
-        assertFalse(NetUtils.isValidAddress((InetAddress) null));
+        assertFalse(NetUtils.isValidV4Address((InetAddress) null));
         InetAddress address = mock(InetAddress.class);
         when(address.isLoopbackAddress()).thenReturn(true);
-        assertFalse(NetUtils.isValidAddress(address));
+        assertFalse(NetUtils.isValidV4Address(address));
         address = mock(InetAddress.class);
         when(address.getHostAddress()).thenReturn("localhost");
-        assertFalse(NetUtils.isValidAddress(address));
+        assertFalse(NetUtils.isValidV4Address(address));
         address = mock(InetAddress.class);
         when(address.getHostAddress()).thenReturn("0.0.0.0");
-        assertFalse(NetUtils.isValidAddress(address));
+        assertFalse(NetUtils.isValidV4Address(address));
         address = mock(InetAddress.class);
         when(address.getHostAddress()).thenReturn("127.0.0.1");
-        assertFalse(NetUtils.isValidAddress(address));
+        assertFalse(NetUtils.isValidV4Address(address));
         address = mock(InetAddress.class);
         when(address.getHostAddress()).thenReturn("1.2.3.4");
-        assertTrue(NetUtils.isValidAddress(address));
+        assertTrue(NetUtils.isValidV4Address(address));
     }
 
     @Test
@@ -200,7 +200,7 @@ public class NetUtilsTest {
      * But enable it will cause other UT to fail.
      * Therefore currently disabling this UT.
      */
-    @Ignore
+    @Disabled
     @Test
     public void testNormalizeV6Address() {
         Inet6Address address = mock(Inet6Address.class);
