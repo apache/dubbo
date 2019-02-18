@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.cluster.loadbalance;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcStatus;
@@ -38,6 +39,12 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
 
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
+        if (CollectionUtils.isEmpty(invokers)) {
+            return null;
+        }
+        if (invokers.size() == 1) {
+            return invokers.get(0);
+        }
         // Number of invokers
         int length = invokers.size();
         // The least active value of all invokers

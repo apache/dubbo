@@ -113,20 +113,18 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
      */
     protected Invoker<T> select(LoadBalance loadbalance, Invocation invocation,
                                 List<Invoker<T>> invokers, List<Invoker<T>> selected) throws RpcException {
-
-        if (CollectionUtils.isEmpty(invokers)) {
-            return null;
+        boolean sticky = false;
+        if (CollectionUtils.isNotEmpty(invokers)) {
+            String methodName = invocation == null ? StringUtils.EMPTY : invocation.getMethodName();
+            sticky = invokers.get(0).getUrl()
+                    .getMethodParameter(methodName, Constants.CLUSTER_STICKY_KEY, Constants.DEFAULT_CLUSTER_STICKY);
         }
-        String methodName = invocation == null ? StringUtils.EMPTY : invocation.getMethodName();
 
-        boolean sticky = invokers.get(0).getUrl()
-                .getMethodParameter(methodName, Constants.CLUSTER_STICKY_KEY, Constants.DEFAULT_CLUSTER_STICKY);
-
-        //ignore overloaded method
-        if (stickyInvoker != null && !invokers.contains(stickyInvoker)) {
+        // ignore overloaded method
+        if (stickyInvoker != null && invokers != null && !invokers.contains(stickyInvoker)) {
             stickyInvoker = null;
         }
-        //ignore concurrency problem
+        // ignore concurrency problem
         if (sticky && stickyInvoker != null && (selected == null || !selected.contains(stickyInvoker))) {
             if (availablecheck && stickyInvoker.isAvailable()) {
                 return stickyInvoker;
@@ -143,13 +141,6 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
     private Invoker<T> doSelect(LoadBalance loadbalance, Invocation invocation,
                                 List<Invoker<T>> invokers, List<Invoker<T>> selected) throws RpcException {
-
-        if (CollectionUtils.isEmpty(invokers)) {
-            return null;
-        }
-        if (invokers.size() == 1) {
-            return invokers.get(0);
-        }
         Invoker<T> invoker = loadbalance.select(invokers, getUrl(), invocation);
 
         //If the `invoker` is in the  `selected` or invoker is unavailable && availablecheck is true, reselect.
