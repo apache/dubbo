@@ -31,7 +31,7 @@ import java.util.List;
  * @see com.alibaba.dubbo.rpc.cluster.Cluster#join(Directory)
  * @see com.alibaba.dubbo.rpc.cluster.Directory#list(Invocation)
  */
-public interface Router extends Comparable<Router> {
+public interface Router extends Comparable<Router>{
 
     /**
      * get the router url.
@@ -50,5 +50,12 @@ public interface Router extends Comparable<Router> {
      * @throws RpcException
      */
     <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException;
+
+    /**
+     * Router's priority, used to sort routers.
+     *
+     * @return router's priority
+     */
+    int getPriority();
 
 }

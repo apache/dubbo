@@ -64,6 +64,19 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
     // customized parameters
     protected Map<String, String> parameters;
 
+    /**
+     * forks for forking cluster
+     */
+    protected Integer forks;
+
+    public Integer getForks() {
+        return forks;
+    }
+
+    public void setForks(Integer forks) {
+        this.forks = forks;
+    }
+
     public Integer getTimeout() {
         return timeout;
     }
@@ -127,8 +140,14 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
     }
 
     public void setMock(String mock) {
-        if (mock != null && mock.startsWith(Constants.RETURN_PREFIX)) {
+        if (mock == null) {
+            return;
+        }
+
+        if (mock.startsWith(Constants.RETURN_PREFIX) || mock.startsWith(Constants.THROW_PREFIX + " ")) {
             checkLength("mock", mock);
+        } else if (mock.startsWith(Constants.FAIL_PREFIX) || mock.startsWith(Constants.FORCE_PREFIX)) {
+            checkNameHasSymbol("mock", mock);
         } else {
             checkName("mock", mock);
         }

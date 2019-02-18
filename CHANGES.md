@@ -1,5 +1,37 @@
 # Release Notes
 
+## 2.6.5
+
+Enhancements / Features：    
+
+- Reactor the generation rule for @Service Bean name [#2235](https://github.com/apache/incubator-dubbo/issues/2235) 
+- Introduce a new Spring ApplicationEvent for ServiceBean exporting [#2251](https://github.com/apache/incubator-dubbo/issues/2251) 
+- [Enhancement] the algorithm of load issue on Windows. [#1641](https://github.com/apache/incubator-dubbo/issues/1641)
+- add javadoc to dubbo-all module good first issue. [#2600](https://github.com/apache/incubator-dubbo/issues/2600) 
+- [Enhancement] Reactor the generation rule for @Service Bean name type/enhancement [#2235](https://github.com/apache/incubator-dubbo/issues/2235) 
+- Optimize LeastActiveLoadBalance and add weight test case. [#2540](https://github.com/apache/incubator-dubbo/issues/2540) 
+- Smooth Round Robin selection. [#2578](https://github.com/apache/incubator-dubbo/issues/2578) [#2647](https://github.com/apache/incubator-dubbo/pull/2647) 
+- [Enhancement] Resolve the placeholders for sub-properties. [#2297](https://github.com/apache/incubator-dubbo/issues/2297) 
+- Add ability to turn off SPI auto injection, special support for generic Object type injection. [#2681](https://github.com/apache/incubator-dubbo/pull/2681)
+
+
+Bugfixes：    
+
+- @Service(register=false) is not work. [#2063](https://github.com/apache/incubator-dubbo/issues/2063) 
+- Our customized serialization id exceeds the maximum limit, now it cannot work on 2.6.2 anymore. [#1903](https://github.com/apache/incubator-dubbo/issues/1903) 
+- Consumer throws RpcException after RegistryDirectory notify in high QPS. [#2016](https://github.com/apache/incubator-dubbo/issues/2016)   
+- Annotation @Reference can't support to export a service with a sync one and an async one . [#2194](https://github.com/apache/incubator-dubbo/issues/2194) 
+- `org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor#generateReferenceBeanCacheKey` has a bug. [#2522](https://github.com/apache/incubator-dubbo/issues/2522) 
+- 2.6.x Spring Event & Bugfix. [#2256](https://github.com/apache/incubator-dubbo/issues/2256) 
+- Fix incorrect descriptions for dubbo-serialization module. [#2665](https://github.com/apache/incubator-dubbo/issues/2665) 
+- A empty directory dubbo-config/dubbo-config-spring/src/test/resources/work after package source tgz. [#2560](https://github.com/apache/incubator-dubbo/issues/2560)
+- Fixed 2.6.x branch a minor issue with doConnect not using getConnectTimeout() in NettyClient.  (*No issue*). [#2622](https://github.com/apache/incubator-dubbo/pull/2622) 
+- Bean name of @service annotated class does not resolve placeholder. [#1755](https://github.com/apache/incubator-dubbo/issues/1755) 
+
+
+
+Issues and Pull Requests, check [milestone-2.6.5](https://github.com/apache/incubator-dubbo/milestone/21).
+
 ## 2.6.4
 
 Enhancements / Features

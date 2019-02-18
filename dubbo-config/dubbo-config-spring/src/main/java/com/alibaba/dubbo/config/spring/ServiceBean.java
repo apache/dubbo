@@ -38,12 +38,12 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.context.support.AbstractApplicationContext;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static com.alibaba.dubbo.config.spring.util.BeanFactoryUtils.addApplicationListener;
 
 /**
  * ServiceFactoryBean
@@ -55,8 +55,6 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         ApplicationEventPublisherAware {
 
     private static final long serialVersionUID = 213195494150089726L;
-
-    private static transient ApplicationContext SPRING_CONTEXT;
 
     private final transient Service service;
 
@@ -78,34 +76,11 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         this.service = service;
     }
 
-    public static ApplicationContext getSpringContext() {
-        return SPRING_CONTEXT;
-    }
-
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
         SpringExtensionFactory.addApplicationContext(applicationContext);
-        if (applicationContext != null) {
-            SPRING_CONTEXT = applicationContext;
-            try {
-                Method method = applicationContext.getClass().getMethod("addApplicationListener", new Class<?>[]{ApplicationListener.class}); // backward compatibility to spring 2.0.1
-                method.invoke(applicationContext, new Object[]{this});
-                supportedApplicationListener = true;
-            } catch (Throwable t) {
-                if (applicationContext instanceof AbstractApplicationContext) {
-                    try {
-                        Method method = AbstractApplicationContext.class.getDeclaredMethod("addListener", new Class<?>[]{ApplicationListener.class}); // backward compatibility to spring 2.0.1
-                        if (!method.isAccessible()) {
-                            method.setAccessible(true);
-                        }
-                        method.invoke(applicationContext, new Object[]{this});
-                        supportedApplicationListener = true;
-                    } catch (Throwable t2) {
-                    }
-                }
-            }
-        }
+        supportedApplicationListener = addApplicationListener(applicationContext, this);
     }
 
     @Override
@@ -303,9 +278,8 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
 
     @Override
     public void destroy() throws Exception {
-        // This will only be called for singleton scope bean, and expected to be called by spring shutdown hook when BeanFactory/ApplicationContext destroys.
-        // We will guarantee dubbo related resources being released with dubbo shutdown hook.
-        //unexport();
+        // no need to call unexport() here, see
+        // org.apache.dubbo.config.spring.extension.SpringExtensionFactory.ShutdownHookListener
     }
 
     // merged from dubbox

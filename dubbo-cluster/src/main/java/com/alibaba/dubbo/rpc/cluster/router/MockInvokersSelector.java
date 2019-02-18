@@ -21,7 +21,6 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.rpc.cluster.Router;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,9 +28,14 @@ import java.util.List;
 /**
  * A specific Router designed to realize mock feature.
  * If a request is configured to use mock, then this router guarantees that only the invokers with protocol MOCK appear in final the invoker list, all other invokers will be excluded.
- *
  */
-public class MockInvokersSelector implements Router {
+public class MockInvokersSelector extends AbstractRouter {
+
+    private static final int DEFAULT_PRIORITY = Integer.MAX_VALUE;
+
+    public MockInvokersSelector() {
+        this.priority = DEFAULT_PRIORITY;
+    }
 
     @Override
     public <T> List<Invoker<T>> route(final List<Invoker<T>> invokers,
@@ -85,16 +89,6 @@ public class MockInvokersSelector implements Router {
             }
         }
         return hasMockProvider;
-    }
-
-    @Override
-    public URL getUrl() {
-        return null;
-    }
-
-    @Override
-    public int compareTo(Router o) {
-        return 1;
     }
 
 }

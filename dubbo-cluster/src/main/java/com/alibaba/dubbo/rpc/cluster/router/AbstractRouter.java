@@ -14,26 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.remoting.transport.netty;
+package com.alibaba.dubbo.rpc.cluster.router;
 
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.remoting.RemotingException;
-import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
-import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
-import com.alibaba.dubbo.remoting.exchange.Exchangers;
-import com.alibaba.dubbo.remoting.exchange.support.Replier;
+import com.alibaba.dubbo.rpc.cluster.Router;
 
-/**
- * NettyClientToServerTest
- */
-public class NettyClientToServerTest extends ClientToServerTest {
+public abstract class AbstractRouter implements Router {
 
-    protected ExchangeServer newServer(int port, Replier<?> receiver) throws RemotingException {
-        return Exchangers.bind(URL.valueOf("exchange://localhost:" + port + "?server=netty3"), receiver);
+    protected URL url;
+    protected int priority;
+
+    @Override
+    public URL getUrl() {
+        return url;
     }
 
-    protected ExchangeChannel newClient(int port) throws RemotingException {
-        return Exchangers.connect(URL.valueOf("exchange://localhost:" + port + "?client=netty3&timeout=3000"));
+    @Override
+    public int compareTo(Router o) {
+        return (this.getPriority() < o.getPriority()) ? -1 : ((this.getPriority() == o.getPriority()) ? 0 : 1);
     }
 
+    public int getPriority() {
+        return priority;
+    }
 }

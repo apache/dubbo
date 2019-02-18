@@ -198,7 +198,8 @@ public class AbstractConfigTest {
     @Test
     public void checkNameHasSymbol() throws Exception {
         try {
-            AbstractConfig.checkNameHasSymbol("hello", ":*,/-0123abcdABCD");
+            AbstractConfig.checkNameHasSymbol("hello", ":*,/ -0123\tabcdABCD");
+            AbstractConfig.checkNameHasSymbol("mock", "force:return world");
         } catch (Exception e) {
             TestCase.fail("the value should be legal.");
         }

@@ -277,7 +277,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
         }
         checkApplication();
-        checkStubAndMock(interfaceClass);
+        checkStub(interfaceClass);
+        checkMock(interfaceClass);
         Map<String, String> map = new HashMap<String, String>();
         Map<Object, Object> attributes = new HashMap<Object, Object>();
         map.put(Constants.SIDE_KEY, Constants.CONSUMER_SIDE);

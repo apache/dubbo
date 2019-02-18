@@ -19,7 +19,7 @@
     <parent>
         <groupId>com.alibaba</groupId>
         <artifactId>dubbo-monitor</artifactId>
-        <version>2.6.5-SNAPSHOT</version>
+        <version>2.6.6-SNAPSHOT</version>
     </parent>
     <artifactId>dubbo-monitor-default</artifactId>
     <packaging>jar</packaging>
@@ -42,7 +42,7 @@
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
-            <artifactId>dubbo-remoting-netty</artifactId>
+            <artifactId>dubbo-remoting-netty4</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>

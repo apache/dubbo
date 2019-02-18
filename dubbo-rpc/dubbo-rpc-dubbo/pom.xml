@@ -19,7 +19,7 @@
     <parent>
         <groupId>com.alibaba</groupId>
         <artifactId>dubbo-rpc</artifactId>
-        <version>2.6.5-SNAPSHOT</version>
+        <version>2.6.6-SNAPSHOT</version>
     </parent>
     <artifactId>dubbo-rpc-dubbo</artifactId>
     <packaging>jar</packaging>
@@ -52,7 +52,7 @@
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
-            <artifactId>dubbo-remoting-netty</artifactId>
+            <artifactId>dubbo-remoting-netty4</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
@@ -63,8 +63,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.mina</groupId>
-            <artifactId>mina-core</artifactId>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

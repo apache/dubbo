@@ -19,11 +19,11 @@
     <parent>
         <groupId>com.alibaba</groupId>
         <artifactId>dubbo-parent</artifactId>
-        <version>2.6.5-SNAPSHOT</version>
+        <version>2.6.6-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>dubbo</artifactId>
-    <version>2.6.5-SNAPSHOT</version>
+    <version>2.6.6-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>dubbo-all</name>
     <description>The all in one project of dubbo</description>
@@ -321,13 +321,6 @@
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
-            <artifactId>dubbo-bootstrap</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>com.alibaba</groupId>
             <artifactId>hessian-lite</artifactId>
             <scope>compile</scope>
             <optional>true</optional>
@@ -424,7 +417,6 @@
                                     <include>com.alibaba:dubbo-serialization-fst</include>
                                     <include>com.alibaba:dubbo-serialization-kryo</include>
                                     <include>com.alibaba:dubbo-serialization-jdk</include>
-                                    <include>com.alibaba:dubbo-bootstrap</include>
                                 </includes>
                             </artifactSet>
                             <transformers>
@@ -543,6 +535,18 @@
                                     </resource>
                                 </transformer>
                             </transformers>
+                            <filters>
+                                <filter>
+                                    <artifact>com.alibaba:dubbo</artifact>
+                                    <excludes>
+                                        <!-- These two line is optional, it can remove some warn log -->
+                                        <exclude>com/**</exclude>
+                                        <exclude>org/**</exclude>
+                                        <!-- This one is required -->
+                                        <exclude>META-INF/dubbo/**</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
                         </configuration>
                     </execution>
                 </executions>
