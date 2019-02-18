@@ -38,7 +38,7 @@ public class ConfigurationUtils {
     public static int getServerShutdownTimeout() {
         int timeout = Constants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
         Configuration configuration = Environment.getInstance().getConfiguration();
-        String value = configuration.getString(Constants.SHUTDOWN_WAIT_KEY);
+        String value = StringUtils.trim(configuration.getString(Constants.SHUTDOWN_WAIT_KEY));
 
         if (value != null && value.length() > 0) {
             try {
@@ -47,7 +47,7 @@ public class ConfigurationUtils {
                 // ignore
             }
         } else {
-            value = configuration.getString(Constants.SHUTDOWN_WAIT_SECONDS_KEY);
+            value = StringUtils.trim(configuration.getString(Constants.SHUTDOWN_WAIT_SECONDS_KEY));
             if (value != null && value.length() > 0) {
                 try {
                     timeout = Integer.parseInt(value) * 1000;
