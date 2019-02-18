@@ -41,7 +41,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -88,34 +88,38 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
         Map<String, Future<Result>> results = new HashMap<String, Future<Result>>();
         for (final Invoker<T> invoker : invokers) {
-            Future<Result> future = executor.submit(new Callable<Result>() {
-                @Override
-                public Result call() throws Exception {
-                    return invoker.invoke(new RpcInvocation(invocation, invoker));
-                }
-            });
+            Future<Result> future = executor.submit(() -> invoker.invoke(new RpcInvocation(invocation, invoker)));
             results.put(invoker.getUrl().getServiceKey(), future);
         }
 
         Object result = null;
 
         List<Result> resultList = new ArrayList<Result>(results.size());
-
+        CountDownLatch latch = new CountDownLatch(results.size());
         int timeout = getUrl().getMethodParameter(invocation.getMethodName(), Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
         for (Map.Entry<String, Future<Result>> entry : results.entrySet()) {
             Future<Result> future = entry.getValue();
-            try {
-                Result r = future.get(timeout, TimeUnit.MILLISECONDS);
-                if (r.hasException()) {
-                    log.error("Invoke " + getGroupDescFromServiceKey(entry.getKey()) +
-                                    " failed: " + r.getException().getMessage(),
-                            r.getException());
-                } else {
-                    resultList.add(r);
+            executor.submit(() -> {
+                try {
+                    Result r = future.get(timeout, TimeUnit.MILLISECONDS);
+                    if (r.hasException()) {
+                        log.error("Invoke " + getGroupDescFromServiceKey(entry.getKey()) + " failed: " +
+                                        r.getException().getMessage(), r.getException());
+                    } else {
+                        resultList.add(r);
+                    }
+                } catch (Throwable e) {
+                    throw new RpcException("Failed to invoke service " + entry.getKey() + ": " + e.getMessage(), e);
+                } finally {
+                    latch.countDown();
                 }
-            } catch (Exception e) {
-                throw new RpcException("Failed to invoke service " + entry.getKey() + ": " + e.getMessage(), e);
-            }
+            });
+        }
+
+        try {
+            latch.wait(timeout * 2);
+        } catch (InterruptedException e) {
+            // ignore
         }
 
         if (resultList.isEmpty()) {
