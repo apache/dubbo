@@ -142,8 +142,11 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
     private Invoker<T> doSelect(LoadBalance loadbalance, Invocation invocation,
                                 List<Invoker<T>> invokers, List<Invoker<T>> selected) throws RpcException {
         Invoker<T> invoker = loadbalance.select(invokers, getUrl(), invocation);
+        if (invoker == null) {
+            return null;
+        }
 
-        //If the `invoker` is in the  `selected` or invoker is unavailable && availablecheck is true, reselect.
+        // If the `invoker` is in the  `selected` or invoker is unavailable && availablecheck is true, reselect.
         if ((selected != null && selected.contains(invoker))
                 || (!invoker.isAvailable() && getUrl() != null && availablecheck)) {
             try {
