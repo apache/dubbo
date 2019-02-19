@@ -20,6 +20,8 @@ import org.apache.dubbo.common.Constants;
 
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class ConsumerMethodModel {
     private final Method method;
@@ -31,8 +33,9 @@ public class ConsumerMethodModel {
     private final String methodName;
     private final boolean generic;
 
-    private final AsyncMethodInfo asyncInfo;
+    private final ConcurrentMap<String, Object> attributeMap = new ConcurrentHashMap<>();
 
+    private final AsyncMethodInfo asyncInfo;
 
     public ConsumerMethodModel(Method method, Map<String, Object> attributes) {
         this.method = method;
@@ -51,6 +54,10 @@ public class ConsumerMethodModel {
 
     public Method getMethod() {
         return method;
+    }
+
+    public ConcurrentMap<String, Object> getAttributeMap() {
+        return attributeMap;
     }
 
     public Class<?> getReturnClass() {

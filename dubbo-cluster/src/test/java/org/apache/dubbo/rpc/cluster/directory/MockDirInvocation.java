@@ -55,6 +55,21 @@ public class MockDirInvocation implements Invocation {
         return null;
     }
 
+    @Override
+    public Object put(Object key, Object value) {
+        return null;
+    }
+
+    @Override
+    public Object get(Object key) {
+        return null;
+    }
+
+    @Override
+    public Map<Object, Object> getAttributes() {
+        return null;
+    }
+
     public String getAttachment(String key) {
         return getAttachments().get(key);
     }

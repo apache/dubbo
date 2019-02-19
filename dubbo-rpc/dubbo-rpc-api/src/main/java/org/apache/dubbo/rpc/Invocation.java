@@ -83,4 +83,9 @@ public interface Invocation {
      */
     Invoker<?> getInvoker();
 
+    Object put(Object key, Object value);
+
+    Object get(Object key);
+
+    Map<Object, Object> getAttributes();
 }

@@ -42,6 +42,8 @@ public class RpcInvocation implements Invocation, Serializable {
 
     private Map<String, String> attachments;
 
+    private Map<Object, Object> attributes = new HashMap<Object, Object>();
+
     private transient Invoker<?> invoker;
 
     public RpcInvocation() {
@@ -111,6 +113,19 @@ public class RpcInvocation implements Invocation, Serializable {
 
     public void setInvoker(Invoker<?> invoker) {
         this.invoker = invoker;
+    }
+
+    public Object put(Object key, Object value) {
+        return attributes.put(key, value);
+    }
+
+    public Object get(Object key) {
+        return attributes.get(key);
+    }
+
+    @Override
+    public Map<Object, Object> getAttributes() {
+        return attributes;
     }
 
     @Override
