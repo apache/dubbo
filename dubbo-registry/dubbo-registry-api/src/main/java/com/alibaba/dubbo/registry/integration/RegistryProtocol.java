@@ -51,6 +51,9 @@ import static com.alibaba.dubbo.common.Constants.ACCEPT_FOREIGN_IP;
 import static com.alibaba.dubbo.common.Constants.QOS_ENABLE;
 import static com.alibaba.dubbo.common.Constants.QOS_PORT;
 import static com.alibaba.dubbo.common.Constants.VALIDATION_KEY;
+import static com.alibaba.dubbo.common.Constants.CATEGORY_KEY;
+import static com.alibaba.dubbo.common.Constants.CONSUMERS_CATEGORY;
+import static com.alibaba.dubbo.common.Constants.CHECK_KEY;
 
 /**
  * RegistryProtocol
@@ -302,6 +305,7 @@ public class RegistryProtocol implements Protocol {
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
             registry.register(subscribeUrl.addParameters(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY,
                     Constants.CHECK_KEY, String.valueOf(false)));
+            directory.setRegisteredConsumerUrl(getRegisteredConsumerUrl(subscribeUrl, url));
         }
         directory.subscribe(subscribeUrl.addParameter(Constants.CATEGORY_KEY,
                 Constants.PROVIDERS_CATEGORY
@@ -311,6 +315,11 @@ public class RegistryProtocol implements Protocol {
         Invoker invoker = cluster.join(directory);
         ProviderConsumerRegTable.registerConsumer(invoker, url, subscribeUrl, directory);
         return invoker;
+    }
+
+    public URL getRegisteredConsumerUrl(final URL consumerUrl, URL registryUrl) {
+        return consumerUrl.addParameters(CATEGORY_KEY, CONSUMERS_CATEGORY,
+                CHECK_KEY, String.valueOf(false));
     }
 
     @Override
