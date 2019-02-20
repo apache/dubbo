@@ -60,12 +60,24 @@ There's a [README](https://github.com/apache/incubator-dubbo-samples/tree/master
 <dependencies>
     <dependency>
         <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-parent</artifactId>
+        <artifactId>dubbo</artifactId>
         <version>${dubbo.version}</version>
     </dependency>
     <dependency>
         <groupId>io.netty</groupId>
         <artifactId>netty-all</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.curator</groupId>
+        <artifactId>curator-framework</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.curator</groupId>
+        <artifactId>curator-recipes</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.zookeeper</groupId>
+        <artifactId>zookeeper</artifactId>
     </dependency>
 </dependencies>
 ```
