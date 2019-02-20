@@ -20,6 +20,7 @@ import com.alibaba.dubbo.common.serialize.kryo.CompatibleKryo;
 import com.alibaba.dubbo.common.serialize.support.SerializableClassRegistry;
 
 import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.pool.KryoFactory;
 import com.esotericsoftware.kryo.serializers.DefaultSerializers;
 import de.javakaffee.kryoserializers.ArraysAsListSerializer;
@@ -48,6 +49,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
@@ -134,8 +136,12 @@ public abstract class AbstractKryoFactory implements KryoFactory {
             kryo.register(clazz);
         }
 
-        for (Class clazz : SerializableClassRegistry.getRegisteredClasses()) {
-            kryo.register(clazz);
+        for (Map.Entry<Class, Object> entry : SerializableClassRegistry.getRegisteredClasses().entrySet()) {
+            if (entry.getValue() == null) {
+                kryo.register(entry.getKey());
+            } else {
+                kryo.register(entry.getKey(), (Serializer) entry.getValue());
+            }
         }
 
         return kryo;
