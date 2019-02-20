@@ -26,4 +26,8 @@ public abstract class ReflectionUtils {
             return false;
         }
     }
+
+    public static boolean isJdk(Class clazz) {
+        return clazz.getName().startsWith("java.") || clazz.getName().startsWith("javax.");
+    }
 }
