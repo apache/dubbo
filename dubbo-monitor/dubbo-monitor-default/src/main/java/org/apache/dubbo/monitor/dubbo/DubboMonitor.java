@@ -51,7 +51,7 @@ public class DubboMonitor implements Monitor {
     /**
      * The timer for sending statistics
      */
-    private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(3, new NamedThreadFactory("DubboMonitorSendTimer", true));
+    private static final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(3, new NamedThreadFactory("DubboMonitorSendTimer", true));
 
     /**
      * The future that can cancel the <b>scheduledExecutorService</b>
@@ -91,7 +91,13 @@ public class DubboMonitor implements Monitor {
             // get statistics data
             Statistics statistics = entry.getKey();
             AtomicReference<long[]> reference = entry.getValue();
-            long[] numbers = reference.get();
+            long[] numbers;
+            long[] update = new long[LENGTH];
+            //
+            do {
+                numbers = reference.get();
+            } while (!reference.compareAndSet(numbers, update));
+
             long success = numbers[0];
             long failure = numbers[1];
             long input = numbers[2];
@@ -121,28 +127,8 @@ public class DubboMonitor implements Monitor {
                     );
             monitorService.collect(url);
 
-            // reset
-            long[] current;
-            long[] update = new long[LENGTH];
-            do {
-                current = reference.get();
-                if (current == null) {
-                    update[0] = 0;
-                    update[1] = 0;
-                    update[2] = 0;
-                    update[3] = 0;
-                    update[4] = 0;
-                    update[5] = 0;
-                } else {
-                    update[0] = current[0] - success;
-                    update[1] = current[1] - failure;
-                    update[2] = current[2] - input;
-                    update[3] = current[3] - output;
-                    update[4] = current[4] - elapsed;
-                    update[5] = current[5] - concurrent;
-                }
-            } while (!reference.compareAndSet(current, update));
         }
+
     }
 
     @Override
