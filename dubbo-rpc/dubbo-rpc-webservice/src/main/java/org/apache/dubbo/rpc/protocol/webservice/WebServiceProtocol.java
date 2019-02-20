@@ -33,7 +33,6 @@ import org.apache.cxf.frontend.ClientProxyFactoryBean;
 import org.apache.cxf.frontend.ServerFactoryBean;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.transport.http.HTTPConduit;
-import org.apache.cxf.transport.http.HTTPTransportFactory;
 import org.apache.cxf.transport.http.HttpDestinationFactory;
 import org.apache.cxf.transport.servlet.ServletController;
 import org.apache.cxf.transport.servlet.ServletDestinationFactory;
@@ -59,7 +58,7 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
 
     private final ExtensionManagerBus bus = new ExtensionManagerBus();
 
-    private final HTTPTransportFactory transportFactory = new HTTPTransportFactory();
+    private final WSDLHTTPTransportFactory transportFactory = new WSDLHTTPTransportFactory();
 
     private HttpBinder httpBinder;
 
@@ -95,10 +94,10 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
         return new Runnable() {
             @Override
             public void run() {
-                if(serverFactoryBean.getServer()!= null) {
+                if (serverFactoryBean.getServer() != null) {
                     serverFactoryBean.getServer().destroy();
                 }
-                if(serverFactoryBean.getBus()!=null) {
+                if (serverFactoryBean.getBus() != null) {
                     serverFactoryBean.getBus().shutdown(true);
                 }
             }
