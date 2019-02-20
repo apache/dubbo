@@ -11,11 +11,9 @@ import org.apache.cxf.wsdl11.WSDLEndpointFactory;
 import java.util.List;
 
 /**
- * @Description:
- * @Author: huazhongming
- * @Date: Created in 2019-02-19 11:56
+ *
  */
-public class WSDLHTTPTransportFactory extends HTTPTransportFactory implements WSDLEndpointFactory {
+public class HttpTransportFactory extends HTTPTransportFactory implements WSDLEndpointFactory {
     @Override
     public EndpointInfo createEndpointInfo(Bus bus, ServiceInfo serviceInfo, BindingInfo bindingInfo, List<?> list) {
         return super.createEndpointInfo(serviceInfo, bindingInfo, list);
