@@ -601,7 +601,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (local == null) {
             setLocal((String) null);
         } else {
-            setLocal(String.valueOf(local));
+            setLocal(local.toString());
         }
     }
 
@@ -623,7 +623,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (stub == null) {
             setStub((String) null);
         } else {
-            setStub(String.valueOf(stub));
+            setStub(stub.toString());
         }
     }
 
