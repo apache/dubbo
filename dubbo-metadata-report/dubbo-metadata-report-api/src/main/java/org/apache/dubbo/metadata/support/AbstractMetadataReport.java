@@ -62,7 +62,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     // Log output
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    // Local disk cache, where the special key value.registries records the list of registry centers, and the others are the list of notified service providers
+    // Local disk cache, where the special key value.registries records the list of metadata centers, and the others are the list of notified service providers
     final Properties properties = new Properties();
     private final ExecutorService reportCacheExecutor = Executors.newFixedThreadPool(1, new NamedThreadFactory("DubboSaveMetadataReport", true));
     final Map<MetadataIdentifier, Object> allMetadataReports = new ConcurrentHashMap<>(4);
@@ -336,7 +336,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     class MetadataReportRetry {
         protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-        final ScheduledExecutorService retryExecutor = Executors.newScheduledThreadPool(0, new NamedThreadFactory("DubboRegistryFailedRetryTimer", true));
+        final ScheduledExecutorService retryExecutor = Executors.newScheduledThreadPool(0, new NamedThreadFactory("DubboMetadataReportRetryTimer", true));
         volatile ScheduledFuture retryScheduledFuture;
         AtomicInteger retryCounter = new AtomicInteger(0);
         // retry task schedule period
@@ -358,7 +358,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
                         retryScheduledFuture = retryExecutor.scheduleWithFixedDelay(new Runnable() {
                             @Override
                             public void run() {
-                                // Check and connect to the registry
+                                // Check and connect to the metadata
                                 try {
                                     int times = retryCounter.incrementAndGet();
                                     logger.info("start to retry task for metadata report. retry times:" + times);
