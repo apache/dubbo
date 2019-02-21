@@ -87,12 +87,12 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
             return invokers;
         }
 
-        if (tagRouterRule == null || !tagRouterRule.isValid() || !tagRouterRule.isEnabled()) {
+        // since the rule can be changed by config center, we should dump one to use.
+        TagRouterRule dump = tagRouterRule;
+        if (dump == null || !dump.isValid() || !dump.isEnabled()) {
             return filterUsingStaticTag(invokers, url, invocation);
         }
 
-        // because the rule can changed, we should dump one to use.
-        TagRouterRule dump = tagRouterRule;
         List<Invoker<T>> result = invokers;
         String tag = StringUtils.isEmpty(invocation.getAttachment(TAG_KEY)) ? url.getParameter(TAG_KEY) :
                 invocation.getAttachment(TAG_KEY);
