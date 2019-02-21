@@ -54,12 +54,23 @@ public class ScriptRouter extends AbstractRouter {
 
     private final String rule;
 
+    private CompiledScript function;
+
     public ScriptRouter(URL url) {
         this.url = url;
         this.priority = url.getParameter(Constants.PRIORITY_KEY, 0);
-        
+
         engine = getEngine(url);
         rule = getRule(url);
+        try {
+            Compilable compilable = (Compilable) engine;
+            function = compilable.compile(rule);
+        } catch (ScriptException e) {
+            logger.error("route error, rule has been ignored. rule: " + rule +
+                    ", url: " + RpcContext.getContext().getUrl(), e);
+        }
+
+
     }
 
     /**
@@ -72,13 +83,13 @@ public class ScriptRouter extends AbstractRouter {
         }
         return vRule;
     }
-    
+
     /**
      * create ScriptEngine instance by type from url parameters, then cache it
      */
     private ScriptEngine getEngine(URL url) {
         String type = url.getParameter(Constants.TYPE_KEY, Constants.DEFAULT_SCRIPT_TYPE_KEY);
-        
+
         return engines.computeIfAbsent(type, t -> {
             ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName(type);
             if (scriptEngine == null) {
@@ -92,8 +103,9 @@ public class ScriptRouter extends AbstractRouter {
     public <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
         try {
             Bindings bindings = createBindings(invokers, invocation);
-            Compilable compilable = (Compilable) engine;
-            CompiledScript function = compilable.compile(rule);
+            if (function == null) {
+                return invokers;
+            }
             return getRoutedInvokers(function.eval(bindings));
         } catch (ScriptException e) {
             logger.error("route error, rule has been ignored. rule: " + rule + ", method:" +
