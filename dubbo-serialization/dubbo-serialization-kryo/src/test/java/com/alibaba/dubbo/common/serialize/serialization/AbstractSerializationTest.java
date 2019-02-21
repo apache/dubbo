@@ -67,7 +67,7 @@ public abstract class AbstractSerializationTest {
     URL url = new URL("protocol", "1.1.1.1", 1234);
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
-    // ================ Primitive Type ================ 
+    // ================ Primitive Type ================
     BigPerson bigPerson;
     MediaContent mediaContent;
 
@@ -383,7 +383,7 @@ public abstract class AbstractSerializationTest {
         }
     }
 
-    // ================ Array Type ================ 
+    // ================ Array Type ================
 
     <T> void assertObjectArray(T[] data, Class<T[]> clazz) throws Exception {
         ObjectOutput objectOutput = serialization.serialize(url, byteArrayOutputStream);
@@ -762,7 +762,7 @@ public abstract class AbstractSerializationTest {
         assertObjectArrayWithType(new String[]{"1", "b"}, String[].class);
     }
 
-    // ================ Simple Type ================ 
+    // ================ Simple Type ================
 
     @Test
     public void test_IntegerArray() throws Exception {
@@ -979,7 +979,7 @@ public abstract class AbstractSerializationTest {
         }
     }
 
-    // ================ Complex Collection Type ================ 
+    // ================ Complex Collection Type ================
 
     @Test
     public void test_SPersonList() throws Exception {
@@ -1111,7 +1111,7 @@ public abstract class AbstractSerializationTest {
     }
 
 
-    // abnormal case 
+    // abnormal case
 
     @Test
     public void test_MediaContent_badStream() throws Exception {

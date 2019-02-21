@@ -16,21 +16,33 @@
  */
 package com.alibaba.dubbo.common.serialize.support;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import com.esotericsoftware.kryo.Serializer;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public abstract class SerializableClassRegistry {
 
-    private static final Set<Class> registrations = new LinkedHashSet<Class>();
+    private static final Map<Class, Object> registrations = new LinkedHashMap<Class, Object>();
 
     /**
      * only supposed to be called at startup time
      */
     public static void registerClass(Class clazz) {
-        registrations.add(clazz);
+        registerClass(clazz, null);
     }
 
-    public static Set<Class> getRegisteredClasses() {
+    /**
+     * only supposed to be called at startup time
+     */
+    public static void registerClass(Class clazz, Serializer serializer) {
+        if (clazz == null) {
+            throw new IllegalArgumentException("Class registered to kryo cannot be null!");
+        }
+        registrations.put(clazz, serializer);
+    }
+
+    public static Map<Class, Object> getRegisteredClasses() {
         return registrations;
     }
 }
