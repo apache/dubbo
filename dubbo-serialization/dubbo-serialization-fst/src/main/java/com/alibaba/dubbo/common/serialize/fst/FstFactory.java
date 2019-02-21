@@ -37,7 +37,7 @@ public class FstFactory {
     }
 
     public FstFactory() {
-        for (Class clazz : SerializableClassRegistry.getRegisteredClasses()) {
+        for (Class clazz : SerializableClassRegistry.getRegisteredClasses().keySet()) {
             conf.registerClass(clazz);
         }
     }
