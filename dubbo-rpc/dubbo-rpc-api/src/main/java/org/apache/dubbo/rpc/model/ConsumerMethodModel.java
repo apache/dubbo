@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.model;
 import org.apache.dubbo.common.Constants;
 
 import java.lang.reflect.Method;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
