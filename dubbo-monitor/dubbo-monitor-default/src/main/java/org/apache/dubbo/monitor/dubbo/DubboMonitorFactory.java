@@ -26,6 +26,10 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 
+import static org.apache.dubbo.common.Constants.CHECK_KEY;
+import static org.apache.dubbo.common.Constants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.Constants.REFERENCE_FILTER_KEY;
+
 /**
  * DefaultMonitorFactory
  */
@@ -45,18 +49,17 @@ public class DubboMonitorFactory extends AbstractMonitorFactory {
 
     @Override
     protected Monitor createMonitor(URL url) {
-        url = url.setProtocol(url.getParameter(Constants.PROTOCOL_KEY, "dubbo"));
+        url = url.setProtocol(url.getParameter(PROTOCOL_KEY, "dubbo"));
         if (StringUtils.isEmpty(url.getPath())) {
             url = url.setPath(MonitorService.class.getName());
         }
-        String filter = url.getParameter(Constants.REFERENCE_FILTER_KEY);
+        String filter = url.getParameter(REFERENCE_FILTER_KEY);
         if (StringUtils.isEmpty(filter)) {
             filter = "";
         } else {
             filter = filter + ",";
         }
-        url = url.addParameters(Constants.CLUSTER_KEY, "failsafe", Constants.CHECK_KEY, String.valueOf(false),
-                Constants.REFERENCE_FILTER_KEY, filter + "-monitor");
+        url = url.addParameters(CHECK_KEY, String.valueOf(false), REFERENCE_FILTER_KEY, filter + "-monitor");
         Invoker<MonitorService> monitorInvoker = protocol.refer(MonitorService.class, url);
         MonitorService monitorService = proxyFactory.getProxy(monitorInvoker);
         return new DubboMonitor(monitorInvoker, monitorService);
