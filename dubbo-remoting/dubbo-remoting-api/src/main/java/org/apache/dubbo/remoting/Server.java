@@ -28,7 +28,7 @@ import java.util.Collection;
  *
  * @see org.apache.dubbo.remoting.Transporter#bind(org.apache.dubbo.common.URL, ChannelHandler)
  */
-public interface Server extends Endpoint, Resetable {
+public interface Server extends Endpoint, Resetable, IdleSensible {
 
     /**
      * is bound.

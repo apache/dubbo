@@ -16,20 +16,26 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
-import io.netty.channel.ChannelDuplexHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPromise;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
+
+import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
+import io.netty.handler.timeout.IdleStateEvent;
 
 /**
  * NettyClientHandler
  */
 @io.netty.channel.ChannelHandler.Sharable
 public class NettyClientHandler extends ChannelDuplexHandler {
+    private static final Logger logger = LoggerFactory.getLogger(NettyClient.class);
 
     private final URL url;
 
@@ -103,6 +109,27 @@ public class NettyClientHandler extends ChannelDuplexHandler {
                 NettyChannel.removeChannelIfDisconnected(ctx.channel());
             }
         });
+    }
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof IdleStateEvent) {
+            try {
+                NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("IdleStateEvent triggered, send heartbeat to channel " + channel);
+                }
+                Request req = new Request();
+                req.setVersion(Version.getProtocolVersion());
+                req.setTwoWay(true);
+                req.setEvent(Request.HEARTBEAT_EVENT);
+                channel.send(req);
+            } finally {
+                NettyChannel.removeChannelIfDisconnected(ctx.channel());
+            }
+       } else {
+            super.userEventTriggered(ctx, evt);
+        }
     }
 
     @Override

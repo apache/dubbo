@@ -22,6 +22,7 @@ import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -34,12 +35,7 @@ public class MapTypeBuilder implements TypeBuilder {
         if (clazz == null) {
             return false;
         }
-
-        if (Map.class.isAssignableFrom(clazz)) {
-            return true;
-        }
-
-        return false;
+        return Map.class.isAssignableFrom(clazz);
     }
 
     @Override
@@ -52,7 +48,7 @@ public class MapTypeBuilder implements TypeBuilder {
         Type[] actualTypeArgs = parameterizedType.getActualTypeArguments();
         if (actualTypeArgs == null || actualTypeArgs.length != 2) {
             throw new IllegalArgumentException(MessageFormat.format(
-                    "[ServiceDefinitionBuilder] Map type [{0}] with unexpected amount of arguments [{1}]." + actualTypeArgs, new Object[]{
+                    "[ServiceDefinitionBuilder] Map type [{0}] with unexpected amount of arguments [{1}]." + Arrays.toString(actualTypeArgs), new Object[]{
                             type, actualTypeArgs}));
         }
 
