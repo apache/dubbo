@@ -251,6 +251,10 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         initialized = true;
         checkStubAndLocal(interfaceClass);
         checkMock(interfaceClass);
+
+        ConsumerModel consumerModel = new ConsumerModel(interfaceName, group, version, interfaceClass);
+        ApplicationModel.initConsumerModel(getUniqueServiceName(), consumerModel);
+
         Map<String, String> map = new HashMap<String, String>();
 
         map.put(Constants.SIDE_KEY, Constants.CONSUMER_SIDE);
@@ -286,7 +290,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                         map.put(methodConfig.getName() + ".retries", "0");
                     }
                 }
-                attributes.put(methodConfig.getName(), convertMethodConfig2AyncInfo(methodConfig));
+                consumerModel.getMethodModel(methodConfig.getName()).addAttribute(Constants.ASYNC_KEY, convertMethodConfig2AyncInfo(methodConfig));
             }
         }
 
@@ -300,8 +304,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
         ref = createProxy(map);
 
-        ConsumerModel consumerModel = new ConsumerModel(interfaceName, group, version, interfaceClass, interfaceClass.getMethods(), attributes);
-        ApplicationModel.initConsumerModel(getUniqueServiceName(), consumerModel);
+        consumerModel.getServiceMetadata().addAttribute(Constants.PROXY_CLASS_REF, ref);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})

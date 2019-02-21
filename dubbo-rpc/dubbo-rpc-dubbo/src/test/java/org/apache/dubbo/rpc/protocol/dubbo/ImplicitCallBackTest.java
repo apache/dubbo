@@ -112,8 +112,9 @@ public class ImplicitCallBackTest {
         ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = new ConsumerMethodModel.AsyncMethodInfo();
         asyncMethodInfo.setOnthrowInstance(notify);
         asyncMethodInfo.setOnthrowMethod(onThrowMethod);
-        attitudes.put("get", asyncMethodInfo);
-        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceInterface(), "Dubbo", "1.0.0", IDemoService.class, IDemoService.class.getMethods(), attitudes));
+        ConsumerModel consumerModel = new ConsumerModel(consumerUrl.getServiceInterface(), "Dubbo", "1.0.0", IDemoService.class);
+        consumerModel.getMethodModel("get").addAttribute(Constants.ASYNC_KEY, asyncMethodInfo);
+        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), consumerModel);
     }
 
     //================================================================================================
@@ -123,8 +124,9 @@ public class ImplicitCallBackTest {
         ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = new ConsumerMethodModel.AsyncMethodInfo();
         asyncMethodInfo.setOnreturnInstance(notify);
         asyncMethodInfo.setOnreturnMethod(onReturnMethod);
-        attitudes.put("get", asyncMethodInfo);
-        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceInterface(), "Dubbo", "1.0.0", IDemoService.class, IDemoService.class.getMethods(), attitudes));
+        ConsumerModel consumerModel = new ConsumerModel(consumerUrl.getServiceInterface(), "Dubbo", "1.0.0", IDemoService.class);
+        consumerModel.getMethodModel("get").addAttribute(Constants.ASYNC_KEY, asyncMethodInfo);
+        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), consumerModel);
     }
 
     public void initImplicitCallBackURL_onlyOninvoke() throws Exception {
@@ -132,8 +134,9 @@ public class ImplicitCallBackTest {
         ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = new ConsumerMethodModel.AsyncMethodInfo();
         asyncMethodInfo.setOninvokeInstance(notify);
         asyncMethodInfo.setOninvokeMethod(onInvokeMethod);
-        attitudes.put("get", asyncMethodInfo);
-        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceInterface(), "Dubbo", "1.0.0", IDemoService.class, IDemoService.class.getMethods(), attitudes));
+        ConsumerModel consumerModel = new ConsumerModel(consumerUrl.getServiceInterface(), "Dubbo", "1.0.0", IDemoService.class);
+        consumerModel.getMethodModel("get").addAttribute(Constants.ASYNC_KEY, asyncMethodInfo);
+        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), consumerModel);
     }
 
     @Test
