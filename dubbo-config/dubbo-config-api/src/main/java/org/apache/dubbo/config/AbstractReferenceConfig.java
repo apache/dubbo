@@ -36,12 +36,12 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     /**
      * Check if service provider exists, if not exists, it will be fast fail
      */
-    protected Boolean check;
+    protected Boolean check = true;
 
     /**
      * Whether to eagle-init
      */
-    protected Boolean init;
+    protected Boolean init = false;
 
     /**
      * Whether to use generic interface
@@ -51,16 +51,16 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     /**
      * Whether to find reference's instance from the current JVM
      */
-    protected Boolean injvm;
+    protected Boolean injvm = true;
 
     /**
      * Lazy create connection
      */
-    protected Boolean lazy;
+    protected Boolean lazy = false;
 
     protected String reconnect;
 
-    protected Boolean sticky;
+    protected Boolean sticky = false;
 
     /**
      * Whether to support event in stub.
