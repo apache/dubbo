@@ -51,7 +51,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     /**
      * Whether to find reference's instance from the current JVM
      */
-    protected Boolean injvm = true;
+    protected Boolean injvm = false;
 
     /**
      * Lazy create connection
