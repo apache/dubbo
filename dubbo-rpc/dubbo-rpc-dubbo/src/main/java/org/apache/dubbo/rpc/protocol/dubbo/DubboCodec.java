@@ -45,7 +45,7 @@ import static org.apache.dubbo.rpc.protocol.dubbo.CallbackServiceCodec.encodeInv
 /**
  * Dubbo codec.
  */
-public class DubboCodec extends ExchangeCodec implements Codec2 {
+public class DubboCodec extends ExchangeCodec {
 
     public static final String NAME = "dubbo";
     public static final String DUBBO_VERSION = Version.getProtocolVersion();
