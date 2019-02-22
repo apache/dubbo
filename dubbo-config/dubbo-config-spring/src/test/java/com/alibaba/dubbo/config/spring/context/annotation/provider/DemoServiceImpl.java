@@ -45,11 +45,6 @@ public class DemoServiceImpl implements DemoService {
 
     @Override
     public Box getBox() {
-        return new Box() {
-            @Override
-            public String getName() {
-                return "MyBox";
-            }
-        };
+        throw new UnsupportedOperationException("For Purposes!");
     }
 }

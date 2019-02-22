@@ -32,6 +32,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Collection;
@@ -155,7 +156,14 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            return method.invoke(bean, args);
+            Object result = null;
+            try {
+                result = method.invoke(bean, args);
+            } catch (InvocationTargetException e) {
+                // re-throws the actual Exception.
+                throw e.getTargetException();
+            }
+            return result;
         }
 
         private void init() {

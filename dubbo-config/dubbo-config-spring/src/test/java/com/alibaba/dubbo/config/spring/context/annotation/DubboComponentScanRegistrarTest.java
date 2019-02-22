@@ -111,5 +111,31 @@ public class DubboComponentScanRegistrarTest {
 
     }
 
+    @Test(expected = UnsupportedOperationException.class)
+    public void testOnException() {
+
+        AnnotationConfigApplicationContext providerContext = new AnnotationConfigApplicationContext();
+
+        providerContext.register(ProviderConfiguration.class);
+
+        providerContext.refresh();
+
+        AnnotationConfigApplicationContext consumerContext = new AnnotationConfigApplicationContext();
+
+        consumerContext.register(ConsumerConfiguration.class);
+
+        consumerContext.refresh();
+
+        ConsumerConfiguration.Child child = consumerContext.getBean(ConsumerConfiguration.Child.class);
+
+        // From Child
+        DemoService demoService = child.getDemoServiceFromChild();
+
+        demoService.getBox();
+
+        providerContext.close();
+        consumerContext.close();
+    }
+
 
 }
