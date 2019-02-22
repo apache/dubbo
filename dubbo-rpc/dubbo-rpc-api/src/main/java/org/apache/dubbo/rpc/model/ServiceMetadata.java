@@ -27,9 +27,11 @@ public class ServiceMetadata {
 
     private final String serviceKey;
     private final String serviceInterfaceName;
-    private final String group;
+    private final String defaultGroup;
     private final String version;
     private final Class<?> serviceType;
+
+    private volatile String group;
 
     /* will be transferred to remote side */
     private final Map<String, Object> attachments = new ConcurrentHashMap<String, Object>();
@@ -38,6 +40,7 @@ public class ServiceMetadata {
 
     public ServiceMetadata(String serviceInterfaceName, String group, String version, Class<?> serviceType) {
         this.serviceInterfaceName = serviceInterfaceName;
+        this.defaultGroup = group;
         this.group = group;
         this.version = version;
         this.serviceKey = serviceInterfaceName + ":" + version;
@@ -72,12 +75,19 @@ public class ServiceMetadata {
         return serviceInterfaceName;
     }
 
-    public String getGroup() {
-        return group;
+    public String getDefaultGroup() {
+        return defaultGroup;
     }
 
     public String getVersion() {
         return version;
     }
 
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
 }

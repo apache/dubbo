@@ -807,6 +807,12 @@ public class Constants {
      * Production environment key.
      */
     public static final String PRODUCTION_ENVIRONMENT = "product";
+
+    /**
+     * Consumer side 's proxy class
+     */
+    public static final String PROXY_CLASS_REF = "refClass";
+
     /*
      * private Constants(){ }
      */

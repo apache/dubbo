@@ -30,11 +30,12 @@ public class ConsumerModel {
     private final ServiceMetadata serviceMetadata;
     private final Map<Method, ConsumerMethodModel> methodModels = new IdentityHashMap<Method, ConsumerMethodModel>();
 
-    public ConsumerModel(String serviceName, String group, String version, Class<?> interfaceClass, Method[] methods, Map<String, Object> attributes) {
+    public ConsumerModel(String serviceName, String group, String version, Class<?> interfaceClass) {
         this.serviceMetadata = new ServiceMetadata(serviceName, group, version, interfaceClass);
 
+        Method[] methods = interfaceClass.getMethods();
         for (Method method : methods) {
-            methodModels.put(method, new ConsumerMethodModel(method, attributes));
+            methodModels.put(method, new ConsumerMethodModel(method));
         }
     }
 
