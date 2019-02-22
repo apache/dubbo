@@ -23,7 +23,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.store.DataStore;
 import org.apache.dubbo.common.utils.ExecutorUtil;
-import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
@@ -53,7 +53,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
 
         String bindIp = getUrl().getParameter(Constants.BIND_IP_KEY, getUrl().getHost());
         int bindPort = getUrl().getParameter(Constants.BIND_PORT_KEY, getUrl().getPort());
-        if (url.getParameter(Constants.ANYHOST_KEY, false) || StringUtils.isEmpty(bindIp)) {
+        if (url.getParameter(Constants.ANYHOST_KEY, false) || NetUtils.isInvalidLocalHost(bindIp)) {
             bindIp = Constants.ANYHOST_VALUE;
         }
         bindAddress = new InetSocketAddress(bindIp, bindPort);
