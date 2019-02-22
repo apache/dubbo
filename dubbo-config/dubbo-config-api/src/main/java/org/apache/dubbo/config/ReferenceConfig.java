@@ -36,6 +36,7 @@ import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.cluster.support.RegistryAwareCluster;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
@@ -290,7 +291,10 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                         map.put(methodConfig.getName() + ".retries", "0");
                     }
                 }
-                consumerModel.getMethodModel(methodConfig.getName()).addAttribute(Constants.ASYNC_KEY, convertMethodConfig2AyncInfo(methodConfig));
+                ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = convertMethodConfig2AyncInfo(methodConfig);
+                if (asyncMethodInfo != null) {
+                    consumerModel.getMethodModel(methodConfig.getName()).addAttribute(Constants.ASYNC_KEY, asyncMethodInfo);
+                }
             }
         }
 
