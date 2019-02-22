@@ -158,6 +158,10 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             Object result = null;
             try {
+                if (bean == null) { // If the bean is not initialized, invoke init()
+                    // issue: https://github.com/apache/incubator-dubbo/issues/3429
+                    init();
+                }
                 result = method.invoke(bean, args);
             } catch (InvocationTargetException e) {
                 // re-throws the actual Exception.
