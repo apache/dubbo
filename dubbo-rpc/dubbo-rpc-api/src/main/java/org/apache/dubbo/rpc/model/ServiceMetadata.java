@@ -55,8 +55,12 @@ public class ServiceMetadata {
         return attachments;
     }
 
-    public Map<String, Object> getAttributeMap() {
-        return attributeMap;
+//    public Map<String, Object> getAttributeMap() {
+//        return attributeMap;
+//    }
+
+    public Object getAttribute(String key) {
+        return attributeMap.get(key);
     }
 
     public void addAttribute(String key, Object value) {
