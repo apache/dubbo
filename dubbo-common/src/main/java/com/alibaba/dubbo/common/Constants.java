@@ -641,6 +641,8 @@ public class Constants {
 
     public static final String FORCE_USE_TAG = "dubbo.force.tag";
 
+    public static final String TELNET = "telnet";
+
     /*
      * private Constants(){ }
      */

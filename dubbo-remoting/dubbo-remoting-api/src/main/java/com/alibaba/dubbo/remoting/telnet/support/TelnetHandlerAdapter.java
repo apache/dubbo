@@ -17,7 +17,9 @@
 package com.alibaba.dubbo.remoting.telnet.support;
 
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
+import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
@@ -49,14 +51,20 @@ public class TelnetHandlerAdapter extends ChannelHandlerAdapter implements Telne
         }
         if (command.length() > 0) {
             if (extensionLoader.hasExtension(command)) {
-                try {
-                    String result = extensionLoader.getExtension(command).telnet(channel, message);
-                    if (result == null) {
-                        return null;
+                if (commandEnabled(channel.getUrl(), command)) {
+                    try {
+                        String result = extensionLoader.getExtension(command).telnet(channel, message);
+                        if (result == null) {
+                            return null;
+                        }
+                        buf.append(result);
+                    } catch (Throwable t) {
+                        buf.append(t.getMessage());
                     }
-                    buf.append(result);
-                } catch (Throwable t) {
-                    buf.append(t.getMessage());
+                } else {
+                    buf.append("Command: ");
+                    buf.append(command);
+                    buf.append(" disabled");
                 }
             } else {
                 buf.append("Unsupported command: ");
@@ -70,6 +78,23 @@ public class TelnetHandlerAdapter extends ChannelHandlerAdapter implements Telne
             buf.append(prompt);
         }
         return buf.toString();
+    }
+
+    private boolean commandEnabled(URL url, String command) {
+        boolean commandEnable = false;
+        String supportCommands = url.getParameter(Constants.TELNET);
+        if (StringUtils.isEmpty(supportCommands)) {
+            commandEnable = true;
+        } else {
+            String[] commands = Constants.COMMA_SPLIT_PATTERN.split(supportCommands);
+            for (String c : commands) {
+                if (command.equals(c)) {
+                    commandEnable = true;
+                    break;
+                }
+            }
+        }
+        return commandEnable;
     }
 
 }

@@ -21,7 +21,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
        http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
 
-    <dubbo:application name="memcached-consumer"/>
+    <dubbo:application name="redis-consumer"/>
 
     <dubbo:reference id="cache" interface="java.util.Map" url="redis://10.20.153.10:6379"/>
 

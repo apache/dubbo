@@ -103,22 +103,23 @@ public class DubboMonitorTest {
                 .addParameter(MonitorService.CONCURRENT, 1)
                 .addParameter(MonitorService.MAX_CONCURRENT, 1);
         monitor.collect(statistics);
+        monitor.send();
         while (lastStatistics == null) {
             Thread.sleep(10);
         }
-        Assert.assertEquals(lastStatistics.getParameter(MonitorService.APPLICATION), "morgan");
-        Assert.assertEquals(lastStatistics.getProtocol(), "dubbo");
-        Assert.assertEquals(lastStatistics.getHost(), "10.20.153.10");
-        Assert.assertEquals(lastStatistics.getParameter(MonitorService.APPLICATION), "morgan");
-        Assert.assertEquals(lastStatistics.getParameter(MonitorService.INTERFACE), "MemberService");
-        Assert.assertEquals(lastStatistics.getParameter(MonitorService.METHOD), "findPerson");
-        Assert.assertEquals(lastStatistics.getParameter(MonitorService.CONSUMER), "10.20.153.11");
-        Assert.assertEquals(lastStatistics.getParameter(MonitorService.SUCCESS), "1");
-        Assert.assertEquals(lastStatistics.getParameter(MonitorService.FAILURE), "0");
-        Assert.assertEquals(lastStatistics.getParameter(MonitorService.ELAPSED), "3");
-        Assert.assertEquals(lastStatistics.getParameter(MonitorService.MAX_ELAPSED), "3");
-        Assert.assertEquals(lastStatistics.getParameter(MonitorService.CONCURRENT), "1");
-        Assert.assertEquals(lastStatistics.getParameter(MonitorService.MAX_CONCURRENT), "1");
+        Assert.assertEquals("morgan", lastStatistics.getParameter(MonitorService.APPLICATION));
+        Assert.assertEquals("dubbo", lastStatistics.getProtocol());
+        Assert.assertEquals("10.20.153.10", lastStatistics.getHost());
+        Assert.assertEquals("morgan", lastStatistics.getParameter(MonitorService.APPLICATION));
+        Assert.assertEquals("MemberService", lastStatistics.getParameter(MonitorService.INTERFACE));
+        Assert.assertEquals("findPerson", lastStatistics.getParameter(MonitorService.METHOD));
+        Assert.assertEquals("10.20.153.11", lastStatistics.getParameter(MonitorService.CONSUMER));
+        Assert.assertEquals("1", lastStatistics.getParameter(MonitorService.SUCCESS));
+        Assert.assertEquals("0", lastStatistics.getParameter(MonitorService.FAILURE));
+        Assert.assertEquals("3", lastStatistics.getParameter(MonitorService.ELAPSED));
+        Assert.assertEquals("3", lastStatistics.getParameter(MonitorService.MAX_ELAPSED));
+        Assert.assertEquals("1", lastStatistics.getParameter(MonitorService.CONCURRENT));
+        Assert.assertEquals("1", lastStatistics.getParameter(MonitorService.MAX_CONCURRENT));
         monitor.destroy();
     }
 
