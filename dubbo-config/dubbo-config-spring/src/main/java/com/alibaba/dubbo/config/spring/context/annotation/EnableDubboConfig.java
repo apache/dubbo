@@ -46,7 +46,7 @@ import java.lang.annotation.Target;
  * <li>{@link ConsumerConfig} binding to property :  "dubbo.consumer"</li>
  * </ul>
  * <p>
- * In contrast, on multiple bean bindings that requires to set {@link #multiple()} to be <code>true</code> :
+ * On multiple bean bindings that requires to set {@link #multiple()} to be <code>true</code> :
  * <ul>
  * <li>{@link ApplicationConfig} binding to property : "dubbo.applications"</li>
  * <li>{@link ModuleConfig} binding to property :  "dubbo.modules"</li>
@@ -59,22 +59,25 @@ import java.lang.annotation.Target;
  *
  * @see EnableDubboConfigBinding
  * @see DubboConfigConfiguration
- * @see DubboConfigConfigurationSelector
+ * @see DubboConfigConfigurationRegistrar
  * @since 2.5.8
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@Import(DubboConfigConfigurationSelector.class)
+@Import(DubboConfigConfigurationRegistrar.class)
 public @interface EnableDubboConfig {
 
     /**
      * It indicates whether binding to multiple Spring Beans.
+     * <p>
+     * Please note that if {@link #multiple()} is <code>true</code> since 2.6.6, the multiple bean bindings will be
+     * enabled, works with single bean bindings, rather than they are mutually exclusive before.
      *
-     * @return the default value is <code>false</code>
+     * @return the default value is <code>true</code> since 2.6.6, the value is inverse earlier.
      * @revised 2.5.9
      */
-    boolean multiple() default false;
+    boolean multiple() default true;
 
 }

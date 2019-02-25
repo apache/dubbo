@@ -37,6 +37,7 @@ import static com.alibaba.dubbo.config.spring.beans.factory.annotation.ServiceBe
  */
 @Service(interfaceClass = DemoService.class, group = GROUP, version = VERSION,
         application = "application", module = "module", registry = {"1", "2", "3"})
+@Deprecated
 public class ServiceBeanNameBuilderTest {
 
     @Reference(interfaceClass = DemoService.class, group = "DUBBO", version = "1.0.0",

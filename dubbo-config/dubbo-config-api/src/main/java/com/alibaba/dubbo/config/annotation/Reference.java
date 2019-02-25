@@ -112,4 +112,12 @@ public @interface Reference {
 
     String[] registry() default {};
 
+    /**
+     * The communication protocol of Dubbo Service
+     *
+     * @return the default value is ""
+     * @since 2.6.6
+     */
+    String protocol() default "";
+
 }
