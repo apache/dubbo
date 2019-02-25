@@ -122,4 +122,6 @@ public @interface Service {
 
     String tag() default "";
 
+    Method[] methods() default {};
+
 }

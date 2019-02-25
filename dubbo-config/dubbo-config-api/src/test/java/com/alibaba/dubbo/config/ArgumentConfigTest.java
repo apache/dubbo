@@ -17,6 +17,7 @@
 
 package com.alibaba.dubbo.config;
 
+import com.alibaba.dubbo.config.annotation.Argument;
 import org.junit.Test;
 
 import java.util.HashMap;

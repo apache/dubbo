@@ -92,8 +92,8 @@ public abstract class AnnotationUtils {
         return interfaceName;
 
     }
-
-
+  
+  
     // Cloned from https://github.com/alibaba/spring-context-support/blob/1.0.2/src/main/java/com/alibaba/spring/util/AnnotationUtils.java
 
     /**
@@ -258,6 +258,18 @@ public abstract class AnnotationUtils {
                 continue;
             }
 
+            /**
+             * @since 2.6.6
+             * ignore annotation member
+             */
+            if (attributeValue.getClass().isAnnotation()){
+                continue;
+            }
+            if (attributeValue.getClass().isArray() && attributeValue.getClass().getComponentType().isAnnotation()){
+                continue;
+            }
+          
+          
             if (attributeValue instanceof String) {
                 attributeValue = resolvePlaceholders(valueOf(attributeValue), propertyResolver);
             } else if (attributeValue instanceof String[]) {

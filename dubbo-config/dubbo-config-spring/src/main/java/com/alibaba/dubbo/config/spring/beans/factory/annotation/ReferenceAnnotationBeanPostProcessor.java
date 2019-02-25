@@ -105,7 +105,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
     }
 
     @Override
-    protected Object doGetInjectedBean(Reference reference, Object bean, String beanName, Class<?> injectedType,
+                            protected Object doGetInjectedBean(Reference reference, Object bean, String beanName, Class<?> injectedType,
                                        InjectionMetadata.InjectedElement injectedElement) throws Exception {
 
         String referencedBeanName = buildReferencedBeanName(reference, injectedType);
