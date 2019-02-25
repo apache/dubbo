@@ -16,6 +16,7 @@
  */
 package com.alibaba.dubbo.examples.annotation.action;
 
+import com.alibaba.dubbo.config.annotation.Method;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.examples.annotation.api.AnnotationService;
 
@@ -27,7 +28,7 @@ import org.springframework.stereotype.Component;
 @Component("annotationAction")
 public class AnnotationAction {
 
-    @Reference
+    @Reference(methods = {@Method(name = "sayHello", timeout = 5000)})
     private AnnotationService annotationService;
 
     public String doSayHello(String name) {

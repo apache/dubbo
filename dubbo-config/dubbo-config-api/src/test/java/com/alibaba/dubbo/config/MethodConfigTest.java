@@ -18,11 +18,16 @@
 package com.alibaba.dubbo.config;
 
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.config.annotation.Argument;
+import com.alibaba.dubbo.config.annotation.Method;
+import com.alibaba.dubbo.config.annotation.Reference;
 import org.hamcrest.Matchers;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.Matchers.contains;
@@ -34,6 +39,54 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 public class MethodConfigTest {
+    private static final String METHOD_NAME = "sayHello";
+    private static final int TIMEOUT = 1300;
+    private static final int RETRIES = 4;
+    private static final String LOADBALANCE = "random";
+    private static final boolean ASYNC = true;
+    private static final int ACTIVES = 3;
+    private static final int EXECUTES = 5;
+    private static final boolean DEPERECATED = true;
+    private static final boolean STICKY = true;
+    private static final String ONINVOKE = "i";
+    private static final String ONTHROW = "t";
+    private static final String ONRETURN = "r";
+    private static final String CACHE = "c";
+    private static final String VALIDATION = "v";
+    private static final int ARGUMENTS_INDEX = 24;
+    private static final boolean ARGUMENTS_CALLBACK = true;
+    private static final String ARGUMENTS_TYPE = "sss";
+
+    @Reference(methods = {@Method(name = METHOD_NAME, timeout = TIMEOUT, retries = RETRIES, loadbalance = LOADBALANCE, async = ASYNC,
+            actives = ACTIVES, executes = EXECUTES, deprecated = DEPERECATED, sticky = STICKY, oninvoke = ONINVOKE, onthrow = ONTHROW, onreturn = ONRETURN, cache = CACHE, validation = VALIDATION,
+            arguments = {@Argument(index = ARGUMENTS_INDEX, callback = ARGUMENTS_CALLBACK, type = ARGUMENTS_TYPE)})})
+    private String testField;
+
+    @Test
+    public void testStaticConstructor() throws NoSuchFieldException {
+        Method[] methods = this.getClass().getDeclaredField("testField").getAnnotation(Reference.class).methods();
+        List<MethodConfig> methodConfigs = MethodConfig.constructMethodConfig(methods);
+        MethodConfig methodConfig = methodConfigs.get(0);
+
+        Assert.assertEquals(METHOD_NAME, methodConfig.getName());
+        Assert.assertEquals(methodConfig.getTimeout().intValue(), TIMEOUT);
+        Assert.assertEquals(RETRIES, methodConfig.getRetries().intValue());
+        Assert.assertEquals(LOADBALANCE, methodConfig.getLoadbalance());
+        Assert.assertEquals(ASYNC, methodConfig.isAsync());
+        Assert.assertEquals(ACTIVES, methodConfig.getActives().intValue());
+        Assert.assertEquals(EXECUTES, methodConfig.getExecutes().intValue());
+        Assert.assertEquals(DEPERECATED, methodConfig.getDeprecated());
+        Assert.assertEquals(STICKY, methodConfig.getSticky());
+        Assert.assertEquals(ONINVOKE, methodConfig.getOninvoke());
+        Assert.assertEquals(ONTHROW, methodConfig.getOnthrow());
+        Assert.assertEquals(ONRETURN, methodConfig.getOnreturn());
+        Assert.assertEquals(CACHE, methodConfig.getCache());
+        Assert.assertEquals(VALIDATION, methodConfig.getValidation());
+        Assert.assertEquals(ARGUMENTS_INDEX, methodConfig.getArguments().get(0).getIndex().intValue());
+        Assert.assertEquals(ARGUMENTS_CALLBACK, methodConfig.getArguments().get(0).isCallback());
+        Assert.assertEquals(ARGUMENTS_TYPE, methodConfig.getArguments().get(0).getType());
+    }
+
     @Test
     public void testName() throws Exception {
         MethodConfig method = new MethodConfig();

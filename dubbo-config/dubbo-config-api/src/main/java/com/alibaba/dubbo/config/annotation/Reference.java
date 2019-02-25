@@ -118,6 +118,8 @@ public @interface Reference {
      * @return the default value is ""
      * @since 2.6.6
      */
-    String protocol() default "";
+    String protocol() default "";  
+  
+    Method[] methods() default {};
 
 }
