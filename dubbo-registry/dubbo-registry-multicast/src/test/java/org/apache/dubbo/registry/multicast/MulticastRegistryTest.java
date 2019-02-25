@@ -92,7 +92,9 @@ public class MulticastRegistryTest {
         Set<URL> registered;
         // clear first
         registered = registry.getRegistered();
-        registered.clear();
+        for (URL url : registered) {
+            registry.unregister(url);
+        }
 
         for (int i = 0; i < 2; i++) {
             registry.register(serviceUrl);

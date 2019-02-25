@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
@@ -99,7 +100,7 @@ public class RegistryProtocol implements Protocol {
     private final ProviderConfigurationListener providerConfigurationListener = new ProviderConfigurationListener();
     //To solve the problem of RMI repeated exposure port conflicts, the services that have been exposed are no longer exposed.
     //providerurl <--> exporter
-    private final Map<String, ExporterChangeableWrapper<?>> bounds = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ExporterChangeableWrapper<?>> bounds = new ConcurrentHashMap<>();
     private Cluster cluster;
     private Protocol protocol;
     private RegistryFactory registryFactory;
@@ -212,19 +213,11 @@ public class RegistryProtocol implements Protocol {
     @SuppressWarnings("unchecked")
     private <T> ExporterChangeableWrapper<T> doLocalExport(final Invoker<T> originInvoker, URL providerUrl) {
         String key = getCacheKey(originInvoker);
-        ExporterChangeableWrapper<T> exporter = (ExporterChangeableWrapper<T>) bounds.get(key);
-        if (exporter == null) {
-            synchronized (bounds) {
-                exporter = (ExporterChangeableWrapper<T>) bounds.get(key);
-                if (exporter == null) {
 
-                    final Invoker<?> invokerDelegete = new InvokerDelegate<T>(originInvoker, providerUrl);
-                    exporter = new ExporterChangeableWrapper<T>((Exporter<T>) protocol.export(invokerDelegete), originInvoker);
-                    bounds.put(key, exporter);
-                }
-            }
-        }
-        return exporter;
+        return (ExporterChangeableWrapper<T>) bounds.computeIfAbsent(key, s -> {
+            Invoker<?> invokerDelegete = new InvokerDelegate<>(originInvoker, providerUrl);
+            return new ExporterChangeableWrapper<>((Exporter<T>) protocol.export(invokerDelegete), originInvoker);
+        });
     }
 
     public <T> void reExport(final Invoker<T> originInvoker, URL newInvokerUrl) {
