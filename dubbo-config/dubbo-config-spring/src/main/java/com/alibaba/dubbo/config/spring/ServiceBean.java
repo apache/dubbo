@@ -33,7 +33,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.context.support.AbstractApplicationContext;
 
 import java.lang.reflect.Method;
@@ -46,7 +46,7 @@ import java.util.Map;
  *
  * @export
  */
-public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean, DisposableBean, ApplicationContextAware, ApplicationListener<ContextRefreshedEvent>, BeanNameAware {
+public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean, DisposableBean, ApplicationContextAware, ApplicationListener<ContextStartedEvent>, BeanNameAware {
 
     private static final long serialVersionUID = 213195494150089726L;
 
@@ -112,7 +112,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         return service;
     }
 
-    public void onApplicationEvent(ContextRefreshedEvent event) {
+    public void onApplicationEvent(ContextStartedEvent event) {
         if (isDelay() && !isExported() && !isUnexported()) {
             if (logger.isInfoEnabled()) {
                 logger.info("The service ready on spring started. service: " + getInterface());
