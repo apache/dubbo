@@ -35,7 +35,9 @@ import static com.alibaba.dubbo.config.spring.util.AnnotationUtils.resolveInterf
  * @see ServiceBean
  * @see ReferenceBean
  * @since 2.6.5
+ * @deprecated {@link AnnotationBeanNameBuilder} as the replacement
  */
+@Deprecated
 class ServiceBeanNameBuilder {
 
     private static final String SEPARATOR = ":";

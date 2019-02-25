@@ -17,6 +17,13 @@
 
 package com.alibaba.dubbo.config.spring.api;
 
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
+
+@Path("/hello-service")
 public interface HelloService {
-    String sayHello(String name);
+
+    @GET
+    String sayHello(@QueryParam("name") String name);
 }

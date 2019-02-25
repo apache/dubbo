@@ -20,8 +20,7 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.spring.ReferenceBean;
 import com.alibaba.dubbo.config.spring.ServiceBean;
 import com.alibaba.dubbo.config.spring.context.event.ServiceBeanExportedEvent;
-import com.alibaba.spring.beans.factory.annotation.AnnotationInjectedBeanPostProcessor;
-import com.alibaba.spring.util.AnnotationUtils;
+import com.alibaba.dubbo.config.spring.util.AnnotationUtils;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
@@ -33,6 +32,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Collection;
@@ -156,7 +156,18 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            return method.invoke(bean, args);
+            Object result = null;
+            try {
+                if (bean == null) { // If the bean is not initialized, invoke init()
+                    // issue: https://github.com/apache/incubator-dubbo/issues/3429
+                    init();
+                }
+                result = method.invoke(bean, args);
+            } catch (InvocationTargetException e) {
+                // re-throws the actual Exception.
+                throw e.getTargetException();
+            }
+            return result;
         }
 
         private void init() {
@@ -170,14 +181,16 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
 
         String key = buildReferencedBeanName(reference, injectedType) +
                 "#source=" + (injectedElement.getMember()) +
-                "#attributes=" + AnnotationUtils.getAttributes(reference,getEnvironment(),true);
+                "#attributes=" + AnnotationUtils.getAttributes(reference, getEnvironment(), true);
 
         return key;
     }
 
     private String buildReferencedBeanName(Reference reference, Class<?> injectedType) {
 
-        ServiceBeanNameBuilder builder = ServiceBeanNameBuilder.create(reference, injectedType, getEnvironment());
+        AnnotationBeanNameBuilder builder = AnnotationBeanNameBuilder.create(reference, injectedType);
+
+        builder.environment(getEnvironment());
 
         return getEnvironment().resolvePlaceholders(builder.build());
     }

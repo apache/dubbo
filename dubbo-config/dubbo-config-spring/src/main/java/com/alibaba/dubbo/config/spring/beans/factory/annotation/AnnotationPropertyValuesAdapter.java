@@ -23,7 +23,7 @@ import org.springframework.core.env.PropertyResolver;
 
 import java.lang.annotation.Annotation;
 
-import static com.alibaba.spring.util.AnnotationUtils.getAttributes;
+import static com.alibaba.dubbo.config.spring.util.AnnotationUtils.getAttributes;
 
 
 /**

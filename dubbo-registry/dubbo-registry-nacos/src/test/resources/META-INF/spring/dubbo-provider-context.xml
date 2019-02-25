@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://dubbo.apache.org/schema/dubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd        http://dubbo.apache.org/schema/dubbo        http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
+
+    <!-- 提供方应用信息，用于计算依赖关系 -->
+    <dubbo:application name="dubbo-provider-xml-demo"/>
+
+    <!-- 使用 Nacos 注册中心 -->
+    <dubbo:registry address="nacos://127.0.0.1:8848"/>
+
+    <!-- 用dubbo协议在随机端口暴露服务 -->
+    <dubbo:protocol name="dubbo" port="-1"/>
+
+    <!-- 声明需要暴露的服务接口 -->
+    <dubbo:service interface="com.alibaba.dubbo.demo.service.DemoService" ref="demoService" version="2.0.0"/>
+
+    <!-- 和本地bean一样实现服务 -->
+    <bean id="demoService" class="com.alibaba.dubbo.demo.service.DefaultService"/>
+</beans>

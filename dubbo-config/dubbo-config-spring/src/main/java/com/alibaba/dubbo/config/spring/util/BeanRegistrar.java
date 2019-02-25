@@ -25,7 +25,7 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
  *
  * @since 2.5.7
  */
-public class BeanRegistrar {
+public abstract class BeanRegistrar {
 
     /**
      * Register Infrastructure Bean
