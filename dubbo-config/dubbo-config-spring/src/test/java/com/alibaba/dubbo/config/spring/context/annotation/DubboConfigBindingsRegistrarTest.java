@@ -50,7 +50,7 @@ public class DubboConfigBindingsRegistrarTest {
 
     @EnableDubboConfigBindings({
             @EnableDubboConfigBinding(prefix = "${application.prefix}", type = ApplicationConfig.class),
-            @EnableDubboConfigBinding(prefix = "dubbo.applications.applicationBean", type = ApplicationConfig.class)
+            @EnableDubboConfigBinding(prefix = "dubbo.applications.applicationBean1", type = ApplicationConfig.class)
     })
     @PropertySource("META-INF/config.properties")
     private static class TestConfig {

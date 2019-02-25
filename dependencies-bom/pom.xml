@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -101,6 +102,7 @@
         <rs_api_version>2.0</rs_api_version>
         <resteasy_version>3.0.19.Final</resteasy_version>
         <tomcat_embed_version>8.5.31</tomcat_embed_version>
+
         <!-- Log libs -->
         <slf4j_version>1.7.25</slf4j_version>
         <jcl_version>1.2</jcl_version>
@@ -111,7 +113,7 @@
 
         <jaxb_version>2.2.7</jaxb_version>
         <activation_version>1.2.0</activation_version>
-        <hessian_lite_version>3.2.4</hessian_lite_version>
+        <hessian_lite_version>3.2.5</hessian_lite_version>
         <alibaba_spring_context_support_version>1.0.2</alibaba_spring_context_support_version>
         <yaml_version>1.17</yaml_version>
     </properties>
@@ -302,6 +304,7 @@
                 <artifactId>tomcat-embed-logging-juli</artifactId>
                 <version>${tomcat_embed_version}</version>
             </dependency>
+
             <!-- Log libs -->
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -362,13 +365,6 @@
             </dependency>
 
             <!-- Alibaba extensions -->
-
-            <!-- Spring Context Support -->
-            <dependency>
-                <groupId>com.alibaba.spring</groupId>
-                <artifactId>spring-context-support</artifactId>
-                <version>${alibaba_spring_context_support_version}</version>
-            </dependency>
 
             <!-- YAML -->
             <dependency>

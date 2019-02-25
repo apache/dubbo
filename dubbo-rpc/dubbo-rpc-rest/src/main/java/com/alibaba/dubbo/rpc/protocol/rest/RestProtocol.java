@@ -25,6 +25,7 @@ import com.alibaba.dubbo.remoting.http.servlet.ServletManager;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.StaticContext;
 import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
+
 import org.apache.http.HeaderElement;
 import org.apache.http.HeaderElementIterator;
 import org.apache.http.HttpResponse;
@@ -231,8 +232,13 @@ public class RestProtocol extends AbstractProxyProtocol {
     }
 
     protected String getContextPath(URL url) {
-        int pos = url.getPath().lastIndexOf("/");
-        return pos > 0 ? url.getPath().substring(0, pos) : "";
+        String path = url.getPath();
+        if (path != null) {
+            int pos = url.getPath().lastIndexOf("/");
+            return pos > 0 ? url.getPath().substring(0, pos) : "";
+        } else {
+            return "";
+        }
     }
 
     protected class ConnectionMonitor extends Thread {
