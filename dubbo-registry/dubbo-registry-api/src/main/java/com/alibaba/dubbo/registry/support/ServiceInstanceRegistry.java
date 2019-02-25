@@ -20,7 +20,6 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
-import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.common.utils.UrlUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
@@ -349,8 +348,8 @@ public abstract class ServiceInstanceRegistry<S> extends FailbackRegistry {
                 Constants.DEFAULT_CATEGORY);
         URL newURL = url.addParameter(Constants.CATEGORY_KEY, category);
         newURL = newURL.addParameter(Constants.PROTOCOL_KEY, url.getProtocol());
-        String ip = NetUtils.getLocalHost();
-        int port = newURL.getParameter(Constants.BIND_PORT_KEY, url.getPort());
+        String ip = url.getHost();
+        int port = url.getPort();
         DubboRegistration registration = new DubboRegistration();
         registration.setServiceName(serviceName);
         registration.setIp(ip);
