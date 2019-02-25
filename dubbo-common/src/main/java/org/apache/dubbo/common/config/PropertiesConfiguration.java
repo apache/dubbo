@@ -34,8 +34,8 @@ public class PropertiesConfiguration extends AbstractPrefixConfiguration {
         super(prefix, id);
 
         ExtensionLoader<OrderedPropertiesProvider> propertiesProviderExtensionLoader = ExtensionLoader.getExtensionLoader(OrderedPropertiesProvider.class);
-        Set<String> propertiesProviderNames = propertiesProviderExtensionLoader.getLoadedExtensions();
-        if (propertiesProviderNames == null) {
+        Set<String> propertiesProviderNames = propertiesProviderExtensionLoader.getSupportedExtensions();
+        if (propertiesProviderNames == null || propertiesProviderNames.isEmpty()) {
             return;
         }
         List<OrderedPropertiesProvider> orderedPropertiesProviders = new ArrayList<>();
