@@ -63,13 +63,10 @@ public class IOUtils {
     public static long write(InputStream is, OutputStream os, int bufferSize) throws IOException {
         int read;
         long total = 0;
-        byte[] buff = new byte[bufferSize];
-        while (is.available() > 0) {
-            read = is.read(buff, 0, buff.length);
-            if (read > 0) {
-                os.write(buff, 0, read);
-                total += read;
-            }
+        byte[] buf = new byte[bufferSize];
+        while (-1 != (read = is.read(buf))) {
+            os.write(buf, 0, read);
+            total += read;
         }
         return total;
     }
@@ -131,7 +128,7 @@ public class IOUtils {
     public static long write(Reader reader, Writer writer, int bufferSize) throws IOException {
         int read;
         long total = 0;
-        char[] buf = new char[BUFFER_SIZE];
+        char[] buf = new char[bufferSize];
         while ((read = reader.read(buf)) != -1) {
             writer.write(buf, 0, read);
             total += read;
