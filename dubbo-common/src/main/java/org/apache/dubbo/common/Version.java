@@ -144,14 +144,18 @@ public final class Version {
     public static String getVersion(Class<?> cls, String defaultVersion) {
         try {
             // find version info from MANIFEST.MF first
-            String version = cls.getPackage().getImplementationVersion();
-            if (!StringUtils.isEmpty(version)) {
-                return version;
-            }
-            
-            version = cls.getPackage().getSpecificationVersion();
-            if (!StringUtils.isEmpty(version)) {
-                return version;
+            Package pkg = cls.getPackage();
+            String version = null;
+            if (pkg != null) {
+                version = pkg.getImplementationVersion();
+                if (!StringUtils.isEmpty(version)) {
+                    return version;
+                }
+
+                version = pkg.getSpecificationVersion();
+                if (!StringUtils.isEmpty(version)) {
+                    return version;
+                }
             }
             
             // guess version fro jar file name if nothing's found from MANIFEST.MF
