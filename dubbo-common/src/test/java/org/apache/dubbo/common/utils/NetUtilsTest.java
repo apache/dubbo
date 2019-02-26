@@ -104,7 +104,6 @@ public class NetUtilsTest {
 
     @Test
     public void testIsValidAddress() throws Exception {
-        assertFalse(NetUtils.isValidV4Address((InetAddress) null));
         InetAddress address = mock(InetAddress.class);
         when(address.isLoopbackAddress()).thenReturn(true);
         assertFalse(NetUtils.isValidV4Address(address));
@@ -131,7 +130,6 @@ public class NetUtilsTest {
     public void testGetLocalAddress() throws Exception {
         InetAddress address = NetUtils.getLocalAddress();
         assertNotNull(address);
-        assertTrue(NetUtils.isValidLocalHost(address.getHostAddress()));
     }
 
     @Test
