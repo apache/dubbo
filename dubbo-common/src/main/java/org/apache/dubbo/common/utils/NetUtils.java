@@ -102,6 +102,7 @@ public class NetUtils {
         return Constants.ANYHOST_VALUE.equals(host);
     }
 
+    // FIXME: should remove this method completely
     public static boolean isInvalidLocalHost(String host) {
         return host == null
                 || host.length() == 0
@@ -110,6 +111,7 @@ public class NetUtils {
                 || (LOCAL_IP_PATTERN.matcher(host).matches());
     }
 
+    // FIXME: should remove this method completely
     public static boolean isValidLocalHost(String host) {
         return !isInvalidLocalHost(host);
     }
@@ -120,9 +122,6 @@ public class NetUtils {
     }
 
     static boolean isValidV4Address(InetAddress address) {
-        if (address == null || address.isLoopbackAddress()) {
-            return false;
-        }
         String name = address.getHostAddress();
         return (name != null
                 && IP_PATTERN.matcher(name).matches()
@@ -147,6 +146,10 @@ public class NetUtils {
             // ignore
         }
         return false;
+    }
+
+    static boolean isValidPublicAddress(InetAddress address) {
+        return !address.isSiteLocalAddress() && !address.isLoopbackAddress();
     }
 
     /**
@@ -219,14 +222,16 @@ public class NetUtils {
     }
 
     private static Optional<InetAddress> toValidAddress(InetAddress address) {
-        if (address instanceof Inet6Address) {
-            Inet6Address v6Address = (Inet6Address) address;
-            if (isValidV6Address(v6Address)) {
-                return Optional.ofNullable(normalizeV6Address(v6Address));
+        if (isValidPublicAddress(address)) {
+            if (address instanceof Inet6Address) {
+                Inet6Address v6Address = (Inet6Address) address;
+                if (isValidV6Address(v6Address)) {
+                    return Optional.ofNullable(normalizeV6Address(v6Address));
+                }
             }
-        }
-        if (isValidV4Address(address)) {
-            return Optional.of(address);
+            if (isValidV4Address(address)) {
+                return Optional.of(address);
+            }
         }
         return Optional.empty();
     }
