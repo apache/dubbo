@@ -46,6 +46,7 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -305,8 +306,21 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
         ref = createProxy(map);
 
-        ConsumerModel consumerModel = new ConsumerModel(getUniqueServiceName(), interfaceClass, ref, interfaceClass.getMethods(), attributes);
-        ApplicationModel.initConsumerModel(getUniqueServiceName(), consumerModel);
+        ApplicationModel.initConsumerModel(getUniqueServiceName(), buildConsumerModel(attributes));
+    }
+
+    private ConsumerModel buildConsumerModel(Map<String, Object> attributes) {
+        Method[] methods = interfaceClass.getMethods();
+        Class serviceInterface = interfaceClass;
+        if (interfaceClass == GenericService.class) {
+            try {
+                serviceInterface = Class.forName(interfaceName);
+                methods = serviceInterface.getMethods();
+            } catch (ClassNotFoundException e) {
+                methods = interfaceClass.getMethods();
+            }
+        }
+        return new ConsumerModel(getUniqueServiceName(), serviceInterface, ref, methods, attributes);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
