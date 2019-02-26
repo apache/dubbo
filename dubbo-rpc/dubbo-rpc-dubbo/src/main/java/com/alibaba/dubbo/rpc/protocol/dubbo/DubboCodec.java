@@ -73,12 +73,13 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
             byte status = header[3];
             res.setStatus(status);
             try {
-                ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
                 if (status == Response.OK) {
                     Object data;
                     if (res.isHeartbeat()) {
+                        ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
                         data = decodeHeartbeatData(channel, in);
                     } else if (res.isEvent()) {
+                        ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
                         data = decodeEventData(channel, in);
                     } else {
                         DecodeableRpcResult result;
@@ -97,6 +98,7 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
                     }
                     res.setResult(data);
                 } else {
+                    ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
                     res.setErrorMessage(in.readUTF());
                 }
             } catch (Throwable t) {
