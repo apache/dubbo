@@ -417,7 +417,7 @@ public class RedisRegistry extends FailbackRegistry {
                 }
             }
             if (urls.isEmpty()) {
-                urls.add(new URLBuilder(url)
+                urls.add(URLBuilder.from(url)
                         .setProtocol(Constants.EMPTY_PROTOCOL)
                         .setAddress(Constants.ANYHOST_VALUE)
                         .setPath(toServiceName(key))

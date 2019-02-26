@@ -49,7 +49,7 @@ public class MetadataReportService {
     MetadataReportService(URL metadataReportURL) {
         if (Constants.METADATA_REPORT_KEY.equals(metadataReportURL.getProtocol())) {
             String protocol = metadataReportURL.getParameter(Constants.METADATA_REPORT_KEY, Constants.DEFAULT_DIRECTORY);
-            metadataReportURL = new URLBuilder(metadataReportURL)
+            metadataReportURL = URLBuilder.from(metadataReportURL)
                     .setProtocol(protocol)
                     .removeParameter(Constants.METADATA_REPORT_KEY)
                     .build();

@@ -56,7 +56,7 @@ public class FileRouterFactory implements RouterFactory {
 
             // FIXME: this code looks useless
             boolean runtime = url.getParameter(Constants.RUNTIME_KEY, false);
-            URL script = new URLBuilder(url)
+            URL script = URLBuilder.from(url)
                     .setProtocol(protocol)
                     .addParameter(Constants.TYPE_KEY, type)
                     .addParameter(Constants.RUNTIME_KEY, runtime)

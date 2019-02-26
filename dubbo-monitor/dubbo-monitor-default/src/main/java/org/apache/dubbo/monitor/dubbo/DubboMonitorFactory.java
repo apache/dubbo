@@ -50,7 +50,7 @@ public class DubboMonitorFactory extends AbstractMonitorFactory {
 
     @Override
     protected Monitor createMonitor(URL url) {
-        URLBuilder urlBuilder = new URLBuilder(url);
+        URLBuilder urlBuilder = URLBuilder.from(url);
         urlBuilder.setProtocol(url.getParameter(PROTOCOL_KEY, DUBBO_PROTOCOL));
         if (StringUtils.isEmpty(url.getPath())) {
             urlBuilder.setPath(MonitorService.class.getName());

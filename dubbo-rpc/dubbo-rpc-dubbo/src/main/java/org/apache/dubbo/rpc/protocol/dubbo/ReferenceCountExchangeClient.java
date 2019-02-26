@@ -166,7 +166,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
      */
     private void replaceWithLazyClient() {
         // this is a defensive operation to avoid client is closed by accident, the initial state of the client is false
-        URL lazyUrl = new URLBuilder(url)
+        URL lazyUrl = URLBuilder.from(url)
                 .addParameter(Constants.LAZY_CONNECT_INITIAL_STATE_KEY, Boolean.FALSE)
                 .addParameter(Constants.RECONNECT_KEY, Boolean.FALSE)
                 .addParameter(Constants.SEND_RECONNECT_KEY, Boolean.TRUE.toString())

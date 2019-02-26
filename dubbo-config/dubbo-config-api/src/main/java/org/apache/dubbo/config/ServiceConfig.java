@@ -571,7 +571,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void exportLocal(URL url) {
         if (!Constants.LOCAL_PROTOCOL.equalsIgnoreCase(url.getProtocol())) {
-            URL local = new URLBuilder(url)
+            URL local = URLBuilder.from(url)
                     .setProtocol(Constants.LOCAL_PROTOCOL)
                     .setHost(LOCALHOST_VALUE)
                     .setPort(0)

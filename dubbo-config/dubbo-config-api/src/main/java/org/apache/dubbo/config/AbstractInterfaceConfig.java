@@ -305,7 +305,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                     List<URL> urls = UrlUtils.parseURLs(address, map);
 
                     for (URL url : urls) {
-                        url = new URLBuilder(url)
+                        url = URLBuilder.from(url)
                                 .addParameter(Constants.REGISTRY_KEY, url.getProtocol())
                                 .setProtocol(Constants.REGISTRY_PROTOCOL)
                                 .build();
@@ -355,7 +355,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             }
             return UrlUtils.parseURL(address, map);
         } else if (Constants.REGISTRY_PROTOCOL.equals(monitor.getProtocol()) && registryURL != null) {
-            return new URLBuilder(registryURL)
+            return URLBuilder.from(registryURL)
                     .setProtocol(Constants.DUBBO_PROTOCOL)
                     .addParameter(Constants.PROTOCOL_KEY, Constants.REGISTRY_PROTOCOL)
                     .addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map))

@@ -273,7 +273,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
         if (urls == null || urls.isEmpty()) {
             int i = path.lastIndexOf(Constants.PATH_SEPARATOR);
             String category = i < 0 ? path : path.substring(i + 1);
-            URL empty = new URLBuilder(consumer)
+            URL empty = URLBuilder.from(consumer)
                     .setProtocol(Constants.EMPTY_PROTOCOL)
                     .addParameter(Constants.CATEGORY_KEY, category)
                     .build();

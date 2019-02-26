@@ -85,7 +85,7 @@ public class StubProxyFactoryWrapper implements ProxyFactory {
                         Constructor<?> constructor = ReflectUtils.findConstructor(stubClass, serviceType);
                         proxy = (T) constructor.newInstance(new Object[]{proxy});
                         //export stub service
-                        URLBuilder urlBuilder = new URLBuilder(url);
+                        URLBuilder urlBuilder = URLBuilder.from(url);
                         if (url.getParameter(Constants.STUB_EVENT_KEY, Constants.DEFAULT_STUB_EVENT)) {
                             urlBuilder.addParameter(Constants.STUB_EVENT_METHODS_KEY, StringUtils.join(Wrapper.getWrapper(proxy.getClass()).getDeclaredMethodNames(), ","));
                             urlBuilder.addParameter(Constants.IS_SERVER_KEY, Boolean.FALSE.toString());

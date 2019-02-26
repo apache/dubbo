@@ -32,7 +32,7 @@ public class ClusterUtilsTest {
                 .setUsername("username")
                 .setPassword("password");
 
-        providerURL = new URLBuilder(providerURL)
+        providerURL = URLBuilder.from(providerURL)
                 .addParameter(Constants.GROUP_KEY, "dubbo")
                 .addParameter(Constants.VERSION_KEY, "1.2.3")
                 .addParameter(Constants.DUBBO_VERSION_KEY, "2.3.7")

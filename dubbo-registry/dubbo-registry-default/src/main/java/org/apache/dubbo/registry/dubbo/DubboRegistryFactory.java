@@ -48,7 +48,7 @@ public class DubboRegistryFactory extends AbstractRegistryFactory {
     private Cluster cluster;
 
     private static URL getRegistryURL(URL url) {
-        return new URLBuilder(url)
+        return URLBuilder.from(url)
                 .setPath(RegistryService.class.getName())
                 .removeParameter(Constants.EXPORT_KEY).removeParameter(Constants.REFER_KEY)
                 .addParameter(Constants.INTERFACE_KEY, RegistryService.class.getName())
