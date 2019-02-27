@@ -188,10 +188,11 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
          */
         ExtensionLoader<AddressListener> addressListenerExtensionLoader = ExtensionLoader.getExtensionLoader(AddressListener.class);
         Set<String> surpportedListeners = addressListenerExtensionLoader.getSupportedExtensions();
-        for (String addressListenerName : surpportedListeners) {
-            addressListenerExtensionLoader.getExtension(addressListenerName).notify(categoryUrls);
+        if (surpportedListeners != null && !surpportedListeners.isEmpty()) {
+            for (String addressListenerName : surpportedListeners) {
+                categoryUrls = addressListenerExtensionLoader.getExtension(addressListenerName).notify(categoryUrls);
+            }
         }
-
 
         /**
          * TODO Try to refactor the processing of these three type of urls using Collectors.groupBy()?
