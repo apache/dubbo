@@ -223,6 +223,7 @@ Please report security vulnerability to [us](mailto:security@dubbo.incubator.apa
 * [Node.js](https://github.com/dubbo/dubbo2.js)
 * [Python](https://github.com/dubbo/dubbo-client-py)
 * [PHP](https://github.com/dubbo/dubbo-php-framework)
+* [Go](https://github.com/dubbo/dubbo-go)
 
 ## License
 
