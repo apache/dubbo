@@ -206,7 +206,7 @@
             <dependency>
                 <groupId>com.ecwid.consul</groupId>
                 <artifactId>consul-api</artifactId>
-                <version>${connsul_version}</version>
+                <version>${consul_version}</version>
             </dependency>
             <dependency>
                 <groupId>com.googlecode.xmemcached</groupId>
