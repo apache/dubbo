@@ -51,19 +51,17 @@ public class ConsulRegistry extends FailbackRegistry {
 
     private void keepAlive() {
         for (URL url : getRegistered()) {
-            if (url.getParameter(Constants.DYNAMIC_KEY, true)) {
-                try {
-                    String checkId = buildId(url);
-                    client.agentCheckPass(checkId);
-                } catch (Throwable t) {
-                    logger.warn("fail to check pass for url: " + url);
-                }
+            String checkId = buildId(url);
+            try {
+                client.agentCheckPass("service:" + checkId);
+            } catch (Throwable t) {
+                logger.warn("fail to check pass for url: " + url + ", check id is: " + checkId);
             }
         }
     }
 
     private String buildId(URL url) {
-        return url.getIp() + ":" + url.getPort() + "/" + url.getServiceKey();
+        return url.getServiceKey();
     }
 
     private NewService.Check buildCheck(URL url) {
@@ -74,6 +72,10 @@ public class ConsulRegistry extends FailbackRegistry {
 
     @Override
     public void doRegister(URL url) {
+        if (isConsumerSide(url)) {
+            return;
+        }
+
         NewService service = new NewService();
         service.setAddress(url.toFullString());
         service.setPort(url.getPort());
@@ -86,6 +88,10 @@ public class ConsulRegistry extends FailbackRegistry {
 
     @Override
     public void doUnregister(URL url) {
+        if (isConsumerSide(url)) {
+            return;
+        }
+
         client.agentServiceDeregister(buildId(url));
     }
 
@@ -103,8 +109,13 @@ public class ConsulRegistry extends FailbackRegistry {
         HealthServicesRequest request = HealthServicesRequest.newBuilder()
                 .setTag("dubbo")
                 .setQueryParams(new QueryParams(DEFAULT_WATCH_TIMEOUT, index))
-                .setPassing(true).build();
+                .setPassing(true)
+                .build();
         return client.getHealthServices(service, request);
+    }
+
+    private boolean isConsumerSide(URL url) {
+        return url.getProtocol().equals(Constants.CONSUMER_PROTOCOL);
     }
 
     private List<URL> convert(List<HealthService> services) {
