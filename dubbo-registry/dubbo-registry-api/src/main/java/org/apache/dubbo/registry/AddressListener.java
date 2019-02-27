@@ -29,6 +29,6 @@ public interface AddressListener {
      *
      * @param addresses
      */
-    void notify(List<URL> addresses);
+    List<URL> notify(List<URL> addresses);
 
 }
