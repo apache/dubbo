@@ -208,7 +208,7 @@ Please follow the [template](https://github.com/apache/incubator-dubbo/issues/ne
 
 ## Reporting a security vulnerability
 
-Please report security vulnerability to [us](security@dubbo.incubator.apache.org) privately.
+Please report security vulnerability to [us](mailto:security@dubbo.incubator.apache.org) privately.
 
 ## Dubbo ecosystem
 
