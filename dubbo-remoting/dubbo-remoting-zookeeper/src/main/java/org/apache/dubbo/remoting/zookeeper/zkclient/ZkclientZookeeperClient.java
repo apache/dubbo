@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.zookeeper.zkclient;
 
 
 import org.I0Itec.zkclient.IZkChildListener;
+import org.I0Itec.zkclient.IZkDataListener;
 import org.I0Itec.zkclient.IZkStateListener;
 import org.I0Itec.zkclient.exception.ZkNoNodeException;
 import org.I0Itec.zkclient.exception.ZkNodeExistsException;
@@ -26,13 +27,15 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.zookeeper.ChildListener;
+import org.apache.dubbo.remoting.zookeeper.DataListener;
+import org.apache.dubbo.remoting.zookeeper.EventType;
 import org.apache.dubbo.remoting.zookeeper.StateListener;
 import org.apache.dubbo.remoting.zookeeper.support.AbstractZookeeperClient;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
 
 import java.util.List;
 
-public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildListener> {
+public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkDataListener, IZkChildListener> {
 
     private Logger logger = LoggerFactory.getLogger(ZkclientZookeeperClient.class);
 
@@ -158,6 +161,27 @@ public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildLis
     @Override
     public List<String> addTargetChildListener(String path, final IZkChildListener listener) {
         return client.subscribeChildChanges(path, listener);
+    }
+
+    @Override
+    protected IZkDataListener createTargetDataListener(String path, DataListener listener) {
+        return new IZkDataListener(){
+
+            @Override
+            public void handleDataChange(String dataPath, Object data) throws Exception {
+                listener.dataChanged(dataPath, data, EventType.NodeDataChanged);
+            }
+
+            @Override
+            public void handleDataDeleted(String dataPath) throws Exception {
+                listener.dataChanged(dataPath, null, EventType.NodeDeleted);
+            }
+        };
+    }
+
+    @Override
+    protected void addTargetDataListener(String path, IZkDataListener iZkDataListener) {
+        client.subscribeDataChanges(path, iZkDataListener);
     }
 
     @Override

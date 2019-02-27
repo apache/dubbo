@@ -19,15 +19,22 @@ package org.apache.dubbo.remoting.zookeeper.curator;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.api.CuratorWatcher;
+import org.apache.curator.framework.recipes.cache.PathChildrenCache;
+import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
+import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.framework.state.ConnectionStateListener;
 import org.apache.curator.retry.RetryNTimes;
+
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.zookeeper.ChildListener;
+import org.apache.dubbo.remoting.zookeeper.DataListener;
+import org.apache.dubbo.remoting.zookeeper.EventType;
 import org.apache.dubbo.remoting.zookeeper.StateListener;
 import org.apache.dubbo.remoting.zookeeper.support.AbstractZookeeperClient;
+
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException.NoNodeException;
 import org.apache.zookeeper.KeeperException.NodeExistsException;
@@ -37,9 +44,9 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 
-public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatcher> {
+public class CuratorZookeeperClient extends AbstractZookeeperClient<PathChildrenCacheListener, CuratorWatcher> {
 
-    private final Charset charset = Charset.forName("UTF-8");
+    static final Charset charset = Charset.forName("UTF-8");
     private final CuratorFramework client;
 
 
@@ -172,8 +179,8 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
     }
 
     @Override
-    public CuratorWatcher createTargetChildListener(String path, ChildListener listener) {
-        return new CuratorWatcherImpl(listener);
+    public CuratorZookeeperClient.CuratorWatcherImpl createTargetChildListener(String path, ChildListener listener) {
+        return new CuratorZookeeperClient.CuratorWatcherImpl(client, listener);
     }
 
     @Override
@@ -188,33 +195,76 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
     }
 
     @Override
+    protected PathChildrenCacheListener createTargetDataListener(String path, DataListener listener) {
+        return new CuratorWatcherImpl(client, listener);
+    }
+
+    @Override
+    protected void addTargetDataListener(String path, PathChildrenCacheListener pathChildrenCacheListener) {
+        try {
+            PathChildrenCache pathcache = new PathChildrenCache(client, "/some/path", true);
+            pathcache.getListenable().addListener(pathChildrenCacheListener);
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    @Override
     public void removeTargetChildListener(String path, CuratorWatcher listener) {
         ((CuratorWatcherImpl) listener).unwatch();
     }
 
-    private class CuratorWatcherImpl implements CuratorWatcher {
+    static class CuratorWatcherImpl implements CuratorWatcher, PathChildrenCacheListener {
 
-        private volatile ChildListener listener;
+        private CuratorFramework client;
+        private volatile ChildListener childListener;
+        private volatile DataListener dataListener;
 
-        public CuratorWatcherImpl(ChildListener listener) {
-            this.listener = listener;
+
+        public CuratorWatcherImpl(CuratorFramework client, ChildListener listener) {
+            this.client = client;
+            this.childListener = listener;
+        }
+
+        public CuratorWatcherImpl(CuratorFramework client, DataListener dataListener) {
+            this.dataListener = dataListener;
         }
 
         public void unwatch() {
-            this.listener = null;
+            this.childListener = null;
         }
 
         @Override
         public void process(WatchedEvent event) throws Exception {
-            if (listener != null) {
+            if (childListener != null) {
                 String path = event.getPath() == null ? "" : event.getPath();
-                listener.childChanged(path,
+                childListener.childChanged(path,
                         // if path is null, curator using watcher will throw NullPointerException.
                         // if client connect or disconnect to server, zookeeper will queue
                         // watched event(Watcher.Event.EventType.None, .., path = null).
                         StringUtils.isNotEmpty(path)
                                 ? client.getChildren().usingWatcher(this).forPath(path)
                                 : Collections.<String>emptyList());
+            }
+        }
+
+        @Override
+        public void childEvent(CuratorFramework client, PathChildrenCacheEvent event) throws Exception {
+            if (dataListener != null) {
+                PathChildrenCacheEvent.Type type = event.getType();
+                EventType eventType = null;
+                switch (type) {
+                    case CHILD_ADDED:
+                        eventType = EventType.NodeCreated;
+                        break;
+                    case CHILD_UPDATED:
+                        eventType = EventType.NodeDataChanged;
+                        break;
+                    case CHILD_REMOVED:
+                        eventType = EventType.NodeDeleted;
+                        break;
+                }
+                dataListener.dataChanged(event.getData().getPath(), new String(event.getData().getData(), charset), eventType);
             }
         }
     }

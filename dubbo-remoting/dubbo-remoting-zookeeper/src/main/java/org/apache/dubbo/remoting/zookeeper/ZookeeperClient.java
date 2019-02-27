@@ -30,6 +30,12 @@ public interface ZookeeperClient {
 
     List<String> addChildListener(String path, ChildListener listener);
 
+    /**
+     * @param path: directory. All of child of path will be listened.
+     * @param listener
+     */
+    void addDataListener(String path, DataListener listener);
+
     void removeChildListener(String path, ChildListener listener);
 
     void addStateListener(StateListener listener);

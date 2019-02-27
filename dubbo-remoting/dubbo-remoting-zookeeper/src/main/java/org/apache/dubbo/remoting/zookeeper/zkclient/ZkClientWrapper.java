@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.zookeeper.zkclient;
 
 import org.I0Itec.zkclient.IZkChildListener;
+import org.I0Itec.zkclient.IZkDataListener;
 import org.I0Itec.zkclient.IZkStateListener;
 import org.I0Itec.zkclient.ZkClient;
 import org.apache.dubbo.common.logger.Logger;
@@ -25,7 +26,9 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -129,6 +132,16 @@ public class ZkClientWrapper {
     public void unsubscribeChildChanges(String path, IZkChildListener listener) {
         Assert.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
         client.unsubscribeChildChanges(path, listener);
+    }
+
+    public void subscribeDataChanges(String path, IZkDataListener listener) {
+        Assert.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
+        client.subscribeDataChanges(path, listener);
+    }
+
+    public void unsubscribeDataChanges(String path, IZkDataListener dataListener) {
+        Assert.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
+        client.unsubscribeDataChanges(path, dataListener);
     }
 
     private void makeClientReady(ZkClient client, Throwable e) {
