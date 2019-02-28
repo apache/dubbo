@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.ExporterListener;
@@ -46,7 +47,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     /**
      * whether the service is deprecated
      */
-    protected Boolean deprecated;
+    protected Boolean deprecated = false;
 
     /**
      * The time delay register service (milliseconds)
@@ -56,7 +57,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     /**
      * Whether to export the service
      */
-    protected Boolean export;
+    protected Boolean export = true;
 
     /**
      * The service weight
@@ -73,7 +74,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
      * after the service registered,and it needs to be enabled manually; if you want to disable the service, you also need
      * manual processing
      */
-    protected Boolean dynamic;
+    protected Boolean dynamic = false;
 
     /**
      * Whether to use token
@@ -98,7 +99,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     /**
      * Whether to register
      */
-    private Boolean register;
+    private Boolean register = true;
 
     /**
      * Warm up period
@@ -200,6 +201,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
     @SuppressWarnings({"unchecked"})
     public void setProtocols(List<? extends ProtocolConfig> protocols) {
+        ConfigManager.getInstance().addProtocols((List<ProtocolConfig>) protocols);
         this.protocols = (List<ProtocolConfig>) protocols;
     }
 
@@ -208,7 +210,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     }
 
     public void setProtocol(ProtocolConfig protocol) {
-        this.protocols = Arrays.asList(protocol);
+        setProtocols(Arrays.asList(protocol));
     }
 
     @Parameter(excluded = true)
@@ -286,7 +288,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
         this.serialization = serialization;
     }
 
-    @Parameter(key = "dubbo.tag", useKeyAsProperty = false)
+    @Parameter(key = Constants.TAG_KEY, useKeyAsProperty = false)
     public String getTag() {
         return tag;
     }

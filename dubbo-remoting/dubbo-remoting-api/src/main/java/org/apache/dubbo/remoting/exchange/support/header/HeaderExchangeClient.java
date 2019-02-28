@@ -33,6 +33,9 @@ import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.utils.UrlUtils.getHeartbeat;
+import static org.apache.dubbo.common.utils.UrlUtils.getIdleTimeout;
+
 /**
  * DefaultMessageClient
  */
@@ -40,27 +43,21 @@ public class HeaderExchangeClient implements ExchangeClient {
 
     private final Client client;
     private final ExchangeChannel channel;
-    private int heartbeat;
-    private int idleTimeout;
 
-    private static HashedWheelTimer idleCheckTimer = new HashedWheelTimer(new NamedThreadFactory("dubbo-client-idleCheck", true), 1,
-            TimeUnit.SECONDS, Constants.TICKS_PER_WHEEL);
+    private static final HashedWheelTimer IDLE_CHECK_TIMER = new HashedWheelTimer(
+            new NamedThreadFactory("dubbo-client-idleCheck", true), 1, TimeUnit.SECONDS, Constants.TICKS_PER_WHEEL);
+    private HeartbeatTimerTask heartBeatTimerTask;
+    private ReconnectTimerTask reconnectTimerTask;
 
-    public HeaderExchangeClient(Client client, boolean needHeartbeat) {
+    public HeaderExchangeClient(Client client, boolean startTimer) {
         Assert.notNull(client, "Client can't be null");
         this.client = client;
         this.channel = new HeaderExchangeChannel(client);
-        String dubbo = client.getUrl().getParameter(Constants.DUBBO_VERSION_KEY);
 
-        this.heartbeat = client.getUrl().getParameter(Constants.HEARTBEAT_KEY, dubbo != null &&
-                dubbo.startsWith("1.0.") ? Constants.DEFAULT_HEARTBEAT : 0);
-        this.idleTimeout = client.getUrl().getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartbeat * 3);
-        if (idleTimeout < heartbeat * 2) {
-            throw new IllegalStateException("idleTimeout < heartbeatInterval * 2");
-        }
-
-        if (needHeartbeat) {
-            startIdleCheckTask();
+        if (startTimer) {
+            URL url = client.getUrl();
+            startReconnectTask(url);
+            startHeartBeatTask(url);
         }
     }
 
@@ -141,6 +138,7 @@ public class HeaderExchangeClient implements ExchangeClient {
     @Override
     public void reset(URL url) {
         client.reset(url);
+        // FIXME, should cancel and restart timer tasks if parameters in the new URL are different?
     }
 
     @Override
@@ -174,20 +172,34 @@ public class HeaderExchangeClient implements ExchangeClient {
         return channel.hasAttribute(key);
     }
 
-    private void startIdleCheckTask() {
-        AbstractTimerTask.ChannelProvider cp = () -> Collections.singletonList(HeaderExchangeClient.this);
+    private void startHeartBeatTask(URL url) {
+        if (!client.canHandleIdle()) {
+            AbstractTimerTask.ChannelProvider cp = () -> Collections.singletonList(HeaderExchangeClient.this);
+            int heartbeat = getHeartbeat(url);
+            long heartbeatTick = calculateLeastDuration(heartbeat);
+            this.heartBeatTimerTask = new HeartbeatTimerTask(cp, heartbeatTick, heartbeat);
+            IDLE_CHECK_TIMER.newTimeout(heartBeatTimerTask, heartbeatTick, TimeUnit.MILLISECONDS);
+        }
+    }
 
-        long heartbeatTick = calculateLeastDuration(heartbeat);
-        long heartbeatTimeoutTick = calculateLeastDuration(idleTimeout);
-        HeartbeatTimerTask heartBeatTimerTask = new HeartbeatTimerTask(cp, heartbeatTick, heartbeat);
-        ReconnectTimerTask reconnectTimerTask = new ReconnectTimerTask(cp, heartbeatTimeoutTick, idleTimeout);
-
-        // init task and start timer.
-        idleCheckTimer.newTimeout(heartBeatTimerTask, heartbeatTick, TimeUnit.MILLISECONDS);
-        idleCheckTimer.newTimeout(reconnectTimerTask, heartbeatTimeoutTick, TimeUnit.MILLISECONDS);
+    private void startReconnectTask(URL url) {
+        if (shouldReconnect(url)) {
+            AbstractTimerTask.ChannelProvider cp = () -> Collections.singletonList(HeaderExchangeClient.this);
+            int idleTimeout = getIdleTimeout(url);
+            long heartbeatTimeoutTick = calculateLeastDuration(idleTimeout);
+            this.reconnectTimerTask = new ReconnectTimerTask(cp, heartbeatTimeoutTick, idleTimeout);
+            IDLE_CHECK_TIMER.newTimeout(reconnectTimerTask, heartbeatTimeoutTick, TimeUnit.MILLISECONDS);
+        }
     }
 
     private void doClose() {
+        if (heartBeatTimerTask != null) {
+            heartBeatTimerTask.cancel();
+        }
+
+        if (reconnectTimerTask != null) {
+            reconnectTimerTask.cancel();
+        }
     }
 
     /**
@@ -199,6 +211,10 @@ public class HeaderExchangeClient implements ExchangeClient {
         } else {
             return time / Constants.HEARTBEAT_CHECK_TICK;
         }
+    }
+
+    private boolean shouldReconnect(URL url) {
+        return url.getParameter(Constants.RECONNECT_KEY, true);
     }
 
     @Override

@@ -349,7 +349,7 @@ class URL implements Serializable {
 
     public String getAuthority() {
         if (StringUtils.isEmpty(username)
-                && StringUtils.isEmpty(parameter)) {
+                && StringUtils.isEmpty(password)) {
             return null;
         }
         return (username == null ? "" : username)
@@ -436,9 +436,8 @@ class URL implements Serializable {
         return urls;
     }
 
-    private String appendDefaultPort(String address, int defaultPort) {
-        if (address != null && address.length() > 0
-                && defaultPort > 0) {
+    static String appendDefaultPort(String address, int defaultPort) {
+        if (address != null && address.length() > 0 && defaultPort > 0) {
             int i = address.indexOf(':');
             if (i < 0) {
                 return address + ":" + defaultPort;
@@ -498,6 +497,15 @@ class URL implements Serializable {
             return defaultValue;
         }
         return Constants.COMMA_SPLIT_PATTERN.split(value);
+    }
+
+    public List<String> getParameter(String key, List<String> defaultValue) {
+        String value = getParameter(key);
+        if (value == null || value.length() == 0) {
+            return defaultValue;
+        }
+        String[] strArray = Constants.COMMA_SPLIT_PATTERN.split(value);
+        return Arrays.asList(strArray);
     }
 
     private Map<String, Number> getNumbers() {
@@ -1269,6 +1277,7 @@ class URL implements Serializable {
             buf.append("/");
             buf.append(path);
         }
+
         if (appendParameter) {
             buildParameters(buf, true, parameters);
         }

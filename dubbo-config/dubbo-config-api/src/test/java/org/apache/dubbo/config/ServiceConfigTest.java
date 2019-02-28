@@ -21,6 +21,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.api.Greeting;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.mock.MockProtocol2;
 import org.apache.dubbo.config.mock.MockRegistryFactory2;
 import org.apache.dubbo.config.mock.TestProxyFactory;
@@ -30,7 +31,7 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.service.GenericService;
-
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -38,6 +39,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.Constants.GENERIC_SERIALIZATION_BEAN;
 import static org.apache.dubbo.common.Constants.GENERIC_SERIALIZATION_DEFAULT;
@@ -50,6 +52,7 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.withSettings;
 
 public class ServiceConfigTest {
@@ -58,7 +61,7 @@ public class ServiceConfigTest {
     private Exporter exporter = Mockito.mock(Exporter.class);
     private ServiceConfig<DemoServiceImpl> service = new ServiceConfig<DemoServiceImpl>();
     private ServiceConfig<DemoServiceImpl> service2 = new ServiceConfig<DemoServiceImpl>();
-
+    private ServiceConfig<DemoServiceImpl> delayService = new ServiceConfig<DemoServiceImpl>();
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -101,6 +104,21 @@ public class ServiceConfigTest {
         service2.setRef(new DemoServiceImpl());
         service2.setMethods(Collections.singletonList(method));
         service2.setProxy("testproxyfactory");
+
+        delayService.setProvider(provider);
+        delayService.setApplication(app);
+        delayService.setRegistry(registry);
+        delayService.setInterface(DemoService.class);
+        delayService.setRef(new DemoServiceImpl());
+        delayService.setMethods(Collections.singletonList(method));
+        delayService.setDelay(100);
+
+        ConfigManager.getInstance().clear();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        ConfigManager.getInstance().clear();
     }
 
     @Test
@@ -132,6 +150,16 @@ public class ServiceConfigTest {
 
         assertThat(service2.getExportedUrls(), hasSize(1));
         assertEquals(2, TestProxyFactory.count); // local injvm and registry protocol, so expected is 2
+    }
+
+
+    @Test
+    public void testDelayExport() throws Exception {
+        delayService.export();
+        assertTrue(delayService.getExportedUrls().isEmpty());
+        //add 300ms to ensure that the delayService has been exported
+        TimeUnit.MILLISECONDS.sleep(delayService.getDelay() + 300);
+        assertThat(delayService.getExportedUrls(), hasSize(1));
     }
 
     @Test

@@ -21,8 +21,7 @@ package org.apache.dubbo.common.utils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.support.io.TempDirectory;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -38,7 +37,6 @@ import java.nio.file.Path;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-@ExtendWith(TempDirectory.class)
 public class IOUtilsTest {
 
     private static String TEXT = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
@@ -89,7 +87,7 @@ public class IOUtilsTest {
     }
 
     @Test
-    public void testLines(@TempDirectory.TempDir Path tmpDir) throws Exception {
+    public void testLines(@TempDir Path tmpDir) throws Exception {
         File file = tmpDir.getFileName().toAbsolutePath().toFile();
         IOUtils.writeLines(file, new String[]{TEXT});
         String[] lines = IOUtils.readLines(file);
@@ -118,7 +116,7 @@ public class IOUtilsTest {
     }
 
     @Test
-    public void testAppendLines(@TempDirectory.TempDir Path tmpDir) throws Exception {
+    public void testAppendLines(@TempDir Path tmpDir) throws Exception {
         File file = tmpDir.getFileName().toAbsolutePath().toFile();
         IOUtils.appendLines(file, new String[]{"a", "b", "c"});
         String[] lines = IOUtils.readLines(file);

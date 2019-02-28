@@ -27,6 +27,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.annotation.Reference;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.metadata.integration.MetadataReportService;
 import org.apache.dubbo.rpc.Invoker;
@@ -45,6 +46,7 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -53,7 +55,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
 
 /**
  * ReferenceConfig
@@ -106,7 +107,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
      * The interface class of the reference service
      */
     private Class<?> interfaceClass;
-    
+
     /**
      * client type
      */
@@ -195,6 +196,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         if (StringUtils.isEmpty(interfaceName)) {
             throw new IllegalStateException("<dubbo:reference interface=\"\" /> interface not allow null!");
         }
+        completeCompoundConfigs();
+        startConfigCenter();
         // get consumer's global configuration
         checkDefault();
         this.refresh();
@@ -213,18 +216,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             checkInterfaceAndMethods(interfaceClass, methods);
         }
         resolveFile();
-        if (consumer != null) {
-            inheritIfAbsentFromConsumer();
-        }
-        if (module != null) {
-            inheritIfAbsentFromModule();
-        }
-        if (application != null) {
-            inheritIfAbsentFromApplication();
-        }
         checkApplication();
         checkMetadataReport();
-        checkRegistryDataConfig();
     }
 
     public synchronized T get() {
@@ -305,15 +298,26 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         String hostToRegistry = ConfigUtils.getSystemProperty(Constants.DUBBO_IP_TO_REGISTRY);
         if (StringUtils.isEmpty(hostToRegistry)) {
             hostToRegistry = NetUtils.getLocalHost();
-        } else if (isInvalidLocalHost(hostToRegistry)) {
-            throw new IllegalArgumentException("Specified invalid registry ip from property:" + Constants.DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
         }
         map.put(Constants.REGISTER_IP_KEY, hostToRegistry);
 
         ref = createProxy(map);
 
-        ConsumerModel consumerModel = new ConsumerModel(getUniqueServiceName(), interfaceClass, ref, interfaceClass.getMethods(), attributes);
-        ApplicationModel.initConsumerModel(getUniqueServiceName(), consumerModel);
+        ApplicationModel.initConsumerModel(getUniqueServiceName(), buildConsumerModel(attributes));
+    }
+
+    private ConsumerModel buildConsumerModel(Map<String, Object> attributes) {
+        Method[] methods = interfaceClass.getMethods();
+        Class serviceInterface = interfaceClass;
+        if (interfaceClass == GenericService.class) {
+            try {
+                serviceInterface = Class.forName(interfaceName);
+                methods = serviceInterface.getMethods();
+            } catch (ClassNotFoundException e) {
+                methods = interfaceClass.getMethods();
+            }
+        }
+        return new ConsumerModel(getUniqueServiceName(), serviceInterface, ref, methods, attributes);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
@@ -354,6 +358,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                     }
                 }
             } else { // assemble URL from register center's configuration
+                checkRegistry();
                 List<URL> us = loadRegistries(false);
                 if (CollectionUtils.isNotEmpty(us)) {
                     for (URL u : us) {
@@ -420,45 +425,56 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     }
 
     private void checkDefault() {
-        if (consumer == null) {
-            consumer = new ConsumerConfig();
-        }
-        consumer.refresh();
+        createConsumerIfAbsent();
     }
 
-    private void inheritIfAbsentFromConsumer() {
-        if (application == null) {
-            application = consumer.getApplication();
+    private void createConsumerIfAbsent() {
+        if (consumer != null) {
+            return;
         }
-        if (module == null) {
-            module = consumer.getModule();
-        }
-        if (registries == null) {
-            registries = consumer.getRegistries();
-        }
-        if (monitor == null) {
-            monitor = consumer.getMonitor();
-        }
+        setConsumer(
+                        ConfigManager.getInstance()
+                            .getDefaultConsumer()
+                            .orElseGet(() -> {
+                                ConsumerConfig consumerConfig = new ConsumerConfig();
+                                consumerConfig.refresh();
+                                return consumerConfig;
+                            })
+                );
     }
 
-    private void inheritIfAbsentFromModule() {
-        if (registries == null) {
-            registries = module.getRegistries();
+    private void completeCompoundConfigs() {
+        if (consumer != null) {
+            if (application == null) {
+                setApplication(consumer.getApplication());
+            }
+            if (module == null) {
+                setModule(consumer.getModule());
+            }
+            if (registries == null) {
+                setRegistries(consumer.getRegistries());
+            }
+            if (monitor == null) {
+                setMonitor(consumer.getMonitor());
+            }
         }
-        if (monitor == null) {
-            monitor = module.getMonitor();
+        if (module != null) {
+            if (registries == null) {
+                setRegistries(module.getRegistries());
+            }
+            if (monitor == null) {
+                setMonitor(module.getMonitor());
+            }
+        }
+        if (application != null) {
+            if (registries == null) {
+                setRegistries(application.getRegistries());
+            }
+            if (monitor == null) {
+                setMonitor(application.getMonitor());
+            }
         }
     }
-
-    private void inheritIfAbsentFromApplication() {
-        if (registries == null) {
-            registries = application.getRegistries();
-        }
-        if (monitor == null) {
-            monitor = application.getMonitor();
-        }
-    }
-
 
     public Class<?> getInterfaceClass() {
         if (interfaceClass != null) {
@@ -539,6 +555,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     }
 
     public void setConsumer(ConsumerConfig consumer) {
+        ConfigManager.getInstance().addConsumer(consumer);
         this.consumer = consumer;
     }
 
@@ -587,21 +604,12 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
             if (resolveFile != null && resolveFile.length() > 0) {
                 Properties properties = new Properties();
-                FileInputStream fis = null;
-                try {
-                    fis = new FileInputStream(new File(resolveFile));
+                try (FileInputStream fis = new FileInputStream(new File(resolveFile))) {
                     properties.load(fis);
                 } catch (IOException e) {
                     throw new IllegalStateException("Failed to load " + resolveFile + ", cause: " + e.getMessage(), e);
-                } finally {
-                    try {
-                        if (null != fis) {
-                            fis.close();
-                        }
-                    } catch (IOException e) {
-                        logger.warn(e.getMessage(), e);
-                    }
                 }
+
                 resolve = properties.getProperty(interfaceName);
             }
         }

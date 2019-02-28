@@ -34,6 +34,8 @@ public abstract class AbstractTimerTask implements TimerTask {
 
     private final Long tick;
 
+    protected volatile boolean cancel = false;
+
     AbstractTimerTask(ChannelProvider channelProvider, Long tick) {
         if (channelProvider == null || tick == null) {
             throw new IllegalArgumentException();
@@ -54,9 +56,17 @@ public abstract class AbstractTimerTask implements TimerTask {
         return System.currentTimeMillis();
     }
 
+    public void cancel() {
+        this.cancel = true;
+    }
+
     private void reput(Timeout timeout, Long tick) {
         if (timeout == null || tick == null) {
             throw new IllegalArgumentException();
+        }
+
+        if (cancel) {
+            return;
         }
 
         Timer timer = timeout.timer();

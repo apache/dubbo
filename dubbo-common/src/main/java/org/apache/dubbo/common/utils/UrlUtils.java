@@ -467,6 +467,19 @@ public class UrlUtils {
                 PROVIDERS_CATEGORY.equals(url.getParameter(CATEGORY_KEY, PROVIDERS_CATEGORY));
     }
 
+    public static int getHeartbeat(URL url) {
+        return url.getParameter(Constants.HEARTBEAT_KEY, Constants.DEFAULT_HEARTBEAT);
+    }
+
+    public static int getIdleTimeout(URL url) {
+        int heartBeat = getHeartbeat(url);
+        int idleTimeout = url.getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartBeat * 3);
+        if (idleTimeout < heartBeat * 2) {
+            throw new IllegalStateException("idleTimeout < heartbeatInterval * 2");
+        }
+        return idleTimeout;
+    }
+
     /**
      * Check if the given value matches the given pattern. The pattern supports wildcard "*".
      *

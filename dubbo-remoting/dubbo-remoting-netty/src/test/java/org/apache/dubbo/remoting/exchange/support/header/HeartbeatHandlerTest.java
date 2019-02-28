@@ -53,6 +53,9 @@ public class HeartbeatHandlerTest {
             server.close();
             server = null;
         }
+
+        // wait for timer to finish
+        Thread.sleep(2000);
     }
 
     @Test

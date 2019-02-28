@@ -20,6 +20,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Cleanable;
 import org.apache.dubbo.common.serialize.ObjectInput;
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
@@ -79,19 +80,21 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
             case DubboCodec.RESPONSE_NULL_VALUE:
                 break;
             case DubboCodec.RESPONSE_VALUE:
-                setResponseResult(in, true, false, false);
+                handleValue(in);
                 break;
             case DubboCodec.RESPONSE_WITH_EXCEPTION:
-                setResponseResult(in, false, true, false);
+                handleException(in);
                 break;
             case DubboCodec.RESPONSE_NULL_VALUE_WITH_ATTACHMENTS:
-                setResponseResult(in, false, false, true);
+                handleAttachment(in);
                 break;
             case DubboCodec.RESPONSE_VALUE_WITH_ATTACHMENTS:
-                setResponseResult(in, true, false, true);
+                handleValue(in);
+                handleAttachment(in);
                 break;
             case DubboCodec.RESPONSE_WITH_EXCEPTION_WITH_ATTACHMENTS:
-                setResponseResult(in, false, true, false);
+                handleException(in);
+                handleAttachment(in);
                 break;
             default:
                 throw new IOException("Unknown result flag, expect '0' '1' '2', get " + flag);
@@ -119,28 +122,44 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
         }
     }
 
-    private void setResponseResult(ObjectInput in, boolean hasValue, boolean hasException, boolean hasAttachments) throws IOException {
+    private void handleValue(ObjectInput in) throws IOException {
         try {
-            if (hasValue) {
-                Type[] returnType = RpcUtils.getReturnTypes(invocation);
-                setValue(returnType == null || returnType.length == 0 ? in.readObject() :
-                        (returnType.length == 1 ? in.readObject((Class<?>) returnType[0])
-                                : in.readObject((Class<?>) returnType[0], returnType[1])));
+            Type[] returnTypes = RpcUtils.getReturnTypes(invocation);
+            Object value = null;
+            if (ArrayUtils.isEmpty(returnTypes)) {
+                value = in.readObject();
+            } else if (returnTypes.length == 1) {
+                value = in.readObject((Class<?>) returnTypes[0]);
+            } else {
+                value = in.readObject((Class<?>) returnTypes[0], returnTypes[1]);
             }
-            if (hasException) {
-                Object obj = in.readObject();
-                if (obj instanceof Throwable == false) {
-                    throw new IOException("Response data error, expect Throwable, but get " + obj);
-                }
-                setException((Throwable) obj);
-            }
-            if (hasAttachments) {
-                setAttachments((Map<String, String>) in.readObject(Map.class));
-            }
+            setValue(value);
         } catch (ClassNotFoundException e) {
-            throw new IOException(StringUtils.toString("Read response data failed.", e));
+            rethrow(e);
         }
-
     }
 
+    private void handleException(ObjectInput in) throws IOException {
+        try {
+            Object obj = in.readObject();
+            if (!(obj instanceof Throwable)) {
+                throw new IOException("Response data error, expect Throwable, but get " + obj);
+            }
+            setException((Throwable) obj);
+        } catch (ClassNotFoundException e) {
+            rethrow(e);
+        }
+    }
+
+    private void handleAttachment(ObjectInput in) throws IOException {
+        try {
+            setAttachments((Map<String, String>) in.readObject(Map.class));
+        } catch (ClassNotFoundException e) {
+            rethrow(e);
+        }
+    }
+
+    private void rethrow(Exception e) throws IOException {
+        throw new IOException(StringUtils.toString("Read response data failed.", e));
+    }
 }
