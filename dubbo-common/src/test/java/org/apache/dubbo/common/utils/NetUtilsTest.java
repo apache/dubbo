@@ -236,12 +236,12 @@ public class NetUtilsTest {
     public void testMatchIpRangeMatchWhenIpv6Exception() throws UnknownHostException {
         IllegalArgumentException thrown =
                 assertThrows(IllegalArgumentException.class, () ->
-                        assertTrue(NetUtils.matchIpRange("234e:0:4567::3d:*", "234e:0:4567::3d:ff")));
+                        NetUtils.matchIpRange("234e:0:4567::3d:*", "234e:0:4567::3d:ff"));
         assertTrue(thrown.getMessage().contains("If you config ip expression that contains '*'"));
 
         thrown =
                 assertThrows(IllegalArgumentException.class, () ->
-                        assertTrue(NetUtils.matchIpRange("192.168.1.1-65-3", "192.168.1.63")));
+                        NetUtils.matchIpRange("192.168.1.1-65-3", "192.168.1.63"));
         assertTrue(thrown.getMessage().contains("There are wrong format of ip Address"));
     }
 
@@ -249,7 +249,7 @@ public class NetUtilsTest {
     public void testMatchIpRangeMatchWhenIpWrongException() throws UnknownHostException {
         UnknownHostException thrown =
                 assertThrows(UnknownHostException.class, () ->
-                        assertTrue(NetUtils.matchIpRange("192.168.1.63", "192.168.1.ff")));
+                        NetUtils.matchIpRange("192.168.1.63", "192.168.1.ff"));
         assertTrue(thrown.getMessage().contains("192.168.1.ff"));
     }
 
