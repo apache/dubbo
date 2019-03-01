@@ -214,6 +214,13 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         resolveFile();
         checkApplication();
         checkMetadataReport();
+        appendParameters();
+    }
+
+    private void appendParameters() {
+        URL appendParametersUrl = URL.valueOf("appendParameters://");
+        List<AppendParametersComponent> appendParametersComponents = ExtensionLoader.getExtensionLoader(AppendParametersComponent.class).getActivateExtension(appendParametersUrl, (String[]) null);
+        appendParametersComponents.forEach(component -> component.appendReferParameters(this));
     }
 
     public synchronized T get() {
