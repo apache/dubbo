@@ -19,54 +19,53 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static java.util.concurrent.Executors.newCachedThreadPool;
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class ConsulRegistry extends FailbackRegistry {
     private static final Logger logger = LoggerFactory.getLogger(ConsulRegistry.class);
 
     private static final String SERVICE_TAG = "dubbo";
     private static final String URL_META_KEY = "url";
+    private static final String WATCH_TIMEOUT = "consul-watch-timeout";
+    public static final String CHECK_PASS_INTERVAL = "consul-check-pass-interval";
     private static final int DEFAULT_PORT = 8500;
-    private static final int DEFAULT_WATCH_TIMEOUT = 2;
+    // default watch timeout in millisecond
+    private static final int DEFAULT_WATCH_TIMEOUT = 2000;
+    // default time-to-live in millisecond
+    private static final long DEFAULT_CHECK_PASS_INTERVAL = 16000L;
 
     private ConsulClient client;
-    private long ttl;
+    private long checkPassInterval;
     private ScheduledExecutorService registerTimer = newSingleThreadScheduledExecutor(
             new NamedThreadFactory("dubbo-consul-register-timer", true));
-    private ScheduledExecutorService subscriberTimer = newSingleThreadScheduledExecutor(
-            new NamedThreadFactory("dubbo-consul-subscriber-timer", true));
-    private ConsulNotifier notifier = new ConsulNotifier();
+    private ExecutorService notifierExecutor = newCachedThreadPool(
+            new NamedThreadFactory("dubbo-consul-notifier", true));
+    private ConcurrentMap<URL, ConsulNotifier> notifiers = new ConcurrentHashMap<>();
 
     public ConsulRegistry(URL url) {
         super(url);
         String host = url.getHost();
         int port = url.getPort() != 0 ? url.getPort() : DEFAULT_PORT;
         client = new ConsulClient(host, port);
-        ttl = url.getParameter("ttl", 16000L);
-        registerTimer.scheduleWithFixedDelay(this::checkPass, ttl / 2, ttl / 2, TimeUnit.MILLISECONDS);
-        subscriberTimer.scheduleWithFixedDelay(notifier, DEFAULT_WATCH_TIMEOUT, DEFAULT_WATCH_TIMEOUT, TimeUnit.SECONDS);
+        checkPassInterval = url.getParameter(CHECK_PASS_INTERVAL, DEFAULT_CHECK_PASS_INTERVAL);
+        registerTimer.scheduleWithFixedDelay(this::checkPass, checkPassInterval / 2, checkPassInterval / 2, MILLISECONDS);
     }
 
     @Override
     public void doRegister(URL url) {
         logger.info("about to register url: " + url);
         if (isConsumerSide(url)) {
+            unregister(url);
             return;
         }
 
-        NewService service = new NewService();
-        service.setAddress(url.getHost());
-        service.setPort(url.getPort());
-        service.setId(buildId(url));
-        service.setName(url.getServiceKey());
-        service.setCheck(buildCheck(url));
-        service.setTags(Collections.singletonList(SERVICE_TAG));
-        service.setMeta(Collections.singletonMap(URL_META_KEY, url.toFullString()));
-        client.agentServiceRegister(service);
+        client.agentServiceRegister(buildService(url));
     }
 
     @Override
@@ -82,38 +81,30 @@ public class ConsulRegistry extends FailbackRegistry {
     @Override
     public void doSubscribe(URL url, NotifyListener listener) {
         logger.info("about to subscribe url: " + url);
+        if (isProviderSide(url)) {
+            unsubscribe(url, listener);
+            return;
+        }
+
         String service = url.getServiceKey();
-        Response<List<HealthService>> healthServices = queryHealthServices(service, -1);
+        Response<List<HealthService>> healthServices = getHealthServices(service, -1, buildWatchTimeout(url));
         Long index = healthServices.getConsulIndex();
         List<URL> urls = convert(healthServices.getValue());
         notify(url, listener, urls);
-        notifier.watch(url, index);
-    }
 
-    private Response<List<HealthService>> queryHealthServices(String service, long index) {
-        HealthServicesRequest request = HealthServicesRequest.newBuilder()
-                .setTag(SERVICE_TAG)
-                .setQueryParams(new QueryParams(DEFAULT_WATCH_TIMEOUT, index))
-                .setPassing(true)
-                .build();
-        return client.getHealthServices(service, request);
-    }
-
-    private boolean isConsumerSide(URL url) {
-        return url.getProtocol().equals(Constants.CONSUMER_PROTOCOL);
-    }
-
-    private List<URL> convert(List<HealthService> services) {
-        return services.stream()
-                .map(s -> s.getService().getMeta().get(URL_META_KEY))
-                .map(URL::valueOf)
-                .collect(Collectors.toList());
+        ConsulNotifier notifier = notifiers.computeIfAbsent(url, k -> new ConsulNotifier(url, index));
+        notifierExecutor.submit(notifier);
     }
 
     @Override
     public void doUnsubscribe(URL url, NotifyListener listener) {
         logger.info("about to unsubscribe url: " + url);
-        notifier.unwatch(url);
+        if (isProviderSide(url)) {
+            return;
+        }
+
+        ConsulNotifier notifier = notifiers.remove(url);
+        notifier.stop();
     }
 
     @Override
@@ -124,8 +115,32 @@ public class ConsulRegistry extends FailbackRegistry {
     @Override
     public void destroy() {
         super.destroy();
-        subscriberTimer.shutdown();
+        notifierExecutor.shutdown();
         registerTimer.shutdown();
+    }
+
+    private Response<List<HealthService>> getHealthServices(String service, long index, int watchTimeout) {
+        HealthServicesRequest request = HealthServicesRequest.newBuilder()
+                .setTag(SERVICE_TAG)
+                .setQueryParams(new QueryParams(watchTimeout, index))
+                .setPassing(true)
+                .build();
+        return client.getHealthServices(service, request);
+    }
+
+    private boolean isConsumerSide(URL url) {
+        return url.getProtocol().equals(Constants.CONSUMER_PROTOCOL);
+    }
+
+    private boolean isProviderSide(URL url) {
+        return url.getProtocol().equals(Constants.PROVIDER_PROTOCOL);
+    }
+
+    private List<URL> convert(List<HealthService> services) {
+        return services.stream()
+                .map(s -> s.getService().getMeta().get(URL_META_KEY))
+                .map(URL::valueOf)
+                .collect(Collectors.toList());
     }
 
     private void checkPass() {
@@ -142,6 +157,18 @@ public class ConsulRegistry extends FailbackRegistry {
         }
     }
 
+    private NewService buildService(URL url) {
+        NewService service = new NewService();
+        service.setAddress(url.getHost());
+        service.setPort(url.getPort());
+        service.setId(buildId(url));
+        service.setName(url.getServiceKey());
+        service.setCheck(buildCheck(url));
+        service.setTags(Collections.singletonList(SERVICE_TAG));
+        service.setMeta(Collections.singletonMap(URL_META_KEY, url.toFullString()));
+        return service;
+    }
+
     private String buildId(URL url) {
         // let's simply use url's hashcode to generate unique service id for now
         return Integer.toHexString(url.hashCode());
@@ -149,21 +176,33 @@ public class ConsulRegistry extends FailbackRegistry {
 
     private NewService.Check buildCheck(URL url) {
         NewService.Check check = new NewService.Check();
-        check.setTtl((ttl / 1000) + "s");
+        check.setTtl((checkPassInterval / 1000) + "s");
         return check;
     }
 
+    private int buildWatchTimeout(URL url) {
+        return url.getParameter(WATCH_TIMEOUT, DEFAULT_WATCH_TIMEOUT) / 1000;
+    }
+
     private class ConsulNotifier implements Runnable {
-        private ConcurrentMap<URL, Long> lastIndexes = new ConcurrentHashMap<>();
+        private URL url;
+        private long consulIndex;
+        private boolean running;
+
+        ConsulNotifier(URL url, long consulIndex) {
+            this.url = url;
+            this.consulIndex = consulIndex;
+            this.running = true;
+        }
 
         @Override
         public void run() {
-            for (URL url : lastIndexes.keySet()) {
+            while (this.running) {
                 String service = url.getServiceKey();
-                Long lastIndex = lastIndexes.get(url);
-                Response<List<HealthService>> response = queryHealthServices(service, lastIndex);
-                Long index = response.getConsulIndex();
-                if (index != null && !index.equals(lastIndex)) {
+                Response<List<HealthService>> response = getHealthServices(service, consulIndex, buildWatchTimeout(url));
+                Long currentIndex = response.getConsulIndex();
+                if (currentIndex != null && currentIndex > consulIndex) {
+                    consulIndex = currentIndex;
                     List<HealthService> services = response.getValue();
                     List<URL> urls = convert(services);
                     for (NotifyListener listener : getSubscribed().get(url)) {
@@ -173,12 +212,8 @@ public class ConsulRegistry extends FailbackRegistry {
             }
         }
 
-        public void watch(URL url, Long consulIndex) {
-            lastIndexes.putIfAbsent(url, consulIndex);
-        }
-
-        public void unwatch(URL url) {
-            lastIndexes.remove(url);
+        void stop() {
+            this.running = false;
         }
     }
 }
