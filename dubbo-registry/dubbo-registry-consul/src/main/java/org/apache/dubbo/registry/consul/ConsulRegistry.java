@@ -28,6 +28,8 @@ import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 public class ConsulRegistry extends FailbackRegistry {
     private static final Logger logger = LoggerFactory.getLogger(ConsulRegistry.class);
 
+    private static final String SERVICE_TAG = "dubbo";
+    private static final String URL_META_KEY = "url";
     private static final int DEFAULT_PORT = 8500;
     private static final int DEFAULT_WATCH_TIMEOUT = 2;
 
@@ -61,7 +63,8 @@ public class ConsulRegistry extends FailbackRegistry {
     }
 
     private String buildId(URL url) {
-        return url.getServiceKey();
+        // let's simply use url's hashcode to generate unique service id for now
+        return Integer.toHexString(url.hashCode());
     }
 
     private NewService.Check buildCheck(URL url) {
@@ -77,12 +80,13 @@ public class ConsulRegistry extends FailbackRegistry {
         }
 
         NewService service = new NewService();
-        service.setAddress(url.toFullString());
+        service.setAddress(url.getHost());
         service.setPort(url.getPort());
         service.setId(buildId(url));
         service.setName(url.getServiceKey());
         service.setCheck(buildCheck(url));
-        service.setTags(Collections.singletonList("dubbo"));
+        service.setTags(Collections.singletonList(SERVICE_TAG));
+        service.setMeta(Collections.singletonMap(URL_META_KEY, url.toFullString()));
         client.agentServiceRegister(service);
     }
 
@@ -107,7 +111,7 @@ public class ConsulRegistry extends FailbackRegistry {
 
     private Response<List<HealthService>> queryHealthServices(String service, long index) {
         HealthServicesRequest request = HealthServicesRequest.newBuilder()
-                .setTag("dubbo")
+                .setTag(SERVICE_TAG)
                 .setQueryParams(new QueryParams(DEFAULT_WATCH_TIMEOUT, index))
                 .setPassing(true)
                 .build();
@@ -119,7 +123,10 @@ public class ConsulRegistry extends FailbackRegistry {
     }
 
     private List<URL> convert(List<HealthService> services) {
-        return services.stream().map(s -> s.getService().getAddress()).map(URL::valueOf).collect(Collectors.toList());
+        return services.stream()
+                .map(s -> s.getService().getMeta().get(URL_META_KEY))
+                .map(URL::valueOf)
+                .collect(Collectors.toList());
     }
 
     @Override
