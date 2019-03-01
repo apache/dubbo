@@ -26,6 +26,10 @@ import java.util.stream.Collectors;
 import static java.util.concurrent.Executors.newCachedThreadPool;
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.apache.dubbo.common.Constants.CONFIG_NAMESPACE_KEY;
+import static org.apache.dubbo.common.Constants.CONSUMERS_CATEGORY;
+import static org.apache.dubbo.common.Constants.PATH_SEPARATOR;
+import static org.apache.dubbo.configcenter.DynamicConfiguration.DEFAULT_GROUP;
 
 public class ConsulRegistry extends FailbackRegistry {
     private static final Logger logger = LoggerFactory.getLogger(ConsulRegistry.class);
@@ -33,7 +37,7 @@ public class ConsulRegistry extends FailbackRegistry {
     private static final String SERVICE_TAG = "dubbo";
     private static final String URL_META_KEY = "url";
     private static final String WATCH_TIMEOUT = "consul-watch-timeout";
-    public static final String CHECK_PASS_INTERVAL = "consul-check-pass-interval";
+    private static final String CHECK_PASS_INTERVAL = "consul-check-pass-interval";
     private static final int DEFAULT_PORT = 8500;
     // default watch timeout in millisecond
     private static final int DEFAULT_WATCH_TIMEOUT = 2000;
@@ -42,6 +46,7 @@ public class ConsulRegistry extends FailbackRegistry {
 
     private ConsulClient client;
     private long checkPassInterval;
+    private String rootPath;
     private ScheduledExecutorService registerTimer = newSingleThreadScheduledExecutor(
             new NamedThreadFactory("dubbo-consul-register-timer", true));
     private ExecutorService notifierExecutor = newCachedThreadPool(
@@ -50,6 +55,7 @@ public class ConsulRegistry extends FailbackRegistry {
 
     public ConsulRegistry(URL url) {
         super(url);
+        this.rootPath = url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP);
         String host = url.getHost();
         int port = url.getPort() != 0 ? url.getPort() : DEFAULT_PORT;
         client = new ConsulClient(host, port);
@@ -58,34 +64,46 @@ public class ConsulRegistry extends FailbackRegistry {
     }
 
     @Override
-    public void doRegister(URL url) {
-        logger.info("about to register url: " + url);
+    public void register(URL url) {
         if (isConsumerSide(url)) {
-            unregister(url);
+            client.setKVValue(buildKVPathForConsumer(url), url.toFullString());
             return;
         }
 
+        super.register(url);
+    }
+
+    @Override
+    public void doRegister(URL url) {
         client.agentServiceRegister(buildService(url));
     }
 
     @Override
-    public void doUnregister(URL url) {
-        logger.info("about to unregister url: " + url);
+    public void unregister(URL url) {
         if (isConsumerSide(url)) {
+            client.deleteKVValue(buildKVPathForConsumer(url));
             return;
         }
 
+        super.unregister(url);
+    }
+
+    @Override
+    public void doUnregister(URL url) {
         client.agentServiceDeregister(buildId(url));
     }
 
     @Override
-    public void doSubscribe(URL url, NotifyListener listener) {
-        logger.info("about to subscribe url: " + url);
+    public void subscribe(URL url, NotifyListener listener) {
         if (isProviderSide(url)) {
-            unsubscribe(url, listener);
             return;
         }
 
+        super.subscribe(url, listener);
+    }
+
+    @Override
+    public void doSubscribe(URL url, NotifyListener listener) {
         String service = url.getServiceKey();
         Response<List<HealthService>> healthServices = getHealthServices(service, -1, buildWatchTimeout(url));
         Long index = healthServices.getConsulIndex();
@@ -97,12 +115,16 @@ public class ConsulRegistry extends FailbackRegistry {
     }
 
     @Override
-    public void doUnsubscribe(URL url, NotifyListener listener) {
-        logger.info("about to unsubscribe url: " + url);
+    public void unsubscribe(URL url, NotifyListener listener) {
         if (isProviderSide(url)) {
             return;
         }
 
+        super.unsubscribe(url, listener);
+    }
+
+    @Override
+    public void doUnsubscribe(URL url, NotifyListener listener) {
         ConsulNotifier notifier = notifiers.remove(url);
         notifier.stop();
     }
@@ -178,6 +200,10 @@ public class ConsulRegistry extends FailbackRegistry {
         NewService.Check check = new NewService.Check();
         check.setTtl((checkPassInterval / 1000) + "s");
         return check;
+    }
+
+    private String buildKVPathForConsumer(URL url) {
+        return rootPath + PATH_SEPARATOR + url.getServiceKey() + PATH_SEPARATOR + CONSUMERS_CATEGORY + PATH_SEPARATOR + url.getIp();
     }
 
     private int buildWatchTimeout(URL url) {
