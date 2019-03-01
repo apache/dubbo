@@ -47,34 +47,13 @@ public class ConsulRegistry extends FailbackRegistry {
         int port = url.getPort() != 0 ? url.getPort() : DEFAULT_PORT;
         client = new ConsulClient(host, port);
         ttl = url.getParameter("ttl", 16000L);
-        registerTimer.scheduleWithFixedDelay(this::keepAlive, ttl / 2, ttl / 2, TimeUnit.MILLISECONDS);
+        registerTimer.scheduleWithFixedDelay(this::checkPass, ttl / 2, ttl / 2, TimeUnit.MILLISECONDS);
         subscriberTimer.scheduleWithFixedDelay(notifier, DEFAULT_WATCH_TIMEOUT, DEFAULT_WATCH_TIMEOUT, TimeUnit.SECONDS);
-    }
-
-    private void keepAlive() {
-        for (URL url : getRegistered()) {
-            String checkId = buildId(url);
-            try {
-                client.agentCheckPass("service:" + checkId);
-            } catch (Throwable t) {
-                logger.warn("fail to check pass for url: " + url + ", check id is: " + checkId);
-            }
-        }
-    }
-
-    private String buildId(URL url) {
-        // let's simply use url's hashcode to generate unique service id for now
-        return Integer.toHexString(url.hashCode());
-    }
-
-    private NewService.Check buildCheck(URL url) {
-        NewService.Check check = new NewService.Check();
-        check.setTtl((ttl / 1000) + "s");
-        return check;
     }
 
     @Override
     public void doRegister(URL url) {
+        logger.info("about to register url: " + url);
         if (isConsumerSide(url)) {
             return;
         }
@@ -92,6 +71,7 @@ public class ConsulRegistry extends FailbackRegistry {
 
     @Override
     public void doUnregister(URL url) {
+        logger.info("about to unregister url: " + url);
         if (isConsumerSide(url)) {
             return;
         }
@@ -101,6 +81,7 @@ public class ConsulRegistry extends FailbackRegistry {
 
     @Override
     public void doSubscribe(URL url, NotifyListener listener) {
+        logger.info("about to subscribe url: " + url);
         String service = url.getServiceKey();
         Response<List<HealthService>> healthServices = queryHealthServices(service, -1);
         Long index = healthServices.getConsulIndex();
@@ -131,6 +112,7 @@ public class ConsulRegistry extends FailbackRegistry {
 
     @Override
     public void doUnsubscribe(URL url, NotifyListener listener) {
+        logger.info("about to unsubscribe url: " + url);
         notifier.unwatch(url);
     }
 
@@ -144,6 +126,31 @@ public class ConsulRegistry extends FailbackRegistry {
         super.destroy();
         subscriberTimer.shutdown();
         registerTimer.shutdown();
+    }
+
+    private void checkPass() {
+        for (URL url : getRegistered()) {
+            String checkId = buildId(url);
+            try {
+                client.agentCheckPass("service:" + checkId);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("check pass for url: " + url + " with check id: " + checkId);
+                }
+            } catch (Throwable t) {
+                logger.warn("fail to check pass for url: " + url + ", check id is: " + checkId);
+            }
+        }
+    }
+
+    private String buildId(URL url) {
+        // let's simply use url's hashcode to generate unique service id for now
+        return Integer.toHexString(url.hashCode());
+    }
+
+    private NewService.Check buildCheck(URL url) {
+        NewService.Check check = new NewService.Check();
+        check.setTtl((ttl / 1000) + "s");
+        return check;
     }
 
     private class ConsulNotifier implements Runnable {
