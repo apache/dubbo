@@ -322,6 +322,13 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
         checkStubAndLocal(interfaceClass);
         checkMock(interfaceClass);
+        appendParameters();
+    }
+
+    private void appendParameters() {
+        URL appendParametersUrl = URL.valueOf("appendParameters://");
+        List<AppendParametersComponent> appendParametersComponents = ExtensionLoader.getExtensionLoader(AppendParametersComponent.class).getActivateExtension(appendParametersUrl, (String[]) null);
+        appendParametersComponents.forEach(component -> component.appendExportParameters(this));
     }
 
     public synchronized void export() {
