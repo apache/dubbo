@@ -81,7 +81,6 @@ public class ConsulRegistry extends FailbackRegistry {
     @Override
     public void unregister(URL url) {
         if (isConsumerSide(url)) {
-            client.deleteKVValue(buildKVPathForConsumer(url));
             return;
         }
 
@@ -118,6 +117,10 @@ public class ConsulRegistry extends FailbackRegistry {
     public void unsubscribe(URL url, NotifyListener listener) {
         if (isProviderSide(url)) {
             return;
+        }
+
+        if (isConsumerSide(url)) {
+            client.deleteKVValue(buildKVPathForConsumer(url));
         }
 
         super.unsubscribe(url, listener);
