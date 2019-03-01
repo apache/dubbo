@@ -16,12 +16,10 @@
  */
 package org.apache.dubbo.rpc.proxy;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -58,12 +56,7 @@ public class InvokerInvocationHandler implements InvocationHandler {
     }
 
     private RpcInvocation createInvocation(Method method, Object[] args) {
-        RpcInvocation invocation = new RpcInvocation(method, args);
-        if (RpcUtils.hasFutureReturnType(method)) {
-            invocation.setAttachment(Constants.FUTURE_RETURNTYPE_KEY, "true");
-            invocation.setAttachment(Constants.ASYNC_KEY, "true");
-        }
-        return invocation;
+        return new RpcInvocation(method, args);
     }
 
 }

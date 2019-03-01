@@ -20,11 +20,10 @@ import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
-/**
- *
- */
-public abstract class AbstractResult implements Result {
+
+public abstract class AbstractResult extends CompletableFuture<Object> implements Result {
     protected Map<String, String> attachments = new HashMap<String, String>();
 
     protected Object result;

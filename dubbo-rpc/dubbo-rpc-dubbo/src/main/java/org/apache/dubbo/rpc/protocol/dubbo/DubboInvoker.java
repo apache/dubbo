@@ -23,8 +23,6 @@ import org.apache.dubbo.common.utils.AtomicPositiveInteger;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
-import org.apache.dubbo.remoting.exchange.ResponseFuture;
-import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -32,11 +30,11 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcResult;
-import org.apache.dubbo.rpc.SimpleAsyncRpcResult;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -89,23 +87,13 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 currentClient.send(inv, isSent);
                 RpcContext.getContext().setFuture(null);
                 return new RpcResult();
-            } else if (isAsync) {
-                ResponseFuture future = currentClient.request(inv, timeout);
-                // For compatibility
-                FutureAdapter<Object> futureAdapter = new FutureAdapter<>(future);
-                RpcContext.getContext().setFuture(futureAdapter);
-
-                Result result;
-                if (isAsyncFuture) {
-                    // register resultCallback, sometimes we need the async result being processed by the filter chain.
-                    result = new AsyncRpcResult(futureAdapter, futureAdapter.getResultFuture(), false);
-                } else {
-                    result = new SimpleAsyncRpcResult(futureAdapter, futureAdapter.getResultFuture(), false);
-                }
-                return result;
             } else {
-                RpcContext.getContext().setFuture(null);
-                return (Result) currentClient.request(inv, timeout).get();
+                RpcResult result = new RpcResult();
+                CompletableFuture<Object> appResultFuture = currentClient.request(inv, timeout);
+                appResultFuture.whenComplete((appResult, t) -> {
+                    appResultToResult;
+                });
+                return result;
             }
         } catch (TimeoutException e) {
             throw new RpcException(RpcException.TIMEOUT_EXCEPTION, "Invoke remote method timeout. method: " + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);

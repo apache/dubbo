@@ -20,7 +20,7 @@ import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 /**
  * ExchangeHandler. (API, Prototype, ThreadSafe)
@@ -35,6 +35,6 @@ public interface ExchangeHandler extends ChannelHandler, TelnetHandler {
      * @return response
      * @throws RemotingException
      */
-    CompletableFuture<Object> reply(ExchangeChannel channel, Object request) throws RemotingException;
+    CompletionStage<Object> reply(ExchangeChannel channel, Object request) throws RemotingException;
 
 }

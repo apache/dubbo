@@ -16,7 +16,12 @@
  */
 package org.apache.dubbo.rpc;
 
+import org.apache.dubbo.rpc.support.RpcUtils;
+
 import java.lang.reflect.Field;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 
 /**
  * RPC Result.
@@ -40,55 +45,55 @@ public class RpcResult extends AbstractResult {
 
     @Override
     public Object recreate() throws Throwable {
-        if (exception != null) {
-            // fix issue#619
-            try {
-                // get Throwable class
-                Class clazz = exception.getClass();
-                while (!clazz.getName().equals(Throwable.class.getName())) {
-                    clazz = clazz.getSuperclass();
+        if (RpcUtils.isReturnTypeFuture()) {
+            CompletableFuture<Object> future = new CompletableFuture<>();
+            this.whenComplete((result, t) -> {
+                if (t != null) {
+                    if (t instanceof CompletionException) {
+                        t = t.getCause();
+                    }
+                    future.completeExceptionally(t);
                 }
-                // get stackTrace value
-                Field stackTraceField = clazz.getDeclaredField("stackTrace");
-                stackTraceField.setAccessible(true);
-                Object stackTrace = stackTraceField.get(exception);
-                if (stackTrace == null) {
-                    exception.setStackTrace(new StackTraceElement[0]);
+            });
+            return future;
+        } else {
+            if (exception != null) {
+                // fix issue#619
+                try {
+                    // get Throwable class
+                    Class clazz = exception.getClass();
+                    while (!clazz.getName().equals(Throwable.class.getName())) {
+                        clazz = clazz.getSuperclass();
+                    }
+                    // get stackTrace value
+                    Field stackTraceField = clazz.getDeclaredField("stackTrace");
+                    stackTraceField.setAccessible(true);
+                    Object stackTrace = stackTraceField.get(exception);
+                    if (stackTrace == null) {
+                        exception.setStackTrace(new StackTraceElement[0]);
+                    }
+                } catch (Exception e) {
+                    // ignore
                 }
-            } catch (Exception e) {
-                // ignore
+                throw exception;
             }
-            throw exception;
+            return result;
         }
-        return result;
     }
 
-    /**
-     * @see org.apache.dubbo.rpc.RpcResult#getValue()
-     * @deprecated Replace to getValue()
-     */
     @Override
-    @Deprecated
-    public Object getResult() {
-        return getValue();
-    }
-
-    /**
-     * @see org.apache.dubbo.rpc.RpcResult#setValue(Object)
-     * @deprecated Replace to setValue()
-     */
-    @Deprecated
-    public void setResult(Object result) {
-        setValue(result);
+    public Object get() throws InterruptedException, ExecutionException {
+        return super.get();
     }
 
     @Override
     public Object getValue() {
-        return result;
+        return this.get();
     }
 
     public void setValue(Object value) {
         this.result = value;
+        this.complete(value);
     }
 
     @Override
@@ -98,10 +103,12 @@ public class RpcResult extends AbstractResult {
 
     public void setException(Throwable e) {
         this.exception = e;
+        this.completeExceptionally(e);
     }
 
     @Override
     public boolean hasException() {
+        // TODO use this.isCompletedExceptionally()?
         return exception != null;
     }
 

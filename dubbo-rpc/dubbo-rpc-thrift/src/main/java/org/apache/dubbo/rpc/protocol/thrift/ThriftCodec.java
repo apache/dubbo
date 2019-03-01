@@ -611,7 +611,7 @@ public class ThriftCodec implements Codec2 {
             }
 
         } else {
-            Object realResult = result.getResult();
+            Object realResult = result.getValue();
             // result field id is 0
             String fieldName = resultObj.fieldForId(0).getFieldName();
             String setMethodName = ThriftUtils.generateSetMethodName(fieldName);

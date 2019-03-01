@@ -70,14 +70,23 @@ public class ProtocolFilterWrapper implements Protocol {
 
                     @Override
                     public Result invoke(Invocation invocation) throws RpcException {
-                        Result result = filter.invoke(next, invocation);
-                        if (result instanceof AsyncRpcResult) {
-                            AsyncRpcResult asyncResult = (AsyncRpcResult) result;
-                            asyncResult.thenApplyWithContext(r -> filter.onResponse(r, invoker, invocation));
-                            return asyncResult;
-                        } else {
-                            return filter.onResponse(result, invoker, invocation);
+                        filter.onSend(invocation);
+                        Result result;
+                        try {
+                            result = next.invoke(invocation);
+//                            result = filter.invoke(next, invocation);
+                            if (result instanceof AsyncRpcResult) {
+                                AsyncRpcResult asyncResult = (AsyncRpcResult) result;
+                                asyncResult.thenApplyWithContext(r -> filter.onResponse(r, invoker, invocation));
+                            } else {
+                                filter.onResponse(result, invoker, invocation);
+                            }
+                        } catch (RpcException rpcException) {
+                            filter.onError(rpcException);
+                            // FIXME if it's not interrupted, return default result.
+                            result = RpcResult.defaultValue();
                         }
+                        return result;
                     }
 
                     @Override

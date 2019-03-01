@@ -30,21 +30,19 @@ import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.ResponseCallback;
-import org.apache.dubbo.remoting.exchange.ResponseFuture;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * DefaultFuture.
  */
-public class DefaultFuture implements ResponseFuture {
+public class DefaultFuture extends CompletableFuture<Object> {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultFuture.class);
 
@@ -62,12 +60,8 @@ public class DefaultFuture implements ResponseFuture {
     private final Channel channel;
     private final Request request;
     private final int timeout;
-    private final Lock lock = new ReentrantLock();
-    private final Condition done = lock.newCondition();
     private final long start = System.currentTimeMillis();
     private volatile long sent;
-    private volatile Response response;
-    private volatile ResponseCallback callback;
 
     private DefaultFuture(Channel channel, Request request, int timeout) {
         this.channel = channel;
@@ -160,14 +154,21 @@ public class DefaultFuture implements ResponseFuture {
     }
 
     @Override
-    public Object get() throws RemotingException {
-        return get(timeout);
+    public Object get() throws InterruptedException, ExecutionException {
+        return get(timeout, TimeUnit.MILLISECONDS);
     }
 
     @Override
-    public Object get(int timeout) throws RemotingException {
+    public Object get (long timeout, TimeUnit unit)
+            throws InterruptedException, ExecutionException, java.util.concurrent.TimeoutException {
         if (timeout <= 0) {
             timeout = Constants.DEFAULT_TIMEOUT;
+        }
+
+        try {
+            super.get(timeout, unit);
+        } catch (java.util.concurrent.TimeoutException e) {
+
         }
         if (!isDone()) {
             long start = System.currentTimeMillis();
@@ -193,6 +194,7 @@ public class DefaultFuture implements ResponseFuture {
 
     public void cancel() {
         Response errorResult = new Response(id);
+        errorResult.setStatus(Response.CLIENT_ERROR);
         errorResult.setErrorMessage("request future has been canceled.");
         response = errorResult;
         FUTURES.remove(id);

@@ -128,12 +128,7 @@ public class AsyncRpcResult extends AbstractResult {
     public boolean hasException() {
         return getRpcResult().hasException();
     }
-
-    @Override
-    public Object getResult() {
-        return getRpcResult().getResult();
-    }
-
+    
     public CompletableFuture getValueFuture() {
         return valueFuture;
     }

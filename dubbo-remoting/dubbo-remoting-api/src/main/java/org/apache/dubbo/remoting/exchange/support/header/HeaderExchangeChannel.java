@@ -30,6 +30,7 @@ import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.ResponseFuture;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
+import org.apache.dubbo.remoting.exchange.support.Futures;
 
 import java.net.InetSocketAddress;
 
@@ -115,7 +116,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         try {
             channel.send(req);
         } catch (RemotingException e) {
-            future.cancel();
+            Futures.cancel(future);
             throw e;
         }
         return future;

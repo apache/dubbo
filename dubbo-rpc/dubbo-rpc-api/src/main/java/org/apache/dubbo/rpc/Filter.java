@@ -43,26 +43,21 @@ import org.apache.dubbo.common.extension.SPI;
 @SPI
 public interface Filter {
 
-    /**
-     * do invoke filter.
-     * <p>
-     * <code>
-     * // before filter
-     * Result result = invoker.invoke(invocation);
-     * // after filter
-     * return result;
-     * </code>
-     *
-     * @param invoker    service
-     * @param invocation invocation.
-     * @return invoke result.
-     * @throws RpcException
-     * @see org.apache.dubbo.rpc.Invoker#invoke(Invocation)
-     */
-    Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException;
+    default Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+        return invoker.invoke(invocation);
+    }
 
+    default void onSend(Invocation invocation) {
+
+    }
+
+    // FIXME does not need a return value.
     default Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
         return result;
+    }
+
+    default void onError(RpcException e) throws RpcException{
+        throw e;
     }
 
 }

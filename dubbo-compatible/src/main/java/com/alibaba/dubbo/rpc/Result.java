@@ -17,12 +17,14 @@
 
 package com.alibaba.dubbo.rpc;
 
+import org.apache.dubbo.rpc.AbstractResult;
+
 import java.util.Map;
 
 @Deprecated
 public interface Result extends org.apache.dubbo.rpc.Result {
 
-    class CompatibleResult implements Result {
+    class CompatibleResult extends AbstractResult {
         private org.apache.dubbo.rpc.Result delegate;
 
         public CompatibleResult(org.apache.dubbo.rpc.Result result) {
@@ -51,11 +53,6 @@ public interface Result extends org.apache.dubbo.rpc.Result {
         @Override
         public Object recreate() throws Throwable {
             return delegate.recreate();
-        }
-
-        @Override
-        public Object getResult() {
-            return delegate.getResult();
         }
 
         @Override
