@@ -23,6 +23,7 @@ import org.apache.dubbo.common.utils.AtomicPositiveInteger;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
+import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -78,8 +79,6 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
             currentClient = clients[index.getAndIncrement() % clients.length];
         }
         try {
-            boolean isAsync = RpcUtils.isAsync(getUrl(), invocation);
-            boolean isAsyncFuture = RpcUtils.isReturnTypeFuture(inv);
             boolean isOneway = RpcUtils.isOneway(getUrl(), invocation);
             int timeout = getUrl().getMethodParameter(methodName, Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
             if (isOneway) {
@@ -90,8 +89,10 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
             } else {
                 RpcResult result = new RpcResult();
                 CompletableFuture<Object> appResultFuture = currentClient.request(inv, timeout);
-                appResultFuture.whenComplete((appResult, t) -> {
-                    appResultToResult;
+                appResultFuture.whenComplete((obj, t) -> {
+                    Response.AppResult appResult = (Response.AppResult) obj;
+                    result.setAttachments(appResult.getAttachments());
+                    result.set
                 });
                 return result;
             }

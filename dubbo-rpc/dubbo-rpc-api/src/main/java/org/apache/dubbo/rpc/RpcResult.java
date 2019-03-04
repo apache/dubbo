@@ -47,38 +47,44 @@ public class RpcResult extends AbstractResult {
     public Object recreate() throws Throwable {
         if (RpcUtils.isReturnTypeFuture()) {
             CompletableFuture<Object> future = new CompletableFuture<>();
-            this.whenComplete((result, t) -> {
+            this.whenComplete((obj, t) -> {
                 if (t != null) {
                     if (t instanceof CompletionException) {
                         t = t.getCause();
                     }
                     future.completeExceptionally(t);
+                } else {
+                    future.complete(obj);
                 }
             });
             return future;
         } else {
             if (exception != null) {
-                // fix issue#619
-                try {
-                    // get Throwable class
-                    Class clazz = exception.getClass();
-                    while (!clazz.getName().equals(Throwable.class.getName())) {
-                        clazz = clazz.getSuperclass();
-                    }
-                    // get stackTrace value
-                    Field stackTraceField = clazz.getDeclaredField("stackTrace");
-                    stackTraceField.setAccessible(true);
-                    Object stackTrace = stackTraceField.get(exception);
-                    if (stackTrace == null) {
-                        exception.setStackTrace(new StackTraceElement[0]);
-                    }
-                } catch (Exception e) {
-                    // ignore
-                }
-                throw exception;
+                throw handleEmptyStacktrace(exception);
             }
             return result;
         }
+    }
+
+    private Throwable handleEmptyStacktrace (Throwable t) {
+        // fix issue#619
+        try {
+            // get Throwable class
+            Class clazz = exception.getClass();
+            while (!clazz.getName().equals(Throwable.class.getName())) {
+                clazz = clazz.getSuperclass();
+            }
+            // get stackTrace value
+            Field stackTraceField = clazz.getDeclaredField("stackTrace");
+            stackTraceField.setAccessible(true);
+            Object stackTrace = stackTraceField.get(exception);
+            if (stackTrace == null) {
+                exception.setStackTrace(new StackTraceElement[0]);
+            }
+        } catch (Exception e) {
+            // ignore
+        }
+        return  exception;
     }
 
     @Override
@@ -93,7 +99,6 @@ public class RpcResult extends AbstractResult {
 
     public void setValue(Object value) {
         this.result = value;
-        this.complete(value);
     }
 
     @Override
@@ -103,7 +108,6 @@ public class RpcResult extends AbstractResult {
 
     public void setException(Throwable e) {
         this.exception = e;
-        this.completeExceptionally(e);
     }
 
     @Override

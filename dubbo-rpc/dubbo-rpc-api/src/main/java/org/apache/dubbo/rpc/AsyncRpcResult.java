@@ -21,40 +21,8 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.function.Function;
 
-/**
- * <b>NOTICE!!</b>
- *
- * <p>
- * You should never rely on this class directly when using or extending Dubbo, the implementation of {@link AsyncRpcResult}
- * is only a workaround for compatibility purpose. It may be changed or even get removed from the next major version.
- * Please only use {@link Result} or {@link RpcResult}.
- *
- * Extending the {@link Filter} is one typical use case:
- * <pre>
- * {@code
- * public class YourFilter implements Filter {
- *     @Override
- *     public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
- *         System.out.println("Filter get the return value: " + result.getValue());
- *         // Don't do this
- *         // AsyncRpcResult asyncRpcResult = ((AsyncRpcResult)result;
- *         // System.out.println("Filter get the return value: " + asyncRpcResult.getValue());
- *         return result;
- *     }
- *
- *     @Override
- *     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
- *         return invoker.invoke(invocation);
- *     }
- * }
- * }
- * </pre>
- * </p>
- * TODO RpcResult can be an instance of {@link java.util.concurrent.CompletionStage} instead of composing CompletionStage inside.
- */
 public class AsyncRpcResult extends AbstractResult {
     private static final Logger logger = LoggerFactory.getLogger(AsyncRpcResult.class);
 
@@ -64,55 +32,6 @@ public class AsyncRpcResult extends AbstractResult {
      */
     private RpcContext storedContext;
     private RpcContext storedServerContext;
-
-    protected CompletableFuture<Object> valueFuture;
-
-    protected CompletableFuture<Result> resultFuture;
-
-    public AsyncRpcResult(CompletableFuture<Object> future) {
-        this(future, true);
-    }
-
-    public AsyncRpcResult(CompletableFuture<Object> future, boolean registerCallback) {
-        this(future, new CompletableFuture<>(), registerCallback);
-    }
-
-    /**
-     * @param future
-     * @param rFuture
-     * @param registerCallback
-     */
-    public AsyncRpcResult(CompletableFuture<Object> future, final CompletableFuture<Result> rFuture, boolean registerCallback) {
-        if (rFuture == null) {
-            throw new IllegalArgumentException();
-        }
-        resultFuture = rFuture;
-        if (registerCallback) {
-            /**
-             * We do not know whether future already completed or not, it's a future exposed or even created by end user.
-             * 1. future complete before whenComplete. whenComplete fn (resultFuture.complete) will be executed in thread subscribing, in our case, it's Dubbo thread.
-             * 2. future complete after whenComplete. whenComplete fn (resultFuture.complete) will be executed in thread calling complete, normally its User thread.
-             */
-            future.whenComplete((v, t) -> {
-                RpcResult rpcResult;
-                if (t != null) {
-                    if (t instanceof CompletionException) {
-                        rpcResult = new RpcResult(t.getCause());
-                    } else {
-                        rpcResult = new RpcResult(t);
-                    }
-                } else {
-                    rpcResult = new RpcResult(v);
-                }
-                // instead of resultFuture we must use rFuture here, resultFuture may being changed before complete when building filter chain, but rFuture was guaranteed never changed by closure.
-                rFuture.complete(rpcResult);
-            });
-        }
-        this.valueFuture = future;
-        // employ copy of context avoid the other call may modify the context content
-        this.storedContext = RpcContext.getContext().copyOf();
-        this.storedServerContext = RpcContext.getServerContext().copyOf();
-    }
 
     @Override
     public Object getValue() {

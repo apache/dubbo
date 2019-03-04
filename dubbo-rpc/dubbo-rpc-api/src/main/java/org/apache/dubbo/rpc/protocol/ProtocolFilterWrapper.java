@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
@@ -27,6 +26,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.RpcResult;
 
 import java.util.List;
 
@@ -70,23 +70,15 @@ public class ProtocolFilterWrapper implements Protocol {
 
                     @Override
                     public Result invoke(Invocation invocation) throws RpcException {
-                        filter.onSend(invocation);
-                        Result result;
-                        try {
-                            result = next.invoke(invocation);
-//                            result = filter.invoke(next, invocation);
-                            if (result instanceof AsyncRpcResult) {
-                                AsyncRpcResult asyncResult = (AsyncRpcResult) result;
-                                asyncResult.thenApplyWithContext(r -> filter.onResponse(r, invoker, invocation));
-                            } else {
-                                filter.onResponse(result, invoker, invocation);
-                            }
-                        } catch (RpcException rpcException) {
-                            filter.onError(rpcException);
-                            // FIXME if it's not interrupted, return default result.
-                            result = RpcResult.defaultValue();
-                        }
-                        return result;
+                        Result result = filter.invoke(next, invocation);
+                        RpcResult newResult = new RpcResult();
+                        result.whenComplete((obj, t) -> {
+                            filter.onResponse(result, invoker, invocation);
+                            newResult.setValue(obj);
+                            newResult.setException(t);
+                            newResult.setAttachments(result.getAttachments());
+                        });
+                        return newResult;
                     }
 
                     @Override
@@ -122,7 +114,8 @@ public class ProtocolFilterWrapper implements Protocol {
         if (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) {
             return protocol.refer(type, url);
         }
-        return buildInvokerChain(protocol.refer(type, url), Constants.REFERENCE_FILTER_KEY, Constants.CONSUMER);
+        Invoker<T> syncInvoker = new AsyncToSyncInvoker<>(protocol.refer(type, url));
+        return buildInvokerChain(syncInvoker, Constants.REFERENCE_FILTER_KEY, Constants.CONSUMER);
     }
 
     @Override

@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 
 /**
@@ -29,7 +30,7 @@ import java.util.concurrent.ExecutionException;
  * @see org.apache.dubbo.rpc.Invoker#invoke(Invocation)
  * @see org.apache.dubbo.rpc.RpcResult
  */
-public interface Result extends CompletionStage<Object>, Serializable {
+public interface Result extends CompletionStage<Object>, Future<Object>, Serializable {
 
     /**
      * Get invoke result.
