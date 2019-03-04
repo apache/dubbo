@@ -44,7 +44,7 @@ public class ConsulRegistry extends FailbackRegistry {
     private static final String CHECK_PASS_INTERVAL = "consul-check-pass-interval";
     private static final int DEFAULT_PORT = 8500;
     // default watch timeout in millisecond
-    private static final int DEFAULT_WATCH_TIMEOUT = 2000;
+    private static final int DEFAULT_WATCH_TIMEOUT = 60 * 1000;
     // default time-to-live in millisecond
     private static final long DEFAULT_CHECK_PASS_INTERVAL = 16000L;
 
