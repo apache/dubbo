@@ -12,11 +12,14 @@ import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.QueryParams;
 import com.ecwid.consul.v1.Response;
 import com.ecwid.consul.v1.agent.model.NewService;
+import com.ecwid.consul.v1.catalog.CatalogServicesRequest;
 import com.ecwid.consul.v1.health.HealthServicesRequest;
 import com.ecwid.consul.v1.health.model.HealthService;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -26,6 +29,7 @@ import java.util.stream.Collectors;
 import static java.util.concurrent.Executors.newCachedThreadPool;
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.apache.dubbo.common.Constants.ANY_VALUE;
 import static org.apache.dubbo.common.Constants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.Constants.CONSUMERS_CATEGORY;
 import static org.apache.dubbo.common.Constants.PATH_SEPARATOR;
@@ -103,12 +107,21 @@ public class ConsulRegistry extends FailbackRegistry {
 
     @Override
     public void doSubscribe(URL url, NotifyListener listener) {
-        String service = url.getServiceKey();
-        Response<List<HealthService>> healthServices = getHealthServices(service, -1, buildWatchTimeout(url));
-        Long index = healthServices.getConsulIndex();
-        List<URL> urls = convert(healthServices.getValue());
-        notify(url, listener, urls);
+        Long index;
+        List<URL> urls;
+        if (ANY_VALUE.equals(url.getServiceInterface())) {
+            Response<Map<String, List<String>>> response = getAllServices(-1, buildWatchTimeout(url));
+            index = response.getConsulIndex();
+            List<HealthService> services = getHealthServices(response.getValue());
+            urls = convert(services);
+        } else {
+            String service = url.getServiceKey();
+            Response<List<HealthService>> response = getHealthServices(service, -1, buildWatchTimeout(url));
+            index = response.getConsulIndex();
+            urls = convert(response.getValue());
+        }
 
+        notify(url, listener, urls);
         ConsulNotifier notifier = notifiers.computeIfAbsent(url, k -> new ConsulNotifier(url, index));
         notifierExecutor.submit(notifier);
     }
@@ -152,6 +165,22 @@ public class ConsulRegistry extends FailbackRegistry {
                 .build();
         return client.getHealthServices(service, request);
     }
+
+    private Response<Map<String, List<String>>> getAllServices(long index, int watchTimeout) {
+        CatalogServicesRequest request = CatalogServicesRequest.newBuilder()
+                .setQueryParams(new QueryParams(watchTimeout, index))
+                .build();
+        return client.getCatalogServices(request);
+    }
+
+    private List<HealthService> getHealthServices(Map<String, List<String>> services) {
+        return services.keySet().stream()
+                .filter(s -> services.get(s).contains(SERVICE_TAG))
+                .map(s -> getHealthServices(s, -1, -1).getValue())
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+    }
+
 
     private boolean isConsumerSide(URL url) {
         return url.getProtocol().equals(Constants.CONSUMER_PROTOCOL);
@@ -206,7 +235,8 @@ public class ConsulRegistry extends FailbackRegistry {
     }
 
     private String buildKVPathForConsumer(URL url) {
-        return rootPath + PATH_SEPARATOR + url.getServiceKey() + PATH_SEPARATOR + CONSUMERS_CATEGORY + PATH_SEPARATOR + url.getIp();
+        return rootPath + PATH_SEPARATOR + url.getServiceKey() + PATH_SEPARATOR + CONSUMERS_CATEGORY +
+                PATH_SEPARATOR + url.getIp();
     }
 
     private int buildWatchTimeout(URL url) {
@@ -227,16 +257,37 @@ public class ConsulRegistry extends FailbackRegistry {
         @Override
         public void run() {
             while (this.running) {
-                String service = url.getServiceKey();
-                Response<List<HealthService>> response = getHealthServices(service, consulIndex, buildWatchTimeout(url));
-                Long currentIndex = response.getConsulIndex();
-                if (currentIndex != null && currentIndex > consulIndex) {
-                    consulIndex = currentIndex;
-                    List<HealthService> services = response.getValue();
-                    List<URL> urls = convert(services);
-                    for (NotifyListener listener : getSubscribed().get(url)) {
-                        doNotify(url, listener, urls);
-                    }
+                if (ANY_VALUE.equals(url.getServiceInterface())) {
+                    processServices();
+                } else {
+                    processService();
+                }
+            }
+        }
+
+        private void processService() {
+            String service = url.getServiceKey();
+            Response<List<HealthService>> response = getHealthServices(service, consulIndex, buildWatchTimeout(url));
+            Long currentIndex = response.getConsulIndex();
+            if (currentIndex != null && currentIndex > consulIndex) {
+                consulIndex = currentIndex;
+                List<HealthService> services = response.getValue();
+                List<URL> urls = convert(services);
+                for (NotifyListener listener : getSubscribed().get(url)) {
+                    doNotify(url, listener, urls);
+                }
+            }
+        }
+
+        private void processServices() {
+            Response<Map<String, List<String>>> response = getAllServices(consulIndex, buildWatchTimeout(url));
+            Long currentIndex = response.getConsulIndex();
+            if (currentIndex != null && currentIndex > consulIndex) {
+                consulIndex = currentIndex;
+                List<HealthService> services = getHealthServices(response.getValue());
+                List<URL> urls = convert(services);
+                for (NotifyListener listener : getSubscribed().get(url)) {
+                    doNotify(url, listener, urls);
                 }
             }
         }
