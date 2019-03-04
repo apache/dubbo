@@ -201,17 +201,17 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
     }
 
     private boolean addressMatches(URL url, List<String> addresses) {
-        return addresses != null && checkAddressMatch(addresses, url.getAddress());
+        return addresses != null && checkAddressMatch(addresses, url.getHost(), url.getPort());
     }
 
     private boolean addressNotMatches(URL url, List<String> addresses) {
-        return addresses == null || !checkAddressMatch(addresses, url.getAddress());
+        return addresses == null || !checkAddressMatch(addresses, url.getHost(), url.getPort());
     }
 
-    private boolean checkAddressMatch(List<String> addresses, String targetAddress) {
+    private boolean checkAddressMatch(List<String> addresses, String host, int port) {
         for (String address : addresses) {
             try {
-                if (NetUtils.matchIpExpression(address, targetAddress)) {
+                if (NetUtils.matchIpExpression(address, host, port)) {
                     return true;
                 }
             } catch (UnknownHostException e) {
