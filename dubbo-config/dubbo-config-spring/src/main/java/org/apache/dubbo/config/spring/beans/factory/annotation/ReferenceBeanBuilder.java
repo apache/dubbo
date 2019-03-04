@@ -18,6 +18,8 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.ConsumerConfig;
+import org.apache.dubbo.config.MethodConfig;
+import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.ReferenceBean;
 
@@ -29,6 +31,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.validation.DataBinder;
 
 import java.beans.PropertyEditorSupport;
+import java.util.List;
 import java.util.Map;
 
 import static org.apache.dubbo.config.spring.util.BeanFactoryUtils.getOptionalBean;
@@ -87,6 +90,14 @@ class ReferenceBeanBuilder extends AbstractAnnotationConfigBeanBuilder<Reference
 
         referenceBean.setConsumer(consumerConfig);
 
+    }
+
+    void configureMethodConfig(Reference reference, ReferenceBean<?> referenceBean){
+        Method[] methods = reference.methods();
+        List<MethodConfig> methodConfigs = MethodConfig.constructMethodConfig(methods);
+        if(!methodConfigs.isEmpty()){
+            referenceBean.setMethods(methodConfigs);
+        }
     }
 
     @Override
@@ -153,6 +164,8 @@ class ReferenceBeanBuilder extends AbstractAnnotationConfigBeanBuilder<Reference
         configureInterface(annotation, bean);
 
         configureConsumerConfig(annotation, bean);
+
+        configureMethodConfig(annotation, bean);
 
         bean.afterPropertiesSet();
 

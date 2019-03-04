@@ -178,6 +178,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     public ReferenceConfig(Reference reference) {
         appendAnnotation(Reference.class, reference);
+        setMethods(MethodConfig.constructMethodConfig(reference.methods()));
     }
 
     public URL toUrl() {

@@ -168,6 +168,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     public ServiceConfig(Service service) {
         appendAnnotation(Service.class, service);
+        setMethods(MethodConfig.constructMethodConfig(service.methods()));
     }
 
     @Deprecated
