@@ -40,12 +40,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
 import static java.util.concurrent.Executors.newCachedThreadPool;
-import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.dubbo.common.Constants.ANY_VALUE;
 import static org.apache.dubbo.common.Constants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.Constants.CONSUMERS_CATEGORY;
@@ -61,18 +58,20 @@ public class ConsulRegistry extends FailbackRegistry {
     private static final String SERVICE_TAG = "dubbo";
     private static final String URL_META_KEY = "url";
     private static final String WATCH_TIMEOUT = "consul-watch-timeout";
-    private static final String CHECK_PASS_INTERVAL = "consul-check-pass-interval";
+    private static final String CHECK_INTERVAL = "consul-check-interval";
+    private static final String CHECK_TIMEOUT = "consul-check-timeout";
+
     private static final int DEFAULT_PORT = 8500;
     // default watch timeout in millisecond
     private static final int DEFAULT_WATCH_TIMEOUT = 60 * 1000;
-    // default time-to-live in millisecond
-    private static final long DEFAULT_CHECK_PASS_INTERVAL = 16000L;
+    // default tcp check interval
+    private static final String DEFAULT_CHECK_INTERVAL = "10s";
+    // default tcp check timeout
+    private static final String DEFAULT_CHECK_TIMEOUT = "1s";
 
     private ConsulClient client;
-    private long checkPassInterval;
     private String rootPath;
-    private ScheduledExecutorService registerTimer = newSingleThreadScheduledExecutor(
-            new NamedThreadFactory("dubbo-consul-register-timer", true));
+
     private ExecutorService notifierExecutor = newCachedThreadPool(
             new NamedThreadFactory("dubbo-consul-notifier", true));
     private ConcurrentMap<URL, ConsulNotifier> notifiers = new ConcurrentHashMap<>();
@@ -83,8 +82,6 @@ public class ConsulRegistry extends FailbackRegistry {
         String host = url.getHost();
         int port = url.getPort() != 0 ? url.getPort() : DEFAULT_PORT;
         client = new ConsulClient(host, port);
-        checkPassInterval = url.getParameter(CHECK_PASS_INTERVAL, DEFAULT_CHECK_PASS_INTERVAL);
-        registerTimer.scheduleWithFixedDelay(this::checkPass, checkPassInterval / 2, checkPassInterval / 2, MILLISECONDS);
     }
 
     @Override
@@ -174,7 +171,6 @@ public class ConsulRegistry extends FailbackRegistry {
     public void destroy() {
         super.destroy();
         notifierExecutor.shutdown();
-        registerTimer.shutdown();
     }
 
     private Response<List<HealthService>> getHealthServices(String service, long index, int watchTimeout) {
@@ -217,20 +213,6 @@ public class ConsulRegistry extends FailbackRegistry {
                 .collect(Collectors.toList());
     }
 
-    private void checkPass() {
-        for (URL url : getRegistered()) {
-            String checkId = buildId(url);
-            try {
-                client.agentCheckPass("service:" + checkId);
-                if (logger.isDebugEnabled()) {
-                    logger.debug("check pass for url: " + url + " with check id: " + checkId);
-                }
-            } catch (Throwable t) {
-                logger.warn("fail to check pass for url: " + url + ", check id is: " + checkId);
-            }
-        }
-    }
-
     private NewService buildService(URL url) {
         NewService service = new NewService();
         service.setAddress(url.getHost());
@@ -250,7 +232,9 @@ public class ConsulRegistry extends FailbackRegistry {
 
     private NewService.Check buildCheck(URL url) {
         NewService.Check check = new NewService.Check();
-        check.setTtl((checkPassInterval / 1000) + "s");
+        check.setTcp(url.getAddress());
+        check.setInterval(url.getParameter(CHECK_INTERVAL, DEFAULT_CHECK_INTERVAL));
+        check.setTimeout(url.getParameter(CHECK_TIMEOUT, DEFAULT_CHECK_TIMEOUT));
         return check;
     }
 
