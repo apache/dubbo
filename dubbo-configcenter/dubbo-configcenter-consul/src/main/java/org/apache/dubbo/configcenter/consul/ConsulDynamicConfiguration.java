@@ -65,10 +65,11 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
     public String getConfig(String key, String group, long timeout) throws IllegalStateException {
         if (StringUtils.isNotEmpty(group)) {
             key = group + "/" + key;
+        } else {
+            int i = key.lastIndexOf(".");
+            key = key.substring(0, i) + "/" + key.substring(i + 1);
         }
 
-        int i = key.lastIndexOf(".");
-        key = key.substring(0, i) + "/" + key.substring(i + 1);
         return (String) getInternalProperty(rootPath + "/" + key);
     }
 
@@ -78,7 +79,7 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
         Response<GetValue> response = client.getKVValue(key, new QueryParams(DEFAULT_WATCH_TIMEOUT, currentIndex));
         GetValue value = response.getValue();
         consulIndexes.put(key, response.getConsulIndex());
-        return value != null ? value.getValue() : null;
+        return value != null ? value.getDecodedValue() : null;
     }
 
     private class ConsulKVWatcher implements Runnable {
@@ -97,7 +98,7 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
                 }
 
                 consulIndexes.put(key, index);
-                ConfigChangeEvent event = new ConfigChangeEvent(key, response.getValue().getValue());
+                ConfigChangeEvent event = new ConfigChangeEvent(key, response.getValue().getDecodedValue());
                 for (ConfigurationListener listener : listeners.get(key)) {
                     listener.process(event);
                 }
