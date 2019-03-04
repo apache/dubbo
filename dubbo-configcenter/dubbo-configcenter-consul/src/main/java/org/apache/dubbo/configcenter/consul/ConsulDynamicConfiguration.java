@@ -158,5 +158,9 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
             int index = key.lastIndexOf('.');
             return rootPath + PATH_SEPARATOR + key.substring(0, index) + PATH_SEPARATOR + key.substring(index + 1);
         }
+
+        private void stop() {
+            running = false;
+        }
     }
 }
