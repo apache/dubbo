@@ -27,7 +27,6 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
 
 import java.text.ParseException;
@@ -44,7 +43,7 @@ import java.util.regex.Pattern;
  * ConditionRouter
  *
  */
-public class ConditionRouter extends AbstractRouter implements Comparable<Router> {
+public class ConditionRouter extends AbstractRouter {
     public static final String NAME = "condition";
 
     private static final Logger logger = LoggerFactory.getLogger(ConditionRouter.class);

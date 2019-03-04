@@ -29,7 +29,6 @@ import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRouterRule;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRuleParser;
@@ -44,9 +43,9 @@ import static org.apache.dubbo.common.Constants.TAG_KEY;
 /**
  * TagRouter, "application.tag-router"
  */
-public class TagRouter extends AbstractRouter implements Comparable<Router>, ConfigurationListener {
+public class TagRouter extends AbstractRouter implements ConfigurationListener {
     public static final String NAME = "TAG_ROUTER";
-    private static final int DEFAULT_PRIORITY = 100;
+    private static final int TAG_ROUTER_DEFAULT_PRIORITY = 100;
     private static final Logger logger = LoggerFactory.getLogger(TagRouter.class);
     private static final String RULE_SUFFIX = ".tag-router";
 
@@ -55,6 +54,7 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
 
     public TagRouter(DynamicConfiguration configuration, URL url) {
         super(configuration, url);
+        this.priority = TAG_ROUTER_DEFAULT_PRIORITY;
     }
 
     @Override
@@ -170,11 +170,6 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
             result = filterInvoker(invokers, invoker -> StringUtils.isEmpty(invoker.getUrl().getParameter(Constants.TAG_KEY)));
         }
         return result;
-    }
-
-    @Override
-    public int getPriority() {
-        return DEFAULT_PRIORITY;
     }
 
     @Override
