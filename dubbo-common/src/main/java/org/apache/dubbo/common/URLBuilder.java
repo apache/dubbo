@@ -55,7 +55,7 @@ public final class URLBuilder {
         this(protocol, null, null, host, port, null, null);
     }
 
-    public URLBuilder(String protocol, String host, int port, String[] pairs) { // varargs ... conflict with the following path argument, use array instead.
+    public URLBuilder(String protocol, String host, int port, String[] pairs) {
         this(protocol, null, null, host, port, null, CollectionUtils.toStringMap(pairs));
     }
 
