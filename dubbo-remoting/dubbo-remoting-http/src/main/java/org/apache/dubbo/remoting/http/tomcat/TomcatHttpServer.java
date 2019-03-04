@@ -67,6 +67,9 @@ public class TomcatHttpServer extends AbstractHttpServer {
         context.addServletMapping("/*", "dispatcher");
         ServletManager.getInstance().addServletContext(url.getPort(), context.getServletContext());
 
+        // tell tomcat to fail on startup failures.
+        System.setProperty("org.apache.catalina.startup.EXIT_ON_INIT_FAILURE", "true");
+
         try {
             tomcat.start();
         } catch (LifecycleException e) {
