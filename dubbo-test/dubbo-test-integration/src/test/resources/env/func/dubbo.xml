@@ -1,0 +1,16 @@
+<project>
+    <properties>
+        <param file="import" value="target/test-classes/env/func/dubbo.properties"/>
+    </properties>
+    <envMode>dubbo</envMode>
+    <machine>
+        <id>dubboMachine</id>
+        <ipAddress>${ip}</ipAddress>
+        <userName>${userName}</userName>
+        <password>${password}</password>
+        <timeout>3600000</timeout>
+        <application>
+            <deployScriptPath>dubbo.sh</deployScriptPath>
+        </application>
+    </machine>
+</project>

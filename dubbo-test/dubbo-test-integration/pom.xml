@@ -27,7 +27,16 @@
     <description>The showcase test module of dubbo project</description>
     <properties>
         <skip_maven_deploy>true</skip_maven_deploy>
+        <PelicanDT.version>1.0.10</PelicanDT.version>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.alibaba.pelican</groupId>
+            <artifactId>PelicanDT</artifactId>
+            <version>${PelicanDT.version}</version>
+        </dependency>
+    </dependencies>
 
     <build>
         <resources>
