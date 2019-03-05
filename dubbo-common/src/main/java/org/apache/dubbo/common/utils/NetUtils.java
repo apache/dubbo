@@ -30,7 +30,6 @@ import java.net.MulticastSocket;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Optional;
@@ -376,6 +375,7 @@ public class NetUtils {
 
     public static boolean matchIpExpression(String pattern, String host, int port) throws UnknownHostException {
 
+        // if the pattern is subnet format, it will not be allowed to config port param in pattern.
         if (pattern.contains("/")) {
             CIDRUtils utils = new CIDRUtils(pattern);
             return utils.isInRange(host);
@@ -424,7 +424,7 @@ public class NetUtils {
         if (pattern.equals(host)) {
             return true;
         }
-        // short name conditon
+        // short name condition
         if (!ipPatternContainExpression(pattern)) {
             InetAddress patternAddress = InetAddress.getByName(pattern);
             if (patternAddress.getHostAddress().equals(host)) {

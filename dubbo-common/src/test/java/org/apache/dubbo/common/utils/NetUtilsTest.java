@@ -212,50 +212,90 @@ public class NetUtilsTest {
 
     @Test
     public void testMatchIpRangeMatchWhenIpv4() throws UnknownHostException {
-        assertTrue(NetUtils.matchIpRange("*.*.*.*", "192.168.1.63", "90"));
-        assertTrue(NetUtils.matchIpRange("192.168.1.*", "192.168.1.63", "90"));
-        assertTrue(NetUtils.matchIpRange("192.168.1.63", "192.168.1.63", "90"));
-        assertTrue(NetUtils.matchIpRange("192.168.1.1-65", "192.168.1.63", "90"));
-        assertFalse(NetUtils.matchIpRange("192.168.1.1-61", "192.168.1.63", "90"));
-        assertFalse(NetUtils.matchIpRange("192.168.1.62", "192.168.1.63", "90"));
+        assertTrue(NetUtils.matchIpRange("*.*.*.*", "192.168.1.63", 90));
+        assertTrue(NetUtils.matchIpRange("192.168.1.*", "192.168.1.63", 90));
+        assertTrue(NetUtils.matchIpRange("192.168.1.63", "192.168.1.63", 90));
+        assertTrue(NetUtils.matchIpRange("192.168.1.1-65", "192.168.1.63", 90));
+        assertFalse(NetUtils.matchIpRange("192.168.1.1-61", "192.168.1.63", 90));
+        assertFalse(NetUtils.matchIpRange("192.168.1.62", "192.168.1.63", 90));
     }
 
     @Test
     public void testMatchIpRangeMatchWhenIpv6() throws UnknownHostException {
-        assertTrue(NetUtils.matchIpRange("*.*.*.*", "192.168.1.63", "90"));
-        assertTrue(NetUtils.matchIpRange("234e:0:4567:0:0:0:3d:*", "234e:0:4567::3d:ff", "90"));
-        assertTrue(NetUtils.matchIpRange("234e:0:4567:0:0:0:3d:ee", "234e:0:4567::3d:ee", "90"));
-        assertTrue(NetUtils.matchIpRange("234e:0:4567:0:0:0:3d:0-ff", "234e:0:4567::3d:ee", "90"));
-        assertTrue(NetUtils.matchIpRange("234e:0:4567:0:0:0:3d:0-ee", "234e:0:4567::3d:ee", "90"));
+        assertTrue(NetUtils.matchIpRange("*.*.*.*", "192.168.1.63", 90));
+        assertTrue(NetUtils.matchIpRange("234e:0:4567:0:0:0:3d:*", "234e:0:4567::3d:ff", 90));
+        assertTrue(NetUtils.matchIpRange("234e:0:4567:0:0:0:3d:ee", "234e:0:4567::3d:ee", 90));
+        assertTrue(NetUtils.matchIpRange("234e:0:4567::3d:ee", "234e:0:4567::3d:ee", 90));
+        assertTrue(NetUtils.matchIpRange("234e:0:4567:0:0:0:3d:0-ff", "234e:0:4567::3d:ee", 90));
+        assertTrue(NetUtils.matchIpRange("234e:0:4567:0:0:0:3d:0-ee", "234e:0:4567::3d:ee", 90));
 
-        assertFalse(NetUtils.matchIpRange("234e:0:4567:0:0:0:3d:ff", "234e:0:4567::3d:ee", "90"));
-        assertFalse(NetUtils.matchIpRange("234e:0:4567:0:0:0:3d:0-ea", "234e:0:4567::3d:ee", "90"));
+        assertFalse(NetUtils.matchIpRange("234e:0:4567:0:0:0:3d:ff", "234e:0:4567::3d:ee", 90));
+        assertFalse(NetUtils.matchIpRange("234e:0:4567:0:0:0:3d:0-ea", "234e:0:4567::3d:ee", 90));
     }
 
     @Test
     public void testMatchIpRangeMatchWhenIpv6Exception() throws UnknownHostException {
         IllegalArgumentException thrown =
                 assertThrows(IllegalArgumentException.class, () ->
-                        NetUtils.matchIpRange("234e:0:4567::3d:*", "234e:0:4567::3d:ff", "90"));
+                        NetUtils.matchIpRange("234e:0:4567::3d:*", "234e:0:4567::3d:ff", 90));
         assertTrue(thrown.getMessage().contains("If you config ip expression that contains '*'"));
+
+        thrown = assertThrows(IllegalArgumentException.class, () ->
+                        NetUtils.matchIpRange("234e:0:4567:3d", "234e:0:4567::3d:ff", 90));
+        assertTrue(thrown.getMessage().contains("The host is ipv6, but the pattern is not ipv6 pattern"));
 
         thrown =
                 assertThrows(IllegalArgumentException.class, () ->
-                        NetUtils.matchIpRange("192.168.1.1-65-3", "192.168.1.63", "90"));
-        assertTrue(thrown.getMessage().contains("There are wrong format of ip Address"));
+                        NetUtils.matchIpRange("192.168.1.1-65-3", "192.168.1.63", 90));
+        assertTrue(thrown.getMessage().contains("There is wrong format of ip Address"));
     }
 
     @Test
     public void testMatchIpRangeMatchWhenIpWrongException() throws UnknownHostException {
         UnknownHostException thrown =
                 assertThrows(UnknownHostException.class, () ->
-                        NetUtils.matchIpRange("192.168.1.63", "192.168.1.ff", "90"));
+                        NetUtils.matchIpRange("192.168.1.63", "192.168.1.ff", 90));
         assertTrue(thrown.getMessage().contains("192.168.1.ff"));
     }
 
     @Test
     public void testMatchIpMatch() throws UnknownHostException {
-        assertTrue(NetUtils.matchIpExpression("192.168.1.*", "192.168.1.63", "90"));
-        assertTrue(NetUtils.matchIpExpression("192.168.1.192/26", "192.168.1.199", "90"));
+        assertTrue(NetUtils.matchIpExpression("192.168.1.*", "192.168.1.63", 90));
+        assertTrue(NetUtils.matchIpExpression("192.168.1.192/26", "192.168.1.199", 90));
+    }
+
+    @Test
+    public void testMatchIpv6WithIpPort() throws UnknownHostException {
+        assertTrue(NetUtils.matchIpRange("[234e:0:4567::3d:ee]", "234e:0:4567::3d:ee", 8090));
+        assertTrue(NetUtils.matchIpRange("[234e:0:4567:0:0:0:3d:ee]", "234e:0:4567::3d:ee", 8090));
+        assertTrue(NetUtils.matchIpRange("[234e:0:4567:0:0:0:3d:ee]:8090", "234e:0:4567::3d:ee", 8090));
+        assertTrue(NetUtils.matchIpRange("[234e:0:4567:0:0:0:3d:0-ee]:8090", "234e:0:4567::3d:ee", 8090));
+        assertTrue(NetUtils.matchIpRange("[234e:0:4567:0:0:0:3d:ee-ff]:8090", "234e:0:4567::3d:ee", 8090));
+        assertTrue(NetUtils.matchIpRange("[234e:0:4567:0:0:0:3d:*]:90", "234e:0:4567::3d:ff", 90));
+
+        assertFalse(NetUtils.matchIpRange("[234e:0:4567:0:0:0:3d:ee]:7289", "234e:0:4567::3d:ee", 8090));
+        assertFalse(NetUtils.matchIpRange("[234e:0:4567:0:0:0:3d:ee-ff]:8090", "234e:0:4567::3d:ee", 9090));
+    }
+
+    @Test
+    public void testMatchIpv4WithIpPort() throws UnknownHostException {
+        NumberFormatException thrown =
+                assertThrows(NumberFormatException.class, () ->NetUtils.matchIpExpression("192.168.1.192/26:90", "192.168.1.199", 90));
+        assertTrue(thrown instanceof NumberFormatException);
+
+        assertTrue(NetUtils.matchIpRange("*.*.*.*:90", "192.168.1.63", 90));
+        assertTrue(NetUtils.matchIpRange("192.168.1.*:90", "192.168.1.63", 90));
+        assertTrue(NetUtils.matchIpRange("192.168.1.63:90", "192.168.1.63", 90));
+        assertTrue(NetUtils.matchIpRange("192.168.1.63-65:90", "192.168.1.63", 90));
+        assertTrue(NetUtils.matchIpRange("192.168.1.1-63:90", "192.168.1.63", 90));
+
+        assertFalse(NetUtils.matchIpRange("*.*.*.*:80", "192.168.1.63", 90));
+        assertFalse(NetUtils.matchIpRange("192.168.1.*:80", "192.168.1.63", 90));
+        assertFalse(NetUtils.matchIpRange("192.168.1.63:80", "192.168.1.63", 90));
+        assertFalse(NetUtils.matchIpRange("192.168.1.63-65:80", "192.168.1.63", 90));
+        assertFalse(NetUtils.matchIpRange("192.168.1.1-63:80", "192.168.1.63", 90));
+
+        assertFalse(NetUtils.matchIpRange("192.168.1.1-61:90", "192.168.1.62", 90));
+        assertFalse(NetUtils.matchIpRange("192.168.1.62:90", "192.168.1.63", 90));
     }
 }
