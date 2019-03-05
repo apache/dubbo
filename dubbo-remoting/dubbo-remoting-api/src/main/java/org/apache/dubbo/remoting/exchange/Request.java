@@ -41,11 +41,6 @@ public class Request {
 
     private boolean mBroken = false;
 
-    /**
-     * whether this request is a failover request.
-     */
-    private boolean failover = false;
-
     private Object mData;
 
     public Request() {
@@ -132,14 +127,6 @@ public class Request {
         if (isHeartbeat) {
             setEvent(HEARTBEAT_EVENT);
         }
-    }
-
-    public boolean isFailover() {
-        return failover;
-    }
-
-    public void setFailover(boolean failover) {
-        this.failover = failover;
     }
 
     @Override
