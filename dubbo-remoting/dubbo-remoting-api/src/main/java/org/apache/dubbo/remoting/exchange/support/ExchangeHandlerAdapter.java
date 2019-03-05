@@ -16,17 +16,30 @@
  */
 package org.apache.dubbo.remoting.exchange.support;
 
+import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.telnet.support.TelnetHandlerAdapter;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * ExchangeHandlerAdapter
  */
 public abstract class ExchangeHandlerAdapter extends TelnetHandlerAdapter implements ExchangeHandler {
+
+    // FIXME shell we make this pool config-able and is this place suitable?
+    protected final Executor failoverExecutor = new ThreadPoolExecutor(20,
+            40,
+            10,
+            TimeUnit.MINUTES,
+            new LinkedBlockingQueue<>(),
+            new NamedInternalThreadFactory("failoverExecutor", true));
 
     @Override
     public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) throws RemotingException {

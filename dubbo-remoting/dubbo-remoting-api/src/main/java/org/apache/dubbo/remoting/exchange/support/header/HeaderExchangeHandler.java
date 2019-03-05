@@ -96,6 +96,10 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
             channel.send(res);
             return;
         }
+        reply(channel, req, res);
+    }
+
+    private void reply(final ExchangeChannel channel, Request req, Response res) throws RemotingException {
         // find handler by message class.
         Object msg = req.getData();
         try {

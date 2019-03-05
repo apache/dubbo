@@ -90,15 +90,47 @@ public class DubboProtocol extends AbstractProtocol {
 
         @Override
         public CompletableFuture<Object> reply(ExchangeChannel channel, Object message) throws RemotingException {
-
             if (!(message instanceof Invocation)) {
                 throw new RemotingException(channel, "Unsupported request: "
                         + (message == null ? null : (message.getClass().getName() + ": " + message))
                         + ", channel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress());
             }
 
-            Invocation inv = (Invocation) message;
-            Invoker<?> invoker = getInvoker(channel, inv);
+            final Invocation inv = (Invocation) message;
+            final Invoker<?> invoker = getInvoker(channel, inv);
+            if (isFailoverInvoke(inv)) {
+                // We execute these failover requests in the failover thread pool, as they may be wrong or timed out.
+                //
+                // Failure to do so may result in the business thread pool being quickly filled.
+                failoverExecutor.execute(() -> doService(channel, invoker, inv));
+            }
+            return doService(channel, invoker, inv);
+        }
+
+        /**
+         * whether this invoke is a failover invoke
+         *
+         * @param inv invocation of this invoke
+         * @return true if this invocation has {@see Constants.FAILOVER_REQUEST} and {@see Constants.FAILOVER_REQUEST} is true
+         */
+        private boolean isFailoverInvoke(Invocation inv) {
+            Map<String, String> attachments = inv.getAttachments();
+            if (attachments == null) {
+                return false;
+            }
+            String failover = attachments.remove(Constants.FAILOVER_REQUEST);
+            return failover != null && Boolean.valueOf(failover);
+        }
+
+        /**
+         * invoke service impl
+         *
+         * @param channel channel
+         * @param invoker selected invoker
+         * @param inv invocation for this invoke
+         * @return future result
+         */
+        private CompletableFuture<Object> doService(ExchangeChannel channel, Invoker<?> invoker, Invocation inv) {
             // need to consider backward-compatibility if it's a callback
             if (Boolean.TRUE.toString().equals(inv.getAttachments().get(IS_CALLBACK_SERVICE_INVOKE))) {
                 String methodsStr = invoker.getUrl().getParameters().get("methods");
@@ -127,7 +159,7 @@ public class DubboProtocol extends AbstractProtocol {
             Result result = invoker.invoke(inv);
 
             if (result instanceof AsyncRpcResult) {
-                return ((AsyncRpcResult) result).getResultFuture().thenApply(r -> (Object) r);
+                return ((AsyncRpcResult) result).getResultFuture().thenApply(r -> r);
 
             } else {
                 return CompletableFuture.completedFuture(result);
@@ -269,8 +301,8 @@ public class DubboProtocol extends AbstractProtocol {
         exporterMap.put(key, exporter);
 
         //export an stub service for dispatching event
-        Boolean isStubSupportEvent = url.getParameter(Constants.STUB_EVENT_KEY, Constants.DEFAULT_STUB_EVENT);
-        Boolean isCallbackservice = url.getParameter(Constants.IS_CALLBACK_SERVICE, false);
+        boolean isStubSupportEvent = url.getParameter(Constants.STUB_EVENT_KEY, Constants.DEFAULT_STUB_EVENT);
+        boolean isCallbackservice = url.getParameter(Constants.IS_CALLBACK_SERVICE, false);
         if (isStubSupportEvent && !isCallbackservice) {
             String stubServiceMethods = url.getParameter(Constants.STUB_EVENT_METHODS_KEY);
             if (stubServiceMethods == null || stubServiceMethods.length() == 0) {

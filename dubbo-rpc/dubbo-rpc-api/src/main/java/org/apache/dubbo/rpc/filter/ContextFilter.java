@@ -52,6 +52,7 @@ public class ContextFilter implements Filter {
             attachments.remove(Constants.TIMEOUT_KEY);
             // Remove async property to avoid being passed to the following invoke chain.
             attachments.remove(Constants.ASYNC_KEY);
+            attachments.remove(Constants.FAILOVER_REQUEST);
             attachments.remove(Constants.TAG_KEY);
             attachments.remove(Constants.FORCE_USE_TAG);
         }

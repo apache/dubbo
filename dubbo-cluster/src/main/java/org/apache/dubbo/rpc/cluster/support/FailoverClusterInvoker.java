@@ -33,6 +33,7 @@ import org.apache.dubbo.rpc.support.RpcUtils;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -40,7 +41,6 @@ import java.util.Set;
  * Note that retry causes latency.
  * <p>
  * <a href="http://en.wikipedia.org/wiki/Failover">Failover</a>
- *
  */
 public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
@@ -95,6 +95,13 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
                     throw e;
                 }
                 le = e;
+                if (e.getCode() == RpcException.TIMEOUT_EXCEPTION) {
+                    // FIXME Shell we set this request as a failover request in any exception situation?
+                    Map<String, String> attachments = invocation.getAttachments();
+                    if (attachments != null) {
+                        attachments.put(Constants.FAILOVER_REQUEST, "true");
+                    }
+                }
             } catch (Throwable e) {
                 le = new RpcException(e.getMessage(), e);
             } finally {
