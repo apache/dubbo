@@ -16,12 +16,14 @@
  */
 package org.apache.dubbo.rpc;
 
+import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.lang.reflect.Field;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
+import java.util.function.BiFunction;
 
 /**
  * RPC Result.
@@ -36,11 +38,11 @@ public class RpcResult extends AbstractResult {
     }
 
     public RpcResult(Object result) {
-        this.result = result;
+        this.setValue(result);
     }
 
     public RpcResult(Throwable exception) {
-        this.exception = exception;
+        this.setException(exception);
     }
 
     @Override
@@ -112,7 +114,6 @@ public class RpcResult extends AbstractResult {
 
     @Override
     public boolean hasException() {
-        // TODO use this.isCompletedExceptionally()?
         return exception != null;
     }
 
@@ -120,4 +121,37 @@ public class RpcResult extends AbstractResult {
     public String toString() {
         return "RpcResult [result=" + result + ", exception=" + exception + "]";
     }
+
+    public final BiFunction<Object, Throwable, Response.AppResult> rpcResultToAppResult = (obj, t) -> {
+        Response.AppResult appResult = new Response.AppResult();
+        if (t != null) {
+            appResult.setException(t);
+        } else {
+            if (this.hasException()) {
+                appResult.setException(this.getException());
+            } else {
+                appResult.setResult(obj);
+            }
+        }
+        appResult.setAttachments(this.getAttachments());
+        return appResult;
+    };
+
+    public final BiFunction<Object, Throwable, Result> appResultToRpcResult = (obj, t) -> {
+        if (t != null) {
+            this.setException(t);
+
+        } else {
+            Response.AppResult appResult = (Response.AppResult) obj;
+            if (appResult.getException() != null) {
+                this.setException(appResult.getException());
+            } else {
+                this.setValue(appResult.getResult());
+            }
+            this.setAttachments(appResult.getAttachments());
+        }
+        return this;
+    };
+
+
 }

@@ -23,7 +23,6 @@ import org.apache.dubbo.common.utils.AtomicPositiveInteger;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
-import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -89,11 +88,8 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
             } else {
                 RpcResult result = new RpcResult();
                 CompletableFuture<Object> appResultFuture = currentClient.request(inv, timeout);
-                appResultFuture.whenComplete((obj, t) -> {
-                    Response.AppResult appResult = (Response.AppResult) obj;
-                    result.setAttachments(appResult.getAttachments());
-                    result.set
-                });
+                CompletableFuture<Result> resultFuture = appResultFuture.handle(result.appResultToRpcResult);
+                RpcContext.getContext().setFuture(new FutureAdapter());
                 return result;
             }
         } catch (TimeoutException e) {

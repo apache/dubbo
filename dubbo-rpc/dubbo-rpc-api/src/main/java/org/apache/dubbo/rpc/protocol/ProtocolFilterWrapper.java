@@ -71,9 +71,14 @@ public class ProtocolFilterWrapper implements Protocol {
                     @Override
                     public Result invoke(Invocation invocation) throws RpcException {
                         Result result = filter.invoke(next, invocation);
+
                         RpcResult newResult = new RpcResult();
                         result.whenComplete((obj, t) -> {
-                            filter.onResponse(result, invoker, invocation);
+                            try {
+                                filter.onResponse(result, invoker, invocation);
+                            } catch (Exception e) {
+
+                            }
                             newResult.setValue(obj);
                             newResult.setException(t);
                             newResult.setAttachments(result.getAttachments());
