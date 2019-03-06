@@ -58,6 +58,7 @@ public class ConsulRegistry extends FailbackRegistry {
     private static final String WATCH_TIMEOUT = "consul-watch-timeout";
     private static final String CHECK_INTERVAL = "consul-check-interval";
     private static final String CHECK_TIMEOUT = "consul-check-timeout";
+    private static final String DEREGISTER_AFTER = "consul-deregister-critical-service-after";
 
     private static final int DEFAULT_PORT = 8500;
     // default watch timeout in millisecond
@@ -66,6 +67,8 @@ public class ConsulRegistry extends FailbackRegistry {
     private static final String DEFAULT_CHECK_INTERVAL = "10s";
     // default tcp check timeout
     private static final String DEFAULT_CHECK_TIMEOUT = "1s";
+    // default deregister critical server after
+    private static final String DEFAULT_DEREGISTER_TIME = "20s";
 
     private ConsulClient client;
     private String rootPath;
@@ -237,6 +240,7 @@ public class ConsulRegistry extends FailbackRegistry {
         check.setTcp(url.getAddress());
         check.setInterval(url.getParameter(CHECK_INTERVAL, DEFAULT_CHECK_INTERVAL));
         check.setTimeout(url.getParameter(CHECK_TIMEOUT, DEFAULT_CHECK_TIMEOUT));
+        check.setDeregisterCriticalServiceAfter(url.getParameter(DEREGISTER_AFTER, DEFAULT_DEREGISTER_TIME));
         return check;
     }
 
