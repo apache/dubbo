@@ -296,10 +296,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                     Map<String, String> map = new HashMap<String, String>();
                     appendParameters(map, application);
                     appendParameters(map, config);
-                    map.put("path", RegistryService.class.getName());
+                    map.put(Constants.PATH_KEY, RegistryService.class.getName());
                     appendRuntimeParameters(map);
-                    if (!map.containsKey("protocol")) {
-                        map.put("protocol", "dubbo");
+                    if (!map.containsKey(Constants.PROTOCOL_KEY)) {
+                        map.put(Constants.PROTOCOL_KEY, Constants.DUBBO_PROTOCOL);
                     }
                     List<URL> urls = UrlUtils.parseURLs(address, map);
 
