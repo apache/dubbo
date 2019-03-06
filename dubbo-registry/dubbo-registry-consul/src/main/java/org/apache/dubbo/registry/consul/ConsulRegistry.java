@@ -45,8 +45,6 @@ import java.util.stream.Collectors;
 import static java.util.concurrent.Executors.newCachedThreadPool;
 import static org.apache.dubbo.common.Constants.ANY_VALUE;
 import static org.apache.dubbo.common.Constants.CONFIG_NAMESPACE_KEY;
-import static org.apache.dubbo.common.Constants.CONSUMERS_CATEGORY;
-import static org.apache.dubbo.common.Constants.PATH_SEPARATOR;
 import static org.apache.dubbo.configcenter.DynamicConfiguration.DEFAULT_GROUP;
 
 /**
@@ -87,7 +85,6 @@ public class ConsulRegistry extends FailbackRegistry {
     @Override
     public void register(URL url) {
         if (isConsumerSide(url)) {
-            client.setKVValue(buildKVPathForConsumer(url), url.toFullString());
             return;
         }
 
@@ -147,10 +144,6 @@ public class ConsulRegistry extends FailbackRegistry {
     public void unsubscribe(URL url, NotifyListener listener) {
         if (isProviderSide(url)) {
             return;
-        }
-
-        if (isConsumerSide(url)) {
-            client.deleteKVValue(buildKVPathForConsumer(url));
         }
 
         super.unsubscribe(url, listener);
@@ -236,11 +229,6 @@ public class ConsulRegistry extends FailbackRegistry {
         check.setInterval(url.getParameter(CHECK_INTERVAL, DEFAULT_CHECK_INTERVAL));
         check.setTimeout(url.getParameter(CHECK_TIMEOUT, DEFAULT_CHECK_TIMEOUT));
         return check;
-    }
-
-    private String buildKVPathForConsumer(URL url) {
-        return rootPath + PATH_SEPARATOR + url.getServiceKey() + PATH_SEPARATOR + CONSUMERS_CATEGORY +
-                PATH_SEPARATOR + url.getIp();
     }
 
     private int buildWatchTimeout(URL url) {
