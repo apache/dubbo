@@ -20,7 +20,16 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.zookeeper.ChildListener;
 
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.api.CuratorWatcher;
+import org.apache.curator.framework.recipes.cache.PathChildrenCache;
+import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
+import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
+import org.apache.curator.framework.recipes.cache.TreeCache;
+import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
+import org.apache.curator.framework.recipes.cache.TreeCacheListener;
+import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.test.TestingServer;
 import org.apache.zookeeper.WatchedEvent;
 import org.junit.jupiter.api.AfterEach;
@@ -31,6 +40,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -41,6 +51,7 @@ import static org.mockito.Mockito.mock;
 public class CuratorZookeeperClientTest {
     private TestingServer zkServer;
     private CuratorZookeeperClient curatorClient;
+    CuratorFramework client = null;
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -48,6 +59,8 @@ public class CuratorZookeeperClientTest {
         zkServer = new TestingServer(zkServerPort, true);
         curatorClient = new CuratorZookeeperClient(URL.valueOf("zookeeper://127.0.0.1:" +
                 zkServerPort + "/org.apache.dubbo.registry.RegistryService"));
+        client = CuratorFrameworkFactory.newClient(zkServer.getConnectString(), new ExponentialBackoffRetry(1000, 3));
+        client.start();
     }
 
     @Test
@@ -152,5 +165,37 @@ public class CuratorZookeeperClientTest {
     public void tearDown() throws Exception {
         curatorClient.close();
         zkServer.stop();
+    }
+
+    @Test
+    public void testAddDataListener() throws Exception {
+        String listenerPath = "/dubbo/service.name/configuration";
+        String path = listenerPath + "/dat/data";
+        String value = "vav";
+
+//        curatorClient.create(path, true);
+        curatorClient.create(path + "/d.json", value, true);
+        String valueFromCache = curatorClient.getContent(path + "/d.json");
+        Assertions.assertEquals(value, valueFromCache);
+        final AtomicInteger atomicInteger = new AtomicInteger(0);
+        curatorClient.addTargetDataListener(listenerPath, new TreeCacheListener() {
+            @Override
+            public void childEvent(CuratorFramework client, TreeCacheEvent event) throws Exception {
+                System.out.println("===" + event);
+                atomicInteger.incrementAndGet();
+            }
+        });
+
+        //curatorClient.delete(path + "/d.json");
+        valueFromCache = curatorClient.getContent(path + "/d.json");
+        Assertions.assertNotNull(valueFromCache);
+        curatorClient.client.setData().forPath(path + "/d.json", "sdsdf".getBytes());
+        curatorClient.client.setData().forPath(path + "/d.json", "dfsasf".getBytes());
+        curatorClient.delete(path + "/d.json");
+        curatorClient.delete(path);
+        valueFromCache = curatorClient.getContent(path + "/d.json");
+        Assertions.assertNull(valueFromCache);
+        Thread.sleep(2000l);
+        Assertions.assertTrue(8l >= atomicInteger.get());
     }
 }

@@ -16,16 +16,6 @@
  */
 package org.apache.dubbo.remoting.zookeeper.curator;
 
-import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.framework.api.CuratorWatcher;
-import org.apache.curator.framework.recipes.cache.PathChildrenCache;
-import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
-import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
-import org.apache.curator.framework.state.ConnectionState;
-import org.apache.curator.framework.state.ConnectionStateListener;
-import org.apache.curator.retry.RetryNTimes;
-
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -35,6 +25,15 @@ import org.apache.dubbo.remoting.zookeeper.EventType;
 import org.apache.dubbo.remoting.zookeeper.StateListener;
 import org.apache.dubbo.remoting.zookeeper.support.AbstractZookeeperClient;
 
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.api.CuratorWatcher;
+import org.apache.curator.framework.recipes.cache.TreeCache;
+import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
+import org.apache.curator.framework.recipes.cache.TreeCacheListener;
+import org.apache.curator.framework.state.ConnectionState;
+import org.apache.curator.framework.state.ConnectionStateListener;
+import org.apache.curator.retry.RetryNTimes;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException.NoNodeException;
 import org.apache.zookeeper.KeeperException.NodeExistsException;
@@ -44,10 +43,10 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 
-public class CuratorZookeeperClient extends AbstractZookeeperClient<PathChildrenCacheListener, CuratorWatcher> {
+public class CuratorZookeeperClient extends AbstractZookeeperClient<TreeCacheListener, CuratorWatcher> {
 
     static final Charset charset = Charset.forName("UTF-8");
-    private final CuratorFramework client;
+    final CuratorFramework client;
 
 
     public CuratorZookeeperClient(URL url) {
@@ -103,10 +102,15 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<PathChildren
 
     @Override
     protected void createPersistent(String path, String data) {
+        byte[] dataBytes = data.getBytes(charset);
         try {
-            byte[] dataBytes = data.getBytes(charset);
             client.create().forPath(path, dataBytes);
         } catch (NodeExistsException e) {
+            try {
+                client.setData().forPath(path, dataBytes);
+            } catch (Exception e1) {
+                throw new IllegalStateException(e.getMessage(), e1);
+            }
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -114,10 +118,15 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<PathChildren
 
     @Override
     protected void createEphemeral(String path, String data) {
+        byte[] dataBytes = data.getBytes(charset);
         try {
-            byte[] dataBytes = data.getBytes(charset);
             client.create().withMode(CreateMode.EPHEMERAL).forPath(path, dataBytes);
         } catch (NodeExistsException e) {
+            try {
+                client.setData().forPath(path, dataBytes);
+            } catch (Exception e1) {
+                throw new IllegalStateException(e.getMessage(), e1);
+            }
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -195,15 +204,16 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<PathChildren
     }
 
     @Override
-    protected PathChildrenCacheListener createTargetDataListener(String path, DataListener listener) {
+    protected TreeCacheListener createTargetDataListener(String path, DataListener listener) {
         return new CuratorWatcherImpl(client, listener);
     }
 
     @Override
-    protected void addTargetDataListener(String path, PathChildrenCacheListener pathChildrenCacheListener) {
+    protected void addTargetDataListener(String path, TreeCacheListener treeCacheListener) {
         try {
-            PathChildrenCache pathcache = new PathChildrenCache(client, "/some/path", true);
-            pathcache.getListenable().addListener(pathChildrenCacheListener);
+            TreeCache treeCache = new TreeCache(client, path);
+            treeCache.start();
+            treeCache.getListenable().addListener(treeCacheListener);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -214,7 +224,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<PathChildren
         ((CuratorWatcherImpl) listener).unwatch();
     }
 
-    static class CuratorWatcherImpl implements CuratorWatcher, PathChildrenCacheListener {
+    static class CuratorWatcherImpl implements CuratorWatcher, TreeCacheListener {
 
         private CuratorFramework client;
         private volatile ChildListener childListener;
@@ -249,18 +259,18 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<PathChildren
         }
 
         @Override
-        public void childEvent(CuratorFramework client, PathChildrenCacheEvent event) throws Exception {
+        public void childEvent(CuratorFramework client, TreeCacheEvent event) throws Exception {
             if (dataListener != null) {
-                PathChildrenCacheEvent.Type type = event.getType();
+                TreeCacheEvent.Type type = event.getType();
                 EventType eventType = null;
                 switch (type) {
-                    case CHILD_ADDED:
+                    case NODE_ADDED:
                         eventType = EventType.NodeCreated;
                         break;
-                    case CHILD_UPDATED:
+                    case NODE_UPDATED:
                         eventType = EventType.NodeDataChanged;
                         break;
-                    case CHILD_REMOVED:
+                    case NODE_REMOVED:
                         eventType = EventType.NodeDeleted;
                         break;
                 }
