@@ -44,8 +44,6 @@ import java.util.stream.Collectors;
 
 import static java.util.concurrent.Executors.newCachedThreadPool;
 import static org.apache.dubbo.common.Constants.ANY_VALUE;
-import static org.apache.dubbo.common.Constants.CONFIG_NAMESPACE_KEY;
-import static org.apache.dubbo.configcenter.DynamicConfiguration.DEFAULT_GROUP;
 
 /**
  * registry center implementation for consul
@@ -71,7 +69,6 @@ public class ConsulRegistry extends FailbackRegistry {
     private static final String DEFAULT_DEREGISTER_TIME = "20s";
 
     private ConsulClient client;
-    private String rootPath;
 
     private ExecutorService notifierExecutor = newCachedThreadPool(
             new NamedThreadFactory("dubbo-consul-notifier", true));
@@ -79,7 +76,6 @@ public class ConsulRegistry extends FailbackRegistry {
 
     public ConsulRegistry(URL url) {
         super(url);
-        this.rootPath = url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP);
         String host = url.getHost();
         int port = url.getPort() != 0 ? url.getPort() : DEFAULT_PORT;
         client = new ConsulClient(host, port);
