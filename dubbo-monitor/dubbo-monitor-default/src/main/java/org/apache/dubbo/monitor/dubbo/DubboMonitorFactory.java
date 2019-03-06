@@ -26,6 +26,7 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 
 import static org.apache.dubbo.common.Constants.CHECK_KEY;
+import static org.apache.dubbo.common.Constants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.Constants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.Constants.REFERENCE_FILTER_KEY;
 
@@ -48,7 +49,7 @@ public class DubboMonitorFactory extends AbstractMonitorFactory {
 
     @Override
     protected Monitor createMonitor(URL url) {
-        url = url.setProtocol(url.getParameter(PROTOCOL_KEY, "dubbo"));
+        url = url.setProtocol(url.getParameter(PROTOCOL_KEY, DUBBO_PROTOCOL));
         if (StringUtils.isEmpty(url.getPath())) {
             url = url.setPath(MonitorService.class.getName());
         }

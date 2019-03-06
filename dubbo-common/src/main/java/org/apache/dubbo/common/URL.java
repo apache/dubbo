@@ -1122,22 +1122,22 @@ class URL implements Serializable {
     }
 
     public String getRawParameter(String key) {
-        if ("protocol".equals(key)) {
+        if (Constants.PROTOCOL_KEY.equals(key)) {
             return protocol;
         }
-        if ("username".equals(key)) {
+        if (Constants.USERNAME_KEY.equals(key)) {
             return username;
         }
-        if ("password".equals(key)) {
+        if (Constants.PASSWORD_KEY.equals(key)) {
             return password;
         }
-        if ("host".equals(key)) {
+        if (Constants.HOST_KEY.equals(key)) {
             return host;
         }
-        if ("port".equals(key)) {
+        if (Constants.PORT_KEY.equals(key)) {
             return String.valueOf(port);
         }
-        if ("path".equals(key)) {
+        if (Constants.PATH_KEY.equals(key)) {
             return path;
         }
         return getParameter(key);
@@ -1146,22 +1146,22 @@ class URL implements Serializable {
     public Map<String, String> toMap() {
         Map<String, String> map = new HashMap<String, String>(parameters);
         if (protocol != null) {
-            map.put("protocol", protocol);
+            map.put(Constants.PROTOCOL_KEY, protocol);
         }
         if (username != null) {
-            map.put("username", username);
+            map.put(Constants.USERNAME_KEY, username);
         }
         if (password != null) {
-            map.put("password", password);
+            map.put(Constants.USERNAME_KEY, password);
         }
         if (host != null) {
-            map.put("host", host);
+            map.put(Constants.HOST_KEY, host);
         }
         if (port > 0) {
-            map.put("port", String.valueOf(port));
+            map.put(Constants.PORT_KEY, String.valueOf(port));
         }
         if (path != null) {
-            map.put("path", path);
+            map.put(Constants.PATH_KEY, path);
         }
         return map;
     }
