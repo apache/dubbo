@@ -310,7 +310,7 @@ public class ConfigManager {
     }
 
     private void checkDuplicate(AbstractConfig oldOne, AbstractConfig newOne) {
-        if (oldOne != null && !oldOne.equals(newOne)) {
+        if (oldOne != null && oldOne.equals(newOne)) {
             String configName = oldOne.getClass().getSimpleName();
             throw new IllegalStateException("Duplicate Config found for " + configName + ", you should use only one unique " + configName + " for one application.");
         }
