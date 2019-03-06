@@ -211,7 +211,7 @@ public class ConsulRegistry extends FailbackRegistry {
         service.setAddress(url.getHost());
         service.setPort(url.getPort());
         service.setId(buildId(url));
-        service.setName(url.getServiceKey());
+        service.setName(url.getServiceInterface());
         service.setCheck(buildCheck(url));
         service.setTags(Collections.singletonList(SERVICE_TAG));
         service.setMeta(Collections.singletonMap(URL_META_KEY, url.toFullString()));
