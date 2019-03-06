@@ -21,9 +21,9 @@ import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
-import org.apache.dubbo.remoting.exchange.ResponseFuture;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.CompletableFuture;
 
 public class MockChannel implements ExchangeChannel {
 
@@ -76,7 +76,7 @@ public class MockChannel implements ExchangeChannel {
         return null;
     }
 
-    public ResponseFuture send(Object request, int timeout) throws RemotingException {
+    public CompletableFuture<Object> send(Object request, int timeout) throws RemotingException {
         return null;
     }
 
@@ -85,11 +85,11 @@ public class MockChannel implements ExchangeChannel {
         return null;
     }
 
-    public ResponseFuture request(Object request) throws RemotingException {
+    public CompletableFuture<Object> request(Object request) throws RemotingException {
         return null;
     }
 
-    public ResponseFuture request(Object request, int timeout) throws RemotingException {
+    public CompletableFuture<Object> request(Object request, int timeout) throws RemotingException {
         return null;
     }
 

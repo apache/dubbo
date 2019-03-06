@@ -18,12 +18,16 @@ package org.apache.dubbo.rpc.protocol;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -45,10 +49,30 @@ public class AsyncToSyncInvoker<T> implements Invoker<T> {
 
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
-        Result result = invoker.invoke(invocation);
-        if (!RpcUtils.isAsync(getUrl(), invocation)) {
+        AsyncRpcResult asyncResult = (AsyncRpcResult)invoker.invoke(invocation);
+        if (RpcUtils.isReturnTypeFuture(invocation)) {
+            CompletableFuture<Object> future = new CompletableFuture<>();
+            Result rpcResult = new RpcResult(future);
+            asyncResult.whenComplete((result, t) -> {
+                if (t != null) {
+                    if (t instanceof CompletionException) {
+                        t = t.getCause();
+                    }
+                    future.completeExceptionally(t);
+                } else {
+                    if (result.hasException()) {
+                        future.completeExceptionally(result.getException());
+                    } else {
+                        future.complete(result.getValue());
+                    }
+                }
+            });
+            return rpcResult;
+        } else if (RpcUtils.isAsync(invoker.getUrl(), invocation)) {
+            return new RpcResult();
+        } else {
             try {
-                result.get();
+                return asyncResult.get();
             } catch (InterruptedException e) {
                 throw new RpcException("Interrupted unexpectedly while waiting for remoting result to return!  method: " + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
             } catch (ExecutionException e) {
@@ -60,7 +84,7 @@ public class AsyncToSyncInvoker<T> implements Invoker<T> {
                 }
             }
         }
-        return result;
+        return new RpcResult();
     }
 
     @Override

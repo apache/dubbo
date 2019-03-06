@@ -23,12 +23,13 @@ import org.apache.dubbo.remoting.Codec;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
-import org.apache.dubbo.remoting.exchange.ResponseCallback;
-import org.apache.dubbo.remoting.exchange.ResponseFuture;
 import org.apache.dubbo.remoting.exchange.support.Replier;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 /**
  * MockedClient
@@ -79,26 +80,23 @@ public class MockedClient implements ExchangeClient {
         this.sent = msg;
     }
 
-    public ResponseFuture request(Object msg) throws RemotingException {
+    public CompletableFuture<Object> request(Object msg) throws RemotingException {
         return request(msg, 0);
     }
 
-    public ResponseFuture request(Object msg, int timeout) throws RemotingException {
+    public CompletableFuture<Object> request(Object msg, int timeout) throws RemotingException {
         this.invoked = msg;
-        return new ResponseFuture() {
-            public Object get() throws RemotingException {
+        return new CompletableFuture<Object>() {
+            public Object get()  throws InterruptedException, ExecutionException {
                 return received;
             }
 
-            public Object get(int timeoutInMillis) throws RemotingException {
+            public Object get(int timeoutInMillis) throws InterruptedException, ExecutionException, TimeoutException {
                 return received;
             }
 
             public boolean isDone() {
                 return true;
-            }
-
-            public void setCallback(ResponseCallback callback) {
             }
         };
     }

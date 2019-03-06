@@ -184,7 +184,8 @@ public class RpcUtils {
     }
 
     public static boolean isReturnTypeFuture(Invocation inv) {
-        return Boolean.TRUE.toString().equals(inv.getAttachment(Constants.FUTURE_RETURNTYPE_KEY));
+        Class<?> clazz = getReturnType(inv);
+        return clazz != null && CompletableFuture.class.isAssignableFrom(clazz);
     }
 
     public static boolean hasFutureReturnType(Method method) {

@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
@@ -26,7 +27,6 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcResult;
 
 import java.util.List;
 
@@ -70,20 +70,8 @@ public class ProtocolFilterWrapper implements Protocol {
 
                     @Override
                     public Result invoke(Invocation invocation) throws RpcException {
-                        Result result = filter.invoke(next, invocation);
-
-                        RpcResult newResult = new RpcResult();
-                        result.whenComplete((obj, t) -> {
-                            try {
-                                filter.onResponse(result, invoker, invocation);
-                            } catch (Exception e) {
-
-                            }
-                            newResult.setValue(obj);
-                            newResult.setException(t);
-                            newResult.setAttachments(result.getAttachments());
-                        });
-                        return newResult;
+                        AsyncRpcResult asyncResult = (AsyncRpcResult) filter.invoke(next, invocation);
+                        return asyncResult.thenApplyWithContext(r -> filter.onResponse(r, invoker, invocation));
                     }
 
                     @Override
@@ -119,8 +107,7 @@ public class ProtocolFilterWrapper implements Protocol {
         if (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) {
             return protocol.refer(type, url);
         }
-        Invoker<T> syncInvoker = new AsyncToSyncInvoker<>(protocol.refer(type, url));
-        return buildInvokerChain(syncInvoker, Constants.REFERENCE_FILTER_KEY, Constants.CONSUMER);
+        return new AsyncToSyncInvoker<>(buildInvokerChain(protocol.refer(type, url), Constants.REFERENCE_FILTER_KEY, Constants.CONSUMER));
     }
 
     @Override

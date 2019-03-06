@@ -52,11 +52,6 @@ public class InvokerInvocationHandler implements InvocationHandler {
             return invoker.equals(args[0]);
         }
 
-        return invoker.invoke(createInvocation(method, args)).recreate();
+        return invoker.invoke(new RpcInvocation(method, args)).recreate();
     }
-
-    private RpcInvocation createInvocation(Method method, Object[] args) {
-        return new RpcInvocation(method, args);
-    }
-
 }

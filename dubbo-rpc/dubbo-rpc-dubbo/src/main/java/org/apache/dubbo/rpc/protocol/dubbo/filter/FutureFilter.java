@@ -20,7 +20,6 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -51,33 +50,12 @@ public class FutureFilter implements Filter {
 
     @Override
     public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-        if (result instanceof AsyncRpcResult) {
-            AsyncRpcResult asyncResult = (AsyncRpcResult) result;
-            asyncResult.thenApplyWithContext(r -> {
-                asyncCallback(invoker, invocation, r);
-                return r;
-            });
-            return asyncResult;
-        } else {
-            syncCallback(invoker, invocation, result);
-            return result;
-        }
-    }
-
-    private void syncCallback(final Invoker<?> invoker, final Invocation invocation, final Result result) {
         if (result.hasException()) {
             fireThrowCallback(invoker, invocation, result.getException());
         } else {
             fireReturnCallback(invoker, invocation, result.getValue());
         }
-    }
-
-    private void asyncCallback(final Invoker<?> invoker, final Invocation invocation, Result result) {
-        if (result.hasException()) {
-            fireThrowCallback(invoker, invocation, result.getException());
-        } else {
-            fireReturnCallback(invoker, invocation, result.getValue());
-        }
+        return result;
     }
 
     private void fireInvokeCallback(final Invoker<?> invoker, final Invocation invocation) {

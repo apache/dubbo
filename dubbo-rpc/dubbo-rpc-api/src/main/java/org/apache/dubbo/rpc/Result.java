@@ -18,9 +18,6 @@ package org.apache.dubbo.rpc;
 
 import java.io.Serializable;
 import java.util.Map;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 
 /**
@@ -30,7 +27,7 @@ import java.util.concurrent.Future;
  * @see org.apache.dubbo.rpc.Invoker#invoke(Invocation)
  * @see org.apache.dubbo.rpc.RpcResult
  */
-public interface Result extends CompletionStage<Object>, Future<Object>, Serializable {
+public interface Result extends Serializable {
 
     /**
      * Get invoke result.
@@ -38,8 +35,6 @@ public interface Result extends CompletionStage<Object>, Future<Object>, Seriali
      * @return result. if no result return null.
      */
     Object getValue();
-
-    Object get() throws InterruptedException, ExecutionException;
 
     /**
      * Get exception.

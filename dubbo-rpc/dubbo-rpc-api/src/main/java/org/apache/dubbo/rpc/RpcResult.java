@@ -16,87 +16,47 @@
  */
 package org.apache.dubbo.rpc;
 
-import org.apache.dubbo.remoting.exchange.Response;
-import org.apache.dubbo.rpc.support.RpcUtils;
-
-import java.lang.reflect.Field;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutionException;
-import java.util.function.BiFunction;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * RPC Result.
  *
  * @serial Don't change the class name and properties.
  */
-public class RpcResult extends AbstractResult {
+public class RpcResult implements Result, Serializable {
 
     private static final long serialVersionUID = -6925924956850004727L;
+
+    private Object result;
+
+    private Throwable exception;
+
+    private Map<String, String> attachments = new HashMap<String, String>();
 
     public RpcResult() {
     }
 
     public RpcResult(Object result) {
-        this.setValue(result);
+        this.result = result;
     }
 
     public RpcResult(Throwable exception) {
-        this.setException(exception);
+        this.exception = exception;
     }
 
     @Override
     public Object recreate() throws Throwable {
-        if (RpcUtils.isReturnTypeFuture()) {
-            CompletableFuture<Object> future = new CompletableFuture<>();
-            this.whenComplete((obj, t) -> {
-                if (t != null) {
-                    if (t instanceof CompletionException) {
-                        t = t.getCause();
-                    }
-                    future.completeExceptionally(t);
-                } else {
-                    future.complete(obj);
-                }
-            });
-            return future;
-        } else {
-            if (exception != null) {
-                throw handleEmptyStacktrace(exception);
-            }
-            return result;
+        if (exception != null) {
+            throw exception;
         }
-    }
-
-    private Throwable handleEmptyStacktrace (Throwable t) {
-        // fix issue#619
-        try {
-            // get Throwable class
-            Class clazz = exception.getClass();
-            while (!clazz.getName().equals(Throwable.class.getName())) {
-                clazz = clazz.getSuperclass();
-            }
-            // get stackTrace value
-            Field stackTraceField = clazz.getDeclaredField("stackTrace");
-            stackTraceField.setAccessible(true);
-            Object stackTrace = stackTraceField.get(exception);
-            if (stackTrace == null) {
-                exception.setStackTrace(new StackTraceElement[0]);
-            }
-        } catch (Exception e) {
-            // ignore
-        }
-        return  exception;
-    }
-
-    @Override
-    public Object get() throws InterruptedException, ExecutionException {
-        return super.get();
+        return result;
     }
 
     @Override
     public Object getValue() {
-        return this.get();
+        return result;
     }
 
     public void setValue(Object value) {
@@ -118,40 +78,49 @@ public class RpcResult extends AbstractResult {
     }
 
     @Override
+    public Map<String, String> getAttachments() {
+        return attachments;
+    }
+
+    /**
+     * Append all items from the map into the attachment, if map is empty then nothing happens
+     *
+     * @param map contains all key-value pairs to append
+     */
+    public void setAttachments(Map<String, String> map) {
+        this.attachments = map == null ? new HashMap<String, String>() : map;
+    }
+
+    public void addAttachments(Map<String, String> map) {
+        if (map == null) {
+            return;
+        }
+        if (this.attachments == null) {
+            this.attachments = new HashMap<String, String>();
+        }
+        this.attachments.putAll(map);
+    }
+
+    @Override
+    public String getAttachment(String key) {
+        return attachments.get(key);
+    }
+
+    @Override
+    public String getAttachment(String key, String defaultValue) {
+        String result = attachments.get(key);
+        if (result == null || result.length() == 0) {
+            result = defaultValue;
+        }
+        return result;
+    }
+
+    public void setAttachment(String key, String value) {
+        attachments.put(key, value);
+    }
+
+    @Override
     public String toString() {
         return "RpcResult [result=" + result + ", exception=" + exception + "]";
     }
-
-    public final BiFunction<Object, Throwable, Response.AppResult> rpcResultToAppResult = (obj, t) -> {
-        Response.AppResult appResult = new Response.AppResult();
-        if (t != null) {
-            appResult.setException(t);
-        } else {
-            if (this.hasException()) {
-                appResult.setException(this.getException());
-            } else {
-                appResult.setResult(obj);
-            }
-        }
-        appResult.setAttachments(this.getAttachments());
-        return appResult;
-    };
-
-    public final BiFunction<Object, Throwable, Result> appResultToRpcResult = (obj, t) -> {
-        if (t != null) {
-            this.setException(t);
-
-        } else {
-            Response.AppResult appResult = (Response.AppResult) obj;
-            if (appResult.getException() != null) {
-                this.setException(appResult.getException());
-            } else {
-                this.setValue(appResult.getResult());
-            }
-            this.setAttachments(appResult.getAttachments());
-        }
-        return this;
-    };
-
-
 }

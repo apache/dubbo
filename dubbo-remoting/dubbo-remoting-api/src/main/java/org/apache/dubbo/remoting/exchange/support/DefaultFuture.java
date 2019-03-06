@@ -143,13 +143,19 @@ public class DefaultFuture extends CompletableFuture<Object> {
         }
     }
 
-    public void cancel() {
+    @Override
+    public boolean cancel(boolean mayInterruptIfRunning) {
         Response errorResult = new Response(id);
         errorResult.setStatus(Response.CLIENT_ERROR);
         errorResult.setErrorMessage("request future has been canceled.");
         this.doReceived(errorResult);
         FUTURES.remove(id);
         CHANNELS.remove(id);
+        return true;
+    }
+
+    public void cancel() {
+        this.cancel(true);
     }
 
 

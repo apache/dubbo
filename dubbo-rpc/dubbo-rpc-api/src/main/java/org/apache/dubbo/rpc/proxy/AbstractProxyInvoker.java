@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.AsyncContextImpl;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -80,11 +81,11 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
 
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
-        RpcResult result = new RpcResult();
         try {
             Object value = doInvoke(proxy, invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
             CompletableFuture<Object> future = wrapWithFuture(value, invocation);
-            future.whenComplete((obj, t) -> {
+            CompletableFuture<Result> resultFuture = future.handle((obj, t) -> {
+                RpcResult result = new RpcResult();
                 if (t != null) {
                     if (t instanceof CompletionException) {
                         result.setException(t.getCause());
@@ -94,16 +95,17 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
                 } else {
                     result.setValue(obj);
                 }
+                return result;
             });
+            return new AsyncRpcResult(resultFuture);
         } catch (InvocationTargetException e) {
             if (RpcContext.getContext().isAsyncStarted() && !RpcContext.getContext().stopAsync()) {
                 logger.error("Provider async started, but got an exception from the original method, cannot write the exception back to consumer because an async result may have returned the new thread.", e);
             }
-            result.setException(e.getTargetException());
+            return AsyncRpcResult.newDefaultAsyncResult(null, e.getTargetException());
         } catch (Throwable e) {
             throw new RpcException("Failed to invoke remote proxy method " + invocation.getMethodName() + " to " + getUrl() + ", cause: " + e.getMessage(), e);
         }
-        return result;
     }
 
     private CompletableFuture<Object> wrapWithFuture (Object value, Invocation invocation) {
