@@ -213,9 +213,18 @@ public class ConsulRegistry extends FailbackRegistry {
         service.setId(buildId(url));
         service.setName(url.getServiceInterface());
         service.setCheck(buildCheck(url));
-        service.setTags(Collections.singletonList(SERVICE_TAG));
+        service.setTags(buildTags(url));
         service.setMeta(Collections.singletonMap(URL_META_KEY, url.toFullString()));
         return service;
+    }
+
+    private List<String> buildTags(URL url) {
+        Map<String, String> params = url.getParameters();
+        List<String> tags = params.keySet().stream()
+                .map(k -> k + "=" + params.get(k))
+                .collect(Collectors.toList());
+        tags.add(SERVICE_TAG);
+        return tags;
     }
 
     private String buildId(URL url) {
