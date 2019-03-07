@@ -99,6 +99,7 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
             protected Result doInvoke(Invocation invocation) throws Throwable {
                 try {
                     Result result = target.invoke(invocation);
+                    // FIXME result is an AsyncRpcResult instance.
                     Throwable e = result.getException();
                     if (e != null) {
                         for (Class<?> rpcException : rpcExceptions) {

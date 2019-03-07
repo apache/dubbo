@@ -47,6 +47,8 @@ public class RpcInvocation implements Invocation, Serializable {
 
     private transient Class<?> returnType;
 
+    private transient InvokeMode invokeMode;
+
     public RpcInvocation() {
     }
 
@@ -214,6 +216,14 @@ public class RpcInvocation implements Invocation, Serializable {
 
     public void setReturnType(Class<?> returnType) {
         this.returnType = returnType;
+    }
+
+    public InvokeMode getInvokeMode() {
+        return invokeMode;
+    }
+
+    public void setInvokeMode(InvokeMode invokeMode) {
+        this.invokeMode = invokeMode;
     }
 
     @Override

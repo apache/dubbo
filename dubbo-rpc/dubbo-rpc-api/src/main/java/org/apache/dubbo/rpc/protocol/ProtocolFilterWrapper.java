@@ -70,8 +70,12 @@ public class ProtocolFilterWrapper implements Protocol {
 
                     @Override
                     public Result invoke(Invocation invocation) throws RpcException {
+                        // TODO add try catch & change to handle() after add onError()
                         AsyncRpcResult asyncResult = (AsyncRpcResult) filter.invoke(next, invocation);
-                        return asyncResult.thenApplyWithContext(r -> filter.onResponse(r, invoker, invocation));
+                        return asyncResult.thenApplyWithContext(r -> {
+                            filter.onResponse(r, invoker, invocation);
+                            return r;
+                        });
                     }
 
                     @Override
@@ -107,7 +111,8 @@ public class ProtocolFilterWrapper implements Protocol {
         if (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) {
             return protocol.refer(type, url);
         }
-        return new AsyncToSyncInvoker<>(buildInvokerChain(protocol.refer(type, url), Constants.REFERENCE_FILTER_KEY, Constants.CONSUMER));
+        Invoker<T> syncableInvoker = new AsyncToSyncInvoker<>(protocol.refer(type, url));
+        return buildInvokerChain(syncableInvoker, Constants.REFERENCE_FILTER_KEY, Constants.CONSUMER);
     }
 
     @Override

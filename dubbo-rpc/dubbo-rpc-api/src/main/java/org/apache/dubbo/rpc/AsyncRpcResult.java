@@ -21,8 +21,8 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public class AsyncRpcResult implements Result {
@@ -35,10 +35,19 @@ public class AsyncRpcResult implements Result {
     private RpcContext storedContext;
     private RpcContext storedServerContext;
 
-    protected CompletableFuture<Result> resultFuture;
+    private CompletableFuture<Result> resultFuture;
+    private Invocation invocation;
 
     public AsyncRpcResult(CompletableFuture<Result> future) {
         this.resultFuture = future;
+        // employ copy of context avoid the other call may modify the context content
+        this.storedContext = RpcContext.getContext().copyOf();
+        this.storedServerContext = RpcContext.getServerContext().copyOf();
+    }
+
+    public AsyncRpcResult(CompletableFuture<Result> future, Invocation invocation) {
+        this.resultFuture = future;
+        this.invocation = invocation;
         // employ copy of context avoid the other call may modify the context content
         this.storedContext = RpcContext.getContext().copyOf();
         this.storedServerContext = RpcContext.getServerContext().copyOf();
@@ -50,8 +59,18 @@ public class AsyncRpcResult implements Result {
     }
 
     @Override
+    public void setValue(Object value) {
+
+    }
+
+    @Override
     public Throwable getException() {
         return getRpcResult().getException();
+    }
+
+    @Override
+    public void setException(Throwable t) {
+
     }
 
     @Override
@@ -81,8 +100,30 @@ public class AsyncRpcResult implements Result {
 
     @Override
     public Object recreate() throws Throwable {
-        // FIXME
-        return new RpcResult();
+        RpcInvocation rpcInvocation = (RpcInvocation) invocation;
+        if (InvokeMode.FUTURE == rpcInvocation.getInvokeMode()) {
+            RpcResult rpcResult = new RpcResult();
+            CompletableFuture<Object> future = new CompletableFuture<>();
+            rpcResult.setValue(future);
+            resultFuture.whenComplete((result, t) -> {
+                if (t != null) {
+                    if (t instanceof CompletionException) {
+                        t = t.getCause();
+                    }
+                    future.completeExceptionally(t);
+                } else {
+                    if (result.hasException()) {
+                        future.completeExceptionally(result.getException());
+                    } else {
+                        future.complete(result.getValue());
+                    }
+                }
+            });
+            return rpcResult.recreate();
+        } else if (resultFuture.isDone()) {
+            return resultFuture.get().recreate();
+        }
+        return (new RpcResult()).recreate();
     }
 
     public Result get() throws InterruptedException, ExecutionException {
@@ -96,11 +137,6 @@ public class AsyncRpcResult implements Result {
 
     public <U> CompletableFuture<U> thenApply(Function<Result,? extends U> fn) {
         return this.resultFuture.thenApply(fn);
-    }
-
-    public CompletableFuture<Result> whenComplete
-            (BiConsumer<Result, ? super Throwable> action) {
-        return this.resultFuture.whenComplete(action);
     }
 
     @Override
@@ -152,6 +188,10 @@ public class AsyncRpcResult implements Result {
         RpcContext.restoreServerContext(tmpServerContext);
         return result;
     };
+
+    public static AsyncRpcResult newDefaultAsyncResult() {
+        return newDefaultAsyncResult(null, null);
+    }
 
     public static AsyncRpcResult newDefaultAsyncResult(Object value) {
        return newDefaultAsyncResult(value, null);

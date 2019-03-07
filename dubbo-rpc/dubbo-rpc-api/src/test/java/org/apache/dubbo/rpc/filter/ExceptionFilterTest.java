@@ -125,7 +125,7 @@ public class ExceptionFilterTest {
 
         Result newResult = exceptionFilter.invoke(invoker, invocation);
 
-        newResult = exceptionFilter.onResponse(newResult, invoker, invocation);
+        exceptionFilter.onResponse(newResult, invoker, invocation);
 
         Assertions.assertFalse(newResult.getException() instanceof HessianException);
 

@@ -26,7 +26,6 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcResult;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -51,7 +50,11 @@ public class CompatibleFilter implements Filter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        Result result = invoker.invoke(invocation);
+        return invoker.invoke(invocation);
+    }
+
+    @Override
+    public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
         if (!invocation.getMethodName().startsWith("$") && !result.hasException()) {
             Object value = result.getValue();
             if (value != null) {
@@ -75,14 +78,12 @@ public class CompatibleFilter implements Filter {
                         newValue = value;
                     }
                     if (newValue != value) {
-                        result = new RpcResult(newValue);
+                        result.setValue(newValue);
                     }
                 } catch (Throwable t) {
                     logger.warn(t.getMessage(), t);
                 }
             }
         }
-        return result;
     }
-
 }

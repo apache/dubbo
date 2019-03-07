@@ -29,6 +29,7 @@ import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -42,6 +43,8 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
+
 /**
  * @since 2.7.0, use https://github.com/dubbo/dubbo-rpc-native-thrift instead
  */
@@ -83,8 +86,8 @@ public class ThriftProtocol extends AbstractProtocol {
 
                 RpcContext.getContext().setRemoteAddress(channel.getRemoteAddress());
 
-                return CompletableFuture.completedFuture(exporter.getInvoker().invoke(inv));
-
+                AsyncRpcResult asyncResult = (AsyncRpcResult) exporter.getInvoker().invoke(inv);
+                return asyncResult.thenApply(Function.identity());
             }
 
             throw new RemotingException(channel,

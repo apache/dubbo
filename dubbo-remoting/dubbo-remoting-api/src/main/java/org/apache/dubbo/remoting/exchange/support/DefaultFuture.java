@@ -165,11 +165,11 @@ public class DefaultFuture extends CompletableFuture<Object> {
         }
         if (res.getStatus() == Response.OK) {
             this.complete(res.getResult());
-        }
-        if (res.getStatus() == Response.CLIENT_TIMEOUT || res.getStatus() == Response.SERVER_TIMEOUT) {
+        } else if (res.getStatus() == Response.CLIENT_TIMEOUT || res.getStatus() == Response.SERVER_TIMEOUT) {
             this.completeExceptionally(new TimeoutException(res.getStatus() == Response.SERVER_TIMEOUT, channel, res.getErrorMessage()));
+        } else {
+            this.completeExceptionally(new RemotingException(channel, res.getErrorMessage()));
         }
-        this.completeExceptionally(new RemotingException(channel, res.getErrorMessage()));
     }
 
     private long getId() {

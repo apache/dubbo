@@ -36,12 +36,16 @@ public interface Result extends Serializable {
      */
     Object getValue();
 
+    void setValue(Object value);
+
     /**
      * Get exception.
      *
      * @return exception. if no exception return null.
      */
     Throwable getException();
+
+    void setException(Throwable t);
 
     /**
      * Has exception.

@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvokeMode;
 import org.apache.dubbo.rpc.RpcInvocation;
 
 import java.lang.reflect.Method;
@@ -188,8 +189,14 @@ public class RpcUtils {
         return clazz != null && CompletableFuture.class.isAssignableFrom(clazz);
     }
 
-    public static boolean hasFutureReturnType(Method method) {
-        return CompletableFuture.class.isAssignableFrom(method.getReturnType());
+    public static InvokeMode getInvokeMode(URL url, Invocation inv) {
+        if (isReturnTypeFuture(inv)) {
+            return InvokeMode.FUTURE;
+        } else if (isAsync(url, inv)) {
+            return InvokeMode.ASYNC;
+        } else {
+            return InvokeMode.SYNC;
+        }
     }
 
     public static boolean isOneway(URL url, Invocation inv) {

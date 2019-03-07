@@ -23,12 +23,12 @@ import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 
@@ -119,10 +119,10 @@ public class RedisProtocol extends AbstractProtocol {
                             }
                             byte[] value = jedis.get(String.valueOf(invocation.getArguments()[0]).getBytes());
                             if (value == null) {
-                                return new RpcResult();
+                                return AsyncRpcResult.newDefaultAsyncResult();
                             }
                             ObjectInput oin = getSerialization(url).deserialize(url, new ByteArrayInputStream(value));
-                            return new RpcResult(oin.readObject());
+                            return AsyncRpcResult.newDefaultAsyncResult(oin.readObject());
                         } else if (set.equals(invocation.getMethodName())) {
                             if (invocation.getArguments().length != 2) {
                                 throw new IllegalArgumentException("The redis set method arguments mismatch, must be two arguments. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url);
@@ -135,13 +135,13 @@ public class RedisProtocol extends AbstractProtocol {
                             if (expiry > 1000) {
                                 jedis.expire(key, expiry / 1000);
                             }
-                            return new RpcResult();
+                            return AsyncRpcResult.newDefaultAsyncResult();
                         } else if (delete.equals(invocation.getMethodName())) {
                             if (invocation.getArguments().length != 1) {
                                 throw new IllegalArgumentException("The redis delete method arguments mismatch, must only one arguments. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url);
                             }
                             jedis.del(String.valueOf(invocation.getArguments()[0]).getBytes());
-                            return new RpcResult();
+                            return AsyncRpcResult.newDefaultAsyncResult();
                         } else {
                             throw new UnsupportedOperationException("Unsupported method " + invocation.getMethodName() + " in redis service.");
                         }
