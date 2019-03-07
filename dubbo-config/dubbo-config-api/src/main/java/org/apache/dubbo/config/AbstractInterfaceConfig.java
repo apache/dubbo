@@ -689,7 +689,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setApplication(ApplicationConfig application) {
-        ConfigManager.getInstance().setApplication(application);
+        if (!ConfigManager.getInstance().getApplication().isPresent() ||
+                !ConfigManager.getInstance().getApplication().get().equals(application)) {
+            ConfigManager.getInstance().setApplication(application);
+        }
         this.application = application;
     }
 
@@ -714,7 +717,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setModule(ModuleConfig module) {
-        ConfigManager.getInstance().setModule(module);
+        if (!ConfigManager.getInstance().getModule().isPresent()
+                || !ConfigManager.getInstance().getModule().get().equals(module)) {
+            ConfigManager.getInstance().setModule(module);
+        }
         this.module = module;
     }
 
@@ -756,7 +762,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setMonitor(MonitorConfig monitor) {
-        ConfigManager.getInstance().setMonitor(monitor);
+        if (!ConfigManager.getInstance().getMonitor().isPresent()
+                || !ConfigManager.getInstance().getMonitor().get().equals(monitor)) {
+            ConfigManager.getInstance().setMonitor(monitor);
+        }
         this.monitor = monitor;
     }
 
@@ -774,7 +783,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setConfigCenter(ConfigCenterConfig configCenter) {
-        ConfigManager.getInstance().setConfigCenter(configCenter);
+        if (!ConfigManager.getInstance().getConfigCenter().isPresent()
+                || !ConfigManager.getInstance().getConfigCenter().get().equals(configCenter)) {
+            ConfigManager.getInstance().setConfigCenter(configCenter);
+        }
         this.configCenter = configCenter;
     }
 
