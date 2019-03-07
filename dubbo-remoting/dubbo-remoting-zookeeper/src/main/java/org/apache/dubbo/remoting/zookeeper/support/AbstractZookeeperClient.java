@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.Executor;
 
 public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildListener> implements ZookeeperClient {
 
@@ -116,6 +117,21 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
     }
 
     @Override
+    public void addDataListener(String path, DataListener listener, Executor executor) {
+        ConcurrentMap<DataListener, TargetDataListener> dataListenerMap = listeners.get(path);
+        if (dataListenerMap == null) {
+            listeners.putIfAbsent(path, new ConcurrentHashMap<DataListener, TargetDataListener>());
+            dataListenerMap = listeners.get(path);
+        }
+        TargetDataListener targetListener = dataListenerMap.get(listener);
+        if (targetListener == null) {
+            dataListenerMap.putIfAbsent(listener, createTargetDataListener(path, listener));
+            targetListener = dataListenerMap.get(listener);
+        }
+        addTargetDataListener(path, targetListener, executor);
+    }
+
+    @Override
     public void removeChildListener(String path, ChildListener listener) {
         ConcurrentMap<ChildListener, TargetChildListener> listeners = childListeners.get(path);
         if (listeners != null) {
@@ -188,6 +204,8 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
     protected abstract TargetDataListener createTargetDataListener(String path, DataListener listener);
 
     protected abstract void addTargetDataListener(String path, TargetDataListener listener);
+
+    protected abstract void addTargetDataListener(String path, TargetDataListener listener, Executor executor);
 
     protected abstract void removeTargetChildListener(String path, TargetChildListener listener);
 

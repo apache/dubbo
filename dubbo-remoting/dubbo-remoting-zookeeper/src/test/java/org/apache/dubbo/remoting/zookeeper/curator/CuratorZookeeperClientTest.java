@@ -22,11 +22,6 @@ import org.apache.dubbo.remoting.zookeeper.ChildListener;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.framework.api.CuratorWatcher;
-import org.apache.curator.framework.recipes.cache.PathChildrenCache;
-import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
-import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
-import org.apache.curator.framework.recipes.cache.TreeCache;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
 import org.apache.curator.framework.recipes.cache.TreeCacheListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
@@ -87,7 +82,8 @@ public class CuratorZookeeperClientTest {
         String path = "/dubbo/org.apache.dubbo.demo.DemoService/providers";
         curatorClient.create(path, false);
         final CountDownLatch countDownLatch = new CountDownLatch(1);
-        curatorClient.addTargetChildListener(path, new CuratorWatcher() {
+        curatorClient.addTargetChildListener(path, new CuratorZookeeperClient.CuratorWatcherImpl() {
+
             @Override
             public void process(WatchedEvent watchedEvent) throws Exception {
                 countDownLatch.countDown();

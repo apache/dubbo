@@ -17,6 +17,7 @@
 package org.apache.dubbo.configcenter.support.zookeeper;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.configcenter.ConfigurationListener;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
@@ -27,6 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import static org.apache.dubbo.common.Constants.CONFIG_NAMESPACE_KEY;
 
@@ -36,6 +39,7 @@ import static org.apache.dubbo.common.Constants.CONFIG_NAMESPACE_KEY;
 public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperDynamicConfiguration.class);
 
+    private Executor executor;
     // The final root path would be: /configRootPath/"config"
     private String rootPath;
     private final ZookeeperClient zkClient;
@@ -51,9 +55,10 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
 
         initializedLatch = new CountDownLatch(1);
         this.cacheListener = new CacheListener(rootPath, initializedLatch);
+        this.executor = Executors.newFixedThreadPool(1, new NamedThreadFactory(this.getClass().getSimpleName(), true));
 
         zkClient = zookeeperTransporter.connect(url);
-        zkClient.addDataListener(rootPath, cacheListener);
+        zkClient.addDataListener(rootPath, cacheListener, executor);
     }
 
     /**

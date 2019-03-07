@@ -42,8 +42,9 @@ import org.apache.zookeeper.WatchedEvent;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executor;
 
-public class CuratorZookeeperClient extends AbstractZookeeperClient<TreeCacheListener, CuratorWatcher> {
+public class CuratorZookeeperClient extends AbstractZookeeperClient<TreeCacheListener, CuratorZookeeperClient.CuratorWatcherImpl> {
 
     static final Charset charset = Charset.forName("UTF-8");
     private final CuratorFramework client;
@@ -193,7 +194,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<TreeCacheLis
     }
 
     @Override
-    public List<String> addTargetChildListener(String path, CuratorWatcher listener) {
+    public List<String> addTargetChildListener(String path, CuratorWatcherImpl listener) {
         try {
             return client.getChildren().usingWatcher(listener).forPath(path);
         } catch (NoNodeException e) {
@@ -215,13 +216,24 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<TreeCacheLis
             treeCache.start();
             treeCache.getListenable().addListener(treeCacheListener);
         } catch (Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
+            throw new IllegalStateException("Add treeCache listener for path:" + path, e);
         }
     }
 
     @Override
-    public void removeTargetChildListener(String path, CuratorWatcher listener) {
-        ((CuratorWatcherImpl) listener).unwatch();
+    protected void addTargetDataListener(String path, TreeCacheListener treeCacheListener, Executor executor) {
+        try {
+            TreeCache treeCache = new TreeCache(client, path);
+            treeCache.start();
+            treeCache.getListenable().addListener(treeCacheListener, executor);
+        } catch (Exception e) {
+            throw new IllegalStateException("Add treeCache listener for path:" + path, e);
+        }
+    }
+
+    @Override
+    public void removeTargetChildListener(String path, CuratorWatcherImpl listener) {
+        listener.unwatch();
     }
 
     static class CuratorWatcherImpl implements CuratorWatcher, TreeCacheListener {
@@ -238,6 +250,9 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<TreeCacheLis
 
         public CuratorWatcherImpl(CuratorFramework client, DataListener dataListener) {
             this.dataListener = dataListener;
+        }
+
+        protected CuratorWatcherImpl(){
         }
 
         public void unwatch() {
@@ -281,6 +296,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<TreeCacheLis
 
     /**
      * just for unit test
+     *
      * @return
      */
     CuratorFramework getClient() {
