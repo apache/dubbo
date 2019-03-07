@@ -87,9 +87,9 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
             return invokers;
         }
 
-        // since the rule can be changed by config center, we should dump one to use.
-        TagRouterRule dump = tagRouterRule;
-        if (dump == null || !dump.isValid() || !dump.isEnabled()) {
+        // since the rule can be changed by config center, we should copy one to use.
+        final TagRouterRule tagRouterRuleCopy = tagRouterRule;
+        if (tagRouterRuleCopy == null || !tagRouterRuleCopy.isValid() || !tagRouterRuleCopy.isEnabled()) {
             return filterUsingStaticTag(invokers, url, invocation);
         }
 
@@ -99,12 +99,12 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
 
         // if we are requesting for a Provider with a specific tag
         if (StringUtils.isNotEmpty(tag)) {
-            List<String> addresses = dump.getTagnameToAddresses().get(tag);
+            List<String> addresses = tagRouterRuleCopy.getTagnameToAddresses().get(tag);
             // filter by dynamic tag group first
             if (CollectionUtils.isNotEmpty(addresses)) {
                 result = filterInvoker(invokers, invoker -> addressMatches(invoker.getUrl(), addresses));
                 // if result is not null OR it's null but force=true, return result directly
-                if (CollectionUtils.isNotEmpty(result) || dump.isForce()) {
+                if (CollectionUtils.isNotEmpty(result) || tagRouterRuleCopy.isForce()) {
                     return result;
                 }
             } else {
@@ -120,13 +120,13 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
             // FAILOVER: return all Providers without any tags.
             else {
                 List<Invoker<T>> tmp = filterInvoker(invokers, invoker -> addressNotMatches(invoker.getUrl(),
-                        dump.getAddresses()));
+                        tagRouterRuleCopy.getAddresses()));
                 return filterInvoker(tmp, invoker -> StringUtils.isEmpty(invoker.getUrl().getParameter(TAG_KEY)));
             }
         } else {
             // List<String> addresses = tagRouterRule.filter(providerApp);
             // return all addresses in dynamic tag group.
-            List<String> addresses = dump.getAddresses();
+            List<String> addresses = tagRouterRuleCopy.getAddresses();
             if (CollectionUtils.isNotEmpty(addresses)) {
                 result = filterInvoker(invokers, invoker -> addressNotMatches(invoker.getUrl(), addresses));
                 // 1. all addresses are in dynamic tag group, return empty list.
@@ -138,7 +138,7 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
             }
             return filterInvoker(result, invoker -> {
                 String localTag = invoker.getUrl().getParameter(TAG_KEY);
-                return StringUtils.isEmpty(localTag) || !dump.getTagNames().contains(localTag);
+                return StringUtils.isEmpty(localTag) || !tagRouterRuleCopy.getTagNames().contains(localTag);
             });
         }
     }
