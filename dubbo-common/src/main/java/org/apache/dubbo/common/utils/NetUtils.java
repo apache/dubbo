@@ -405,7 +405,6 @@ public class NetUtils {
         boolean isIpv4 = isValidV4Address(inetAddress) ? true : false;
         String[] hostAndPort = getPatternHostAndPort(pattern, isIpv4);
         if (hostAndPort[1] != null && !hostAndPort[1].equals(String.valueOf(port))) {
-            logger.info("The pattern port is not equals to port form param.");
             return false;
         }
         pattern = hostAndPort[0];
