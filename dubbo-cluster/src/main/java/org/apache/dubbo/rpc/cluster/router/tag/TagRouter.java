@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.ConfigChangeType;
@@ -33,6 +34,7 @@ import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRouterRule;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRuleParser;
 
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -196,11 +198,26 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
     }
 
     private boolean addressMatches(URL url, List<String> addresses) {
-        return addresses != null && addresses.contains(url.getAddress());
+        return addresses != null && checkAddressMatch(addresses, url.getHost(), url.getPort());
     }
 
     private boolean addressNotMatches(URL url, List<String> addresses) {
-        return addresses == null || !addresses.contains(url.getAddress());
+        return addresses == null || !checkAddressMatch(addresses, url.getHost(), url.getPort());
+    }
+
+    private boolean checkAddressMatch(List<String> addresses, String host, int port) {
+        for (String address : addresses) {
+            try {
+                if (NetUtils.matchIpExpression(address, host, port)) {
+                    return true;
+                }
+            } catch (UnknownHostException e) {
+                logger.error("The format of ip address is invalid in tag route. Address :" + address, e);
+            } catch (Exception e) {
+                logger.error("The format of ip address is invalid in tag route. Address :" + address, e);
+            }
+        }
+        return false;
     }
 
     public void setApplication(String app) {
@@ -232,7 +249,7 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
                 configuration.addListener(key, this);
                 application = providerApplication;
                 String rawRule = configuration.getConfig(key);
-                if (rawRule != null) {
+                if (StringUtils.isNotEmpty(rawRule)) {
                     this.process(new ConfigChangeEvent(key, rawRule));
                 }
             }
