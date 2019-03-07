@@ -2,10 +2,20 @@ language: java
 sudo: false # faster builds
 
 jdk:
-    - oraclejdk8
-    - openjdk7
+  - oraclejdk11
+  - oraclejdk8
 
-script: "mvn cobertura:cobertura"
+cache:
+  directories:
+    - $HOME/.m2
+
+install: true
+
+script:
+  - travis_wait 30 ./mvnw clean install -DskipTests=false -Dcheckstyle.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
+
+after_failure:
+  - if [ -f dubbo.log ]; then echo "------TAIL of dubbo.log------"; tail -n 1000 dubbo.log; echo "------END of dubbo.log------"; fi

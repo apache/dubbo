@@ -1,0 +1,10 @@
+mock=org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterWrapper
+failover=org.apache.dubbo.rpc.cluster.support.FailoverCluster
+failfast=org.apache.dubbo.rpc.cluster.support.FailfastCluster
+failsafe=org.apache.dubbo.rpc.cluster.support.FailsafeCluster
+failback=org.apache.dubbo.rpc.cluster.support.FailbackCluster
+forking=org.apache.dubbo.rpc.cluster.support.ForkingCluster
+available=org.apache.dubbo.rpc.cluster.support.AvailableCluster
+mergeable=org.apache.dubbo.rpc.cluster.support.MergeableCluster
+broadcast=org.apache.dubbo.rpc.cluster.support.BroadcastCluster
+registryaware=org.apache.dubbo.rpc.cluster.support.RegistryAwareCluster
