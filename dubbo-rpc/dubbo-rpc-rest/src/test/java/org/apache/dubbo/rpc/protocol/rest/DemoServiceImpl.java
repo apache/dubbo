@@ -16,17 +16,27 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
 
-@Path("/demoService")
-public interface IDemoService {
-    @GET
-    @Path("/hello")
-    Integer hello(@QueryParam("a") Integer a, @QueryParam("b") Integer b);
+public class DemoServiceImpl implements DemoService {
+    private boolean called;
 
-    @GET
-    @Path("/error")
-    String error();
+    public String sayHello(String name) {
+        called = true;
+        return "Hello, " + name;
+    }
+
+
+    public boolean isCalled() {
+        return called;
+    }
+
+    @Override
+    public Integer hello(Integer a, Integer b) {
+        return a + b;
+    }
+
+    @Override
+    public String error() {
+        throw new RuntimeException();
+    }
 }
