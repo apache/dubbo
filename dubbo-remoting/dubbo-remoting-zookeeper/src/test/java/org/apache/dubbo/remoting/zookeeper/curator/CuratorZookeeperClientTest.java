@@ -190,7 +190,7 @@ public class CuratorZookeeperClientTest {
         valueFromCache = curatorClient.getContent(path + "/d.json");
         Assertions.assertNull(valueFromCache);
         Thread.sleep(2000l);
-        Assertions.assertTrue(8l >= atomicInteger.get());
+        Assertions.assertTrue(9l >= atomicInteger.get());
         Assertions.assertTrue(2l <= atomicInteger.get());
     }
 }
