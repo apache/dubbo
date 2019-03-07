@@ -324,23 +324,37 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     public synchronized void export() {
         checkAndUpdateSubConfigs();
 
-        if (provider != null) {
-            if (export == null) {
-                export = provider.getExport();
-            }
-            if (delay == null) {
-                delay = provider.getDelay();
-            }
-        }
-        if (export != null && !export) {
+        if (!shouldExport()) {
             return;
         }
 
-        if (delay != null && delay > 0) {
+        if (shouldDelay()) {
             delayExportExecutor.schedule(this::doExport, delay, TimeUnit.MILLISECONDS);
         } else {
             doExport();
         }
+    }
+
+    private boolean shouldExport() {
+        Boolean shouldExport = getExport();
+        if (shouldExport == null && provider != null) {
+            shouldExport = provider.getExport();
+        }
+
+        // default value is true
+        if (shouldExport == null) {
+            return true;
+        }
+
+        return shouldExport;
+    }
+
+    private boolean shouldDelay() {
+        Integer delay = getDelay();
+        if (delay == null && provider != null) {
+            delay = provider.getDelay();
+        }
+        return delay != null && delay > 0;
     }
 
     protected synchronized void doExport() {
