@@ -83,7 +83,6 @@
         <httpcore_version>4.4.6</httpcore_version>
         <fastjson_version>1.2.46</fastjson_version>
         <zookeeper_version>3.4.13</zookeeper_version>
-        <zkclient_version>0.2</zkclient_version>
         <curator_version>4.0.1</curator_version>
         <curator_test_version>2.12.0</curator_test_version>
         <jedis_version>2.9.0</jedis_version>
@@ -180,11 +179,6 @@
                 <groupId>org.apache.zookeeper</groupId>
                 <artifactId>zookeeper</artifactId>
                 <version>${zookeeper_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.101tec</groupId>
-                <artifactId>zkclient</artifactId>
-                <version>${zkclient_version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.curator</groupId>
