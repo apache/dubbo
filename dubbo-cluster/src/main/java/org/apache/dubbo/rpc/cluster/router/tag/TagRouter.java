@@ -252,7 +252,7 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
                 configuration.addListener(key, this);
                 application = providerApplication;
                 String rawRule = configuration.getConfig(key);
-                if (rawRule != null) {
+                if (StringUtils.isNotEmpty(rawRule)) {
                     this.process(new ConfigChangeEvent(key, rawRule));
                 }
             }
