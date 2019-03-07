@@ -46,7 +46,7 @@ import java.util.List;
 public class CuratorZookeeperClient extends AbstractZookeeperClient<TreeCacheListener, CuratorWatcher> {
 
     static final Charset charset = Charset.forName("UTF-8");
-    final CuratorFramework client;
+    private final CuratorFramework client;
 
 
     public CuratorZookeeperClient(URL url) {
@@ -279,4 +279,11 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<TreeCacheLis
         }
     }
 
+    /**
+     * just for unit test
+     * @return
+     */
+    CuratorFramework getClient() {
+        return client;
+    }
 }

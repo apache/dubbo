@@ -168,12 +168,11 @@ public class CuratorZookeeperClientTest {
     }
 
     @Test
-    public void testAddDataListener() throws Exception {
+    public void testAddTargetDataListener() throws Exception {
         String listenerPath = "/dubbo/service.name/configuration";
         String path = listenerPath + "/dat/data";
         String value = "vav";
 
-//        curatorClient.create(path, true);
         curatorClient.create(path + "/d.json", value, true);
         String valueFromCache = curatorClient.getContent(path + "/d.json");
         Assertions.assertEquals(value, valueFromCache);
@@ -186,16 +185,16 @@ public class CuratorZookeeperClientTest {
             }
         });
 
-        //curatorClient.delete(path + "/d.json");
         valueFromCache = curatorClient.getContent(path + "/d.json");
         Assertions.assertNotNull(valueFromCache);
-        curatorClient.client.setData().forPath(path + "/d.json", "sdsdf".getBytes());
-        curatorClient.client.setData().forPath(path + "/d.json", "dfsasf".getBytes());
+        curatorClient.getClient().setData().forPath(path + "/d.json", "sdsdf".getBytes());
+        curatorClient.getClient().setData().forPath(path + "/d.json", "dfsasf".getBytes());
         curatorClient.delete(path + "/d.json");
         curatorClient.delete(path);
         valueFromCache = curatorClient.getContent(path + "/d.json");
         Assertions.assertNull(valueFromCache);
         Thread.sleep(2000l);
         Assertions.assertTrue(8l >= atomicInteger.get());
+        Assertions.assertTrue(2l <= atomicInteger.get());
     }
 }
