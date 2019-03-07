@@ -124,6 +124,22 @@ public class AbstractInterfaceConfigTest {
     }
 
     @Test
+    public void checkDuplicateApplication() {
+        try {
+            System.setProperty("dubbo.application.name", "demo");
+            Assertions.assertThrows(IllegalStateException.class,
+                    () -> {
+                        InterfaceConfig interfaceConfig = new InterfaceConfig();
+                        interfaceConfig.checkApplication();
+                        interfaceConfig = new InterfaceConfig();
+                        interfaceConfig.checkApplication();
+                    });
+        } finally {
+            System.clearProperty("dubbo.application.name");
+        }
+    }
+
+    @Test
     public void testLoadRegistries() {
         System.setProperty("dubbo.registry.address", "addr1");
         InterfaceConfig interfaceConfig = new InterfaceConfig();
