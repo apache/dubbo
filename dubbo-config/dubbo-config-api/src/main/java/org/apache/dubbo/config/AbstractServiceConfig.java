@@ -57,7 +57,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     /**
      * Whether to export the service
      */
-    protected Boolean export = true;
+    protected Boolean export;
 
     /**
      * The service weight
