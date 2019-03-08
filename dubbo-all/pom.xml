@@ -395,6 +395,13 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metadata-report-consul</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
 
         <!-- Transitive dependencies -->
         <dependency>
@@ -508,6 +515,7 @@
                                     <include>org.apache.dubbo:dubbo-metadata-definition</include>
                                     <include>org.apache.dubbo:dubbo-metadata-report-redis</include>
                                     <include>org.apache.dubbo:dubbo-metadata-report-zookeeper</include>
+                                    <include>org.apache.dubbo:dubbo-metadata-report-consul</include>
                                 </includes>
                             </artifactSet>
                             <transformers>
