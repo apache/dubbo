@@ -151,8 +151,8 @@ public class DubboProtocol extends AbstractProtocol {
 
         @Override
         public void disconnected(Channel channel) throws RemotingException {
-            if (logger.isInfoEnabled()) {
-                logger.info("disconnected from " + channel.getRemoteAddress() + ",url:" + channel.getUrl());
+            if (logger.isDebugEnabled()) {
+                logger.debug("disconnected from " + channel.getRemoteAddress() + ",url:" + channel.getUrl());
             }
             invoke(channel, Constants.ON_DISCONNECT_KEY);
         }
