@@ -64,7 +64,7 @@ public class ConfigurationUtils {
     }
 
     public static String getProperty(String property, String defaultValue) {
-        return Environment.getInstance().getConfiguration().getString(property, defaultValue);
+        return StringUtils.trim(Environment.getInstance().getConfiguration().getString(property, defaultValue));
     }
 
     public static Map<String, String> parseProperties(String content) throws IOException {
