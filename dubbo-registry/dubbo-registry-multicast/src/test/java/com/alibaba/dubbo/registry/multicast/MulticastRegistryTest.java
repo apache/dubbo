@@ -53,7 +53,7 @@ public class MulticastRegistryTest {
         registry.register(serviceUrl);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = IllegalStateException.class)
     public void testUrlError() {
         URL errorUrl = URL.valueOf("multicast://mullticast/");
         new MulticastRegistry(errorUrl);
