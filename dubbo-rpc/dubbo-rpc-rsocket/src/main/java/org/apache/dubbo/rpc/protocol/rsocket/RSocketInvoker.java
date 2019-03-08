@@ -52,9 +52,6 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 
-/**
- * @author sixie.xyn on 2019/1/2.
- */
 public class RSocketInvoker<T> extends AbstractInvoker<T> {
 
     private final RSocket[] clients;
@@ -248,4 +245,5 @@ public class RSocketInvoker<T> extends AbstractInvoker<T> {
         }
         return dataOutputStream.toByteArray();
     }
+
 }

@@ -22,9 +22,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-/**
- * @author sixie.xyn on 2019/1/3.
- */
 public class MetadataCodec {
 
     public static Map<String, Object> decodeMetadata(byte[] bytes) throws IOException {

@@ -22,9 +22,6 @@ import org.apache.dubbo.rpc.protocol.AbstractExporter;
 
 import java.util.Map;
 
-/**
- * @author sixie.xyn on 2019/1/2.
- */
 public class RSocketExporter<T> extends AbstractExporter<T> {
 
     private final String key;
