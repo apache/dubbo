@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/apache/incubator-dubbo.svg?branch=master)](https://travis-ci.org/apache/incubator-dubbo)
 [![codecov](https://codecov.io/gh/apache/incubator-dubbo/branch/master/graph/badge.svg)](https://codecov.io/gh/apache/incubator-dubbo)
-![maven](https://img.shields.io/maven-central/v/com.alibaba/dubbo.svg)
+![maven](https://img.shields.io/maven-central/v/org.apache.dubbo/dubbo.svg)
 ![license](https://img.shields.io/github/license/alibaba/dubbo.svg)
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/apache/incubator-dubbo.svg)](http://isitmaintained.com/project/apache/incubator-dubbo "Average time to resolve an issue")
 [![Percentage of issues still open](http://isitmaintained.com/badge/open/apache/incubator-dubbo.svg)](http://isitmaintained.com/project/apache/incubator-dubbo "Percentage of issues still open")
