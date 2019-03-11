@@ -103,7 +103,7 @@ public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
             });
             delayPeriod = getUrl().getParameter(Constants.REGISTRY_RETRY_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RETRY_PERIOD);
             reconnectSchedule = Executors.newScheduledThreadPool(1,
-                    new NamedThreadFactory("etcd2-watch-auto-reconnect"));
+                    new NamedThreadFactory("etcd3-watch-auto-reconnect"));
 
             notifyExecutor = new ThreadPoolExecutor(
                     1
