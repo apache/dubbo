@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rsocket;
 
-/**
- * @author sixie.xyn on 2019/1/3.
- */
 public class RSocketConstants {
 
     public static final String SERVICE_NAME_KEY = "_service_name";

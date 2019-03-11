@@ -66,9 +66,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 
-/**
- * @author sixie.xyn on 2019/1/2.
- */
 public class RSocketProtocol extends AbstractProtocol {
 
     public static final String NAME = "rsocket";
