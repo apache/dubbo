@@ -17,13 +17,13 @@
 
 package org.apache.dubbo.filter;
 
-import org.apache.dubbo.rpc.Filter;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.service.MockInvocation;
 
+import com.alibaba.dubbo.rpc.Filter;
+import com.alibaba.dubbo.rpc.Invocation;
+import com.alibaba.dubbo.rpc.Invoker;
+import com.alibaba.dubbo.rpc.Result;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -37,7 +37,7 @@ public class FilterTest {
     @Test
     public void testInvokeException() {
         try {
-            Invoker<FilterTest> invoker = new MyInvoker<FilterTest>(null);
+            Invoker<FilterTest> invoker = new LegacyInvoker<FilterTest>(null);
             Invocation invocation = new MockInvocation("aa");
             myFilter.invoke(invoker, invocation);
             fail();
@@ -48,7 +48,7 @@ public class FilterTest {
 
     @Test
     public void testDefault() {
-        Invoker<FilterTest> invoker = new MyInvoker<FilterTest>(null);
+        Invoker<FilterTest> invoker = new LegacyInvoker<FilterTest>(null);
         Invocation invocation = new MockInvocation("bbb");
         Result res = myFilter.invoke(invoker, invocation);
         System.out.println(res);
