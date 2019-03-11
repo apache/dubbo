@@ -15,23 +15,18 @@
  * limitations under the License.
  */
 
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.apache.dubbo.remoting.etcd.jetcd;
+
+import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ExecutorUtil;
+import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.remoting.etcd.ChildListener;
+import org.apache.dubbo.remoting.etcd.StateListener;
+import org.apache.dubbo.remoting.etcd.option.OptionUtil;
+import org.apache.dubbo.remoting.etcd.support.AbstractEtcdClient;
 
 import com.google.protobuf.ByteString;
 import io.etcd.jetcd.ByteSequence;
@@ -46,15 +41,6 @@ import io.etcd.jetcd.common.exception.ClosedClientException;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import io.netty.util.internal.ConcurrentSet;
-import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
-import org.apache.dubbo.remoting.etcd.ChildListener;
-import org.apache.dubbo.remoting.etcd.StateListener;
-import org.apache.dubbo.remoting.etcd.option.OptionUtil;
-import org.apache.dubbo.remoting.etcd.support.AbstractEtcdClient;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -63,10 +49,14 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static java.util.stream.Collectors.toList;
 import static org.apache.dubbo.remoting.etcd.jetcd.JEtcdClientWrapper.UTF_8;
@@ -78,6 +68,8 @@ public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
 
     private JEtcdClientWrapper clientWrapper;
     private ScheduledExecutorService reconnectSchedule;
+
+    private ExecutorService notifyExecutor;
 
     private int delayPeriod;
     private Logger logger = LoggerFactory.getLogger(JEtcdClient.class);
@@ -95,7 +87,16 @@ public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
             });
             delayPeriod = getUrl().getParameter(Constants.REGISTRY_RETRY_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RETRY_PERIOD);
             reconnectSchedule = Executors.newScheduledThreadPool(1,
-                    new NamedThreadFactory("auto-reconnect"));
+                    new NamedThreadFactory("etcd3-watch-auto-reconnect"));
+
+            notifyExecutor = new ThreadPoolExecutor(
+                    1
+                    , url.getParameter(Constants.ETCD3_NOTIFY_MAXTHREADS_KEYS, Constants.DEFAULT_ETCD3_NOTIFY_THREADS)
+                    , Constants.DEFAULT_SESSION_TIMEOUT
+                    , TimeUnit.MILLISECONDS
+                    , new LinkedBlockingQueue<Runnable>(url.getParameter(Constants.DEFAULT_ETCD3_NOTIFY_QUEUES_KEY, Constants.DEFAULT_GRPC_QUEUES * 3))
+                    , new NamedThreadFactory("etcd3-notify", true));
+
             clientWrapper.start();
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -166,9 +167,19 @@ public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
     @Override
     public void doClose() {
         try {
-            reconnectSchedule.shutdownNow();
+            if (notifyExecutor != null) {
+                ExecutorUtil.shutdownNow(notifyExecutor, 100);
+            }
         } catch (Exception e) {
+            logger.warn(e.getMessage(), e);
+        }
 
+        try {
+            if (reconnectSchedule != null) {
+                ExecutorUtil.shutdownNow(reconnectSchedule, 100);
+            }
+        } catch (Exception e) {
+            logger.warn(e.getMessage(), e);
         } finally {
             clientWrapper.doClose();
         }
@@ -181,8 +192,10 @@ public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
         protected long watchId;
         protected String path;
         protected Throwable throwable;
-        protected Set<String> urls = new ConcurrentSet<>();
+        protected volatile Set<String> urls = new ConcurrentSet<>();
         private ChildListener listener;
+
+        protected ReentrantLock lock = new ReentrantLock(true);
 
         public EtcdWatcher(ChildListener listener) {
             this.listener = listener;
@@ -220,7 +233,12 @@ public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
                     }
                 }
                 if (modified > 0) {
-                    listener.childChanged(path, new ArrayList<>(urls));
+                    notifyExecutor.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.childChanged(path, new ArrayList<>(urls));
+                        }
+                    });
                 }
 
             }
@@ -257,37 +275,42 @@ public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
             if (!isConnected()) {
                 throw new ClosedClientException("watch client has been closed, path '" + path + "'");
             }
-
             if (this.path != null) {
-                if (this.path.equals(path)) {
-                    return clientWrapper.getChildren(path);
-                }
                 unwatch();
             }
 
-            this.watchStub = WatchGrpc.newStub(clientWrapper.getChannel());
-            this.watchRequest = watchStub.watch(this);
             this.path = path;
-            this.watchRequest.onNext(nextRequest());
 
-            List<String> children = clientWrapper.getChildren(path);
+            lock.lock();
+            try {
 
-            /**
-             * caching the current service
-             */
-            if (!children.isEmpty()) {
-                this.urls.addAll(filterChildren(children));
+                this.watchStub = WatchGrpc.newStub(clientWrapper.getChannel());
+                this.watchRequest = watchStub.watch(this);
+                this.watchRequest.onNext(nextRequest());
+
+                List<String> children = clientWrapper.getChildren(path);
+                /**
+                 * caching the current service
+                 */
+                if (!children.isEmpty()) {
+                    this.urls.addAll(filterChildren(children));
+                }
+
+                return new ArrayList<>(urls);
+            } finally {
+                lock.unlock();
             }
-
-            return new ArrayList<>(urls);
         }
 
         private boolean safeUpdate(String service, boolean add) {
-            synchronized (this) {
+            lock.lock();
+            try {
                 /**
                  * If the collection already contains the specified service, do nothing
                  */
                 return add ? this.urls.add(service) : this.urls.remove(service);
+            } finally {
+                lock.unlock();
             }
         }
 
