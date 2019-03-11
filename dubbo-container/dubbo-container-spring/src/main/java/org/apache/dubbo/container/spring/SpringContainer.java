@@ -46,7 +46,8 @@ public class SpringContainer implements Container {
         if (StringUtils.isEmpty(configPath)) {
             configPath = DEFAULT_SPRING_CONFIG;
         }
-        context = new ClassPathXmlApplicationContext(configPath.split("[,\\s]+"));
+        context = new ClassPathXmlApplicationContext(configPath.split("[,\\s]+"), false);
+        context.refresh();
         context.start();
     }
 
