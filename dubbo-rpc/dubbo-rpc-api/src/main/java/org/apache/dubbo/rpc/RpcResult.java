@@ -35,29 +35,12 @@ public class RpcResult extends AbstractResult {
     }
 
     public RpcResult(Throwable exception) {
-        this.exception = exception;
+        this.exception = handleStackTraceNull(exception);
     }
 
     @Override
     public Object recreate() throws Throwable {
         if (exception != null) {
-            // fix issue#619
-            try {
-                // get Throwable class
-                Class clazz = exception.getClass();
-                while (!clazz.getName().equals(Throwable.class.getName())) {
-                    clazz = clazz.getSuperclass();
-                }
-                // get stackTrace value
-                Field stackTraceField = clazz.getDeclaredField("stackTrace");
-                stackTraceField.setAccessible(true);
-                Object stackTrace = stackTraceField.get(exception);
-                if (stackTrace == null) {
-                    exception.setStackTrace(new StackTraceElement[0]);
-                }
-            } catch (Exception e) {
-                // ignore
-            }
             throw exception;
         }
         return result;
@@ -97,7 +80,7 @@ public class RpcResult extends AbstractResult {
     }
 
     public void setException(Throwable e) {
-        this.exception = e;
+        this.exception = handleStackTraceNull(e);
     }
 
     @Override
@@ -108,5 +91,33 @@ public class RpcResult extends AbstractResult {
     @Override
     public String toString() {
         return "RpcResult [result=" + result + ", exception=" + exception + "]";
+    }
+
+    /**
+     * fix issue#619
+     * @param e
+     * @return
+     */
+    private Throwable handleStackTraceNull(Throwable e) {
+        if (e != null) {
+            try {
+                // get Throwable class
+                Class clazz = e.getClass();
+                while (!clazz.getName().equals(Throwable.class.getName())) {
+                    clazz = clazz.getSuperclass();
+                }
+                // get stackTrace value
+                Field stackTraceField = clazz.getDeclaredField("stackTrace");
+                stackTraceField.setAccessible(true);
+                Object stackTrace = stackTraceField.get(e);
+                if (stackTrace == null) {
+                    e.setStackTrace(new StackTraceElement[0]);
+                }
+            } catch (Throwable t) {
+                // ignore
+            }
+        }
+
+        return e;
     }
 }
