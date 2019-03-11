@@ -444,14 +444,14 @@ public class JEtcdClientWrapper {
 
     private void recovery() {
 
-        /**
-         * The client is processing reconnection
-         */
-        if (cancelKeepAlive) return;
-
-        cancelKeepAlive();
-
         try {
+            /**
+             * The client is processing reconnection
+             */
+            if (cancelKeepAlive) return;
+
+            cancelKeepAlive();
+
             Set<String> ephemeralPaths = new HashSet<String>(registeredPaths);
             if (!ephemeralPaths.isEmpty()) {
                 for (String path : ephemeralPaths) {
@@ -465,11 +465,17 @@ public class JEtcdClientWrapper {
 
                         createEphemeral(path);
                         failedRegistered.remove(path);
-                    } catch (Exception ignored) {
+                    } catch (Exception e) {
+
                         /**
                          * waiting for retry again
                          */
                         failedRegistered.add(path);
+
+                        Status status = Status.fromThrowable(e);
+                        if (status.getCode() == Status.Code.NOT_FOUND) {
+                            cancelKeepAlive();
+                        }
                     }
                 }
             }
