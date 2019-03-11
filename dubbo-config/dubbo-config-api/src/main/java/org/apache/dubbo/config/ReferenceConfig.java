@@ -322,20 +322,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
     private T createProxy(Map<String, String> map) {
-        URL tmpUrl = new URL("temp", "localhost", 0, map);
-        final boolean isJvmRefer;
-        if (isInjvm() == null) {
-            if (url != null && url.length() > 0) { // if a url is specified, don't do local reference
-                isJvmRefer = false;
-            } else {
-                // by default, reference local service if there is
-                isJvmRefer = InjvmProtocol.getInjvmProtocol().isInjvmRefer(tmpUrl);
-            }
-        } else {
-            isJvmRefer = isInjvm();
-        }
-
-        if (isJvmRefer) {
+        if (shouldJvmRefer(map)) {
             URL url = new URL(Constants.LOCAL_PROTOCOL, Constants.LOCALHOST_VALUE, 0, interfaceClass.getName()).addParameters(map);
             invoker = refprotocol.refer(interfaceClass, url);
             if (logger.isInfoEnabled()) {
@@ -396,14 +383,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
         }
 
-        Boolean c = check;
-        if (c == null && consumer != null) {
-            c = consumer.isCheck();
-        }
-        if (c == null) {
-            c = true; // default true
-        }
-        if (c && !invoker.isAvailable()) {
+        if (shouldCheck() && !invoker.isAvailable()) {
             // make it possible for consumer to retry later if provider is temporarily unavailable
             initialized = false;
             throw new IllegalStateException("Failed to check the status of the service " + interfaceName + ". No provider available for the service " + (group == null ? "" : group + "/") + interfaceName + (version == null ? "" : ":" + version) + " from the url " + invoker.getUrl() + " to the consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion());
@@ -422,6 +402,55 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
         // create service proxy
         return (T) proxyFactory.getProxy(invoker);
+    }
+
+    /**
+     * Figure out should refer the service in the same JVM from configurations. The default behavior is true
+     * 1. if injvm is specified, then use it
+     * 2. then if a url is specified, then assume it's a remote call
+     * 3. otherwise, check scope parameter
+     * 4. if scope is not specified but the target service is provided in the same JVM, then prefer to make the local
+     * call, which is the default behavior
+     */
+    protected boolean shouldJvmRefer(Map<String, String> map) {
+        URL tmpUrl = new URL("temp", "localhost", 0, map);
+        boolean isJvmRefer;
+        if (isInjvm() == null) {
+            // if a url is specified, don't do local reference
+            if (url != null && url.length() > 0) {
+                isJvmRefer = false;
+            } else {
+                // by default, reference local service if there is
+                isJvmRefer = InjvmProtocol.getInjvmProtocol().isInjvmRefer(tmpUrl);
+            }
+        } else {
+            isJvmRefer = isInjvm();
+        }
+        return isJvmRefer;
+    }
+
+    protected boolean shouldCheck() {
+        Boolean shouldCheck = isCheck();
+        if (shouldCheck == null && getConsumer()!= null) {
+            shouldCheck = getConsumer().isCheck();
+        }
+        if (shouldCheck == null) {
+            // default true
+            shouldCheck = true;
+        }
+        return shouldCheck;
+    }
+
+    protected boolean shouldInit() {
+        Boolean shouldInit = isInit();
+        if (shouldInit == null && getConsumer() != null) {
+            shouldInit = getConsumer().isInit();
+        }
+        if (shouldInit == null) {
+            // default is false
+            return false;
+        }
+        return shouldInit;
     }
 
     private void checkDefault() {

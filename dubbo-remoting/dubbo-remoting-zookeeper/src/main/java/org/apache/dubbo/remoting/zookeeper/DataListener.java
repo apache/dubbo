@@ -17,7 +17,7 @@
 package org.apache.dubbo.remoting.zookeeper;
 
 /**
- * @author cvictory ON 2019-02-26
+ * 2019-02-26
  */
 public interface DataListener {
 

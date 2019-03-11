@@ -211,21 +211,19 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<TreeCacheLis
 
     @Override
     protected void addTargetDataListener(String path, TreeCacheListener treeCacheListener) {
-        try {
-            TreeCache treeCache = new TreeCache(client, path);
-            treeCache.start();
-            treeCache.getListenable().addListener(treeCacheListener);
-        } catch (Exception e) {
-            throw new IllegalStateException("Add treeCache listener for path:" + path, e);
-        }
+        this.addTargetDataListener(path, treeCacheListener, null);
     }
 
     @Override
     protected void addTargetDataListener(String path, TreeCacheListener treeCacheListener, Executor executor) {
         try {
-            TreeCache treeCache = new TreeCache(client, path);
+            TreeCache treeCache = TreeCache.newBuilder(client, path).setCacheData(false).build();
             treeCache.start();
-            treeCache.getListenable().addListener(treeCacheListener, executor);
+            if (executor == null) {
+                treeCache.getListenable().addListener(treeCacheListener);
+            } else {
+                treeCache.getListenable().addListener(treeCacheListener, executor);
+            }
         } catch (Exception e) {
             throw new IllegalStateException("Add treeCache listener for path:" + path, e);
         }
@@ -252,7 +250,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<TreeCacheLis
             this.dataListener = dataListener;
         }
 
-        protected CuratorWatcherImpl(){
+        protected CuratorWatcherImpl() {
         }
 
         public void unwatch() {
@@ -278,18 +276,21 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<TreeCacheLis
             if (dataListener != null) {
                 TreeCacheEvent.Type type = event.getType();
                 EventType eventType = null;
+                String content = null;
                 switch (type) {
                     case NODE_ADDED:
                         eventType = EventType.NodeCreated;
+                        content = new String(event.getData().getData(), charset);
                         break;
                     case NODE_UPDATED:
                         eventType = EventType.NodeDataChanged;
+                        content = new String(event.getData().getData(), charset);
                         break;
                     case NODE_REMOVED:
                         eventType = EventType.NodeDeleted;
                         break;
                 }
-                dataListener.dataChanged(event.getData().getPath(), new String(event.getData().getData(), charset), eventType);
+                dataListener.dataChanged(event.getData().getPath(), content, eventType);
             }
         }
     }

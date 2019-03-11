@@ -78,7 +78,7 @@ public class CacheListener implements DataListener {
             return;
         }
 
-        if (value == null) {
+        if (value == null && eventType != EventType.NodeDeleted) {
             return;
         }
 

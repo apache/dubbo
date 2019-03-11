@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.redis;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ArrayUtils;
@@ -416,10 +417,12 @@ public class RedisRegistry extends FailbackRegistry {
                 }
             }
             if (urls.isEmpty()) {
-                urls.add(url.setProtocol(Constants.EMPTY_PROTOCOL)
+                urls.add(URLBuilder.from(url)
+                        .setProtocol(Constants.EMPTY_PROTOCOL)
                         .setAddress(Constants.ANYHOST_VALUE)
                         .setPath(toServiceName(key))
-                        .addParameter(Constants.CATEGORY_KEY, category));
+                        .addParameter(Constants.CATEGORY_KEY, category)
+                        .build());
             }
             result.addAll(urls);
             if (logger.isInfoEnabled()) {

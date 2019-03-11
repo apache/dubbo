@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.integration;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -133,10 +134,12 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         if (StringUtils.isNotEmpty(isDefault)) {
             queryMap.put(Constants.REGISTRY_KEY + "." + Constants.DEFAULT_KEY, isDefault);
         }
-        return url.setPath(url.getServiceInterface())
+        return URLBuilder.from(url)
+                .setPath(url.getServiceInterface())
                 .clearParameters()
                 .addParameters(queryMap)
-                .removeParameter(Constants.MONITOR_KEY);
+                .removeParameter(Constants.MONITOR_KEY)
+                .build();
     }
 
     public void setProtocol(Protocol protocol) {

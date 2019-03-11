@@ -18,6 +18,7 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -304,8 +305,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                     List<URL> urls = UrlUtils.parseURLs(address, map);
 
                     for (URL url : urls) {
-                        url = url.addParameter(Constants.REGISTRY_KEY, url.getProtocol());
-                        url = url.setProtocol(Constants.REGISTRY_PROTOCOL);
+                        url = URLBuilder.from(url)
+                                .addParameter(Constants.REGISTRY_KEY, url.getProtocol())
+                                .setProtocol(Constants.REGISTRY_PROTOCOL)
+                                .build();
                         if ((provider && url.getParameter(Constants.REGISTER_KEY, true))
                                 || (!provider && url.getParameter(Constants.SUBSCRIBE_KEY, true))) {
                             registryList.add(url);
@@ -352,7 +355,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             }
             return UrlUtils.parseURL(address, map);
         } else if (Constants.REGISTRY_PROTOCOL.equals(monitor.getProtocol()) && registryURL != null) {
-          return registryURL.setProtocol(Constants.DUBBO_PROTOCOL).addParameter(Constants.PROTOCOL_KEY, Constants.REGISTRY_PROTOCOL).addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map));
+            return URLBuilder.from(registryURL)
+                    .setProtocol(Constants.DUBBO_PROTOCOL)
+                    .addParameter(Constants.PROTOCOL_KEY, Constants.REGISTRY_PROTOCOL)
+                    .addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map))
+                    .build();
         }
         return null;
     }

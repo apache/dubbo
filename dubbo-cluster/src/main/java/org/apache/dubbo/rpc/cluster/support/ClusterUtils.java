@@ -84,7 +84,9 @@ public class ClusterUtils {
             String remoteGroup = map.get(Constants.GROUP_KEY);
             String remoteRelease = map.get(Constants.RELEASE_KEY);
             map.putAll(localMap);
-            map.put(Constants.GROUP_KEY, remoteGroup);
+            if (StringUtils.isNotEmpty(remoteGroup)) {
+                map.put(Constants.GROUP_KEY, remoteGroup);
+            }
             // we should always keep the Provider RELEASE_KEY not overrode by the the value on Consumer side.
             map.remove(Constants.RELEASE_KEY);
             if (StringUtils.isNotEmpty(remoteRelease)) {
