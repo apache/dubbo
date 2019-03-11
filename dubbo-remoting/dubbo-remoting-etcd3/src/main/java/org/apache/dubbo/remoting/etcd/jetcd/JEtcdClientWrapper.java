@@ -33,6 +33,16 @@
  */
 package org.apache.dubbo.remoting.etcd.jetcd;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.etcd.RetryPolicy;
+import org.apache.dubbo.remoting.etcd.StateListener;
+import org.apache.dubbo.remoting.etcd.option.Constants;
+
 import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.Client;
 import io.etcd.jetcd.ClientBuilder;
@@ -45,22 +55,15 @@ import io.etcd.jetcd.options.GetOption;
 import io.etcd.jetcd.options.PutOption;
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import io.grpc.util.RoundRobinLoadBalancerFactory;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ConcurrentHashSet;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.remoting.etcd.RetryPolicy;
-import org.apache.dubbo.remoting.etcd.StateListener;
-import org.apache.dubbo.remoting.etcd.option.Constants;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -346,14 +349,15 @@ public class JEtcdClientWrapper {
                         public Long call() throws Exception {
                             requiredNotNull(client, failed);
 
-                            keepAlive();
                             registeredPaths.add(path);
+                            keepAlive();
+                            final long leaseId = globalLeaseId;
                             client.getKVClient()
                                     .put(ByteSequence.from(path, UTF_8)
-                                            , ByteSequence.from(String.valueOf(globalLeaseId), UTF_8)
-                                            , PutOption.newBuilder().withLeaseId(globalLeaseId).build())
+                                            , ByteSequence.from(String.valueOf(leaseId), UTF_8)
+                                            , PutOption.newBuilder().withLeaseId(leaseId).build())
                                     .get(DEFAULT_REQUEST_TIMEOUT, TimeUnit.MILLISECONDS);
-                            return globalLeaseId;
+                            return leaseId;
                         }
                     }, retryPolicy);
         } catch (Exception e) {
@@ -426,13 +430,14 @@ public class JEtcdClientWrapper {
              * causing the extreme scene service to be dropped.
              *
              */
+            long leaseId = globalLeaseId;
             try {
                 if (logger.isWarnEnabled()) {
-                    logger.warn("Failed to keep alive for global lease, waiting for retry again.");
+                    logger.warn("Failed to keep alive for global lease '" + leaseId + "', waiting for retry again.");
                 }
                 onFailed.accept(null);
             } catch (Exception ignored) {
-                logger.warn("Failed to recover from global lease expired or lease deadline exceeded.", ignored);
+                logger.warn("Failed to recover from global lease expired or lease deadline exceeded. lease '" + leaseId + "'", ignored);
             }
         }
     }
@@ -499,12 +504,13 @@ public class JEtcdClientWrapper {
 
     public String[] endPoints(String backupAddress) {
         String[] endpoints = backupAddress.split(Constants.COMMA_SEPARATOR);
-        return Arrays.stream(endpoints)
+        List<String> addressess = Arrays.stream(endpoints)
                 .map(address -> address.indexOf(Constants.HTTP_SUBFIX_KEY) > -1
                         ? address
                         : Constants.HTTP_KEY + address)
-                .collect(toList())
-                .toArray(new String[0]);
+                .collect(toList());
+        Collections.shuffle(addressess);
+        return addressess.toArray(new String[0]);
     }
 
     /**
@@ -538,11 +544,14 @@ public class JEtcdClientWrapper {
                         if (connectState != connected) {
                             int notifyState = connected ? StateListener.CONNECTED : StateListener.DISCONNECTED;
                             if (connectionStateListener != null) {
-                                if (connected) {
-                                    clearKeepAlive();
+                                try {
+                                    if (connected) {
+                                        clearKeepAlive();
+                                    }
+                                    connectionStateListener.stateChanged(getClient(), notifyState);
+                                } finally {
+                                    cancelKeepAlive = false;
                                 }
-                                connectionStateListener.stateChanged(getClient(), notifyState);
-                                cancelKeepAlive = false;
                             }
                             connectState = connected;
                         }
@@ -566,9 +575,8 @@ public class JEtcdClientWrapper {
         }
     }
 
-    private synchronized void clearKeepAlive() {
+    private void clearKeepAlive() {
         cancelKeepAlive = true;
-        registeredPaths.clear();
         failedRegistered.clear();
         cancelKeepAlive();
     }
@@ -662,8 +670,16 @@ public class JEtcdClientWrapper {
 
                             createEphemeral(path);
                             failedRegistered.remove(path);
-                        } catch (Throwable t) {
-                            logger.warn("Failed to retry register(keep alive) for path '" + path + "', waiting for again, cause: " + t.getMessage(), t);
+                        } catch (Throwable e) {
+
+                            failedRegistered.add(path);
+
+                            Status status = Status.fromThrowable(e);
+                            if (status.getCode() == Status.Code.NOT_FOUND) {
+                                cancelKeepAlive();
+                            }
+
+                            logger.warn("Failed to retry register(keep alive) for path '" + path + "', waiting for again, cause: " + e.getMessage(), e);
                         }
                     }
                 } catch (Throwable t) {
