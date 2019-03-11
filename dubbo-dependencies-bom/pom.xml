@@ -105,6 +105,7 @@
         <curator_version>4.0.1</curator_version>
         <curator_test_version>2.12.0</curator_test_version>
         <jedis_version>2.9.0</jedis_version>
+        <consul_version>1.4.2</consul_version>
         <xmemcached_version>1.3.6</xmemcached_version>
         <cxf_version>3.1.15</cxf_version>
         <thrift_version>0.8.0</thrift_version>
@@ -231,6 +232,11 @@
                 <groupId>redis.clients</groupId>
                 <artifactId>jedis</artifactId>
                 <version>${jedis_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.ecwid.consul</groupId>
+                <artifactId>consul-api</artifactId>
+                <version>${consul_version}</version>
             </dependency>
             <dependency>
                 <groupId>com.googlecode.xmemcached</groupId>
