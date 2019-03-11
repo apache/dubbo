@@ -27,10 +27,13 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.RpcInvocation;
 
 import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -42,17 +45,30 @@ import java.util.Map;
  */
 public class CacheTest extends TestCase {
 
+    @Before
+    public void setUp() {
+        ConfigManager.getInstance().clear();
+    }
+
+    @After
+    public void tearDown() {
+        ConfigManager.getInstance().clear();
+    }
+
     private void testCache(String type) throws Exception {
+        ApplicationConfig applicationConfig = new ApplicationConfig("cache-test");
+        RegistryConfig registryConfig = new RegistryConfig("N/A");
+        ProtocolConfig protocolConfig = new ProtocolConfig("injvm");
         ServiceConfig<CacheService> service = new ServiceConfig<CacheService>();
-        service.setApplication(new ApplicationConfig("cache-provider"));
-        service.setRegistry(new RegistryConfig("N/A"));
-        service.setProtocol(new ProtocolConfig("injvm"));
+        service.setApplication(applicationConfig);
+        service.setRegistry(registryConfig);
+        service.setProtocol(protocolConfig);
         service.setInterface(CacheService.class.getName());
         service.setRef(new CacheServiceImpl());
         service.export();
         try {
             ReferenceConfig<CacheService> reference = new ReferenceConfig<CacheService>();
-            reference.setApplication(new ApplicationConfig("cache-consumer"));
+            reference.setApplication(applicationConfig);
             reference.setInterface(CacheService.class);
             reference.setUrl("injvm://127.0.0.1?scope=remote&cache=true");
 
@@ -97,8 +113,12 @@ public class CacheTest extends TestCase {
     }
 
     @Test
-    public void testCache() throws Exception {
+    public void testCacheLru() throws Exception {
         testCache("lru");
+    }
+
+    @Test
+    public void testCacheThreadlocal() throws Exception {
         testCache("threadlocal");
     }
 

@@ -731,12 +731,11 @@ public class RpcContext {
     @SuppressWarnings("unchecked")
     public static AsyncContext startAsync() throws IllegalStateException {
         RpcContext currentContext = getContext();
-        if (currentContext.asyncContext != null) {
-            currentContext.asyncContext.start();
-            return currentContext.asyncContext;
-        } else {
-            throw new IllegalStateException("This service does not support asynchronous operations, you should open async explicitly before use.");
+        if (currentContext.asyncContext == null) {
+            currentContext.asyncContext = new AsyncContextImpl();
         }
+        currentContext.asyncContext.start();
+        return currentContext.asyncContext;
     }
 
     public boolean isAsyncStarted() {
@@ -748,10 +747,6 @@ public class RpcContext {
 
     public boolean stopAsync() {
         return asyncContext.stop();
-    }
-
-    public void setAsyncContext(AsyncContext asyncContext) {
-        this.asyncContext = asyncContext;
     }
 
     public AsyncContext getAsyncContext() {

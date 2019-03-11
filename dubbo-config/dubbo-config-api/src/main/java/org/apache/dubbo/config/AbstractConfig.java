@@ -50,22 +50,55 @@ public abstract class AbstractConfig implements Serializable {
 
     protected static final Logger logger = LoggerFactory.getLogger(AbstractConfig.class);
     private static final long serialVersionUID = 4267533505537413570L;
+
+    /**
+     * The maximum length of a <b>parameter's value</b>
+     */
     private static final int MAX_LENGTH = 200;
 
+    /**
+     * The maximum length of a <b>path</b>
+     */
     private static final int MAX_PATH_LENGTH = 200;
 
+    /**
+     * The rule qualification for <b>name</b>
+     */
     private static final Pattern PATTERN_NAME = Pattern.compile("[\\-._0-9a-zA-Z]+");
 
+    /**
+     * The rule qualification for <b>multiply name</b>
+     */
     private static final Pattern PATTERN_MULTI_NAME = Pattern.compile("[,\\-._0-9a-zA-Z]+");
 
+    /**
+     * The rule qualification for <b>method names</b>
+     */
     private static final Pattern PATTERN_METHOD_NAME = Pattern.compile("[a-zA-Z][0-9a-zA-Z]*");
 
+    /**
+     * The rule qualification for <b>path</b>
+     */
     private static final Pattern PATTERN_PATH = Pattern.compile("[/\\-$._0-9a-zA-Z]+");
 
+    /**
+     * The pattern matches a value who has a symbol
+     */
     private static final Pattern PATTERN_NAME_HAS_SYMBOL = Pattern.compile("[:*,\\s/\\-._0-9a-zA-Z]+");
 
+    /**
+     * The pattern matches a property key
+     */
     private static final Pattern PATTERN_KEY = Pattern.compile("[*,\\-._0-9a-zA-Z]+");
+
+    /**
+     * The legacy properties container
+     */
     private static final Map<String, String> legacyProperties = new HashMap<String, String>();
+
+    /**
+     * The suffix container
+     */
     private static final String[] SUFFIXES = new String[]{"Config", "Bean"};
 
     static {
@@ -82,6 +115,9 @@ public abstract class AbstractConfig implements Serializable {
         DubboShutdownHook.getDubboShutdownHook().register();
     }
 
+    /**
+     * The config id
+     */
     protected String id;
     protected String prefix;
 
@@ -104,7 +140,7 @@ public abstract class AbstractConfig implements Serializable {
                 break;
             }
         }
-        return tag.substring(0, 1).toLowerCase() + tag.substring(1);
+        return StringUtils.camelToSplitName(tag, "-");
     }
 
     protected static void appendParameters(Map<String, String> parameters, Object config) {
@@ -255,32 +291,26 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
-    /**
-     * We only check boolean value at this moment.
-     *
-     * @param type
-     * @param value
-     * @return
-     */
-    private static boolean isTypeMatch(Class<?> type, String value) {
-        if ((type == boolean.class || type == Boolean.class)
-                && !("true".equals(value) || "false".equals(value))) {
-            return false;
-        }
-        return true;
-    }
 
     protected static void checkExtension(Class<?> type, String property, String value) {
         checkName(property, value);
-        if (value != null && value.length() > 0
+        if (StringUtils.isNotEmpty(value)
                 && !ExtensionLoader.getExtensionLoader(type).hasExtension(value)) {
             throw new IllegalStateException("No such extension " + value + " for " + property + "/" + type.getName());
         }
     }
 
+    /**
+     * Check whether there is a <code>Extension</code> who's name (property) is <code>value</code> (special treatment is
+     * required)
+     *
+     * @param type The Extension type
+     * @param property The extension key
+     * @param value The Extension name
+     */
     protected static void checkMultiExtension(Class<?> type, String property, String value) {
         checkMultiName(property, value);
-        if (value != null && value.length() > 0) {
+        if (StringUtils.isNotEmpty(value)) {
             String[] values = value.split("\\s*[,]+\\s*");
             for (String v : values) {
                 if (v.startsWith(Constants.REMOVE_VALUE_PREFIX)) {
@@ -338,7 +368,7 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     protected static void checkProperty(String property, String value, int maxlength, Pattern pattern) {
-        if (value == null || value.length() == 0) {
+        if (StringUtils.isEmpty(value)) {
             return;
         }
         if (value.length() > maxlength) {
@@ -521,7 +551,7 @@ public abstract class AbstractConfig implements Serializable {
             config.addProperties(getMetaData());
             if (Environment.getInstance().isConfigCenterFirst()) {
                 // The sequence would be: SystemConfiguration -> ExternalConfiguration -> AppExternalConfiguration -> AbstractConfig -> PropertiesConfiguration
-                compositeConfiguration.addConfiguration(3,config);
+                compositeConfiguration.addConfiguration(3, config);
             } else {
                 // The sequence would be: SystemConfiguration -> AbstractConfig -> ExternalConfiguration -> AppExternalConfiguration -> PropertiesConfiguration
                 compositeConfiguration.addConfiguration(1, config);
@@ -590,4 +620,31 @@ public abstract class AbstractConfig implements Serializable {
         return true;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj.getClass().getName().equals(this.getClass().getName()))) {
+            return false;
+        }
+
+        Method[] methods = this.getClass().getMethods();
+        for (Method method1 : methods) {
+            if (ClassHelper.isGetter(method1) && ClassHelper.isPrimitive(method1.getReturnType())) {
+                Parameter parameter = method1.getAnnotation(Parameter.class);
+                if (parameter != null && parameter.excluded()) {
+                    continue;
+                }
+                try {
+                    Method method2 = obj.getClass().getMethod(method1.getName(), method1.getParameterTypes());
+                    Object value1 = method1.invoke(this, new Object[]{});
+                    Object value2 = method2.invoke(obj, new Object[]{});
+                    if ((value1 != null && value2 != null) && !value1.equals(value2)) {
+                        return false;
+                    }
+                } catch (Exception e) {
+                    return true;
+                }
+            }
+        }
+        return true;
+    }
 }

@@ -245,5 +245,4 @@ public class RSocketInvoker<T> extends AbstractInvoker<T> {
         }
         return dataOutputStream.toByteArray();
     }
-
 }

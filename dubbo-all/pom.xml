@@ -603,7 +603,7 @@
                                 </transformer>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>META-INF/dubbo/internal/org.apache.dubbo.configcenter.DynamicConfiguration
+                                    <resource>META-INF/dubbo/internal/org.apache.dubbo.configcenter.DynamicConfigurationFactory
                                     </resource>
                                 </transformer>
                             </transformers>

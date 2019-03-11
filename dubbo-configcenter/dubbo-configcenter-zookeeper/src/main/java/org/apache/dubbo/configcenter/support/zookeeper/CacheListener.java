@@ -65,7 +65,7 @@ public class CacheListener implements TreeCacheListener {
         // TODO We limit the notification of config changes to a specific path level, for example
         //  /dubbo/config/service/configurators, other config changes not in this level will not get notified,
         //  say /dubbo/config/dubbo.properties
-        if (data.getPath().split("/").length == 5) {
+        if (data.getPath().split("/").length >= 5) {
             byte[] value = data.getData();
             String key = pathToKey(data.getPath());
             ConfigChangeType changeType;

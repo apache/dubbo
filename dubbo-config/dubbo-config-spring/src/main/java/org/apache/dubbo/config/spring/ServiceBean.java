@@ -19,13 +19,13 @@ package org.apache.dubbo.config.spring;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.RegistryDataConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
@@ -145,12 +145,10 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             if (applicationConfigMap != null && applicationConfigMap.size() > 0) {
                 ApplicationConfig applicationConfig = null;
                 for (ApplicationConfig config : applicationConfigMap.values()) {
-                    if (config.isDefault() == null || config.isDefault()) {
-                        if (applicationConfig != null) {
-                            throw new IllegalStateException("Duplicate application configs: " + applicationConfig + " and " + config);
-                        }
-                        applicationConfig = config;
+                    if (applicationConfig != null) {
+                        throw new IllegalStateException("Duplicate application configs: " + applicationConfig + " and " + config);
                     }
+                    applicationConfig = config;
                 }
                 if (applicationConfig != null) {
                     setApplication(applicationConfig);
@@ -220,12 +218,12 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             }
         }
 
-        if (getRegistryDataConfig() == null) {
-            Map<String, RegistryDataConfig> registryDataConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, RegistryDataConfig.class, false, false);
-            if (registryDataConfigMap != null && registryDataConfigMap.size() == 1) {
-                super.setRegistryDataConfig(registryDataConfigMap.values().iterator().next());
-            } else if (registryDataConfigMap != null && registryDataConfigMap.size() > 1) {
-                throw new IllegalStateException("Multiple RegistryData configs: " + registryDataConfigMap);
+        if (getConfigCenter() == null) {
+            Map<String, ConfigCenterConfig> configenterMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ConfigCenterConfig.class, false, false);
+            if (configenterMap != null && configenterMap.size() == 1) {
+                super.setConfigCenter(configenterMap.values().iterator().next());
+            } else if (configenterMap != null && configenterMap.size() > 1) {
+                throw new IllegalStateException("Multiple ConfigCenter found:" + configenterMap);
             }
         }
 

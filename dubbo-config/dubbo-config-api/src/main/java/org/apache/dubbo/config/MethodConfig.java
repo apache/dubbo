@@ -23,7 +23,7 @@ import org.apache.dubbo.config.support.Parameter;
 import java.util.List;
 
 /**
- * MethodConfig
+ * The method configuration
  *
  * @export
  */
@@ -31,48 +31,79 @@ public class MethodConfig extends AbstractMethodConfig {
 
     private static final long serialVersionUID = 884908855422675941L;
 
-    // method name
+    /**
+     * The method name
+     */
     private String name;
 
-    // stat
+    /**
+     * Stat
+     */
     private Integer stat;
 
-    // whether to retry
+    /**
+     * Whether to retry
+     */
     private Boolean retry;
 
-    // if it's reliable
+    /**
+     * If it's reliable
+     */
     private Boolean reliable;
 
-    // thread limits for method invocations
+    /**
+     * Thread limits for method invocations
+     */
     private Integer executes;
 
-    // if it's deprecated
+    /**
+     * If it's deprecated
+     */
     private Boolean deprecated;
 
-    // whether to enable sticky
+    /**
+     * Whether to enable sticky
+     */
     private Boolean sticky;
 
-    // whether need to return
+    /**
+     * Whether need to return
+     */
     private Boolean isReturn;
 
-    // callback instance when async-call is invoked
+    /**
+     * Callback instance when async-call is invoked
+     */
     private Object oninvoke;
 
-    // callback method when async-call is invoked
+    /**
+     * Callback method when async-call is invoked
+     */
     private String oninvokeMethod;
 
-    // callback instance when async-call is returned
+    /**
+     * Callback instance when async-call is returned
+     */
     private Object onreturn;
 
-    // callback method when async-call is returned
+    /**
+     * Callback method when async-call is returned
+     */
     private String onreturnMethod;
 
-    // callback instance when async-call has exception thrown
+    /**
+     * Callback instance when async-call has exception thrown
+     */
     private Object onthrow;
 
-    // callback method when async-call has exception thrown
+    /**
+     * Callback method when async-call has exception thrown
+     */
     private String onthrowMethod;
 
+    /**
+     * The method arguments
+     */
     private List<ArgumentConfig> arguments;
 
     /**
@@ -89,7 +120,7 @@ public class MethodConfig extends AbstractMethodConfig {
     public void setName(String name) {
         checkMethodName("name", name);
         this.name = name;
-        if (id == null || id.length() == 0) {
+        if (StringUtils.isEmpty(id)) {
             id = name;
         }
     }
