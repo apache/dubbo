@@ -17,8 +17,9 @@
 package org.apache.dubbo.filter;
 
 import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
+
+import com.alibaba.dubbo.rpc.Invocation;
+import com.alibaba.dubbo.rpc.Invoker;
 
 import java.util.HashMap;
 import java.util.Map;

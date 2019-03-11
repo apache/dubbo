@@ -18,7 +18,6 @@
 package org.apache.dubbo.filter;
 
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.service.MockInvocation;
 
 import com.alibaba.dubbo.rpc.Filter;
 import com.alibaba.dubbo.rpc.Invocation;
@@ -38,7 +37,7 @@ public class FilterTest {
     public void testInvokeException() {
         try {
             Invoker<FilterTest> invoker = new LegacyInvoker<FilterTest>(null);
-            Invocation invocation = new MockInvocation("aa");
+            Invocation invocation = new LegacyInvocation("aa");
             myFilter.invoke(invoker, invocation);
             fail();
         } catch (RpcException e) {
@@ -49,7 +48,7 @@ public class FilterTest {
     @Test
     public void testDefault() {
         Invoker<FilterTest> invoker = new LegacyInvoker<FilterTest>(null);
-        Invocation invocation = new MockInvocation("bbb");
+        Invocation invocation = new LegacyInvocation("bbb");
         Result res = myFilter.invoke(invoker, invocation);
         System.out.println(res);
     }
