@@ -104,7 +104,7 @@ public class AccessLogFilter implements Filter {
                 log(accessLogKey, logData);
             }
         } catch (Throwable t) {
-            logger.warn("Exception in AcessLogFilter of service(" + invoker + " -> " + inv + ")", t);
+            logger.warn("Exception in AccessLogFilter of service(" + invoker + " -> " + inv + ")", t);
         }
         return invoker.invoke(inv);
     }
