@@ -137,16 +137,6 @@ public class MethodConfig extends AbstractMethodConfig {
         if(!"".equals(method.onthrow())){
             this.setOnthrow(method.onthrow());
         }
-        //if "" of @Method, then should set to null
-//        if("".equals(this.loadbalance)){
-//            this.setLoadbalance(null);
-//        }
-//        if("".equals(this.cache)){
-//            this.setLoadbalance(null);
-//        }
-//        if("".equals(this.validation)){
-//            this.setValidation(null);
-//        }
 
         if (method.arguments() != null && method.arguments().length != 0) {
             List<ArgumentConfig> argumentConfigs = new ArrayList<ArgumentConfig>(method.arguments().length);
