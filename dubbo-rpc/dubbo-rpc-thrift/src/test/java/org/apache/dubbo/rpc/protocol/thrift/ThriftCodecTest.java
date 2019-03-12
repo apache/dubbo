@@ -93,6 +93,8 @@ public class ThriftCodecTest {
         Assertions.assertEquals(ThriftCodec.VERSION, protocol.readByte());
         // service name
         Assertions.assertEquals(Demo.Iface.class.getName(), protocol.readString());
+        // path
+        Assertions.assertEquals(Demo.Iface.class.getName(), protocol.readString());
         // dubbo request id
         Assertions.assertEquals(request.getId(), protocol.readI64());
 
@@ -147,6 +149,8 @@ public class ThriftCodecTest {
         protocol.writeI32(Integer.MAX_VALUE);
         protocol.writeI16(Short.MAX_VALUE);
         protocol.writeByte(ThriftCodec.VERSION);
+        protocol.writeString(Demo.Iface.class.getName());
+        // path
         protocol.writeString(Demo.Iface.class.getName());
         protocol.writeI64(request.getId());
         protocol.getTransport().flush();
@@ -220,6 +224,8 @@ public class ThriftCodecTest {
         protocol.writeI32(Integer.MAX_VALUE);
         protocol.writeI16(Short.MAX_VALUE);
         protocol.writeByte(ThriftCodec.VERSION);
+        protocol.writeString(Demo.class.getName());
+        // path
         protocol.writeString(Demo.class.getName());
         protocol.writeI64(request.getId());
         protocol.getTransport().flush();
@@ -396,6 +402,9 @@ public class ThriftCodecTest {
         protocol.writeString(
                 ((RpcInvocation) request.getData())
                         .getAttachment(Constants.INTERFACE_KEY));
+        protocol.writeString(
+                ((RpcInvocation) request.getData())
+                        .getAttachment(Constants.PATH_KEY));
         protocol.writeI64(request.getId());
         protocol.getTransport().flush();
         headerLength = bos.size();
@@ -448,6 +457,7 @@ public class ThriftCodecTest {
         invocation.setParameterTypes(new Class<?>[]{String.class});
 
         invocation.setAttachment(Constants.INTERFACE_KEY, Demo.Iface.class.getName());
+        invocation.setAttachment(Constants.PATH_KEY, Demo.Iface.class.getName());
 
         Request request = new Request(1L);
 

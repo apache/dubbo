@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.proxy.wrapper;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.bytecode.Wrapper;
 import org.apache.dubbo.common.logger.Logger;
@@ -64,11 +65,12 @@ public class StubProxyFactoryWrapper implements ProxyFactory {
     public <T> T getProxy(Invoker<T> invoker) throws RpcException {
         T proxy = proxyFactory.getProxy(invoker);
         if (GenericService.class != invoker.getInterface()) {
-            String stub = invoker.getUrl().getParameter(Constants.STUB_KEY, invoker.getUrl().getParameter(Constants.LOCAL_KEY));
+            URL url = invoker.getUrl();
+            String stub = url.getParameter(Constants.STUB_KEY, url.getParameter(Constants.LOCAL_KEY));
             if (ConfigUtils.isNotEmpty(stub)) {
                 Class<?> serviceType = invoker.getInterface();
                 if (ConfigUtils.isDefault(stub)) {
-                    if (invoker.getUrl().hasParameter(Constants.STUB_KEY)) {
+                    if (url.hasParameter(Constants.STUB_KEY)) {
                         stub = serviceType.getName() + "Stub";
                     } else {
                         stub = serviceType.getName() + "Local";
@@ -83,12 +85,12 @@ public class StubProxyFactoryWrapper implements ProxyFactory {
                         Constructor<?> constructor = ReflectUtils.findConstructor(stubClass, serviceType);
                         proxy = (T) constructor.newInstance(new Object[]{proxy});
                         //export stub service
-                        URL url = invoker.getUrl();
+                        URLBuilder urlBuilder = URLBuilder.from(url);
                         if (url.getParameter(Constants.STUB_EVENT_KEY, Constants.DEFAULT_STUB_EVENT)) {
-                            url = url.addParameter(Constants.STUB_EVENT_METHODS_KEY, StringUtils.join(Wrapper.getWrapper(proxy.getClass()).getDeclaredMethodNames(), ","));
-                            url = url.addParameter(Constants.IS_SERVER_KEY, Boolean.FALSE.toString());
+                            urlBuilder.addParameter(Constants.STUB_EVENT_METHODS_KEY, StringUtils.join(Wrapper.getWrapper(proxy.getClass()).getDeclaredMethodNames(), ","));
+                            urlBuilder.addParameter(Constants.IS_SERVER_KEY, Boolean.FALSE.toString());
                             try {
-                                export(proxy, (Class) invoker.getInterface(), url);
+                                export(proxy, (Class) invoker.getInterface(), urlBuilder.build());
                             } catch (Exception e) {
                                 LOGGER.error("export a stub service error.", e);
                             }

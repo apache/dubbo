@@ -20,11 +20,10 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-/**
- * FIXME This is not a formal UT
- */
+@Disabled("FIXME This is not a formal UT")
 public class TagRouterTest {
     private static CuratorFramework client;
 
@@ -51,7 +50,7 @@ public class TagRouterTest {
                 "...";
 //        String serviceStr = "";
         try {
-            String servicePath = "/dubbo/config/demo-provider/tagrouters";
+            String servicePath = "/dubbo/config/demo-provider/tag-router";
             if (client.checkExists().forPath(servicePath) == null) {
                 client.create().creatingParentsIfNeeded().forPath(servicePath);
             }

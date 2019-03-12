@@ -50,7 +50,7 @@ public class GenericImplFilterTest {
                 new Class[]{Person.class}, new Object[]{new Person("dubbo", 10)});
 
 
-        URL url = URL.valueOf("test://test:11/com.alibaba.dubbo.rpc.support.DemoService?" +
+        URL url = URL.valueOf("test://test:11/org.apache.dubbo.rpc.support.DemoService?" +
                 "accesslog=true&group=dubbo&version=1.1&generic=true");
         Invoker invoker = Mockito.mock(Invoker.class);
 
@@ -74,7 +74,7 @@ public class GenericImplFilterTest {
         RpcInvocation invocation = new RpcInvocation("getPerson",
                 new Class[]{Person.class}, new Object[]{new Person("dubbo", 10)});
 
-        URL url = URL.valueOf("test://test:11/com.alibaba.dubbo.rpc.support.DemoService?" +
+        URL url = URL.valueOf("test://test:11/org.apache.dubbo.rpc.support.DemoService?" +
                 "accesslog=true&group=dubbo&version=1.1&generic=true");
         Invoker invoker = Mockito.mock(Invoker.class);
 
@@ -100,7 +100,7 @@ public class GenericImplFilterTest {
         RpcInvocation invocation = new RpcInvocation(Constants.$INVOKE, genericInvoke.getParameterTypes(),
                 new Object[]{"getPerson", new String[]{Person.class.getCanonicalName()}, new Object[]{person}});
 
-        URL url = URL.valueOf("test://test:11/com.alibaba.dubbo.rpc.support.DemoService?" +
+        URL url = URL.valueOf("test://test:11/org.apache.dubbo.rpc.support.DemoService?" +
                 "accesslog=true&group=dubbo&version=1.1&generic=true");
         Invoker invoker = Mockito.mock(Invoker.class);
         when(invoker.invoke(any(Invocation.class))).thenReturn(new RpcResult(new Person("person", 10)));

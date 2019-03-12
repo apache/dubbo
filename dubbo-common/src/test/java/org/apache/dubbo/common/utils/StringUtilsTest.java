@@ -240,9 +240,22 @@ public class StringUtilsTest {
 
     @Test
     public void testIsNumeric() throws Exception {
-        assertThat(StringUtils.isNumeric("123"), is(true));
-        assertThat(StringUtils.isNumeric("1a3"), is(false));
-        assertThat(StringUtils.isNumeric(null), is(false));
+        assertThat(StringUtils.isNumeric("123", false), is(true));
+        assertThat(StringUtils.isNumeric("1a3", false), is(false));
+        assertThat(StringUtils.isNumeric(null, false), is(false));
+
+        assertThat(StringUtils.isNumeric("0", true), is(true));
+        assertThat(StringUtils.isNumeric("0.1", true), is(true));
+        assertThat(StringUtils.isNumeric("DUBBO", true), is(false));
+        assertThat(StringUtils.isNumeric("", true), is(false));
+        assertThat(StringUtils.isNumeric(" ", true), is(false));
+        assertThat(StringUtils.isNumeric("   ", true), is(false));
+
+        assertThat(StringUtils.isNumeric("123.3.3", true), is(false));
+        assertThat(StringUtils.isNumeric("123.", true), is(true));
+        assertThat(StringUtils.isNumeric(".123", true), is(true));
+        assertThat(StringUtils.isNumeric("..123", true), is(false));
+
     }
 
     @Test
@@ -273,5 +286,13 @@ public class StringUtilsTest {
         assertThat(s, containsString("a,"));
         assertThat(s, containsString("0,"));
         assertThat(s, containsString("{\"enabled\":true}"));
+    }
+
+    @Test
+    public void testTrim() {
+        assertEquals("left blank", StringUtils.trim(" left blank"));
+        assertEquals("right blank", StringUtils.trim("right blank "));
+        assertEquals("bi-side blank", StringUtils.trim(" bi-side blank "));
+
     }
 }

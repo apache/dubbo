@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.ConfigChangeType;
@@ -29,11 +30,11 @@ import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRouterRule;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRuleParser;
 
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -42,19 +43,20 @@ import static org.apache.dubbo.common.Constants.FORCE_USE_TAG;
 import static org.apache.dubbo.common.Constants.TAG_KEY;
 
 /**
- * TagRouter
+ * TagRouter, "application.tag-router"
  */
-public class TagRouter extends AbstractRouter implements Comparable<Router>, ConfigurationListener {
+public class TagRouter extends AbstractRouter implements ConfigurationListener {
     public static final String NAME = "TAG_ROUTER";
-    private static final int DEFAULT_PRIORITY = 100;
+    private static final int TAG_ROUTER_DEFAULT_PRIORITY = 100;
     private static final Logger logger = LoggerFactory.getLogger(TagRouter.class);
-    private static final String RULE_PREFIX = ".tagrouters";
+    private static final String RULE_SUFFIX = ".tag-router";
 
     private TagRouterRule tagRouterRule;
     private String application;
 
     public TagRouter(DynamicConfiguration configuration, URL url) {
         super(configuration, url);
+        this.priority = TAG_ROUTER_DEFAULT_PRIORITY;
     }
 
     @Override
@@ -87,8 +89,10 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
             return invokers;
         }
 
-        if (tagRouterRule == null || !tagRouterRule.isValid() || !tagRouterRule.isEnabled()) {
-            return invokers;
+        // since the rule can be changed by config center, we should copy one to use.
+        final TagRouterRule tagRouterRuleCopy = tagRouterRule;
+        if (tagRouterRuleCopy == null || !tagRouterRuleCopy.isValid() || !tagRouterRuleCopy.isEnabled()) {
+            return filterUsingStaticTag(invokers, url, invocation);
         }
 
         List<Invoker<T>> result = invokers;
@@ -97,12 +101,12 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
 
         // if we are requesting for a Provider with a specific tag
         if (StringUtils.isNotEmpty(tag)) {
-            List<String> addresses = tagRouterRule.getTagnameToAddresses().get(tag);
+            List<String> addresses = tagRouterRuleCopy.getTagnameToAddresses().get(tag);
             // filter by dynamic tag group first
             if (CollectionUtils.isNotEmpty(addresses)) {
                 result = filterInvoker(invokers, invoker -> addressMatches(invoker.getUrl(), addresses));
                 // if result is not null OR it's null but force=true, return result directly
-                if (CollectionUtils.isNotEmpty(result) || tagRouterRule.isForce()) {
+                if (CollectionUtils.isNotEmpty(result) || tagRouterRuleCopy.isForce()) {
                     return result;
                 }
             } else {
@@ -112,19 +116,19 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
             }
             // If there's no tagged providers that can match the current tagged request. force.tag is set by default
             // to false, which means it will invoke any providers without a tag unless it's explicitly disallowed.
-            if (CollectionUtils.isNotEmpty(result) || isForceUse(invocation)) {
+            if (CollectionUtils.isNotEmpty(result) || isForceUseTag(invocation)) {
                 return result;
             }
             // FAILOVER: return all Providers without any tags.
             else {
                 List<Invoker<T>> tmp = filterInvoker(invokers, invoker -> addressNotMatches(invoker.getUrl(),
-                        tagRouterRule.getAddresses()));
+                        tagRouterRuleCopy.getAddresses()));
                 return filterInvoker(tmp, invoker -> StringUtils.isEmpty(invoker.getUrl().getParameter(TAG_KEY)));
             }
         } else {
             // List<String> addresses = tagRouterRule.filter(providerApp);
             // return all addresses in dynamic tag group.
-            List<String> addresses = tagRouterRule.getAddresses();
+            List<String> addresses = tagRouterRuleCopy.getAddresses();
             if (CollectionUtils.isNotEmpty(addresses)) {
                 result = filterInvoker(invokers, invoker -> addressNotMatches(invoker.getUrl(), addresses));
                 // 1. all addresses are in dynamic tag group, return empty list.
@@ -136,14 +140,40 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
             }
             return filterInvoker(result, invoker -> {
                 String localTag = invoker.getUrl().getParameter(TAG_KEY);
-                return StringUtils.isEmpty(localTag) || !tagRouterRule.getTagNames().contains(localTag);
+                return StringUtils.isEmpty(localTag) || !tagRouterRuleCopy.getTagNames().contains(localTag);
             });
         }
     }
 
-    @Override
-    public int getPriority() {
-        return DEFAULT_PRIORITY;
+    /**
+     * If there's no dynamic tag rule being set, use static tag in URL.
+     * <p>
+     * A typical scenario is a Consumer using version 2.7.x calls Providers using version 2.6.x or lower,
+     * the Consumer should always respect the tag in provider URL regardless of whether a dynamic tag rule has been set to it or not.
+     * <p>
+     * TODO, to guarantee consistent behavior of interoperability between 2.6- and 2.7+, this method should has the same logic with the TagRouter in 2.6.x.
+     *
+     * @param invokers
+     * @param url
+     * @param invocation
+     * @param <T>
+     * @return
+     */
+    private <T> List<Invoker<T>> filterUsingStaticTag(List<Invoker<T>> invokers, URL url, Invocation invocation) {
+        List<Invoker<T>> result = invokers;
+        // Dynamic param
+        String tag = StringUtils.isEmpty(invocation.getAttachment(TAG_KEY)) ? url.getParameter(TAG_KEY) :
+                invocation.getAttachment(TAG_KEY);
+        // Tag request
+        if (!StringUtils.isEmpty(tag)) {
+            result = filterInvoker(invokers, invoker -> tag.equals(invoker.getUrl().getParameter(Constants.TAG_KEY)));
+            if (CollectionUtils.isEmpty(result) && !isForceUseTag(invocation)) {
+                result = filterInvoker(invokers, invoker -> StringUtils.isEmpty(invoker.getUrl().getParameter(Constants.TAG_KEY)));
+            }
+        } else {
+            result = filterInvoker(invokers, invoker -> StringUtils.isEmpty(invoker.getUrl().getParameter(Constants.TAG_KEY)));
+        }
+        return result;
     }
 
     @Override
@@ -157,7 +187,7 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
         return tagRouterRule != null && tagRouterRule.isForce();
     }
 
-    private boolean isForceUse(Invocation invocation) {
+    private boolean isForceUseTag(Invocation invocation) {
         return Boolean.valueOf(invocation.getAttachment(FORCE_USE_TAG, url.getParameter(FORCE_USE_TAG, "false")));
     }
 
@@ -168,11 +198,26 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
     }
 
     private boolean addressMatches(URL url, List<String> addresses) {
-        return addresses != null && addresses.contains(url.getAddress());
+        return addresses != null && checkAddressMatch(addresses, url.getHost(), url.getPort());
     }
 
     private boolean addressNotMatches(URL url, List<String> addresses) {
-        return addresses == null || !addresses.contains(url.getAddress());
+        return addresses == null || !checkAddressMatch(addresses, url.getHost(), url.getPort());
+    }
+
+    private boolean checkAddressMatch(List<String> addresses, String host, int port) {
+        for (String address : addresses) {
+            try {
+                if (NetUtils.matchIpExpression(address, host, port)) {
+                    return true;
+                }
+            } catch (UnknownHostException e) {
+                logger.error("The format of ip address is invalid in tag route. Address :" + address, e);
+            } catch (Exception e) {
+                logger.error("The format of ip address is invalid in tag route. Address :" + address, e);
+            }
+        }
+        return false;
     }
 
     public void setApplication(String app) {
@@ -198,13 +243,13 @@ public class TagRouter extends AbstractRouter implements Comparable<Router>, Con
         synchronized (this) {
             if (!providerApplication.equals(application)) {
                 if (!StringUtils.isEmpty(application)) {
-                    configuration.removeListener(application + RULE_PREFIX, this);
+                    configuration.removeListener(application + RULE_SUFFIX, this);
                 }
-                String key = providerApplication + RULE_PREFIX;
+                String key = providerApplication + RULE_SUFFIX;
                 configuration.addListener(key, this);
                 application = providerApplication;
                 String rawRule = configuration.getConfig(key);
-                if (rawRule != null) {
+                if (StringUtils.isNotEmpty(rawRule)) {
                     this.process(new ConfigChangeEvent(key, rawRule));
                 }
             }

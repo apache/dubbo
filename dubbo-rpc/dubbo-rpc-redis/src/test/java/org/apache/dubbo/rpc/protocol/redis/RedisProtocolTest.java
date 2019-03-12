@@ -55,7 +55,8 @@ public class RedisProtocolTest {
     @BeforeEach
     public void setUp(TestInfo testInfo) {
         int redisPort = NetUtils.getAvailablePort();
-        if (testInfo.getTestMethod().equals("testAuthRedis") || testInfo.getTestMethod().equals("testWrongAuthRedis")) {
+        String methodName = testInfo.getTestMethod().get().getName();
+        if ("testAuthRedis".equals(methodName) || ("testWrongAuthRedis".equals(methodName))) {
             String password = "123456";
             this.redisServer = RedisServer.builder().port(redisPort).setting("requirepass " + password).build();
             this.registryUrl = URL.valueOf("redis://username:" + password + "@localhost:" + redisPort + "?db.index=0");
@@ -135,7 +136,7 @@ public class RedisProtocolTest {
     public void testExport() {
         Assertions.assertThrows(UnsupportedOperationException.class, () -> protocol.export(protocol.refer(IDemoService.class, registryUrl)));
     }
-    @Disabled
+
     @Test
     public void testAuthRedis() {
         // default db.index=0
@@ -174,9 +175,7 @@ public class RedisProtocolTest {
 
         // jedis gets the result comparison
         JedisPool pool = new JedisPool(new GenericObjectPoolConfig(), "localhost", registryUrl.getPort(), 2000, password, database, (String) null);
-        Jedis jedis = null;
-        try {
-            jedis = pool.getResource();
+        try (Jedis jedis = pool.getResource()) {
             byte[] valueByte = jedis.get("key".getBytes());
             Serialization serialization = ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(this.registryUrl.getParameter(Constants.SERIALIZATION_KEY, "java"));
             ObjectInput oin = serialization.deserialize(this.registryUrl, new ByteArrayInputStream(valueByte));
@@ -185,9 +184,6 @@ public class RedisProtocolTest {
         } catch (Exception e) {
             Assertions.fail("jedis gets the result comparison is error!");
         } finally {
-            if (jedis != null) {
-                jedis.close();
-            }
             pool.destroy();
         }
 
@@ -197,8 +193,8 @@ public class RedisProtocolTest {
 
         refer.destroy();
     }
-    @Disabled
-    //@Test
+
+    @Test
     public void testWrongAuthRedis() {
         String password = "1234567";
         this.registryUrl = this.registryUrl.setPassword(password);

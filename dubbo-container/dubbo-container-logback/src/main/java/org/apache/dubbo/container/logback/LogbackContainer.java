@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * LogbackContainer. (SPI, Singleton, ThreadSafe)
+ *
+ * The container class implementation for Logback
  */
 public class LogbackContainer implements Container {
 

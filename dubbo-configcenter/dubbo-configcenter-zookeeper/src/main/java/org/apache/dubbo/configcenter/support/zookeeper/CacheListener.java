@@ -38,6 +38,8 @@ import java.util.concurrent.CountDownLatch;
  *
  */
 public class CacheListener implements TreeCacheListener {
+    private static final byte[] EMPTY_BYTES = new byte[0];
+
     private Map<String, Set<ConfigurationListener>> keyListeners = new ConcurrentHashMap<>();
     private CountDownLatch initializedLatch;
     private String rootPath;
@@ -65,7 +67,7 @@ public class CacheListener implements TreeCacheListener {
         // TODO We limit the notification of config changes to a specific path level, for example
         //  /dubbo/config/service/configurators, other config changes not in this level will not get notified,
         //  say /dubbo/config/dubbo.properties
-        if (data.getPath().split("/").length == 5) {
+        if (data.getPath().split("/").length >= 5) {
             byte[] value = data.getData();
             String key = pathToKey(data.getPath());
             ConfigChangeType changeType;
@@ -83,6 +85,9 @@ public class CacheListener implements TreeCacheListener {
                     return;
             }
 
+            if (value == null) {
+                value = EMPTY_BYTES;
+            }
             ConfigChangeEvent configChangeEvent = new ConfigChangeEvent(key, new String(value, StandardCharsets.UTF_8), changeType);
             Set<ConfigurationListener> listeners = keyListeners.get(key);
             if (CollectionUtils.isNotEmpty(listeners)) {

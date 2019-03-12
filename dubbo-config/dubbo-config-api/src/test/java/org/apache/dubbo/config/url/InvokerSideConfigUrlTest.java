@@ -19,12 +19,12 @@ package org.apache.dubbo.config.url;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.api.DemoService;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.mock.MockRegistry;
 
 import org.junit.jupiter.api.AfterEach;
@@ -42,8 +42,6 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
     // ======================================================
     //   invoker related data preparing
     // ======================================================  
-    private ApplicationConfig appConfForConsumer;
-    private ApplicationConfig appConfForReference;
     private RegistryConfig regConfForConsumer;
     private RegistryConfig regConfForReference;
     private MethodConfig methodConfForReference;
@@ -145,11 +143,13 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
     public void setUp() {
         initServConf();
         initRefConf();
+        ConfigManager.getInstance().clear();
     }
 
     @AfterEach()
     public void teardown() {
         //RegistryServer.reloadCache();
+        ConfigManager.getInstance().clear();
     }
 
 
@@ -173,9 +173,6 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
     //   private helper
     // ====================================================== 
     private void initRefConf() {
-
-        appConfForConsumer = new ApplicationConfig();
-        appConfForReference = new ApplicationConfig();
         regConfForConsumer = new RegistryConfig();
         regConfForReference = new RegistryConfig();
         methodConfForReference = new MethodConfig();
@@ -186,11 +183,10 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
         methodConfForReference.setName("sayName");
         regConfForReference.setAddress("127.0.0.1:9090");
         regConfForReference.setProtocol("mockregistry");
-        appConfForReference.setName("ConfigTests");
         refConf.setInterface("org.apache.dubbo.config.api.DemoService");
 
-        refConf.setApplication(appConfForReference);
-        consumerConf.setApplication(appConfForConsumer);
+        refConf.setApplication(application);
+//        consumerConf.setApplication(appConfForConsumer);
 
         refConf.setRegistry(regConfForReference);
         consumerConf.setRegistry(regConfForConsumer);

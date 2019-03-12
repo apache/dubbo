@@ -87,7 +87,7 @@ public class ExtensionLoaderTest {
             fail();
         } catch (IllegalArgumentException expected) {
             assertThat(expected.getMessage(),
-                    containsString("Extension type(class org.apache.dubbo.common.extension.ExtensionLoaderTest) is not interface"));
+                    containsString("Extension type (class org.apache.dubbo.common.extension.ExtensionLoaderTest) is not an interface"));
         }
     }
 
@@ -99,8 +99,8 @@ public class ExtensionLoaderTest {
         } catch (IllegalArgumentException expected) {
             assertThat(expected.getMessage(),
                     allOf(containsString("org.apache.dubbo.common.extension.NoSpiExt"),
-                            containsString("is not extension"),
-                            containsString("WITHOUT @SPI Annotation")));
+                            containsString("is not an extension"),
+                            containsString("NOT annotated with @SPI")));
         }
     }
 
@@ -263,7 +263,7 @@ public class ExtensionLoaderTest {
             ExtensionLoader.getExtensionLoader(AddExt1.class).addExtension("impl1", AddExt1_ManualAdd1.class);
             fail();
         } catch (IllegalStateException expected) {
-            assertThat(expected.getMessage(), containsString("Extension name impl1 already existed(Extension interface org.apache.dubbo.common.extension.ext8_add.AddExt1)!"));
+            assertThat(expected.getMessage(), containsString("Extension name impl1 already exists (Extension interface org.apache.dubbo.common.extension.ext8_add.AddExt1)!"));
         }
     }
 
@@ -286,7 +286,7 @@ public class ExtensionLoaderTest {
             loader.addExtension(null, AddExt1_ManualAdaptive.class);
             fail();
         } catch (IllegalStateException expected) {
-            assertThat(expected.getMessage(), containsString("Adaptive Extension already existed(Extension interface org.apache.dubbo.common.extension.ext8_add.AddExt1)!"));
+            assertThat(expected.getMessage(), containsString("Adaptive Extension already exists (Extension interface org.apache.dubbo.common.extension.ext8_add.AddExt1)!"));
         }
     }
 
@@ -335,7 +335,7 @@ public class ExtensionLoaderTest {
             ExtensionLoader.getExtensionLoader(AddExt1.class).replaceExtension("NotExistedExtension", AddExt1_ManualAdd1.class);
             fail();
         } catch (IllegalStateException expected) {
-            assertThat(expected.getMessage(), containsString("Extension name NotExistedExtension not existed(Extension interface org.apache.dubbo.common.extension.ext8_add.AddExt1)"));
+            assertThat(expected.getMessage(), containsString("Extension name NotExistedExtension doesn't exist (Extension interface org.apache.dubbo.common.extension.ext8_add.AddExt1)"));
         }
     }
 
@@ -347,7 +347,7 @@ public class ExtensionLoaderTest {
             loader.replaceExtension(null, AddExt4_ManualAdaptive.class);
             fail();
         } catch (IllegalStateException expected) {
-            assertThat(expected.getMessage(), containsString("Adaptive Extension not existed(Extension interface org.apache.dubbo.common.extension.ext8_add.AddExt4)"));
+            assertThat(expected.getMessage(), containsString("Adaptive Extension doesn't exist (Extension interface org.apache.dubbo.common.extension.ext8_add.AddExt4)"));
         }
     }
 
@@ -361,7 +361,7 @@ public class ExtensionLoaderTest {
             loader.getExtension("error");
             fail();
         } catch (IllegalStateException expected) {
-            assertThat(expected.getMessage(), containsString("Failed to load extension class(interface: interface org.apache.dubbo.common.extension.ext7.InitErrorExt"));
+            assertThat(expected.getMessage(), containsString("Failed to load extension class (interface: interface org.apache.dubbo.common.extension.ext7.InitErrorExt"));
             assertThat(expected.getCause(), instanceOf(ExceptionInInitializerError.class));
         }
     }
