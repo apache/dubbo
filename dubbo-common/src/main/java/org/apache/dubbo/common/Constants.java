@@ -91,6 +91,11 @@ public class Constants {
 
     public static final String $INVOKE = "$invoke";
 
+    /**
+     * aysnc generic invoke method name.
+     */
+    public static final String $INVOKE_ASYNC = "$invokeAsync";
+
     public static final String $ECHO = "$echo";
 
     public static final int DEFAULT_IO_THREADS = Math.min(Runtime.getRuntime().availableProcessors() + 1, 32);
@@ -357,6 +362,7 @@ public class Constants {
     public static final String ASYNC_KEY = "async";
 
     public static final String FUTURE_GENERATED_KEY = "future_generated";
+
     public static final String FUTURE_RETURNTYPE_KEY = "future_returntype";
 
     public static final String ASYNC_SUFFIX = "Async";

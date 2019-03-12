@@ -16,10 +16,11 @@
  */
 package org.apache.dubbo.rpc.service;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
+
 /**
  * Generic service interface
- *
- * @export
  */
 public interface GenericService {
 
@@ -35,4 +36,16 @@ public interface GenericService {
      */
     Object $invoke(String method, String[] parameterTypes, Object[] args) throws GenericException;
 
+    /**
+     * Async generic invocation
+     *
+     * @param method         method name, same with {@link #$invoke(String, String[], Object[])}'s method name. e.g. findPerson
+     * @param parameterTypes Parameter types
+     * @param args           Arguments
+     * @return future type. We can use it with {@link CompletableFuture#whenComplete(BiConsumer)}
+     * @throws GenericException potential exception thrown from the invocation
+     */
+    default CompletableFuture<Object> $invokeAsync(String method, String[] parameterTypes, Object[] args) throws GenericException {
+        return CompletableFuture.completedFuture($invoke(method, parameterTypes, args));
+    }
 }

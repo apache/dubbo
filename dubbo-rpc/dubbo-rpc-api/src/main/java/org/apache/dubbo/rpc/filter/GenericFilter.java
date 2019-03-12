@@ -51,7 +51,9 @@ public class GenericFilter implements Filter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
-        if (inv.getMethodName().equals(Constants.$INVOKE)
+        boolean asyncGeneric = inv.getMethodName().equals(Constants.$INVOKE_ASYNC);
+        boolean genericMethod = inv.getMethodName().equals(Constants.$INVOKE) || asyncGeneric;
+        if (genericMethod
                 && inv.getArguments() != null
                 && inv.getArguments().length == 3
                 && !GenericService.class.isAssignableFrom(invoker.getInterface())) {
@@ -76,7 +78,7 @@ public class GenericFilter implements Filter {
                 } else if (ProtocolUtils.isJavaGenericSerialization(generic)) {
                     for (int i = 0; i < args.length; i++) {
                         if (byte[].class == args[i].getClass()) {
-                            try(UnsafeByteArrayInputStream is = new UnsafeByteArrayInputStream((byte[]) args[i])) {
+                            try (UnsafeByteArrayInputStream is = new UnsafeByteArrayInputStream((byte[]) args[i])) {
                                 args[i] = ExtensionLoader.getExtensionLoader(Serialization.class)
                                         .getExtension(Constants.GENERIC_SERIALIZATION_NATIVE_JAVA)
                                         .deserialize(null, is).readObject();
@@ -108,7 +110,14 @@ public class GenericFilter implements Filter {
                         }
                     }
                 }
-                Result result = invoker.invoke(new RpcInvocation(method, args, inv.getAttachments()));
+                RpcInvocation realInvocation = new RpcInvocation(method, args, inv.getAttachments());
+                if (asyncGeneric) {
+                    // We need to remove FUTURE_RETURNTYPE_KEY to ensure that the
+                    // server return value is still a normal type instead of a Future.
+                    // In addition, the server does not provide the function of asynchronous generic invoke.
+                    realInvocation.getAttachments().remove(Constants.FUTURE_RETURNTYPE_KEY);
+                }
+                Result result = invoker.invoke(realInvocation);
                 if (result.hasException()
                         && !(result.getException() instanceof GenericException)) {
                     return new RpcResult(new GenericException(result.getException()));

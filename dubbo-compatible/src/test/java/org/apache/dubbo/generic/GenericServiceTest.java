@@ -18,6 +18,7 @@
 package org.apache.dubbo.generic;
 
 
+import com.alibaba.fastjson.JSON;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
@@ -32,9 +33,6 @@ import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.service.ComplexObject;
 import org.apache.dubbo.service.DemoService;
 import org.apache.dubbo.service.DemoServiceImpl;
-
-import com.alibaba.fastjson.JSON;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -43,6 +41,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 public class GenericServiceTest {
 
@@ -62,6 +61,26 @@ public class GenericServiceTest {
         org.apache.dubbo.rpc.service.GenericService newClient = (org.apache.dubbo.rpc.service.GenericService) proxyFactory.getProxy(invoker, true);
         Object res = newClient.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{"hehe"});
         Assertions.assertEquals("hello hehe", res);
+        invoker.destroy();
+        exporter.unexport();
+    }
+
+    @Test
+    public void asyncGenericCall() throws Exception {
+        DemoService server = new DemoServiceImpl();
+        ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        URL url = URL.valueOf("dubbo://127.0.0.1:5342/" + DemoService.class.getName() + "?version=1.0.0");
+        Exporter<DemoService> exporter = protocol.export(proxyFactory.getInvoker(server, DemoService.class, url));
+        Invoker<DemoService> invoker = protocol.refer(DemoService.class, url);
+
+        GenericService client = (GenericService) proxyFactory.getProxy(invoker, true);
+        CompletableFuture<Object> future = client.$invokeAsync("sayHello", new String[]{"java.lang.String"}, new Object[]{"haha"});
+
+        // it will print hello haha and then pass the assert.
+        future.whenComplete((o, throwable) -> System.out.println(o));
+        Assertions.assertEquals("hello haha", future.get());
+
         invoker.destroy();
         exporter.unexport();
     }
@@ -107,7 +126,7 @@ public class GenericServiceTest {
 
         FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(DemoService.class);
         MethodDefinition methodDefinition = getMethod("complexCompute", fullServiceDefinition.getMethods());
-        Map mapObject = createComplexObject(fullServiceDefinition,var1, var2, l, var3, var4, testEnum);
+        Map mapObject = createComplexObject(fullServiceDefinition, var1, var2, l, var3, var4, testEnum);
         ComplexObject complexObject = map2bean(mapObject);
 
         Invoker<GenericService> invoker = protocol.refer(GenericService.class, url);
