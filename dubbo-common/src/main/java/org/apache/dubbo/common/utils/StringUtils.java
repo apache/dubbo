@@ -789,4 +789,8 @@ public final class StringUtils {
         }
         return buf.toString();
     }
+
+    public static String trim(String str) {
+        return str == null ? null : str.trim();
+    }
 }

@@ -71,9 +71,9 @@ public @interface Reference {
     boolean generic() default false;
 
     /**
-     * When enable, prefer to call local service in the same JVM if it's present, default value is false
+     * When enable, prefer to call local service in the same JVM if it's present, default value is true
      */
-    boolean injvm() default false;
+    boolean injvm() default true;
 
     /**
      * Check if service provider is available during boot up, default value is true

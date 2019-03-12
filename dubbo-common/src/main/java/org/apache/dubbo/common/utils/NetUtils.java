@@ -57,6 +57,9 @@ public class NetUtils {
     private static final Map<String, String> hostNameCache = new LRUCache<>(1000);
     private static volatile InetAddress LOCAL_ADDRESS = null;
 
+    private static final String SPLIT_IPV4_CHARECTER = "\\.";
+    private static final String SPLIT_IPV6_CHARECTER = ":";
+
     public static int getRandomPort() {
         return RND_PORT_START + ThreadLocalRandom.current().nextInt(RND_PORT_RANGE);
     }
@@ -340,13 +343,13 @@ public class NetUtils {
         return sb.toString();
     }
 
-    public static void joinMulticastGroup (MulticastSocket multicastSocket, InetAddress multicastAddress) throws IOException {
+    public static void joinMulticastGroup(MulticastSocket multicastSocket, InetAddress multicastAddress) throws IOException {
         setInterface(multicastSocket, multicastAddress instanceof Inet6Address);
         multicastSocket.setLoopbackMode(false);
         multicastSocket.joinGroup(multicastAddress);
     }
 
-    public static void setInterface (MulticastSocket multicastSocket, boolean preferIpv6) throws IOException{
+    public static void setInterface(MulticastSocket multicastSocket, boolean preferIpv6) throws IOException {
         boolean interfaceSet = false;
         Enumeration interfaces = NetworkInterface.getNetworkInterfaces();
         while (interfaces.hasMoreElements()) {
@@ -368,6 +371,136 @@ public class NetUtils {
                 break;
             }
         }
+    }
+
+    public static boolean matchIpExpression(String pattern, String host, int port) throws UnknownHostException {
+
+        // if the pattern is subnet format, it will not be allowed to config port param in pattern.
+        if (pattern.contains("/")) {
+            CIDRUtils utils = new CIDRUtils(pattern);
+            return utils.isInRange(host);
+        }
+
+
+        return matchIpRange(pattern, host, port);
+    }
+
+    /**
+     * @param pattern
+     * @param host
+     * @param port
+     * @return
+     * @throws UnknownHostException
+     */
+    public static boolean matchIpRange(String pattern, String host, int port) throws UnknownHostException {
+        if (pattern == null || host == null) {
+            throw new IllegalArgumentException("Illegal Argument pattern or hostName. Pattern:" + pattern + ", Host:" + host);
+        }
+        pattern = pattern.trim();
+        if (pattern.equals("*.*.*.*") || pattern.equals("*")) {
+            return true;
+        }
+
+        InetAddress inetAddress = InetAddress.getByName(host);
+        boolean isIpv4 = isValidV4Address(inetAddress) ? true : false;
+        String[] hostAndPort = getPatternHostAndPort(pattern, isIpv4);
+        if (hostAndPort[1] != null && !hostAndPort[1].equals(String.valueOf(port))) {
+            return false;
+        }
+        pattern = hostAndPort[0];
+
+        String splitCharacter = SPLIT_IPV4_CHARECTER;
+        if (!isIpv4) {
+            splitCharacter = SPLIT_IPV6_CHARECTER;
+        }
+        String[] mask = pattern.split(splitCharacter);
+        //check format of pattern
+        checkHostPattern(pattern, mask, isIpv4);
+
+        host = inetAddress.getHostAddress();
+
+        String[] ip_address = host.split(splitCharacter);
+        if (pattern.equals(host)) {
+            return true;
+        }
+        // short name condition
+        if (!ipPatternContainExpression(pattern)) {
+            InetAddress patternAddress = InetAddress.getByName(pattern);
+            if (patternAddress.getHostAddress().equals(host)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        for (int i = 0; i < mask.length; i++) {
+            if (mask[i].equals("*") || mask[i].equals(ip_address[i])) {
+                continue;
+            } else if (mask[i].contains("-")) {
+                String[] rangeNumStrs = mask[i].split("-");
+                if (rangeNumStrs.length != 2) {
+                    throw new IllegalArgumentException("There is wrong format of ip Address: " + mask[i]);
+                }
+                Integer min = getNumOfIpSegment(rangeNumStrs[0], isIpv4);
+                Integer max = getNumOfIpSegment(rangeNumStrs[1], isIpv4);
+                Integer ip = getNumOfIpSegment(ip_address[i], isIpv4);
+                if (ip < min || ip > max) {
+                    return false;
+                }
+            } else if ("0".equals(ip_address[i]) && ("0".equals(mask[i]) || "00".equals(mask[i]) || "000".equals(mask[i]) || "0000".equals(mask[i]))) {
+                continue;
+            } else if (!mask[i].equals(ip_address[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean ipPatternContainExpression(String pattern) {
+        return pattern.contains("*") || pattern.contains("-");
+    }
+
+    private static void checkHostPattern(String pattern, String[] mask, boolean isIpv4) {
+        if (!isIpv4) {
+            if (mask.length != 8 && ipPatternContainExpression(pattern)) {
+                throw new IllegalArgumentException("If you config ip expression that contains '*' or '-', please fill qulified ip pattern like 234e:0:4567:0:0:0:3d:*. ");
+            }
+            if (mask.length != 8 && !pattern.contains("::")) {
+                throw new IllegalArgumentException("The host is ipv6, but the pattern is not ipv6 pattern : " + pattern);
+            }
+        } else {
+            if (mask.length != 4) {
+                throw new IllegalArgumentException("The host is ipv4, but the pattern is not ipv4 pattern : " + pattern);
+            }
+        }
+    }
+
+    private static String[] getPatternHostAndPort(String pattern, boolean isIpv4) {
+        String[] result = new String[2];
+        if (pattern.startsWith("[") && pattern.contains("]:")) {
+            int end = pattern.indexOf("]:");
+            result[0] = pattern.substring(1, end);
+            result[1] = pattern.substring(end + 2);
+            return result;
+        } else if (pattern.startsWith("[") && pattern.endsWith("]")) {
+            result[0] = pattern.substring(1, pattern.length() - 1);
+            result[1] = null;
+            return result;
+        } else if (isIpv4 && pattern.contains(":")) {
+            int end = pattern.indexOf(":");
+            result[0] = pattern.substring(0, end);
+            result[1] = pattern.substring(end + 1);
+            return result;
+        } else {
+            result[0] = pattern;
+            return result;
+        }
+    }
+
+    private static Integer getNumOfIpSegment(String ipSegment, boolean isIpv4) {
+        if (isIpv4) {
+            return Integer.parseInt(ipSegment);
+        }
+        return Integer.parseInt(ipSegment, 16);
     }
 
 }
