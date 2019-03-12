@@ -129,15 +129,15 @@ public class JEtcdClientWrapper {
 
     private Client prepareClient(URL url) {
 
-        int maxInboudSize = DEFAULT_INBOUT_SIZE;
-        if (StringUtils.isNotEmpty(System.getProperty(GRPC_MAX_INBOUD_SIZE_KEY))) {
-            maxInboudSize = Integer.valueOf(System.getProperty(GRPC_MAX_INBOUD_SIZE_KEY));
+        int maxInboundSize = DEFAULT_INBOUND_SIZE;
+        if (StringUtils.isNotEmpty(System.getProperty(GRPC_MAX_INBOUND_SIZE_KEY))) {
+            maxInboundSize = Integer.valueOf(System.getProperty(GRPC_MAX_INBOUND_SIZE_KEY));
         }
 
         ClientBuilder clientBuilder = Client.builder()
                 .loadBalancerFactory(RoundRobinLoadBalancerFactory.getInstance())
                 .endpoints(endPoints(url.getBackupAddress()))
-                .maxInboundMessageSize(maxInboudSize);
+                .maxInboundMessageSize(maxInboundSize);
 
         return clientBuilder.build();
     }
@@ -656,9 +656,9 @@ public class JEtcdClientWrapper {
      */
     public static final long DEFAULT_REQUEST_TIMEOUT = obtainRequestTimeout();
 
-    public static final int DEFAULT_INBOUT_SIZE = 100 * 1024 * 1024;
+    public static final int DEFAULT_INBOUND_SIZE = 100 * 1024 * 1024;
 
-    public static final String GRPC_MAX_INBOUD_SIZE_KEY = "grpc.max.inbound.size";
+    public static final String GRPC_MAX_INBOUND_SIZE_KEY = "grpc.max.inbound.size";
 
     public static final String ETCD_REQUEST_TIMEOUT_KEY = "etcd.request.timeout";
 
