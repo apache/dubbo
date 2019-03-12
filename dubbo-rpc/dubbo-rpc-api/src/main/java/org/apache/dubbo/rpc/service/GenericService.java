@@ -48,4 +48,5 @@ public interface GenericService {
     default CompletableFuture<Object> $invokeAsync(String method, String[] parameterTypes, Object[] args) throws GenericException {
         return CompletableFuture.completedFuture($invoke(method, parameterTypes, args));
     }
+
 }
