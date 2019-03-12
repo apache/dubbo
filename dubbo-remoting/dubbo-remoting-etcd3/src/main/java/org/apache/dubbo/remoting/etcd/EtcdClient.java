@@ -164,4 +164,12 @@ public interface EtcdClient {
      */
     void revokeLease(long lease);
 
+
+    /**
+     * Get the value of the specified key.
+     * @param key the specified key
+     * @return null if the value is not found
+     */
+    String getKVValue(String key);
+
 }

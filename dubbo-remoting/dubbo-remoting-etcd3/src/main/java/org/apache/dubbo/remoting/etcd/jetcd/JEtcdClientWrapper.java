@@ -31,9 +31,11 @@ import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.Client;
 import io.etcd.jetcd.ClientBuilder;
 import io.etcd.jetcd.CloseableClient;
+import io.etcd.jetcd.KeyValue;
 import io.etcd.jetcd.Observers;
 import io.etcd.jetcd.common.exception.ErrorCode;
 import io.etcd.jetcd.common.exception.EtcdException;
+import io.etcd.jetcd.kv.GetResponse;
 import io.etcd.jetcd.lease.LeaseKeepAliveResponse;
 import io.etcd.jetcd.options.GetOption;
 import io.etcd.jetcd.options.PutOption;
@@ -608,6 +610,25 @@ public class JEtcdClientWrapper {
         if (obj == null) {
             throw exeception;
         }
+    }
+
+    public String getKVValue(String key) {
+        if (null == key) {
+            return null;
+        }
+
+        CompletableFuture<GetResponse> responseFuture = this.client.getKVClient().get(ByteSequence.from(key, UTF_8));
+
+        try {
+            List<KeyValue> result = responseFuture.get(DEFAULT_REQUEST_TIMEOUT, TimeUnit.MILLISECONDS).getKvs();
+            if (!result.isEmpty()) {
+                return result.get(0).getValue().toString(UTF_8);
+            }
+        } catch (Exception e) {
+            // ignore
+        }
+
+        return null;
     }
 
     private void retry() {

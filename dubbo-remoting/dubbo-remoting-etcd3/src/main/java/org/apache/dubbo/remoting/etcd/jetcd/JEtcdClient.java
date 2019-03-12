@@ -185,6 +185,11 @@ public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
         }
     }
 
+    @Override
+    public String getKVValue(String key) {
+        return clientWrapper.getKVValue(key);
+    }
+
     public class EtcdWatcher implements StreamObserver<WatchResponse> {
 
         protected WatchGrpc.WatchStub watchStub;
@@ -233,12 +238,7 @@ public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
                     }
                 }
                 if (modified > 0) {
-                    notifyExecutor.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.childChanged(path, new ArrayList<>(urls));
-                        }
-                    });
+                    notifyExecutor.execute(() -> listener.childChanged(path, new ArrayList<>(urls)));
                 }
 
             }
