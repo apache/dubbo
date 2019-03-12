@@ -470,13 +470,13 @@ public class JEtcdClientWrapper {
 
     public String[] endPoints(String backupAddress) {
         String[] endpoints = backupAddress.split(Constants.COMMA_SEPARATOR);
-        List<String> addressess = Arrays.stream(endpoints)
-                .map(address -> address.indexOf(Constants.HTTP_SUBFIX_KEY) > -1
+        List<String> addresses = Arrays.stream(endpoints)
+                .map(address -> address.contains(Constants.HTTP_SUBFIX_KEY)
                         ? address
                         : Constants.HTTP_KEY + address)
                 .collect(toList());
-        Collections.shuffle(addressess);
-        return addressess.toArray(new String[0]);
+        Collections.shuffle(addresses);
+        return addresses.toArray(new String[0]);
     }
 
     /**
