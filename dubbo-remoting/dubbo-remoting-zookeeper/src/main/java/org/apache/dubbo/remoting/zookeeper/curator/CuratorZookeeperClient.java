@@ -42,12 +42,15 @@ import org.apache.zookeeper.WatchedEvent;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 
-public class CuratorZookeeperClient extends AbstractZookeeperClient<TreeCacheListener, CuratorZookeeperClient.CuratorWatcherImpl> {
+public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZookeeperClient.CuratorWatcherImpl, CuratorZookeeperClient.CuratorWatcherImpl> {
 
     static final Charset charset = Charset.forName("UTF-8");
     private final CuratorFramework client;
+    private Map<String, TreeCache> treeCacheMap = new ConcurrentHashMap<>();
 
 
     public CuratorZookeeperClient(URL url) {
@@ -205,19 +208,20 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<TreeCacheLis
     }
 
     @Override
-    protected TreeCacheListener createTargetDataListener(String path, DataListener listener) {
+    protected CuratorZookeeperClient.CuratorWatcherImpl createTargetDataListener(String path, DataListener listener) {
         return new CuratorWatcherImpl(client, listener);
     }
 
     @Override
-    protected void addTargetDataListener(String path, TreeCacheListener treeCacheListener) {
+    protected void addTargetDataListener(String path, CuratorZookeeperClient.CuratorWatcherImpl treeCacheListener) {
         this.addTargetDataListener(path, treeCacheListener, null);
     }
 
     @Override
-    protected void addTargetDataListener(String path, TreeCacheListener treeCacheListener, Executor executor) {
+    protected void addTargetDataListener(String path, CuratorZookeeperClient.CuratorWatcherImpl treeCacheListener, Executor executor) {
         try {
             TreeCache treeCache = TreeCache.newBuilder(client, path).setCacheData(false).build();
+            treeCacheMap.putIfAbsent(path, treeCache);
             treeCache.start();
             if (executor == null) {
                 treeCache.getListenable().addListener(treeCacheListener);
@@ -227,6 +231,15 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<TreeCacheLis
         } catch (Exception e) {
             throw new IllegalStateException("Add treeCache listener for path:" + path, e);
         }
+    }
+
+    @Override
+    protected void removeTargetDataListener(String path, CuratorZookeeperClient.CuratorWatcherImpl treeCacheListener) {
+        TreeCache treeCache = treeCacheMap.get(path);
+        if (treeCache != null) {
+            treeCache.getListenable().removeListener(treeCacheListener);
+        }
+        treeCacheListener.dataListener = null;
     }
 
     @Override
@@ -277,20 +290,37 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<TreeCacheLis
                 TreeCacheEvent.Type type = event.getType();
                 EventType eventType = null;
                 String content = null;
+                String path = null;
                 switch (type) {
                     case NODE_ADDED:
                         eventType = EventType.NodeCreated;
+                        path = event.getData().getPath();
                         content = new String(event.getData().getData(), charset);
                         break;
                     case NODE_UPDATED:
                         eventType = EventType.NodeDataChanged;
+                        path = event.getData().getPath();
                         content = new String(event.getData().getData(), charset);
                         break;
                     case NODE_REMOVED:
+                        path = event.getData().getPath();
                         eventType = EventType.NodeDeleted;
                         break;
+                    case INITIALIZED:
+                        eventType = EventType.INITIALIZED;
+                        break;
+                    case CONNECTION_LOST:
+                        eventType = EventType.CONNECTION_LOST;
+                        break;
+                    case CONNECTION_RECONNECTED:
+                        eventType = EventType.CONNECTION_RECONNECTED;
+                        break;
+                    case CONNECTION_SUSPENDED:
+                        eventType = EventType.CONNECTION_SUSPENDED;
+                        break;
+
                 }
-                dataListener.dataChanged(event.getData().getPath(), content, eventType);
+                dataListener.dataChanged(path, content, eventType);
             }
         }
     }

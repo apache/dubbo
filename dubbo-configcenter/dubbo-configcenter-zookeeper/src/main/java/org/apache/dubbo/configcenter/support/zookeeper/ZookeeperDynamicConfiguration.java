@@ -59,6 +59,12 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
 
         zkClient = zookeeperTransporter.connect(url);
         zkClient.addDataListener(rootPath, cacheListener, executor);
+        try {
+            // Wait for connection
+            this.initializedLatch.await();
+        } catch (InterruptedException e) {
+            logger.warn("Failed to build local cache for config center (zookeeper)." + url);
+        }
     }
 
     /**

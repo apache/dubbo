@@ -44,6 +44,8 @@ public interface ZookeeperClient {
      */
     void addDataListener(String path, DataListener listener, Executor executor);
 
+    void removeDataListener(String path, DataListener listener);
+
     void removeChildListener(String path, ChildListener listener);
 
     void addStateListener(StateListener listener);

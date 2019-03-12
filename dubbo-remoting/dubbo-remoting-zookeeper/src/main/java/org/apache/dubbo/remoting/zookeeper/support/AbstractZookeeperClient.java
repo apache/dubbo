@@ -103,17 +103,7 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
 
     @Override
     public void addDataListener(String path, DataListener listener) {
-        ConcurrentMap<DataListener, TargetDataListener> dataListenerMap = listeners.get(path);
-        if (dataListenerMap == null) {
-            listeners.putIfAbsent(path, new ConcurrentHashMap<DataListener, TargetDataListener>());
-            dataListenerMap = listeners.get(path);
-        }
-        TargetDataListener targetListener = dataListenerMap.get(listener);
-        if (targetListener == null) {
-            dataListenerMap.putIfAbsent(listener, createTargetDataListener(path, listener));
-            targetListener = dataListenerMap.get(listener);
-        }
-        addTargetDataListener(path, targetListener);
+        this.addDataListener(path, listener, null);
     }
 
     @Override
@@ -129,6 +119,17 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
             targetListener = dataListenerMap.get(listener);
         }
         addTargetDataListener(path, targetListener, executor);
+    }
+
+    @Override
+    public void removeDataListener(String path, DataListener listener ){
+        ConcurrentMap<DataListener, TargetDataListener> dataListenerMap = listeners.get(path);
+        if (dataListenerMap != null) {
+            TargetDataListener targetListener = dataListenerMap.remove(listener);
+            if(targetListener != null){
+                removeTargetDataListener(path, targetListener);
+            }
+        }
     }
 
     @Override
@@ -206,6 +207,8 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
     protected abstract void addTargetDataListener(String path, TargetDataListener listener);
 
     protected abstract void addTargetDataListener(String path, TargetDataListener listener, Executor executor);
+
+    protected abstract void removeTargetDataListener(String path, TargetDataListener listener);
 
     protected abstract void removeTargetChildListener(String path, TargetChildListener listener);
 

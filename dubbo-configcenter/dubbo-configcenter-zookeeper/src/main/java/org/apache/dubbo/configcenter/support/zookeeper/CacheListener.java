@@ -74,11 +74,15 @@ public class CacheListener implements DataListener {
     @Override
     public void dataChanged(String path, Object value, EventType eventType) {
         if (eventType == null) {
+            return;
+        }
+
+        if (eventType == EventType.INITIALIZED) {
             initializedLatch.countDown();
             return;
         }
 
-        if (value == null && eventType != EventType.NodeDeleted) {
+        if (path == null || (value == null && eventType != EventType.NodeDeleted)) {
             return;
         }
 
