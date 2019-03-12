@@ -82,7 +82,7 @@ public class Server {
         if (!started.compareAndSet(false, true)) {
             return;
         }
-        boss = new NioEventLoopGroup(0, new DefaultThreadFactory("qos-boss", true));
+        boss = new NioEventLoopGroup(1, new DefaultThreadFactory("qos-boss", true));
         worker = new NioEventLoopGroup(0, new DefaultThreadFactory("qos-worker", true));
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         serverBootstrap.group(boss, worker);
