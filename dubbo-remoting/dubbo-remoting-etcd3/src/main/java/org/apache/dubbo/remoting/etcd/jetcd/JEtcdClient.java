@@ -17,6 +17,8 @@
 
 package org.apache.dubbo.remoting.etcd.jetcd;
 
+import io.etcd.jetcd.Client;
+import io.etcd.jetcd.Watch;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
@@ -188,6 +190,15 @@ public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
     @Override
     public String getKVValue(String key) {
         return clientWrapper.getKVValue(key);
+    }
+
+    @Override
+    public void addWatchListener(String key, Watch.Listener listener) {
+        Client client = clientWrapper.getClient();
+        if (client == null) {
+            return;
+        }
+        client.getWatchClient().watch(ByteSequence.from(key, UTF_8), listener);
     }
 
     public class EtcdWatcher implements StreamObserver<WatchResponse> {

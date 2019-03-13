@@ -24,6 +24,9 @@ import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.remoting.etcd.EtcdClient;
 import org.apache.dubbo.remoting.etcd.jetcd.JEtcdClient;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import static org.apache.dubbo.common.Constants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.Constants.PATH_SEPARATOR;
 
@@ -42,14 +45,21 @@ public class EtcdDynamicConfiguration implements DynamicConfiguration {
      */
     private final EtcdClient etcdClient;
 
+    /**
+     * The map store the key to {@link EtcdConfigListener} mapping
+     */
+    private final ConcurrentMap<String, EtcdConfigListener> watchListenerMap;
+
     EtcdDynamicConfiguration(URL url) {
         rootPath = "/" + url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP) + "/config";
         etcdClient = new JEtcdClient(url);
+        watchListenerMap = new ConcurrentHashMap<>();
     }
 
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
-
+        String normalizedKey = convertKey(key);
+        etcdClient.addWatchListener(normalizedKey, new EtcdConfigListener(listener));
     }
 
     @Override
@@ -72,5 +82,11 @@ public class EtcdDynamicConfiguration implements DynamicConfiguration {
     @Override
     public Object getInternalProperty(String key) {
         return etcdClient.getKVValue(key);
+    }
+
+
+    private String convertKey(String key) {
+        int index = key.lastIndexOf('.');
+        return rootPath + PATH_SEPARATOR + key.substring(0, index) + PATH_SEPARATOR + key.substring(index + 1);
     }
 }

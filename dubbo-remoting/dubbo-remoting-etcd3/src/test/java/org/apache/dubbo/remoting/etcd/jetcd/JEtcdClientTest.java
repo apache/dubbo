@@ -33,7 +33,11 @@
  */
 package org.apache.dubbo.remoting.etcd.jetcd;
 
+import io.etcd.jetcd.ByteSequence;
+import io.etcd.jetcd.Client;
+import io.etcd.jetcd.Watch;
 import io.etcd.jetcd.common.exception.ClosedClientException;
+import io.etcd.jetcd.watch.WatchEvent;
 import io.grpc.Status;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
@@ -46,6 +50,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Disabled
 public class JEtcdClientTest {
@@ -73,6 +79,33 @@ public class JEtcdClientTest {
 
         client.removeChildListener(path, childListener);
         client.delete(child);
+    }
+
+    @Test
+    public void test_watch_when_modify() {
+        String path = "/dubbo/config/jetcd-client-unit-test/configurators";
+        String endpoint = "http://127.0.0.1:2379";
+        CountDownLatch latch = new CountDownLatch(1);
+        ByteSequence key = ByteSequence.from(path, UTF_8);
+
+        Watch.Listener listener = Watch.listener(response -> {
+            for (WatchEvent event : response.getEvents()) {
+                Assertions.assertEquals("PUT", event.getEventType().toString());
+                Assertions.assertEquals(path, event.getKeyValue().getKey().toString(UTF_8));
+                Assertions.assertEquals("Hello", event.getKeyValue().getValue().toString(UTF_8));
+            }
+            latch.countDown();
+        });
+
+        try (Client client = Client.builder().endpoints(endpoint).build();
+             Watch watch = client.getWatchClient();
+             Watch.Watcher watcher = watch.watch(key, listener)) {
+            // try to modify the key
+            client.getKVClient().put(ByteSequence.from(path, UTF_8), ByteSequence.from("Hello", UTF_8));
+            latch.await();
+        } catch (Exception e) {
+            Assertions.fail(e.getMessage());
+        }
     }
 
     @Test
