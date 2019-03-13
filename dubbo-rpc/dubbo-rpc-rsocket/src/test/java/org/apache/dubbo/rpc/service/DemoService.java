@@ -61,5 +61,9 @@ public interface DemoService {
 
     Flux<String> requestFluxBizError(String name);
 
+    Mono<String> requestMonoWithMonoArg(Mono<String> m1, Mono<String> m2);
+
+    Flux<String> requestFluxWithFluxArg(Flux<String> f1, Flux<String> f2);
+
 
 }

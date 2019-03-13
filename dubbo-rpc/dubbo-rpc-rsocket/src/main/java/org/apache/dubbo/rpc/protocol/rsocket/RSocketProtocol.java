@@ -33,6 +33,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
+import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.remoting.RemotingException;
@@ -61,6 +62,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -231,15 +233,128 @@ public class RSocketProtocol extends AbstractProtocol {
                     rSocket ->
                             new AbstractRSocket() {
                                 public Mono<Payload> requestResponse(Payload payload) {
-                                    //TODO support Mono arg
-                                    throw new UnsupportedOperationException();
+                                    try {
+                                        ByteBuffer metadataBuffer = payload.getMetadata();
+                                        byte[] metadataBytes = new byte[metadataBuffer.remaining()];
+                                        metadataBuffer.get(metadataBytes, metadataBuffer.position(), metadataBuffer.remaining());
+                                        Map<String,Object> metadataMap = MetadataCodec.decodeMetadata(metadataBytes);
+                                        Byte serializeId = ((Integer) metadataMap.get(RSocketConstants.SERIALIZE_TYPE_KEY)).byteValue();
+
+
+                                        ByteBuffer dataBuffer = payload.getData();
+                                        byte[] dataBytes = new byte[dataBuffer.remaining()];
+                                        dataBuffer.get(dataBytes, dataBuffer.position(), dataBuffer.remaining());
+                                        InputStream dataInputStream = new ByteArrayInputStream(dataBytes);
+                                        ObjectInput in = CodecSupport.getSerializationById(serializeId).deserialize(null, dataInputStream);
+                                        long id = in.readLong();
+
+                                        Mono mono = ResourceDirectory.unmountMono(id);
+                                        return mono.map(new Function<Object, Payload>() {
+                                            @Override
+                                            public Payload apply(Object o) {
+                                                try {
+                                                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                                                    ObjectOutput out = CodecSupport.getSerializationById(serializeId).serialize(null, bos);
+                                                    out.writeByte((byte) 0);
+                                                    out.writeObject(o);
+                                                    out.flushBuffer();
+                                                    bos.flush();
+                                                    bos.close();
+                                                    Payload responsePayload = DefaultPayload.create(bos.toByteArray());
+                                                    return responsePayload;
+                                                } catch (Throwable t) {
+                                                    throw Exceptions.propagate(t);
+                                                }
+                                            }
+                                        }).onErrorResume(new Function<Throwable, Publisher<Payload>>() {
+                                            @Override
+                                            public Publisher<Payload> apply(Throwable throwable) {
+                                                try {
+                                                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                                                    ObjectOutput out = CodecSupport.getSerializationById(serializeId).serialize(null, bos);
+                                                    out.writeByte((byte) RSocketConstants.FLAG_ERROR);
+                                                    out.writeObject(throwable);
+                                                    out.flushBuffer();
+                                                    bos.flush();
+                                                    bos.close();
+                                                    Payload errorPayload = DefaultPayload.create(bos.toByteArray());
+                                                    return Flux.just(errorPayload);
+                                                } catch (Throwable t) {
+                                                    throw Exceptions.propagate(t);
+                                                }
+                                            }
+                                        });
+
+                                    }catch (Throwable t){
+                                        throw new RuntimeException(t);
+                                    }
                                 }
 
                                 @Override
                                 public Flux<Payload> requestStream(Payload payload) {
-                                    //TODO support Flux arg
-                                    throw new UnsupportedOperationException();
+                                    try {
+                                        ByteBuffer metadataBuffer = payload.getMetadata();
+                                        byte[] metadataBytes = new byte[metadataBuffer.remaining()];
+                                        metadataBuffer.get(metadataBytes, metadataBuffer.position(), metadataBuffer.remaining());
+                                        Map<String,Object> metadataMap = MetadataCodec.decodeMetadata(metadataBytes);
+                                        Byte serializeId = ((Integer) metadataMap.get(RSocketConstants.SERIALIZE_TYPE_KEY)).byteValue();
+
+
+                                        ByteBuffer dataBuffer = payload.getData();
+                                        byte[] dataBytes = new byte[dataBuffer.remaining()];
+                                        dataBuffer.get(dataBytes, dataBuffer.position(), dataBuffer.remaining());
+                                        InputStream dataInputStream = new ByteArrayInputStream(dataBytes);
+                                        ObjectInput in = CodecSupport.getSerializationById(serializeId).deserialize(null, dataInputStream);
+                                        long id = in.readLong();
+
+                                        Flux flux = ResourceDirectory.unmountFlux(id);
+                                        return flux.map(new Function<Object, Payload>() {
+                                            @Override
+                                            public Payload apply(Object o) {
+                                                try {
+                                                    return encodeData(o, serializeId);
+                                                } catch (Throwable t) {
+                                                    throw new RuntimeException(t);
+                                                }
+                                            }
+                                        }).onErrorResume(new Function<Throwable, Publisher<Payload>>() {
+                                            @Override
+                                            public Publisher<Payload> apply(Throwable throwable) {
+                                                try {
+                                                    Payload errorPayload = encodeError(throwable, serializeId);
+                                                    return Flux.just(errorPayload);
+                                                } catch (Throwable t) {
+                                                    throw new RuntimeException(t);
+                                                }
+                                            }
+                                        });
+                                    }catch (Throwable t){
+                                        throw new RuntimeException(t);
+                                    }
                                 }
+
+                                private Payload encodeData(Object data, byte serializeId) throws Throwable {
+                                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                                    ObjectOutput out = CodecSupport.getSerializationById(serializeId).serialize(null, bos);
+                                    out.writeByte((byte) 0);
+                                    out.writeObject(data);
+                                    out.flushBuffer();
+                                    bos.flush();
+                                    bos.close();
+                                    return DefaultPayload.create(bos.toByteArray());
+                                }
+
+                                private Payload encodeError(Throwable throwable, byte serializeId) throws Throwable {
+                                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                                    ObjectOutput out = CodecSupport.getSerializationById(serializeId).serialize(null, bos);
+                                    out.writeByte((byte) RSocketConstants.FLAG_ERROR);
+                                    out.writeObject(throwable);
+                                    out.flushBuffer();
+                                    bos.flush();
+                                    bos.close();
+                                    return DefaultPayload.create(bos.toByteArray());
+                                }
+
                             })
                     .transport(TcpClientTransport.create(serverAddress))
                     .start()
@@ -516,6 +631,21 @@ public class RSocketProtocol extends AbstractProtocol {
                                     }
                                 }
                             }
+
+                            //process stream args
+                            for (int i = 0; i < pts.length; i++) {
+                                if (ResourceInfo.class.isAssignableFrom(pts[i])) {
+                                    ResourceInfo resourceInfo = (ResourceInfo) args[i];
+                                    if (resourceInfo.getType() == ResourceInfo.RESOURCE_TYPE_MONO) {
+                                        pts[i] = Mono.class;
+                                        args[i] = getMonoProxy(resourceInfo.getId(), serializeId, reactiveSocket);
+                                    } else {
+                                        pts[i] = Flux.class;
+                                        args[i] = getFluxProxy(resourceInfo.getId(), serializeId, reactiveSocket);
+                                    }
+                                }
+                            }
+
                             inv.setParameterTypes(pts);
                             inv.setArguments(args);
                             Map<String, String> map = (Map<String, String>) in.readObject(Map.class);
@@ -526,5 +656,73 @@ public class RSocketProtocol extends AbstractProtocol {
                         }
                     });
         }
+
+        private Mono getMonoProxy(long id, Byte serializeId, RSocket rSocket) throws IOException {
+            Map<String, Object> metadataMap = new HashMap<String, Object>();
+            metadataMap.put(RSocketConstants.SERIALIZE_TYPE_KEY, serializeId);
+            byte[] metadata = MetadataCodec.encodeMetadata(metadataMap);
+
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ObjectOutput out = CodecSupport.getSerializationById(serializeId).serialize(null, bos);
+            out.writeLong(id);
+            out.flushBuffer();
+            bos.flush();
+            bos.close();
+            Payload payload = DefaultPayload.create(bos.toByteArray(), metadata);
+
+            Mono<Payload> payloads = rSocket.requestResponse(payload);
+            Mono streamArg = payloads.map(new Function<Payload, Object>() {
+                @Override
+                public Object apply(Payload payload) {
+                    return decodeData(serializeId, payload);
+                }
+            });
+            return streamArg;
+        }
+
+        private Flux getFluxProxy(long id, Byte serializeId, RSocket rSocket) throws IOException {
+            Map<String, Object> metadataMap = new HashMap<String, Object>();
+            metadataMap.put(RSocketConstants.SERIALIZE_TYPE_KEY, serializeId);
+            byte[] metadata = MetadataCodec.encodeMetadata(metadataMap);
+
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ObjectOutput out = CodecSupport.getSerializationById(serializeId).serialize(null, bos);
+            out.writeLong(id);
+            out.flushBuffer();
+            bos.flush();
+            bos.close();
+            Payload payload = DefaultPayload.create(bos.toByteArray(), metadata);
+
+            Flux<Payload> payloads = rSocket.requestStream(payload);
+            Flux streamArg = payloads.map(new Function<Payload, Object>() {
+                @Override
+                public Object apply(Payload payload) {
+                    return decodeData(serializeId, payload);
+                }
+            });
+            return streamArg;
+        }
+
+        private Object decodeData(Byte serializeId, Payload payload) {
+            try {
+                Serialization serialization = CodecSupport.getSerializationById(serializeId);
+                //TODO save the copy
+                ByteBuffer dataBuffer = payload.getData();
+                byte[] dataBytes = new byte[dataBuffer.remaining()];
+                dataBuffer.get(dataBytes, dataBuffer.position(), dataBuffer.remaining());
+                InputStream dataInputStream = new ByteArrayInputStream(dataBytes);
+                ObjectInput in = serialization.deserialize(null, dataInputStream);
+                int flag = in.readByte();
+                if ((flag & RSocketConstants.FLAG_ERROR) != 0) {
+                    Throwable t = (Throwable) in.readObject();
+                    throw t;
+                } else {
+                    return in.readObject();
+                }
+            } catch (Throwable t) {
+                throw Exceptions.propagate(t);
+            }
+        }
+
     }
 }

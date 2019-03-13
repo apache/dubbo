@@ -49,6 +49,7 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 
@@ -93,11 +94,11 @@ public class RSocketInvoker<T> extends AbstractInvoker<T> {
             //TODO support timeout
             int timeout = getUrl().getMethodParameter(methodName, Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
 
+            Class<?> retType = RpcUtils.getReturnType(invocation);
+
             RpcContext.getContext().setFuture(null);
             //encode inv: metadata and data(arg,attachment)
             Payload requestPayload = encodeInvocation(invocation);
-
-            Class<?> retType = RpcUtils.getReturnType(invocation);
 
             if (retType != null && retType.isAssignableFrom(Mono.class)) {
                 Mono<Payload> responseMono = currentClient.requestResponse(requestPayload);
@@ -133,7 +134,9 @@ public class RSocketInvoker<T> extends AbstractInvoker<T> {
 
             @Override
             public Object apply(Payload payload) {
-                return decodeData(payload);
+                Object o = decodeData(payload);
+                payload.release();
+                return o;
             }
         });
 
@@ -145,12 +148,12 @@ public class RSocketInvoker<T> extends AbstractInvoker<T> {
 
     private Object decodeData(Payload payload) {
         try {
-            //TODO save the copy
             ByteBuffer dataBuffer = payload.getData();
             byte[] dataBytes = new byte[dataBuffer.remaining()];
             dataBuffer.get(dataBytes, dataBuffer.position(), dataBuffer.remaining());
             InputStream dataInputStream = new ByteArrayInputStream(dataBytes);
             ObjectInput in = serialization.deserialize(null, dataInputStream);
+            //TODO save the copy
             int flag = in.readByte();
             if ((flag & RSocketConstants.FLAG_ERROR) != 0) {
                 Throwable t = (Throwable) in.readObject();
@@ -209,28 +212,41 @@ public class RSocketInvoker<T> extends AbstractInvoker<T> {
     }
 
     private Payload encodeInvocation(Invocation invocation) throws IOException {
-        byte[] metadata = encodeMetadata(invocation);
-        byte[] data = encodeData(invocation);
-        return DefaultPayload.create(data, metadata);
-    }
+        //process stream args
+        RpcInvocation inv = (RpcInvocation) invocation;
+        Class<?>[] parameterTypes = invocation.getParameterTypes();
+        Object[] args = inv.getArguments();
+        if (args != null) {
+            for (int i = 0; i < args.length; i++) {
+                if(args[i]!=null) {
+                    Class argClass = args[i].getClass();
+                    if (Mono.class.isAssignableFrom(argClass)) {
+                        long id = ResourceDirectory.mountResource(args[i]);
+                        args[i] = new ResourceInfo(id, ResourceInfo.RESOURCE_TYPE_MONO);
+                        parameterTypes[i] = ResourceInfo.class;
+                    } else if (Flux.class.isAssignableFrom(argClass)) {
+                        long id = ResourceDirectory.mountResource(args[i]);
+                        args[i] = new ResourceInfo(id, ResourceInfo.RESOURCE_TYPE_FLUX);
+                        parameterTypes[i] = ResourceInfo.class;
+                    }
+                }
+            }
+        }
 
-    private byte[] encodeMetadata(Invocation invocation) throws IOException {
+        //metadata
         Map<String, Object> metadataMap = new HashMap<String, Object>();
         metadataMap.put(RSocketConstants.SERVICE_NAME_KEY, invocation.getAttachment(Constants.PATH_KEY));
         metadataMap.put(RSocketConstants.SERVICE_VERSION_KEY, invocation.getAttachment(Constants.VERSION_KEY));
         metadataMap.put(RSocketConstants.METHOD_NAME_KEY, invocation.getMethodName());
-        metadataMap.put(RSocketConstants.PARAM_TYPE_KEY, ReflectUtils.getDesc(invocation.getParameterTypes()));
         metadataMap.put(RSocketConstants.SERIALIZE_TYPE_KEY, (Byte) serialization.getContentTypeId());
-        return MetadataCodec.encodeMetadata(metadataMap);
-    }
+        metadataMap.put(RSocketConstants.PARAM_TYPE_KEY, ReflectUtils.getDesc(parameterTypes));
+        byte[] metadata =  MetadataCodec.encodeMetadata(metadataMap);
 
 
-    private byte[] encodeData(Invocation invocation) throws IOException {
+        //data
         ByteArrayOutputStream dataOutputStream = new ByteArrayOutputStream();
         Serialization serialization = CodecSupport.getSerialization(getUrl());
         ObjectOutput out = serialization.serialize(getUrl(), dataOutputStream);
-        RpcInvocation inv = (RpcInvocation) invocation;
-        Object[] args = inv.getArguments();
         if (args != null) {
             for (int i = 0; i < args.length; i++) {
                 out.writeObject(args[i]);
@@ -243,7 +259,9 @@ public class RSocketInvoker<T> extends AbstractInvoker<T> {
         if (out instanceof Cleanable) {
             ((Cleanable) out).cleanup();
         }
-        return dataOutputStream.toByteArray();
-    }
+        byte[] data = dataOutputStream.toByteArray();
 
+
+        return DefaultPayload.create(data, metadata);
+    }
 }

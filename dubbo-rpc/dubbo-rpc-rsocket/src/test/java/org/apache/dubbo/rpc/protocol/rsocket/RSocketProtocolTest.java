@@ -117,6 +117,7 @@ public class RSocketProtocolTest {
         assertEquals("world", service.echo("world"));
         assertEquals("hello world", remote.sayHello("world"));
 
+
         EchoService serviceEcho = (EchoService) service;
         assertEquals(serviceEcho.$echo("test"), "test");
 
@@ -216,4 +217,43 @@ public class RSocketProtocolTest {
         }
     }
 
+
+    @Test
+    public void testRequestMonoWithMonoArg() throws Exception {
+        DemoService service = new DemoServiceImpl();
+        protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("rsocket://127.0.0.1:9020/" + DemoService.class.getName())));
+        service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("rsocket://127.0.0.1:9020/" + DemoService.class.getName()).addParameter("timeout", 3000l)));
+
+        Mono<String> result = service.requestMonoWithMonoArg(Mono.just("A"), Mono.just("B"));
+        result.doOnNext(new Consumer<String>() {
+            @Override
+            public void accept(String s) {
+                assertEquals(s, "A B");
+                System.out.println(s);
+            }
+        }).block();
+    }
+
+
+    @Test
+    public void testRequestFluxWithFluxArg() throws Exception {
+        DemoService service = new DemoServiceImpl();
+        protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("rsocket://127.0.0.1:9020/" + DemoService.class.getName())));
+        service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("rsocket://127.0.0.1:9020/" + DemoService.class.getName()).addParameter("timeout", 3000l)));
+
+        {
+            Flux<String> result = service.requestFluxWithFluxArg(Flux.just("A","B","C"), Flux.just("1","2","3"));
+            result.doOnNext(new Consumer<String>() {
+                @Override
+                public void accept(String s) {
+                    System.out.println(s);
+                }
+            }).takeLast(1).doOnNext(new Consumer<String>() {
+                @Override
+                public void accept(String s) {
+                    assertEquals(s, "C 3");
+                }
+            }).blockLast();
+        }
+    }
 }
