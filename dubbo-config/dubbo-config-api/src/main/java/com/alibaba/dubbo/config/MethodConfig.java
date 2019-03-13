@@ -17,6 +17,7 @@
 package com.alibaba.dubbo.config;
 
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.config.annotation.Method;
 import com.alibaba.dubbo.config.support.Parameter;
 
@@ -83,9 +84,17 @@ public class MethodConfig extends AbstractMethodConfig {
     public MethodConfig(Method method) {
         appendAnnotation(Method.class, method);
         this.setReturn(method.isReturn());
-        this.setOninvoke(method.oninvoke());
-        this.setOnreturn(method.onreturn());
-        this.setOnthrow(method.onthrow());
+
+        if(StringUtils.isNotEmpty(method.oninvoke())){
+            this.setOninvoke(method.oninvoke());
+        }
+        if(StringUtils.isNotEmpty(method.onreturn())){
+            this.setOnreturn(method.onreturn());
+        }
+        if(StringUtils.isNotEmpty(method.onthrow())){
+            this.setOnthrow(method.onthrow());
+        }
+
         if (method.arguments() != null && method.arguments().length != 0) {
             List<ArgumentConfig> argumentConfigs = new ArrayList<ArgumentConfig>(method.arguments().length);
             this.setArguments(argumentConfigs);
