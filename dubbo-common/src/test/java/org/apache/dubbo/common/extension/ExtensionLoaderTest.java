@@ -87,7 +87,7 @@ public class ExtensionLoaderTest {
             fail();
         } catch (IllegalArgumentException expected) {
             assertThat(expected.getMessage(),
-                    containsString("Extension type (class org.apache.dubbo.common.extension.ExtensionLoaderTest) is not interface"));
+                    containsString("Extension type (class org.apache.dubbo.common.extension.ExtensionLoaderTest) is not an interface"));
         }
     }
 
@@ -99,8 +99,8 @@ public class ExtensionLoaderTest {
         } catch (IllegalArgumentException expected) {
             assertThat(expected.getMessage(),
                     allOf(containsString("org.apache.dubbo.common.extension.NoSpiExt"),
-                            containsString("is not extension"),
-                            containsString("WITHOUT @SPI Annotation")));
+                            containsString("is not an extension"),
+                            containsString("NOT annotated with @SPI")));
         }
     }
 

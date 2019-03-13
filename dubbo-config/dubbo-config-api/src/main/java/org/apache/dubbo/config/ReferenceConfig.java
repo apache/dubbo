@@ -46,6 +46,7 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -54,7 +55,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
 
 /**
  * ReferenceConfig
@@ -107,7 +107,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
      * The interface class of the reference service
      */
     private Class<?> interfaceClass;
-    
+
     /**
      * client type
      */
@@ -298,18 +298,28 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         String hostToRegistry = ConfigUtils.getSystemProperty(Constants.DUBBO_IP_TO_REGISTRY);
         if (StringUtils.isEmpty(hostToRegistry)) {
             hostToRegistry = NetUtils.getLocalHost();
-        } else if (isInvalidLocalHost(hostToRegistry)) {
-            throw new IllegalArgumentException("Specified invalid registry ip from property:" + Constants.DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
         }
         map.put(Constants.REGISTER_IP_KEY, hostToRegistry);
 
         ref = createProxy(map);
 
         String serviceKey = URL.buildKey(interfaceName, group, version);
-        ConsumerModel consumerModel = new ConsumerModel(serviceKey, interfaceClass, ref, interfaceClass.getMethods(), attributes);
-        ApplicationModel.initConsumerModel(serviceKey, consumerModel);
+        ApplicationModel.initConsumerModel(serviceKey, buildConsumerModel(serviceKey, attributes));
     }
 
+    private ConsumerModel buildConsumerModel(String serviceKey, Map<String, Object> attributes) {
+        Method[] methods = interfaceClass.getMethods();
+        Class serviceInterface = interfaceClass;
+        if (interfaceClass == GenericService.class) {
+            try {
+                serviceInterface = Class.forName(interfaceName);
+                methods = serviceInterface.getMethods();
+            } catch (ClassNotFoundException e) {
+                methods = interfaceClass.getMethods();
+            }
+        }
+        return new ConsumerModel(serviceKey, serviceInterface, ref, methods, attributes);
+    }
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
     private T createProxy(Map<String, String> map) {
         URL tmpUrl = new URL("temp", "localhost", 0, map);

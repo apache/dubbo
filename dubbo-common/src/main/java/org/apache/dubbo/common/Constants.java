@@ -247,7 +247,7 @@ public class Constants {
 
     public static final String PROTOCOL_KEY = "protocol";
 
-    public static final String DOBBO_PROTOCOL = DUBBO;
+    public static final String DUBBO_PROTOCOL = DUBBO;
 
     public static final String ZOOKEEPER_PROTOCOL = "zookeeper";
 
@@ -752,6 +752,12 @@ public class Constants {
     public static final String FORCE_USE_TAG = "dubbo.force.tag";
 
     public static final String HOST_KEY = "host";
+
+    public static final String PORT_KEY = "port";
+
+    public static final String USERNAME_KEY = "username";
+
+    public static final String PASSWORD_KEY = "password";
 
     public static final String ADDRESS_KEY = "address";
 

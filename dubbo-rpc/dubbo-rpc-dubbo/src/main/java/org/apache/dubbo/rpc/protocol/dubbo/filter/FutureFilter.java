@@ -206,14 +206,22 @@ public class FutureFilter implements Filter {
         if (consumerModel == null) {
             return null;
         }
-        ConsumerMethodModel methodModel = consumerModel.getMethodModel(invocation.getMethodName());
+
+        String methodName = invocation.getMethodName();
+        if (methodName.equals(Constants.$INVOKE)) {
+            methodName = (String) invocation.getArguments()[0];
+        }
+
+        ConsumerMethodModel methodModel = consumerModel.getMethodModel(methodName);
         if (methodModel == null) {
             return null;
         }
+
         final ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = methodModel.getAsyncInfo();
         if (asyncMethodInfo == null) {
             return null;
         }
+
         return asyncMethodInfo;
     }
 }

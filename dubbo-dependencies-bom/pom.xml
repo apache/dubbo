@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.apache</groupId>
         <artifactId>apache</artifactId>
-        <version>19</version>
+        <version>21</version>
         <relativePath></relativePath>
     </parent>
 
@@ -119,7 +119,7 @@
 
         <jaxb_version>2.2.7</jaxb_version>
         <activation_version>1.2.0</activation_version>
-        <hessian_lite_version>3.2.3</hessian_lite_version>
+        <hessian_lite_version>3.2.5</hessian_lite_version>
         <swagger_version>1.5.19</swagger_version>
         <spring_test_version>4.3.16.RELEASE</spring_test_version>
 
