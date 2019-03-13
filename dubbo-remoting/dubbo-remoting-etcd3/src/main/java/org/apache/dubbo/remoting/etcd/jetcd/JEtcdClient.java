@@ -201,6 +201,11 @@ public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
         client.getWatchClient().watch(ByteSequence.from(key, UTF_8), listener);
     }
 
+    @Override
+    public boolean put(String key, String value) {
+        return clientWrapper.put(key, value);
+    }
+
     public class EtcdWatcher implements StreamObserver<WatchResponse> {
 
         protected WatchGrpc.WatchStub watchStub;

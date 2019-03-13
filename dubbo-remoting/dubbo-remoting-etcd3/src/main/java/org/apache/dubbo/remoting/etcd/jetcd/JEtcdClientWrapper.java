@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.remoting.etcd.jetcd;
 
+import io.etcd.jetcd.kv.PutResponse;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -629,6 +630,22 @@ public class JEtcdClientWrapper {
         }
 
         return null;
+    }
+
+
+    public boolean put(String key, String value) {
+        if (key == null || value == null) {
+            return false;
+        }
+        CompletableFuture<PutResponse> putFuture =
+                this.client.getKVClient().put(ByteSequence.from(key, UTF_8), ByteSequence.from(value, UTF_8));
+        try {
+            putFuture.get(DEFAULT_REQUEST_TIMEOUT, TimeUnit.MILLISECONDS);
+            return true;
+        } catch (Exception e) {
+            // ignore
+        }
+        return false;
     }
 
     private void retry() {

@@ -182,4 +182,13 @@ public interface EtcdClient {
      */
     void addWatchListener(String key, Watch.Listener listener);
 
+
+    /**
+     * Put the key value pair to etcd
+     * @param key the specified key
+     * @param value the paired value
+     * @return true if put success
+     */
+    boolean put(String key, String value);
+
 }
