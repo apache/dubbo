@@ -19,18 +19,11 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Environment;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
-import org.apache.dubbo.configcenter.DynamicConfigurationFactory;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -54,60 +47,13 @@ public class ConfigCenterConfig extends AbstractConfig {
     private String configFile = "dubbo.properties";
     private String appConfigFile;
 
-    private ApplicationConfig application;
-    private RegistryConfig registry;
-
     // customized parameters
     private Map<String, String> parameters;
 
     public ConfigCenterConfig() {
     }
 
-    public void init() {
-        if (!inited.compareAndSet(false, true)) {
-            return;
-        }
-
-        // give jvm properties the chance to override local configs, e.g., -Ddubbo.configcenter.highestPriority
-        refresh();
-
-        // try to use registryConfig as the default configcenter, only applies to zookeeper.
-        if (!isValid() && registry != null && registry.isZookeeperProtocol()) {
-            setAddress(registry.getAddress());
-            setProtocol(registry.getProtocol());
-        }
-//        checkConfigCenter();
-
-        if (isValid()) {
-            DynamicConfiguration dynamicConfiguration = startDynamicConfiguration(toConfigUrl());
-            String configContent = dynamicConfiguration.getConfig(configFile, group);
-
-            String appGroup = getApplicationName();
-            String appConfigContent = null;
-            if (StringUtils.isNotEmpty(appGroup)) {
-                appConfigContent = dynamicConfiguration.getConfig
-                        (StringUtils.isNotEmpty(appConfigFile) ? appConfigFile : configFile,
-                         appGroup
-                        );
-            }
-            try {
-                Environment.getInstance().setConfigCenterFirst(highestPriority);
-                Environment.getInstance().updateExternalConfigurationMap(parseProperties(configContent));
-                Environment.getInstance().updateAppExternalConfigurationMap(parseProperties(appConfigContent));
-            } catch (IOException e) {
-                throw new IllegalStateException("Failed to parse configurations from Config Center.", e);
-            }
-        }
-    }
-
-    private DynamicConfiguration startDynamicConfiguration(URL url) {
-        DynamicConfigurationFactory dynamicConfigurationFactory = ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getExtension(url.getProtocol());
-        DynamicConfiguration configuration = dynamicConfigurationFactory.getDynamicConfiguration(url);
-        Environment.getInstance().setDynamicConfiguration(configuration);
-        return configuration;
-    }
-
-    private URL toConfigUrl() {
+    public URL toUrl() {
         Map<String, String> map = this.getMetaData();
         if (StringUtils.isEmpty(address)) {
             address = Constants.ANYHOST_VALUE;
@@ -115,44 +61,21 @@ public class ConfigCenterConfig extends AbstractConfig {
         map.put(Constants.PATH_KEY, ConfigCenterConfig.class.getSimpleName());
         // use 'zookeeper' as the default configcenter.
         if (StringUtils.isEmpty(map.get(Constants.PROTOCOL_KEY))) {
-            map.put(Constants.PROTOCOL_KEY, "zookeeper");
+            map.put(Constants.PROTOCOL_KEY, Constants.ZOOKEEPER_PROTOCOL);
         }
         return UrlUtils.parseURL(address, map);
     }
 
-    private String getApplicationName() {
-        if (application != null) {
-            if (!application.isValid()) {
-                throw new IllegalStateException(
-                        "No application config found or it's not a valid config! Please add <dubbo:application name=\"...\" /> to your spring config.");
-            }
-            return application.getName();
-        }
-        return appName;
-    }
-
-    protected Map<String, String> parseProperties(String content) throws IOException {
-        Map<String, String> map = new HashMap<>();
-        if (StringUtils.isEmpty(content)) {
-            logger.warn("You specified the config centre, but there's not even one single config item in it.");
-        } else {
-            Properties properties = new Properties();
-            properties.load(new StringReader(content));
-            properties.stringPropertyNames().forEach(
-                    k -> map.put(k, properties.getProperty(k))
-            );
-        }
-        return map;
+    public boolean checkOrUpdateInited() {
+        return inited.compareAndSet(false, true);
     }
 
     public void setExternalConfig(Map<String, String> externalConfiguration) {
         Environment.getInstance().setExternalConfigMap(externalConfiguration);
-        inited.set(true);
     }
 
     public void setAppExternalConfig(Map<String, String> appExternalConfiguration) {
         Environment.getInstance().setAppExternalConfigMap(appExternalConfiguration);
-        inited.set(true);
     }
 
     public String getProtocol() {
@@ -209,7 +132,7 @@ public class ConfigCenterConfig extends AbstractConfig {
     }
 
     @Parameter(key = Constants.CONFIG_ENABLE_KEY, useKeyAsProperty = false)
-    public Boolean getHighestPriority() {
+    public Boolean isHighestPriority() {
         return highestPriority;
     }
 
@@ -276,29 +199,6 @@ public class ConfigCenterConfig extends AbstractConfig {
     public void setParameters(Map<String, String> parameters) {
         checkParameterName(parameters);
         this.parameters = parameters;
-    }
-
-    public ApplicationConfig getApplication() {
-        return application;
-    }
-
-    public void setApplication(ApplicationConfig application) {
-        this.application = application;
-    }
-
-    public RegistryConfig getRegistry() {
-        return registry;
-    }
-
-    public void setRegistry(RegistryConfig registry) {
-        this.registry = registry;
-    }
-
-    private void checkConfigCenter() {
-        if (StringUtils.isEmpty(address)
-                || (StringUtils.isEmpty(protocol) && (StringUtils.isEmpty(address) || !address.contains("://")))) {
-            throw new IllegalStateException("You must specify the right parameter for configcenter.");
-        }
     }
 
     @Override

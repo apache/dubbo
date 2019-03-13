@@ -16,12 +16,15 @@
  */
 package org.apache.dubbo.config.spring.context.annotation;
 
-import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.context.annotation.consumer.test.TestConsumerConfiguration;
 import org.apache.dubbo.config.spring.context.annotation.provider.DemoServiceImpl;
+
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -44,6 +47,16 @@ import static org.springframework.core.annotation.AnnotationUtils.findAnnotation
  * @since 2.5.8
  */
 public class EnableDubboTest {
+
+    @Before
+    public void setUp() {
+        ConfigManager.getInstance().clear();
+    }
+
+    @After
+    public void tearDown() {
+        ConfigManager.getInstance().clear();
+    }
 
     @Test
     public void test() {
@@ -115,13 +128,6 @@ public class EnableDubboTest {
         Assert.assertEquals("Hello,Mercy", value);
 
         // Test dubbo-annotation-consumer2 bean presentation
-
-        ApplicationConfig applicationConfig = consumerContext.getBean("dubbo-annotation-consumer2", ApplicationConfig.class);
-
-        // Test multiple binding
-        Assert.assertEquals("dubbo-consumer2", applicationConfig.getName());
-
-        // Test dubbo-annotation-consumer2 bean presentation
         RegistryConfig registryConfig = consumerContext.getBean("my-registry2", RegistryConfig.class);
 
         // Test multiple binding
@@ -135,7 +141,7 @@ public class EnableDubboTest {
 
     @EnableDubbo(scanBasePackages = "org.apache.dubbo.config.spring.context.annotation.provider")
     @ComponentScan(basePackages = "org.apache.dubbo.config.spring.context.annotation.provider")
-    @PropertySource("META-INF/dubbb-provider.properties")
+    @PropertySource("META-INF/dubbo-provider.properties")
     @EnableTransactionManagement
     public static class TestProviderConfiguration {
 

@@ -210,7 +210,7 @@ public class FutureFilter implements Filter {
         if (methodModel == null) {
             return null;
         }
-        final ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = methodModel.getAsyncInfo();
+        final ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = (ConsumerMethodModel.AsyncMethodInfo) methodModel.getAttribute(Constants.ASYNC_KEY);
         if (asyncMethodInfo == null) {
             return null;
         }

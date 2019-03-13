@@ -17,17 +17,18 @@
 package org.apache.dubbo.rpc.model;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class ProviderMethodModel {
-    private transient final Method method;
+    private final Method method;
     private final String methodName;
     private final String[] methodArgTypes;
-    private final String serviceName;
 
+    private final ConcurrentMap<String, Object> attributeMap = new ConcurrentHashMap<>();
 
-    public ProviderMethodModel(Method method, String serviceName) {
+    public ProviderMethodModel(Method method) {
         this.method = method;
-        this.serviceName = serviceName;
         this.methodName = method.getName();
         this.methodArgTypes = getArgTypes(method);
     }
@@ -44,8 +45,8 @@ public class ProviderMethodModel {
         return methodArgTypes;
     }
 
-    public String getServiceName() {
-        return serviceName;
+    public ConcurrentMap<String, Object> getAttributeMap() {
+        return attributeMap;
     }
 
     private static String[] getArgTypes(Method method) {

@@ -73,6 +73,21 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
         }
 
         @Override
+        public Object put(Object key, Object value) {
+            return delegate.put(key, value);
+        }
+
+        @Override
+        public Object get(Object key) {
+            return delegate.get(key);
+        }
+
+        @Override
+        public Map<Object, Object> getAttributes() {
+            return delegate.getAttributes();
+        }
+
+        @Override
         public org.apache.dubbo.rpc.Invocation getOriginal() {
             return delegate;
         }

@@ -1,0 +1,2 @@
+mock1=org.apache.dubbo.common.config.MockOrderedPropertiesProvider1
+mock2=org.apache.dubbo.common.config.MockOrderedPropertiesProvider2
