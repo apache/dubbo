@@ -29,6 +29,10 @@ import org.apache.dubbo.rpc.RpcInvocation;
 
 import java.util.concurrent.ExecutionException;
 
+/**
+ * This class will work as a wrapper wrapping outside of each protocol invoker.
+ * @param <T>
+ */
 public class AsyncToSyncInvoker<T> implements Invoker<T> {
 
     private Invoker<T> invoker;

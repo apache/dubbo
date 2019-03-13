@@ -59,7 +59,13 @@ public interface Filter {
      * @throws RpcException
      * @see org.apache.dubbo.rpc.Invoker#invoke(Invocation)
      */
-    Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException;
+    default Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+        return invoker.invoke(invocation);
+    }
+
+    default void onSend(Invoker<?> invoker, Invocation invocation) throws RpcException {
+
+    }
 
     default void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
 
