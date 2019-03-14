@@ -64,6 +64,32 @@ We have always keep compatibility in mind during the whole process of 2.7.0. We 
 
 5. Configuration
 
+## 2.6.6
+
+Enhancement / New feature：
+
+* tag route.  #3065 
+* Use Netty4 as default Netty version. #3029 
+* upporting Java 8 Date/Time type when serializing with Kryo #3519 
+* supoort config telnet  #3511
+* add annotation driven in MethodConfig and ArgumentConfig #2603
+* add nacos-registry module #3296  
+* add `protocol` attribute in `@Rerefence` #3555 
+*support the hierarchical interface in @Service  #3251  
+* change the default behavior in `@EnableDubboConfig.multiple()` #3193 
+* inline source code of `spring-context-support` #3192 
+* Simplify externalized configuration of Dubbo Protocol name  #3189 
+
+BugFix：
+ 
+* update hessian-lite to 2.3.5, fix unnecessary class load #3538 
+* Fix unregister when client destroyed（referenceconfig#destroy) #3502 
+* SPI entires dup by 3 times #3315 
+* fix Consumer throws RpcException after RegistryDirectory notify in high QPS #2016 
+* fix NPE in @Reference when using Junit to test dubbo service #3429 
+* fix consuer always catch java.lang.reflect.UndeclaredThrowableException for any exception throws in provider  #3386 
+* fix the priority of `DubboConfigConfigurationSelector ` #2897 
+* fix `@Rerefence#parameters()` not work #2301 
 
 ## 2.6.5
 
