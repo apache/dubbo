@@ -57,6 +57,7 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.dubbo.common.Constants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.utils.NetUtils.getAvailablePort;
@@ -105,6 +106,31 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private static final ScheduledExecutorService delayExportExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboServiceDelayExporter", true));
 
     /**
+     * Indicating that the provider has just initiated or the last exporting request is dismissed, the client may export it at any time.
+     */
+    private static final int INITIAL_STAGE = 0;
+
+    /**
+     * Indicating that the provider is being exported.
+     */
+    private static final int EXPORTING_STAGE = 1;
+
+    /**
+     * Indicating that the provider has been exported.
+     */
+    private static final int EXPORTED_STAGE = 2;
+
+    /**
+     * Indicating that the provider has unexported.
+     */
+    private static final int UNEXPORTED_STAGE = 3;
+
+    /**
+     * Stores what exporting stage the provider currently is in.
+     */
+    private AtomicInteger exportingStage = new AtomicInteger();
+
+    /**
      * The urls of the services exported
      */
     private final List<URL> urls = new ArrayList<URL>();
@@ -148,16 +174,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
      * The providerIds
      */
     private String providerIds;
-
-    /**
-     * Whether the provider has been exported
-     */
-    private transient volatile boolean exported;
-
-    /**
-     * The flag whether a service has unexported ,if the method unexported is invoked, the value is true
-     */
-    private transient volatile boolean unexported;
 
     /**
      * whether it is a GenericService
@@ -250,12 +266,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     @Parameter(excluded = true)
     public boolean isExported() {
-        return exported;
+        return exportingStage.get() >= EXPORTED_STAGE;
     }
 
     @Parameter(excluded = true)
     public boolean isUnexported() {
-        return unexported;
+        return exportingStage.get() == UNEXPORTED_STAGE;
     }
 
     public void checkAndUpdateSubConfigs() {
@@ -322,17 +338,26 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         checkMock(interfaceClass);
     }
 
-    public synchronized void export() {
-        checkAndUpdateSubConfigs();
+    public void export() {
+        if (exportingStage.compareAndSet(INITIAL_STAGE, EXPORTING_STAGE)) {
+            checkAndUpdateSubConfigs();
 
-        if (!shouldExport()) {
-            return;
-        }
+            if (!shouldExport()) {
+                exportingStage.set(INITIAL_STAGE);
+                return;
+            }
 
-        if (shouldDelay()) {
-            delayExportExecutor.schedule(this::doExport, delay, TimeUnit.MILLISECONDS);
-        } else {
-            doExport();
+            if (shouldDelay()) {
+                delayExportExecutor.schedule(() -> {
+                    doExport();
+                    exportingStage.set(EXPORTED_STAGE);
+                }, delay, TimeUnit.MILLISECONDS);
+            } else {
+                doExport();
+                exportingStage.set(EXPORTED_STAGE);
+            }
+        } else if (exportingStage.get() == UNEXPORTED_STAGE) {
+            throw new IllegalStateException("The service " + interfaceClass.getName() + " has already unexported!");
         }
     }
 
@@ -358,15 +383,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         return delay != null && delay > 0;
     }
 
-    protected synchronized void doExport() {
-        if (unexported) {
-            throw new IllegalStateException("The service " + interfaceClass.getName() + " has already unexported!");
-        }
-        if (exported) {
-            return;
-        }
-        exported = true;
-
+    protected void doExport() {
         if (StringUtils.isEmpty(path)) {
             path = interfaceName;
         }
@@ -388,24 +405,19 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
     }
 
-    public synchronized void unexport() {
-        if (!exported) {
-            return;
-        }
-        if (unexported) {
-            return;
-        }
-        if (!exporters.isEmpty()) {
-            for (Exporter<?> exporter : exporters) {
-                try {
-                    exporter.unexport();
-                } catch (Throwable t) {
-                    logger.warn("Unexpected error occured when unexport " + exporter, t);
+    public void unexport() {
+        if (exportingStage.compareAndSet(EXPORTED_STAGE, UNEXPORTED_STAGE)) {
+            if (!exporters.isEmpty()) {
+                for (Exporter<?> exporter : exporters) {
+                    try {
+                        exporter.unexport();
+                    } catch (Throwable t) {
+                        logger.warn("Unexpected error occured when unexport " + exporter, t);
+                    }
                 }
+                exporters.clear();
             }
-            exporters.clear();
         }
-        unexported = true;
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
