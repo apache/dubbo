@@ -50,7 +50,7 @@ class StatItem {
         }
 
         boolean flag = false;
-        while (token.sum() > 0 && !flag) {
+        while (getToken() > 0 && !flag) {
             token.decrement();
             flag = true;
         }
