@@ -188,7 +188,9 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
 
     private String buildReferencedBeanName(Reference reference, Class<?> injectedType) {
 
-        ServiceBeanNameBuilder builder = ServiceBeanNameBuilder.create(reference, injectedType, getEnvironment());
+        AnnotationBeanNameBuilder builder = AnnotationBeanNameBuilder.create(reference, injectedType);
+
+        builder.environment(getEnvironment());
 
         return getEnvironment().resolvePlaceholders(builder.build());
     }

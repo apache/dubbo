@@ -16,6 +16,18 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
+import static org.apache.dubbo.config.spring.util.ObjectUtils.of;
+import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
+import static org.springframework.context.annotation.AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR;
+import static org.springframework.core.annotation.AnnotationUtils.findAnnotation;
+import static org.springframework.util.ClassUtils.resolveClassName;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.annotation.Service;
@@ -50,18 +62,6 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
-import static org.apache.dubbo.config.spring.util.ObjectUtils.of;
-import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
-import static org.springframework.context.annotation.AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR;
-import static org.springframework.core.annotation.AnnotationUtils.findAnnotation;
-import static org.springframework.util.ClassUtils.resolveClassName;
 
 /**
  * {@link Service} Annotation
@@ -289,8 +289,9 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
      */
     private String generateServiceBeanName(Service service, Class<?> interfaceClass, String annotatedServiceBeanName) {
 
-        ServiceBeanNameBuilder builder = ServiceBeanNameBuilder.create(service, interfaceClass, environment);
+        AnnotationBeanNameBuilder builder = AnnotationBeanNameBuilder.create(service, interfaceClass);
 
+        builder.environment(environment);
 
         return builder.build();
 
