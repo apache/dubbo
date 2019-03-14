@@ -135,7 +135,6 @@ public class ServiceConfigTest {
         assertThat(url.getParameters(), hasKey(Constants.BIND_IP_KEY));
         assertThat(url.getParameters(), hasKey(Constants.BIND_PORT_KEY));
         assertThat(url.getParameters(), hasEntry(Constants.DEFAULT_KEY + "." + Constants.EXPORT_KEY, "true"));
-        assertThat(url.getParameters(), hasEntry(Constants.EXPORT_KEY, "true"));
         assertThat(url.getParameters(), hasEntry("echo.0.callback", "false"));
         assertThat(url.getParameters(), hasEntry(Constants.GENERIC_KEY, "false"));
         assertThat(url.getParameters(), hasEntry(Constants.INTERFACE_KEY, DemoService.class.getName()));
