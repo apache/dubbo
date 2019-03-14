@@ -18,6 +18,7 @@ package org.apache.dubbo.metadata.integration;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -48,7 +49,10 @@ public class MetadataReportService {
     MetadataReportService(URL metadataReportURL) {
         if (Constants.METADATA_REPORT_KEY.equals(metadataReportURL.getProtocol())) {
             String protocol = metadataReportURL.getParameter(Constants.METADATA_REPORT_KEY, Constants.DEFAULT_DIRECTORY);
-            metadataReportURL = metadataReportURL.setProtocol(protocol).removeParameter(Constants.METADATA_REPORT_KEY);
+            metadataReportURL = URLBuilder.from(metadataReportURL)
+                    .setProtocol(protocol)
+                    .removeParameter(Constants.METADATA_REPORT_KEY)
+                    .build();
         }
         this.metadataReportUrl = metadataReportURL;
         metadataReport = metadataReportFactory.getMetadataReport(this.metadataReportUrl);

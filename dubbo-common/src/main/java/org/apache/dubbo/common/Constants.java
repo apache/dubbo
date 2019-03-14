@@ -753,6 +753,12 @@ public class Constants {
 
     public static final String HOST_KEY = "host";
 
+    public static final String PORT_KEY = "port";
+
+    public static final String USERNAME_KEY = "username";
+
+    public static final String PASSWORD_KEY = "password";
+
     public static final String ADDRESS_KEY = "address";
 
     public static final String RETRY_TIMES_KEY = "retry.times";
@@ -825,8 +831,13 @@ public class Constants {
      * Production environment key.
      */
     public static final String PRODUCTION_ENVIRONMENT = "product";
-    /*
-     * private Constants(){ }
-     */
+
+    public static final String ETCD3_NOTIFY_MAXTHREADS_KEYS = "etcd3.notify.maxthreads";
+
+    public static final int DEFAULT_ETCD3_NOTIFY_THREADS = DEFAULT_IO_THREADS;
+
+    public static final String DEFAULT_ETCD3_NOTIFY_QUEUES_KEY = "etcd3.notify.queues";
+
+    public static final int DEFAULT_GRPC_QUEUES = 300_0000;
 
 }
