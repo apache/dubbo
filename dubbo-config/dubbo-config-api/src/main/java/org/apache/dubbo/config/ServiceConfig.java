@@ -53,6 +53,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -169,6 +170,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     public ServiceConfig(Service service) {
         appendAnnotation(Service.class, service);
+        setMethods(MethodConfig.constructMethodConfig(service.methods()));
     }
 
     @Deprecated
@@ -370,9 +372,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (StringUtils.isEmpty(path)) {
             path = interfaceName;
         }
-        String uniqueServiceName = getUniqueServiceName();
-        ProviderModel providerModel = new ProviderModel(uniqueServiceName, ref, interfaceClass);
-        ApplicationModel.initProviderModel(uniqueServiceName, providerModel);
         doExportUrls();
     }
 
@@ -412,6 +411,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private void doExportUrls() {
         List<URL> registryURLs = loadRegistries(true);
         for (ProtocolConfig protocolConfig : protocols) {
+            String pathKey = URL.buildKey(getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), group, version);
+            ProviderModel providerModel = new ProviderModel(pathKey, ref, interfaceClass);
+            ApplicationModel.initProviderModel(pathKey, providerModel);
             doExportUrlsFor1Protocol(protocolConfig, registryURLs);
         }
     }
@@ -511,14 +513,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             }
         }
         // export service
-        String contextPath = protocolConfig.getContextpath();
-        if (StringUtils.isEmpty(contextPath) && provider != null) {
-            contextPath = provider.getContextpath();
-        }
-
         String host = this.findConfigedHosts(protocolConfig, registryURLs, map);
         Integer port = this.findConfigedPorts(protocolConfig, name, map);
-        URL url = new URL(name, host, port, (StringUtils.isEmpty(contextPath) ? "" : contextPath + "/") + path, map);
+        URL url = new URL(name, host, port, getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), map);
 
         if (ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
                 .hasExtension(url.getProtocol())) {
@@ -595,6 +592,14 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             exporters.add(exporter);
             logger.info("Export dubbo service " + interfaceClass.getName() + " to local registry");
         }
+    }
+
+    private Optional<String> getContextPath(ProtocolConfig protocolConfig) {
+        String contextPath = protocolConfig.getContextpath();
+        if (StringUtils.isEmpty(contextPath) && provider != null) {
+            contextPath = provider.getContextpath();
+        }
+        return Optional.ofNullable(contextPath);
     }
 
     protected Class getServiceClass(T ref) {
@@ -984,19 +989,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     @Deprecated
     public void setProviders(List<ProviderConfig> providers) {
         this.protocols = convertProviderToProtocol(providers);
-    }
-
-    @Parameter(excluded = true)
-    public String getUniqueServiceName() {
-        StringBuilder buf = new StringBuilder();
-        if (group != null && group.length() > 0) {
-            buf.append(group).append("/");
-        }
-        buf.append(StringUtils.isNotEmpty(path) ? path : interfaceName);
-        if (version != null && version.length() > 0) {
-            buf.append(":").append(version);
-        }
-        return buf.toString();
     }
 
     @Override
