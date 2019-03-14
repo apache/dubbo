@@ -78,7 +78,11 @@ public abstract class AbstractSerializationTest {
         bigPerson.setStatus(PersonStatus.ENABLED);
         bigPerson.setEmail("sm@1.com");
         bigPerson.setPenName("pname");
-
+        ArrayList<Integer> wage = new ArrayList<>();
+        wage.add(null);
+        wage.add(null);
+        wage.add(3);
+        bigPerson.setWage(wage);
         ArrayList<Phone> phones = new ArrayList<Phone>();
         Phone phone1 = new Phone("86", "0571", "87654321", "001");
         Phone phone2 = new Phone("86", "0571", "87654322", "002");

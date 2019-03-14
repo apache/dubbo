@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.serialize.model.person;
 
 import java.io.Serializable;
+import java.util.List;
 
 public class BigPerson implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -32,6 +33,8 @@ public class BigPerson implements Serializable {
     String penName;
 
     PersonInfo infoProfile;
+
+    List<Integer> wage;
 
     public BigPerson() {
 
@@ -89,6 +92,14 @@ public class BigPerson implements Serializable {
         this.penName = penName;
     }
 
+    public List<Integer> getWage() {
+        return wage;
+    }
+
+    public void setWage(List<Integer> wage) {
+        this.wage = wage;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -99,6 +110,7 @@ public class BigPerson implements Serializable {
         result = prime * result + ((penName == null) ? 0 : penName.hashCode());
         result = prime * result + ((personId == null) ? 0 : personId.hashCode());
         result = prime * result + ((status == null) ? 0 : status.hashCode());
+        result = prime * result + ((wage == null) ? 0 : wage.hashCode());
         return result;
     }
 
@@ -136,6 +148,11 @@ public class BigPerson implements Serializable {
                 return false;
         } else if (!personId.equals(other.personId))
             return false;
+        if (wage == null) {
+            if (other.wage != null)
+                return false;
+        } else if (!wage.equals(other.wage))
+            return false;
         if (status != other.status)
             return false;
         return true;
@@ -143,7 +160,7 @@ public class BigPerson implements Serializable {
 
     @Override
     public String toString() {
-        return "BigPerson [personId=" + personId + ", loginName=" + loginName + ", status="
+        return "BigPerson [wage=" + wage + ", personId=" + personId + ", loginName=" + loginName + ", status="
                 + status + ", email=" + email + ", penName=" + penName + ", infoProfile="
                 + infoProfile + "]";
     }
