@@ -17,6 +17,12 @@
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 
+import static org.springframework.util.StringUtils.arrayToCommaDelimitedString;
+
+import java.lang.reflect.Field;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.ReferenceBean;
@@ -30,12 +36,6 @@ import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.mock.env.MockEnvironment;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.validation.DataBinder;
-
-import java.lang.reflect.Field;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import static org.springframework.util.StringUtils.arrayToCommaDelimitedString;
 
 /**
  * {@link AnnotationPropertyValuesAdapter} Test
@@ -96,7 +96,7 @@ public class AnnotationPropertyValuesAdapterTest {
         Assert.assertEquals("dubbo://localhost:12345", referenceBean.getUrl());
         Assert.assertEquals("client", referenceBean.getClient());
         Assert.assertEquals(true, referenceBean.isGeneric());
-        Assert.assertEquals(true, referenceBean.isInjvm());
+        Assert.assertNull(referenceBean.isInjvm());
         Assert.assertEquals(false, referenceBean.isCheck());
         Assert.assertEquals(true, referenceBean.isInit());
         Assert.assertEquals(true, referenceBean.getLazy());

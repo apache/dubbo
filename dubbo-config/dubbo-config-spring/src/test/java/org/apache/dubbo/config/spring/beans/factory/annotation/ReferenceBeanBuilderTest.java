@@ -17,6 +17,13 @@
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 
+import static org.springframework.core.annotation.AnnotationUtils.findAnnotation;
+import static org.springframework.util.ReflectionUtils.findField;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.ReferenceBean;
 
@@ -27,13 +34,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.springframework.core.annotation.AnnotationUtils.findAnnotation;
-import static org.springframework.util.ReflectionUtils.findField;
 
 /**
  * {@link ReferenceBeanBuilder} Test
@@ -81,7 +81,7 @@ public class ReferenceBeanBuilderTest {
         Assert.assertEquals("dubbo://localhost:12345", referenceBean.getUrl());
         Assert.assertEquals("client", referenceBean.getClient());
         Assert.assertEquals(true, referenceBean.isGeneric());
-        Assert.assertEquals(true, referenceBean.isInjvm());
+        Assert.assertNull(referenceBean.isInjvm());
         Assert.assertEquals(false, referenceBean.isCheck());
         Assert.assertEquals(null, referenceBean.isInit());
         Assert.assertEquals(true, referenceBean.getLazy());
