@@ -33,5 +33,6 @@
         <module>dubbo-configcenter-api</module>
         <module>dubbo-configcenter-zookeeper</module>
         <module>dubbo-configcenter-apollo</module>
+        <module>dubbo-configcenter-consul</module>
     </modules>
 </project>

@@ -128,7 +128,6 @@
 
     <modules>
         <module>dubbo-common</module>
-        <module>dubbo-metrics</module>
         <module>dubbo-container</module>
         <module>dubbo-remoting</module>
         <module>dubbo-rpc</module>
@@ -196,6 +195,15 @@
     </dependencies>
 
     <profiles>
+        <profile>
+            <id>javadoc-lint</id>
+            <activation>
+                <jdk>[1.8,)</jdk>
+            </activation>
+            <properties>
+                <doclint>none</doclint>
+            </properties>
+        </profile>
         <profile>
             <id>checkstyle</id>
             <activation>

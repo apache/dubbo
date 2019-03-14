@@ -42,7 +42,7 @@ public class AccessLogFilterTest {
         Invocation invocation = new MockInvocation();
         LogUtil.start();
         accessLogFilter.invoke(invoker, invocation);
-        assertEquals(1, LogUtil.findMessage("Exception in AcessLogFilter of service"));
+        assertEquals(1, LogUtil.findMessage("Exception in AccessLogFilter of service"));
         LogUtil.stop();
     }
 

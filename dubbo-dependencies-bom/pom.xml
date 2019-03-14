@@ -105,6 +105,7 @@
         <curator_version>4.0.1</curator_version>
         <curator_test_version>2.12.0</curator_test_version>
         <jedis_version>2.9.0</jedis_version>
+        <consul_version>1.4.2</consul_version>
         <xmemcached_version>1.3.6</xmemcached_version>
         <cxf_version>3.1.15</cxf_version>
         <thrift_version>0.8.0</thrift_version>
@@ -126,6 +127,7 @@
         <rs_api_version>2.0</rs_api_version>
         <resteasy_version>3.0.19.Final</resteasy_version>
         <tomcat_embed_version>8.5.31</tomcat_embed_version>
+        <jetcd_version>0.3.0</jetcd_version>
         <!-- Log libs -->
         <slf4j_version>1.7.25</slf4j_version>
         <jcl_version>1.2</jcl_version>
@@ -141,6 +143,7 @@
         <swagger_version>1.5.19</swagger_version>
         <spring_test_version>4.3.16.RELEASE</spring_test_version>
 
+        <metrics_version>2.0.1</metrics_version>
         <gson_version>2.8.5</gson_version>
     </properties>
 
@@ -231,6 +234,11 @@
                 <groupId>redis.clients</groupId>
                 <artifactId>jedis</artifactId>
                 <version>${jedis_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.ecwid.consul</groupId>
+                <artifactId>consul-api</artifactId>
+                <version>${consul_version}</version>
             </dependency>
             <dependency>
                 <groupId>com.googlecode.xmemcached</groupId>
@@ -373,6 +381,21 @@
                 <artifactId>tomcat-embed-logging-juli</artifactId>
                 <version>${tomcat_embed_version}</version>
             </dependency>
+            <dependency>
+                <groupId>io.etcd</groupId>
+                <artifactId>jetcd-core</artifactId>
+                <version>${jetcd_version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-codec-http2</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-handler-proxy</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
             <!-- Log libs -->
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -469,6 +492,28 @@
                 <groupId>io.swagger</groupId>
                 <artifactId>swagger-jaxrs</artifactId>
                 <version>${swagger_version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.alibaba.middleware</groupId>
+                <artifactId>metrics-core-api</artifactId>
+                <version>${metrics_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.middleware</groupId>
+                <artifactId>metrics-core-impl</artifactId>
+                <version>${metrics_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.middleware</groupId>
+                <artifactId>metrics-common</artifactId>
+                <version>${metrics_version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.alibaba.middleware</groupId>
+                <artifactId>metrics-rest</artifactId>
+                <version>${metrics_version}</version>
             </dependency>
 
             <!-- Test lib -->

@@ -831,8 +831,26 @@ public class Constants {
      * Production environment key.
      */
     public static final String PRODUCTION_ENVIRONMENT = "product";
-    /*
-     * private Constants(){ }
+
+    public static final String ETCD3_NOTIFY_MAXTHREADS_KEYS = "etcd3.notify.maxthreads";
+
+    public static final int DEFAULT_ETCD3_NOTIFY_THREADS = DEFAULT_IO_THREADS;
+
+    public static final String DEFAULT_ETCD3_NOTIFY_QUEUES_KEY = "etcd3.notify.queues";
+
+    public static final int DEFAULT_GRPC_QUEUES = 300_0000;
+
+    /**
+     * metrics
      */
+    public static final String DUBBO_PROVIDER = "dubbo.provider";
+    public static final String DUBBO_CONSUMER = "dubbo.consumer";
+    public static final String DUBBO_PROVIDER_METHOD = "dubbo.provider.method";
+    public static final String DUBBO_CONSUMER_METHOD = "dubbo.consumer.method";
+    public static final String SERVICE = "service";
+    public static final String METHOD = "method";
+    public static final String DUBBO_GROUP = "dubbo";
+    public static final String METRICS_KEY = "metrics";
+
 
 }

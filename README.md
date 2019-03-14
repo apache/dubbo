@@ -209,7 +209,7 @@ See [CONTRIBUTING](https://github.com/apache/incubator-dubbo/blob/master/CONTRI
   * blog post
   * translation on documentation
   * use cases about how Dubbo is being used in enterprise system.
-* Improve the [dubbo-ops/dubbo-monitor](https://github.com/apache/incubator-dubbo-ops).
+* Improve the [dubbo-admin/dubbo-monitor](https://github.com/apache/incubator-dubbo-admin).
 * Contribute to the projects listed in [ecosystem](https://github.com/dubbo).
 * Any form of contribution that is not mentioned above.
 * If you would like to contribute, please send an email to dev@dubbo.incubator.apache.org to let us know!
@@ -228,7 +228,7 @@ Please report security vulnerability to [us](mailto:security@dubbo.incubator.apa
 * [Dubbo Website](https://github.com/apache/incubator-dubbo-website) - Apache Dubbo (incubating) official website
 * [Dubbo Samples](https://github.com/apache/incubator-dubbo-samples) - samples for Apache Dubbo (incubating)
 * [Dubbo Spring Boot](https://github.com/apache/incubator-dubbo-spring-boot-project) - Spring Boot Project for Dubbo
-* [Dubbo OPS](https://github.com/apache/incubator-dubbo-ops) - The reference implementation for Dubbo admin
+* [Dubbo Admin](https://github.com/apache/incubator-dubbo-admin) - The reference implementation for Dubbo admin
 
 #### Language
 
