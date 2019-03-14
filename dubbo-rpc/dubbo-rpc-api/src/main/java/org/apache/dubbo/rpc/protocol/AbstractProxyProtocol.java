@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -66,7 +67,10 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
         final String uri = serviceKey(invoker.getUrl());
         Exporter<T> exporter = (Exporter<T>) exporterMap.get(uri);
         if (exporter != null) {
-            return exporter;
+            // When modifying the configuration through override, you need to re-expose the newly modified service.
+            if (Objects.equals(exporter.getInvoker().getUrl(), invoker.getUrl())) {
+                return exporter;
+            }
         }
         final Runnable runnable = doExport(proxyFactory.getProxy(invoker, true), invoker.getInterface(), invoker.getUrl());
         exporter = new AbstractExporter<T>(invoker) {

@@ -18,6 +18,7 @@
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
     <appender name="DUBBO" class="org.apache.dubbo.common.utils.DubboAppender">
+        <param name="File" value="../dubbo.log"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="[%d{dd/MM/yy HH:mm:ss:SSS z}] %t %5p %c{2}: %m%n"/>
         </layout>

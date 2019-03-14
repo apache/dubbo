@@ -17,19 +17,19 @@
 
 package org.apache.dubbo.echo;
 
-import com.alibaba.dubbo.rpc.service.EchoService;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.service.DemoService;
-import org.apache.dubbo.service.DemoServiceImpl;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.service.DemoService;
+import org.apache.dubbo.service.DemoServiceImpl;
 
-import org.junit.Assert;
-import org.junit.Test;
+import com.alibaba.dubbo.rpc.service.EchoService;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class EchoServiceTest {
 
@@ -43,11 +43,11 @@ public class EchoServiceTest {
         Invoker<DemoService> invoker = protocol.refer(DemoService.class, url);
         EchoService client = (EchoService) proxyFactory.getProxy(invoker);
         Object result = client.$echo("haha");
-        Assert.assertEquals("haha", result);
+        Assertions.assertEquals("haha", result);
 
         org.apache.dubbo.rpc.service.EchoService newClient = (org.apache.dubbo.rpc.service.EchoService) proxyFactory.getProxy(invoker);
         Object res = newClient.$echo("hehe");
-        Assert.assertEquals("hehe", res);
+        Assertions.assertEquals("hehe", res);
         invoker.destroy();
         exporter.unexport();
     }

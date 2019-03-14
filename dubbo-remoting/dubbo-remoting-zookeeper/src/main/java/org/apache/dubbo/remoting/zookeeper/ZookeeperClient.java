@@ -42,4 +42,8 @@ public interface ZookeeperClient {
 
     URL getUrl();
 
+    void create(String path, String content, boolean ephemeral);
+
+    String getContent(String path);
+
 }

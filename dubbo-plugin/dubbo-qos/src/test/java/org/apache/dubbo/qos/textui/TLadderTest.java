@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.qos.textui;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class TLadderTest {
     @Test
@@ -31,10 +31,10 @@ public class TLadderTest {
         ladder.addItem("3");
         ladder.addItem("4");
         String result = ladder.rendering();
-        String expected = "1\n" +
-                "  `-2\n" +
-                "    `-3\n" +
-                "      `-4\n";
+        String expected = "1" + System.lineSeparator() +
+                "  `-2" + System.lineSeparator() +
+                "    `-3" + System.lineSeparator() +
+                "      `-4" + System.lineSeparator();
         assertThat(result, equalTo(expected));
         System.out.println(result);
     }

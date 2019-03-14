@@ -24,9 +24,9 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.support.MockInvocation;
 import org.apache.dubbo.rpc.support.MyInvoker;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * AccessLogFilterTest.java
@@ -42,7 +42,7 @@ public class AccessLogFilterTest {
         Invocation invocation = new MockInvocation();
         LogUtil.start();
         accessLogFilter.invoke(invoker, invocation);
-        assertEquals(1, LogUtil.findMessage("Exception in AcessLogFilter of service"));
+        assertEquals(1, LogUtil.findMessage("Exception in AccessLogFilter of service"));
         LogUtil.stop();
     }
 

@@ -16,10 +16,10 @@
  */
 package org.apache.dubbo.qos.textui;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class TTableTest {
     @Test
@@ -28,11 +28,11 @@ public class TTableTest {
         table.addRow(1, "one", "uno", "un");
         table.addRow(2, "two", "dos", "deux");
         String result = table.rendering();
-        String expected = "+-+---+---+----+\n" +
-                "|1|one|uno|un  |\n" +
-                "+-+---+---+----+\n" +
-                "|2|two|dos|deux|\n" +
-                "+-+---+---+----+\n";
+        String expected = "+-+---+---+----+" + System.lineSeparator() +
+                "|1|one|uno|un  |" + System.lineSeparator() +
+                "+-+---+---+----+" + System.lineSeparator() +
+                "|2|two|dos|deux|" + System.lineSeparator() +
+                "+-+---+---+----+" + System.lineSeparator();
         assertThat(result, equalTo(expected));
         System.out.println(result);
     }
@@ -46,9 +46,9 @@ public class TTableTest {
         });
         table.addRow(1, "abcde", "ABCDE");
         String result = table.rendering();
-        String expected = "+-+----------+----------+\n" +
-                "|1|   abcde  |     ABCDE|\n" +
-                "+-+----------+----------+\n";
+        String expected = "+-+----------+----------+" + System.lineSeparator() +
+                "|1|   abcde  |     ABCDE|" + System.lineSeparator() +
+                "+-+----------+----------+" + System.lineSeparator();
         assertThat(result, equalTo(expected));
         System.out.println(result);
     }

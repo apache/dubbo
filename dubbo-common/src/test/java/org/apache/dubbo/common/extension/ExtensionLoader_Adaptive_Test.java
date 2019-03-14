@@ -29,19 +29,19 @@ import org.apache.dubbo.common.extension.ext6_inject.Ext6;
 import org.apache.dubbo.common.extension.ext6_inject.impl.Ext6Impl2;
 import org.apache.dubbo.common.utils.LogUtil;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.allOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.matchers.JUnitMatchers.containsString;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class ExtensionLoader_Adaptive_Test {
 
@@ -147,8 +147,8 @@ public class ExtensionLoader_Adaptive_Test {
             fail();
         } catch (IllegalStateException expected) {
             assertThat(expected.getMessage(),
-                    allOf(containsString("Can not create adaptive extension interface org.apache.dubbo.common.extension.ext5.NoAdaptiveMethodExt"),
-                            containsString("No adaptive method on extension org.apache.dubbo.common.extension.ext5.NoAdaptiveMethodExt, refuse to create the adaptive class")));
+                    allOf(containsString("Can't create adaptive extension interface org.apache.dubbo.common.extension.ext5.NoAdaptiveMethodExt"),
+                            containsString("No adaptive method exist on extension org.apache.dubbo.common.extension.ext5.NoAdaptiveMethodExt, refuse to create the adaptive class")));
         }
         // report same error when get is invoked for multiple times
         try {
@@ -156,8 +156,8 @@ public class ExtensionLoader_Adaptive_Test {
             fail();
         } catch (IllegalStateException expected) {
             assertThat(expected.getMessage(),
-                    allOf(containsString("Can not create adaptive extension interface org.apache.dubbo.common.extension.ext5.NoAdaptiveMethodExt"),
-                            containsString("No adaptive method on extension org.apache.dubbo.common.extension.ext5.NoAdaptiveMethodExt, refuse to create the adaptive class")));
+                    allOf(containsString("Can't create adaptive extension interface org.apache.dubbo.common.extension.ext5.NoAdaptiveMethodExt"),
+                            containsString("No adaptive method exist on extension org.apache.dubbo.common.extension.ext5.NoAdaptiveMethodExt, refuse to create the adaptive class")));
         }
     }
 
@@ -185,7 +185,7 @@ public class ExtensionLoader_Adaptive_Test {
             ExtensionLoader.getExtensionLoader(NoUrlParamExt.class).getAdaptiveExtension();
             fail();
         } catch (Exception expected) {
-            assertThat(expected.getMessage(), containsString("fail to create adaptive class for interface "));
+            assertThat(expected.getMessage(), containsString("Failed to create adaptive class for interface "));
             assertThat(expected.getMessage(), containsString(": not found url parameter or url attribute in parameters of method "));
         }
     }
@@ -218,7 +218,7 @@ public class ExtensionLoader_Adaptive_Test {
             ext.echo(holder, "haha");
             fail();
         } catch (IllegalStateException expected) {
-            assertThat(expected.getMessage(), containsString("Fail to get extension("));
+            assertThat(expected.getMessage(), containsString("Failed to get extension"));
         }
 
         url = url.addParameter("ext2", "XXX");
@@ -281,7 +281,7 @@ public class ExtensionLoader_Adaptive_Test {
             ext.echo(holder, "impl1");
             fail();
         } catch (IllegalStateException expected) {
-            assertThat(expected.getMessage(), containsString("Fail to get extension("));
+            assertThat(expected.getMessage(), containsString("Failed to get extension"));
         }
 
         url = url.addParameter("key1", "impl1");
@@ -290,7 +290,7 @@ public class ExtensionLoader_Adaptive_Test {
             ext.echo(holder, "haha");
             fail();
         } catch (IllegalStateException expected) {
-            assertThat(expected.getMessage(), containsString("Fail to get extension(org.apache.dubbo.common.extension.ext2.Ext2) name from url"));
+            assertThat(expected.getMessage(), containsString("Failed to get extension (org.apache.dubbo.common.extension.ext2.Ext2) name from url"));
         }
     }
 
@@ -304,7 +304,7 @@ public class ExtensionLoader_Adaptive_Test {
 
         assertEquals("Ext6Impl1-echo-Ext1Impl1-echo", ext.echo(url, "ha"));
 
-        Assert.assertTrue("can not find error.", LogUtil.checkNoError());
+        Assertions.assertTrue(LogUtil.checkNoError(), "can not find error.");
         LogUtil.stop();
 
         url = url.addParameters("simple.ext", "impl2");

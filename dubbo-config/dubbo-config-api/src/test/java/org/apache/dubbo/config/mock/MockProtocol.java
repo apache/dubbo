@@ -24,6 +24,8 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 
+import org.mockito.Mockito;
+
 public class MockProtocol implements Protocol {
 
     /* (non-Javadoc)
@@ -39,7 +41,7 @@ public class MockProtocol implements Protocol {
      * @see org.apache.dubbo.rpc.Protocol#export(org.apache.dubbo.rpc.Invoker)
      */
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        return null;
+        return Mockito.mock(Exporter.class);
     }
 
     /* (non-Javadoc)
