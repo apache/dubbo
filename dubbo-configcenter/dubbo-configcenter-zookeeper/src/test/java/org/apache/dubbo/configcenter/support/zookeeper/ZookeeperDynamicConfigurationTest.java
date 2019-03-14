@@ -133,6 +133,7 @@ public class ZookeeperDynamicConfigurationTest {
 
         @Override
         public void process(ConfigChangeEvent event) {
+            System.out.println(this + ": " + event);
             Integer count = countMap.computeIfAbsent(event.getKey(), k -> new Integer(0));
             countMap.put(event.getKey(), ++count);
 
