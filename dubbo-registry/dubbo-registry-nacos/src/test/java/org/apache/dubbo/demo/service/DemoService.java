@@ -14,21 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.protocol.spring.webmvc.annotation;
+package org.apache.dubbo.demo.service;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
 
 /**
- * Rest Service Annotation
+ * DemoService
  *
- * @since 2.7.0
+ * @since 2.6.5
  */
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface RestService {
+@Path("/demo-service")
+public interface DemoService {
+
+    @GET
+    String sayName(@QueryParam("name") String name);
+
 }

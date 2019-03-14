@@ -14,27 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.test.provider;
+package org.apache.dubbo.registry.support.cloud;
 
-import org.apache.dubbo.config.annotation.Service;
-import org.apache.dubbo.demo.DemoService;
+import org.apache.dubbo.common.URL;
 
 /**
- * Default {@link DemoService} implementation
+ * {@link ServiceInstance} Factory to create a instance of {@link ServiceInstance}
  *
- * @since 2.5.8
+ * @param <S> The subclass of {@link ServiceInstance}
+ * @since 2.7.1
  */
-@Service(
-        version = "2.5.8",
-        application = "dubbo-annotation-provider",
-        protocol = "dubbo",
-        registry = "my-registry"
-)
-public class DefaultDemoService implements DemoService {
+public interface ServiceInstanceFactory<S extends ServiceInstance> {
 
-    @Override
-    public String sayHello(String name) {
-        return "DefaultDemoService - sayHell() : " + name;
-    }
+    /**
+     * Creates a instance of {@link S}
+     *
+     * @param url The Dubbo's {@link URL}
+     * @return a instance of {@link S}, if null, it indicates the registration will not be executed.
+     */
+    S create(URL url);
 
+    /**
+     * Creates the Service Name
+     *
+     * @param url The Dubbo's {@link URL}
+     * @return non-null
+     */
+    String createServiceName(URL url);
 }

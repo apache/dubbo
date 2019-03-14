@@ -14,30 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.protocol.spring.webmvc.annotation;
+package org.apache.dubbo.demo.provider;
 
-import com.alibaba.dubbo.rpc.protocol.spring.webmvc.method.annotation.RestServiceHandlerAdapter;
-import com.alibaba.dubbo.rpc.protocol.spring.webmvc.method.annotation.RestServiceHandlerMapping;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.apache.dubbo.demo.service.DemoService;
+
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import java.io.IOException;
 
 /**
- * {@link RestService}
- *
- * @since 2.7.0
+ * {@link DemoService} provider demo XML bootstrap
  */
-@Configuration
-public class RestServiceConfiguration {
+public class DemoServiceProviderXmlBootstrap {
 
-    @Bean
-    public RestServiceHandlerMapping restServiceHandlerMapping() {
-        return new RestServiceHandlerMapping();
+    public static void main(String[] args) throws IOException {
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext();
+        context.setConfigLocation("/META-INF/spring/dubbo-provider-context.xml");
+        context.refresh();
+        System.out.println("DemoService provider (XML) is starting...");
+        System.in.read();
     }
-
-    @Bean
-    public RestServiceHandlerAdapter restServiceHandlerAdapter(){
-        return new RestServiceHandlerAdapter();
-    }
-
-
 }

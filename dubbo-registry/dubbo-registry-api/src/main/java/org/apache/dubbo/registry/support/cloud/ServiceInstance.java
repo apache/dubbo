@@ -14,20 +14,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.test.provider;
+package org.apache.dubbo.registry.support.cloud;
 
-import org.apache.dubbo.config.spring.context.annotation.DubboComponentScan;
-
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.ImportResource;
+import java.util.Map;
 
 /**
- * Provider {@Link Configuration}
+ * The Service Instance
  *
- * @since 2.5.8
+ * @since 2.7.1
  */
-@Configuration
-@ImportResource("META-INF/spring/dubbo-provider.xml")
-@DubboComponentScan
-public class ProviderConfiguration {
+public interface ServiceInstance {
+
+    /**
+     * @return The service name
+     */
+    String getServiceName();
+
+    /**
+     * @return The Host
+     */
+    String getHost();
+
+    /**
+     * @return The service port
+     */
+    int getPort();
+
+    /**
+     * @return The read-only metadata
+     */
+    Map<String, String> getMetadata();
+
+    /**
+     * @return The scheme of the service instance.
+     */
+    default String getScheme() {
+        return null;
+    }
+
+    @Override
+    boolean equals(Object o);
+
+    @Override
+    int hashCode();
 }
