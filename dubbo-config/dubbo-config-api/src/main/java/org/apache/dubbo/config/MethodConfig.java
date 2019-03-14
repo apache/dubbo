@@ -18,8 +18,11 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.support.Parameter;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -115,6 +118,46 @@ public class MethodConfig extends AbstractMethodConfig {
     @Parameter(excluded = true)
     public String getName() {
         return name;
+    }
+
+    public MethodConfig() {
+    }
+
+    public MethodConfig(Method method) {
+        appendAnnotation(Method.class, method);
+
+        this.setReturn(method.isReturn());
+
+        if(!"".equals(method.oninvoke())){
+            this.setOninvoke(method.oninvoke());
+        }
+        if(!"".equals(method.onreturn())){
+            this.setOnreturn(method.onreturn());
+        }
+        if(!"".equals(method.onthrow())){
+            this.setOnthrow(method.onthrow());
+        }
+
+        if (method.arguments() != null && method.arguments().length != 0) {
+            List<ArgumentConfig> argumentConfigs = new ArrayList<ArgumentConfig>(method.arguments().length);
+            this.setArguments(argumentConfigs);
+            for (int i = 0; i < method.arguments().length; i++) {
+                ArgumentConfig argumentConfig = new ArgumentConfig(method.arguments()[i]);
+                argumentConfigs.add(argumentConfig);
+            }
+        }
+    }
+
+    public static List<MethodConfig> constructMethodConfig(Method[] methods) {
+        if (methods != null && methods.length != 0) {
+            List<MethodConfig> methodConfigs = new ArrayList<MethodConfig>(methods.length);
+            for (int i = 0; i < methods.length; i++) {
+                MethodConfig methodConfig = new MethodConfig(methods[i]);
+                methodConfigs.add(methodConfig);
+            }
+            return methodConfigs;
+        }
+        return Collections.emptyList();
     }
 
     public void setName(String name) {

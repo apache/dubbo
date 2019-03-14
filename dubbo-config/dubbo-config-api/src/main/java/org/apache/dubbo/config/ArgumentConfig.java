@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.config.annotation.Argument;
 import org.apache.dubbo.config.support.Parameter;
 
 import java.io.Serializable;
@@ -43,6 +44,15 @@ public class ArgumentConfig implements Serializable {
      * Whether the argument is the callback interface
      */
     private Boolean callback;
+
+    public ArgumentConfig() {
+    }
+
+    public ArgumentConfig(Argument argument) {
+        this.index = argument.index();
+        this.type = argument.type();
+        this.callback = argument.callback();
+    }
 
     @Parameter(excluded = true)
     public Integer getIndex() {
