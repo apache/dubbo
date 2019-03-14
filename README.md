@@ -42,7 +42,7 @@ There's a [README](https://github.com/apache/incubator-dubbo-samples/tree/master
 
 ```xml
 <properties>
-    <dubbo.version>2.7.0</dubbo.version>
+    <dubbo.version>2.7.1</dubbo.version>
 </properties>
     
 <dependencyManagement>
@@ -62,14 +62,6 @@ There's a [README](https://github.com/apache/incubator-dubbo-samples/tree/master
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo</artifactId>
         <version>${dubbo.version}</version>
-    </dependency>
-    <dependency>
-        <groupId>io.netty</groupId>
-        <artifactId>netty-all</artifactId>
-    </dependency>
-    <dependency>
-        <groupId>org.apache.curator</groupId>
-        <artifactId>curator-framework</artifactId>
     </dependency>
     <dependency>
         <groupId>org.apache.curator</groupId>
