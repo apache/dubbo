@@ -14,29 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metrics;
+package org.apache.dubbo.config.annotation;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * A filter used to determine whether or not a metric should be reported, among other things.
+ * @since 2.6.5
+ *
+ * 2018/9/29
  */
-public interface MetricFilter {
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.ANNOTATION_TYPE})
+@Inherited
+public @interface Argument {
+    //argument: index -1 represents not set
+    int index() default -1;
 
-    /**
-     * Matches all metrics, regardless of type or name.
-     */
-    MetricFilter ALL = new MetricFilter() {
-        @Override
-        public boolean matches(MetricName name, Metric metric) {
-            return true;
-        }
-    };
+    //argument type
+    String type() default "";
 
-    /**
-     * Returns {@code true} if the metric matches the filter; {@code false} otherwise.
-     *
-     * @param name      the metric's name
-     * @param metric    the metric
-     * @return {@code true} if the metric matches the filter
-     */
-    boolean matches(MetricName name, Metric metric);
+    //callback interface
+    boolean callback() default false;
 }

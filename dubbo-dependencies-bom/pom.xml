@@ -143,6 +143,7 @@
         <swagger_version>1.5.19</swagger_version>
         <spring_test_version>4.3.16.RELEASE</spring_test_version>
 
+        <metrics_version>2.0.1</metrics_version>
         <gson_version>2.8.5</gson_version>
     </properties>
 
@@ -491,6 +492,28 @@
                 <groupId>io.swagger</groupId>
                 <artifactId>swagger-jaxrs</artifactId>
                 <version>${swagger_version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.alibaba.middleware</groupId>
+                <artifactId>metrics-core-api</artifactId>
+                <version>${metrics_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.middleware</groupId>
+                <artifactId>metrics-core-impl</artifactId>
+                <version>${metrics_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.middleware</groupId>
+                <artifactId>metrics-common</artifactId>
+                <version>${metrics_version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.alibaba.middleware</groupId>
+                <artifactId>metrics-rest</artifactId>
+                <version>${metrics_version}</version>
             </dependency>
 
             <!-- Test lib -->
