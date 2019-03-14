@@ -38,6 +38,7 @@ import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -137,15 +138,15 @@ public abstract class AbstractRegistry implements Registry {
     }
 
     public Set<URL> getRegistered() {
-        return registered;
+        return Collections.unmodifiableSet(registered);
     }
 
     public Map<URL, Set<NotifyListener>> getSubscribed() {
-        return subscribed;
+        return Collections.unmodifiableMap(subscribed);
     }
 
     public Map<URL, Map<String, List<URL>>> getNotified() {
-        return notified;
+        return Collections.unmodifiableMap(notified);
     }
 
     public File getCacheFile() {

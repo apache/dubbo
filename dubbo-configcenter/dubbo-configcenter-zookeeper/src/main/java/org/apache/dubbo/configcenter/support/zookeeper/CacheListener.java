@@ -38,6 +38,8 @@ import java.util.concurrent.CountDownLatch;
  *
  */
 public class CacheListener implements TreeCacheListener {
+    private static final byte[] EMPTY_BYTES = new byte[0];
+
     private Map<String, Set<ConfigurationListener>> keyListeners = new ConcurrentHashMap<>();
     private CountDownLatch initializedLatch;
     private String rootPath;
@@ -83,6 +85,9 @@ public class CacheListener implements TreeCacheListener {
                     return;
             }
 
+            if (value == null) {
+                value = EMPTY_BYTES;
+            }
             ConfigChangeEvent configChangeEvent = new ConfigChangeEvent(key, new String(value, StandardCharsets.UTF_8), changeType);
             Set<ConfigurationListener> listeners = keyListeners.get(key);
             if (CollectionUtils.isNotEmpty(listeners)) {

@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.apache</groupId>
         <artifactId>apache</artifactId>
-        <version>19</version>
+        <version>21</version>
     </parent>
 
     <groupId>org.apache.dubbo</groupId>
@@ -128,7 +128,6 @@
 
     <modules>
         <module>dubbo-common</module>
-        <module>dubbo-metrics</module>
         <module>dubbo-container</module>
         <module>dubbo-remoting</module>
         <module>dubbo-rpc</module>
@@ -147,6 +146,7 @@
         <module>dubbo-distribution</module>
         <module>dubbo-metadata-report</module>
         <module>dubbo-configcenter</module>
+        <module>dubbo-dependencies</module>
     </modules>
 
     <dependencyManagement>
@@ -195,6 +195,15 @@
     </dependencies>
 
     <profiles>
+        <profile>
+            <id>javadoc-lint</id>
+            <activation>
+                <jdk>[1.8,)</jdk>
+            </activation>
+            <properties>
+                <doclint>none</doclint>
+            </properties>
+        </profile>
         <profile>
             <id>checkstyle</id>
             <activation>

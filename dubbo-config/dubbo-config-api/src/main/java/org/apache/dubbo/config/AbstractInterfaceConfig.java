@@ -18,6 +18,7 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -296,16 +297,18 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                     Map<String, String> map = new HashMap<String, String>();
                     appendParameters(map, application);
                     appendParameters(map, config);
-                    map.put("path", RegistryService.class.getName());
+                    map.put(Constants.PATH_KEY, RegistryService.class.getName());
                     appendRuntimeParameters(map);
-                    if (!map.containsKey("protocol")) {
-                        map.put("protocol", "dubbo");
+                    if (!map.containsKey(Constants.PROTOCOL_KEY)) {
+                        map.put(Constants.PROTOCOL_KEY, Constants.DUBBO_PROTOCOL);
                     }
                     List<URL> urls = UrlUtils.parseURLs(address, map);
 
                     for (URL url : urls) {
-                        url = url.addParameter(Constants.REGISTRY_KEY, url.getProtocol());
-                        url = url.setProtocol(Constants.REGISTRY_PROTOCOL);
+                        url = URLBuilder.from(url)
+                                .addParameter(Constants.REGISTRY_KEY, url.getProtocol())
+                                .setProtocol(Constants.REGISTRY_PROTOCOL)
+                                .build();
                         if ((provider && url.getParameter(Constants.REGISTER_KEY, true))
                                 || (!provider && url.getParameter(Constants.SUBSCRIBE_KEY, true))) {
                             registryList.add(url);
@@ -333,9 +336,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         String hostToRegistry = ConfigUtils.getSystemProperty(Constants.DUBBO_IP_TO_REGISTRY);
         if (StringUtils.isEmpty(hostToRegistry)) {
             hostToRegistry = NetUtils.getLocalHost();
-        } else if (NetUtils.isInvalidLocalHost(hostToRegistry)) {
-            throw new IllegalArgumentException("Specified invalid registry ip from property:" +
-                    Constants.DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
         }
         map.put(Constants.REGISTER_IP_KEY, hostToRegistry);
         appendParameters(map, monitor);
@@ -350,12 +350,16 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 if (getExtensionLoader(MonitorFactory.class).hasExtension("logstat")) {
                     map.put(Constants.PROTOCOL_KEY, "logstat");
                 } else {
-                    map.put(Constants.PROTOCOL_KEY, Constants.DOBBO_PROTOCOL);
+                    map.put(Constants.PROTOCOL_KEY, Constants.DUBBO_PROTOCOL);
                 }
             }
             return UrlUtils.parseURL(address, map);
         } else if (Constants.REGISTRY_PROTOCOL.equals(monitor.getProtocol()) && registryURL != null) {
-          return registryURL.setProtocol(Constants.DOBBO_PROTOCOL).addParameter(Constants.PROTOCOL_KEY, Constants.REGISTRY_PROTOCOL).addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map));
+            return URLBuilder.from(registryURL)
+                    .setProtocol(Constants.DUBBO_PROTOCOL)
+                    .addParameter(Constants.PROTOCOL_KEY, Constants.REGISTRY_PROTOCOL)
+                    .addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map))
+                    .build();
         }
         return null;
     }
@@ -601,7 +605,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (local == null) {
             setLocal((String) null);
         } else {
-            setLocal(String.valueOf(local));
+            setLocal(local.toString());
         }
     }
 
@@ -623,7 +627,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (stub == null) {
             setStub((String) null);
         } else {
-            setStub(String.valueOf(stub));
+            setStub(stub.toString());
         }
     }
 

@@ -247,7 +247,7 @@ public class Constants {
 
     public static final String PROTOCOL_KEY = "protocol";
 
-    public static final String DOBBO_PROTOCOL = DUBBO;
+    public static final String DUBBO_PROTOCOL = DUBBO;
 
     public static final String ZOOKEEPER_PROTOCOL = "zookeeper";
 
@@ -753,6 +753,12 @@ public class Constants {
 
     public static final String HOST_KEY = "host";
 
+    public static final String PORT_KEY = "port";
+
+    public static final String USERNAME_KEY = "username";
+
+    public static final String PASSWORD_KEY = "password";
+
     public static final String ADDRESS_KEY = "address";
 
     public static final String RETRY_TIMES_KEY = "retry.times";
@@ -830,5 +836,25 @@ public class Constants {
      * The redis replicate key
      */
     public static final String REDIS_REPLICATE_KEY = "replicate";
+
+    public static final String ETCD3_NOTIFY_MAXTHREADS_KEYS = "etcd3.notify.maxthreads";
+
+    public static final int DEFAULT_ETCD3_NOTIFY_THREADS = DEFAULT_IO_THREADS;
+
+    public static final String DEFAULT_ETCD3_NOTIFY_QUEUES_KEY = "etcd3.notify.queues";
+
+    public static final int DEFAULT_GRPC_QUEUES = 300_0000;
+
+    /**
+     * metrics
+     */
+    public static final String DUBBO_PROVIDER = "dubbo.provider";
+    public static final String DUBBO_CONSUMER = "dubbo.consumer";
+    public static final String DUBBO_PROVIDER_METHOD = "dubbo.provider.method";
+    public static final String DUBBO_CONSUMER_METHOD = "dubbo.consumer.method";
+    public static final String SERVICE = "service";
+    public static final String METHOD = "method";
+    public static final String DUBBO_GROUP = "dubbo";
+    public static final String METRICS_KEY = "metrics";
 
 }
