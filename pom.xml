@@ -197,6 +197,15 @@
 
     <profiles>
         <profile>
+            <id>javadoc-lint</id>
+            <activation>
+                <jdk>[1.8,)</jdk>
+            </activation>
+            <properties>
+                <doclint>none</doclint>
+            </properties>
+        </profile>
+        <profile>
             <id>checkstyle</id>
             <activation>
                 <jdk>[1.8,)</jdk>
