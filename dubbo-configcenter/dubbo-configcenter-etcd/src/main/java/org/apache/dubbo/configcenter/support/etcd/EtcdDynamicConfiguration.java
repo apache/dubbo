@@ -17,16 +17,26 @@
 
 package org.apache.dubbo.configcenter.support.etcd;
 
+import com.google.protobuf.ByteString;
+import io.etcd.jetcd.api.Event;
+import io.etcd.jetcd.api.WatchCancelRequest;
+import io.etcd.jetcd.api.WatchCreateRequest;
+import io.etcd.jetcd.api.WatchGrpc;
+import io.etcd.jetcd.api.WatchRequest;
+import io.etcd.jetcd.api.WatchResponse;
+import io.grpc.ManagedChannel;
+import io.grpc.stub.StreamObserver;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.ConfigurationListener;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
-import org.apache.dubbo.remoting.etcd.EtcdClient;
 import org.apache.dubbo.remoting.etcd.jetcd.JEtcdClient;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.dubbo.common.Constants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.Constants.PATH_SEPARATOR;
 
@@ -43,12 +53,12 @@ public class EtcdDynamicConfiguration implements DynamicConfiguration {
     /**
      * The etcd client
      */
-    private final EtcdClient etcdClient;
+    private final JEtcdClient etcdClient;
 
     /**
-     * The map store the key to {@link EtcdConfigListener} mapping
+     * The map store the key to {@link EtcdConfigWatcher} mapping
      */
-    private final ConcurrentMap<String, EtcdConfigListener> watchListenerMap;
+    private final ConcurrentMap<ConfigurationListener, EtcdConfigWatcher> watchListenerMap;
 
     EtcdDynamicConfiguration(URL url) {
         rootPath = "/" + url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP) + "/config";
@@ -58,13 +68,18 @@ public class EtcdDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
-        String normalizedKey = convertKey(key);
-        etcdClient.addWatchListener(normalizedKey, new EtcdConfigListener(listener));
+        if (watchListenerMap.get(listener) == null) {
+            EtcdConfigWatcher watcher = new EtcdConfigWatcher(listener);
+            watchListenerMap.put(listener, watcher);
+            String normalizedKey = convertKey(key);
+            watcher.watch(normalizedKey);
+        }
     }
 
     @Override
     public void removeListener(String key, String group, ConfigurationListener listener) {
-
+        EtcdConfigWatcher watcher = watchListenerMap.get(listener);
+        watcher.cancelWatch();
     }
 
     // TODO Abstract the logic into super class
@@ -88,5 +103,62 @@ public class EtcdDynamicConfiguration implements DynamicConfiguration {
     private String convertKey(String key) {
         int index = key.lastIndexOf('.');
         return rootPath + PATH_SEPARATOR + key.substring(0, index) + PATH_SEPARATOR + key.substring(index + 1);
+    }
+
+    public class EtcdConfigWatcher implements StreamObserver<WatchResponse> {
+
+        private ConfigurationListener listener;
+        protected WatchGrpc.WatchStub watchStub;
+        private StreamObserver<WatchRequest> observer;
+        protected long watchId;
+        private ManagedChannel channel;
+
+        public EtcdConfigWatcher(ConfigurationListener listener) {
+            this.listener = listener;
+            this.channel = etcdClient.getChannel();
+        }
+
+        @Override
+        public void onNext(WatchResponse watchResponse) {
+            this.watchId = watchResponse.getWatchId();
+            for (Event etcdEvent : watchResponse.getEventsList()) {
+                ConfigChangeEvent event = new ConfigChangeEvent(
+                        etcdEvent.getKv().getKey().toString(UTF_8),
+                        etcdEvent.getKv().getValue().toString(UTF_8));
+                listener.process(event);
+            }
+        }
+
+        @Override
+        public void onError(Throwable throwable) {
+            // ignore
+        }
+
+        @Override
+        public void onCompleted() {
+            // ignore
+        }
+
+        public long getWatchId() {
+            return watchId;
+        }
+
+        private void watch(String key) {
+            watchStub = WatchGrpc.newStub(channel);
+            observer = watchStub.watch(this);
+            WatchCreateRequest.Builder builder = WatchCreateRequest.newBuilder()
+                    .setKey(ByteString.copyFromUtf8(key))
+                    .setProgressNotify(true);
+            WatchRequest req = WatchRequest.newBuilder().setCreateRequest(builder).build();
+            observer.onNext(req);
+        }
+
+        private void cancelWatch() {
+            WatchCancelRequest watchCancelRequest =
+                    WatchCancelRequest.newBuilder().setWatchId(watchId).build();
+            WatchRequest cancelRequest = WatchRequest.newBuilder()
+                    .setCancelRequest(watchCancelRequest).build();
+            observer.onNext(cancelRequest);
+        }
     }
 }

@@ -33,7 +33,6 @@
  */
 package org.apache.dubbo.remoting.etcd;
 
-import io.etcd.jetcd.Watch;
 import org.apache.dubbo.common.URL;
 
 import java.util.List;
@@ -172,16 +171,6 @@ public interface EtcdClient {
      * @return null if the value is not found
      */
     String getKVValue(String key);
-
-
-    /**
-     * Watch the specified key with given listener.
-     * The listener will be notified with future update to the key
-     * @param key the key to watch
-     * @param listener the listener to notify
-     */
-    void addWatchListener(String key, Watch.Listener listener);
-
 
     /**
      * Put the key value pair to etcd
