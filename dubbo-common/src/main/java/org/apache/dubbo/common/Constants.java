@@ -91,6 +91,8 @@ public class Constants {
 
     public static final String $INVOKE = "$invoke";
 
+    public static final String $INVOKE_ASYNC = "$invokeAsync";
+
     public static final String $ECHO = "$echo";
 
     public static final int DEFAULT_IO_THREADS = Math.min(Runtime.getRuntime().availableProcessors() + 1, 32);
@@ -825,6 +827,10 @@ public class Constants {
      * Production environment key.
      */
     public static final String PRODUCTION_ENVIRONMENT = "product";
+
+    public static final String CONSUMER_START_TIME_KEY = "consumer.start.time";
+
+    public static final String PROVIDER_START_TIME_KEY = "provider.start.time";
     /*
      * private Constants(){ }
      */

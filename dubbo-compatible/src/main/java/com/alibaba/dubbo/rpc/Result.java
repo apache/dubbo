@@ -22,6 +22,16 @@ import java.util.Map;
 @Deprecated
 public interface Result extends org.apache.dubbo.rpc.Result {
 
+    @Override
+    default void setValue(Object value) {
+
+    }
+
+    @Override
+    default void setException(Throwable t) {
+
+    }
+
     class CompatibleResult implements Result {
         private org.apache.dubbo.rpc.Result delegate;
 

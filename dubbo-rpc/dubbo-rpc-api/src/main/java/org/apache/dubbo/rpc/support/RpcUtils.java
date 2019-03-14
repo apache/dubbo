@@ -27,12 +27,10 @@ import org.apache.dubbo.rpc.InvokeMode;
 import org.apache.dubbo.rpc.RpcInvocation;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -66,7 +64,6 @@ public class RpcUtils {
         return null;
     }
 
-    // TODO why not get return type when initialize Invocation?
     public static Type[] getReturnTypes(Invocation invocation) {
         try {
             if (invocation != null && invocation.getInvoker() != null
@@ -81,24 +78,7 @@ public class RpcUtils {
                     if (method.getReturnType() == void.class) {
                         return null;
                     }
-                    Class<?> returnType = method.getReturnType();
-                    Type genericReturnType = method.getGenericReturnType();
-                    if (Future.class.isAssignableFrom(returnType)) {
-                        if (genericReturnType instanceof ParameterizedType) {
-                            Type actualArgType = ((ParameterizedType) genericReturnType).getActualTypeArguments()[0];
-                            if (actualArgType instanceof ParameterizedType) {
-                                returnType = (Class<?>) ((ParameterizedType) actualArgType).getRawType();
-                                genericReturnType = actualArgType;
-                            } else {
-                                returnType = (Class<?>) actualArgType;
-                                genericReturnType = returnType;
-                            }
-                        } else {
-                            returnType = null;
-                            genericReturnType = null;
-                        }
-                    }
-                    return new Type[]{returnType, genericReturnType};
+                    return ReflectUtils.getReturnTypes(method);
                 }
             }
         } catch (Throwable t) {
@@ -186,7 +166,7 @@ public class RpcUtils {
 
     public static boolean isReturnTypeFuture(Invocation inv) {
         Class<?> clazz = getReturnType(inv);
-        return clazz != null && CompletableFuture.class.isAssignableFrom(clazz);
+        return (clazz != null && CompletableFuture.class.isAssignableFrom(clazz)) || isGenericAsync(inv);
     }
 
     public static InvokeMode getInvokeMode(URL url, Invocation inv) {
@@ -197,6 +177,10 @@ public class RpcUtils {
         } else {
             return InvokeMode.SYNC;
         }
+    }
+
+    public static boolean isGenericAsync(Invocation inv) {
+        return Constants.$INVOKE_ASYNC.equals(inv.getMethodName());
     }
 
     public static boolean isOneway(URL url, Invocation inv) {
