@@ -94,9 +94,14 @@ public class RpcResult extends AbstractResult {
     }
 
     /**
-     * fix issue#619
-     * @param e
-     * @return
+     * we need to deal the exception whose stack trace is null.
+     * <p>
+     * see https://github.com/apache/incubator-dubbo/pull/2956
+     * and https://github.com/apache/incubator-dubbo/pull/3634
+     * and https://github.com/apache/incubator-dubbo/issues/619
+     *
+     * @param e exception
+     * @return exception after deal with stack trace
      */
     private Throwable handleStackTraceNull(Throwable e) {
         if (e != null) {
