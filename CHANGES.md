@@ -1,5 +1,77 @@
 # Release Notes
 
+## 2.7.1
+
+### New Features
+
+- nacos support on 2.7 [3582](https://github.com/apache/incubator-dubbo/issues/3582)
+- support consul as registry center, config center and metadata center [#983](https://github.com/apache/incubator-dubbo/issues/983)
+- etcd registry center support [#808](https://github.com/apache/incubator-dubbo/issues/808)
+- metrics support in dubbo 2.7.1 [#3598](https://github.com/apache/incubator-dubbo/issues/3598)
+- @Argument @Method support [#2405](https://github.com/apache/incubator-dubbo/issues/2045)
+
+### Enhancement
+
+- [Enhancement] @EnableDubboConfigBinding annotates @Repeatable [#1770](https://github.com/apache/incubator-dubbo/issues/1770)
+- Should make annotation easier to use in multiple items circumstance [#3039](https://github.com/apache/incubator-dubbo/issues/3039)
+- NoSuchMethodError are thrown when add custom Filter using dubbo2.6.5 and JDK1.6 and upgrade to dubbo2.7.0 [#3570](https://github.com/apache/incubator-dubbo/issues/3570)
+- introduce dubbo-dependencies-zookeeper [#3607](https://github.com/apache/incubator-dubbo/pull/3607)
+- Zookeeper ConfigCenter reuse the client abstraction and connection session [#3288](https://github.com/apache/incubator-dubbo/issues/3288)
+- [Survey] Is it necessary to continue to maintain zkclient in dubbo project? [#3569](https://github.com/apache/incubator-dubbo/issues/3569)
+- Start to use IdleStateHandler in Netty4 [#3341](https://github.com/apache/incubator-dubbo/pull/3341)
+- Support multiple shared links [#2457](https://github.com/apache/incubator-dubbo/pull/2457)
+- Optimize heartbeat [#3299](https://github.com/apache/incubator-dubbo/pull/3299)
+- AccessLogFilter simple date format reduce instance creation [#3026](https://github.com/apache/incubator-dubbo/issues/3026)
+- Support wildcard ip for tag router rule. [#3289](https://github.com/apache/incubator-dubbo/issues/3289)
+- ScriptRouter should cache CompiledScript [#390](https://github.com/apache/incubator-dubbo/issues/390)
+- Optimize compareTo in Router to guarantee consistent behaviour. [#3302](https://github.com/apache/incubator-dubbo/issues/3302)
+- RMI protocol doesn't support generic invocation [#2779](https://github.com/apache/incubator-dubbo/issues/2779)
+- a more elegant way to enhance HashedWheelTimer [#3567](https://github.com/apache/incubator-dubbo/pull/3567)
+- obtain local address incorrectly sometimes in dubbo [#538](https://github.com/apache/incubator-dubbo/issues/538)
+- implement pull request #3412 on master branch [#3418](https://github.com/apache/incubator-dubbo/pull/3418)
+- enhancement for event of response (follow up for pull request #3043) [#3244](https://github.com/apache/incubator-dubbo/issues/3244)
+- bump up hessian-lite version #3423 [#3513](https://github.com/apache/incubator-dubbo/pull/3513)
+
+### Bugfixes
+
+- cannot register REST service in 2.7 due to the changes in RestProtoco#getContextPath [#3445](https://github.com/apache/incubator-dubbo/issues/3445)
+- Conflict between curator client and dubbo [#3574](https://github.com/apache/incubator-dubbo/issues/3574)
+- is there a problem in NettyBackedChannelBuffer.setBytes(...)? [#2619](https://github.com/apache/incubator-dubbo/issues/2619)
+- [Dubbo - client always reconnect offline provider] Dubbo client bug [#3158](https://github.com/apache/incubator-dubbo/issues/3158)
+- fix heartbeat internal [#3579](https://github.com/apache/incubator-dubbo/pull/3579)
+- logic issue in RedisRegistry leads to services cannot be discovered. [#3291](https://github.com/apache/incubator-dubbo/pull/3291)
+- Multicast demo fails with message "Can't assign requested address" [#2423](https://github.com/apache/incubator-dubbo/issues/2423)
+- Fix thrift protocol, use path to locate exporter. [#3331](https://github.com/apache/incubator-dubbo/pull/3331)
+- cannot use override to modify provider's configuration when hessian protocol is used [#900](https://github.com/apache/incubator-dubbo/issues/900)
+- Condition is not properly used ? [#1917](https://github.com/apache/incubator-dubbo/issues/1917)
+- connectionMonitor in RestProtocol seems not work [#3237](https://github.com/apache/incubator-dubbo/issues/3237)
+- fail to parse config text with white space [#3367](https://github.com/apache/incubator-dubbo/issues/3367)
+- @Reference check=false doesn't take effect [#195](https://github.com/apache/incubator-dubbo/issues/195)
+- [Issue] SpringStatusChecker execute errors on non-XML Spring configuration [#3615](https://github.com/apache/incubator-dubbo/issues/3615)
+- monitor's cluster config is set to failsafe and set to failsafe only [#274](https://github.com/apache/incubator-dubbo/issues/274)
+- A question for ReferenceConfigCache. [#1293](https://github.com/apache/incubator-dubbo/issues/1293)
+- referenceconfig#destroy never invoke unregister [#3294](https://github.com/apache/incubator-dubbo/issues/3294)
+- Fix when qos is disable,log will print every time [#3397](https://github.com/apache/incubator-dubbo/pull/3397)
+- service group is not supported in generic direct invocation [#3555](https://github.com/apache/incubator-dubbo/issues/3555)
+- setOnreturn doesn't take effect in async generic invocation [#208](https://github.com/apache/incubator-dubbo/issues/208)
+- Fix timeout filter not work in async way [#3174](https://github.com/apache/incubator-dubbo/pull/3174)
+- java.lang.NumberFormatException: For input string: "" [#3069](https://github.com/apache/incubator-dubbo/issues/3069)
+- NPE occurred when the configuration was deleted [#3533](https://github.com/apache/incubator-dubbo/issues/3533)
+- NPE when package of interface is empty [#3556](https://github.com/apache/incubator-dubbo/issues/3556)
+- NPE when exporting rest service using a given path. [#3477](https://github.com/apache/incubator-dubbo/issues/3477)
+- NullPointerException happened when using SpringContainer.getContext() [#3476](https://github.com/apache/incubator-dubbo/issues/3476)
+- Why does not tomcat throw an exception when `server.start` failed with a socket binding error.  [#3236](https://github.com/apache/incubator-dubbo/issues/3236)
+- No such extension org.apache.dubbo.metadata.store.MetadataReportFactory by name redis [#3514](https://github.com/apache/incubator-dubbo/issues/3514)
+- dubbo 2.7.1-SNAPSHOT NoClassDefFoundError when use springboot [#3426](https://github.com/apache/incubator-dubbo/issues/3426)
+- dubbo2.7.0 com.alibaba.com.caucho.hessian.io.HessianProtocolException: 'com.alibaba.dubbo.common.URL' could not be instantiated [#3342](https://github.com/apache/incubator-dubbo/issues/3342)
+- Close Resources Properly [#3473](https://github.com/apache/incubator-dubbo/issues/3473)
+- SPI entires dup by 3 times. [#2842](https://github.com/apache/incubator-dubbo/issues/2842)
+- provider gets wrong interface name from attachment when use generic invocation in 2.6.3 [#2981](https://github.com/apache/incubator-dubbo/issues/2981)
+- HashedWheelTimer's queue gets full [#3449](https://github.com/apache/incubator-dubbo/issues/3449)
+- Modify MetadataReportRetry ThreadName [#3550](https://github.com/apache/incubator-dubbo/pull/3550)
+- Keep interface key in the URL in simplify mode when it's different from path. [#3478](https://github.com/apache/incubator-dubbo/issues/3478)
+- nc is not stable in dubbo's bootstrap script [#936](https://github.com/apache/incubator-dubbo/issues/936)
+
 ## 2.7.0
 
 Requirements: **Java 8+** required
