@@ -123,7 +123,9 @@ public class ServiceConfigTest {
 
     @Test
     public void testExport() throws Exception {
+        assertThat(service.isExported(), is(false));
         service.export();
+        assertThat(service.isExported(), is(true));
 
         assertThat(service.getExportedUrls(), hasSize(1));
         URL url = service.toUrl();
@@ -154,10 +156,13 @@ public class ServiceConfigTest {
 
     @Test
     public void testDelayExport() throws Exception {
+        assertThat(delayService.isExported(), is(false));
         delayService.export();
+        assertThat(delayService.isExported(), is(false));
         assertTrue(delayService.getExportedUrls().isEmpty());
         //add 300ms to ensure that the delayService has been exported
         TimeUnit.MILLISECONDS.sleep(delayService.getDelay() + 300);
+        assertThat(delayService.isExported(), is(true));
         assertThat(delayService.getExportedUrls(), hasSize(1));
     }
 
@@ -167,7 +172,11 @@ public class ServiceConfigTest {
         System.setProperty(Constants.SHUTDOWN_WAIT_KEY, "0");
         try {
             service.export();
+
+            assertThat(service.isUnexported(), is(false));
             service.unexport();
+            assertThat(service.isUnexported(), is(true));
+
             Thread.sleep(1000);
             Mockito.verify(exporter, Mockito.atLeastOnce()).unexport();
         } finally {
@@ -251,5 +260,22 @@ public class ServiceConfigTest {
         service.setInterface(Greeting.class);
         service.setVersion("1.0.0");
         assertThat(service.getUniqueServiceName(), equalTo("dubbo/" + Greeting.class.getName() + ":1.0.0"));
+    }
+
+    @Test
+    public void testDuplicateExportShouldSilentlyFail() throws Exception {
+        service.export();
+
+        // this one is supposed to silently fail and exit
+        service.export();
+    }
+
+    @Test
+    public void testReexportShouldThrowException() throws Exception {
+	    Assertions.assertThrows(IllegalStateException.class, () -> {
+            service.export();
+            service.unexport();
+            service.export();
+        });
     }
 }
