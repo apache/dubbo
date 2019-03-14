@@ -62,14 +62,14 @@ public class ExceptionFilter implements Filter {
     }
 
     @Override
-    public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
+    public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
         if (result.hasException() && GenericService.class != invoker.getInterface()) {
             try {
                 Throwable exception = result.getException();
 
                 // directly throw if it's checked exception
                 if (!(exception instanceof RuntimeException) && (exception instanceof Exception)) {
-                    return;
+                    return result;
                 }
                 // directly throw if the exception appears in the signature
                 try {
@@ -77,11 +77,11 @@ public class ExceptionFilter implements Filter {
                     Class<?>[] exceptionClassses = method.getExceptionTypes();
                     for (Class<?> exceptionClass : exceptionClassses) {
                         if (exception.getClass().equals(exceptionClass)) {
-                            return;
+                            return result;
                         }
                     }
                 } catch (NoSuchMethodException e) {
-                    return;
+                    return result;
                 }
 
                 // for the exception not found in method's signature, print ERROR message in server's log.
@@ -93,26 +93,29 @@ public class ExceptionFilter implements Filter {
                 String serviceFile = ReflectUtils.getCodeBase(invoker.getInterface());
                 String exceptionFile = ReflectUtils.getCodeBase(exception.getClass());
                 if (serviceFile == null || exceptionFile == null || serviceFile.equals(exceptionFile)) {
-                    return;
+                    return result;
                 }
                 // directly throw if it's JDK exception
                 String className = exception.getClass().getName();
                 if (className.startsWith("java.") || className.startsWith("javax.")) {
-                    return;
+                    return result;
                 }
                 // directly throw if it's dubbo exception
                 if (exception instanceof RpcException) {
-                    return;
+                    return result;
                 }
 
                 // otherwise, wrap with RuntimeException and throw back to the client
                 result.setException(new RuntimeException(StringUtils.toString(exception)));
+                return result;
             } catch (Throwable e) {
                 logger.warn("Fail to ExceptionFilter when called by " + RpcContext.getContext().getRemoteHost()
                         + ". service: " + invoker.getInterface().getName() + ", method: " + invocation.getMethodName()
                         + ", exception: " + e.getClass().getName() + ": " + e.getMessage(), e);
+                return result;
             }
         }
+        return result;
     }
 
 }

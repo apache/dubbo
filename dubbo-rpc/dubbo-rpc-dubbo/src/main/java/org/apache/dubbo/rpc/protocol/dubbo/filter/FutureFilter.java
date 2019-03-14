@@ -49,12 +49,13 @@ public class FutureFilter implements Filter {
     }
 
     @Override
-    public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
+    public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
         if (result.hasException()) {
             fireThrowCallback(invoker, invocation, result.getException());
         } else {
             fireReturnCallback(invoker, invocation, result.getValue());
         }
+        return result;
     }
 
     private void fireInvokeCallback(final Invoker<?> invoker, final Invocation invocation) {

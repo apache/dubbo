@@ -51,6 +51,16 @@ public class MockDirInvocation implements Invocation {
         return attachments;
     }
 
+    @Override
+    public void setAttachment(String key, String value) {
+
+    }
+
+    @Override
+    public void setAttachmentIfAbsent(String key, String value) {
+
+    }
+
     public Invoker<?> getInvoker() {
         return null;
     }

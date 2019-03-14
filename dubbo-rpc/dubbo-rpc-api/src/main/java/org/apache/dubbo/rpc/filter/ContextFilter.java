@@ -85,8 +85,9 @@ public class ContextFilter implements Filter {
     }
 
     @Override
-    public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
+    public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
         // pass attachments to result
         result.addAttachments(RpcContext.getServerContext().getAttachments());
+        return result;
     }
 }

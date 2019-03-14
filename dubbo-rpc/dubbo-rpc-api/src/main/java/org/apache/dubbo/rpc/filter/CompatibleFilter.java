@@ -54,7 +54,7 @@ public class CompatibleFilter implements Filter {
     }
 
     @Override
-    public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
+    public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
         if (!invocation.getMethodName().startsWith("$") && !result.hasException()) {
             Object value = result.getValue();
             if (value != null) {
@@ -85,5 +85,6 @@ public class CompatibleFilter implements Filter {
                 }
             }
         }
+        return result;
     }
 }
