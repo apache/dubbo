@@ -17,50 +17,56 @@
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.spring.context.config.NamePropertyDefaultValueDubboConfigBeanCustomizer;
 import org.apache.dubbo.config.spring.context.properties.DefaultDubboConfigBinder;
-import org.apache.dubbo.config.spring.context.properties.DubboConfigBinder;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 
-import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * {@link DubboConfigBindingBeanPostProcessor}
  */
-@PropertySource({"classpath:/META-INF/config.properties"})
-@Configuration
+@RunWith(SpringRunner.class)
+@ContextConfiguration(classes = {
+        DefaultDubboConfigBinder.class,
+        NamePropertyDefaultValueDubboConfigBeanCustomizer.class,
+        DubboConfigBindingBeanPostProcessorTest.class
+})
+@TestPropertySource(properties = {
+        "dubbo.application.id = dubbo-demo-application",
+        "dubbo.application.owner = mercyblitz",
+        "dubbo.application.organization = Apache",
+
+})
 public class DubboConfigBindingBeanPostProcessorTest {
 
-    @Bean("applicationBean")
+    @Bean("dubbo-demo-application")
     public ApplicationConfig applicationConfig() {
         return new ApplicationConfig();
     }
 
     @Bean
-    public DubboConfigBinder dubboConfigBinder() {
-        return new DefaultDubboConfigBinder();
+    public DubboConfigBindingBeanPostProcessor bindingBeanPostProcessor() {
+        return new DubboConfigBindingBeanPostProcessor("dubbo.application", "dubbo-demo-application");
     }
+
+    @Autowired
+    private ApplicationContext applicationContext;
 
     @Test
     public void test() {
 
-        final AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
-
-        applicationContext.register(getClass());
-
-        Class<?> processorClass = DubboConfigBindingBeanPostProcessor.class;
-
-        applicationContext.registerBeanDefinition("DubboConfigBindingBeanPostProcessor", rootBeanDefinition(processorClass).addConstructorArgValue("dubbo.application").addConstructorArgValue("applicationBean").getBeanDefinition());
-
-        applicationContext.refresh();
-
         ApplicationConfig applicationConfig = applicationContext.getBean(ApplicationConfig.class);
 
-        Assertions.assertEquals("dubbo-demo-application", applicationConfig.getName());
-
+        Assert.assertEquals("dubbo-demo-application", applicationConfig.getName());
+        Assert.assertEquals("mercyblitz", applicationConfig.getOwner());
+        Assert.assertEquals("Apache", applicationConfig.getOrganization());
     }
 }
