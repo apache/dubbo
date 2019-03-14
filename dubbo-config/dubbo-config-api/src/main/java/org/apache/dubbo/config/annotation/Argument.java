@@ -14,25 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.annotation.consumer;
+package org.apache.dubbo.config.annotation;
 
-import org.apache.dubbo.config.annotation.Method;
-import org.apache.dubbo.config.annotation.Reference;
-import org.apache.dubbo.config.spring.api.DemoService;
-
-import org.springframework.stereotype.Controller;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * AnnotationAction
+ * @since 2.6.5
+ *
+ * 2018/9/29
  */
-@Controller("annotationAction")
-public class AnnotationAction {
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.ANNOTATION_TYPE})
+@Inherited
+public @interface Argument {
+    //argument: index -1 represents not set
+    int index() default -1;
 
-    @Reference(version = "1.2", methods = {@Method(name = "sayHello", timeout = 5000)})
-    private DemoService demoService;
+    //argument type
+    String type() default "";
 
-    public String doSayName(String name) {
-        return demoService.sayName(name);
-    }
-
+    //callback interface
+    boolean callback() default false;
 }
