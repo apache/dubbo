@@ -63,7 +63,11 @@ public abstract class AbstractBuilder<T extends AbstractConfig, B extends Abstra
     }
 
     protected void build(T instance) {
-        if (!StringUtils.isEmpty(id)) instance.setId(id);
-        if (!StringUtils.isEmpty(prefix)) instance.setPrefix(prefix);
+        if (!StringUtils.isEmpty(id)) {
+            instance.setId(id);
+        }
+        if (!StringUtils.isEmpty(prefix)) {
+            instance.setPrefix(prefix);
+        }
     }
 }

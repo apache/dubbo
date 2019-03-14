@@ -87,6 +87,7 @@ public class EtcdRegistry extends FailbackRegistry {
         this.root = group;
         etcdClient = etcdTransporter.connect(url);
         etcdClient.addStateListener(new StateListener() {
+            @Override
             public void stateChanged(int state) {
                 if (state == CONNECTED) {
                     try {
@@ -165,6 +166,7 @@ public class EtcdRegistry extends FailbackRegistry {
                                 .orElseGet(() -> {
                                     ChildListener childListener, prev;
                                     prev = listeners.putIfAbsent(listener, childListener = new ChildListener() {
+                                        @Override
                                         public void childChanged(String parentPath, List<String> currentChildren) {
                                             /**
                                              *  because etcd3 not support direct children watch events,
@@ -227,6 +229,7 @@ public class EtcdRegistry extends FailbackRegistry {
                                     .orElseGet(() -> {
                                         ChildListener watchListener, prev;
                                         prev = listeners.putIfAbsent(listener, watchListener = new ChildListener() {
+                                            @Override
                                             public void childChanged(String parentPath, List<String> currentChildren) {
                                                 EtcdRegistry.this.notify(url, listener,
                                                         toUrlsWithEmpty(url, parentPath, currentChildren));

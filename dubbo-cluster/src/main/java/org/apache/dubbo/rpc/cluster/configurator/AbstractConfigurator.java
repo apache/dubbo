@@ -28,7 +28,6 @@ import java.util.Set;
 
 /**
  * AbstractOverrideConfigurator
- *
  */
 public abstract class AbstractConfigurator implements Configurator {
 

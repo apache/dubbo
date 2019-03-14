@@ -68,26 +68,31 @@ public abstract class AbstractEtcdClient<WatcherListener> implements EtcdClient 
         this.url = url;
     }
 
+    @Override
     public URL getUrl() {
         return url;
     }
 
+    @Override
     public void create(String path) {
         String fixedPath = fixNamespace(path);
         createParentIfAbsent(fixedPath);
         doCreatePersistent(fixedPath);
     }
 
+    @Override
     public long createEphemeral(String path) {
         String fixedPath = fixNamespace(path);
         createParentIfAbsent(fixedPath);
         return doCreateEphemeral(path);
     }
 
+    @Override
     public void addStateListener(StateListener listener) {
         stateListeners.add(listener);
     }
 
+    @Override
     public void removeStateListener(StateListener listener) {
         stateListeners.remove(listener);
     }
@@ -96,6 +101,7 @@ public abstract class AbstractEtcdClient<WatcherListener> implements EtcdClient 
         return stateListeners;
     }
 
+    @Override
     public List<String> addChildListener(String path, final ChildListener listener) {
         ConcurrentMap<ChildListener, WatcherListener> listeners = childListeners.get(path);
         if (listeners == null) {
@@ -110,6 +116,7 @@ public abstract class AbstractEtcdClient<WatcherListener> implements EtcdClient 
         return addChildWatcherListener(path, targetListener);
     }
 
+    @Override
     public WatcherListener getChildListener(String path, ChildListener listener) {
         ConcurrentMap<ChildListener, WatcherListener> listeners = childListeners.get(path);
         if (listeners == null) {
@@ -123,6 +130,7 @@ public abstract class AbstractEtcdClient<WatcherListener> implements EtcdClient 
         return targetListener;
     }
 
+    @Override
     public void removeChildListener(String path, ChildListener listener) {
         ConcurrentMap<ChildListener, WatcherListener> listeners = childListeners.get(path);
         if (listeners != null) {
@@ -163,6 +171,7 @@ public abstract class AbstractEtcdClient<WatcherListener> implements EtcdClient 
         }
     }
 
+    @Override
     public void close() {
         if (closed) {
             return;
@@ -181,6 +190,7 @@ public abstract class AbstractEtcdClient<WatcherListener> implements EtcdClient 
 
     public abstract long doCreateEphemeral(String path);
 
+    @Override
     public abstract void delete(String path);
 
     public abstract boolean checkExists(String path);

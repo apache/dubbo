@@ -222,25 +222,60 @@ public abstract class AbstractServiceBuilder<T extends AbstractServiceConfig, B 
         return getThis();
     }
 
+    @Override
     public void build(T instance) {
         super.build(instance);
 
-        if (!StringUtils.isEmpty(version)) instance.setVersion(version);
-        if (!StringUtils.isEmpty(group)) instance.setGroup(group);
-        if (deprecated != null) instance.setDeprecated(deprecated);
-        if (delay != null) instance.setDelay(delay);
-        if (export != null) instance.setExport(export);
-        if (weight != null) instance.setWeight(weight);
-        if (!StringUtils.isEmpty(document)) instance.setDocument(document);
-        if (dynamic != null) instance.setDynamic(dynamic);
-        if (!StringUtils.isEmpty(token)) instance.setToken(token);
-        if (!StringUtils.isEmpty(accesslog)) instance.setAccesslog(accesslog);
-        if (protocols != null) instance.setProtocols(protocols);
-        if (!StringUtils.isEmpty(protocolIds)) instance.setProtocolIds(protocolIds);
-        if (tag != null) instance.setTag(tag);
-        if (executes != null) instance.setExecutes(executes);
-        if (register != null)  instance.setRegister(register);
-        if (warmup != null) instance.setWarmup(warmup);
-        if (!StringUtils.isEmpty(serialization)) instance.setSerialization(serialization);
+        if (!StringUtils.isEmpty(version)) {
+            instance.setVersion(version);
+        }
+        if (!StringUtils.isEmpty(group)) {
+            instance.setGroup(group);
+        }
+        if (deprecated != null) {
+            instance.setDeprecated(deprecated);
+        }
+        if (delay != null) {
+            instance.setDelay(delay);
+        }
+        if (export != null) {
+            instance.setExport(export);
+        }
+        if (weight != null) {
+            instance.setWeight(weight);
+        }
+        if (!StringUtils.isEmpty(document)) {
+            instance.setDocument(document);
+        }
+        if (dynamic != null) {
+            instance.setDynamic(dynamic);
+        }
+        if (!StringUtils.isEmpty(token)) {
+            instance.setToken(token);
+        }
+        if (!StringUtils.isEmpty(accesslog)) {
+            instance.setAccesslog(accesslog);
+        }
+        if (protocols != null) {
+            instance.setProtocols(protocols);
+        }
+        if (!StringUtils.isEmpty(protocolIds)) {
+            instance.setProtocolIds(protocolIds);
+        }
+        if (tag != null) {
+            instance.setTag(tag);
+        }
+        if (executes != null) {
+            instance.setExecutes(executes);
+        }
+        if (register != null) {
+            instance.setRegister(register);
+        }
+        if (warmup != null) {
+            instance.setWarmup(warmup);
+        }
+        if (!StringUtils.isEmpty(serialization)) {
+            instance.setSerialization(serialization);
+        }
     }
 }
