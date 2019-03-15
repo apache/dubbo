@@ -32,6 +32,7 @@ import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.ConfigChangeType;
 import org.apache.dubbo.configcenter.ConfigurationListener;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
+import org.apache.dubbo.remoting.etcd.StateListener;
 import org.apache.dubbo.remoting.etcd.jetcd.JEtcdClient;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -64,16 +65,25 @@ public class EtcdDynamicConfiguration implements DynamicConfiguration {
     EtcdDynamicConfiguration(URL url) {
         rootPath = "/" + url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP) + "/config";
         etcdClient = new JEtcdClient(url);
+        etcdClient.addStateListener(state -> {
+            if (state == StateListener.CONNECTED) {
+                try {
+                    recover();
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
+        });
         watchListenerMap = new ConcurrentHashMap<>();
     }
 
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
         if (watchListenerMap.get(listener) == null) {
-            EtcdConfigWatcher watcher = new EtcdConfigWatcher(listener);
-            watchListenerMap.put(listener, watcher);
             String normalizedKey = convertKey(key);
-            watcher.watch(normalizedKey);
+            EtcdConfigWatcher watcher = new EtcdConfigWatcher(normalizedKey, listener);
+            watchListenerMap.put(listener, watcher);
+            watcher.watch();
         }
     }
 
@@ -106,6 +116,12 @@ public class EtcdDynamicConfiguration implements DynamicConfiguration {
         return rootPath + PATH_SEPARATOR + key.substring(0, index) + PATH_SEPARATOR + key.substring(index + 1);
     }
 
+    private void recover() {
+        for (EtcdConfigWatcher watcher: watchListenerMap.values()) {
+            watcher.watch();
+        }
+    }
+
     public class EtcdConfigWatcher implements StreamObserver<WatchResponse> {
 
         private ConfigurationListener listener;
@@ -113,8 +129,10 @@ public class EtcdDynamicConfiguration implements DynamicConfiguration {
         private StreamObserver<WatchRequest> observer;
         protected long watchId;
         private ManagedChannel channel;
+        private String key;
 
-        public EtcdConfigWatcher(ConfigurationListener listener) {
+        public EtcdConfigWatcher(String key, ConfigurationListener listener) {
+            this.key = key;
             this.listener = listener;
             this.channel = etcdClient.getChannel();
         }
@@ -148,7 +166,7 @@ public class EtcdDynamicConfiguration implements DynamicConfiguration {
             return watchId;
         }
 
-        private void watch(String key) {
+        private void watch() {
             watchStub = WatchGrpc.newStub(channel);
             observer = watchStub.watch(this);
             WatchCreateRequest.Builder builder = WatchCreateRequest.newBuilder()
