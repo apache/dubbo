@@ -21,7 +21,7 @@
         <format>zip</format>
     </formats>
     <includeBaseDirectory>true</includeBaseDirectory>
-    <baseDirectory>${project.build.finalName}-source-release</baseDirectory>
+    <baseDirectory>${project.build.finalName}-src</baseDirectory>
 
     <fileSets>
         <fileSet>
