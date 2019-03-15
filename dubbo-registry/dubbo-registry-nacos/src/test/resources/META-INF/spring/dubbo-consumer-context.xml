@@ -4,13 +4,12 @@
        xmlns:dubbo="http://dubbo.apache.org/schema/dubbo"
        xsi:schemaLocation="http://www.springframework.org/schema/beans        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd        http://dubbo.apache.org/schema/dubbo        http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
 
-    <!-- 提供方应用信息，用于计算依赖关系 -->
     <dubbo:application name="dubbo-consumer-xml-demo"/>
 
-    <!-- 使用 Nacos 注册中心 -->
+    <!-- Nacos Registry -->
     <dubbo:registry address="nacos://127.0.0.1:8848"/>
 
-    <!-- 引用服务接口 -->
+    <!-- Reference interface -->
     <dubbo:reference id="demoService" interface="org.apache.dubbo.demo.service.DemoService" version="2.0.0"/>
 
 </beans>
