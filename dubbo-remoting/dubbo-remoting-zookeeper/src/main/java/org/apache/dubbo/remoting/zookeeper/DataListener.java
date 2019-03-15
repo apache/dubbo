@@ -14,16 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.zookeeper.zkclient;
+package org.apache.dubbo.remoting.zookeeper;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
-import org.apache.dubbo.remoting.zookeeper.support.AbstractZookeeperTransporter;
+/**
+ * 2019-02-26
+ */
+public interface DataListener {
 
-public class ZkclientZookeeperTransporter extends AbstractZookeeperTransporter {
-    @Override
-    public ZookeeperClient createZookeeperClient(URL url) {
-        return new ZkclientZookeeperClient(url);
-    }
-
+    void dataChanged(String path, Object value, EventType eventType);
 }
