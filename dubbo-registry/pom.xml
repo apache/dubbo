@@ -36,5 +36,6 @@
         <module>dubbo-registry-redis</module>
         <module>dubbo-registry-consul</module>
         <module>dubbo-registry-etcd3</module>
+        <module>dubbo-registry-nacos</module>
     </modules>
 </project>
