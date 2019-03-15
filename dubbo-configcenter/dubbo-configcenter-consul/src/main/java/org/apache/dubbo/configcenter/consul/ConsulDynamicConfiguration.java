@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.configcenter.ConfigChangeEvent;
+import org.apache.dubbo.configcenter.ConfigChangeType;
 import org.apache.dubbo.configcenter.ConfigurationListener;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 
@@ -40,6 +41,7 @@ import java.util.concurrent.ExecutorService;
 import static java.util.concurrent.Executors.newCachedThreadPool;
 import static org.apache.dubbo.common.Constants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.Constants.PATH_SEPARATOR;
+import static org.apache.dubbo.configcenter.ConfigChangeType.ADDED;
 
 /**
  * config center implementation for consul
@@ -104,11 +106,23 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
     @Override
     public Object getInternalProperty(String key) {
         logger.info("get config from: " + key);
-        Long currentIndex = consulIndexes.computeIfAbsent(key, k -> -1L);
-        Response<GetValue> response = client.getKVValue(key, new QueryParams(watchTimeout, currentIndex));
-        GetValue value = response.getValue();
-        consulIndexes.put(key, response.getConsulIndex());
-        return value != null ? value.getDecodedValue() : null;
+        Response<GetValue> response = getValue(key);
+        if (response != null) {
+            GetValue value = response.getValue();
+            consulIndexes.put(key, response.getConsulIndex());
+            return value != null ? value.getDecodedValue() : null;
+        }
+        return null;
+    }
+
+    private Response<GetValue> getValue(String key) {
+        try {
+            Long currentIndex = consulIndexes.computeIfAbsent(key, k -> -1L);
+            return client.getKVValue(key, new QueryParams(watchTimeout, currentIndex));
+        } catch (Throwable t) {
+            logger.warn("fail to get value for key: " + key);
+        }
+        return null;
     }
 
     private int buildWatchTimeout(URL url) {
@@ -119,6 +133,7 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
         private String key;
         private Set<ConfigurationListener> listeners;
         private boolean running = true;
+        private boolean existing = false;
 
         public ConsulKVWatcher(String key) {
             this.key = convertKey(key);
@@ -129,19 +144,45 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
         public void run() {
             while (running) {
                 Long lastIndex = consulIndexes.computeIfAbsent(key, k -> -1L);
-                Response<GetValue> response = client.getKVValue(key, new QueryParams(watchTimeout, lastIndex));
+                Response<GetValue> response = getValue(key);
+                if (response == null) {
+                    try {
+                        Thread.sleep(watchTimeout);
+                    } catch (InterruptedException e) {
+                        // ignore
+                    }
+                    continue;
+                }
 
+                GetValue getValue = response.getValue();
                 Long currentIndex = response.getConsulIndex();
                 if (currentIndex == null || currentIndex <= lastIndex) {
                     continue;
                 }
 
                 consulIndexes.put(key, currentIndex);
-                String value = response.getValue().getDecodedValue();
-                logger.info("notify change for key: " + key + ", the value is: " + value);
-                ConfigChangeEvent event = new ConfigChangeEvent(key, value);
-                for (ConfigurationListener listener : listeners) {
-                    listener.process(event);
+                ConfigChangeEvent event = null;
+                if (getValue != null) {
+                    String value = getValue.getDecodedValue();
+                    if (existing) {
+                        logger.info("notify change for key: " + key + ", the changed value is: " + value);
+                        event = new ConfigChangeEvent(key, value);
+                    } else {
+                        logger.info("notify change for key: " + key + ", the added value is: " + value);
+                        event = new ConfigChangeEvent(key, value, ADDED);
+                    }
+                } else {
+                    if (existing) {
+                        logger.info("notify change for key: " + key + ", the value is deleted");
+                        event = new ConfigChangeEvent(key, null, ConfigChangeType.DELETED);
+                    }
+                }
+
+                existing = getValue != null;
+                if (event != null) {
+                    for (ConfigurationListener listener : listeners) {
+                        listener.process(event);
+                    }
                 }
             }
         }
