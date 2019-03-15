@@ -70,6 +70,7 @@
 - No such extension org.apache.dubbo.metadata.store.MetadataReportFactory by name redis [#3514](https://github.com/apache/incubator-dubbo/issues/3514)
 - dubbo 2.7.1-SNAPSHOT NoClassDefFoundError when use springboot [#3426](https://github.com/apache/incubator-dubbo/issues/3426)
 - NPE occurs when use @Reference in junit in spring boot application [#3429](https://github.com/apache/incubator-dubbo/issues/3429)
+- When refer the same service with more than one @References(with different configs) on consumer side, only one take effect [#1306](https://github.com/apache/incubator-dubbo/issues/1306)
 - consumer always catch java.lang.reflect.UndeclaredThrowableException for the exception thrown from provider [#3386](https://github.com/apache/incubator-dubbo/issues/3386)
 - dubbo2.7.0 com.alibaba.com.caucho.hessian.io.HessianProtocolException: 'com.alibaba.dubbo.common.URL' could not be instantiated [#3342](https://github.com/apache/incubator-dubbo/issues/3342)
 - Close Resources Properly [#3473](https://github.com/apache/incubator-dubbo/issues/3473)
