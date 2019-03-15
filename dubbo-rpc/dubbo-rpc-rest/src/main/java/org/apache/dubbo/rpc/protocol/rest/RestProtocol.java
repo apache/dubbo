@@ -237,13 +237,17 @@ public class RestProtocol extends AbstractProxyProtocol {
      */
     protected String getContextPath(URL url) {
         String contextPath = url.getPath();
-        if (contextPath.equalsIgnoreCase(url.getParameter(Constants.INTERFACE_KEY))) {
+        if (contextPath != null) {
+            if (contextPath.equalsIgnoreCase(url.getParameter(Constants.INTERFACE_KEY))) {
+                return "";
+            }
+            if (contextPath.endsWith(url.getParameter(Constants.INTERFACE_KEY))) {
+                contextPath = contextPath.substring(0, contextPath.lastIndexOf(url.getParameter(Constants.INTERFACE_KEY)));
+            }
+            return contextPath.endsWith("/") ? contextPath.substring(0, contextPath.length() - 1) : contextPath;
+        } else {
             return "";
         }
-        if (contextPath.endsWith(url.getParameter(Constants.INTERFACE_KEY))) {
-            contextPath = contextPath.substring(0, contextPath.lastIndexOf(url.getParameter(Constants.INTERFACE_KEY)));
-        }
-        return contextPath.endsWith("/") ? contextPath.substring(0, contextPath.length() - 1) : contextPath;
     }
 
     protected class ConnectionMonitor extends Thread {
