@@ -14,37 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metrics;
+package org.apache.dubbo.config.annotation;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * <pre>
- * An incrementing and decrementing counter metric.
- * </pre>
+ * @since 2.6.5
+ *
+ * 2018/9/29
  */
-public interface Counter extends Metric, Counting {
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.ANNOTATION_TYPE})
+@Inherited
+public @interface Argument {
+    //argument: index -1 represents not set
+    int index() default -1;
 
-    /**
-     * Increment the counter by one.
-     */
-    void inc();
+    //argument type
+    String type() default "";
 
-    /**
-     * Increment the counter by {@code n}.
-     *
-     * @param n the amount by which the counter will be increased
-     */
-    void inc(long n);
-
-    /**
-     * Decrement the counter by one.
-     */
-    void dec();
-
-    /**
-     * Decrement the counter by {@code n}.
-     *
-     * @param n the amount by which the counter will be decreased
-     */
-    void dec(long n);
-
+    //callback interface
+    boolean callback() default false;
 }

@@ -14,16 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.zookeeper.zkclient;
+package org.apache.dubbo.monitor.service;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
-import org.apache.dubbo.remoting.zookeeper.support.AbstractZookeeperTransporter;
+public interface DemoService {
 
-public class ZkclientZookeeperTransporter extends AbstractZookeeperTransporter {
-    @Override
-    public ZookeeperClient createZookeeperClient(URL url) {
-        return new ZkclientZookeeperClient(url);
-    }
+    String sayName(String name);
+
+    void timeoutException();
+
+    void throwDemoException() throws Exception;
+
+    int echo(int i);
+
 
 }

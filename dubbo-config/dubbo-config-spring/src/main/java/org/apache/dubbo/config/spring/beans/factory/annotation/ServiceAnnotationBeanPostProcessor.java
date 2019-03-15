@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.context.annotation.DubboClassPathBeanDefinitionScanner;
@@ -434,6 +435,11 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
         if (!protocolRuntimeBeanReferences.isEmpty()) {
             builder.addPropertyValue("protocols", protocolRuntimeBeanReferences);
+        }
+
+        List<MethodConfig> methodConfigs = MethodConfig.constructMethodConfig(service.methods());
+        if (!methodConfigs.isEmpty()) {
+            builder.addPropertyValue("methods", methodConfigs);
         }
 
         return builder.getBeanDefinition();

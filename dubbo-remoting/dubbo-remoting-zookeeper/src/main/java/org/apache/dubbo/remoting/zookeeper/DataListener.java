@@ -14,29 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metrics;
+package org.apache.dubbo.remoting.zookeeper;
 
 /**
- * A filter used to determine whether or not a metric should be reported, among other things.
+ * 2019-02-26
  */
-public interface MetricFilter {
+public interface DataListener {
 
-    /**
-     * Matches all metrics, regardless of type or name.
-     */
-    MetricFilter ALL = new MetricFilter() {
-        @Override
-        public boolean matches(MetricName name, Metric metric) {
-            return true;
-        }
-    };
-
-    /**
-     * Returns {@code true} if the metric matches the filter; {@code false} otherwise.
-     *
-     * @param name      the metric's name
-     * @param metric    the metric
-     * @return {@code true} if the metric matches the filter
-     */
-    boolean matches(MetricName name, Metric metric);
+    void dataChanged(String path, Object value, EventType eventType);
 }
