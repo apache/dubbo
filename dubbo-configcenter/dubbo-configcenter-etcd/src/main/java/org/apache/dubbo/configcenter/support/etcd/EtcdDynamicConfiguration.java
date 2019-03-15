@@ -29,6 +29,7 @@ import io.grpc.stub.StreamObserver;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.configcenter.ConfigChangeEvent;
+import org.apache.dubbo.configcenter.ConfigChangeType;
 import org.apache.dubbo.configcenter.ConfigurationListener;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.remoting.etcd.jetcd.JEtcdClient;
@@ -122,9 +123,13 @@ public class EtcdDynamicConfiguration implements DynamicConfiguration {
         public void onNext(WatchResponse watchResponse) {
             this.watchId = watchResponse.getWatchId();
             for (Event etcdEvent : watchResponse.getEventsList()) {
+                ConfigChangeType type = ConfigChangeType.MODIFIED;
+                if (etcdEvent.getType() == Event.EventType.DELETE) {
+                    type = ConfigChangeType.DELETED;
+                }
                 ConfigChangeEvent event = new ConfigChangeEvent(
                         etcdEvent.getKv().getKey().toString(UTF_8),
-                        etcdEvent.getKv().getValue().toString(UTF_8));
+                        etcdEvent.getKv().getValue().toString(UTF_8), type);
                 listener.process(event);
             }
         }
