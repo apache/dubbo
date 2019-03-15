@@ -94,7 +94,7 @@ public class EnableDubboConfigTest {
 
     }
 
-    @EnableDubboConfig(multiple = true)
+    @EnableDubboConfig
     @PropertySource("META-INF/config.properties")
     private static class TestMultipleConfig {
 
