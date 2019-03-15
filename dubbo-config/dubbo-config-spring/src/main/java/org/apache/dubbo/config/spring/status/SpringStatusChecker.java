@@ -25,6 +25,7 @@ import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.Lifecycle;
+import org.springframework.web.context.support.GenericWebApplicationContext;
 
 import java.lang.reflect.Method;
 
@@ -40,6 +41,12 @@ public class SpringStatusChecker implements StatusChecker {
     public Status check() {
         ApplicationContext context = null;
         for (ApplicationContext c : SpringExtensionFactory.getContexts()) {
+            // [Issue] SpringStatusChecker execute errors on non-XML Spring configuration
+            // issue : https://github.com/apache/incubator-dubbo/issues/3615
+            if(c instanceof GenericWebApplicationContext) { // ignore GenericXmlApplicationContext
+                continue;
+            }
+
             if (c != null) {
                 context = c;
                 break;
