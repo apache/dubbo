@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.nacos;
 
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
+import com.alibaba.nacos.api.naming.pojo.Instance;
 
 import org.apache.dubbo.registry.support.cloud.CloudServiceDiscovery;
 import org.apache.dubbo.registry.support.cloud.CloudServiceRegistry;
@@ -55,7 +56,9 @@ class NacosCloudService implements CloudServiceRegistry<NacosServiceInstance>, C
     public List<NacosServiceInstance> getServiceInstances(String serviceName) {
         return execute(namingService ->
                 namingService.selectInstances(serviceName, true)
-                        .stream().map(NacosServiceInstance::new)
+                        .stream()
+                        .filter(Instance::isEnabled)
+                        .map(NacosServiceInstance::new)
                         .collect(Collectors.toList())
         );
     }
