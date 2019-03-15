@@ -37,6 +37,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonList;
+import static org.apache.dubbo.common.Constants.PATH_KEY;
+import static org.apache.dubbo.common.Constants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.Constants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.Constants.SIDE_KEY;
 
@@ -140,13 +142,6 @@ public class CloudNativeRegistry<S extends ServiceInstance> extends FailbackRegi
         return cloudServiceDiscovery.getServices();
     }
 
-    private void doSubscribe(final URL url, final NotifyListener listener, final List<String> serviceNames) {
-        for (String serviceName : serviceNames) {
-            List<S> serviceInstances = cloudServiceDiscovery.getServiceInstances(serviceName);
-            notifySubscriber(url, listener, serviceInstances);
-        }
-    }
-
     /**
      * Get the service names from the specified {@link URL url}
      *
@@ -202,7 +197,7 @@ public class CloudNativeRegistry<S extends ServiceInstance> extends FailbackRegi
         filter(serviceNames, cloudServiceDiscovery::supports);
     }
 
-    private void doSubscribe(final URL url, final NotifyListener listener, final Set<String> serviceNames) {
+    private void doSubscribe(final URL url, final NotifyListener listener, final Collection<String> serviceNames) {
         Collection<S> serviceInstances = serviceNames.stream()
                 .map(cloudServiceDiscovery::getServiceInstances)
                 .flatMap(v -> v.stream())
@@ -237,15 +232,20 @@ public class CloudNativeRegistry<S extends ServiceInstance> extends FailbackRegi
         for (S serviceInstance : serviceInstances) {
             URL url = buildURL(serviceInstance);
             if (UrlUtils.isMatch(consumerURL, url)) {
-                urls.add(url);
+                urls.add(url.setPath(consumerURL.getPath()));
             }
         }
         return urls;
     }
 
     private URL buildURL(S serviceInstance) {
-        URL url = new URL(serviceInstance.getMetadata().get(Constants.PROTOCOL_KEY),
-                serviceInstance.getHost(), serviceInstance.getPort(),
+        Map<String, String> metadata = serviceInstance.getMetadata();
+        String path = metadata.get(PATH_KEY);
+        String protocol = metadata.get(PROTOCOL_KEY);
+        URL url = new URL(protocol,
+                serviceInstance.getHost(),
+                serviceInstance.getPort(),
+                path,
                 serviceInstance.getMetadata());
         return url;
     }

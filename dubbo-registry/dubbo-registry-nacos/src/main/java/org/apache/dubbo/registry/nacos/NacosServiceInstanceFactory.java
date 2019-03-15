@@ -31,6 +31,7 @@ import static org.apache.dubbo.common.Constants.CONSUMERS_CATEGORY;
 import static org.apache.dubbo.common.Constants.DEFAULT_CATEGORY;
 import static org.apache.dubbo.common.Constants.GROUP_KEY;
 import static org.apache.dubbo.common.Constants.INTERFACE_KEY;
+import static org.apache.dubbo.common.Constants.PATH_KEY;
 import static org.apache.dubbo.common.Constants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.Constants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.Constants.VERSION_KEY;
@@ -58,6 +59,7 @@ public class NacosServiceInstanceFactory implements ServiceInstanceFactory<Nacos
         String category = url.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY);
         URL newURL = url.addParameter(CATEGORY_KEY, category);
         newURL = newURL.addParameter(PROTOCOL_KEY, url.getProtocol());
+        newURL = newURL.addParameter(PATH_KEY, url.getPath());
         String ip = url.getHost();
         int port = url.getPort();
         String serviceName = createServiceName(url);
