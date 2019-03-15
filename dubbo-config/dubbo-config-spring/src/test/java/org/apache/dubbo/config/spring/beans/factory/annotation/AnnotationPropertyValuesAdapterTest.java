@@ -96,7 +96,7 @@ public class AnnotationPropertyValuesAdapterTest {
         Assert.assertEquals("dubbo://localhost:12345", referenceBean.getUrl());
         Assert.assertEquals("client", referenceBean.getClient());
         Assert.assertEquals(true, referenceBean.isGeneric());
-        Assert.assertEquals(true, referenceBean.isInjvm());
+        Assert.assertNull(referenceBean.isInjvm());
         Assert.assertEquals(false, referenceBean.isCheck());
         Assert.assertEquals(true, referenceBean.isInit());
         Assert.assertEquals(true, referenceBean.getLazy());
