@@ -2,11 +2,15 @@
 
 ## 2.7.1
 
+### Notice
+
+'zkclient' extension for 'org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter' is removed from Dubbo 2.7.1, and 'curator' extension becomes the default extension. If you happen to config your application to use 'zkclient' explicitly, pls. switch to use 'curator' instead.
+
 ### New Features
 
-- nacos support on 2.7 [#3582](https://github.com/apache/incubator-dubbo/issues/3582)
+- service register support on nacos [#3582](https://github.com/apache/incubator-dubbo/issues/3582)
 - support consul as registry center, config center and metadata center [#983](https://github.com/apache/incubator-dubbo/issues/983)
-- etcd registry center support [#808](https://github.com/apache/incubator-dubbo/issues/808)
+- service registry support/config center support on etcd [#808](https://github.com/apache/incubator-dubbo/issues/808)
 - metrics support in dubbo 2.7.1 [#3598](https://github.com/apache/incubator-dubbo/issues/3598)
 - @Argument @Method support [#2405](https://github.com/apache/incubator-dubbo/issues/2045)
 
