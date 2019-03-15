@@ -17,6 +17,7 @@
 ### Enhancement
 
 - [Enhancement] @EnableDubboConfigBinding annotates @Repeatable [#1770](https://github.com/apache/incubator-dubbo/issues/1770)
+- [Enhancement] Change the default behavior of @EnableDubboConfig.multiple() [#3193](https://github.com/apache/incubator-dubbo/issues/3193)
 - Should make annotation easier to use in multiple items circumstance [#3039](https://github.com/apache/incubator-dubbo/issues/3039)
 - NoSuchMethodError are thrown when add custom Filter using dubbo2.6.5 and JDK1.6 and upgrade to dubbo2.7.0 [#3570](https://github.com/apache/incubator-dubbo/issues/3570)
 - introduce dubbo-dependencies-zookeeper [#3607](https://github.com/apache/incubator-dubbo/pull/3607)
@@ -68,6 +69,8 @@
 - Why does not tomcat throw an exception when `server.start` failed with a socket binding error.  [#3236](https://github.com/apache/incubator-dubbo/issues/3236)
 - No such extension org.apache.dubbo.metadata.store.MetadataReportFactory by name redis [#3514](https://github.com/apache/incubator-dubbo/issues/3514)
 - dubbo 2.7.1-SNAPSHOT NoClassDefFoundError when use springboot [#3426](https://github.com/apache/incubator-dubbo/issues/3426)
+- NPE occurs when use @Reference in junit in spring boot application [#3429](https://github.com/apache/incubator-dubbo/issues/3429)
+- consumer always catch java.lang.reflect.UndeclaredThrowableException for the exception thrown from provider [#3386](https://github.com/apache/incubator-dubbo/issues/3386)
 - dubbo2.7.0 com.alibaba.com.caucho.hessian.io.HessianProtocolException: 'com.alibaba.dubbo.common.URL' could not be instantiated [#3342](https://github.com/apache/incubator-dubbo/issues/3342)
 - Close Resources Properly [#3473](https://github.com/apache/incubator-dubbo/issues/3473)
 - SPI entires dup by 3 times. [#2842](https://github.com/apache/incubator-dubbo/issues/2842)
