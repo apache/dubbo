@@ -4,7 +4,7 @@
 
 ### New Features
 
-- nacos support on 2.7 [3582](https://github.com/apache/incubator-dubbo/issues/3582)
+- nacos support on 2.7 [#3582](https://github.com/apache/incubator-dubbo/issues/3582)
 - support consul as registry center, config center and metadata center [#983](https://github.com/apache/incubator-dubbo/issues/983)
 - etcd registry center support [#808](https://github.com/apache/incubator-dubbo/issues/808)
 - metrics support in dubbo 2.7.1 [#3598](https://github.com/apache/incubator-dubbo/issues/3598)
@@ -31,6 +31,7 @@
 - implement pull request #3412 on master branch [#3418](https://github.com/apache/incubator-dubbo/pull/3418)
 - enhancement for event of response (follow up for pull request #3043) [#3244](https://github.com/apache/incubator-dubbo/issues/3244)
 - bump up hessian-lite version #3423 [#3513](https://github.com/apache/incubator-dubbo/pull/3513)
+- [Dubbo-3610]make snakeyaml transitive, should we do this? [#3659](https://github.com/apache/incubator-dubbo/pull/3659)
 
 ### Bugfixes
 
