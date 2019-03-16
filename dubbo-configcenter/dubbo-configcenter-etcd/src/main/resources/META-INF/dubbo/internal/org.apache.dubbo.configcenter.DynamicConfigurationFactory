@@ -1,0 +1,1 @@
+etcd=org.apache.dubbo.configcenter.support.etcd.EtcdDynamicConfigurationFactory
