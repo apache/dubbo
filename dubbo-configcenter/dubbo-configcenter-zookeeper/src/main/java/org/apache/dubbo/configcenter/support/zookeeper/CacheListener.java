@@ -89,7 +89,8 @@ public class CacheListener implements DataListener {
         // TODO We limit the notification of config changes to a specific path level, for example
         //  /dubbo/config/service/configurators, other config changes not in this level will not get notified,
         //  say /dubbo/config/dubbo.properties
-        if (path.split("/").length >= 5) {
+        final int MIN_PATH_ARRAY_LENGTH = 5;
+        if (path.split("/").length >= MIN_PATH_ARRAY_LENGTH) {
             String key = pathToKey(path);
             ConfigChangeType changeType;
             switch (eventType) {
