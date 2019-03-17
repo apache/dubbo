@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.remoting.etcd.jetcd;
 
+import io.grpc.ManagedChannel;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
@@ -185,6 +186,20 @@ public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
         }
     }
 
+    @Override
+    public String getKVValue(String key) {
+        return clientWrapper.getKVValue(key);
+    }
+
+    @Override
+    public boolean put(String key, String value) {
+        return clientWrapper.put(key, value);
+    }
+
+    public ManagedChannel getChannel() {
+        return clientWrapper.getChannel();
+    }
+
     public class EtcdWatcher implements StreamObserver<WatchResponse> {
 
         protected WatchGrpc.WatchStub watchStub;
@@ -233,12 +248,7 @@ public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
                     }
                 }
                 if (modified > 0) {
-                    notifyExecutor.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.childChanged(path, new ArrayList<>(urls));
-                        }
-                    });
+                    notifyExecutor.execute(() -> listener.childChanged(path, new ArrayList<>(urls)));
                 }
 
             }
