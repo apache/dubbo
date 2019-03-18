@@ -80,14 +80,16 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
 
     // TODO Unified to AsyncResult?
     @Override
+    @SuppressWarnings("unchecked")
     public Result invoke(Invocation invocation) throws RpcException {
         RpcContext rpcContext = RpcContext.getContext();
         try {
             Object obj = doInvoke(proxy, invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
-            if (RpcUtils.isReturnTypeFuture(invocation)) {
+            if (rpcContext.isAsyncStarted()) {
+                // ignore obj in case of RpcContext.startAsync()? always rely on user to write back.
+                return new AsyncRpcResult(((AsyncContextImpl) (rpcContext.getAsyncContext())).getInternalFuture());
+            } else if (RpcUtils.isReturnTypeFuture(invocation)) {
                 return new AsyncRpcResult((CompletableFuture<Object>) obj);
-            } else if (rpcContext.isAsyncStarted()) { // ignore obj in case of RpcContext.startAsync()? always rely on user to write back.
-                return new AsyncRpcResult(((AsyncContextImpl)(rpcContext.getAsyncContext())).getInternalFuture());
             } else {
                 return new RpcResult(obj);
             }
