@@ -250,7 +250,9 @@ public abstract class AbstractRegistry implements Registry {
             subscribe(url, listener); // Subscribe logic guarantees the first notify to return
             List<URL> urls = reference.get();
             if (CollectionUtils.isNotEmpty(urls)) {
-                urls.stream().filter(u -> !Constants.EMPTY_PROTOCOL.equals(u.getProtocol())).forEach(u -> {
+                urls.stream()
+                .filter(u -> !Constants.EMPTY_PROTOCOL.equals(u.getProtocol()))
+                .forEach(u -> {
                     result.add(u);
                 });
             }
