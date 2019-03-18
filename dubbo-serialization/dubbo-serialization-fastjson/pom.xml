@@ -20,7 +20,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-serialization</artifactId>
-        <version>2.7.1-SNAPSHOT</version>
+        <version>2.7.1</version>
     </parent>
     <artifactId>dubbo-serialization-fastjson</artifactId>
     <packaging>jar</packaging>
