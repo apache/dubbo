@@ -128,7 +128,6 @@
 
     <modules>
         <module>dubbo-common</module>
-        <module>dubbo-metrics</module>
         <module>dubbo-container</module>
         <module>dubbo-remoting</module>
         <module>dubbo-rpc</module>

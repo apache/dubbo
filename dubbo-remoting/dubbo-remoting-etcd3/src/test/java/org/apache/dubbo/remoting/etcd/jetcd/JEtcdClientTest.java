@@ -33,8 +33,21 @@
  */
 package org.apache.dubbo.remoting.etcd.jetcd;
 
+import com.google.protobuf.ByteString;
+import io.etcd.jetcd.ByteSequence;
+import io.etcd.jetcd.Client;
+import io.etcd.jetcd.Watch;
+import io.etcd.jetcd.api.Event;
+import io.etcd.jetcd.api.WatchCancelRequest;
+import io.etcd.jetcd.api.WatchCreateRequest;
+import io.etcd.jetcd.api.WatchGrpc;
+import io.etcd.jetcd.api.WatchRequest;
+import io.etcd.jetcd.api.WatchResponse;
 import io.etcd.jetcd.common.exception.ClosedClientException;
+import io.etcd.jetcd.watch.WatchEvent;
+import io.grpc.ManagedChannel;
 import io.grpc.Status;
+import io.grpc.stub.StreamObserver;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.etcd.ChildListener;
@@ -44,8 +57,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Disabled
 public class JEtcdClientTest {
@@ -73,6 +91,139 @@ public class JEtcdClientTest {
 
         client.removeChildListener(path, childListener);
         client.delete(child);
+    }
+
+    @Test
+    public void test_watch_when_modify() {
+        String path = "/dubbo/config/jetcd-client-unit-test/configurators";
+        String endpoint = "http://127.0.0.1:2379";
+        CountDownLatch latch = new CountDownLatch(1);
+        ByteSequence key = ByteSequence.from(path, UTF_8);
+
+        Watch.Listener listener = Watch.listener(response -> {
+            for (WatchEvent event : response.getEvents()) {
+                Assertions.assertEquals("PUT", event.getEventType().toString());
+                Assertions.assertEquals(path, event.getKeyValue().getKey().toString(UTF_8));
+                Assertions.assertEquals("Hello", event.getKeyValue().getValue().toString(UTF_8));
+                latch.countDown();
+            }
+
+        });
+
+        try (Client client = Client.builder().endpoints(endpoint).build();
+             Watch watch = client.getWatchClient();
+             Watch.Watcher watcher = watch.watch(key, listener)) {
+            // try to modify the key
+            client.getKVClient().put(ByteSequence.from(path, UTF_8), ByteSequence.from("Hello", UTF_8));
+            latch.await();
+        } catch (Exception e) {
+            Assertions.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void testWatchWithGrpc() {
+        String path = "/dubbo/config/test_watch_with_grpc/configurators";
+        String endpoint = "http://127.0.0.1:2379";
+        CountDownLatch latch = new CountDownLatch(1);
+        try (Client client = Client.builder().endpoints(endpoint).build()) {
+            ManagedChannel channel = getChannel(client);
+            StreamObserver<WatchRequest> observer = WatchGrpc.newStub(channel).watch(new StreamObserver<WatchResponse>() {
+                @Override
+                public void onNext(WatchResponse response) {
+                    for (Event event : response.getEventsList()) {
+                        Assertions.assertEquals("PUT", event.getType().toString());
+                        Assertions.assertEquals(path, event.getKv().getKey().toString(UTF_8));
+                        Assertions.assertEquals("Hello", event.getKv().getValue().toString(UTF_8));
+                        latch.countDown();
+                    }
+                }
+
+                @Override
+                public void onError(Throwable throwable) {
+
+                }
+
+                @Override
+                public void onCompleted() {
+
+                }
+            });
+            WatchCreateRequest.Builder builder = WatchCreateRequest.newBuilder()
+                    .setKey(ByteString.copyFrom(path, UTF_8));
+
+            observer.onNext(WatchRequest.newBuilder().setCreateRequest(builder).build());
+
+            // try to modify the key
+            client.getKVClient().put(ByteSequence.from(path, UTF_8), ByteSequence.from("Hello", UTF_8));
+            latch.await(5, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            Assertions.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void testCancelWatchWithGrpc() {
+        String path = "/dubbo/config/testCancelWatchWithGrpc/configurators";
+        String endpoint = "http://127.0.0.1:2379";
+        CountDownLatch updateLatch = new CountDownLatch(1);
+        CountDownLatch cancelLatch = new CountDownLatch(1);
+        final AtomicLong watchID = new AtomicLong(-1L);
+        try (Client client = Client.builder().endpoints(endpoint).build()) {
+            ManagedChannel channel = getChannel(client);
+            StreamObserver<WatchRequest> observer = WatchGrpc.newStub(channel).watch(new StreamObserver<WatchResponse>() {
+                @Override
+                public void onNext(WatchResponse response) {
+                    watchID.set(response.getWatchId());
+                    for (Event event : response.getEventsList()) {
+                        Assertions.assertEquals("PUT", event.getType().toString());
+                        Assertions.assertEquals(path, event.getKv().getKey().toString(UTF_8));
+                        Assertions.assertEquals("Hello", event.getKv().getValue().toString(UTF_8));
+                        updateLatch.countDown();
+                    }
+                    if (response.getCanceled()) {
+                        // received the cancel response
+                        cancelLatch.countDown();
+                    }
+                }
+
+                @Override
+                public void onError(Throwable throwable) {
+
+                }
+
+                @Override
+                public void onCompleted() {
+
+                }
+            });
+            // create
+            WatchCreateRequest.Builder builder = WatchCreateRequest.newBuilder()
+                    .setKey(ByteString.copyFrom(path, UTF_8));
+
+            // make the grpc call to watch the key
+            observer.onNext(WatchRequest.newBuilder().setCreateRequest(builder).build());
+
+            // try to put the value
+            client.getKVClient().put(ByteSequence.from(path, UTF_8), ByteSequence.from("Hello", UTF_8));
+
+            // response received, latch counts down to zero
+            updateLatch.await();
+
+            WatchCancelRequest watchCancelRequest =
+                    WatchCancelRequest.newBuilder().setWatchId(watchID.get()).build();
+            WatchRequest cancelRequest = WatchRequest.newBuilder()
+                    .setCancelRequest(watchCancelRequest).build();
+            observer.onNext(cancelRequest);
+
+            // try to put the value
+            client.getKVClient().put(ByteSequence.from(path, UTF_8), ByteSequence.from("Hello world", UTF_8));
+
+            cancelLatch.await();
+        } catch (Exception e) {
+            Assertions.fail(e.getMessage());
+        }
+
     }
 
     @Test
@@ -255,6 +406,21 @@ public class JEtcdClientTest {
 
         synchronized int increaseAndGet() {
             return ++value;
+        }
+    }
+
+    private ManagedChannel getChannel(Client client) {
+        try {
+            // hack, use reflection to get the shared channel.
+            Field connectionField = client.getClass().getDeclaredField("connectionManager");
+            connectionField.setAccessible(true);
+            Object connection = connectionField.get(client);
+            Method channelMethod = connection.getClass().getDeclaredMethod("getChannel");
+            channelMethod.setAccessible(true);
+            ManagedChannel channel = (ManagedChannel) channelMethod.invoke(connection);
+            return channel;
+        } catch (Exception e) {
+            return null;
         }
     }
 }

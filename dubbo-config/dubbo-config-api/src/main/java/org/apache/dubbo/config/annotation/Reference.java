@@ -256,4 +256,10 @@ public @interface Reference {
      * Protocol spring bean names
      */
     String protocol() default "";
+
+    /**
+     * methods support
+     * @return
+     */
+    Method[] methods() default {};
 }
