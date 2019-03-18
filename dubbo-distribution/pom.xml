@@ -267,7 +267,7 @@
                         <version>3.1.0</version>
                         <executions>
                             <execution>
-                                <id>bin-release</id>
+                                <id>bin</id>
                                 <phase>package</phase>
                                 <goals>
                                     <goal>single</goal>
@@ -279,7 +279,7 @@
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>source-release</id>
+                                <id>src</id>
                                 <phase>package</phase>
                                 <goals>
                                     <goal>single</goal>
