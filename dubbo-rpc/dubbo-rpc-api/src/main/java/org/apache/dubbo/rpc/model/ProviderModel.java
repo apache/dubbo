@@ -74,6 +74,11 @@ public class ProviderModel {
         return null;
     }
 
+    public List<ProviderMethodModel> getMethodModelList(String methodName) {
+        return methods.get(methodName);
+    }
+
+
     private void initMethod(Class<?> serviceInterfaceClass) {
         Method[] methodsToExport = null;
         methodsToExport = serviceInterfaceClass.getMethods();
