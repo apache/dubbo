@@ -49,18 +49,22 @@ class StatItem {
             lastResetTime = now;
         }
 
-        boolean flag = false;
-        while (getToken() > 0 && !flag) {
-            token.decrement();
-            flag = true;
+        if (token.sum() < 0) {
+            return false;
         }
-
-        return flag;
+        token.decrement();
+        return true;
     }
+
+    public long getInterval() {
+        return interval;
+    }
+
 
     public int getRate() {
         return rate;
     }
+
 
     long getLastResetTime() {
         return lastResetTime;
