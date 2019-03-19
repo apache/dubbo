@@ -550,7 +550,7 @@ public class JEtcdClientWrapper {
 
         try {
             cancelKeepAlive = true;
-            if (globalLeaseId > 0) {
+            if (globalLeaseId != 0) {
                 revokeLease(this.globalLeaseId);
             }
         } catch (Exception e) {
