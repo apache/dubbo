@@ -85,8 +85,8 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
 
             final URL monitorUrl = url;
             final CompletableFuture<Monitor> completableFuture = CompletableFuture.supplyAsync(() -> AbstractMonitorFactory.this.createMonitor(monitorUrl));
-            completableFuture.thenRunAsync(new MonitorListener(key), executor);
             FUTURES.put(key, completableFuture);
+            completableFuture.thenRunAsync(new MonitorListener(key), executor);
 
             return null;
         } finally {
