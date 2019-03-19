@@ -49,13 +49,10 @@ public class ConsumerContextFilter implements Filter {
             ((RpcInvocation) invocation).setInvoker(invoker);
         }
         try {
-            // TODO should we clear server context?
             RpcContext.removeServerContext();
             return invoker.invoke(invocation);
         } finally {
-            // TODO Call removeContext? but we need to save future for RpcContext.getFuture().
-            // TODO By calling clearAttachments, attachments will not be available when onResponse is invoked.
-            RpcContext.getContext().clearAttachments();
+            RpcContext.removeContext();
         }
     }
 

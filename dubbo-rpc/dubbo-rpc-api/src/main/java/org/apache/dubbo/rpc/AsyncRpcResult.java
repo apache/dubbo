@@ -29,8 +29,8 @@ public class AsyncRpcResult implements Result {
     private static final Logger logger = LoggerFactory.getLogger(AsyncRpcResult.class);
 
     /**
-     * RpcContext can be changed, because thread may have been used by other thread. It should be cloned before store.
-     * So we use Invocation instead, Invocation will create for every invoke, but invocation only support attachments of string type.
+     * RpcContext may already have been changed when callback happens, it happens when the same thread is used to execute another RPC call.
+     * So we should keep the reference of current RpcContext instance and restore it before callback being executed.
      */
     private RpcContext storedContext;
     private RpcContext storedServerContext;
@@ -39,18 +39,14 @@ public class AsyncRpcResult implements Result {
     private Invocation invocation;
 
     public AsyncRpcResult(CompletableFuture<Result> future) {
-        this.resultFuture = future;
-        // employ copy of context avoid the other call may modify the context content
-        this.storedContext = RpcContext.getContext().copyOf();
-        this.storedServerContext = RpcContext.getServerContext().copyOf();
+        this(future, null);
     }
 
     public AsyncRpcResult(CompletableFuture<Result> future, Invocation invocation) {
         this.resultFuture = future;
         this.invocation = invocation;
-        // employ copy of context avoid the other call may modify the context content
-        this.storedContext = RpcContext.getContext().copyOf();
-        this.storedServerContext = RpcContext.getServerContext().copyOf();
+        this.storedContext = RpcContext.getContext();
+        this.storedServerContext = RpcContext.getServerContext();
     }
 
     @Override
