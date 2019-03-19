@@ -45,7 +45,7 @@ public class TimeoutFilter implements Filter {
     }
 
     @Override
-    public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
+    public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
         String startAttach = invocation.getAttachment(TIMEOUT_FILTER_START_TIME);
         if (startAttach != null) {
             long elapsed = System.currentTimeMillis() - Long.valueOf(startAttach);
@@ -59,6 +59,5 @@ public class TimeoutFilter implements Filter {
                 }
             }
         }
-        return result;
     }
 }

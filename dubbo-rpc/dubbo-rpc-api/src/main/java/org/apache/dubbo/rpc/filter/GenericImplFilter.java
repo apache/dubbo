@@ -112,7 +112,7 @@ public class GenericImplFilter implements Filter {
     }
 
     @Override
-    public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
+    public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
         String generic = invoker.getUrl().getParameter(Constants.GENERIC_KEY);
         String methodName = invocation.getMethodName();
         Class<?>[] parameterTypes = invocation.getParameterTypes();
@@ -183,7 +183,6 @@ public class GenericImplFilter implements Filter {
                 }
             }
         }
-        return result;
     }
 
     private void error(String generic, String expected, String actual) throws RpcException {

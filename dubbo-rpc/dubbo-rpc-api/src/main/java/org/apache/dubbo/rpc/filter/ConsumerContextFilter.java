@@ -57,8 +57,7 @@ public class ConsumerContextFilter implements Filter {
     }
 
     @Override
-    public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
+    public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
         RpcContext.getServerContext().setAttachments(result.getAttachments());
-        return result;
     }
 }

@@ -119,7 +119,7 @@ public class GenericFilter implements Filter {
     }
 
     @Override
-    public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
+    public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
         String generic = invocation.getAttachment(Constants.GENERIC_KEY);
 
         if (result.hasException()
@@ -141,6 +141,5 @@ public class GenericFilter implements Filter {
         } else {
             result.setValue(PojoUtils.generalize(result.getValue()));
         }
-        return result;
     }
 }
