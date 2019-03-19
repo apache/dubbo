@@ -91,7 +91,7 @@ public class ThriftInvoker<T> extends AbstractInvoker<T> {
             CompletableFuture<Object> responseFuture = currentClient.request(inv, timeout);
             CompletableFuture<Result> resultFuture = responseFuture.thenApply(obj -> (Result)obj);
             RpcContext.getContext().setFuture(new FutureAdapter(resultFuture));
-            return new AsyncRpcResult(resultFuture);
+            return new AsyncRpcResult(resultFuture, invocation);
         } catch (TimeoutException e) {
             throw new RpcException(RpcException.TIMEOUT_EXCEPTION, e.getMessage(), e);
         } catch (RemotingException e) {

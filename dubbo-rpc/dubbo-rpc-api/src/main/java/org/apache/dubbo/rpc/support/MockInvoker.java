@@ -104,7 +104,7 @@ final public class MockInvoker<T> implements Invoker<T> {
             try {
                 Type[] returnTypes = RpcUtils.getReturnTypes(invocation);
                 Object value = parseMockValue(mock, returnTypes);
-                return AsyncRpcResult.newDefaultAsyncResult(value);
+                return AsyncRpcResult.newDefaultAsyncResult(value, invocation);
             } catch (Exception ew) {
                 throw new RpcException("mock return invoke error. method :" + invocation.getMethodName()
                         + ", mock:" + mock + ", url: " + url, ew);

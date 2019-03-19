@@ -92,7 +92,7 @@ public class MemcachedProtocol extends AbstractProtocol {
                         } else {
                             throw new UnsupportedOperationException("Unsupported method " + invocation.getMethodName() + " in memcached service.");
                         }
-                        return AsyncRpcResult.newDefaultAsyncResult(value);
+                        return AsyncRpcResult.newDefaultAsyncResult(value, invocation);
                     } catch (Throwable t) {
                         RpcException re = new RpcException("Failed to invoke memcached service method. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url + ", cause: " + t.getMessage(), t);
                         if (t instanceof TimeoutException || t instanceof SocketTimeoutException) {

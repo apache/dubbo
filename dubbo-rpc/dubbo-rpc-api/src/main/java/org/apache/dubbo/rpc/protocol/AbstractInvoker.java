@@ -156,21 +156,21 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         } catch (InvocationTargetException e) { // biz exception
             Throwable te = e.getTargetException();
             if (te == null) {
-                return AsyncRpcResult.newDefaultAsyncResult(null, e);
+                return AsyncRpcResult.newDefaultAsyncResult(null, e, invocation);
             } else {
                 if (te instanceof RpcException) {
                     ((RpcException) te).setCode(RpcException.BIZ_EXCEPTION);
                 }
-                return AsyncRpcResult.newDefaultAsyncResult(null, te);
+                return AsyncRpcResult.newDefaultAsyncResult(null, te, invocation);
             }
         } catch (RpcException e) {
             if (e.isBiz()) {
-                return AsyncRpcResult.newDefaultAsyncResult(null, e);
+                return AsyncRpcResult.newDefaultAsyncResult(null, e, invocation);
             } else {
                 throw e;
             }
         } catch (Throwable e) {
-            return AsyncRpcResult.newDefaultAsyncResult(null, e);
+            return AsyncRpcResult.newDefaultAsyncResult(null, e, invocation);
         }
     }
 

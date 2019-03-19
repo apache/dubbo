@@ -38,10 +38,6 @@ public class AsyncRpcResult implements Result {
     private CompletableFuture<Result> resultFuture;
     private Invocation invocation;
 
-    public AsyncRpcResult(CompletableFuture<Result> future) {
-        this(future, null);
-    }
-
     public AsyncRpcResult(CompletableFuture<Result> future, Invocation invocation) {
         this.resultFuture = future;
         this.invocation = invocation;
@@ -185,19 +181,19 @@ public class AsyncRpcResult implements Result {
         return result;
     };
 
-    public static AsyncRpcResult newDefaultAsyncResult() {
-        return newDefaultAsyncResult(null, null);
+    public static AsyncRpcResult newDefaultAsyncResult(Invocation invocation) {
+        return newDefaultAsyncResult(null, null, invocation);
     }
 
-    public static AsyncRpcResult newDefaultAsyncResult(Object value) {
-       return newDefaultAsyncResult(value, null);
+    public static AsyncRpcResult newDefaultAsyncResult(Object value, Invocation invocation) {
+        return newDefaultAsyncResult(value, null, invocation);
     }
 
-    public static AsyncRpcResult newDefaultAsyncResult(Throwable t) {
-        return newDefaultAsyncResult(null, t);
+    public static AsyncRpcResult newDefaultAsyncResult(Throwable t, Invocation invocation) {
+        return newDefaultAsyncResult(null, t, invocation);
     }
 
-    public static AsyncRpcResult newDefaultAsyncResult(Object value, Throwable t) {
+    public static AsyncRpcResult newDefaultAsyncResult(Object value, Throwable t, Invocation invocation) {
         CompletableFuture<Result> future = new CompletableFuture<>();
         RpcResult result = new RpcResult();
         if (t != null) {
@@ -206,7 +202,7 @@ public class AsyncRpcResult implements Result {
             result.setValue(value);
         }
         future.complete(result);
-        return new AsyncRpcResult(future);
+        return new AsyncRpcResult(future, invocation);
     }
 }
 

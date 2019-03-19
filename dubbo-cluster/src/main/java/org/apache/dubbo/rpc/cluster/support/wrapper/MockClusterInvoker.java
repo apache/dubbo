@@ -113,7 +113,7 @@ public class MockClusterInvoker<T> implements Invoker<T> {
             result = minvoker.invoke(invocation);
         } catch (RpcException me) {
             if (me.isBiz()) {
-                result = AsyncRpcResult.newDefaultAsyncResult(me.getCause());
+                result = AsyncRpcResult.newDefaultAsyncResult(me.getCause(), invocation);
             } else {
                 throw new RpcException(me.getCode(), getMockExceptionMessage(e, me), me.getCause());
             }

@@ -84,7 +84,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 boolean isSent = getUrl().getMethodParameter(methodName, Constants.SENT_KEY, false);
                 currentClient.send(inv, isSent);
                 RpcContext.getContext().setFuture(null);
-                return AsyncRpcResult.newDefaultAsyncResult();
+                return AsyncRpcResult.newDefaultAsyncResult(invocation);
             } else {
                 CompletableFuture<Object> responseFuture = currentClient.request(inv, timeout);
                 CompletableFuture<Result> resultFuture = responseFuture.thenApply(obj -> (Result)obj);

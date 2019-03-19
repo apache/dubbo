@@ -119,10 +119,10 @@ public class RedisProtocol extends AbstractProtocol {
                             }
                             byte[] value = jedis.get(String.valueOf(invocation.getArguments()[0]).getBytes());
                             if (value == null) {
-                                return AsyncRpcResult.newDefaultAsyncResult();
+                                return AsyncRpcResult.newDefaultAsyncResult(invocation);
                             }
                             ObjectInput oin = getSerialization(url).deserialize(url, new ByteArrayInputStream(value));
-                            return AsyncRpcResult.newDefaultAsyncResult(oin.readObject());
+                            return AsyncRpcResult.newDefaultAsyncResult(oin.readObject(), invocation);
                         } else if (set.equals(invocation.getMethodName())) {
                             if (invocation.getArguments().length != 2) {
                                 throw new IllegalArgumentException("The redis set method arguments mismatch, must be two arguments. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url);
@@ -135,13 +135,13 @@ public class RedisProtocol extends AbstractProtocol {
                             if (expiry > 1000) {
                                 jedis.expire(key, expiry / 1000);
                             }
-                            return AsyncRpcResult.newDefaultAsyncResult();
+                            return AsyncRpcResult.newDefaultAsyncResult(invocation);
                         } else if (delete.equals(invocation.getMethodName())) {
                             if (invocation.getArguments().length != 1) {
                                 throw new IllegalArgumentException("The redis delete method arguments mismatch, must only one arguments. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url);
                             }
                             jedis.del(String.valueOf(invocation.getArguments()[0]).getBytes());
-                            return AsyncRpcResult.newDefaultAsyncResult();
+                            return AsyncRpcResult.newDefaultAsyncResult(invocation);
                         } else {
                             throw new UnsupportedOperationException("Unsupported method " + invocation.getMethodName() + " in redis service.");
                         }

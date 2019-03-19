@@ -113,13 +113,13 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
         }
 
         if (resultList.isEmpty()) {
-            return AsyncRpcResult.newDefaultAsyncResult();
+            return AsyncRpcResult.newDefaultAsyncResult(invocation);
         } else if (resultList.size() == 1) {
             return resultList.iterator().next();
         }
 
         if (returnType == void.class) {
-            return AsyncRpcResult.newDefaultAsyncResult();
+            return AsyncRpcResult.newDefaultAsyncResult(invocation);
         }
 
         if (merger.startsWith(".")) {
@@ -167,7 +167,7 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 throw new RpcException("There is no merger to merge result.");
             }
         }
-        return AsyncRpcResult.newDefaultAsyncResult(result);
+        return AsyncRpcResult.newDefaultAsyncResult(result, invocation);
     }
 
 
