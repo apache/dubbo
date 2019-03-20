@@ -17,8 +17,6 @@
 
 package com.alibaba.dubbo.rpc;
 
-import org.apache.dubbo.rpc.AbstractResult;
-
 import java.util.Map;
 
 @Deprecated
@@ -31,6 +29,10 @@ public interface Result extends org.apache.dubbo.rpc.Result {
 
     @Override
     default void setException(Throwable t) {
+
+    }
+
+    abstract class AbstractResult extends org.apache.dubbo.rpc.AbstractResult implements Result {
 
     }
 
