@@ -85,7 +85,7 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
             Object value = doInvoke(proxy, invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
             CompletableFuture<Object> future = wrapWithFuture(value, invocation);
             AsyncRpcResult asyncRpcResult = new AsyncRpcResult(invocation);
-            future.handle((obj, t) -> {
+            future.whenComplete((obj, t) -> {
                 RpcResult result = new RpcResult();
                 if (t != null) {
                     if (t instanceof CompletionException) {

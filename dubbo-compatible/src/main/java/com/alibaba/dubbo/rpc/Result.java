@@ -17,6 +17,8 @@
 
 package com.alibaba.dubbo.rpc;
 
+import org.apache.dubbo.rpc.AbstractResult;
+
 import java.util.Map;
 
 @Deprecated
@@ -32,7 +34,7 @@ public interface Result extends org.apache.dubbo.rpc.Result {
 
     }
 
-    class CompatibleResult implements Result {
+    class CompatibleResult extends AbstractResult {
         private org.apache.dubbo.rpc.Result delegate;
 
         public CompatibleResult(org.apache.dubbo.rpc.Result result) {
@@ -49,8 +51,18 @@ public interface Result extends org.apache.dubbo.rpc.Result {
         }
 
         @Override
+        public void setValue(Object value) {
+            delegate.setValue(value);
+        }
+
+        @Override
         public Throwable getException() {
             return delegate.getException();
+        }
+
+        @Override
+        public void setException(Throwable t) {
+            delegate.setException(t);
         }
 
         @Override
