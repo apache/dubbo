@@ -44,6 +44,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class MonitorFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(MonitorFilter.class);
+    private static final String MONITOR_FILTER_START_TIME = "monitor_filter_start_time";
 
     /**
      * The Concurrent counter
@@ -70,22 +71,25 @@ public class MonitorFilter implements Filter {
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         if (invoker.getUrl().hasParameter(Constants.MONITOR_KEY)) {
-            RpcContext context = RpcContext.getContext(); // provider must fetch context before invoke() gets called
-            String remoteHost = context.getRemoteHost();
-            long start = System.currentTimeMillis(); // record start timestamp
+            invocation.setAttachment(MONITOR_FILTER_START_TIME, String.valueOf(System.currentTimeMillis()));
             getConcurrent(invoker, invocation).incrementAndGet(); // count up
-            try {
-                Result result = invoker.invoke(invocation); // proceed invocation chain
-                collect(invoker, invocation, result, remoteHost, start, false);
-                return result;
-            } catch (RpcException e) {
-                collect(invoker, invocation, null, remoteHost, start, true);
-                throw e;
-            } finally {
-                getConcurrent(invoker, invocation).decrementAndGet(); // count down
-            }
-        } else {
-            return invoker.invoke(invocation);
+        }
+        return invoker.invoke(invocation); // proceed invocation chain
+    }
+
+    @Override
+    public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
+        if (invoker.getUrl().hasParameter(Constants.MONITOR_KEY)) {
+            collect(invoker, invocation, result, RpcContext.getContext().getRemoteHost(), Long.valueOf(invocation.getAttachment(MONITOR_FILTER_START_TIME)), false);
+            getConcurrent(invoker, invocation).decrementAndGet(); // count down
+        }
+    }
+
+    @Override
+    public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
+        if (invoker.getUrl().hasParameter(Constants.MONITOR_KEY)) {
+            collect(invoker, invocation, null, RpcContext.getContext().getRemoteHost(), Long.valueOf(invocation.getAttachment(MONITOR_FILTER_START_TIME)), true);
+            getConcurrent(invoker, invocation).decrementAndGet(); // count down
         }
     }
 

@@ -25,7 +25,6 @@ import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcException;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -47,11 +46,6 @@ import java.lang.reflect.Type;
 public class CompatibleFilter implements Filter {
 
     private static Logger logger = LoggerFactory.getLogger(CompatibleFilter.class);
-
-    @Override
-    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        return invoker.invoke(invocation);
-    }
 
     @Override
     public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {

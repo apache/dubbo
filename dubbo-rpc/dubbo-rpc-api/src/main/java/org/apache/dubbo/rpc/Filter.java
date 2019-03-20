@@ -43,28 +43,19 @@ import org.apache.dubbo.common.extension.SPI;
 @SPI
 public interface Filter {
 
+    default void beforeRequest(Invoker<?> invoker, Invocation invocation) {
+
+    }
+
+    default void afterRequest(Invoker<?> invoker, Invocation invocation) {
+
+    }
+
     /**
-     * do invoke filter.
-     * <p>
-     * <code>
-     * // before filter
-     * Result result = invoker.invoke(invocation);
-     * // after filter
-     * return result;
-     * </code>
-     *
-     * @param invoker    service
-     * @param invocation invocation.
-     * @return invoke result.
-     * @throws RpcException
-     * @see org.apache.dubbo.rpc.Invoker#invoke(Invocation)
+     * Does not need to override/implement this method.
      */
     default Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         return invoker.invoke(invocation);
-    }
-
-    default void onRequest(Invoker<?> invoker, Invocation invocation) throws RpcException {
-
     }
 
     default void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
