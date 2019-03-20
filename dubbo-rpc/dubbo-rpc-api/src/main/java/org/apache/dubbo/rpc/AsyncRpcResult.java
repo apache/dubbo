@@ -22,7 +22,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
 public class AsyncRpcResult extends AbstractResult {
@@ -35,14 +34,18 @@ public class AsyncRpcResult extends AbstractResult {
     private RpcContext storedContext;
     private RpcContext storedServerContext;
 
-    private CompletableFuture<AppResponse> responseFuture;
     private Invocation invocation;
 
-    public AsyncRpcResult(CompletableFuture<AppResponse> future, Invocation invocation) {
-        this.responseFuture = future;
+    public AsyncRpcResult(Invocation invocation) {
         this.invocation = invocation;
         this.storedContext = RpcContext.getContext();
         this.storedServerContext = RpcContext.getServerContext();
+    }
+
+    public AsyncRpcResult(AsyncRpcResult asyncRpcResult) {
+        this.invocation = asyncRpcResult.getInvocation();
+        this.storedContext = asyncRpcResult.getStoredContext();
+        this.storedServerContext = asyncRpcResult.getStoredServerContext();
     }
 
     @Override
@@ -70,18 +73,10 @@ public class AsyncRpcResult extends AbstractResult {
         return getAppResponse().hasException();
     }
 
-    public CompletableFuture<AppResponse> getResponseFuture() {
-        return responseFuture;
-    }
-
-    public void setResponseFuture(CompletableFuture<AppResponse> responseFuture) {
-        this.responseFuture = responseFuture;
-    }
-
     public Result getAppResponse() {
         try {
-            if (responseFuture.isDone()) {
-                return responseFuture.get();
+            if (this.isDone()) {
+                return this.get();
             }
         } catch (Exception e) {
             // This should never happen;
@@ -97,7 +92,7 @@ public class AsyncRpcResult extends AbstractResult {
             AppResponse appResponse = new AppResponse();
             CompletableFuture<Object> future = new CompletableFuture<>();
             appResponse.setValue(future);
-            responseFuture.whenComplete((result, t) -> {
+            this.whenComplete((result, t) -> {
                 if (t != null) {
                     if (t instanceof CompletionException) {
                         t = t.getCause();
@@ -112,20 +107,27 @@ public class AsyncRpcResult extends AbstractResult {
                 }
             });
             return appResponse.recreate();
-        } else if (responseFuture.isDone()) {
-            return responseFuture.get().recreate();
+        } else if (this.isDone()) {
+            return this.get().recreate();
         }
         return (new AppResponse()).recreate();
     }
 
-    public AppResponse get() throws InterruptedException, ExecutionException {
-        return responseFuture.get();
+    public AsyncRpcResult thenApplyWithContext(Function<Result, Result> fn) {
+        CompletableFuture<Result> future = this.thenApply(fn.compose(beforeContext).andThen(afterContext));
+        AsyncRpcResult nextAsyncRpcResult = new AsyncRpcResult(this);
+        nextAsyncRpcResult.subscribeTo(future);
+        return nextAsyncRpcResult;
     }
 
-    @Override
-    public Result thenApplyWithContext(Function<AppResponse, AppResponse> fn) {
-        this.responseFuture = responseFuture.thenApply(fn.compose(beforeContext).andThen(afterContext));
-        return this;
+    public void subscribeTo(CompletableFuture<?> future) {
+        future.whenComplete((obj, t) -> {
+            if (t != null) {
+                this.completeExceptionally(t);
+            } else {
+                this.complete((Result) obj);
+            }
+        });
     }
 
     @Override
@@ -198,15 +200,15 @@ public class AsyncRpcResult extends AbstractResult {
     }
 
     public static AsyncRpcResult newDefaultAsyncResult(Object value, Throwable t, Invocation invocation) {
-        CompletableFuture<AppResponse> future = new CompletableFuture<>();
-        AppResponse result = new AppResponse();
+        AsyncRpcResult asyncRpcResult = new AsyncRpcResult(invocation);
+        RpcResult result = new RpcResult();
         if (t != null) {
             result.setException(t);
         } else {
             result.setValue(value);
         }
-        future.complete(result);
-        return new AsyncRpcResult(future, invocation);
+        asyncRpcResult.complete(result);
+        return asyncRpcResult;
     }
 }
 
