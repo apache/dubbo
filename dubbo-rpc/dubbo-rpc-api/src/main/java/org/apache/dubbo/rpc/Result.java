@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.concurrent.CompletionStage;
 
 
 /**
@@ -27,7 +28,7 @@ import java.util.Map;
  * @see org.apache.dubbo.rpc.Invoker#invoke(Invocation)
  * @see org.apache.dubbo.rpc.RpcResult
  */
-public interface Result extends Serializable {
+public interface Result extends CompletionStage<Result>, Serializable {
 
     /**
      * Get invoke result.

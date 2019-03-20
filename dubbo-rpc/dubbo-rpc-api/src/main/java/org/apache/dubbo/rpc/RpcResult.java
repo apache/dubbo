@@ -25,7 +25,7 @@ import java.util.Map;
  *
  * @serial Don't change the class name and properties.
  */
-public class RpcResult implements Result, Serializable {
+public class RpcResult extends AbstractResult implements Serializable {
 
     private static final long serialVersionUID = -6925924956850004727L;
 
