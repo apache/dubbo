@@ -72,7 +72,7 @@ public class MonitorFilter implements Filter {
         if (invoker.getUrl().hasParameter(Constants.MONITOR_KEY)) {
             RpcContext context = RpcContext.getContext(); // provider must fetch context before invoke() gets called
             String remoteHost = context.getRemoteHost();
-            long start = System.currentTimeMillis(); // record start timestamp
+            long start = System.nanoTime(); // record start timestamp
             getConcurrent(invoker, invocation).incrementAndGet(); // count up
             try {
                 Result result = invoker.invoke(invocation); // proceed invocation chain
@@ -126,7 +126,7 @@ public class MonitorFilter implements Filter {
      */
     private URL createStatisticsUrl(Invoker<?> invoker, Invocation invocation, Result result, String remoteHost, long start, boolean error) {
         // ---- service statistics ----
-        long elapsed = System.currentTimeMillis() - start; // invocation cost
+        long elapsed = (System.nanoTime() - start) / 1000000; // invocation cost
         int concurrent = getConcurrent(invoker, invocation).get(); // current concurrent count
         String application = invoker.getUrl().getParameter(Constants.APPLICATION_KEY);
         String service = invoker.getInterface().getName(); // service name
