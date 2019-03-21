@@ -18,7 +18,7 @@ package org.apache.dubbo.common.threadpool.support;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;

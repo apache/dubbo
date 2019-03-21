@@ -106,8 +106,12 @@ public class TypeDefinition {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof TypeDefinition)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof TypeDefinition)) {
+            return false;
+        }
         TypeDefinition that = (TypeDefinition) o;
         return Objects.equals(getId(), that.getId()) &&
                 Objects.equals(getType(), that.getType()) &&

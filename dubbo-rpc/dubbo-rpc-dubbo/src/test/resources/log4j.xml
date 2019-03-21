@@ -21,6 +21,7 @@
     <!-- 以下是appender的定义 -->
     <!-- ===================================================================== -->
     <appender name="dubbo" class="org.apache.dubbo.common.utils.DubboAppender">
+        <param name="File" value="../../dubbo.log"/>
         <param name="encoding" value="GBK"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d %p [%c:%M] - %m%n"/>
@@ -30,17 +31,8 @@
             <param name="LevelMax" value="DEBUG" />
         </filter> -->
     </appender>
-    <appender name="FILE" class="org.apache.log4j.FileAppender">
-        <param name="File" value="dubbo.log"/>
-        <layout class="org.apache.log4j.PatternLayout">
-            <!-- <param name="ConversionPattern" value="[%t %d{dd/MM/yy HH:mm:ss:SSS
-                z}] %5p %c{2}: %L %m%n" /> -->
-            <param name="ConversionPattern" value="[%t %l %d{dd/MM/yy HH:mm:ss:SSS z}] %5p %m %n"/>
-        </layout>
-    </appender>
     <root>
         <level value="INFO"/>
         <appender-ref ref="dubbo"/>
-        <appender-ref ref="FILE"/>
     </root>
 </log4j:configuration>

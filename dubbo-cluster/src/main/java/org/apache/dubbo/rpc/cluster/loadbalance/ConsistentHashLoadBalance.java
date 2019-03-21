@@ -22,7 +22,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -33,7 +33,6 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * ConsistentHashLoadBalance
- *
  */
 public class ConsistentHashLoadBalance extends AbstractLoadBalance {
     public static final String NAME = "consistenthash";
@@ -126,12 +125,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
                 throw new IllegalStateException(e.getMessage(), e);
             }
             md5.reset();
-            byte[] bytes;
-            try {
-                bytes = value.getBytes("UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
+            byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
             md5.update(bytes);
             return md5.digest();
         }

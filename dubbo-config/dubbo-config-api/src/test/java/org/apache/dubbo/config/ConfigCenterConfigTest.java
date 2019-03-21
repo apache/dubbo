@@ -19,13 +19,14 @@
 
 package org.apache.dubbo.config;
 
-import junit.framework.TestCase;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class ConfigCenterConfigTest {
     @Test
     public void testPrefix() {
         ConfigCenterConfig config = new ConfigCenterConfig();
-        TestCase.assertEquals("dubbo.config-center", config.getPrefix());
+        Assertions.assertEquals("dubbo.config-center", config.getPrefix());
     }
 }

@@ -59,9 +59,7 @@ public class TKv implements TComponent {
 
     private String filterEmptyLine(String content) {
         final StringBuilder sb = new StringBuilder();
-        Scanner scanner = null;
-        try {
-            scanner = new Scanner(content);
+        try (Scanner scanner = new Scanner(content)) {
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
                 if (line != null) {
@@ -72,10 +70,6 @@ public class TKv implements TComponent {
                     }
                 }
                 sb.append(line).append(System.lineSeparator());
-            }
-        } finally {
-            if (null != scanner) {
-                scanner.close();
             }
         }
 

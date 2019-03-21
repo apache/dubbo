@@ -137,6 +137,10 @@ public class Response {
         mResult = event;
     }
 
+    public void setEvent(boolean mEvent) {
+        this.mEvent = mEvent;
+    }
+
     public boolean isHeartbeat() {
         return mEvent && HEARTBEAT_EVENT == mResult;
     }

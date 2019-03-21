@@ -28,8 +28,8 @@ import org.apache.dubbo.service.DemoServiceImpl;
 
 import com.alibaba.dubbo.rpc.service.EchoService;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class EchoServiceTest {
 
@@ -43,11 +43,11 @@ public class EchoServiceTest {
         Invoker<DemoService> invoker = protocol.refer(DemoService.class, url);
         EchoService client = (EchoService) proxyFactory.getProxy(invoker);
         Object result = client.$echo("haha");
-        Assert.assertEquals("haha", result);
+        Assertions.assertEquals("haha", result);
 
         org.apache.dubbo.rpc.service.EchoService newClient = (org.apache.dubbo.rpc.service.EchoService) proxyFactory.getProxy(invoker);
         Object res = newClient.$echo("hehe");
-        Assert.assertEquals("hehe", res);
+        Assertions.assertEquals("hehe", res);
         invoker.destroy();
         exporter.unexport();
     }

@@ -136,7 +136,7 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
             // decode response.
             Response res = new Response(id);
             if ((flag & FLAG_EVENT) != 0) {
-                res.setEvent(Response.HEARTBEAT_EVENT);
+                res.setEvent(true);
             }
             // get status.
             byte status = header[3];
@@ -167,7 +167,7 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
             req.setVersion(Version.getProtocolVersion());
             req.setTwoWay((flag & FLAG_TWOWAY) != 0);
             if ((flag & FLAG_EVENT) != 0) {
-                req.setEvent(Request.HEARTBEAT_EVENT);
+                req.setEvent(true);
             }
             try {
                 ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);

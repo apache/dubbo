@@ -22,8 +22,8 @@ import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.configcenter.support.nop.NopDynamicConfigurationFactory;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -36,12 +36,12 @@ public class AbstractDynamicConfigurationTest {
     public void testInit() {
         DynamicConfiguration configuration1 = configurationFactory.getDynamicConfiguration(url);
         DynamicConfiguration configuration2 = configurationFactory.getDynamicConfiguration(url);
-        Assert.assertEquals(configuration1, configuration2);
+        Assertions.assertEquals(configuration1, configuration2);
     }
 
     @Test
     public void testDefaultExtension() {
         DynamicConfigurationFactory factory = ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getDefaultExtension();
-        Assert.assertTrue(factory instanceof NopDynamicConfigurationFactory);
+        Assertions.assertTrue(factory instanceof NopDynamicConfigurationFactory);
     }
 }

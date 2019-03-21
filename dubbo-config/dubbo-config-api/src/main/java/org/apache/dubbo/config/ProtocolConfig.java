@@ -317,7 +317,7 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     public void setCodec(String codec) {
-        if (Constants.DOBBO_PROTOCOL.equals(name)) {
+        if (Constants.DUBBO_PROTOCOL.equals(name)) {
             checkMultiExtension(Codec.class, Constants.CODEC_KEY, codec);
         }
         this.codec = codec;
@@ -328,7 +328,7 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     public void setSerialization(String serialization) {
-        if (Constants.DOBBO_PROTOCOL.equals(name)) {
+        if (Constants.DUBBO_PROTOCOL.equals(name)) {
             checkMultiExtension(Serialization.class, Constants.SERIALIZATION_KEY, serialization);
         }
         this.serialization = serialization;
@@ -371,7 +371,7 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     public void setServer(String server) {
-        if (Constants.DOBBO_PROTOCOL.equals(name)) {
+        if (Constants.DUBBO_PROTOCOL.equals(name)) {
             checkMultiExtension(Transporter.class, Constants.SERVER_KEY, server);
         }
         this.server = server;
@@ -382,7 +382,7 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     public void setClient(String client) {
-        if (Constants.DOBBO_PROTOCOL.equals(name)) {
+        if (Constants.DUBBO_PROTOCOL.equals(name)) {
             checkMultiExtension(Transporter.class, Constants.CLIENT_KEY, client);
         }
         this.client = client;

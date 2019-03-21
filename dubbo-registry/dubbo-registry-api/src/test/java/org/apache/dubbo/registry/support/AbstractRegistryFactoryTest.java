@@ -22,8 +22,8 @@ import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
 import java.util.List;
@@ -83,7 +83,7 @@ public class AbstractRegistryFactoryTest {
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostAddress() + ":2233");
         Registry registry1 = registryFactory.getRegistry(url);
         Registry registry2 = registryFactory.getRegistry(url);
-        Assert.assertEquals(registry1, registry2);
+        Assertions.assertEquals(registry1, registry2);
     }
 
     /**
@@ -93,14 +93,14 @@ public class AbstractRegistryFactoryTest {
     public void testRegistryFactoryIpCache() throws Exception {
         Registry registry1 = registryFactory.getRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":2233"));
         Registry registry2 = registryFactory.getRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostAddress() + ":2233"));
-        Assert.assertEquals(registry1, registry2);
+        Assertions.assertEquals(registry1, registry2);
     }
 
     @Test
     public void testRegistryFactoryGroupCache() throws Exception {
         Registry registry1 = registryFactory.getRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":2233?group=aaa"));
         Registry registry2 = registryFactory.getRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":2233?group=bbb"));
-        Assert.assertNotSame(registry1, registry2);
+        Assertions.assertNotSame(registry1, registry2);
     }
 
     @Test
@@ -108,10 +108,10 @@ public class AbstractRegistryFactoryTest {
         Registry registry1 = registryFactory.getRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":8888?group=xxx"));
         Registry registry2 = registryFactory.getRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":9999?group=yyy"));
         Collection<Registry> registries = AbstractRegistryFactory.getRegistries();
-        Assert.assertTrue(registries.contains(registry1));
-        Assert.assertTrue(registries.contains(registry2));
+        Assertions.assertTrue(registries.contains(registry1));
+        Assertions.assertTrue(registries.contains(registry2));
         AbstractRegistryFactory.destroyAll();
-        Assert.assertFalse(registries.contains(registry1));
-        Assert.assertFalse(registries.contains(registry2));
+        Assertions.assertFalse(registries.contains(registry1));
+        Assertions.assertFalse(registries.contains(registry2));
     }
 }

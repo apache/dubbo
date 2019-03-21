@@ -90,7 +90,7 @@ while [ $COUNT -lt 1 ]; do
     sleep 1 
     if [ -n "$SERVER_PORT" ]; then
         if [ "$SERVER_PROTOCOL" == "dubbo" ]; then
-    	    COUNT=`echo status | nc -i 1 $SERVER_HOST $SERVER_PORT | grep -c OK`
+    	    COUNT=`(sleep 1; echo -e '\n'; sleep 1; echo status; sleep 1)| telnet $SERVER_HOST $SERVER_PORT | grep -c OK`
         else
             COUNT=`netstat -an | grep $SERVER_PORT | wc -l`
         fi

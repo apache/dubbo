@@ -80,8 +80,12 @@ public class ServiceDefinition {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ServiceDefinition)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ServiceDefinition)) {
+            return false;
+        }
         ServiceDefinition that = (ServiceDefinition) o;
         return Objects.equals(getCanonicalName(), that.getCanonicalName()) &&
                 Objects.equals(getCodeSource(), that.getCodeSource()) &&
