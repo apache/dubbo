@@ -38,6 +38,7 @@ import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.cluster.support.RegistryAwareCluster;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
@@ -218,6 +219,13 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         resolveFile();
         checkApplication();
         checkMetadataReport();
+        appendParameters();
+    }
+
+    private void appendParameters() {
+        URL appendParametersUrl = URL.valueOf("appendParameters://");
+        List<AppendParametersComponent> appendParametersComponents = ExtensionLoader.getExtensionLoader(AppendParametersComponent.class).getActivateExtension(appendParametersUrl, (String[]) null);
+        appendParametersComponents.forEach(component -> component.appendReferParameters(this));
     }
 
     public synchronized T get() {
@@ -256,6 +264,10 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         initialized = true;
         checkStubAndLocal(interfaceClass);
         checkMock(interfaceClass);
+
+        ConsumerModel consumerModel = new ConsumerModel(interfaceName, group, version, interfaceClass);
+        ApplicationModel.initConsumerModel(getUniqueServiceName(), consumerModel);
+
         Map<String, String> map = new HashMap<String, String>();
 
         map.put(Constants.SIDE_KEY, Constants.CONSUMER_SIDE);
@@ -291,7 +303,10 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                         map.put(methodConfig.getName() + ".retries", "0");
                     }
                 }
-                attributes.put(methodConfig.getName(), convertMethodConfig2AyncInfo(methodConfig));
+                ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = convertMethodConfig2AyncInfo(methodConfig);
+                if (asyncMethodInfo != null) {
+                    consumerModel.getMethodModel(methodConfig.getName()).addAttribute(Constants.ASYNC_KEY, asyncMethodInfo);
+                }
             }
         }
 
@@ -305,8 +320,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
         ref = createProxy(map);
 
-        ConsumerModel consumerModel = new ConsumerModel(getUniqueServiceName(), interfaceClass, ref, interfaceClass.getMethods(), attributes);
-        ApplicationModel.initConsumerModel(getUniqueServiceName(), consumerModel);
+        consumerModel.getServiceMetadata().addAttribute(Constants.PROXY_CLASS_REF, ref);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
@@ -422,14 +436,14 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             return;
         }
         setConsumer(
-                        ConfigManager.getInstance()
-                            .getDefaultConsumer()
-                            .orElseGet(() -> {
-                                ConsumerConfig consumerConfig = new ConsumerConfig();
-                                consumerConfig.refresh();
-                                return consumerConfig;
-                            })
-                );
+                ConfigManager.getInstance()
+                        .getDefaultConsumer()
+                        .orElseGet(() -> {
+                            ConsumerConfig consumerConfig = new ConsumerConfig();
+                            consumerConfig.refresh();
+                            return consumerConfig;
+                        })
+        );
     }
 
     private void completeCompoundConfigs() {

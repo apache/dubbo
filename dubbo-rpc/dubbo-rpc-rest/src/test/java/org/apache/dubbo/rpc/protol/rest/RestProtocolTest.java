@@ -40,11 +40,12 @@ public class RestProtocolTest {
     public void testRestProtocol() {
         URL url = URL.valueOf("rest://127.0.0.1:5342/rest/say1?version=1.0.0");
         RestServiceImpl server = new RestServiceImpl();
-        ProviderModel providerModel = new ProviderModel(url.getServiceKey(), server, RestService.class);
+        ProviderModel providerModel = new ProviderModel(url.getServiceInterface(), "Dubbo", "1.0.0", server, RestService.class);
         ApplicationModel.initProviderModel(url.getServiceKey(), providerModel);
 
         Exporter<RestService> exporter = protocol.export(proxyFactory.getInvoker(server, RestService.class, url));
-        Invoker<RestService> invoker = protocol.refer(RestService.class, url);        Assertions.assertFalse(server.isCalled());
+        Invoker<RestService> invoker = protocol.refer(RestService.class, url);
+        Assertions.assertFalse(server.isCalled());
 
         RestService client = proxyFactory.getProxy(invoker);
         String result = client.sayHello("haha");
@@ -59,7 +60,7 @@ public class RestProtocolTest {
         RestServiceImpl server = new RestServiceImpl();
         Assertions.assertFalse(server.isCalled());
         URL url = URL.valueOf("rest://127.0.0.1:5341/a/b/c?version=1.0.0");
-        ProviderModel providerModel = new ProviderModel(url.getServiceKey(), server, RestService.class);
+        ProviderModel providerModel = new ProviderModel(url.getServiceInterface(), "Dubbo", "1.0.0", server, RestService.class);
         ApplicationModel.initProviderModel(url.getServiceKey(), providerModel);
 
         Exporter<RestService> exporter = protocol.export(proxyFactory.getInvoker(server, RestService.class, url));

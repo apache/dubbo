@@ -83,5 +83,20 @@ public class CacheTest {
         public Invoker<?> getInvoker() {
             return null;
         }
+
+        @Override
+        public Object put(Object key, Object value) {
+            return null;
+        }
+
+        @Override
+        public Object get(Object key) {
+            return null;
+        }
+
+        @Override
+        public Map<Object, Object> getAttributes() {
+            return null;
+        }
     }
 }

@@ -828,9 +828,11 @@ public class Constants {
      */
     public static final String PRODUCTION_ENVIRONMENT = "product";
 
-    public static final String CONSUMER_START_TIME_KEY = "consumer.start.time";
+    /**
+     * Consumer side 's proxy class
+     */
+    public static final String PROXY_CLASS_REF = "refClass";
 
-    public static final String PROVIDER_START_TIME_KEY = "provider.start.time";
     /*
      * private Constants(){ }
      */

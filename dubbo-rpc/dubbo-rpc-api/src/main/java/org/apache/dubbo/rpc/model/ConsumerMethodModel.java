@@ -19,7 +19,8 @@ package org.apache.dubbo.rpc.model;
 import org.apache.dubbo.common.Constants;
 
 import java.lang.reflect.Method;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class ConsumerMethodModel {
     private final Method method;
@@ -31,10 +32,9 @@ public class ConsumerMethodModel {
     private final String methodName;
     private final boolean generic;
 
-    private final AsyncMethodInfo asyncInfo;
+    private final ConcurrentMap<String, Object> attributeMap = new ConcurrentHashMap<>();
 
-
-    public ConsumerMethodModel(Method method, Map<String, Object> attributes) {
+    public ConsumerMethodModel(Method method) {
         this.method = method;
         this.parameterClasses = method.getParameterTypes();
         this.returnClass = method.getReturnType();
@@ -42,24 +42,32 @@ public class ConsumerMethodModel {
         this.methodName = method.getName();
         this.generic = methodName.equals(Constants.$INVOKE) && parameterTypes != null && parameterTypes.length == 3;
 
-        if (attributes != null) {
-            asyncInfo = (AsyncMethodInfo) attributes.get(methodName);
-        } else {
-            asyncInfo = null;
-        }
     }
 
     public Method getMethod() {
         return method;
     }
 
+//    public ConcurrentMap<String, Object> getAttributeMap() {
+//        return attributeMap;
+//    }
+
+    public void addAttribute(String key, Object value) {
+        this.attributeMap.put(key, value);
+    }
+
+    public Object getAttribute(String key) {
+        return this.attributeMap.get(key);
+    }
+
+
     public Class<?> getReturnClass() {
         return returnClass;
     }
 
-    public AsyncMethodInfo getAsyncInfo() {
-        return asyncInfo;
-    }
+//    public AsyncMethodInfo getAsyncInfo() {
+//        return (AsyncMethodInfo) attributeMap.get(Constants.ASYNC_KEY);
+//    }
 
     public String getMethodName() {
         return methodName;
