@@ -48,8 +48,6 @@ class AnnotationBeanNameBuilder {
 
     // Required properties
 
-    private final String category;
-
     private final String protocol;
 
     private final String interfaceClassName;
@@ -62,20 +60,19 @@ class AnnotationBeanNameBuilder {
 
     private Environment environment;
 
-    private AnnotationBeanNameBuilder(String category, String protocol, String interfaceClassName) {
-        this.category = category;
+    private AnnotationBeanNameBuilder(String protocol, String interfaceClassName) {
         this.protocol = protocol;
         this.interfaceClassName = interfaceClassName;
     }
 
     private AnnotationBeanNameBuilder(Service service, Class<?> interfaceClass) {
-        this(PROVIDERS_CATEGORY, resolveProtocol(service.protocol()), resolveInterfaceName(service, interfaceClass));
+        this(resolveProtocol(service.protocol()), resolveInterfaceName(service, interfaceClass));
         this.group(service.group());
         this.version(service.version());
     }
 
     private AnnotationBeanNameBuilder(Reference reference, Class<?> interfaceClass) {
-        this(CONSUMERS_CATEGORY, resolveProtocol(reference.protocol()), resolveInterfaceName(reference, interfaceClass));
+        this(resolveProtocol(reference.protocol()), resolveInterfaceName(reference, interfaceClass));
         this.group(reference.group());
         this.version(reference.version());
     }
@@ -129,7 +126,7 @@ class AnnotationBeanNameBuilder {
      */
     public String build() {
         // Append the required properties
-        StringBuilder beanNameBuilder = new StringBuilder(category);
+        StringBuilder beanNameBuilder = new StringBuilder("ServiceBean");
         append(beanNameBuilder, protocol);
         append(beanNameBuilder, interfaceClassName);
         // Append the optional properties
