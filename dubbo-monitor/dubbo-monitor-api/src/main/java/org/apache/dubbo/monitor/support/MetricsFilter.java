@@ -41,14 +41,14 @@ public class MetricsFilter implements Filter {
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         RpcContext context = RpcContext.getContext();
         boolean isProvider = context.isProviderSide();
-        long start = System.currentTimeMillis();
+        long start = System.nanoTime();
         try {
             Result result = invoker.invoke(invocation); // proceed invocation chain
-            long duration = System.currentTimeMillis() - start;
+            long duration = (System.nanoTime() - start) / 1000000;
             reportMetrics(invoker, invocation, duration, "success", isProvider);
             return result;
         } catch (RpcException e) {
-            long duration = System.currentTimeMillis() - start;
+            long duration = (System.nanoTime() - start) / 1000000;
             String result = "error";
             if (e.isTimeout()) {
                 result = "timeoutError";
