@@ -205,17 +205,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                     return "";
                 }));
 
-        /**
-         * 3.x added for extend URL address
-         */
-        ExtensionLoader<AddressListener> addressListenerExtensionLoader = ExtensionLoader.getExtensionLoader(AddressListener.class);
-        Set<String> surpportedListeners = addressListenerExtensionLoader.getSupportedExtensions();
-        if (surpportedListeners != null && !surpportedListeners.isEmpty()) {
-            for (String addressListenerName : surpportedListeners) {
-                categoryUrls = addressListenerExtensionLoader.getExtension(addressListenerName).notify(categoryUrls);
-            }
-        }
-
         List<URL> configuratorURLs = categoryUrls.getOrDefault(CONFIGURATORS_CATEGORY, Collections.emptyList());
         this.configurators = Configurator.toConfigurators(configuratorURLs).orElse(this.configurators);
 
@@ -224,6 +213,16 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
         // providers
         List<URL> providerURLs = categoryUrls.getOrDefault(PROVIDERS_CATEGORY, Collections.emptyList());
+        /**
+         * 3.x added for extend URL address
+         */
+        ExtensionLoader<AddressListener> addressListenerExtensionLoader = ExtensionLoader.getExtensionLoader(AddressListener.class);
+        Set<String> surpportedListeners = addressListenerExtensionLoader.getSupportedExtensions();
+        if (surpportedListeners != null && !surpportedListeners.isEmpty()) {
+            for (String addressListenerName : surpportedListeners) {
+                providerURLs = addressListenerExtensionLoader.getExtension(addressListenerName).notify(providerURLs);
+            }
+        }
         refreshOverrideAndInvoker(providerURLs);
     }
 
