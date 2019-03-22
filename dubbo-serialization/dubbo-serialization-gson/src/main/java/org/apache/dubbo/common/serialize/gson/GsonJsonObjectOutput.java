@@ -20,7 +20,12 @@ package org.apache.dubbo.common.serialize.gson;
 import com.google.gson.Gson;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 
-import java.io.*;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.io.IOException;
+
 
 public class GsonJsonObjectOutput implements ObjectOutput {
 

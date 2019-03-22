@@ -21,8 +21,13 @@ import com.google.gson.Gson;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.utils.PojoUtils;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Type;
+import java.io.Reader;
+import java.io.IOException;
+import java.io.EOFException;
 
 public class GsonJsonObjectInput implements ObjectInput {
     private final BufferedReader reader;
