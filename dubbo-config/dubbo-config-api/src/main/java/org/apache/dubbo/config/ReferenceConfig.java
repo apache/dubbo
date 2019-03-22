@@ -47,7 +47,6 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -267,7 +266,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         checkMock(interfaceClass);
 
         ConsumerModel consumerModel = new ConsumerModel(interfaceName, group, version, interfaceClass);
-        ApplicationModel.initConsumerModel(getUniqueServiceName(), consumerModel);
+        ApplicationModel.initConsumerModel(URL.buildKey(interfaceName, group, version), consumerModel);
 
         Map<String, String> map = new HashMap<String, String>();
 

@@ -380,7 +380,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             path = interfaceName;
         }
         ProviderModel providerModel = new ProviderModel(interfaceName, group, version, ref, interfaceClass);
-        ApplicationModel.initProviderModel(getUniqueServiceName(), providerModel);
+        ApplicationModel.initProviderModel(URL.buildKey(interfaceName, group, version), providerModel);
         doExportUrls();
     }
 
