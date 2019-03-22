@@ -32,32 +32,32 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 
 public class AvroSerializationTest {
-	 private AvroSerialization avroSerialization;
+    private AvroSerialization avroSerialization;
 
-	    @BeforeEach
-	    public void setUp() {
-	        this.avroSerialization = new AvroSerialization();
-	    }
+    @BeforeEach
+    public void setUp() {
+        this.avroSerialization = new AvroSerialization();
+    }
 
-	    @Test
-	    public void testContentType() {
-	        assertThat(avroSerialization.getContentType(), is("avro/binary"));
-	    }
+    @Test
+    public void testContentType() {
+        assertThat(avroSerialization.getContentType(), is("avro/binary"));
+    }
 
-	    @Test
-	    public void testContentTypeId() {
-	        assertThat(avroSerialization.getContentTypeId(), is((byte) 10));
-	    }
+    @Test
+    public void testContentTypeId() {
+        assertThat(avroSerialization.getContentTypeId(), is((byte) 10));
+    }
 
-	    @Test
-	    public void testObjectOutput() throws IOException {
-	        ObjectOutput objectOutput = avroSerialization.serialize(null, mock(OutputStream.class));
-	        assertThat(objectOutput, Matchers.<ObjectOutput>instanceOf(AvroObjectOutput.class));
-	    }
+    @Test
+    public void testObjectOutput() throws IOException {
+        ObjectOutput objectOutput = avroSerialization.serialize(null, mock(OutputStream.class));
+        assertThat(objectOutput, Matchers.<ObjectOutput>instanceOf(AvroObjectOutput.class));
+    }
 
-	    @Test
-	    public void testObjectInput() throws IOException {
-	        ObjectInput objectInput = avroSerialization.deserialize(null, mock(InputStream.class));
-	        assertThat(objectInput, Matchers.<ObjectInput>instanceOf(AvroObjectInput.class));
-	    }
+    @Test
+    public void testObjectInput() throws IOException {
+        ObjectInput objectInput = avroSerialization.deserialize(null, mock(InputStream.class));
+        assertThat(objectInput, Matchers.<ObjectInput>instanceOf(AvroObjectInput.class));
+    }
 }
