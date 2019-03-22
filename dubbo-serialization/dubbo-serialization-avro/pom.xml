@@ -28,7 +28,7 @@
     <name>${project.artifactId}</name>
     <description>The avro serialization module of dubbo project</description>
     <properties>
-        <avro.version>1.8.2</avro.version>
+        <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
 
     <dependencies>
@@ -40,7 +40,6 @@
         <dependency>
             <groupId>org.apache.avro</groupId>
             <artifactId>avro</artifactId>
-            <version>${avro.version}</version>
         </dependency>
     </dependencies>
 </project>
