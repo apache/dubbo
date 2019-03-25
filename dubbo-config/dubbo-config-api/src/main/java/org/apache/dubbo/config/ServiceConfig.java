@@ -39,6 +39,7 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
@@ -166,10 +167,16 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
      */
     private volatile String generic;
 
+    private ServiceMetadata serviceMetadata;
+
     public ServiceConfig() {
+        serviceMetadata = new ServiceMetadata();
+        serviceMetadata.addAttribute("ORIGIN_CONFIG", this);
     }
 
     public ServiceConfig(Service service) {
+        serviceMetadata = new ServiceMetadata();
+        serviceMetadata.addAttribute("ORIGIN_CONFIG", this);
         appendAnnotation(Service.class, service);
     }
 
@@ -334,6 +341,18 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     public synchronized void export() {
         checkAndUpdateSubConfigs();
 
+
+        //init serivceMetadata
+        serviceMetadata.setVersion(version);
+        serviceMetadata.setGroup(group);
+        serviceMetadata.setDefaultGroup(group);
+        serviceMetadata.setServiceType(interfaceClass);
+        serviceMetadata.setServiceInterfaceName(interfaceName);
+        serviceMetadata.setTarget(ref);
+
+        ProviderModel providerModel = new ProviderModel(ref, serviceMetadata);
+        ApplicationModel.initProviderModel(getUniqueServiceName(), providerModel);
+
         if (provider != null) {
             if (export == null) {
                 export = provider.getExport();
@@ -365,8 +384,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (path == null || path.length() == 0) {
             path = interfaceName;
         }
-        ProviderModel providerModel = new ProviderModel(interfaceName, group, version, ref, interfaceClass);
-        ApplicationModel.initProviderModel(getUniqueServiceName(), providerModel);
         doExportUrls();
     }
 
@@ -508,6 +525,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             protocolConfig.setRegister(false);
             map.put("notify", "false");
         }
+
+        //init serviceMetadata attachments
+
+        serviceMetadata.getAttachments().putAll(map);
+
+
         // export service
         String contextPath = protocolConfig.getContextpath();
         if ((contextPath == null || contextPath.length() == 0) && provider != null) {

@@ -25,13 +25,15 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ServiceMetadata {
 
-    private final String serviceKey;
-    private final String serviceInterfaceName;
-    private final String defaultGroup;
-    private final String version;
-    private final Class<?> serviceType;
+    private String serviceKey;
+    private String serviceInterfaceName;
+    private String defaultGroup;
+    private String version;
+    private Class<?> serviceType;
 
     private volatile String group;
+
+    private Object target;
 
     /* will be transferred to remote side */
     private final Map<String, Object> attachments = new ConcurrentHashMap<String, Object>();
@@ -47,17 +49,20 @@ public class ServiceMetadata {
         this.serviceType = serviceType;
     }
 
+    public ServiceMetadata() {
+    }
+
     public String getServiceKey() {
-        return serviceKey;
+        return serviceInterfaceName + ":" + version;
     }
 
     public Map<String, Object> getAttachments() {
         return attachments;
     }
 
-//    public Map<String, Object> getAttributeMap() {
-//        return attributeMap;
-//    }
+    public Map<String, Object> getAttributeMap() {
+        return attributeMap;
+    }
 
     public Object getAttribute(String key) {
         return attributeMap.get(key);
@@ -93,5 +98,33 @@ public class ServiceMetadata {
 
     public void setGroup(String group) {
         this.group = group;
+    }
+
+    public void setServiceInterfaceName(String serviceInterfaceName) {
+        this.serviceInterfaceName = serviceInterfaceName;
+    }
+
+    public void setDefaultGroup(String defaultGroup) {
+        this.defaultGroup = defaultGroup;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public void setServiceType(Class<?> serviceType) {
+        this.serviceType = serviceType;
+    }
+
+    public void setServiceKey(String serviceKey) {
+        this.serviceKey = serviceKey;
+    }
+
+    public Object getTarget() {
+        return target;
+    }
+
+    public void setTarget(Object target) {
+        this.target = target;
     }
 }
