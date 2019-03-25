@@ -840,4 +840,17 @@ public class Constants {
 
     public static final int DEFAULT_GRPC_QUEUES = 300_0000;
 
+    /**
+     * metrics
+     */
+    public static final String DUBBO_PROVIDER = "dubbo.provider";
+    public static final String DUBBO_CONSUMER = "dubbo.consumer";
+    public static final String DUBBO_PROVIDER_METHOD = "dubbo.provider.method";
+    public static final String DUBBO_CONSUMER_METHOD = "dubbo.consumer.method";
+    public static final String SERVICE = "service";
+    public static final String METHOD = "method";
+    public static final String DUBBO_GROUP = "dubbo";
+    public static final String METRICS_KEY = "metrics";
+
+
 }

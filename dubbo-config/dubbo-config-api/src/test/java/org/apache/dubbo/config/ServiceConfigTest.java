@@ -31,6 +31,7 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.service.GenericService;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -242,14 +243,5 @@ public class ServiceConfigTest {
             ServiceConfig service = new ServiceConfig();
             service.setMock(true);
         });
-    }
-
-    @Test
-    public void testUniqueServiceName() throws Exception {
-        ServiceConfig<Greeting> service = new ServiceConfig<Greeting>();
-        service.setGroup("dubbo");
-        service.setInterface(Greeting.class);
-        service.setVersion("1.0.0");
-        assertThat(service.getUniqueServiceName(), equalTo("dubbo/" + Greeting.class.getName() + ":1.0.0"));
     }
 }

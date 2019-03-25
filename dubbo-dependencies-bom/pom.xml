@@ -101,7 +101,6 @@
         <httpcore_version>4.4.6</httpcore_version>
         <fastjson_version>1.2.46</fastjson_version>
         <zookeeper_version>3.4.13</zookeeper_version>
-        <zkclient_version>0.2</zkclient_version>
         <curator_version>4.0.1</curator_version>
         <curator_test_version>2.12.0</curator_test_version>
         <jedis_version>2.9.0</jedis_version>
@@ -143,6 +142,7 @@
         <swagger_version>1.5.19</swagger_version>
         <spring_test_version>4.3.16.RELEASE</spring_test_version>
 
+        <metrics_version>2.0.1</metrics_version>
         <gson_version>2.8.5</gson_version>
     </properties>
 
@@ -150,7 +150,7 @@
         <dependencies>
             <!-- Common libs -->
             <dependency>
-                <groupId>org.springframework</groupId>
+<groupId>org.springframework</groupId>
                 <artifactId>spring-framework-bom</artifactId>
                 <version>${spring_version}</version>
                 <type>pom</type>
@@ -204,17 +204,6 @@
                     <exclusion>
                         <groupId>io.netty</groupId>
                         <artifactId>netty</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>com.101tec</groupId>
-                <artifactId>zkclient</artifactId>
-                <version>${zkclient_version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.apache.zookeeper</groupId>
-                        <artifactId>zookeeper</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -491,6 +480,28 @@
                 <groupId>io.swagger</groupId>
                 <artifactId>swagger-jaxrs</artifactId>
                 <version>${swagger_version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.alibaba.middleware</groupId>
+                <artifactId>metrics-core-api</artifactId>
+                <version>${metrics_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.middleware</groupId>
+                <artifactId>metrics-core-impl</artifactId>
+                <version>${metrics_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.middleware</groupId>
+                <artifactId>metrics-common</artifactId>
+                <version>${metrics_version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.alibaba.middleware</groupId>
+                <artifactId>metrics-rest</artifactId>
+                <version>${metrics_version}</version>
             </dependency>
 
             <!-- Test lib -->

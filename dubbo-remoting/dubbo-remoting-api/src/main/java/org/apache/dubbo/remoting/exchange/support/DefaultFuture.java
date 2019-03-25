@@ -329,9 +329,7 @@ public class DefaultFuture implements ResponseFuture {
         lock.lock();
         try {
             response = res;
-            if (done != null) {
-                done.signal();
-            }
+            done.signalAll();
         } finally {
             lock.unlock();
         }

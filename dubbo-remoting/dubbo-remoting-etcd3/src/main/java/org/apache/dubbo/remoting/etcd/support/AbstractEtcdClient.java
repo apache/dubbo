@@ -57,7 +57,7 @@ public abstract class AbstractEtcdClient<WatcherListener> implements EtcdClient 
 
     private final Set<StateListener> stateListeners = new ConcurrentHashSet<>();
 
-    private final ConcurrentMap<String, ConcurrentMap<ChildListener, WatcherListener>> childListeners = new ConcurrentHashMap<String, ConcurrentMap<ChildListener, WatcherListener>>();
+    private final ConcurrentMap<String, ConcurrentMap<ChildListener, WatcherListener>> childListeners = new ConcurrentHashMap<>();
     private final List<String> categroies = Arrays.asList(Constants.PROVIDERS_CATEGORY
             , Constants.CONSUMERS_CATEGORY
             , Constants.ROUTERS_CATEGORY
@@ -99,7 +99,7 @@ public abstract class AbstractEtcdClient<WatcherListener> implements EtcdClient 
     public List<String> addChildListener(String path, final ChildListener listener) {
         ConcurrentMap<ChildListener, WatcherListener> listeners = childListeners.get(path);
         if (listeners == null) {
-            childListeners.putIfAbsent(path, new ConcurrentHashMap<ChildListener, WatcherListener>());
+            childListeners.putIfAbsent(path, new ConcurrentHashMap<>());
             listeners = childListeners.get(path);
         }
         WatcherListener targetListener = listeners.get(listener);
