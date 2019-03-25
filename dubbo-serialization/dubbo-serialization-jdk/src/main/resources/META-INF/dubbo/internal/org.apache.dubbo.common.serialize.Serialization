@@ -1,0 +1,3 @@
+java=org.apache.dubbo.common.serialize.java.JavaSerialization
+compactedjava=org.apache.dubbo.common.serialize.java.CompactedJavaSerialization
+nativejava=org.apache.dubbo.common.serialize.nativejava.NativeJavaSerialization

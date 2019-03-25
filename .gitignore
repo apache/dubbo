@@ -1,6 +1,7 @@
 # maven ignore
 target/
 *.jar
+!.mvn/wrapper/*
 *.war
 *.zip
 *.tar
@@ -27,4 +28,4 @@ target/
 # system ignore
 .DS_Store
 Thumbs.db
-
+*.orig

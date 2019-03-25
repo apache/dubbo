@@ -1,0 +1,2 @@
+monitor=org.apache.dubbo.monitor.support.MonitorFilter
+metrics=org.apache.dubbo.monitor.support.MetricsFilter
