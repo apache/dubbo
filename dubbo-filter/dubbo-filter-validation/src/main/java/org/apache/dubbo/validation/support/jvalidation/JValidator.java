@@ -94,7 +94,7 @@ public class JValidator implements Validator {
             factory = Validation.buildDefaultValidatorFactory();
         }
         this.validator = factory.getValidator();
-        this.methodClassMap = new ConcurrentHashMap<String, Class>();
+        this.methodClassMap = new ConcurrentHashMap<>();
     }
 
     private static boolean isPrimitives(Class<?> cls) {
@@ -117,7 +117,7 @@ public class JValidator implements Validator {
             String parameterClassName = generateMethodParameterClassName(clazz, method);
             Class<?> parameterClass;
             try {
-                parameterClass = (Class<?>) Class.forName(parameterClassName, true, clazz.getClassLoader());
+                parameterClass = Class.forName(parameterClassName, true, clazz.getClassLoader());
             } catch (ClassNotFoundException e) {
                 ClassPool pool = ClassGenerator.getClassPool(clazz.getClassLoader());
                 CtClass ctClass = pool.makeClass(parameterClassName);
@@ -243,14 +243,14 @@ public class JValidator implements Validator {
 
     @Override
     public void validate(String methodName, Class<?>[] parameterTypes, Object[] arguments) throws Exception {
-        List<Class<?>> groups = new ArrayList<Class<?>>();
+        List<Class<?>> groups = new ArrayList<>();
         Class<?> methodClass = methodClass(methodName);
         if (methodClass != null) {
             groups.add(methodClass);
         }
-        Set<ConstraintViolation<?>> violations = new HashSet<ConstraintViolation<?>>();
+        Set<ConstraintViolation<?>> violations = new HashSet<>();
         Method method = clazz.getMethod(methodName, parameterTypes);
-        Class<?>[] methodClasses = null;
+        Class<?>[] methodClasses;
         if (method.isAnnotationPresent(MethodValidated.class)){
             methodClasses = method.getAnnotation(MethodValidated.class).value();
             groups.addAll(Arrays.asList(methodClasses));
@@ -260,7 +260,7 @@ public class JValidator implements Validator {
         groups.add(1, clazz);
 
         // convert list to array
-        Class<?>[] classgroups = groups.toArray(new Class[0]);
+        Class<?>[] classgroups = groups.toArray(new Class[groups.size()]);
 
         Object parameterBean = getMethodParameterBean(clazz, method, arguments);
         if (parameterBean != null) {
