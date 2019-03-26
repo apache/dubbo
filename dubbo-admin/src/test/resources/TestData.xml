@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<dataset>
-   <tests id="1"  service_name="hello.HelloService" method="sayHello" parameters="" result=""  username="root" exception="1" auto_run="1"/>
-    <tests id="2"  service_name="hello.SampleService" method="sayHi" parameters="" result="" username="root" exception="0" auto_run="1"/>
-     <tests id="3"  service_name="hello.FooService" method="say" parameters="" result=""  username="root" exception="1" auto_run="0"/>
-</dataset>
