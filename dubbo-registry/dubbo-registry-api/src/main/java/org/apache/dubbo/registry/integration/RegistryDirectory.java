@@ -29,6 +29,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
+import org.apache.dubbo.registry.AddressListener;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.rpc.Invocation;
@@ -215,6 +216,16 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
         // providers
         List<URL> providerURLs = categoryUrls.getOrDefault(PROVIDERS_CATEGORY, Collections.emptyList());
+        /**
+         * 3.x added for extend URL address
+         */
+        ExtensionLoader<AddressListener> addressListenerExtensionLoader = ExtensionLoader.getExtensionLoader(AddressListener.class);
+        Set<String> surpportedListeners = addressListenerExtensionLoader.getSupportedExtensions();
+        if (surpportedListeners != null && !surpportedListeners.isEmpty()) {
+            for (String addressListenerName : surpportedListeners) {
+                providerURLs = addressListenerExtensionLoader.getExtension(addressListenerName).notify(providerURLs);
+            }
+        }
         refreshOverrideAndInvoker(providerURLs);
     }
 
