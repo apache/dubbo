@@ -47,7 +47,6 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -266,8 +265,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         checkStubAndLocal(interfaceClass);
         checkMock(interfaceClass);
 
-        ConsumerModel consumerModel = new ConsumerModel(interfaceName, group, version, interfaceClass);
-        ApplicationModel.initConsumerModel(getUniqueServiceName(), consumerModel);
+        ConsumerModel consumerModel = new ConsumerModel(interfaceName, group, version, getActualInterface());
+        ApplicationModel.initConsumerModel(URL.buildKey(interfaceName, group, version), consumerModel);
 
         Map<String, String> map = new HashMap<String, String>();
 
@@ -322,18 +321,16 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         consumerModel.getServiceMetadata().addAttribute(Constants.PROXY_CLASS_REF, ref);
     }
 
-    private ConsumerModel buildConsumerModel(String serviceKey, Map<String, Object> attributes) {
-        Method[] methods = interfaceClass.getMethods();
-        Class serviceInterface = interfaceClass;
+    private Class<?> getActualInterface() {
+        Class actualInterface = interfaceClass;
         if (interfaceClass == GenericService.class) {
             try {
-                serviceInterface = Class.forName(interfaceName);
-                methods = serviceInterface.getMethods();
+                actualInterface = Class.forName(interfaceName);
             } catch (ClassNotFoundException e) {
-                methods = interfaceClass.getMethods();
+                // ignore
             }
         }
-        return new ConsumerModel(serviceKey, serviceInterface, ref, methods, attributes);
+        return actualInterface;
     }
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
     private T createProxy(Map<String, String> map) {
