@@ -18,7 +18,6 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.context.annotation.DubboClassPathBeanDefinitionScanner;
@@ -290,8 +289,9 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
      */
     private String generateServiceBeanName(Service service, Class<?> interfaceClass, String annotatedServiceBeanName) {
 
-        ServiceBeanNameBuilder builder = ServiceBeanNameBuilder.create(service, interfaceClass, environment);
+        AnnotationBeanNameBuilder builder = AnnotationBeanNameBuilder.create(service, interfaceClass);
 
+        builder.environment(environment);
 
         return builder.build();
 
@@ -316,8 +316,9 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         }
 
         if (interfaceClass == null) {
-
-            Class<?>[] allInterfaces = annotatedServiceBeanClass.getInterfaces();
+            // Find all interfaces from the annotated class
+            // To resolve an issue : https://github.com/apache/incubator-dubbo/issues/3251
+            Class<?>[] allInterfaces = ClassUtils.getAllInterfacesForClass(annotatedServiceBeanClass);
 
             if (allInterfaces.length > 0) {
                 interfaceClass = allInterfaces[0];
@@ -433,11 +434,6 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
         if (!protocolRuntimeBeanReferences.isEmpty()) {
             builder.addPropertyValue("protocols", protocolRuntimeBeanReferences);
-        }
-
-        List<MethodConfig> methodConfigs = MethodConfig.constructMethodConfig(service.methods());
-        if (!methodConfigs.isEmpty()) {
-            builder.addPropertyValue("methods", methodConfigs);
         }
 
         return builder.getBeanDefinition();
