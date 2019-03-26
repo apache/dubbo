@@ -23,9 +23,9 @@ import org.apache.dubbo.cache.support.lru.LruCacheFactory;
 import org.apache.dubbo.cache.support.threadlocal.ThreadLocalCacheFactory;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcResult;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -84,9 +84,15 @@ public class CacheFilterTest {
         invocation.setParameterTypes(new Class<?>[]{});
         invocation.setArguments(new Object[]{});
 
-        cacheFilter.invoke(invoker, invocation);
+        Result r = cacheFilter.invoke(invoker, invocation);
+        cacheFilter.onResponse(r, invoker, invocation);
+
         RpcResult rpcResult1 = (RpcResult) cacheFilter.invoke(invoker1, invocation);
+        cacheFilter.onResponse(rpcResult1, invoker, invocation);
+
         RpcResult rpcResult2 = (RpcResult) cacheFilter.invoke(invoker2, invocation);
+        cacheFilter.onResponse(rpcResult2, invoker, invocation);
+
         Assertions.assertEquals(rpcResult1.getValue(), rpcResult2.getValue());
         Assertions.assertEquals(rpcResult1.getValue(), "value");
     }
@@ -99,9 +105,15 @@ public class CacheFilterTest {
         invocation.setParameterTypes(new Class<?>[]{String.class});
         invocation.setArguments(new Object[]{"arg1"});
 
-        cacheFilter.invoke(invoker, invocation);
+        Result r = cacheFilter.invoke(invoker, invocation);
+        cacheFilter.onResponse(r, invoker, invocation);
+
         RpcResult rpcResult1 = (RpcResult) cacheFilter.invoke(invoker1, invocation);
+        cacheFilter.onResponse(rpcResult1, invoker1, invocation);
+
         RpcResult rpcResult2 = (RpcResult) cacheFilter.invoke(invoker2, invocation);
+        cacheFilter.onResponse(rpcResult2, invoker2, invocation);
+
         Assertions.assertEquals(rpcResult1.getValue(), rpcResult2.getValue());
         Assertions.assertEquals(rpcResult1.getValue(), "value");
     }
@@ -114,8 +126,12 @@ public class CacheFilterTest {
         invocation.setParameterTypes(new Class<?>[]{String.class});
         invocation.setArguments(new Object[]{"arg2"});
 
-        cacheFilter.invoke(invoker3, invocation);
+        Result r = cacheFilter.invoke(invoker3, invocation);
+        cacheFilter.onResponse(r, invoker3, invocation);
+
         RpcResult rpcResult = (RpcResult) cacheFilter.invoke(invoker2, invocation);
+        cacheFilter.onResponse(rpcResult, invoker2, invocation);
+
         Assertions.assertEquals(rpcResult.getValue(), "value2");
     }
 
@@ -127,9 +143,15 @@ public class CacheFilterTest {
         invocation.setParameterTypes(new Class<?>[]{String.class});
         invocation.setArguments(new Object[]{"arg3"});
 
-        cacheFilter.invoke(invoker4, invocation);
+        Result r = cacheFilter.invoke(invoker4, invocation);
+        cacheFilter.onResponse(r, invoker4, invocation);
+
         RpcResult rpcResult1 = (RpcResult) cacheFilter.invoke(invoker1, invocation);
+        cacheFilter.onResponse(rpcResult1, invoker1, invocation);
+
         RpcResult rpcResult2 = (RpcResult) cacheFilter.invoke(invoker2, invocation);
+        cacheFilter.onResponse(rpcResult2, invoker2, invocation);
+
         Assertions.assertEquals(rpcResult1.getValue(), null);
         Assertions.assertEquals(rpcResult2.getValue(), null);
     }
