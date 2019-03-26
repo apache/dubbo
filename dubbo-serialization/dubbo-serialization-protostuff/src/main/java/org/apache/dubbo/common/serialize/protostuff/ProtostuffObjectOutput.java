@@ -47,7 +47,7 @@ public class ProtostuffObjectOutput implements ObjectOutput {
         byte[] classNameBytes;
 
         try {
-            if (WrapperUtils.needWrapper(obj)) {
+            if (obj == null || WrapperUtils.needWrapper(obj)) {
                 Schema<Wrapper> schema = RuntimeSchema.getSchema(Wrapper.class);
                 Wrapper wrapper = new Wrapper(obj);
                 bytes = GraphIOUtil.toByteArray(wrapper, schema, buffer);
