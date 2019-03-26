@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.cluster.router.file;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.utils.IOUtils;
 import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.RouterFactory;
@@ -55,9 +56,12 @@ public class FileRouterFactory implements RouterFactory {
 
             // FIXME: this code looks useless
             boolean runtime = url.getParameter(Constants.RUNTIME_KEY, false);
-            URL script = url.setProtocol(protocol).addParameter(Constants.TYPE_KEY, type)
+            URL script = URLBuilder.from(url)
+                    .setProtocol(protocol)
+                    .addParameter(Constants.TYPE_KEY, type)
                     .addParameter(Constants.RUNTIME_KEY, runtime)
-                    .addParameterAndEncoded(Constants.RULE_KEY, rule);
+                    .addParameterAndEncoded(Constants.RULE_KEY, rule)
+                    .build();
 
             return routerFactory.getRouter(script);
         } catch (IOException e) {

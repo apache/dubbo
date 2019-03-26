@@ -55,8 +55,7 @@ public class LogTelnetHandler implements TelnetHandler {
                 int showLogLength = Integer.parseInt(str[0]);
 
                 if (file != null && file.exists()) {
-                    try {
-                        FileInputStream fis = new FileInputStream(file);
+                    try(FileInputStream fis = new FileInputStream(file)) {
                         FileChannel filechannel = fis.getChannel();
                         size = filechannel.size();
                         ByteBuffer bb;

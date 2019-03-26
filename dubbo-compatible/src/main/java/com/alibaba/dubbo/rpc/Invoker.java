@@ -30,6 +30,12 @@ public interface Invoker<T> extends org.apache.dubbo.rpc.Invoker<T> {
         return null;
     }
 
+    // This method will never be called for a legacy invoker.
+    @Override
+    default org.apache.dubbo.rpc.Result invoke(org.apache.dubbo.rpc.Invocation invocation) throws org.apache.dubbo.rpc.RpcException {
+        return null;
+    }
+
     class CompatibleInvoker<T> implements Invoker<T> {
 
         private org.apache.dubbo.rpc.Invoker<T> invoker;
@@ -41,11 +47,6 @@ public interface Invoker<T> extends org.apache.dubbo.rpc.Invoker<T> {
         @Override
         public Class<T> getInterface() {
             return invoker.getInterface();
-        }
-
-        @Override
-        public org.apache.dubbo.rpc.Result invoke(org.apache.dubbo.rpc.Invocation invocation) throws org.apache.dubbo.rpc.RpcException {
-            return invoker.invoke(invocation);
         }
 
         @Override

@@ -47,7 +47,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     /**
      * whether the service is deprecated
      */
-    protected Boolean deprecated;
+    protected Boolean deprecated = false;
 
     /**
      * The time delay register service (milliseconds)
@@ -74,7 +74,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
      * after the service registered,and it needs to be enabled manually; if you want to disable the service, you also need
      * manual processing
      */
-    protected Boolean dynamic;
+    protected Boolean dynamic = false;
 
     /**
      * Whether to use token
@@ -99,7 +99,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     /**
      * Whether to register
      */
-    private Boolean register;
+    private Boolean register = true;
 
     /**
      * Warm up period

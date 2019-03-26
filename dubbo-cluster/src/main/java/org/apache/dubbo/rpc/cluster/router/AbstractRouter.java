@@ -21,7 +21,7 @@ import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.rpc.cluster.Router;
 
 public abstract class AbstractRouter implements Router {
-    protected int priority;
+    protected int priority = DEFAULT_PRIORITY;
     protected boolean force = false;
     protected URL url;
 

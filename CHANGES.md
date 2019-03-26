@@ -20,7 +20,7 @@ Please check [here](https://github.com/apache/incubator-dubbo/blob/2.7.0-release
 
 - Simplified registry URL. With lower Registry memory use and less notification pressure from Service Directory, separates Configuration notification from Service Discovery.
 
-- Metadata Center. A totally new concept since 2.7.0,  used to store service metadata including static configuration, service definition, method signature, etc.. By default, Zookeeper and Redis are supported as the backend storage. Will work as the basis of service testing, mock and other service governance features going to be supported in OPS.
+- Metadata Center. A totally new concept since 2.7.0,  used to store service metadata including static configuration, service definition, method signature, etc.. By default, Zookeeper and Redis are supported as the backend storage. Will work as the basis of service testing, mock and other service governance features going to be supported in [Dubbo-Admin](https://github.com/apache/incubator-dubbo-admin).
 
 - Asynchronous Programming Model (only works for Dubbo protocol now)
   - Built-in support for the method with CompletableFuture<T> signature.

@@ -34,5 +34,20 @@
             <artifactId>dubbo-rpc-api</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.alibaba.middleware</groupId>
+            <artifactId>metrics-core-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba.middleware</groupId>
+            <artifactId>metrics-core-impl</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba.middleware</groupId>
+            <artifactId>metrics-common</artifactId>
+        </dependency>
+
+
     </dependencies>
 </project>

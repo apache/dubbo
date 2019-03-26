@@ -34,5 +34,7 @@
         <module>dubbo-registry-multicast</module>
         <module>dubbo-registry-zookeeper</module>
         <module>dubbo-registry-redis</module>
+        <module>dubbo-registry-consul</module>
+        <module>dubbo-registry-etcd3</module>
     </modules>
 </project>

@@ -44,6 +44,7 @@ import org.mockito.Mockito;
 import javax.script.ScriptEngineManager;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -677,8 +678,9 @@ public class RegistryDirectoryTest {
         registryDirectory.notify(durls);
         List<Invoker<?>> invokers = registryDirectory.list(invocation);
         Assertions.assertEquals(2, invokers.size());
-        Invoker<?> a1Invoker = invokers.get(0);
-        Invoker<?> b1Invoker = invokers.get(1);
+        Map<String, Invoker<?>> map = new HashMap<>();
+        map.put(invokers.get(0).getUrl().getAddress(), invokers.get(0));
+        map.put(invokers.get(1).getUrl().getAddress(), invokers.get(1));
 
         durls = new ArrayList<URL>();
         durls.add(URL.valueOf("override://0.0.0.0?timeout=1&connections=5"));
@@ -688,13 +690,15 @@ public class RegistryDirectoryTest {
         invokers = registryDirectory.list(invocation);
         Assertions.assertEquals(2, invokers.size());
 
-        Invoker<?> a2Invoker = invokers.get(0);
-        Invoker<?> b2Invoker = invokers.get(1);
+        Map<String, Invoker<?>> map2 = new HashMap<>();
+        map2.put(invokers.get(0).getUrl().getAddress(), invokers.get(0));
+        map2.put(invokers.get(1).getUrl().getAddress(), invokers.get(1));
+
         //The parameters are different and must be rereferenced.
-        Assertions.assertTrue(a1Invoker == a2Invoker, "object should not same");
+        Assertions.assertFalse(map.get(SERVICEURL.getAddress()) == map2.get(SERVICEURL.getAddress()), "object should not same");
 
         //The parameters can not be rereferenced
-        Assertions.assertFalse(b1Invoker == b2Invoker, "object should same");
+        Assertions.assertTrue(map.get(SERVICEURL2.getAddress()) == map2.get(SERVICEURL2.getAddress()), "object should not same");
     }
 
     /**

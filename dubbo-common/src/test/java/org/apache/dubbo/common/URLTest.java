@@ -687,4 +687,22 @@ public class URLTest {
         Assertions.assertEquals("10.20.153.10:2181", URL.appendDefaultPort("10.20.153.10:0", 2181));
         Assertions.assertEquals("10.20.153.10:2181", URL.appendDefaultPort("10.20.153.10", 2181));
     }
+
+    @Test
+    public void testGetServiceKey () {
+        URL url1 = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName");
+        Assertions.assertEquals("org.apache.dubbo.test.interfaceName", url1.getServiceKey());
+
+        URL url2 = URL.valueOf("10.20.130.230:20880/org.apache.dubbo.test.interfaceName?interface=org.apache.dubbo.test.interfaceName");
+        Assertions.assertEquals("org.apache.dubbo.test.interfaceName", url2.getServiceKey());
+
+        URL url3 = URL.valueOf("10.20.130.230:20880/org.apache.dubbo.test.interfaceName?interface=org.apache.dubbo.test.interfaceName&group=group1&version=1.0.0");
+        Assertions.assertEquals("group1/org.apache.dubbo.test.interfaceName:1.0.0", url3.getServiceKey());
+
+        URL url4 = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName");
+        Assertions.assertEquals("context/path", url4.getPathKey());
+
+        URL url5 = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName&group=group1&version=1.0.0");
+        Assertions.assertEquals("group1/context/path:1.0.0", url5.getPathKey());
+    }
 }
