@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
@@ -70,11 +69,10 @@ public class ProtocolFilterWrapper implements Protocol {
 
                     @Override
                     public Result invoke(Invocation invocation) throws RpcException {
-//                        filter.onRequest(invoker, invocation);
                         // For compatibility, otherwise, we should call 'invoker.invoke()' directly.
-                        AsyncRpcResult asyncResult;
+                        Result asyncResult;
                         try {
-                            asyncResult = (AsyncRpcResult) filter.invoke(invoker, invocation);
+                            asyncResult = filter.invoke(invoker, invocation);
                         } catch (Exception e) {
                             filter.onError(e, invoker, invocation);
                             throw e;

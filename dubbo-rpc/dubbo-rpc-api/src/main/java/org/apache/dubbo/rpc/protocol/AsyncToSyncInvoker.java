@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
-import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.InvokeMode;
 import org.apache.dubbo.rpc.Invoker;
@@ -48,7 +47,7 @@ public class AsyncToSyncInvoker<T> implements Invoker<T> {
 
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
-        AsyncRpcResult asyncResult = (AsyncRpcResult)invoker.invoke(invocation);
+        Result asyncResult = invoker.invoke(invocation);
 
         try {
             if (InvokeMode.SYNC == ((RpcInvocation)invocation).getInvokeMode()) {

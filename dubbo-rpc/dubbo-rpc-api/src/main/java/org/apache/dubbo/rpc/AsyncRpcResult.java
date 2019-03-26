@@ -122,11 +122,13 @@ public class AsyncRpcResult implements Result {
         return resultFuture.get();
     }
 
-    public AsyncRpcResult thenApplyWithContext(Function<Result, Result> fn) {
+    @Override
+    public Result thenApplyWithContext(Function<Result, Result> fn) {
         this.resultFuture = resultFuture.thenApply(fn.compose(beforeContext).andThen(afterContext));
         return this;
     }
 
+    @Override
     public <U> CompletableFuture<U> thenApply(Function<Result,? extends U> fn) {
         return this.resultFuture.thenApply(fn);
     }

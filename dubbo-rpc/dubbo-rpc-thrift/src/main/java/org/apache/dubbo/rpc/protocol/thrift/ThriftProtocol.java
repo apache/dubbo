@@ -29,10 +29,10 @@ import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
-import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
@@ -86,8 +86,8 @@ public class ThriftProtocol extends AbstractProtocol {
 
                 RpcContext.getContext().setRemoteAddress(channel.getRemoteAddress());
 
-                AsyncRpcResult asyncResult = (AsyncRpcResult) exporter.getInvoker().invoke(inv);
-                return asyncResult.thenApply(Function.identity());
+                Result result = exporter.getInvoker().invoke(inv);
+                return result.thenApply(Function.identity());
             }
 
             throw new RemotingException(channel,

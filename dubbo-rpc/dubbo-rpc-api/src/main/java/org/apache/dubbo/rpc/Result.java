@@ -18,6 +18,9 @@ package org.apache.dubbo.rpc;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
 
 
 /**
@@ -106,5 +109,11 @@ public interface Result extends Serializable {
     String getAttachment(String key, String defaultValue);
 
     void setAttachment(String key, String value);
+
+    Result thenApplyWithContext(Function<Result, Result> fn);
+
+    <U> CompletableFuture<U> thenApply(Function<Result, ? extends U> fn);
+
+    Result get() throws InterruptedException, ExecutionException;
 
 }

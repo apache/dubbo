@@ -19,6 +19,9 @@ package org.apache.dubbo.rpc;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
 
 /**
  * RPC Result.
@@ -117,6 +120,21 @@ public class RpcResult implements Result, Serializable {
 
     public void setAttachment(String key, String value) {
         attachments.put(key, value);
+    }
+
+    @Override
+    public Result thenApplyWithContext(Function<Result, Result> fn) {
+        throw new UnsupportedOperationException("RpcResult represents an concrete response, there will be no status changes, you should get internal values directly.");
+    }
+
+    @Override
+    public <U> CompletableFuture<U> thenApply(Function<Result, ? extends U> fn) {
+        throw new UnsupportedOperationException("RpcResult represents an concrete response, there will be no status changes, you should get internal values directly.");
+    }
+
+    @Override
+    public Result get() throws InterruptedException, ExecutionException {
+        throw new UnsupportedOperationException("RpcResult represents an concrete response, there will be no status changes, you should get internal values directly.");
     }
 
     @Override

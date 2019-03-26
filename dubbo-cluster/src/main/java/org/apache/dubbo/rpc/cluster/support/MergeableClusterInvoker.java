@@ -87,17 +87,17 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
             returnType = null;
         }
 
-        Map<String, AsyncRpcResult> results = new HashMap<>();
+        Map<String, Result> results = new HashMap<>();
         for (final Invoker<T> invoker : invokers) {
-            results.put(invoker.getUrl().getServiceKey(), (AsyncRpcResult)invoker.invoke(new RpcInvocation(invocation, invoker)));
+            results.put(invoker.getUrl().getServiceKey(), invoker.invoke(new RpcInvocation(invocation, invoker)));
         }
 
         Object result = null;
 
         List<Result> resultList = new ArrayList<Result>(results.size());
 
-        for (Map.Entry<String, AsyncRpcResult> entry : results.entrySet()) {
-            AsyncRpcResult asyncResult = entry.getValue();
+        for (Map.Entry<String, Result> entry : results.entrySet()) {
+            Result asyncResult = entry.getValue();
             try {
                 Result r = asyncResult.get();
                 if (r.hasException()) {
