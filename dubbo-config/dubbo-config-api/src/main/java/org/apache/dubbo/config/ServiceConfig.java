@@ -83,7 +83,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
      *
      * <li>when the url is dubbo://224.5.6.7:1234/org.apache.dubbo.config.api.DemoService?application=dubbo-sample, then
      * the protocol is <b>DubboProtocol</b></li>
-     * <p>
+     *
      * Actually，when the {@link ExtensionLoader} init the {@link Protocol} instants,it will automatically wraps two
      * layers, and eventually will get a <b>ProtocolFilterWrapper</b> or <b>ProtocolListenerWrapper</b>
      */
@@ -380,7 +380,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             path = interfaceName;
         }
         ProviderModel providerModel = new ProviderModel(interfaceName, group, version, ref, interfaceClass);
-        ApplicationModel.initProviderModel(getUniqueServiceName(), providerModel);
+        ApplicationModel.initProviderModel(URL.buildKey(interfaceName, group, version), providerModel);
         doExportUrls();
     }
 
