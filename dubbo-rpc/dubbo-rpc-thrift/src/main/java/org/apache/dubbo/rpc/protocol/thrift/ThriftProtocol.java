@@ -63,9 +63,9 @@ public class ThriftProtocol extends AbstractProtocol {
 
             if (msg instanceof Invocation) {
                 Invocation inv = (Invocation) msg;
-                String serviceName = inv.getAttachments().get(Constants.INTERFACE_KEY);
+                String path = inv.getAttachments().get(Constants.PATH_KEY);
                 String serviceKey = serviceKey(channel.getLocalAddress().getPort(),
-                        serviceName, null, null);
+                        path, null, null);
                 DubboExporter<?> exporter = (DubboExporter<?>) exporterMap.get(serviceKey);
                 if (exporter == null) {
                     throw new RemotingException(channel,

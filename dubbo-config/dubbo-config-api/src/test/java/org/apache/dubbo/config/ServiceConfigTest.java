@@ -32,13 +32,15 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.service.GenericService;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.Constants.GENERIC_SERIALIZATION_BEAN;
 import static org.apache.dubbo.common.Constants.GENERIC_SERIALIZATION_DEFAULT;
@@ -46,11 +48,12 @@ import static org.apache.dubbo.common.Constants.GENERIC_SERIALIZATION_NATIVE_JAV
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.withSettings;
 
 public class ServiceConfigTest {
@@ -59,9 +62,9 @@ public class ServiceConfigTest {
     private Exporter exporter = Mockito.mock(Exporter.class);
     private ServiceConfig<DemoServiceImpl> service = new ServiceConfig<DemoServiceImpl>();
     private ServiceConfig<DemoServiceImpl> service2 = new ServiceConfig<DemoServiceImpl>();
+    private ServiceConfig<DemoServiceImpl> delayService = new ServiceConfig<DemoServiceImpl>();
 
-
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         MockProtocol2.delegate = protocolDelegate;
         MockRegistryFactory2.registry = registryDelegate;
@@ -103,10 +106,18 @@ public class ServiceConfigTest {
         service2.setMethods(Collections.singletonList(method));
         service2.setProxy("testproxyfactory");
 
+        delayService.setProvider(provider);
+        delayService.setApplication(app);
+        delayService.setRegistry(registry);
+        delayService.setInterface(DemoService.class);
+        delayService.setRef(new DemoServiceImpl());
+        delayService.setMethods(Collections.singletonList(method));
+        delayService.setDelay(100);
+
         ConfigManager.getInstance().clear();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         ConfigManager.getInstance().clear();
     }
@@ -124,7 +135,6 @@ public class ServiceConfigTest {
         assertThat(url.getParameters(), hasKey(Constants.BIND_IP_KEY));
         assertThat(url.getParameters(), hasKey(Constants.BIND_PORT_KEY));
         assertThat(url.getParameters(), hasEntry(Constants.DEFAULT_KEY + "." + Constants.EXPORT_KEY, "true"));
-        assertThat(url.getParameters(), hasEntry(Constants.EXPORT_KEY, "true"));
         assertThat(url.getParameters(), hasEntry("echo.0.callback", "false"));
         assertThat(url.getParameters(), hasEntry(Constants.GENERIC_KEY, "false"));
         assertThat(url.getParameters(), hasEntry(Constants.INTERFACE_KEY, DemoService.class.getName()));
@@ -142,8 +152,18 @@ public class ServiceConfigTest {
         assertEquals(2, TestProxyFactory.count); // local injvm and registry protocol, so expected is 2
     }
 
+
     @Test
-    @Ignore("cannot pass in travis")
+    public void testDelayExport() throws Exception {
+        delayService.export();
+        assertTrue(delayService.getExportedUrls().isEmpty());
+        //add 300ms to ensure that the delayService has been exported
+        TimeUnit.MILLISECONDS.sleep(delayService.getDelay() + 300);
+        assertThat(delayService.getExportedUrls(), hasSize(1));
+    }
+
+    @Test
+    @Disabled("cannot pass in travis")
     public void testUnexport() throws Exception {
         System.setProperty(Constants.SHUTDOWN_WAIT_KEY, "0");
         try {
@@ -167,10 +187,12 @@ public class ServiceConfigTest {
         assertThat(service.getInterfaceClass() == GenericService.class, is(true));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testInterface1() throws Exception {
-        ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
-        service.setInterface(DemoServiceImpl.class);
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
+            service.setInterface(DemoServiceImpl.class);
+        });
     }
 
     @Test
@@ -199,30 +221,27 @@ public class ServiceConfigTest {
         assertThat(service.getGeneric(), equalTo(GENERIC_SERIALIZATION_BEAN));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testGeneric2() throws Exception {
-        ServiceConfig service = new ServiceConfig();
-        service.setGeneric("illegal");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testMock() throws Exception {
-        ServiceConfig service = new ServiceConfig();
-        service.setMock("true");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testMock2() throws Exception {
-        ServiceConfig service = new ServiceConfig();
-        service.setMock(true);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            ServiceConfig service = new ServiceConfig();
+            service.setGeneric("illegal");
+        });
     }
 
     @Test
-    public void testUniqueServiceName() throws Exception {
-        ServiceConfig<Greeting> service = new ServiceConfig<Greeting>();
-        service.setGroup("dubbo");
-        service.setInterface(Greeting.class);
-        service.setVersion("1.0.0");
-        assertThat(service.getUniqueServiceName(), equalTo("dubbo/" + Greeting.class.getName() + ":1.0.0"));
+    public void testMock() throws Exception {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            ServiceConfig service = new ServiceConfig();
+            service.setMock("true");
+        });
+    }
+
+    @Test
+    public void testMock2() throws Exception {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            ServiceConfig service = new ServiceConfig();
+            service.setMock(true);
+        });
     }
 }

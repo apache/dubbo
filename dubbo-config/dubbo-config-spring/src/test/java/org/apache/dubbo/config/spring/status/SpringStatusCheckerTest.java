@@ -19,16 +19,18 @@ package org.apache.dubbo.config.spring.status;
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.Lifecycle;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -39,14 +41,14 @@ public class SpringStatusCheckerTest {
     @Mock
     private ApplicationContext applicationContext;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         initMocks(this);
         this.springStatusChecker = new SpringStatusChecker();
         new ServiceBean<Object>().setApplicationContext(applicationContext);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         SpringExtensionFactory.clearContexts();
         Mockito.reset(applicationContext);

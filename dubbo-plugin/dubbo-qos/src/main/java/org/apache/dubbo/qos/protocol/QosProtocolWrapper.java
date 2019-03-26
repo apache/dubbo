@@ -80,7 +80,11 @@ public class QosProtocolWrapper implements Protocol {
 
     private void startQosServer(URL url) {
         try {
-            boolean qosEnable = url.getParameter(QOS_ENABLE,true);
+            if (!hasStarted.compareAndSet(false, true)) {
+                return;
+            }
+
+            boolean qosEnable = url.getParameter(QOS_ENABLE, true);
             if (!qosEnable) {
                 logger.info("qos won't be started because it is disabled. " +
                         "Please check dubbo.application.qos.enable is configured either in system property, " +
@@ -88,12 +92,8 @@ public class QosProtocolWrapper implements Protocol {
                 return;
             }
 
-            if (!hasStarted.compareAndSet(false, true)) {
-                return;
-            }
-
             int port = url.getParameter(QOS_PORT, QosConstants.DEFAULT_PORT);
-            boolean acceptForeignIp = Boolean.parseBoolean(url.getParameter(ACCEPT_FOREIGN_IP,"false"));
+            boolean acceptForeignIp = Boolean.parseBoolean(url.getParameter(ACCEPT_FOREIGN_IP, "false"));
             Server server = Server.getInstance();
             server.setPort(port);
             server.setAcceptForeignIp(acceptForeignIp);

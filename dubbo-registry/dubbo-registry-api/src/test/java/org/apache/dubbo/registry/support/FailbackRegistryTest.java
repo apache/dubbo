@@ -20,9 +20,9 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.registry.NotifyListener;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
@@ -30,7 +30,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FailbackRegistryTest {
     static String service;
@@ -44,7 +44,7 @@ public class FailbackRegistryTest {
     /**
      * @throws java.lang.Exception
      */
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         service = "org.apache.dubbo.test.DemoService";
         serviceUrl = URL.valueOf("remote://127.0.0.1/demoservice?method=get");
@@ -195,14 +195,14 @@ public class FailbackRegistryTest {
         MockRegistry mockRegistry = new MockRegistry(registryUrl, countDownLatch);
         mockRegistry.register(serviceUrl);
         mockRegistry.subscribe(serviceUrl, listener);
-        Assert.assertEquals(1, mockRegistry.getRegistered().size());
-        Assert.assertEquals(1, mockRegistry.getSubscribed().size());
+        Assertions.assertEquals(1, mockRegistry.getRegistered().size());
+        Assertions.assertEquals(1, mockRegistry.getSubscribed().size());
         mockRegistry.recover();
         countDownLatch.await();
-        Assert.assertEquals(0, mockRegistry.getFailedRegistered().size());
+        Assertions.assertEquals(0, mockRegistry.getFailedRegistered().size());
         FailbackRegistry.Holder h = new FailbackRegistry.Holder(registryUrl, listener);
-        Assert.assertEquals(null, mockRegistry.getFailedSubscribed().get(h));
-        Assert.assertEquals(countDownLatch.getCount(), 0);
+        Assertions.assertEquals(null, mockRegistry.getFailedSubscribed().get(h));
+        Assertions.assertEquals(countDownLatch.getCount(), 0);
     }
 
     private static class MockRegistry extends FailbackRegistry {

@@ -98,6 +98,7 @@ public interface Configurator extends Comparable<Configurator> {
      * 1. the url with a specific host ip should have higher priority than 0.0.0.0
      * 2. if two url has the same host, compare by priority value；
      */
+    @Override
     default int compareTo(Configurator o) {
         if (o == null) {
             return -1;

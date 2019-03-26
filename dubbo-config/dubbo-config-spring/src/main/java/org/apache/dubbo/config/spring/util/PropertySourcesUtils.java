@@ -16,20 +16,25 @@
  */
 package org.apache.dubbo.config.spring.util;
 
+import org.springframework.core.env.AbstractEnvironment;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.EnumerablePropertySource;
+import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
 import org.springframework.core.env.PropertySources;
-import org.springframework.core.env.PropertySourcesPropertyResolver;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 
+
 /**
  * {@link PropertySources} Utilities
+ * <p>
+ * The source code is cloned from https://github.com/alibaba/spring-context-support/blob/1.0.2/src/main/java/com/alibaba/spring/util/PropertySourcesUtils.java
  *
- * @see PropertySources
- * @since 2.5.8
+ * @since 2.6.6
  */
 public abstract class PropertySourcesUtils {
 
@@ -38,30 +43,60 @@ public abstract class PropertySourcesUtils {
      *
      * @param propertySources {@link PropertySource} Iterable
      * @param prefix          the prefix of property name
-     * @return Map<String                                                                                                                                                                                                                                                               ,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               String>
+     * @return Map
      * @see Properties
      */
-    public static Map<String, String> getSubProperties(Iterable<PropertySource<?>> propertySources, String prefix) {
+    public static Map<String, Object> getSubProperties(Iterable<PropertySource<?>> propertySources, String prefix) {
 
-        Map<String, String> subProperties = new LinkedHashMap<String, String>();
+        // Non-Extension AbstractEnvironment
+        AbstractEnvironment environment = new AbstractEnvironment() {
+        };
+
+        MutablePropertySources mutablePropertySources = environment.getPropertySources();
+
+        for (PropertySource<?> source : propertySources) {
+            mutablePropertySources.addLast(source);
+        }
+
+        return getSubProperties(environment, prefix);
+
+    }
+
+    /**
+     * Get Sub {@link Properties}
+     *
+     * @param environment {@link ConfigurableEnvironment}
+     * @param prefix      the prefix of property name
+     * @return Map
+     * @see Properties
+     */
+    public static Map<String, Object> getSubProperties(ConfigurableEnvironment environment, String prefix) {
+
+        Map<String, Object> subProperties = new LinkedHashMap<String, Object>();
+
+        MutablePropertySources propertySources = environment.getPropertySources();
 
         String normalizedPrefix = normalizePrefix(prefix);
-
-        PropertySourcesPropertyResolver propertyResolver = new PropertySourcesPropertyResolver((PropertySources) propertySources);
 
         for (PropertySource<?> source : propertySources) {
             if (source instanceof EnumerablePropertySource) {
                 for (String name : ((EnumerablePropertySource<?>) source).getPropertyNames()) {
-                    if (name.startsWith(normalizedPrefix)) {
+                    if (!subProperties.containsKey(name) && name.startsWith(normalizedPrefix)) {
                         String subName = name.substring(normalizedPrefix.length());
-                        String value = propertyResolver.getProperty(name);
-                        subProperties.putIfAbsent(subName, value);
+                        if (!subProperties.containsKey(subName)) { // take first one
+                            Object value = source.getProperty(name);
+                            if (value instanceof String) {
+                                // Resolve placeholder
+                                value = environment.resolvePlaceholders((String) value);
+                            }
+                            subProperties.put(subName, value);
+                        }
                     }
                 }
             }
         }
 
-        return subProperties;
+        return Collections.unmodifiableMap(subProperties);
 
     }
 
@@ -74,5 +109,4 @@ public abstract class PropertySourcesUtils {
     public static String normalizePrefix(String prefix) {
         return prefix.endsWith(".") ? prefix : prefix + ".";
     }
-
 }

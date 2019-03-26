@@ -104,15 +104,10 @@ public class CompatibleTypeUtils {
                 // Process string to char array for generic invoke
                 // See
                 // - https://github.com/apache/incubator-dubbo/issues/2003
-                if (string == null) {
-                    return null;
-                }
-                else {
-                    int len = string.length();
-                    char[] chars = new char[len];
-                    string.getChars(0, len, chars, 0);
-                    return chars;
-                }
+                int len = string.length();
+                char[] chars = new char[len];
+                string.getChars(0, len, chars, 0);
+                return chars;
             }
         } else if (value instanceof Number) {
             Number number = (Number) value;

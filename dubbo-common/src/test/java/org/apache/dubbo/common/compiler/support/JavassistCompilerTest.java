@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.common.compiler.support;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
 
@@ -30,7 +30,7 @@ public class JavassistCompilerTest extends JavaCodeTest {
         // Because javassist compiles using the caller class loader, we should't use HelloService directly
         Object instance = clazz.newInstance();
         Method sayHello = instance.getClass().getMethod("sayHello");
-        Assert.assertEquals("Hello world!", sayHello.invoke(instance));
+        Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
     }
 
     /**
@@ -42,16 +42,18 @@ public class JavassistCompilerTest extends JavaCodeTest {
         Class<?> clazz = compiler.compile(getSimpleCodeWithoutPackage(), JavassistCompiler.class.getClassLoader());
         Object instance = clazz.newInstance();
         Method sayHello = instance.getClass().getMethod("sayHello");
-        Assert.assertEquals("Hello world!", sayHello.invoke(instance));
+        Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testCompileJavaClass1() throws Exception {
-        JavassistCompiler compiler = new JavassistCompiler();
-        Class<?> clazz = compiler.compile(getSimpleCodeWithSyntax0(), JavassistCompiler.class.getClassLoader());
-        Object instance = clazz.newInstance();
-        Method sayHello = instance.getClass().getMethod("sayHello");
-        Assert.assertEquals("Hello world!", sayHello.invoke(instance));
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            JavassistCompiler compiler = new JavassistCompiler();
+            Class<?> clazz = compiler.compile(getSimpleCodeWithSyntax0(), JavassistCompiler.class.getClassLoader());
+            Object instance = clazz.newInstance();
+            Method sayHello = instance.getClass().getMethod("sayHello");
+            Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
+        });
     }
 
     @Test
@@ -60,7 +62,7 @@ public class JavassistCompilerTest extends JavaCodeTest {
         Class<?> clazz = compiler.compile(getSimpleCodeWithImports(), JavassistCompiler.class.getClassLoader());
         Object instance = clazz.newInstance();
         Method sayHello = instance.getClass().getMethod("sayHello");
-        Assert.assertEquals("Hello world!", sayHello.invoke(instance));
+        Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
     }
 
     @Test
@@ -69,6 +71,6 @@ public class JavassistCompilerTest extends JavaCodeTest {
         Class<?> clazz = compiler.compile(getSimpleCodeWithWithExtends(), JavassistCompiler.class.getClassLoader());
         Object instance = clazz.newInstance();
         Method sayHello = instance.getClass().getMethod("sayHello");
-        Assert.assertEquals("Hello world3!", sayHello.invoke(instance));
+        Assertions.assertEquals("Hello world3!", sayHello.invoke(instance));
     }
 }

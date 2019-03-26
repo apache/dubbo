@@ -22,8 +22,8 @@ import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -90,7 +90,7 @@ public class EagerThreadPoolExecutorTest {
         }
         Thread.sleep(5000);
         // cores theads are all alive.
-        Assert.assertTrue("more than cores threads alive!", executor.getPoolSize() == cores);
+        Assertions.assertTrue(executor.getPoolSize() == cores, "more than cores threads alive!");
     }
 
     @Test
@@ -98,9 +98,9 @@ public class EagerThreadPoolExecutorTest {
         ExecutorService executorService = (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class)
                 .getExtension("eager")
                 .getExecutor(URL);
-        Assert.assertTrue("test spi fail!",
+        Assertions.assertTrue(
                 executorService.getClass()
                         .getSimpleName()
-                        .equals("EagerThreadPoolExecutor"));
+                        .equals("EagerThreadPoolExecutor"), "test spi fail!");
     }
 }

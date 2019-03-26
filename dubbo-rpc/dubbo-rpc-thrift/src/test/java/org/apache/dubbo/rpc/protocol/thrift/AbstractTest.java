@@ -32,8 +32,8 @@ import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TServerTransport;
 import org.apache.thrift.transport.TTransportFactory;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 public abstract class AbstractTest {
 
@@ -138,12 +138,12 @@ public abstract class AbstractTest {
                 "thrift://127.0.0.1:" + PORT + "/" + getInterface().getName());
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         destroy();
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         init();
     }

@@ -18,11 +18,13 @@ package org.apache.dubbo.registry.integration;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
@@ -52,6 +54,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -64,7 +67,6 @@ import static org.apache.dubbo.common.Constants.DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.Constants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.Constants.ROUTERS_CATEGORY;
 import static org.apache.dubbo.common.Constants.ROUTE_PROTOCOL;
-import static org.apache.dubbo.common.utils.UrlUtils.classifyUrls;
 
 
 /**
@@ -89,6 +91,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     private volatile boolean forbidden = false;
 
     private volatile URL overrideDirectoryUrl; // Initialization at construction time, assertion not null, and always assign non null value
+
+    private volatile URL registeredConsumerUrl;
 
     /**
      * override rules
@@ -122,7 +126,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         this.queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(Constants.REFER_KEY));
         this.overrideDirectoryUrl = this.directoryUrl = turnRegistryUrlToConsumerUrl(url);
         String group = directoryUrl.getParameter(Constants.GROUP_KEY, "");
-        this.multiGroup = group != null && ("*".equals(group) || group.contains(","));
+        this.multiGroup = group != null && (Constants.ANY_VALUE.equals(group) || group.contains(","));
     }
 
     private URL turnRegistryUrlToConsumerUrl(URL url) {
@@ -131,10 +135,12 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         if (StringUtils.isNotEmpty(isDefault)) {
             queryMap.put(Constants.REGISTRY_KEY + "." + Constants.DEFAULT_KEY, isDefault);
         }
-        return url.setPath(url.getServiceInterface())
+        return URLBuilder.from(url)
+                .setPath(url.getServiceInterface())
                 .clearParameters()
                 .addParameters(queryMap)
-                .removeParameter(Constants.MONITOR_KEY);
+                .removeParameter(Constants.MONITOR_KEY)
+                .build();
     }
 
     public void setProtocol(Protocol protocol) {
@@ -158,6 +164,15 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         if (isDestroyed()) {
             return;
         }
+
+        // unregister.
+        try {
+            if (getRegisteredConsumerUrl() != null && registry != null && registry.isAvailable()) {
+                registry.unregister(getRegisteredConsumerUrl());
+            }
+        } catch (Throwable t) {
+            logger.warn("unexpected error when unregister service " + serviceKey + "from registry" + registry.getUrl(), t);
+        }
         // unsubscribe.
         try {
             if (getConsumerUrl() != null && registry != null && registry.isAvailable()) {
@@ -178,11 +193,29 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     @Override
     public synchronized void notify(List<URL> urls) {
-        List<URL> categoryUrls = urls.stream()
+        Map<String, List<URL>> categoryUrls = urls.stream()
+                .filter(Objects::nonNull)
                 .filter(this::isValidCategory)
                 .filter(this::isNotCompatibleFor26x)
-                .collect(Collectors.toList());
+                .collect(Collectors.groupingBy(url -> {
+                    if (UrlUtils.isConfigurator(url)) {
+                        return CONFIGURATORS_CATEGORY;
+                    } else if (UrlUtils.isRoute(url)) {
+                        return ROUTERS_CATEGORY;
+                    } else if (UrlUtils.isProvider(url)) {
+                        return PROVIDERS_CATEGORY;
+                    }
+                    return "";
+                }));
 
+        List<URL> configuratorURLs = categoryUrls.getOrDefault(CONFIGURATORS_CATEGORY, Collections.emptyList());
+        this.configurators = Configurator.toConfigurators(configuratorURLs).orElse(this.configurators);
+
+        List<URL> routerURLs = categoryUrls.getOrDefault(ROUTERS_CATEGORY, Collections.emptyList());
+        toRouters(routerURLs).ifPresent(this::addRouters);
+
+        // providers
+        List<URL> providerURLs = categoryUrls.getOrDefault(PROVIDERS_CATEGORY, Collections.emptyList());
         /**
          * 3.x added for extend URL address
          */
@@ -190,20 +223,10 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         Set<String> surpportedListeners = addressListenerExtensionLoader.getSupportedExtensions();
         if (surpportedListeners != null && !surpportedListeners.isEmpty()) {
             for (String addressListenerName : surpportedListeners) {
-                categoryUrls = addressListenerExtensionLoader.getExtension(addressListenerName).notify(categoryUrls);
+                providerURLs = addressListenerExtensionLoader.getExtension(addressListenerName).notify(providerURLs);
             }
         }
-
-        /**
-         * TODO Try to refactor the processing of these three type of urls using Collectors.groupBy()?
-         */
-        this.configurators = Configurator.toConfigurators(classifyUrls(categoryUrls, UrlUtils::isConfigurator))
-                .orElse(configurators);
-
-        toRouters(classifyUrls(categoryUrls, UrlUtils::isRoute)).ifPresent(this::addRouters);
-
-        // providers
-        refreshOverrideAndInvoker(classifyUrls(categoryUrls, UrlUtils::isProvider));
+        refreshOverrideAndInvoker(providerURLs);
     }
 
     private void refreshOverrideAndInvoker(List<URL> urls) {
@@ -228,9 +251,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     private void refreshInvoker(List<URL> invokerUrls) {
         Assert.notNull(invokerUrls, "invokerUrls should not be null");
 
-        if (invokerUrls.size() == 1 && invokerUrls.get(0) != null && Constants.EMPTY_PROTOCOL.equals(invokerUrls
-                .get(0)
-                .getProtocol())) {
+        if (invokerUrls.size() == 1
+                && invokerUrls.get(0) != null
+                && Constants.EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
             this.forbidden = true; // Forbid to access
             this.invokers = Collections.emptyList();
             routerChain.setInvokers(this.invokers);
@@ -252,9 +275,15 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }
             Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls);// Translate url list to Invoker map
 
-            // state change
-            // If the calculation is wrong, it is not processed.
-            if (newUrlInvokerMap == null || newUrlInvokerMap.size() == 0) {
+            /**
+             * If the calculation is wrong, it is not processed.
+             *
+             * 1. The protocol configured by the client is inconsistent with the protocol of the server.
+             *    eg: consumer protocol = dubbo, provider only has other protocol services(rest).
+             * 2. The registration center is not robust and pushes illegal specification data.
+             *
+             */
+            if (CollectionUtils.isEmptyMap(newUrlInvokerMap)) {
                 logger.error(new IllegalStateException("urls to invokers error .invokerUrls.size :" + invokerUrls.size() + ", invoker.size :0. urls :" + invokerUrls
                         .toString()));
                 return;
@@ -277,7 +306,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     private List<Invoker<T>> toMergeInvokerList(List<Invoker<T>> invokers) {
         List<Invoker<T>> mergedInvokers = new ArrayList<>();
-        Map<String, List<Invoker<T>>> groupMap = new HashMap<String, List<Invoker<T>>>();
+        Map<String, List<Invoker<T>>> groupMap = new HashMap<>();
         for (Invoker<T> invoker : invokers) {
             String group = invoker.getUrl().getParameter(Constants.GROUP_KEY, "");
             groupMap.computeIfAbsent(group, k -> new ArrayList<>());
@@ -337,11 +366,11 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * @return invokers
      */
     private Map<String, Invoker<T>> toInvokers(List<URL> urls) {
-        Map<String, Invoker<T>> newUrlInvokerMap = new HashMap<String, Invoker<T>>();
+        Map<String, Invoker<T>> newUrlInvokerMap = new HashMap<>();
         if (urls == null || urls.isEmpty()) {
             return newUrlInvokerMap;
         }
-        Set<String> keys = new HashSet<String>();
+        Set<String> keys = new HashSet<>();
         String queryProtocols = this.queryMap.get(Constants.PROTOCOL_KEY);
         for (URL providerUrl : urls) {
             // If protocol is configured at the reference side, only the matching protocol is selected
@@ -387,7 +416,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                         enabled = url.getParameter(Constants.ENABLED_KEY, true);
                     }
                     if (enabled) {
-                        invoker = new InvokerDelegate<T>(protocol.refer(serviceType, url), url, providerUrl);
+                        invoker = new InvokerDelegate<>(protocol.refer(serviceType, url), url, providerUrl);
                     }
                 } catch (Throwable t) {
                     logger.error("Failed to refer invoker for interface:" + serviceType + ",url:(" + url + ")" + t.getMessage(), t);
@@ -420,7 +449,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         this.overrideDirectoryUrl = this.overrideDirectoryUrl.addParametersIfAbsent(providerUrl.getParameters()); // Merge the provider side parameters
 
         if ((providerUrl.getPath() == null || providerUrl.getPath()
-                .length() == 0) && "dubbo".equals(providerUrl.getProtocol())) { // Compatible version 1.0
+                .length() == 0) && Constants.DUBBO_PROTOCOL.equals(providerUrl.getProtocol())) { // Compatible version 1.0
             //fix by tony.chenl DUBBO-44
             String path = directoryUrl.getParameter(Constants.INTERFACE_KEY);
             if (path != null) {
@@ -454,7 +483,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
 
     private URL overrideWithConfigurators(List<Configurator> configurators, URL url) {
-        if (configurators != null && !configurators.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(configurators)) {
             for (Configurator configurator : configurators) {
                 url = configurator.configure(url);
             }
@@ -468,7 +497,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     private void destroyAllInvokers() {
         Map<String, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap; // local reference
         if (localUrlInvokerMap != null) {
-            for (Invoker<T> invoker : new ArrayList<Invoker<T>>(localUrlInvokerMap.values())) {
+            for (Invoker<T> invoker : new ArrayList<>(localUrlInvokerMap.values())) {
                 try {
                     invoker.destroy();
                 } catch (Throwable t) {
@@ -499,7 +528,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             for (Map.Entry<String, Invoker<T>> entry : oldUrlInvokerMap.entrySet()) {
                 if (!newInvokers.contains(entry.getValue())) {
                     if (deleted == null) {
-                        deleted = new ArrayList<String>();
+                        deleted = new ArrayList<>();
                     }
                     deleted.add(entry.getKey());
                 }
@@ -576,6 +605,14 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         return this.overrideDirectoryUrl;
     }
 
+    public URL getRegisteredConsumerUrl() {
+        return registeredConsumerUrl;
+    }
+
+    public void setRegisteredConsumerUrl(URL registeredConsumerUrl) {
+        this.registeredConsumerUrl = registeredConsumerUrl;
+    }
+
     @Override
     public boolean isAvailable() {
         if (isDestroyed()) {
@@ -583,7 +620,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         }
         Map<String, Invoker<T>> localUrlInvokerMap = urlInvokerMap;
         if (localUrlInvokerMap != null && localUrlInvokerMap.size() > 0) {
-            for (Invoker<T> invoker : new ArrayList<Invoker<T>>(localUrlInvokerMap.values())) {
+            for (Invoker<T> invoker : new ArrayList<>(localUrlInvokerMap.values())) {
                 if (invoker.isAvailable()) {
                     return true;
                 }
@@ -638,7 +675,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
 
     private void doOverrideUrl(List<Configurator> configurators) {
-        if (configurators != null && !configurators.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(configurators)) {
             for (Configurator configurator : configurators) {
                 this.overrideDirectoryUrl = configurator.configure(overrideDirectoryUrl);
             }

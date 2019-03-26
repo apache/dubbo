@@ -23,12 +23,15 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.service.EchoService;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.apache.dubbo.rpc.service.GenericService;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class RmiProtocolTest {
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
@@ -89,7 +92,7 @@ public class RmiProtocolTest {
     }
 
     // FIXME RMI protocol doesn't support casting to EchoService yet.
-    @Ignore
+    @Disabled
     @Test
     public void testRmiProtocol_echoService() throws Exception {
         DemoService service = new DemoServiceImpl();
@@ -113,6 +116,19 @@ public class RmiProtocolTest {
         assertEquals(echo.$echo(1234), 1234);
 
         rpcExporter.unexport();
+    }
+
+    @Test
+    public void testGenericInvoke() {
+        DemoService service = new DemoServiceImpl();
+        URL url = URL.valueOf("rmi://127.0.0.1:9003/" + DemoService.class.getName() + "?release=2.7.0");
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(service, DemoService.class, url));
+        Invoker<GenericService> invoker = protocol.refer(GenericService.class, url);
+        GenericService client = proxy.getProxy(invoker, true);
+        String result = (String) client.$invoke("sayHi", new String[]{"java.lang.String"}, new Object[]{"haha"});
+        Assertions.assertEquals("Hi, haha", result);
+        invoker.destroy();
+        exporter.unexport();
     }
 
     public static interface NonStdRmiInterface {
