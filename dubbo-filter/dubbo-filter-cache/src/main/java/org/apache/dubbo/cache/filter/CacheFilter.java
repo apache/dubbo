@@ -45,10 +45,10 @@ import java.io.Serializable;
  *        3)&lt;dubbo:provider cache="expiring" /&gt;
  *        4)&lt;dubbo:consumer cache="jcache" /&gt;
  *
- *If cache type is defined in method level then method level type will get precedence. According to above provided
- *example, if service has two method, method1 and method2, method2 will have cache type as <b>threadlocal</b> where others will
- *be backed by <b>lru</b>
- *</pre>
+ * If cache type is defined in method level then method level type will get precedence. According to above provided
+ * example, if service has two method, method1 and method2, method2 will have cache type as <b>threadlocal</b> where others will
+ * be backed by <b>lru</b>
+ * </pre>
  *
  * @see org.apache.dubbo.rpc.Filter
  * @see org.apache.dubbo.cache.support.lru.LruCacheFactory
@@ -59,7 +59,6 @@ import java.io.Serializable;
  * @see org.apache.dubbo.cache.support.threadlocal.ThreadLocalCache
  * @see org.apache.dubbo.cache.support.expiring.ExpiringCacheFactory
  * @see org.apache.dubbo.cache.support.expiring.ExpiringCache
- *
  */
 @Activate(group = {Constants.CONSUMER, Constants.PROVIDER}, value = Constants.CACHE_KEY)
 public class CacheFilter implements Filter {
@@ -81,45 +80,65 @@ public class CacheFilter implements Filter {
      * If cache is configured, dubbo will invoke method on each method call. If cache value is returned by cache store
      * then it will return otherwise call the remote method and return value. If remote method's return valeu has error
      * then it will not cache the value.
+     *
      * @param invoker    service
      * @param invocation invocation.
      * @return Cache returned value if found by the underlying cache store. If cache miss it will call target method.
-     * @throws RpcException
+     * @throws RpcException rpc exception
      */
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        if (cacheFactory != null && ConfigUtils.isNotEmpty(invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.CACHE_KEY))) {
-            Cache cache = cacheFactory.getCache(invoker.getUrl(), invocation);
-            if (cache != null) {
-                String key = StringUtils.toArgumentString(invocation.getArguments());
-                Object value = cache.get(key);
-                if (value != null) {
-                    if (value instanceof ValueWrapper) {
-                        return new RpcResult(((ValueWrapper)value).get());
-                    } else {
-                        return new RpcResult(value);
-                    }
-                }
-                Result result = invoker.invoke(invocation);
-                if (!result.hasException()) {
-                    cache.put(key, new ValueWrapper(result.getValue()));
-                }
-                return result;
+        Cache cache = openCache(invoker, invocation);
+        if (cache == null) {
+            return invoker.invoke(invocation);
+        }
+        String key = StringUtils.toArgumentString(invocation.getArguments());
+        Object value = cache.get(key);
+        if (value != null) {
+            if (value instanceof ValueWrapper) {
+                return new RpcResult(((ValueWrapper) value).get());
+            } else {
+                return new RpcResult(value);
             }
         }
         return invoker.invoke(invocation);
     }
 
+    @Override
+    public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
+        Cache cache = openCache(invoker, invocation);
+        if (cache == null) {
+            return result;
+        }
+        String key = StringUtils.toArgumentString(invocation.getArguments());
+        if (!result.hasException()) {
+            cache.put(key, new ValueWrapper(result.getValue()));
+        }
+        return result;
+    }
+
+    private Cache openCache(Invoker<?> invoker, Invocation invocation) {
+        if (cacheFactory == null ||
+                ConfigUtils.isEmpty(invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.CACHE_KEY))) {
+            return null;
+        }
+        Cache cache = cacheFactory.getCache(invoker.getUrl(), invocation);
+        if (cache == null) {
+            return null;
+        }
+        return cache;
+    }
+
     /**
      * Cache value wrapper.
      */
-    static class ValueWrapper implements Serializable{
+    static class ValueWrapper implements Serializable {
 
         private static final long serialVersionUID = -1777337318019193256L;
 
         private final Object value;
 
-        public ValueWrapper(Object value){
+        public ValueWrapper(Object value) {
             this.value = value;
         }
 
