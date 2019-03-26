@@ -23,6 +23,7 @@ import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.PojoUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
@@ -69,7 +70,7 @@ final public class MockInvoker<T> implements Invoker<T> {
             value = mock.subSequence(1, mock.length() - 1);
         } else if (returnTypes != null && returnTypes.length > 0 && returnTypes[0] == String.class) {
             value = mock;
-        } else if (StringUtils.isNumeric(mock)) {
+        } else if (StringUtils.isNumeric(mock, false)) {
             value = JSON.parse(mock);
         } else if (mock.startsWith("{")) {
             value = JSON.parseObject(mock, Map.class);
@@ -78,7 +79,7 @@ final public class MockInvoker<T> implements Invoker<T> {
         } else {
             value = mock;
         }
-        if (returnTypes != null && returnTypes.length > 0) {
+        if (ArrayUtils.isNotEmpty(returnTypes)) {
             value = PojoUtils.realize(value, (Class<?>) returnTypes[0], returnTypes.length > 1 ? returnTypes[1] : null);
         }
         return value;

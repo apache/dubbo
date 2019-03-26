@@ -27,9 +27,9 @@ import org.apache.dubbo.rpc.support.DemoService;
 import org.apache.dubbo.rpc.support.MockInvocation;
 import org.apache.dubbo.rpc.support.MyInvoker;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 

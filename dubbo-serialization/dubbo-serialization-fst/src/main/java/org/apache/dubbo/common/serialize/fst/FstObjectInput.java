@@ -24,7 +24,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 
-
+/**
+ * Fst object input implementation
+ */
 public class FstObjectInput implements ObjectInput {
 
     private FSTObjectInput input;

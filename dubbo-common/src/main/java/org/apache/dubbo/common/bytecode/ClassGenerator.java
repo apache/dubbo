@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.bytecode;
 
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.ClassHelper;
 import org.apache.dubbo.common.utils.ReflectUtils;
 
@@ -29,6 +30,7 @@ import javassist.CtNewConstructor;
 import javassist.CtNewMethod;
 import javassist.LoaderClassPath;
 import javassist.NotFoundException;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -165,7 +167,7 @@ public final class ClassGenerator {
         StringBuilder sb = new StringBuilder();
         sb.append(modifier(mod)).append(' ').append(ReflectUtils.getName(type)).append(' ');
         sb.append(name);
-        if (def != null && def.length() > 0) {
+        if (StringUtils.isNotEmpty(def)) {
             sb.append('=');
             sb.append(def);
         }
@@ -198,7 +200,7 @@ public final class ClassGenerator {
             sb.append(" arg").append(i);
         }
         sb.append(')');
-        if (ets != null && ets.length > 0) {
+        if (ArrayUtils.isNotEmpty(ets)) {
             sb.append(" throws ");
             for (int i = 0; i < ets.length; i++) {
                 if (i > 0) {
@@ -250,7 +252,7 @@ public final class ClassGenerator {
             sb.append(" arg").append(i);
         }
         sb.append(')');
-        if (ets != null && ets.length > 0) {
+        if (ArrayUtils.isNotEmpty(ets)) {
             sb.append(" throws ");
             for (int i = 0; i < ets.length; i++) {
                 if (i > 0) {

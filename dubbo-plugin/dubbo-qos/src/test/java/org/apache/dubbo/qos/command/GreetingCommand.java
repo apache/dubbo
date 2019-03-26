@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.qos.command;
 
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.qos.command.annotation.Cmd;
 
 
@@ -24,6 +25,6 @@ import org.apache.dubbo.qos.command.annotation.Cmd;
 public class GreetingCommand implements BaseCommand {
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-        return args != null && args.length > 0 ? "greeting " + args[0] : "greeting";
+        return ArrayUtils.isNotEmpty(args) ? "greeting " + args[0] : "greeting";
     }
 }

@@ -22,7 +22,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.http.HttpHandler;
 import org.apache.dubbo.remoting.http.HttpServer;
 import org.apache.http.client.fluent.Request;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

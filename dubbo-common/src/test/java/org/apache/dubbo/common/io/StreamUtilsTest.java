@@ -16,16 +16,17 @@
  */
 package org.apache.dubbo.common.io;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class StreamUtilsTest {
 
@@ -117,23 +118,25 @@ public class StreamUtilsTest {
         is.close();
     }
 
-    @Test(expected = IOException.class)
-    public void testMarkInputSupport() throws IOException {
-        InputStream is = StreamUtilsTest.class.getResourceAsStream("/StreamUtilsTest.txt");
-        try {
-            is = StreamUtils.markSupportedInputStream(new PushbackInputStream(is), 1);
+    @Test
+    public void testMarkInputSupport() {
+        Assertions.assertThrows(IOException.class, () -> {
+            InputStream is = StreamUtilsTest.class.getResourceAsStream("/StreamUtilsTest.txt");
+            try {
+                is = StreamUtils.markSupportedInputStream(new PushbackInputStream(is), 1);
 
-            is.mark(1);
-            int read = is.read();
-            assertThat(read, is((int) '0'));
+                is.mark(1);
+                int read = is.read();
+                assertThat(read, is((int) '0'));
 
-            is.skip(1);
-            is.read();
-        } finally {
-            if (is != null) {
-                is.close();
+                is.skip(1);
+                is.read();
+            } finally {
+                if (is != null) {
+                    is.close();
+                }
             }
-        }
+        });
     }
 
     @Test
@@ -145,29 +148,33 @@ public class StreamUtilsTest {
         is.close();
     }
 
-    @Test(expected = NullPointerException.class)
-    public void testReadEmptyByteArray() throws IOException {
-        InputStream is = StreamUtilsTest.class.getResourceAsStream("/StreamUtilsTest.txt");
-        try {
-            is = StreamUtils.limitedInputStream(is, 2);
-            is.read(null, 0, 1);
-        } finally {
-            if (is != null) {
-                is.close();
+    @Test
+    public void testReadEmptyByteArray() {
+        Assertions.assertThrows(NullPointerException.class, () -> {
+            InputStream is = StreamUtilsTest.class.getResourceAsStream("/StreamUtilsTest.txt");
+            try {
+                is = StreamUtils.limitedInputStream(is, 2);
+                is.read(null, 0, 1);
+            } finally {
+                if (is != null) {
+                    is.close();
+                }
             }
-        }
+        });
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
-    public void testReadWithWrongOffset() throws IOException {
-        InputStream is = StreamUtilsTest.class.getResourceAsStream("/StreamUtilsTest.txt");
-        try {
-            is = StreamUtils.limitedInputStream(is, 2);
-            is.read(new byte[1], -1, 1);
-        } finally {
-            if (is != null) {
-                is.close();
+    @Test
+    public void testReadWithWrongOffset() {
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
+            InputStream is = StreamUtilsTest.class.getResourceAsStream("/StreamUtilsTest.txt");
+            try {
+                is = StreamUtils.limitedInputStream(is, 2);
+                is.read(new byte[1], -1, 1);
+            } finally {
+                if (is != null) {
+                    is.close();
+                }
             }
-        }
+        });
     }
 }

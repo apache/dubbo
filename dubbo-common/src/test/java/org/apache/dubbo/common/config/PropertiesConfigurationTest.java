@@ -16,15 +16,15 @@
  */
 package org.apache.dubbo.common.config;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class PropertiesConfigurationTest {
 
     @Test
     public void testOrderPropertiesProviders() {
         PropertiesConfiguration configuration = new PropertiesConfiguration("test", null);
-        Assert.assertTrue(configuration.getInternalProperty("testKey").equals("999"));
+        Assertions.assertTrue(configuration.getInternalProperty("testKey").equals("999"));
     }
 
 }

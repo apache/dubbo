@@ -28,9 +28,9 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +56,7 @@ public class StickyTest {
     );
     private int runs = 1;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         dic = mock(Directory.class);
         invocation = new RpcInvocation();
@@ -77,26 +77,26 @@ public class StickyTest {
     public void testStickyNoCheck() {
         int count = testSticky(null, false);
         System.out.println(count);
-        Assert.assertTrue(count > 0 && count <= runs);
+        Assertions.assertTrue(count > 0 && count <= runs);
     }
 
     @Test
     public void testStickyForceCheck() {
         int count = testSticky(null, true);
-        Assert.assertTrue(count == 0 || count == runs);
+        Assertions.assertTrue(count == 0 || count == runs);
     }
 
     @Test
     public void testMethodStickyNoCheck() {
         int count = testSticky("method1", false);
         System.out.println(count);
-        Assert.assertTrue(count > 0 && count <= runs);
+        Assertions.assertTrue(count > 0 && count <= runs);
     }
 
     @Test
     public void testMethodStickyForceCheck() {
         int count = testSticky("method1", true);
-        Assert.assertTrue(count == 0 || count == runs);
+        Assertions.assertTrue(count == 0 || count == runs);
     }
 
     @Test
@@ -104,7 +104,7 @@ public class StickyTest {
         for (int i = 0; i < 100; i++) {//Two different methods should always use the same invoker every time.
             int count1 = testSticky("method1", true);
             int count2 = testSticky("method2", true);
-            Assert.assertTrue(count1 == count2);
+            Assertions.assertTrue(count1 == count2);
         }
     }
 
@@ -129,7 +129,7 @@ public class StickyTest {
 
         int count = 0;
         for (int i = 0; i < runs; i++) {
-            Assert.assertEquals(null, clusterinvoker.invoke(invocation));
+            Assertions.assertEquals(null, clusterinvoker.invoke(invocation));
             if (invoker1 == clusterinvoker.getSelectedInvoker()) {
                 count++;
             }
