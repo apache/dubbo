@@ -26,9 +26,6 @@ import com.esotericsoftware.kryo.io.Output;
 import java.io.IOException;
 import java.io.OutputStream;
 
-/**
- * Kryo object output implementation, kryo object can be clean
- */
 public class KryoObjectOutput implements ObjectOutput, Cleanable {
 
     private Output output;

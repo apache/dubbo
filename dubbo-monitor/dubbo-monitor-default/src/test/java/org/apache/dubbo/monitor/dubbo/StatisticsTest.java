@@ -16,13 +16,10 @@
  */
 package org.apache.dubbo.monitor.dubbo;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.monitor.MonitorService;
-
-import org.hamcrest.MatcherAssert;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -32,7 +29,7 @@ import static org.hamcrest.Matchers.not;
 public class StatisticsTest {
     @Test
     public void testEquals() {
-        URL statistics = new URLBuilder(Constants.DUBBO_PROTOCOL, "10.20.153.10", 0)
+        URL statistics = new URL("dubbo", "10.20.153.10", 0)
                 .addParameter(MonitorService.APPLICATION, "morgan")
                 .addParameter(MonitorService.INTERFACE, "MemberService")
                 .addParameter(MonitorService.METHOD, "findPerson")
@@ -42,26 +39,25 @@ public class StatisticsTest {
                 .addParameter(MonitorService.ELAPSED, 3)
                 .addParameter(MonitorService.MAX_ELAPSED, 3)
                 .addParameter(MonitorService.CONCURRENT, 1)
-                .addParameter(MonitorService.MAX_CONCURRENT, 1)
-                .build();
+                .addParameter(MonitorService.MAX_CONCURRENT, 1);
 
         Statistics statistics1 = new Statistics(statistics);
         Statistics statistics2 = new Statistics(statistics);
 
-        MatcherAssert.assertThat(statistics1, equalTo(statistics1));
-        MatcherAssert.assertThat(statistics1, equalTo(statistics2));
+        Assert.assertThat(statistics1, equalTo(statistics1));
+        Assert.assertThat(statistics1, equalTo(statistics2));
 
         statistics1.setVersion("2");
-        MatcherAssert.assertThat(statistics1, not(equalTo(statistics2)));
-        MatcherAssert.assertThat(statistics1.hashCode(), not(equalTo(statistics2.hashCode())));
+        Assert.assertThat(statistics1, not(equalTo(statistics2)));
+        Assert.assertThat(statistics1.hashCode(), not(equalTo(statistics2.hashCode())));
 
         statistics1.setMethod("anotherMethod");
-        MatcherAssert.assertThat(statistics1, not(equalTo(statistics2)));
-        MatcherAssert.assertThat(statistics1.hashCode(), not(equalTo(statistics2.hashCode())));
+        Assert.assertThat(statistics1, not(equalTo(statistics2)));
+        Assert.assertThat(statistics1.hashCode(), not(equalTo(statistics2.hashCode())));
 
         statistics1.setClient("anotherClient");
-        MatcherAssert.assertThat(statistics1, not(equalTo(statistics2)));
-        MatcherAssert.assertThat(statistics1.hashCode(), not(equalTo(statistics2.hashCode())));
+        Assert.assertThat(statistics1, not(equalTo(statistics2)));
+        Assert.assertThat(statistics1.hashCode(), not(equalTo(statistics2.hashCode())));
     }
 
     @Test
@@ -74,7 +70,7 @@ public class StatisticsTest {
         statistics.setService("MemberService");
         assertThat(statistics.toString(), is("dubbo://10.20.153.10"));
 
-        Statistics statisticsWithDetailInfo = new Statistics(new URLBuilder(Constants.DUBBO_PROTOCOL, "10.20.153.10", 0)
+        Statistics statisticsWithDetailInfo = new Statistics(new URL("dubbo", "10.20.153.10", 0)
                 .addParameter(MonitorService.APPLICATION, "morgan")
                 .addParameter(MonitorService.INTERFACE, "MemberService")
                 .addParameter(MonitorService.METHOD, "findPerson")
@@ -85,14 +81,13 @@ public class StatisticsTest {
                 .addParameter(MonitorService.ELAPSED, 3)
                 .addParameter(MonitorService.MAX_ELAPSED, 3)
                 .addParameter(MonitorService.CONCURRENT, 1)
-                .addParameter(MonitorService.MAX_CONCURRENT, 1)
-                .build());
+                .addParameter(MonitorService.MAX_CONCURRENT, 1));
 
-        MatcherAssert.assertThat(statisticsWithDetailInfo.getServer(), equalTo(statistics.getServer()));
-        MatcherAssert.assertThat(statisticsWithDetailInfo.getService(), equalTo(statistics.getService()));
-        MatcherAssert.assertThat(statisticsWithDetailInfo.getMethod(), equalTo(statistics.getMethod()));
+        Assert.assertThat(statisticsWithDetailInfo.getServer(), equalTo(statistics.getServer()));
+        Assert.assertThat(statisticsWithDetailInfo.getService(), equalTo(statistics.getService()));
+        Assert.assertThat(statisticsWithDetailInfo.getMethod(), equalTo(statistics.getMethod()));
 
-        MatcherAssert.assertThat(statisticsWithDetailInfo.getGroup(), equalTo(statistics.getGroup()));
-        MatcherAssert.assertThat(statisticsWithDetailInfo, not(equalTo(statistics)));
+        Assert.assertThat(statisticsWithDetailInfo.getGroup(), equalTo(statistics.getGroup()));
+        Assert.assertThat(statisticsWithDetailInfo, not(equalTo(statistics)));
     }
 }

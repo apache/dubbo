@@ -28,9 +28,6 @@ import java.io.OutputStream;
 /**
  * TODO for now kryo serialization doesn't deny classes that don't implement the serializable interface
  *
- * <pre>
- *     e.g. &lt;dubbo:protocol serialization="kryo" /&gt;
- * </pre>
  */
 public class KryoSerialization implements Serialization {
 

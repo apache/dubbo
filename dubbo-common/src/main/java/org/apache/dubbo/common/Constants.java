@@ -97,10 +97,7 @@ public class Constants {
 
     public static final String DEFAULT_PROXY = "javassist";
 
-    /**
-     * 8M
-     */
-    public static final int DEFAULT_PAYLOAD = 8 * 1024 * 1024;
+    public static final int DEFAULT_PAYLOAD = 8 * 1024 * 1024;                      // 8M
 
     public static final String DEFAULT_CLUSTER = "failover";
 
@@ -146,13 +143,7 @@ public class Constants {
 
     public static final int DEFAULT_ALIVE = 60 * 1000;
 
-    /**
-     * By default, a consumer JVM instance and a provider JVM instance share a long TCP connection (except when connections are set),
-     * which can set the number of long TCP connections shared to avoid the bottleneck of sharing a single long TCP connection.
-     */
-    public static final String DEFAULT_SHARE_CONNECTIONS = "1";
-
-    public static final String SHARE_CONNECTIONS_KEY = "shareconnections";
+    public static final int DEFAULT_CONNECTIONS = 0;
 
     public static final int DEFAULT_ACCEPTS = 0;
 
@@ -164,20 +155,15 @@ public class Constants {
 
     public static final int DEFAULT_CONNECT_TIMEOUT = 3000;
 
-    /**
-     * public static final int DEFAULT_REGISTRY_CONNECT_TIMEOUT = 5000;
-     */
+//    public static final int DEFAULT_REGISTRY_CONNECT_TIMEOUT = 5000;
+
     public static final int DEFAULT_RETRIES = 2;
 
     public static final int DEFAULT_FAILBACK_TASKS = 100;
 
     public static final int DEFAULT_FAILBACK_TIMES = 3;
 
-    public static final int MAX_PROXY_COUNT = 65535;
-
-    /**
-     * default buffer size is 8k.
-     */
+    // default buffer size is 8k.
     public static final int DEFAULT_BUFFER_SIZE = 8 * 1024;
 
     public static final Integer DEFAULT_METADATA_REPORT_RETRY_TIMES = 100;
@@ -200,9 +186,7 @@ public class Constants {
 
     public static final String LOADBALANCE_KEY = "loadbalance";
 
-    /**
-     * key for router type, for e.g., "script"/"file",  corresponding to ScriptRouterFactory.NAME, FileRouterFactory.NAME
-     */
+    // key for router type, for e.g., "script"/"file",  corresponding to ScriptRouterFactory.NAME, FileRouterFactory.NAME
     public static final String ROUTER_KEY = "router";
 
     public static final String CLUSTER_KEY = "cluster";
@@ -247,7 +231,7 @@ public class Constants {
 
     public static final String PROTOCOL_KEY = "protocol";
 
-    public static final String DUBBO_PROTOCOL = DUBBO;
+    public static final String DOBBO_PROTOCOL = DUBBO;
 
     public static final String ZOOKEEPER_PROTOCOL = "zookeeper";
 
@@ -314,9 +298,9 @@ public class Constants {
     public static final long LEAST_HEARTBEAT_DURATION = 1000;
 
     /**
-     * ticks per wheel.
+     * ticks per wheel. Currently only contains two tasks, so 16 locations are enough
      */
-    public static final int TICKS_PER_WHEEL = 128;
+    public static final int TICKS_PER_WHEEL = 16;
 
     public static final String HEARTBEAT_TIMEOUT_KEY = "heartbeat.timeout";
 
@@ -753,12 +737,6 @@ public class Constants {
 
     public static final String HOST_KEY = "host";
 
-    public static final String PORT_KEY = "port";
-
-    public static final String USERNAME_KEY = "username";
-
-    public static final String PASSWORD_KEY = "password";
-
     public static final String ADDRESS_KEY = "address";
 
     public static final String RETRY_TIMES_KEY = "retry.times";
@@ -772,9 +750,7 @@ public class Constants {
     public static final String CONFIG_VERSION_KEY = "configVersion";
 
     public static final String COMPATIBLE_CONFIG_KEY = "compatible_config";
-    /**
-     * package version in the manifest
-     */
+    // package version in the manifest
     public static final String RELEASE_KEY = "release";
 
     public static final String OVERRIDE_PROVIDERS_KEY = "providerAddresses";
@@ -837,25 +813,8 @@ public class Constants {
      */
     public static final String PROXY_CLASS_REF = "refClass";
 
-    public static final String ETCD3_NOTIFY_MAXTHREADS_KEYS = "etcd3.notify.maxthreads";
-
-    public static final int DEFAULT_ETCD3_NOTIFY_THREADS = DEFAULT_IO_THREADS;
-
-    public static final String DEFAULT_ETCD3_NOTIFY_QUEUES_KEY = "etcd3.notify.queues";
-
-    public static final int DEFAULT_GRPC_QUEUES = 300_0000;
-
-    /**
-     * metrics
+    /*
+     * private Constants(){ }
      */
-    public static final String DUBBO_PROVIDER = "dubbo.provider";
-    public static final String DUBBO_CONSUMER = "dubbo.consumer";
-    public static final String DUBBO_PROVIDER_METHOD = "dubbo.provider.method";
-    public static final String DUBBO_CONSUMER_METHOD = "dubbo.consumer.method";
-    public static final String SERVICE = "service";
-    public static final String METHOD = "method";
-    public static final String DUBBO_GROUP = "dubbo";
-    public static final String METRICS_KEY = "metrics";
-
 
 }

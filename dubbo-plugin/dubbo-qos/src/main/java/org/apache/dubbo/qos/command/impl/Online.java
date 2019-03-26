@@ -19,7 +19,6 @@ package org.apache.dubbo.qos.command.impl;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
@@ -45,7 +44,7 @@ public class Online implements BaseCommand {
     public String execute(CommandContext commandContext, String[] args) {
         logger.info("receive online command");
         String servicePattern = ".*";
-        if (ArrayUtils.isNotEmpty(args)) {
+        if (args != null && args.length > 0) {
             servicePattern = args[0];
         }
 

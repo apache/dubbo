@@ -22,13 +22,13 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import junit.framework.TestCase;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Random;
 
-public class PerformanceClientFixedTest  {
+public class PerformanceClientFixedTest extends TestCase {
 
     private static final Logger logger = LoggerFactory.getLogger(PerformanceClientTest.class);
 

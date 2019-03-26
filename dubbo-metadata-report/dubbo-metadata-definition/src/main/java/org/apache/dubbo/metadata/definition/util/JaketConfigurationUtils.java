@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.metadata.definition.util;
 
-import org.apache.dubbo.common.utils.StringUtils;
-
 import java.io.InputStream;
 import java.util.Properties;
 
@@ -38,17 +36,17 @@ public class JaketConfigurationUtils {
         try {
             props.load(inStream);
             String value = (String) props.get("included_interface_packages");
-            if (StringUtils.isNotEmpty(value)) {
+            if (value != null && !value.isEmpty()) {
                 includedInterfacePackages = value.split(",");
             }
 
             value = props.getProperty("included_type_packages");
-            if (StringUtils.isNotEmpty(value)) {
+            if (value != null && !value.isEmpty()) {
                 includedTypePackages = value.split(",");
             }
 
             value = props.getProperty("closed_types");
-            if (StringUtils.isNotEmpty(value)) {
+            if (value != null && !value.isEmpty()) {
                 closedTypes = value.split(",");
             }
 

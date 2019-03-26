@@ -28,14 +28,14 @@ public interface Logger {
      *
      * @param msg log this message
      */
-    void trace(String msg);
+    public void trace(String msg);
 
     /**
      * Logs an error with trace log level.
      *
      * @param e log this cause
      */
-    void trace(Throwable e);
+    public void trace(Throwable e);
 
     /**
      * Logs an error with trace log level.
@@ -43,21 +43,21 @@ public interface Logger {
      * @param msg log this message
      * @param e   log this cause
      */
-    void trace(String msg, Throwable e);
+    public void trace(String msg, Throwable e);
 
     /**
      * Logs a message with debug log level.
      *
      * @param msg log this message
      */
-    void debug(String msg);
+    public void debug(String msg);
 
     /**
      * Logs an error with debug log level.
      *
      * @param e log this cause
      */
-    void debug(Throwable e);
+    public void debug(Throwable e);
 
     /**
      * Logs an error with debug log level.
@@ -65,21 +65,21 @@ public interface Logger {
      * @param msg log this message
      * @param e   log this cause
      */
-    void debug(String msg, Throwable e);
+    public void debug(String msg, Throwable e);
 
     /**
      * Logs a message with info log level.
      *
      * @param msg log this message
      */
-    void info(String msg);
+    public void info(String msg);
 
     /**
      * Logs an error with info log level.
      *
      * @param e log this cause
      */
-    void info(Throwable e);
+    public void info(Throwable e);
 
     /**
      * Logs an error with info log level.
@@ -87,21 +87,21 @@ public interface Logger {
      * @param msg log this message
      * @param e   log this cause
      */
-    void info(String msg, Throwable e);
+    public void info(String msg, Throwable e);
 
     /**
      * Logs a message with warn log level.
      *
      * @param msg log this message
      */
-    void warn(String msg);
+    public void warn(String msg);
 
     /**
      * Logs a message with warn log level.
      *
      * @param e log this message
      */
-    void warn(Throwable e);
+    public void warn(Throwable e);
 
     /**
      * Logs a message with warn log level.
@@ -109,21 +109,21 @@ public interface Logger {
      * @param msg log this message
      * @param e   log this cause
      */
-    void warn(String msg, Throwable e);
+    public void warn(String msg, Throwable e);
 
     /**
      * Logs a message with error log level.
      *
      * @param msg log this message
      */
-    void error(String msg);
+    public void error(String msg);
 
     /**
      * Logs an error with error log level.
      *
      * @param e log this cause
      */
-    void error(Throwable e);
+    public void error(Throwable e);
 
     /**
      * Logs an error with error log level.
@@ -131,41 +131,41 @@ public interface Logger {
      * @param msg log this message
      * @param e   log this cause
      */
-    void error(String msg, Throwable e);
+    public void error(String msg, Throwable e);
 
     /**
      * Is trace logging currently enabled?
      *
      * @return true if trace is enabled
      */
-    boolean isTraceEnabled();
+    public boolean isTraceEnabled();
 
     /**
      * Is debug logging currently enabled?
      *
      * @return true if debug is enabled
      */
-    boolean isDebugEnabled();
+    public boolean isDebugEnabled();
 
     /**
      * Is info logging currently enabled?
      *
      * @return true if info is enabled
      */
-    boolean isInfoEnabled();
+    public boolean isInfoEnabled();
 
     /**
      * Is warn logging currently enabled?
      *
      * @return true if warn is enabled
      */
-    boolean isWarnEnabled();
+    public boolean isWarnEnabled();
 
     /**
      * Is error logging currently enabled?
      *
      * @return true if error is enabled
      */
-    boolean isErrorEnabled();
+    public boolean isErrorEnabled();
 
 }

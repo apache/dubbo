@@ -25,12 +25,12 @@ import org.apache.dubbo.common.extension.SPI;
 public interface Container {
 
     /**
-     * start method to load the container.
+     * start.
      */
     void start();
 
     /**
-     * stop method to unload the container.
+     * stop.
      */
     void stop();
 

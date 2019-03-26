@@ -16,13 +16,12 @@
  */
 package org.apache.dubbo.common.io;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThat;
 
 public class UnsafeStringWriterTest {
     @Test
@@ -37,11 +36,9 @@ public class UnsafeStringWriterTest {
         assertThat(writer.toString(), is("abc"));
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testNegativeSize() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            new UnsafeStringWriter(-1);
-        });
+        new UnsafeStringWriter(-1);
     }
 
     @Test
@@ -81,21 +78,17 @@ public class UnsafeStringWriterTest {
         assertThat(writer.toString(), is("aba"));
     }
 
-    @Test
+    @Test(expected = IndexOutOfBoundsException.class)
     public void testWriteCharWithWrongLength() throws IOException {
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
-            UnsafeStringWriter writer = new UnsafeStringWriter();
-            char[] chars = new char[0];
-            writer.write(chars, 0, 1);
-        });
+        UnsafeStringWriter writer = new UnsafeStringWriter();
+        char[] chars = new char[0];
+        writer.write(chars, 0, 1);
     }
 
-    @Test
+    @Test(expected = IndexOutOfBoundsException.class)
     public void testWriteCharWithWrongCombineLength() throws IOException {
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
-            UnsafeStringWriter writer = new UnsafeStringWriter();
-            char[] chars = new char[1];
-            writer.write(chars, 1, 1);
-        });
+        UnsafeStringWriter writer = new UnsafeStringWriter();
+        char[] chars = new char[1];
+        writer.write(chars, 1, 1);
     }
 }

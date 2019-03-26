@@ -16,10 +16,8 @@
  */
 package org.apache.dubbo.config.spring.annotation.consumer;
 
-import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.api.DemoService;
-
 import org.springframework.stereotype.Controller;
 
 /**
@@ -28,7 +26,7 @@ import org.springframework.stereotype.Controller;
 @Controller("annotationAction")
 public class AnnotationAction {
 
-    @Reference(version = "1.2", methods = {@Method(name = "sayHello", timeout = 5000)})
+    @Reference(version = "1.2")
     private DemoService demoService;
 
     public String doSayName(String name) {

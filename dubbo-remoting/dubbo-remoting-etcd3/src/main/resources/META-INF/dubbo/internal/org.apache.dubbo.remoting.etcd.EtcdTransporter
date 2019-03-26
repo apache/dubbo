@@ -1,1 +1,0 @@
-jetcd=org.apache.dubbo.remoting.etcd.jetcd.JEtcdTransporter

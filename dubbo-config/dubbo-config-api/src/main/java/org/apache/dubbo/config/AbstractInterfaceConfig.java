@@ -18,7 +18,6 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -91,7 +90,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected String cluster;
 
     /**
-     * The {@link Filter} when the provider side exposed a service or the customer side references a remote service used,
+     * The {@link Filter} when the provicer side exposed a service or the customer side references a remote service used,
      * if there are more than one, you can use commas to separate them
      */
     protected String filter;
@@ -103,7 +102,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected String listener;
 
     /**
-     * The owner of the service providers
+     * The owner of zhe service providers
      */
     protected String owner;
 
@@ -287,7 +286,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected List<URL> loadRegistries(boolean provider) {
         // check && override if necessary
         List<URL> registryList = new ArrayList<URL>();
-        if (CollectionUtils.isNotEmpty(registries)) {
+        if (registries != null && !registries.isEmpty()) {
             for (RegistryConfig config : registries) {
                 String address = config.getAddress();
                 if (StringUtils.isEmpty(address)) {
@@ -297,18 +296,16 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                     Map<String, String> map = new HashMap<String, String>();
                     appendParameters(map, application);
                     appendParameters(map, config);
-                    map.put(Constants.PATH_KEY, RegistryService.class.getName());
+                    map.put("path", RegistryService.class.getName());
                     appendRuntimeParameters(map);
-                    if (!map.containsKey(Constants.PROTOCOL_KEY)) {
-                        map.put(Constants.PROTOCOL_KEY, Constants.DUBBO_PROTOCOL);
+                    if (!map.containsKey("protocol")) {
+                        map.put("protocol", "dubbo");
                     }
                     List<URL> urls = UrlUtils.parseURLs(address, map);
 
                     for (URL url : urls) {
-                        url = URLBuilder.from(url)
-                                .addParameter(Constants.REGISTRY_KEY, url.getProtocol())
-                                .setProtocol(Constants.REGISTRY_PROTOCOL)
-                                .build();
+                        url = url.addParameter(Constants.REGISTRY_KEY, url.getProtocol());
+                        url = url.setProtocol(Constants.REGISTRY_PROTOCOL);
                         if ((provider && url.getParameter(Constants.REGISTER_KEY, true))
                                 || (!provider && url.getParameter(Constants.SUBSCRIBE_KEY, true))) {
                             registryList.add(url);
@@ -334,8 +331,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         appendRuntimeParameters(map);
         //set ip
         String hostToRegistry = ConfigUtils.getSystemProperty(Constants.DUBBO_IP_TO_REGISTRY);
-        if (StringUtils.isEmpty(hostToRegistry)) {
+        if (hostToRegistry == null || hostToRegistry.length() == 0) {
             hostToRegistry = NetUtils.getLocalHost();
+        } else if (NetUtils.isInvalidLocalHost(hostToRegistry)) {
+            throw new IllegalArgumentException("Specified invalid registry ip from property:" +
+                    Constants.DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
         }
         map.put(Constants.REGISTER_IP_KEY, hostToRegistry);
         appendParameters(map, monitor);
@@ -350,16 +350,12 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 if (getExtensionLoader(MonitorFactory.class).hasExtension("logstat")) {
                     map.put(Constants.PROTOCOL_KEY, "logstat");
                 } else {
-                    map.put(Constants.PROTOCOL_KEY, Constants.DUBBO_PROTOCOL);
+                    map.put(Constants.PROTOCOL_KEY, Constants.DOBBO_PROTOCOL);
                 }
             }
             return UrlUtils.parseURL(address, map);
         } else if (Constants.REGISTRY_PROTOCOL.equals(monitor.getProtocol()) && registryURL != null) {
-            return URLBuilder.from(registryURL)
-                    .setProtocol(Constants.DUBBO_PROTOCOL)
-                    .addParameter(Constants.PROTOCOL_KEY, Constants.REGISTRY_PROTOCOL)
-                    .addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map))
-                    .build();
+          return registryURL.setProtocol(Constants.DOBBO_PROTOCOL).addParameter(Constants.PROTOCOL_KEY, Constants.REGISTRY_PROTOCOL).addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map));
         }
         return null;
     }
@@ -375,7 +371,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     private URL loadMetadataReporterURL() {
         String address = metadataReportConfig.getAddress();
-        if (StringUtils.isEmpty(address)) {
+        if (address == null || address.length() == 0) {
             return null;
         }
         Map<String, String> map = new HashMap<String, String>();
@@ -407,13 +403,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
         }
         // check if methods exist in the remote service interface
-        if (CollectionUtils.isNotEmpty(methods)) {
+        if (methods != null && !methods.isEmpty()) {
             for (MethodConfig methodBean : methods) {
                 methodBean.setService(interfaceClass.getName());
                 methodBean.setServiceId(this.getId());
                 methodBean.refresh();
                 String methodName = methodBean.getName();
-                if (StringUtils.isEmpty(methodName)) {
+                if (methodName == null || methodName.length() == 0) {
                     throw new IllegalStateException("<dubbo:method> name attribute is required! Please check: " +
                             "<dubbo:service interface=\"" + interfaceClass.getName() + "\" ... >" +
                             "<dubbo:method name=\"\" ... /></<dubbo:reference>");
@@ -493,7 +489,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
 
         try {
-            //Check if the localClass a constructor with parameter who's type is interfaceClass
+            //Check if the localClass a contructor with parameter who's type is interfaceClass
             ReflectUtils.findConstructor(localClass, interfaceClass);
         } catch (NoSuchMethodException e) {
             throw new IllegalStateException("No such constructor \"public " + localClass.getSimpleName() +
@@ -605,7 +601,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (local == null) {
             setLocal((String) null);
         } else {
-            setLocal(local.toString());
+            setLocal(String.valueOf(local));
         }
     }
 
@@ -627,7 +623,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (stub == null) {
             setStub((String) null);
         } else {
-            setStub(stub.toString());
+            setStub(String.valueOf(stub));
         }
     }
 
@@ -726,7 +722,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public RegistryConfig getRegistry() {
-        return CollectionUtils.isEmpty(registries) ? null : registries.get(0);
+        return registries == null || registries.isEmpty() ? null : registries.get(0);
     }
 
     public void setRegistry(RegistryConfig registry) {

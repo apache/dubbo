@@ -28,10 +28,10 @@ import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -57,14 +57,14 @@ public class ImplicitCallBackTest {
     //================================================================================================
     IDemoService demoProxy = null;
 
-    @BeforeEach
+    @Before
     public void setUp() throws SecurityException, NoSuchMethodException {
         onReturnMethod = Nofify.class.getMethod("onreturn", new Class<?>[]{Person.class, Integer.class});
         onThrowMethod = Nofify.class.getMethod("onthrow", new Class<?>[]{Throwable.class, Integer.class});
         onInvokeMethod = Nofify.class.getMethod("oninvoke", new Class<?>[]{Integer.class});
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         ProtocolUtils.closeAll();
     }
@@ -144,7 +144,7 @@ public class ImplicitCallBackTest {
         initOrResetUrl(false);
         initOrResetService();
         Person ret = demoProxy.get(1);
-        Assertions.assertEquals(1, ret.getId());
+        Assert.assertEquals(1, ret.getId());
         destroyService();
     }
 
@@ -156,7 +156,7 @@ public class ImplicitCallBackTest {
 
         int requestId = 2;
         Person ret = demoProxy.get(requestId);
-        Assertions.assertEquals(requestId, ret.getId());
+        Assert.assertEquals(requestId, ret.getId());
         for (int i = 0; i < 10; i++) {
             if (!notify.ret.containsKey(requestId)) {
                 Thread.sleep(200);
@@ -164,7 +164,7 @@ public class ImplicitCallBackTest {
                 break;
             }
         }
-        Assertions.assertEquals(requestId, notify.ret.get(requestId).getId());
+        Assert.assertEquals(requestId, notify.ret.get(requestId).getId());
         destroyService();
     }
 
@@ -177,7 +177,7 @@ public class ImplicitCallBackTest {
 
         int requestId = 2;
         Person ret = demoProxy.get(requestId);
-        Assertions.assertEquals(null, ret);
+        Assert.assertEquals(null, ret);
         for (int i = 0; i < 10; i++) {
             if (!notify.errors.containsKey(requestId)) {
                 Thread.sleep(200);
@@ -185,7 +185,7 @@ public class ImplicitCallBackTest {
                 break;
             }
         }
-        Assertions.assertTrue(!notify.errors.containsKey(requestId));
+        Assert.assertTrue(!notify.errors.containsKey(requestId));
         destroyService();
     }
 
@@ -197,7 +197,7 @@ public class ImplicitCallBackTest {
 
         int requestId = 2;
         Person ret = demoProxy.get(requestId);
-        Assertions.assertEquals(null, ret);
+        Assert.assertEquals(null, ret);
         for (int i = 0; i < 10; i++) {
             if (!notify.inv.contains(requestId)) {
                 Thread.sleep(200);
@@ -205,7 +205,7 @@ public class ImplicitCallBackTest {
                 break;
             }
         }
-        Assertions.assertTrue(notify.inv.contains(requestId));
+        Assert.assertTrue(notify.inv.contains(requestId));
         destroyService();
     }
 
@@ -217,7 +217,7 @@ public class ImplicitCallBackTest {
 
         int requestId = 2;
         Person ret = demoProxy.get(requestId);
-        Assertions.assertEquals(null, ret);
+        Assert.assertEquals(null, ret);
         for (int i = 0; i < 10; i++) {
             if (!notify.errors.containsKey(requestId)) {
                 Thread.sleep(200);
@@ -225,8 +225,8 @@ public class ImplicitCallBackTest {
                 break;
             }
         }
-        Assertions.assertTrue(notify.errors.containsKey(requestId));
-        Assertions.assertTrue(notify.errors.get(requestId) instanceof Throwable);
+        Assert.assertTrue(notify.errors.containsKey(requestId));
+        Assert.assertTrue(notify.errors.get(requestId) instanceof Throwable);
         destroyService();
     }
 
@@ -238,9 +238,9 @@ public class ImplicitCallBackTest {
 
         int requestId = 2;
         Person ret = demoProxy.get(requestId);
-        Assertions.assertEquals(requestId, ret.getId());
+        Assert.assertEquals(requestId, ret.getId());
         Future<Person> pFuture = RpcContext.getContext().getFuture();
-        Assertions.assertEquals(null, pFuture);
+        Assert.assertEquals(null, pFuture);
         destroyService();
     }
 
@@ -251,10 +251,10 @@ public class ImplicitCallBackTest {
 
         int requestId = 2;
         Person ret = demoProxy.get(requestId);
-        Assertions.assertEquals(null, ret);
+        Assert.assertEquals(null, ret);
         Future<Person> pFuture = RpcContext.getContext().getFuture();
         ret = pFuture.get(1000 * 1000, TimeUnit.MICROSECONDS);
-        Assertions.assertEquals(requestId, ret.getId());
+        Assert.assertEquals(requestId, ret.getId());
         destroyService();
     }
 
@@ -265,52 +265,48 @@ public class ImplicitCallBackTest {
 
         int requestId1 = 1;
         Person ret = demoProxy.get(requestId1);
-        Assertions.assertEquals(null, ret);
+        Assert.assertEquals(null, ret);
         Future<Person> p1Future = RpcContext.getContext().getFuture();
 
         int requestId2 = 1;
         Person ret2 = demoProxy.get(requestId2);
-        Assertions.assertEquals(null, ret2);
+        Assert.assertEquals(null, ret2);
         Future<Person> p2Future = RpcContext.getContext().getFuture();
 
         ret = p1Future.get(1000 * 1000, TimeUnit.MICROSECONDS);
         ret2 = p2Future.get(1000 * 1000, TimeUnit.MICROSECONDS);
-        Assertions.assertEquals(requestId1, ret.getId());
-        Assertions.assertEquals(requestId2, ret.getId());
+        Assert.assertEquals(requestId1, ret.getId());
+        Assert.assertEquals(requestId2, ret.getId());
         destroyService();
     }
 
-    @Test
+    @Test(expected = RuntimeException.class)
     public void test_Async_Future_Ex() throws Throwable {
-        Assertions.assertThrows(RuntimeException.class, () -> {
-            try {
-                initOrResetUrl(true);
-                initOrResetExService();
-
-                int requestId = 2;
-                Person ret = demoProxy.get(requestId);
-                Assertions.assertEquals(null, ret);
-                Future<Person> pFuture = RpcContext.getContext().getFuture();
-                ret = pFuture.get(1000 * 1000, TimeUnit.MICROSECONDS);
-                Assertions.assertEquals(requestId, ret.getId());
-            } catch (ExecutionException e) {
-                throw e.getCause();
-            } finally {
-                destroyService();
-            }
-        });
-    }
-
-    @Test
-    public void test_Normal_Ex() throws Exception {
-        Assertions.assertThrows(RuntimeException.class, () -> {
-            initOrResetUrl(false);
+        try {
+            initOrResetUrl(true);
             initOrResetExService();
 
             int requestId = 2;
             Person ret = demoProxy.get(requestId);
-            Assertions.assertEquals(requestId, ret.getId());
-        });
+            Assert.assertEquals(null, ret);
+            Future<Person> pFuture = RpcContext.getContext().getFuture();
+            ret = pFuture.get(1000 * 1000, TimeUnit.MICROSECONDS);
+            Assert.assertEquals(requestId, ret.getId());
+        } catch (ExecutionException e) {
+            throw e.getCause();
+        } finally {
+            destroyService();
+        }
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void test_Normal_Ex() throws Exception {
+        initOrResetUrl(false);
+        initOrResetExService();
+
+        int requestId = 2;
+        Person ret = demoProxy.get(requestId);
+        Assert.assertEquals(requestId, ret.getId());
     }
 
     interface Nofify {

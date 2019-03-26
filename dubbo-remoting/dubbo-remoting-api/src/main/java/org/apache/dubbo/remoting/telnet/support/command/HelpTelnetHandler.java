@@ -18,7 +18,6 @@ package org.apache.dubbo.remoting.telnet.support.command;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.telnet.support.Help;
@@ -55,7 +54,7 @@ public class HelpTelnetHandler implements TelnetHandler {
         } else {
             List<List<String>> table = new ArrayList<List<String>>();
             List<TelnetHandler> handlers = extensionLoader.getActivateExtension(channel.getUrl(), "telnet");
-            if (CollectionUtils.isNotEmpty(handlers)) {
+            if (handlers != null && !handlers.isEmpty()) {
                 for (TelnetHandler handler : handlers) {
                     Help help = handler.getClass().getAnnotation(Help.class);
                     List<String> row = new ArrayList<String>();

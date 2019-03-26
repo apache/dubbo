@@ -23,7 +23,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 
 /**
- * Java object output implementation
+ * Java Object output.
  */
 public class JavaObjectOutput extends NativeJavaObjectOutput {
     public JavaObjectOutput(OutputStream os) throws IOException {

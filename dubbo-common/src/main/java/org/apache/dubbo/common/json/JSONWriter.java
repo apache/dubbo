@@ -275,7 +275,6 @@ public class JSONWriter {
             case OBJECT_VALUE:
                 mState.type = OBJECT;
                 return;
-            default:
         }
     }
 

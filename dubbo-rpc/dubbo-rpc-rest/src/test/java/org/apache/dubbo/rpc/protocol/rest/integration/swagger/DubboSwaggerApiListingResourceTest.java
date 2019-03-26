@@ -18,8 +18,8 @@ package org.apache.dubbo.rpc.protocol.rest.integration.swagger;
 
 import io.swagger.models.Swagger;
 import org.jboss.resteasy.spi.ResteasyUriInfo;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -55,10 +55,10 @@ public class DubboSwaggerApiListingResourceTest {
         Response response = resource.getListingJson(app, sc,
                 null, new ResteasyUriInfo(new URI("http://rest.test")));
 
-        Assertions.assertNotNull(response);
+        Assert.assertNotNull(response);
         Swagger swagger = (Swagger)response.getEntity();
-        Assertions.assertEquals("SwaggerService",swagger.getTags().get(0).getName());
-        Assertions.assertEquals("/demoService/hello",swagger.getPaths().keySet().toArray()[0].toString());
+        Assert.assertEquals("SwaggerService",swagger.getTags().get(0).getName());
+        Assert.assertEquals("/demoService/hello",swagger.getPaths().keySet().toArray()[0].toString());
     }
 
 }

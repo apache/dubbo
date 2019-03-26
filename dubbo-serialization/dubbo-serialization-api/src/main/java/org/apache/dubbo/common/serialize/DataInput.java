@@ -19,7 +19,7 @@ package org.apache.dubbo.common.serialize;
 import java.io.IOException;
 
 /**
- * Basic data type input interface.
+ * Data input.
  */
 public interface DataInput {
 

@@ -25,9 +25,9 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TServerTransport;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.lang.reflect.Field;
 import java.util.Map;
@@ -87,7 +87,7 @@ public class ServiceMethodNotFoundTest extends AbstractTest {
 
     }
 
-    @BeforeEach
+    @Before
     public void setUp() throws Exception {
 
         init();
@@ -98,7 +98,7 @@ public class ServiceMethodNotFoundTest extends AbstractTest {
 
     }
 
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
 
         destroy();
@@ -122,7 +122,7 @@ public class ServiceMethodNotFoundTest extends AbstractTest {
 
         invoker = protocol.refer( Demo.class, url );
 
-        org.junit.jupiter.api.Assertions.assertNotNull( invoker );
+        org.junit.Assert.assertNotNull( invoker );
 
         RpcInvocation invocation = new RpcInvocation();
 
@@ -138,9 +138,9 @@ public class ServiceMethodNotFoundTest extends AbstractTest {
 
         Result result = invoker.invoke( invocation );
 
-        Assertions.assertNull( result.getResult() );
+        Assert.assertNull( result.getResult() );
 
-        Assertions.assertTrue( result.getException() instanceof RpcException );*/
+        Assert.assertTrue( result.getException() instanceof RpcException );*/
 
     }
 

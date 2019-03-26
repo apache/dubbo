@@ -22,10 +22,10 @@ import org.apache.dubbo.config.spring.context.annotation.consumer.ConsumerConfig
 import org.apache.dubbo.config.spring.context.annotation.provider.DemoServiceImpl;
 import org.apache.dubbo.config.spring.context.annotation.provider.ProviderConfiguration;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,12 +39,12 @@ import static org.springframework.core.annotation.AnnotationUtils.findAnnotation
  */
 public class DubboComponentScanRegistrarTest {
 
-    @BeforeEach
+    @Before
     public void setUp() {
         ConfigManager.getInstance().clear();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         ConfigManager.getInstance().clear();
     }
@@ -62,15 +62,15 @@ public class DubboComponentScanRegistrarTest {
 
         String value = demoService.sayName("Mercy");
 
-        Assertions.assertEquals("Hello,Mercy", value);
+        Assert.assertEquals("Hello,Mercy", value);
 
         Class<?> beanClass = AopUtils.getTargetClass(demoService);
 
         // DemoServiceImpl with @Transactional
-        Assertions.assertEquals(DemoServiceImpl.class, beanClass);
+        Assert.assertEquals(DemoServiceImpl.class, beanClass);
 
         // Test @Transactional is present or not
-        Assertions.assertNotNull(findAnnotation(beanClass, Transactional.class));
+        Assert.assertNotNull(findAnnotation(beanClass, Transactional.class));
 
         AnnotationConfigApplicationContext consumerContext = new AnnotationConfigApplicationContext();
 
@@ -84,7 +84,7 @@ public class DubboComponentScanRegistrarTest {
 
         value = demoService.sayName("Mercy");
 
-        Assertions.assertEquals("Hello,Mercy", value);
+        Assert.assertEquals("Hello,Mercy", value);
 
         ConsumerConfiguration.Child child = consumerContext.getBean(ConsumerConfiguration.Child.class);
 
@@ -92,31 +92,31 @@ public class DubboComponentScanRegistrarTest {
 
         demoService = child.getDemoServiceFromChild();
 
-        Assertions.assertNotNull(demoService);
+        Assert.assertNotNull(demoService);
 
         value = demoService.sayName("Mercy");
 
-        Assertions.assertEquals("Hello,Mercy", value);
+        Assert.assertEquals("Hello,Mercy", value);
 
         // From Parent
 
         demoService = child.getDemoServiceFromParent();
 
-        Assertions.assertNotNull(demoService);
+        Assert.assertNotNull(demoService);
 
         value = demoService.sayName("Mercy");
 
-        Assertions.assertEquals("Hello,Mercy", value);
+        Assert.assertEquals("Hello,Mercy", value);
 
         // From Ancestor
 
         demoService = child.getDemoServiceFromAncestor();
 
-        Assertions.assertNotNull(demoService);
+        Assert.assertNotNull(demoService);
 
         value = demoService.sayName("Mercy");
 
-        Assertions.assertEquals("Hello,Mercy", value);
+        Assert.assertEquals("Hello,Mercy", value);
 
         providerContext.close();
         consumerContext.close();

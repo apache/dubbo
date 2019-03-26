@@ -16,17 +16,17 @@
  */
 package org.apache.dubbo.rpc.filter.tps;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
+import org.junit.After;
+import org.junit.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class StatItemTest {
 
     private StatItem statItem;
 
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
         statItem = null;
     }

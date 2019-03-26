@@ -27,6 +27,7 @@ import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.Codec2;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.codec.ExchangeCodec;
@@ -44,7 +45,7 @@ import static org.apache.dubbo.rpc.protocol.dubbo.CallbackServiceCodec.encodeInv
 /**
  * Dubbo codec.
  */
-public class DubboCodec extends ExchangeCodec {
+public class DubboCodec extends ExchangeCodec implements Codec2 {
 
     public static final String NAME = "dubbo";
     public static final String DUBBO_VERSION = Version.getProtocolVersion();
@@ -67,7 +68,7 @@ public class DubboCodec extends ExchangeCodec {
             // decode response.
             Response res = new Response(id);
             if ((flag & FLAG_EVENT) != 0) {
-                res.setEvent(true);
+                res.setEvent(Response.HEARTBEAT_EVENT);
             }
             // get status.
             byte status = header[3];
@@ -113,7 +114,7 @@ public class DubboCodec extends ExchangeCodec {
             req.setVersion(Version.getProtocolVersion());
             req.setTwoWay((flag & FLAG_TWOWAY) != 0);
             if ((flag & FLAG_EVENT) != 0) {
-                req.setEvent(true);
+                req.setEvent(Request.HEARTBEAT_EVENT);
             }
             try {
                 Object data;
@@ -144,7 +145,6 @@ public class DubboCodec extends ExchangeCodec {
                 req.setBroken(true);
                 req.setData(t);
             }
-
             return req;
         }
     }

@@ -20,7 +20,6 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -107,7 +106,7 @@ public class NettyServer extends AbstractServer implements Server {
         }
         try {
             Collection<org.apache.dubbo.remoting.Channel> channels = getChannels();
-            if (CollectionUtils.isNotEmpty(channels)) {
+            if (channels != null && !channels.isEmpty()) {
                 for (org.apache.dubbo.remoting.Channel channel : channels) {
                     try {
                         channel.close();

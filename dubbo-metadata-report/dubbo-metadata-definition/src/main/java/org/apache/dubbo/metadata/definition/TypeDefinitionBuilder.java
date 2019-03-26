@@ -26,7 +26,6 @@ import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,16 +35,20 @@ import java.util.Map;
  */
 public class TypeDefinitionBuilder {
 
-    private static final TypeBuilder ARRAY_BUILDER = new ArrayTypeBuilder();
-    private static final TypeBuilder COLLECTION_BUILDER = new CollectionTypeBuilder();
-    private static final TypeBuilder MAP_BUILDER = new MapTypeBuilder();
-    private static final TypeBuilder ENUM_BUILDER = new EnumTypeBuilder();
+    private static final ThreadLocal<ArrayList<TypeBuilder>> builders;
 
-    private static final List<TypeBuilder> BUILDERS = Arrays.asList(ARRAY_BUILDER, COLLECTION_BUILDER, MAP_BUILDER, ENUM_BUILDER);
+    static {
+        builders = new ThreadLocal<ArrayList<TypeBuilder>>();
+        builders.set(new ArrayList<TypeBuilder>());
+        builders.get().add(new ArrayTypeBuilder());
+        builders.get().add(new CollectionTypeBuilder());
+        builders.get().add(new MapTypeBuilder());
+        builders.get().add(new EnumTypeBuilder());
+    }
 
     public static TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache) {
         TypeBuilder builder = getGenericTypeBuilder(type, clazz);
-        TypeDefinition td;
+        TypeDefinition td = null;
         if (builder != null) {
             td = builder.build(type, clazz, typeCache);
         } else {
@@ -55,7 +58,7 @@ public class TypeDefinitionBuilder {
     }
 
     private static TypeBuilder getGenericTypeBuilder(Type type, Class<?> clazz) {
-        for (TypeBuilder builder : BUILDERS) {
+        for (TypeBuilder builder : builders.get()) {
             if (builder.accept(type, clazz)) {
                 return builder;
             }
@@ -63,14 +66,14 @@ public class TypeDefinitionBuilder {
         return null;
     }
 
-    private Map<Class<?>, TypeDefinition> typeCache = new HashMap<>();
+    private Map<Class<?>, TypeDefinition> typeCache = new HashMap<Class<?>, TypeDefinition>();
 
     public TypeDefinition build(Type type, Class<?> clazz) {
         return build(type, clazz, typeCache);
     }
 
     public List<TypeDefinition> getTypeDefinitions() {
-        return new ArrayList<>(typeCache.values());
+        return new ArrayList<TypeDefinition>(typeCache.values());
     }
 
 }

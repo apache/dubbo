@@ -23,23 +23,20 @@ import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.status.RegistryStatusChecker;
 import org.apache.dubbo.remoting.zookeeper.curator.CuratorZookeeperTransporter;
-
 import org.apache.curator.test.TestingServer;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 
 public class ZookeeperRegistryTest {
@@ -51,7 +48,7 @@ public class ZookeeperRegistryTest {
     private URL registryUrl;
     private ZookeeperRegistryFactory zookeeperRegistryFactory;
 
-    @BeforeEach
+    @Before
     public void setUp() throws Exception {
         int zkServerPort = NetUtils.getAvailablePort();
         this.zkServer = new TestingServer(zkServerPort, true);
@@ -62,17 +59,21 @@ public class ZookeeperRegistryTest {
         this.zookeeperRegistry = (ZookeeperRegistry) zookeeperRegistryFactory.createRegistry(registryUrl);
     }
 
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
         zkServer.stop();
     }
 
     @Test
+    public void testDefaultPort() {
+        Assert.assertEquals("10.20.153.10:2181", ZookeeperRegistry.appendDefaultPort("10.20.153.10:0"));
+        Assert.assertEquals("10.20.153.10:2181", ZookeeperRegistry.appendDefaultPort("10.20.153.10"));
+    }
+
+    @Test(expected = IllegalStateException.class)
     public void testAnyHost() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            URL errorUrl = URL.valueOf("multicast://0.0.0.0/");
-            new ZookeeperRegistryFactory().createRegistry(errorUrl);
-        });
+        URL errorUrl = URL.valueOf("multicast://0.0.0.0/");
+        new ZookeeperRegistryFactory().createRegistry(errorUrl);
     }
 
     @Test
@@ -123,7 +124,7 @@ public class ZookeeperRegistryTest {
         assertThat(lookup.size(), is(1));
     }
 
-    @Disabled
+    @Ignore
     @Test
     /*
       This UT is unstable, consider remove it later.
@@ -149,7 +150,12 @@ public class ZookeeperRegistryTest {
     public void testSubscribeAnyValue() throws InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
         zookeeperRegistry.register(serviceUrl);
-        zookeeperRegistry.subscribe(anyUrl, urls -> latch.countDown());
+        zookeeperRegistry.subscribe(anyUrl, new NotifyListener() {
+            @Override
+            public void notify(List<URL> urls) {
+                latch.countDown();
+            }
+        });
         zookeeperRegistry.register(serviceUrl);
         latch.await();
     }

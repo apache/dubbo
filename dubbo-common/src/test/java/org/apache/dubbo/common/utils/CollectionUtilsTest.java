@@ -16,8 +16,7 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,11 +34,11 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class CollectionUtilsTest {
     @Test
@@ -162,9 +161,9 @@ public class CollectionUtilsTest {
         assertThat(toStringMap("key", "value"), equalTo(Collections.singletonMap("key", "value")));
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testStringMap2() throws Exception {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> toStringMap("key", "value", "odd"));
+        toStringMap("key", "value", "odd");
     }
 
     @Test
@@ -179,9 +178,9 @@ public class CollectionUtilsTest {
         assertEquals(expected, CollectionUtils.toMap("a", 1, "b", 2, "c", 3));
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testToMap2() throws Exception {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> toMap("a", "b", "c"));
+        toMap("a", "b", "c");
     }
 
     @Test

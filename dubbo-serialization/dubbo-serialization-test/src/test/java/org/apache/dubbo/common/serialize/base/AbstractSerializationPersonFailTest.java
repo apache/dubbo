@@ -18,8 +18,7 @@ package org.apache.dubbo.common.serialize.base;
 
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.model.Person;
-
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.io.NotSerializableException;
 import java.util.ArrayList;
@@ -29,9 +28,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+import static org.junit.matchers.JUnitMatchers.containsString;
 
 public abstract class AbstractSerializationPersonFailTest extends AbstractSerializationTest {
 

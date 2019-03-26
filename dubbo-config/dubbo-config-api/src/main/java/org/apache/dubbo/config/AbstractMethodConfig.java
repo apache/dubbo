@@ -178,7 +178,7 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
         if (mock == null) {
             setMock((String) null);
         } else {
-            setMock(mock.toString());
+            setMock(String.valueOf(mock));
         }
     }
 

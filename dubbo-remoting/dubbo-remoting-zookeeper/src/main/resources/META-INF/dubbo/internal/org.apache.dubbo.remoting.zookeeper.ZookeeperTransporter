@@ -1,1 +1,2 @@
+zkclient=org.apache.dubbo.remoting.zookeeper.zkclient.ZkclientZookeeperTransporter
 curator=org.apache.dubbo.remoting.zookeeper.curator.CuratorZookeeperTransporter

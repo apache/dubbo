@@ -304,9 +304,9 @@ public abstract class AbstractConfig implements Serializable {
      * Check whether there is a <code>Extension</code> who's name (property) is <code>value</code> (special treatment is
      * required)
      *
-     * @param type     The Extension type
+     * @param type The Extension type
      * @param property The extension key
-     * @param value    The Extension name
+     * @param value The Extension name
      */
     protected static void checkMultiExtension(Class<?> type, String property, String value) {
         checkMultiName(property, value);
@@ -359,7 +359,7 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     protected static void checkParameterName(Map<String, String> parameters) {
-        if (CollectionUtils.isEmptyMap(parameters)) {
+        if (parameters == null || parameters.size() == 0) {
             return;
         }
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
@@ -485,7 +485,12 @@ public abstract class AbstractConfig implements Serializable {
         for (Method method : methods) {
             try {
                 String name = method.getName();
-                if (isMetaMethod(method)) {
+                if ((name.startsWith("get") || name.startsWith("is"))
+                        && !name.equals("get")
+                        && !"getClass".equals(name)
+                        && Modifier.isPublic(method.getModifiers())
+                        && method.getParameterTypes().length == 0
+                        && ClassHelper.isPrimitive(method.getReturnType())) {
                     String prop = calculateAttributeFromGetter(name);
                     String key;
                     Parameter parameter = method.getAnnotation(Parameter.class);
@@ -557,7 +562,7 @@ public abstract class AbstractConfig implements Serializable {
             for (Method method : methods) {
                 if (ClassHelper.isSetter(method)) {
                     try {
-                        String value = StringUtils.trim(compositeConfiguration.getString(extractPropertyName(getClass(), method)));
+                        String value = compositeConfiguration.getString(extractPropertyName(getClass(), method));
                         // isTypeMatch() is called to avoid duplicate and incorrect update, for example, we have two 'setGeneric' methods in ReferenceConfig.
                         if (StringUtils.isNotEmpty(value) && ClassHelper.isTypeMatch(method.getParameterTypes()[0], value)) {
                             method.invoke(this, ClassHelper.convertPrimitive(method.getParameterTypes()[0], value));
@@ -612,29 +617,6 @@ public abstract class AbstractConfig implements Serializable {
      */
     @Parameter(excluded = true)
     public boolean isValid() {
-        return true;
-    }
-
-    private boolean isMetaMethod(Method method) {
-        String name = method.getName();
-        if (!(name.startsWith("get") || name.startsWith("is"))) {
-            return false;
-        }
-        if ("get".equals(name)) {
-            return false;
-        }
-        if ("getClass".equals(name)) {
-            return false;
-        }
-        if (!Modifier.isPublic(method.getModifiers())) {
-            return false;
-        }
-        if (method.getParameterTypes().length != 0) {
-            return false;
-        }
-        if (!ClassHelper.isPrimitive(method.getReturnType())) {
-            return false;
-        }
         return true;
     }
 

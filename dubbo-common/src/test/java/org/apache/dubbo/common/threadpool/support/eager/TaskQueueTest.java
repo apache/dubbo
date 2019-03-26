@@ -17,25 +17,22 @@
 
 package org.apache.dubbo.common.threadpool.support.eager;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 
 public class TaskQueueTest {
 
-    @Test
+    @Test(expected = RejectedExecutionException.class)
     public void testOffer1() throws Exception {
-        Assertions.assertThrows(RejectedExecutionException.class, () -> {
-            TaskQueue<Runnable> queue = new TaskQueue<Runnable>(1);
-            queue.offer(mock(Runnable.class));
-        });
+        TaskQueue<Runnable> queue = new TaskQueue<Runnable>(1);
+        queue.offer(mock(Runnable.class));
     }
 
     @Test
@@ -70,15 +67,13 @@ public class TaskQueueTest {
         assertThat(queue.offer(mock(Runnable.class)), is(true));
     }
 
-    @Test
+    @Test(expected = RejectedExecutionException.class)
     public void testRetryOffer1() throws Exception {
-        Assertions.assertThrows(RejectedExecutionException.class, () -> {
-            TaskQueue<Runnable> queue = new TaskQueue<Runnable>(1);
-            EagerThreadPoolExecutor executor = mock(EagerThreadPoolExecutor.class);
-            Mockito.when(executor.isShutdown()).thenReturn(true);
-            queue.setExecutor(executor);
-            queue.retryOffer(mock(Runnable.class), 1000, TimeUnit.MILLISECONDS);
-        });
+        TaskQueue<Runnable> queue = new TaskQueue<Runnable>(1);
+        EagerThreadPoolExecutor executor = mock(EagerThreadPoolExecutor.class);
+        Mockito.when(executor.isShutdown()).thenReturn(true);
+        queue.setExecutor(executor);
+        queue.retryOffer(mock(Runnable.class), 1000, TimeUnit.MILLISECONDS);
     }
 
 

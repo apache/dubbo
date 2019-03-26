@@ -16,10 +16,9 @@
  */
 package org.apache.dubbo.remoting.buffer;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -29,10 +28,10 @@ import java.util.Random;
 
 import static org.apache.dubbo.remoting.buffer.ChannelBuffers.directBuffer;
 import static org.apache.dubbo.remoting.buffer.ChannelBuffers.wrappedBuffer;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
 public abstract class AbstractChannelBufferTest {
@@ -53,14 +52,14 @@ public abstract class AbstractChannelBufferTest {
     }
 
 
-    @BeforeEach
+    @Before
     public void init() {
         buffer = newBuffer(CAPACITY);
         seed = System.currentTimeMillis();
         random = new Random(seed);
     }
 
-    @AfterEach
+    @After
     public void dispose() {
         buffer = null;
     }
@@ -71,40 +70,34 @@ public abstract class AbstractChannelBufferTest {
         assertEquals(0, buffer.readerIndex());
     }
 
-    @Test
+    @Test(expected = IndexOutOfBoundsException.class)
     public void readerIndexBoundaryCheck1() {
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
-            try {
-                buffer.writerIndex(0);
-            } catch (IndexOutOfBoundsException e) {
-                fail();
-            }
-            buffer.readerIndex(-1);
-        });
+        try {
+            buffer.writerIndex(0);
+        } catch (IndexOutOfBoundsException e) {
+            fail();
+        }
+        buffer.readerIndex(-1);
     }
 
-    @Test
+    @Test(expected = IndexOutOfBoundsException.class)
     public void readerIndexBoundaryCheck2() {
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
-            try {
-                buffer.writerIndex(buffer.capacity());
-            } catch (IndexOutOfBoundsException e) {
-                fail();
-            }
-            buffer.readerIndex(buffer.capacity() + 1);
-        });
+        try {
+            buffer.writerIndex(buffer.capacity());
+        } catch (IndexOutOfBoundsException e) {
+            fail();
+        }
+        buffer.readerIndex(buffer.capacity() + 1);
     }
 
-    @Test
+    @Test(expected = IndexOutOfBoundsException.class)
     public void readerIndexBoundaryCheck3() {
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
-            try {
-                buffer.writerIndex(CAPACITY / 2);
-            } catch (IndexOutOfBoundsException e) {
-                fail();
-            }
-            buffer.readerIndex(CAPACITY * 3 / 2);
-        });
+        try {
+            buffer.writerIndex(CAPACITY / 2);
+        } catch (IndexOutOfBoundsException e) {
+            fail();
+        }
+        buffer.readerIndex(CAPACITY * 3 / 2);
     }
 
     @Test
@@ -115,38 +108,31 @@ public abstract class AbstractChannelBufferTest {
         buffer.readerIndex(buffer.capacity());
     }
 
-    @Test
+    @Test(expected = IndexOutOfBoundsException.class)
     public void writerIndexBoundaryCheck1() {
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
-            buffer.writerIndex(-1);
-        });
+        buffer.writerIndex(-1);
     }
 
-    @Test
+    @Test(expected = IndexOutOfBoundsException.class)
     public void writerIndexBoundaryCheck2() {
-
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
-            try {
-                buffer.writerIndex(CAPACITY);
-                buffer.readerIndex(CAPACITY);
-            } catch (IndexOutOfBoundsException e) {
-                fail();
-            }
-            buffer.writerIndex(buffer.capacity() + 1);
-        });
+        try {
+            buffer.writerIndex(CAPACITY);
+            buffer.readerIndex(CAPACITY);
+        } catch (IndexOutOfBoundsException e) {
+            fail();
+        }
+        buffer.writerIndex(buffer.capacity() + 1);
     }
 
-    @Test
+    @Test(expected = IndexOutOfBoundsException.class)
     public void writerIndexBoundaryCheck3() {
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
-            try {
-                buffer.writerIndex(CAPACITY);
-                buffer.readerIndex(CAPACITY / 2);
-            } catch (IndexOutOfBoundsException e) {
-                fail();
-            }
-            buffer.writerIndex(CAPACITY / 4);
-        });
+        try {
+            buffer.writerIndex(CAPACITY);
+            buffer.readerIndex(CAPACITY / 2);
+        } catch (IndexOutOfBoundsException e) {
+            fail();
+        }
+        buffer.writerIndex(CAPACITY / 4);
     }
 
     @Test
@@ -156,64 +142,64 @@ public abstract class AbstractChannelBufferTest {
         buffer.writerIndex(CAPACITY);
     }
 
-    @Test
+    @Test(expected = IndexOutOfBoundsException.class)
     public void getByteBoundaryCheck1() {
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> buffer.getByte(-1));
+        buffer.getByte(-1);
     }
 
-    @Test
+    @Test(expected = IndexOutOfBoundsException.class)
     public void getByteBoundaryCheck2() {
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> buffer.getByte(buffer.capacity()));
+        buffer.getByte(buffer.capacity());
     }
 
-    @Test
+    @Test(expected = IndexOutOfBoundsException.class)
     public void getByteArrayBoundaryCheck1() {
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> buffer.getBytes(-1, new byte[0]));
+        buffer.getBytes(-1, new byte[0]);
     }
 
-    @Test
+    @Test(expected = IndexOutOfBoundsException.class)
     public void getByteArrayBoundaryCheck2() {
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> buffer.getBytes(-1, new byte[0], 0, 0));
+        buffer.getBytes(-1, new byte[0], 0, 0);
     }
 
-    @Test
+    @Test(expected = IndexOutOfBoundsException.class)
     public void getByteBufferBoundaryCheck() {
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> buffer.getBytes(-1, ByteBuffer.allocate(0)));
+        buffer.getBytes(-1, ByteBuffer.allocate(0));
     }
 
-    @Test
+    @Test(expected = IndexOutOfBoundsException.class)
     public void copyBoundaryCheck1() {
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> buffer.copy(-1, 0));
+        buffer.copy(-1, 0);
     }
 
-    @Test
+    @Test(expected = IndexOutOfBoundsException.class)
     public void copyBoundaryCheck2() {
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> buffer.copy(0, buffer.capacity() + 1));
+        buffer.copy(0, buffer.capacity() + 1);
     }
 
-    @Test
+    @Test(expected = IndexOutOfBoundsException.class)
     public void copyBoundaryCheck3() {
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> buffer.copy(buffer.capacity() + 1, 0));
+        buffer.copy(buffer.capacity() + 1, 0);
     }
 
-    @Test
+    @Test(expected = IndexOutOfBoundsException.class)
     public void copyBoundaryCheck4() {
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> buffer.copy(buffer.capacity(), 1));
+        buffer.copy(buffer.capacity(), 1);
     }
 
-    @Test
+    @Test(expected = IndexOutOfBoundsException.class)
     public void setIndexBoundaryCheck1() {
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> buffer.setIndex(-1, CAPACITY));
+        buffer.setIndex(-1, CAPACITY);
     }
 
-    @Test
+    @Test(expected = IndexOutOfBoundsException.class)
     public void setIndexBoundaryCheck2() {
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> buffer.setIndex(CAPACITY / 2, CAPACITY / 4));
+        buffer.setIndex(CAPACITY / 2, CAPACITY / 4);
     }
 
-    @Test
+    @Test(expected = IndexOutOfBoundsException.class)
     public void setIndexBoundaryCheck3() {
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> buffer.setIndex(0, CAPACITY + 1));
+        buffer.setIndex(0, CAPACITY + 1);
     }
 
     @Test
@@ -238,9 +224,9 @@ public abstract class AbstractChannelBufferTest {
         assertEquals(0, dst.get(3));
     }
 
-    @Test
+    @Test(expected = IndexOutOfBoundsException.class)
     public void getDirectByteBufferBoundaryCheck() {
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> buffer.getBytes(-1, ByteBuffer.allocateDirect(0)));
+        buffer.getBytes(-1, ByteBuffer.allocateDirect(0));
     }
 
     @Test

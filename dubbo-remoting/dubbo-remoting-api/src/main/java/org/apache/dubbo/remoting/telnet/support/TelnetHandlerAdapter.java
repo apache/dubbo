@@ -74,24 +74,27 @@ public class TelnetHandlerAdapter extends ChannelHandlerAdapter implements Telne
         if (buf.length() > 0) {
             buf.append("\r\n");
         }
-        if (StringUtils.isNotEmpty(prompt) && !noprompt) {
+        if (prompt != null && prompt.length() > 0 && !noprompt) {
             buf.append(prompt);
         }
         return buf.toString();
     }
 
     private boolean commandEnabled(URL url, String command) {
+        boolean commandEnable = false;
         String supportCommands = url.getParameter(Constants.TELNET);
         if (StringUtils.isEmpty(supportCommands)) {
-            return true;
-        }
-        String[] commands = Constants.COMMA_SPLIT_PATTERN.split(supportCommands);
-        for (String c : commands) {
-            if (command.equals(c)) {
-                return true;
+            commandEnable = true;
+        } else {
+            String[] commands = Constants.COMMA_SPLIT_PATTERN.split(supportCommands);
+            for (String c : commands) {
+                if (command.equals(c)) {
+                    commandEnable = true;
+                    break;
+                }
             }
         }
-        return false;
+        return commandEnable;
     }
 
 }

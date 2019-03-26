@@ -20,8 +20,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.cluster.configurator.consts.UrlConstant;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * OverrideConfiguratorTest
@@ -34,16 +34,16 @@ public class AbsentConfiguratorTest {
         AbsentConfigurator configurator = new AbsentConfigurator(URL.valueOf("override://foo@0.0.0.0/com.foo.BarService?timeout=200"));
 
         URL url = configurator.configure(URL.valueOf(UrlConstant.URL_CONSUMER));
-        Assertions.assertEquals("200", url.getParameter("timeout"));
+        Assert.assertEquals("200", url.getParameter("timeout"));
 
         url = configurator.configure(URL.valueOf(UrlConstant.URL_ONE));
-        Assertions.assertEquals("1000", url.getParameter("timeout"));
+        Assert.assertEquals("1000", url.getParameter("timeout"));
 
         url = configurator.configure(URL.valueOf(UrlConstant.APPLICATION_BAR_SIDE_CONSUMER_11));
-        Assertions.assertNull(url.getParameter("timeout"));
+        Assert.assertNull(url.getParameter("timeout"));
 
         url = configurator.configure(URL.valueOf(UrlConstant.TIMEOUT_1000_SIDE_CONSUMER_11));
-        Assertions.assertEquals("1000", url.getParameter("timeout"));
+        Assert.assertEquals("1000", url.getParameter("timeout"));
     }
 
     @Test
@@ -51,18 +51,18 @@ public class AbsentConfiguratorTest {
         AbsentConfigurator configurator = new AbsentConfigurator(URL.valueOf("override://" + NetUtils.getLocalHost() + "/com.foo.BarService?timeout=200"));
 
         URL url = configurator.configure(URL.valueOf(UrlConstant.URL_CONSUMER));
-        Assertions.assertEquals("200", url.getParameter("timeout"));
+        Assert.assertEquals("200", url.getParameter("timeout"));
 
         url = configurator.configure(URL.valueOf(UrlConstant.URL_ONE));
-        Assertions.assertEquals("1000", url.getParameter("timeout"));
+        Assert.assertEquals("1000", url.getParameter("timeout"));
 
         AbsentConfigurator configurator1 = new AbsentConfigurator(URL.valueOf(UrlConstant.SERVICE_TIMEOUT_200));
 
         url = configurator1.configure(URL.valueOf(UrlConstant.APPLICATION_BAR_SIDE_CONSUMER_10));
-        Assertions.assertNull(url.getParameter("timeout"));
+        Assert.assertNull(url.getParameter("timeout"));
 
         url = configurator1.configure(URL.valueOf(UrlConstant.TIMEOUT_1000_SIDE_CONSUMER_10));
-        Assertions.assertEquals("1000", url.getParameter("timeout"));
+        Assert.assertEquals("1000", url.getParameter("timeout"));
     }
 
 }

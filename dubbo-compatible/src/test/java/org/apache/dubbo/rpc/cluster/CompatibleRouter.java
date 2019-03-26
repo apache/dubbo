@@ -28,7 +28,6 @@ import java.util.List;
  *
  */
 public class CompatibleRouter implements Router {
-
     @Override
     public URL getUrl() {
         return null;

@@ -16,13 +16,13 @@
  */
 package org.apache.dubbo.common.logger;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.io.File;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThat;
 
 public class LoggerFactoryTest {
     @Test
@@ -55,14 +55,6 @@ public class LoggerFactoryTest {
     public void testGetLogger() {
         Logger logger1 = LoggerFactory.getLogger(this.getClass());
         Logger logger2 = LoggerFactory.getLogger(this.getClass());
-
-        assertThat(logger1, is(logger2));
-    }
-
-    @Test
-    public void shouldReturnSameLogger() {
-        Logger logger1 = LoggerFactory.getLogger(this.getClass().getName());
-        Logger logger2 = LoggerFactory.getLogger(this.getClass().getName());
 
         assertThat(logger1, is(logger2));
     }

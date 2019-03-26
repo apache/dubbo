@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.common.compiler.support;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class AdaptiveCompilerTest extends JavaCodeTest {
 
@@ -27,7 +27,7 @@ public class AdaptiveCompilerTest extends JavaCodeTest {
         AdaptiveCompiler compiler = new AdaptiveCompiler();
         Class<?> clazz = compiler.compile(getSimpleCode(), AdaptiveCompiler.class.getClassLoader());
         HelloService helloService = (HelloService) clazz.newInstance();
-        Assertions.assertEquals("Hello world!", helloService.sayHello());
+        Assert.assertEquals("Hello world!", helloService.sayHello());
     }
 
 }

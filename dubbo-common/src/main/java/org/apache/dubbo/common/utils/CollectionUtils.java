@@ -55,7 +55,7 @@ public class CollectionUtils {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static <T> List<T> sort(List<T> list) {
-        if (isNotEmpty(list)) {
+        if (list != null && !list.isEmpty()) {
             Collections.sort((List) list);
         }
         return list;
@@ -120,7 +120,7 @@ public class CollectionUtils {
         for (Map.Entry<String, String> entry : map.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();
-            if (StringUtils.isEmpty(value)) {
+            if (value == null || value.length() == 0) {
                 list.add(key);
             } else {
                 list.add(key + separator + value);
@@ -206,15 +206,7 @@ public class CollectionUtils {
     }
 
     public static boolean isNotEmpty(Collection<?> collection) {
-        return !isEmpty(collection);
-    }
-
-    public static boolean isEmptyMap(Map map) {
-        return map == null || map.size() == 0;
-    }
-
-    public static boolean isNotEmptyMap(Map map) {
-        return !isEmptyMap(map);
+        return collection != null && !collection.isEmpty();
     }
 
 }

@@ -22,19 +22,19 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.transport.dispatcher.WrappedChannelHandler;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.lang.reflect.Field;
 
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.Assert.fail;
 
 public class WrappedChannelHandlerTest {
     WrappedChannelHandler handler;
     URL url = URL.valueOf("test://10.20.30.40:1234");
 
-    @BeforeEach
+    @Before
     public void setUp() throws Exception {
         handler = new WrappedChannelHandler(new BizChannelHander(true), url);
     }
@@ -78,21 +78,21 @@ public class WrappedChannelHandlerTest {
         }
     }
 
-    @Test
+    @Test(expected = RemotingException.class)
     public void test_Connect_Biz_Error() throws RemotingException {
-        Assertions.assertThrows(RemotingException.class, () -> handler.connected(new MockedChannel()));
+        handler.connected(new MockedChannel());
     }
 
     ;
 
-    @Test
+    @Test(expected = RemotingException.class)
     public void test_Disconnect_Biz_Error() throws RemotingException {
-        Assertions.assertThrows(RemotingException.class, () -> handler.disconnected(new MockedChannel()));
+        handler.disconnected(new MockedChannel());
     }
 
-    @Test
+    @Test(expected = RemotingException.class)
     public void test_MessageReceived_Biz_Error() throws RemotingException {
-        Assertions.assertThrows(RemotingException.class, () -> handler.received(new MockedChannel(), ""));
+        handler.received(new MockedChannel(), "");
     }
 
     @Test
@@ -101,7 +101,7 @@ public class WrappedChannelHandlerTest {
             handler.caught(new MockedChannel(), new BizException());
             fail();
         } catch (Exception e) {
-            Assertions.assertEquals(BizException.class, e.getCause().getClass());
+            Assert.assertEquals(BizException.class, e.getCause().getClass());
         }
     }
 

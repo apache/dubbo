@@ -24,9 +24,9 @@ import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
 
 import com.google.gson.Gson;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.Calendar;
 import java.util.Collections;
@@ -42,7 +42,7 @@ public class AbstractMetadataReportTest {
     private NewMetadataReport abstractMetadataReport;
 
 
-    @BeforeEach
+    @Before
     public void before() {
         URL url = URL.valueOf("zookeeper://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
         abstractMetadataReport = new NewMetadataReport(url);
@@ -52,11 +52,11 @@ public class AbstractMetadataReportTest {
     public void testGetProtocol() {
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic&side=provider");
         String protocol = abstractMetadataReport.getProtocol(url);
-        Assertions.assertEquals(protocol, "provider");
+        Assert.assertEquals(protocol, "provider");
 
         URL url2 = URL.valueOf("consumer://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
         String protocol2 = abstractMetadataReport.getProtocol(url2);
-        Assertions.assertEquals(protocol2, "consumer");
+        Assert.assertEquals(protocol2, "consumer");
     }
 
     @Test
@@ -67,7 +67,7 @@ public class AbstractMetadataReportTest {
         String application = "vic";
         MetadataIdentifier providerMetadataIdentifier = storePrivider(abstractMetadataReport, interfaceName, version, group, application);
         Thread.sleep(1500);
-        Assertions.assertNotNull(abstractMetadataReport.store.get(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY)));
+        Assert.assertNotNull(abstractMetadataReport.store.get(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY)));
     }
 
     @Test
@@ -78,7 +78,7 @@ public class AbstractMetadataReportTest {
         String application = "vic";
         abstractMetadataReport.syncReport = true;
         MetadataIdentifier providerMetadataIdentifier = storePrivider(abstractMetadataReport, interfaceName, version, group, application);
-        Assertions.assertNotNull(abstractMetadataReport.store.get(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY)));
+        Assert.assertNotNull(abstractMetadataReport.store.get(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY)));
     }
 
     @Test
@@ -87,7 +87,7 @@ public class AbstractMetadataReportTest {
         URL singleUrl = URL.valueOf("redis://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.metadata.integration.InterfaceNameTestService?version=1.0.0&application=singleTest");
         NewMetadataReport singleMetadataReport = new NewMetadataReport(singleUrl);
 
-        Assertions.assertFalse(singleMetadataReport.file.exists());
+        Assert.assertFalse(singleMetadataReport.file.exists());
 
         String interfaceName = "org.apache.dubbo.metadata.integration.InterfaceNameTestService";
         String version = "1.0.0";
@@ -96,8 +96,8 @@ public class AbstractMetadataReportTest {
         MetadataIdentifier providerMetadataIdentifier = storePrivider(singleMetadataReport, interfaceName, version, group, application);
 
         Thread.sleep(2000);
-        Assertions.assertTrue(singleMetadataReport.file.exists());
-        Assertions.assertTrue(singleMetadataReport.properties.containsKey(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY)));
+        Assert.assertTrue(singleMetadataReport.file.exists());
+        Assert.assertTrue(singleMetadataReport.properties.containsKey(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY)));
     }
 
     @Test
@@ -110,23 +110,23 @@ public class AbstractMetadataReportTest {
         RetryMetadataReport retryReport = new RetryMetadataReport(storeUrl, 2);
         retryReport.metadataReportRetry.retryPeriod = 400L;
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
-        Assertions.assertNull(retryReport.metadataReportRetry.retryScheduledFuture);
-        Assertions.assertTrue(retryReport.metadataReportRetry.retryCounter.get() == 0);
-        Assertions.assertTrue(retryReport.store.isEmpty());
-        Assertions.assertTrue(retryReport.failedReports.isEmpty());
+        Assert.assertNull(retryReport.metadataReportRetry.retryScheduledFuture);
+        Assert.assertTrue(retryReport.metadataReportRetry.retryCounter.get() == 0);
+        Assert.assertTrue(retryReport.store.isEmpty());
+        Assert.assertTrue(retryReport.failedReports.isEmpty());
 
 
         storePrivider(retryReport, interfaceName, version, group, application);
         Thread.sleep(150);
 
-        Assertions.assertTrue(retryReport.store.isEmpty());
-        Assertions.assertFalse(retryReport.failedReports.isEmpty());
-        Assertions.assertNotNull(retryReport.metadataReportRetry.retryScheduledFuture);
+        Assert.assertTrue(retryReport.store.isEmpty());
+        Assert.assertFalse(retryReport.failedReports.isEmpty());
+        Assert.assertNotNull(retryReport.metadataReportRetry.retryScheduledFuture);
         Thread.sleep(2000L);
-        Assertions.assertTrue(retryReport.metadataReportRetry.retryCounter.get() != 0);
-        Assertions.assertTrue(retryReport.metadataReportRetry.retryCounter.get() >= 3);
-        Assertions.assertFalse(retryReport.store.isEmpty());
-        Assertions.assertTrue(retryReport.failedReports.isEmpty());
+        Assert.assertTrue(retryReport.metadataReportRetry.retryCounter.get() != 0);
+        Assert.assertTrue(retryReport.metadataReportRetry.retryCounter.get() >= 3);
+        Assert.assertFalse(retryReport.store.isEmpty());
+        Assert.assertTrue(retryReport.failedReports.isEmpty());
     }
 
     @Test
@@ -143,11 +143,11 @@ public class AbstractMetadataReportTest {
         storePrivider(retryReport, interfaceName, version, group, application);
         Thread.sleep(80);
 
-        Assertions.assertFalse(retryReport.metadataReportRetry.retryScheduledFuture.isCancelled());
-        Assertions.assertFalse(retryReport.metadataReportRetry.retryExecutor.isShutdown());
+        Assert.assertFalse(retryReport.metadataReportRetry.retryScheduledFuture.isCancelled());
+        Assert.assertFalse(retryReport.metadataReportRetry.retryExecutor.isShutdown());
         Thread.sleep(1000L);
-        Assertions.assertTrue(retryReport.metadataReportRetry.retryScheduledFuture.isCancelled());
-        Assertions.assertTrue(retryReport.metadataReportRetry.retryExecutor.isShutdown());
+        Assert.assertTrue(retryReport.metadataReportRetry.retryScheduledFuture.isCancelled());
+        Assert.assertTrue(retryReport.metadataReportRetry.retryExecutor.isShutdown());
 
     }
 
@@ -179,42 +179,42 @@ public class AbstractMetadataReportTest {
     @Test
     public void testPublishAll() throws ClassNotFoundException, InterruptedException {
 
-        Assertions.assertTrue(abstractMetadataReport.store.isEmpty());
-        Assertions.assertTrue(abstractMetadataReport.allMetadataReports.isEmpty());
+        Assert.assertTrue(abstractMetadataReport.store.isEmpty());
+        Assert.assertTrue(abstractMetadataReport.allMetadataReports.isEmpty());
         String interfaceName = "org.apache.dubbo.metadata.integration.InterfaceNameTestService";
         String version = "1.0.0";
         String group = null;
         String application = "vic";
         MetadataIdentifier providerMetadataIdentifier1 = storePrivider(abstractMetadataReport, interfaceName, version, group, application);
         Thread.sleep(1000);
-        Assertions.assertEquals(abstractMetadataReport.allMetadataReports.size(), 1);
-        Assertions.assertTrue(((FullServiceDefinition) abstractMetadataReport.allMetadataReports.get(providerMetadataIdentifier1)).getParameters().containsKey("testPKey"));
+        Assert.assertEquals(abstractMetadataReport.allMetadataReports.size(), 1);
+        Assert.assertTrue(((FullServiceDefinition) abstractMetadataReport.allMetadataReports.get(providerMetadataIdentifier1)).getParameters().containsKey("testPKey"));
 
         MetadataIdentifier providerMetadataIdentifier2 = storePrivider(abstractMetadataReport, interfaceName, version + "_2", group + "_2", application);
         Thread.sleep(1000);
-        Assertions.assertEquals(abstractMetadataReport.allMetadataReports.size(), 2);
-        Assertions.assertTrue(((FullServiceDefinition) abstractMetadataReport.allMetadataReports.get(providerMetadataIdentifier2)).getParameters().containsKey("testPKey"));
-        Assertions.assertEquals(((FullServiceDefinition) abstractMetadataReport.allMetadataReports.get(providerMetadataIdentifier2)).getParameters().get("version"), version + "_2");
+        Assert.assertEquals(abstractMetadataReport.allMetadataReports.size(), 2);
+        Assert.assertTrue(((FullServiceDefinition) abstractMetadataReport.allMetadataReports.get(providerMetadataIdentifier2)).getParameters().containsKey("testPKey"));
+        Assert.assertEquals(((FullServiceDefinition) abstractMetadataReport.allMetadataReports.get(providerMetadataIdentifier2)).getParameters().get("version"), version + "_2");
 
         Map<String, String> tmpMap = new HashMap<>();
         tmpMap.put("testKey", "value");
         MetadataIdentifier consumerMetadataIdentifier = storeConsumer(abstractMetadataReport, interfaceName, version + "_3", group + "_3", application, tmpMap);
         Thread.sleep(1000);
-        Assertions.assertEquals(abstractMetadataReport.allMetadataReports.size(), 3);
+        Assert.assertEquals(abstractMetadataReport.allMetadataReports.size(), 3);
 
         Map tmpMapResult = (Map) abstractMetadataReport.allMetadataReports.get(consumerMetadataIdentifier);
-        Assertions.assertEquals(tmpMapResult.get("testPKey"), "9090");
-        Assertions.assertEquals(tmpMapResult.get("testKey"), "value");
-        Assertions.assertTrue(abstractMetadataReport.store.size() == 3);
+        Assert.assertEquals(tmpMapResult.get("testPKey"), "9090");
+        Assert.assertEquals(tmpMapResult.get("testKey"), "value");
+        Assert.assertTrue(abstractMetadataReport.store.size() == 3);
 
         abstractMetadataReport.store.clear();
 
-        Assertions.assertTrue(abstractMetadataReport.store.size() == 0);
+        Assert.assertTrue(abstractMetadataReport.store.size() == 0);
 
         abstractMetadataReport.publishAll();
         Thread.sleep(200);
 
-        Assertions.assertTrue(abstractMetadataReport.store.size() == 3);
+        Assert.assertTrue(abstractMetadataReport.store.size() == 3);
 
         String v = abstractMetadataReport.store.get(providerMetadataIdentifier1.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY));
         Gson gson = new Gson();
@@ -238,8 +238,8 @@ public class AbstractMetadataReportTest {
             long t = abstractMetadataReport.calculateStartTime() + System.currentTimeMillis();
             Calendar c = Calendar.getInstance();
             c.setTimeInMillis(t);
-            Assertions.assertTrue(c.get(Calendar.HOUR_OF_DAY) >= 2);
-            Assertions.assertTrue(c.get(Calendar.HOUR_OF_DAY) <= 6);
+            Assert.assertTrue(c.get(Calendar.HOUR_OF_DAY) >= 2);
+            Assert.assertTrue(c.get(Calendar.HOUR_OF_DAY) <= 6);
         }
     }
 
@@ -250,8 +250,8 @@ public class AbstractMetadataReportTest {
     }
 
     private void checkParam(Map<String, String> map, String application, String version) {
-        Assertions.assertEquals(map.get("application"), application);
-        Assertions.assertEquals(map.get("version"), version);
+        Assert.assertEquals(map.get("application"), application);
+        Assert.assertEquals(map.get("version"), version);
     }
 
     private Map<String, String> queryUrlToMap(String urlQuery) {

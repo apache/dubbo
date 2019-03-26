@@ -18,7 +18,6 @@ package org.apache.dubbo.config.spring.context.annotation.provider;
 
 import org.apache.dubbo.config.spring.api.Box;
 import org.apache.dubbo.config.spring.api.DemoService;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

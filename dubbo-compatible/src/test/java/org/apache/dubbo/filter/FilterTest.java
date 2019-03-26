@@ -17,17 +17,18 @@
 
 package org.apache.dubbo.filter;
 
+import org.apache.dubbo.rpc.Filter;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.service.MockInvocation;
 
-import com.alibaba.dubbo.rpc.Filter;
-import com.alibaba.dubbo.rpc.Invocation;
-import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.Result;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Test;
 
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.Assert.fail;
 
 public class FilterTest {
 
@@ -36,25 +37,25 @@ public class FilterTest {
     @Test
     public void testInvokeException() {
         try {
-            Invoker<FilterTest> invoker = new LegacyInvoker<FilterTest>(null);
-            Invocation invocation = new LegacyInvocation("aa");
+            Invoker<FilterTest> invoker = new MyInvoker<FilterTest>(null);
+            Invocation invocation = new MockInvocation("aa");
             myFilter.invoke(invoker, invocation);
             fail();
         } catch (RpcException e) {
-            Assertions.assertTrue(e.getMessage().contains("arg0 illegal"));
+            Assert.assertTrue(e.getMessage().contains("arg0 illegal"));
         }
     }
 
     @Test
     public void testDefault() {
-        Invoker<FilterTest> invoker = new LegacyInvoker<FilterTest>(null);
-        Invocation invocation = new LegacyInvocation("bbb");
+        Invoker<FilterTest> invoker = new MyInvoker<FilterTest>(null);
+        Invocation invocation = new MockInvocation("bbb");
         Result res = myFilter.invoke(invoker, invocation);
         System.out.println(res);
     }
 
-    @AfterAll
+    @AfterClass
     public static void tear() {
-        Assertions.assertEquals(2, MyFilter.count);
+        Assert.assertEquals(2, MyFilter.count);
     }
 }

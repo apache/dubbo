@@ -19,10 +19,10 @@ package org.apache.dubbo.cache.support.expiring;
 import org.apache.dubbo.cache.Cache;
 import org.apache.dubbo.cache.support.AbstractCacheFactory;
 import org.apache.dubbo.cache.support.AbstractCacheFactoryTest;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThat;
 
 public class ExpiringCacheFactoryTest extends AbstractCacheFactoryTest {
     @Test

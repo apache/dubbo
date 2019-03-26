@@ -20,7 +20,6 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.monitor.Monitor;
 import org.apache.dubbo.monitor.MonitorService;
@@ -210,7 +209,7 @@ public class DubboMonitor implements Monitor {
     @Override
     public void destroy() {
         try {
-            ExecutorUtil.cancelScheduledFuture(sendFuture);
+            sendFuture.cancel(true);
         } catch (Throwable t) {
             logger.error("Unexpected error occur at cancel sender timer, cause: " + t.getMessage(), t);
         }

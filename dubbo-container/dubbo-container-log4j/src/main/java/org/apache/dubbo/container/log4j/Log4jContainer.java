@@ -17,7 +17,6 @@
 package org.apache.dubbo.container.log4j;
 
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.container.Container;
 
 import org.apache.log4j.Appender;
@@ -30,8 +29,6 @@ import java.util.Properties;
 
 /**
  * Log4jContainer. (SPI, Singleton, ThreadSafe)
- *
- * The container class implementation for Log4j
  */
 public class Log4jContainer implements Container {
 
@@ -49,7 +46,7 @@ public class Log4jContainer implements Container {
         String file = ConfigurationUtils.getProperty(LOG4J_FILE);
         if (file != null && file.length() > 0) {
             String level = ConfigurationUtils.getProperty(LOG4J_LEVEL);
-            if (StringUtils.isEmpty(level)) {
+            if (level == null || level.length() == 0) {
                 level = DEFAULT_LOG4J_LEVEL;
             }
             Properties properties = new Properties();

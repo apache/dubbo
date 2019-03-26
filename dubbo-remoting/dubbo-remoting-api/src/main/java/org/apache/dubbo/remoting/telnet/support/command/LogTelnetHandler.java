@@ -56,8 +56,10 @@ public class LogTelnetHandler implements TelnetHandler {
 
                 if (file != null && file.exists()) {
                     try {
-                        try (FileInputStream fis = new FileInputStream(file)) {
-                            try (FileChannel filechannel = fis.getChannel()) {
+                        FileInputStream fis = new FileInputStream(file);
+                        try {
+                            FileChannel filechannel = fis.getChannel();
+                            try {
                                 size = filechannel.size();
                                 ByteBuffer bb;
                                 if (size <= showLogLength) {
@@ -76,7 +78,11 @@ public class LogTelnetHandler implements TelnetHandler {
                                 buf.append("\r\nmodified:" + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
                                         .format(new Date(file.lastModified()))));
                                 buf.append("\r\nsize:" + size + "\r\n");
+                            } finally {
+                                filechannel.close();
                             }
+                        } finally {
+                            fis.close();
                         }
                     } catch (Exception e) {
                         buf.append(e.getMessage());

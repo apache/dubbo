@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.StringUtils;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -214,7 +213,7 @@ public class RpcInvocation implements Invocation, Serializable {
             return defaultValue;
         }
         String value = attachments.get(key);
-        if (StringUtils.isEmpty(value)) {
+        if (value == null || value.length() == 0) {
             return defaultValue;
         }
         return value;

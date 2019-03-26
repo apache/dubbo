@@ -63,22 +63,22 @@ public class UrlUtils {
                 url += URL_PARAM_STARTING_SYMBOL + Constants.BACKUP_KEY + "=" + backup.toString();
             }
         }
-        String defaultProtocol = defaults == null ? null : defaults.get(Constants.PROTOCOL_KEY);
+        String defaultProtocol = defaults == null ? null : defaults.get("protocol");
         if (defaultProtocol == null || defaultProtocol.length() == 0) {
-            defaultProtocol = Constants.DUBBO_PROTOCOL;
+            defaultProtocol = "dubbo";
         }
-        String defaultUsername = defaults == null ? null : defaults.get(Constants.USERNAME_KEY);
-        String defaultPassword = defaults == null ? null : defaults.get(Constants.PASSWORD_KEY);
-        int defaultPort = StringUtils.parseInteger(defaults == null ? null : defaults.get(Constants.PORT_KEY));
-        String defaultPath = defaults == null ? null : defaults.get(Constants.PATH_KEY);
+        String defaultUsername = defaults == null ? null : defaults.get("username");
+        String defaultPassword = defaults == null ? null : defaults.get("password");
+        int defaultPort = StringUtils.parseInteger(defaults == null ? null : defaults.get("port"));
+        String defaultPath = defaults == null ? null : defaults.get("path");
         Map<String, String> defaultParameters = defaults == null ? null : new HashMap<String, String>(defaults);
         if (defaultParameters != null) {
-            defaultParameters.remove(Constants.PROTOCOL_KEY);
-            defaultParameters.remove(Constants.USERNAME_KEY);
-            defaultParameters.remove(Constants.PASSWORD_KEY);
-            defaultParameters.remove(Constants.HOST_KEY);
-            defaultParameters.remove(Constants.PORT_KEY);
-            defaultParameters.remove(Constants.PATH_KEY);
+            defaultParameters.remove("protocol");
+            defaultParameters.remove("username");
+            defaultParameters.remove("password");
+            defaultParameters.remove("host");
+            defaultParameters.remove("port");
+            defaultParameters.remove("path");
         }
         URL u = URL.valueOf(url);
         boolean changed = false;
@@ -126,7 +126,7 @@ public class UrlUtils {
                 String defaultValue = entry.getValue();
                 if (defaultValue != null && defaultValue.length() > 0) {
                     String value = parameters.get(key);
-                    if (StringUtils.isEmpty(value)) {
+                    if (value == null || value.length() == 0) {
                         changed = true;
                         parameters.put(key, defaultValue);
                     }
@@ -318,7 +318,7 @@ public class UrlUtils {
 
     //compatible for dubbo-2.0.0
     public static List<String> revertForbid(List<String> forbid, Set<URL> subscribed) {
-        if (CollectionUtils.isNotEmpty(forbid)) {
+        if (forbid != null && !forbid.isEmpty()) {
             List<String> newForbid = new ArrayList<String>();
             for (String serviceName : forbid) {
                 if (!serviceName.contains(":") && !serviceName.contains("/")) {
@@ -410,10 +410,12 @@ public class UrlUtils {
         if ("*".equals(pattern)) {
             return true;
         }
-        if (StringUtils.isEmpty(pattern) && StringUtils.isEmpty(value)) {
+        if ((pattern == null || pattern.length() == 0)
+                && (value == null || value.length() == 0)) {
             return true;
         }
-        if (StringUtils.isEmpty(pattern) || StringUtils.isEmpty(value)) {
+        if ((pattern == null || pattern.length() == 0)
+                || (value == null || value.length() == 0)) {
             return false;
         }
 
@@ -465,19 +467,6 @@ public class UrlUtils {
         return !OVERRIDE_PROTOCOL.equals(url.getProtocol()) &&
                 !ROUTE_PROTOCOL.equals(url.getProtocol()) &&
                 PROVIDERS_CATEGORY.equals(url.getParameter(CATEGORY_KEY, PROVIDERS_CATEGORY));
-    }
-
-    public static int getHeartbeat(URL url) {
-        return url.getParameter(Constants.HEARTBEAT_KEY, Constants.DEFAULT_HEARTBEAT);
-    }
-
-    public static int getIdleTimeout(URL url) {
-        int heartBeat = getHeartbeat(url);
-        int idleTimeout = url.getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartBeat * 3);
-        if (idleTimeout < heartBeat * 2) {
-            throw new IllegalStateException("idleTimeout < heartbeatInterval * 2");
-        }
-        return idleTimeout;
     }
 
     /**

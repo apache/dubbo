@@ -21,7 +21,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ReflectUtils;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.RpcInvocation;
 
@@ -48,7 +47,7 @@ public class RpcUtils {
                     && invocation.getInvoker().getUrl() != null
                     && !invocation.getMethodName().startsWith("$")) {
                 String service = invocation.getInvoker().getUrl().getServiceInterface();
-                if (StringUtils.isNotEmpty(service)) {
+                if (service != null && service.length() > 0) {
                     Class<?> invokerInterface = invocation.getInvoker().getInterface();
                     Class<?> cls = invokerInterface != null ? ReflectUtils.forName(invokerInterface.getClassLoader(), service)
                             : ReflectUtils.forName(service);
@@ -72,7 +71,7 @@ public class RpcUtils {
                     && invocation.getInvoker().getUrl() != null
                     && !invocation.getMethodName().startsWith("$")) {
                 String service = invocation.getInvoker().getUrl().getServiceInterface();
-                if (StringUtils.isNotEmpty(service)) {
+                if (service != null && service.length() > 0) {
                     Class<?> invokerInterface = invocation.getInvoker().getInterface();
                     Class<?> cls = invokerInterface != null ? ReflectUtils.forName(invokerInterface.getClassLoader(), service)
                             : ReflectUtils.forName(service);

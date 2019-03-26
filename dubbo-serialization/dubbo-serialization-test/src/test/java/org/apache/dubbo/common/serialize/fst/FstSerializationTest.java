@@ -18,10 +18,9 @@ package org.apache.dubbo.common.serialize.fst;
 
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
-
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,7 +33,7 @@ import static org.mockito.Mockito.mock;
 public class FstSerializationTest {
     private FstSerialization fstSerialization;
 
-    @BeforeEach
+    @Before
     public void setUp() {
         this.fstSerialization = new FstSerialization();
     }

@@ -28,9 +28,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 
-/**
- * Kryo object input implementation, kryo object can be clean
- */
 public class KryoObjectInput implements ObjectInput, Cleanable {
 
     private Kryo kryo;

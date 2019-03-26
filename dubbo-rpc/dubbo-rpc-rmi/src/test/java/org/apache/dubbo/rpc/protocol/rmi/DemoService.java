@@ -23,8 +23,6 @@ package org.apache.dubbo.rpc.protocol.rmi;
 public interface DemoService {
     void sayHello(String name);
 
-    String sayHi(String name);
-
     String echo(String text);
 
     long timestamp();

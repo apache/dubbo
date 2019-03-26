@@ -18,8 +18,8 @@ package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.URL;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,19 +30,19 @@ public class RpcContextTest {
     public void testGetContext() {
 
         RpcContext rpcContext = RpcContext.getContext();
-        Assertions.assertNotNull(rpcContext);
+        Assert.assertNotNull(rpcContext);
 
         RpcContext.removeContext();
         // if null, will return the initialize value.
-        //Assertions.assertNull(RpcContext.getContext());
-        Assertions.assertNotNull(RpcContext.getContext());
-        Assertions.assertNotEquals(rpcContext, RpcContext.getContext());
+        //Assert.assertNull(RpcContext.getContext());
+        Assert.assertNotNull(RpcContext.getContext());
+        Assert.assertNotEquals(rpcContext, RpcContext.getContext());
 
         RpcContext serverRpcContext = RpcContext.getServerContext();
-        Assertions.assertNotNull(serverRpcContext);
+        Assert.assertNotNull(serverRpcContext);
 
         RpcContext.removeServerContext();
-        Assertions.assertNotEquals(serverRpcContext, RpcContext.getServerContext());
+        Assert.assertNotEquals(serverRpcContext, RpcContext.getServerContext());
 
     }
 
@@ -50,19 +50,19 @@ public class RpcContextTest {
     public void testAddress() {
         RpcContext context = RpcContext.getContext();
         context.setLocalAddress("127.0.0.1", 20880);
-        Assertions.assertTrue(context.getLocalAddress().getPort() == 20880);
-        Assertions.assertEquals("127.0.0.1:20880", context.getLocalAddressString());
+        Assert.assertTrue(context.getLocalAddress().getPort() == 20880);
+        Assert.assertEquals("127.0.0.1:20880", context.getLocalAddressString());
 
         context.setRemoteAddress("127.0.0.1", 20880);
-        Assertions.assertTrue(context.getRemoteAddress().getPort() == 20880);
-        Assertions.assertEquals("127.0.0.1:20880", context.getRemoteAddressString());
+        Assert.assertTrue(context.getRemoteAddress().getPort() == 20880);
+        Assert.assertEquals("127.0.0.1:20880", context.getRemoteAddressString());
 
         context.setRemoteAddress("127.0.0.1", -1);
         context.setLocalAddress("127.0.0.1", -1);
-        Assertions.assertTrue(context.getRemoteAddress().getPort() == 0);
-        Assertions.assertTrue(context.getLocalAddress().getPort() == 0);
-        Assertions.assertEquals("127.0.0.1", context.getRemoteHostName());
-        Assertions.assertEquals("127.0.0.1", context.getLocalHostName());
+        Assert.assertTrue(context.getRemoteAddress().getPort() == 0);
+        Assert.assertTrue(context.getLocalAddress().getPort() == 0);
+        Assert.assertEquals("127.0.0.1", context.getRemoteHostName());
+        Assert.assertEquals("127.0.0.1", context.getLocalHostName());
     }
 
     @Test
@@ -74,12 +74,12 @@ public class RpcContextTest {
         //context.isProviderSide();
 
         context.setUrl(URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1"));
-        Assertions.assertFalse(context.isConsumerSide());
-        Assertions.assertTrue(context.isProviderSide());
+        Assert.assertFalse(context.isConsumerSide());
+        Assert.assertTrue(context.isProviderSide());
 
         context.setUrl(URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&side=consumer"));
-        Assertions.assertTrue(context.isConsumerSide());
-        Assertions.assertFalse(context.isProviderSide());
+        Assert.assertTrue(context.isConsumerSide());
+        Assert.assertFalse(context.isProviderSide());
     }
 
     @Test
@@ -92,22 +92,22 @@ public class RpcContextTest {
         map.put(".33", "3333");
 
         context.setAttachments(map);
-        Assertions.assertEquals(map, context.getAttachments());
+        Assert.assertEquals(map, context.getAttachments());
 
-        Assertions.assertEquals("1111", context.getAttachment("_11"));
+        Assert.assertEquals("1111", context.getAttachment("_11"));
         context.setAttachment("_11", "11.11");
-        Assertions.assertEquals("11.11", context.getAttachment("_11"));
+        Assert.assertEquals("11.11", context.getAttachment("_11"));
 
         context.setAttachment(null, "22222");
         context.setAttachment("_22", null);
-        Assertions.assertEquals("22222", context.getAttachment(null));
-        Assertions.assertNull(context.getAttachment("_22"));
+        Assert.assertEquals("22222", context.getAttachment(null));
+        Assert.assertNull(context.getAttachment("_22"));
 
-        Assertions.assertNull(context.getAttachment("_33"));
-        Assertions.assertEquals("3333", context.getAttachment(".33"));
+        Assert.assertNull(context.getAttachment("_33"));
+        Assert.assertEquals("3333", context.getAttachment(".33"));
 
         context.clearAttachments();
-        Assertions.assertNull(context.getAttachment("_11"));
+        Assert.assertNull(context.getAttachment("_11"));
     }
 
     @Test
@@ -121,38 +121,38 @@ public class RpcContextTest {
 
         map.forEach(context::set);
 
-        Assertions.assertEquals(map, context.get());
+        Assert.assertEquals(map, context.get());
 
-        Assertions.assertEquals("1111", context.get("_11"));
+        Assert.assertEquals("1111", context.get("_11"));
         context.set("_11", "11.11");
-        Assertions.assertEquals("11.11", context.get("_11"));
+        Assert.assertEquals("11.11", context.get("_11"));
 
         context.set(null, "22222");
         context.set("_22", null);
-        Assertions.assertEquals("22222", context.get(null));
-        Assertions.assertNull(context.get("_22"));
+        Assert.assertEquals("22222", context.get(null));
+        Assert.assertNull(context.get("_22"));
 
-        Assertions.assertNull(context.get("_33"));
-        Assertions.assertEquals("3333", context.get(".33"));
+        Assert.assertNull(context.get("_33"));
+        Assert.assertEquals("3333", context.get(".33"));
 
         map.keySet().forEach(context::remove);
-        Assertions.assertNull(context.get("_11"));
+        Assert.assertNull(context.get("_11"));
     }
 
     @Test
     public void testAsync() {
 
         RpcContext rpcContext = RpcContext.getContext();
-        Assertions.assertFalse(rpcContext.isAsyncStarted());
+        Assert.assertFalse(rpcContext.isAsyncStarted());
 
         AsyncContext asyncContext = RpcContext.startAsync();
-        Assertions.assertTrue(rpcContext.isAsyncStarted());
+        Assert.assertTrue(rpcContext.isAsyncStarted());
 
         asyncContext.write(new Object());
-        Assertions.assertTrue(((AsyncContextImpl)asyncContext).getInternalFuture().isDone());
+        Assert.assertTrue(((AsyncContextImpl)asyncContext).getInternalFuture().isDone());
 
         rpcContext.stopAsync();
-        Assertions.assertTrue(rpcContext.isAsyncStarted());
+        Assert.assertTrue(rpcContext.isAsyncStarted());
     }
 
 }

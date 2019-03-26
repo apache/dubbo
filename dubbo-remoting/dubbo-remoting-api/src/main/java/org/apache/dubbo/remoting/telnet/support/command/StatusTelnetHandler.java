@@ -22,7 +22,6 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.common.status.StatusChecker;
 import org.apache.dubbo.common.status.support.StatusUtils;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.telnet.support.Help;
@@ -49,7 +48,7 @@ public class StatusTelnetHandler implements TelnetHandler {
             String[] header = new String[]{"resource", "status", "message"};
             List<List<String>> table = new ArrayList<List<String>>();
             Map<String, Status> statuses = new HashMap<String, Status>();
-            if (CollectionUtils.isNotEmpty(checkers)) {
+            if (checkers != null && !checkers.isEmpty()) {
                 for (StatusChecker checker : checkers) {
                     String name = extensionLoader.getExtensionName(checker);
                     Status stat;
@@ -80,7 +79,7 @@ public class StatusTelnetHandler implements TelnetHandler {
         }
         String status = channel.getUrl().getParameter("status");
         Map<String, Status> statuses = new HashMap<String, Status>();
-        if (CollectionUtils.isNotEmptyMap(statuses)) {
+        if (status != null && status.length() > 0) {
             String[] ss = Constants.COMMA_SPLIT_PATTERN.split(status);
             for (String s : ss) {
                 StatusChecker handler = extensionLoader.getExtension(s);

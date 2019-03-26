@@ -26,9 +26,8 @@ import org.apache.dubbo.rpc.service.DemoServiceImpl;
 import org.apache.dubbo.rpc.service.EchoService;
 import org.apache.dubbo.rpc.service.RemoteService;
 import org.apache.dubbo.rpc.service.RemoteServiceImpl;
-
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Test;
+import org.junit.AfterClass;
+import org.junit.Test;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -39,14 +38,14 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 public class RSocketProtocolTest {
 
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
     private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
-    @AfterAll
+    @AfterClass
     public static void after() {
         RSocketProtocol.getRSocketProtocol().destroy();
     }

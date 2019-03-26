@@ -24,8 +24,8 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcResult;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.util.HashMap;
@@ -53,42 +53,38 @@ public class TokenFilterTest {
         when(invocation.getAttachments()).thenReturn(attachments);
 
         Result result = tokenFilter.invoke(invoker, invocation);
-        Assertions.assertEquals("result", result.getValue());
+        Assert.assertEquals("result", result.getValue());
     }
 
-    @Test
+    @Test(expected = RpcException.class)
     public void testInvokeWithWrongToken() throws Exception {
-        Assertions.assertThrows(RpcException.class, () -> {
-            String token = "token";
+        String token = "token";
 
-            Invoker invoker = Mockito.mock(Invoker.class);
-            URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&token=" + token);
-            when(invoker.getUrl()).thenReturn(url);
-            when(invoker.invoke(any(Invocation.class))).thenReturn(new RpcResult("result"));
+        Invoker invoker = Mockito.mock(Invoker.class);
+        URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&token=" + token);
+        when(invoker.getUrl()).thenReturn(url);
+        when(invoker.invoke(any(Invocation.class))).thenReturn(new RpcResult("result"));
 
-            Map<String, String> attachments = new HashMap<String, String>();
-            attachments.put(Constants.TOKEN_KEY, "wrongToken");
-            Invocation invocation = Mockito.mock(Invocation.class);
-            when(invocation.getAttachments()).thenReturn(attachments);
+        Map<String, String> attachments = new HashMap<String, String>();
+        attachments.put(Constants.TOKEN_KEY, "wrongToken");
+        Invocation invocation = Mockito.mock(Invocation.class);
+        when(invocation.getAttachments()).thenReturn(attachments);
 
-            tokenFilter.invoke(invoker, invocation);
-        });
+        tokenFilter.invoke(invoker, invocation);
     }
 
-    @Test
+    @Test(expected = RpcException.class)
     public void testInvokeWithoutToken() throws Exception {
-        Assertions.assertThrows(RpcException.class, () -> {
-            String token = "token";
+        String token = "token";
 
-            Invoker invoker = Mockito.mock(Invoker.class);
-            URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&token=" + token);
-            when(invoker.getUrl()).thenReturn(url);
-            when(invoker.invoke(any(Invocation.class))).thenReturn(new RpcResult("result"));
+        Invoker invoker = Mockito.mock(Invoker.class);
+        URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&token=" + token);
+        when(invoker.getUrl()).thenReturn(url);
+        when(invoker.invoke(any(Invocation.class))).thenReturn(new RpcResult("result"));
 
-            Invocation invocation = Mockito.mock(Invocation.class);
+        Invocation invocation = Mockito.mock(Invocation.class);
 
-            tokenFilter.invoke(invoker, invocation);
-        });
+        tokenFilter.invoke(invoker, invocation);
     }
 }
 

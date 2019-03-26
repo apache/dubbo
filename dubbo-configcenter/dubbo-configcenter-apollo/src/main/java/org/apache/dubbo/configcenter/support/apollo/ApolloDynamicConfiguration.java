@@ -33,13 +33,10 @@ import com.ctrip.framework.apollo.enums.ConfigSourceType;
 import com.ctrip.framework.apollo.enums.PropertyChangeType;
 import com.ctrip.framework.apollo.model.ConfigChange;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.stream.Collectors;
 
 /**
  * Apollo implementation, https://github.com/ctripcorp/apollo
@@ -49,7 +46,6 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
     private static final String APOLLO_ENV_KEY = "env";
     private static final String APOLLO_ADDR_KEY = "apollo.meta";
     private static final String APOLLO_CLUSTER_KEY = "apollo.cluster";
-    private static final String APOLLO_PROTOCOL_PREFIX = "http://";
 
     private URL url;
     private Config dubboConfig;
@@ -59,12 +55,12 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
         this.url = url;
         // Instead of using Dubbo's configuration, I would suggest use the original configuration method Apollo provides.
         String configEnv = url.getParameter(APOLLO_ENV_KEY);
-        String configAddr = getAddressWithProtocolPrefix(url);
+        String configAddr = url.getBackupAddress();
         String configCluster = url.getParameter(Constants.CONFIG_CLUSTER_KEY);
         if (configEnv != null) {
             System.setProperty(APOLLO_ENV_KEY, configEnv);
         }
-        if (StringUtils.isEmpty(System.getProperty(APOLLO_ENV_KEY)) && !Constants.ANYHOST_VALUE.equals(configAddr)) {
+        if (StringUtils.isEmpty(configEnv) && !Constants.ANYHOST_VALUE.equals(configAddr)) {
             System.setProperty(APOLLO_ADDR_KEY, configAddr);
         }
         if (configCluster != null) {
@@ -86,21 +82,6 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
         }
     }
 
-    private String getAddressWithProtocolPrefix (URL url) {
-        String address = url.getBackupAddress();
-        if (StringUtils.isNotEmpty(address)) {
-            address = Arrays.stream(Constants.COMMA_SPLIT_PATTERN.split(address))
-                    .map(addr ->  {
-                        if (addr.startsWith(APOLLO_PROTOCOL_PREFIX)) {
-                            return addr;
-                        }
-                        return APOLLO_PROTOCOL_PREFIX + addr;
-                    })
-                    .collect(Collectors.joining(","));
-        }
-        return address;
-    }
-
     /**
      * Since all governance rules will lay under dubbo group, this method now always uses the default dubboConfig and
      * ignores the group parameter.
@@ -109,7 +90,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
     public void addListener(String key, String group, ConfigurationListener listener) {
         ApolloListener apolloListener = listeners.computeIfAbsent(group + key, k -> createTargetListener(key, group));
         apolloListener.addListener(listener);
-        dubboConfig.addChangeListener(apolloListener, Collections.singleton(key));
+        dubboConfig.addChangeListener(apolloListener);
     }
 
     @Override
@@ -131,8 +112,11 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
     @Override
     public String getConfig(String key, String group, long timeout) throws IllegalStateException {
         if (StringUtils.isNotEmpty(group) && !url.getParameter(Constants.CONFIG_GROUP_KEY, DEFAULT_GROUP).equals(group)) {
-            Config config = ConfigService.getAppConfig();
-            return config.getProperty(key, null);
+            Config config = ConfigService.getConfig(group);
+            if (config != null) {
+                return config.getProperty(key, null);
+            }
+            return null;
         }
         return dubboConfig.getProperty(key, null);
     }
@@ -176,8 +160,11 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
                     return;
                 }
 
-                ConfigChangeEvent event = new ConfigChangeEvent(key, change.getNewValue(), getChangeType(change));
-                listeners.forEach(listener -> listener.process(event));
+                listeners.forEach(listener -> {
+                            ConfigChangeEvent event = new ConfigChangeEvent(key, change.getNewValue(), getChangeType(change));
+                            listener.process(event);
+                        }
+                );
             }
         }
 

@@ -21,9 +21,8 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.handler.MockedChannel;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -36,17 +35,17 @@ public class DefaultFutureTest {
     @Test
     public void newFuture() {
         DefaultFuture future = defaultFuture(3000);
-        Assertions.assertNotNull(future, "new future return null");
+        Assert.assertNotNull("new future return null", future);
     }
 
     @Test
     public void isDone() {
         DefaultFuture future = defaultFuture(3000);
-        Assertions.assertTrue(!future.isDone(), "init future is finished!");
+        Assert.assertTrue("init future is finished!", !future.isDone());
 
         //cancel a future
         future.cancel();
-        Assertions.assertTrue(future.isDone(), "cancel a future failed!");
+        Assert.assertTrue("cancel a future failed!", future.isDone());
     }
 
     /**
@@ -74,7 +73,7 @@ public class DefaultFutureTest {
         try {
             f.get();
         } catch (Exception e) {
-            Assertions.assertTrue(e instanceof TimeoutException, "catch exception is not timeout exception!");
+            Assert.assertTrue("catch exception is not timeout exception!", e instanceof TimeoutException);
             System.out.println(e.getMessage());
         }
     }
@@ -108,7 +107,7 @@ public class DefaultFutureTest {
         try {
             f.get();
         } catch (Exception e) {
-            Assertions.assertTrue(e instanceof TimeoutException, "catch exception is not timeout exception!");
+            Assert.assertTrue("catch exception is not timeout exception!", e instanceof TimeoutException);
             System.out.println(e.getMessage());
         }
     }

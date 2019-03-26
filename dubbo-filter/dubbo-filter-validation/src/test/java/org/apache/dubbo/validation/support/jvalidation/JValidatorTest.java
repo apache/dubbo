@@ -18,20 +18,16 @@ package org.apache.dubbo.validation.support.jvalidation;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.validation.support.jvalidation.mock.ValidationParameter;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import javax.validation.ConstraintViolationException;
 
 public class JValidatorTest {
-    @Test
+    @Test(expected = NoSuchMethodException.class)
     public void testItWithNonExistMethod() throws Exception {
-        Assertions.assertThrows(NoSuchMethodException.class, () -> {
-            URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
-            JValidator jValidator = new JValidator(url);
-            jValidator.validate("nonExistingMethod", new Class<?>[]{String.class}, new Object[]{"arg1"});
-        });
+        URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
+        JValidator jValidator = new JValidator(url);
+        jValidator.validate("nonExistingMethod", new Class<?>[]{String.class}, new Object[]{"arg1"});
     }
 
     @Test
@@ -41,13 +37,11 @@ public class JValidatorTest {
         jValidator.validate("someMethod1", new Class<?>[]{String.class}, new Object[]{"anything"});
     }
 
-    @Test
+    @Test(expected = ConstraintViolationException.class)
     public void testItWhenItViolatedConstraint() throws Exception {
-        Assertions.assertThrows(ConstraintViolationException.class, () -> {
-            URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
-            JValidator jValidator = new JValidator(url);
-            jValidator.validate("someMethod2", new Class<?>[]{ValidationParameter.class}, new Object[]{new ValidationParameter()});
-        });
+        URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
+        JValidator jValidator = new JValidator(url);
+        jValidator.validate("someMethod2", new Class<?>[]{ValidationParameter.class}, new Object[]{new ValidationParameter()});
     }
 
     @Test

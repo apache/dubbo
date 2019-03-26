@@ -20,11 +20,9 @@ import org.apache.curator.test.TestingServer;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
-
-import org.apache.curator.test.TestingServer;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNot.not;
@@ -36,7 +34,7 @@ public class CuratorZookeeperTransporterTest {
     private CuratorZookeeperTransporter curatorZookeeperTransporter;
     private int zkServerPort;
 
-    @BeforeEach
+    @Before
     public void setUp() throws Exception {
         zkServerPort = NetUtils.getAvailablePort();
         zkServer = new TestingServer(zkServerPort, true);
@@ -45,14 +43,16 @@ public class CuratorZookeeperTransporterTest {
         curatorZookeeperTransporter = new CuratorZookeeperTransporter();
     }
 
+
+    @After
+    public void tearDown() throws Exception {
+        zkServer.stop();
+    }
+
     @Test
     public void testZookeeperClient() {
         assertThat(zookeeperClient, not(nullValue()));
         zookeeperClient.close();
     }
 
-    @AfterEach
-    public void tearDown() throws Exception {
-        zkServer.stop();
-    }
 }

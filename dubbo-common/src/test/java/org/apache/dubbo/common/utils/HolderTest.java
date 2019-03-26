@@ -17,10 +17,10 @@
 
 package org.apache.dubbo.common.utils;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThat;
 
 public class HolderTest {
     @Test

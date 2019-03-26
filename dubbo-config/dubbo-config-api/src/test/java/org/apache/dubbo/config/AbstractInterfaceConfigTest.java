@@ -29,64 +29,64 @@ import org.apache.dubbo.config.mock.GreetingMock2;
 import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.registry.RegistryService;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
 public class AbstractInterfaceConfigTest {
+    @ClassRule
+    public static TemporaryFolder tempDir = new TemporaryFolder();
     private static File dubboProperties;
 
-    @BeforeAll
-    public static void setUp(@TempDir Path folder) {
-        dubboProperties = folder.resolve(Constants.DUBBO_PROPERTIES_KEY).toFile();
+    @BeforeClass
+    public static void setUp() throws Exception {
+        dubboProperties = tempDir.newFile(Constants.DUBBO_PROPERTIES_KEY);
         System.setProperty(Constants.DUBBO_PROPERTIES_KEY, dubboProperties.getAbsolutePath());
     }
 
-    @AfterAll
-    public static void tearDown() {
+    @AfterClass
+    public static void tearDown() throws Exception {
         System.clearProperty(Constants.DUBBO_PROPERTIES_KEY);
     }
 
-    @AfterEach
+    @After
     public void tearMethodAfterEachUT() {
         ConfigManager.getInstance().clear();
     }
 
     @Test
-    public void testCheckRegistry1() {
+    public void testCheckRegistry1() throws Exception {
         System.setProperty("dubbo.registry.address", "addr1|addr2");
         try {
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.checkRegistry();
-            Assertions.assertEquals(2, interfaceConfig.getRegistries().size());
+            TestCase.assertEquals(2, interfaceConfig.getRegistries().size());
         } finally {
             System.clearProperty("dubbo.registry.address");
         }
     }
 
-    @Test
-    public void testCheckRegistry2() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.checkRegistry();
-        });
+    @Test(expected = IllegalStateException.class)
+    public void testCheckRegistry2() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.checkRegistry();
     }
 
     @Test
-    public void checkApplication1() {
+    public void checkApplication1() throws Exception {
         try {
             ConfigUtils.setProperties(null);
             System.clearProperty(Constants.SHUTDOWN_WAIT_KEY);
@@ -97,8 +97,8 @@ public class AbstractInterfaceConfigTest {
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.checkApplication();
             ApplicationConfig appConfig = interfaceConfig.getApplication();
-            Assertions.assertEquals("demo", appConfig.getName());
-            Assertions.assertEquals("100", System.getProperty(Constants.SHUTDOWN_WAIT_KEY));
+            TestCase.assertEquals("demo", appConfig.getName());
+            TestCase.assertEquals("100", System.getProperty(Constants.SHUTDOWN_WAIT_KEY));
 
             System.clearProperty(Constants.SHUTDOWN_WAIT_KEY);
             ConfigUtils.setProperties(null);
@@ -106,7 +106,7 @@ public class AbstractInterfaceConfigTest {
             System.setProperty("dubbo.application.name", "demo");
             interfaceConfig = new InterfaceConfig();
             interfaceConfig.checkApplication();
-            Assertions.assertEquals("1000", System.getProperty(Constants.SHUTDOWN_WAIT_SECONDS_KEY));
+            TestCase.assertEquals("1000", System.getProperty(Constants.SHUTDOWN_WAIT_SECONDS_KEY));
         } finally {
             ConfigUtils.setProperties(null);
             System.clearProperty("dubbo.application.name");
@@ -115,314 +115,290 @@ public class AbstractInterfaceConfigTest {
         }
     }
 
-    @Test
-    public void checkApplication2() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.checkApplication();
-        });
+    @Test(expected = IllegalStateException.class)
+    public void checkApplication2() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.checkApplication();
     }
 
     @Test
-    public void testLoadRegistries() {
+    public void testLoadRegistries() throws Exception {
         System.setProperty("dubbo.registry.address", "addr1");
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         // FIXME: now we need to check first, then load
         interfaceConfig.checkRegistry();
         List<URL> urls = interfaceConfig.loadRegistries(true);
-        Assertions.assertEquals(1, urls.size());
+        TestCase.assertEquals(1, urls.size());
         URL url = urls.get(0);
-        Assertions.assertEquals("registry", url.getProtocol());
-        Assertions.assertEquals("addr1:9090", url.getAddress());
-        Assertions.assertEquals(RegistryService.class.getName(), url.getPath());
-        Assertions.assertTrue(url.getParameters().containsKey("timestamp"));
-        Assertions.assertTrue(url.getParameters().containsKey("pid"));
-        Assertions.assertTrue(url.getParameters().containsKey("registry"));
-        Assertions.assertTrue(url.getParameters().containsKey("dubbo"));
+        TestCase.assertEquals("registry", url.getProtocol());
+        TestCase.assertEquals("addr1:9090", url.getAddress());
+        TestCase.assertEquals(RegistryService.class.getName(), url.getPath());
+        TestCase.assertTrue(url.getParameters().containsKey("timestamp"));
+        TestCase.assertTrue(url.getParameters().containsKey("pid"));
+        TestCase.assertTrue(url.getParameters().containsKey("registry"));
+        TestCase.assertTrue(url.getParameters().containsKey("dubbo"));
     }
 
     @Test
-    public void testLoadMonitor() {
+    public void testLoadMonitor() throws Exception {
         System.setProperty("dubbo.monitor.address", "monitor-addr:12080");
         System.setProperty("dubbo.monitor.protocol", "monitor");
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         URL url = interfaceConfig.loadMonitor(new URL("dubbo", "addr1", 9090));
-        Assertions.assertEquals("monitor-addr:12080", url.getAddress());
-        Assertions.assertEquals(MonitorService.class.getName(), url.getParameter("interface"));
-        Assertions.assertNotNull(url.getParameter("dubbo"));
-        Assertions.assertNotNull(url.getParameter("pid"));
-        Assertions.assertNotNull(url.getParameter("timestamp"));
+        TestCase.assertEquals("monitor-addr:12080", url.getAddress());
+        TestCase.assertEquals(MonitorService.class.getName(), url.getParameter("interface"));
+        TestCase.assertNotNull(url.getParameter("dubbo"));
+        TestCase.assertNotNull(url.getParameter("pid"));
+        TestCase.assertNotNull(url.getParameter("timestamp"));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void checkInterfaceAndMethods1() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.checkInterfaceAndMethods(null, null);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void checkInterfaceAndMethods2() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.checkInterfaceAndMethods(AbstractInterfaceConfigTest.class, null);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void checkInterfaceAndMethod3() throws Exception {
+        MethodConfig methodConfig = new MethodConfig();
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.checkInterfaceAndMethods(Greeting.class, Collections.singletonList(methodConfig));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void checkInterfaceAndMethod4() throws Exception {
+        MethodConfig methodConfig = new MethodConfig();
+        methodConfig.setName("nihao");
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.checkInterfaceAndMethods(Greeting.class, Collections.singletonList(methodConfig));
     }
 
     @Test
-    public void checkInterfaceAndMethods1() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.checkInterfaceAndMethods(null, null);
-        });
-    }
-
-    @Test
-    public void checkInterfaceAndMethods2() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.checkInterfaceAndMethods(AbstractInterfaceConfigTest.class, null);
-        });
-    }
-
-    @Test
-    public void checkInterfaceAndMethod3() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            MethodConfig methodConfig = new MethodConfig();
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.checkInterfaceAndMethods(Greeting.class, Collections.singletonList(methodConfig));
-        });
-    }
-
-    @Test
-    public void checkInterfaceAndMethod4() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            MethodConfig methodConfig = new MethodConfig();
-            methodConfig.setName("nihao");
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.checkInterfaceAndMethods(Greeting.class, Collections.singletonList(methodConfig));
-        });
-    }
-
-    @Test
-    public void checkInterfaceAndMethod5() {
+    public void checkInterfaceAndMethod5() throws Exception {
         MethodConfig methodConfig = new MethodConfig();
         methodConfig.setName("hello");
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.checkInterfaceAndMethods(Greeting.class, Collections.singletonList(methodConfig));
     }
 
-    @Test
-    public void checkStubAndMock1() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.setLocal(GreetingLocal1.class.getName());
-            interfaceConfig.checkStubAndLocal(Greeting.class);
-            interfaceConfig.checkMock(Greeting.class);
-        });
+    @Test(expected = IllegalStateException.class)
+    public void checkStubAndMock1() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.setLocal(GreetingLocal1.class.getName());
+        interfaceConfig.checkStubAndLocal(Greeting.class);
+        interfaceConfig.checkMock(Greeting.class);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void checkStubAndMock2() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.setLocal(GreetingLocal2.class.getName());
+        interfaceConfig.checkStubAndLocal(Greeting.class);
+        interfaceConfig.checkMock(Greeting.class);
     }
 
     @Test
-    public void checkStubAndMock2() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.setLocal(GreetingLocal2.class.getName());
-            interfaceConfig.checkStubAndLocal(Greeting.class);
-            interfaceConfig.checkMock(Greeting.class);
-        });
-    }
-
-    @Test
-    public void checkStubAndMock3() {
+    public void checkStubAndMock3() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setLocal(GreetingLocal3.class.getName());
         interfaceConfig.checkStubAndLocal(Greeting.class);
         interfaceConfig.checkMock(Greeting.class);
     }
 
-    @Test
-    public void checkStubAndMock4() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.setStub(GreetingLocal1.class.getName());
-            interfaceConfig.checkStubAndLocal(Greeting.class);
-            interfaceConfig.checkMock(Greeting.class);
-        });
+    @Test(expected = IllegalStateException.class)
+    public void checkStubAndMock4() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.setStub(GreetingLocal1.class.getName());
+        interfaceConfig.checkStubAndLocal(Greeting.class);
+        interfaceConfig.checkMock(Greeting.class);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void checkStubAndMock5() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.setStub(GreetingLocal2.class.getName());
+        interfaceConfig.checkStubAndLocal(Greeting.class);
+        interfaceConfig.checkMock(Greeting.class);
     }
 
     @Test
-    public void checkStubAndMock5() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.setStub(GreetingLocal2.class.getName());
-            interfaceConfig.checkStubAndLocal(Greeting.class);
-            interfaceConfig.checkMock(Greeting.class);
-        });
-    }
-
-    @Test
-    public void checkStubAndMock6() {
+    public void checkStubAndMock6() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setStub(GreetingLocal3.class.getName());
         interfaceConfig.checkStubAndLocal(Greeting.class);
         interfaceConfig.checkMock(Greeting.class);
     }
 
-    @Test
-    public void checkStubAndMock7() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.setMock("return {a, b}");
-            interfaceConfig.checkStubAndLocal(Greeting.class);
-            interfaceConfig.checkMock(Greeting.class);
-        });
+    @Test(expected = IllegalStateException.class)
+    public void checkStubAndMock7() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.setMock("return {a, b}");
+        interfaceConfig.checkStubAndLocal(Greeting.class);
+        interfaceConfig.checkMock(Greeting.class);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void checkStubAndMock8() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.setMock(GreetingMock1.class.getName());
+        interfaceConfig.checkStubAndLocal(Greeting.class);
+        interfaceConfig.checkMock(Greeting.class);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void checkStubAndMock9() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.setMock(GreetingMock2.class.getName());
+        interfaceConfig.checkStubAndLocal(Greeting.class);
+        interfaceConfig.checkMock(Greeting.class);
     }
 
     @Test
-    public void checkStubAndMock8() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.setMock(GreetingMock1.class.getName());
-            interfaceConfig.checkStubAndLocal(Greeting.class);
-            interfaceConfig.checkMock(Greeting.class);
-        });
-    }
-
-    @Test
-    public void checkStubAndMock9() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.setMock(GreetingMock2.class.getName());
-            interfaceConfig.checkStubAndLocal(Greeting.class);
-            interfaceConfig.checkMock(Greeting.class);
-        });
-    }
-
-    @Test
-    public void testLocal() {
+    public void testLocal() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setLocal((Boolean) null);
-        Assertions.assertNull(interfaceConfig.getLocal());
+        TestCase.assertNull(interfaceConfig.getLocal());
         interfaceConfig.setLocal(true);
-        Assertions.assertEquals("true", interfaceConfig.getLocal());
+        TestCase.assertEquals("true", interfaceConfig.getLocal());
         interfaceConfig.setLocal("GreetingMock");
-        Assertions.assertEquals("GreetingMock", interfaceConfig.getLocal());
+        TestCase.assertEquals("GreetingMock", interfaceConfig.getLocal());
     }
 
     @Test
-    public void testStub() {
+    public void testStub() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setStub((Boolean) null);
-        Assertions.assertNull(interfaceConfig.getStub());
+        TestCase.assertNull(interfaceConfig.getStub());
         interfaceConfig.setStub(true);
-        Assertions.assertEquals("true", interfaceConfig.getStub());
+        TestCase.assertEquals("true", interfaceConfig.getStub());
         interfaceConfig.setStub("GreetingMock");
-        Assertions.assertEquals("GreetingMock", interfaceConfig.getStub());
+        TestCase.assertEquals("GreetingMock", interfaceConfig.getStub());
     }
 
     @Test
-    public void testCluster() {
+    public void testCluster() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setCluster("mockcluster");
-        Assertions.assertEquals("mockcluster", interfaceConfig.getCluster());
+        TestCase.assertEquals("mockcluster", interfaceConfig.getCluster());
     }
 
     @Test
-    public void testProxy() {
+    public void testProxy() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setProxy("mockproxyfactory");
-        Assertions.assertEquals("mockproxyfactory", interfaceConfig.getProxy());
+        TestCase.assertEquals("mockproxyfactory", interfaceConfig.getProxy());
     }
 
     @Test
-    public void testConnections() {
+    public void testConnections() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setConnections(1);
-        Assertions.assertEquals(1, interfaceConfig.getConnections().intValue());
+        TestCase.assertEquals(1, interfaceConfig.getConnections().intValue());
     }
 
     @Test
-    public void testFilter() {
+    public void testFilter() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setFilter("mockfilter");
-        Assertions.assertEquals("mockfilter", interfaceConfig.getFilter());
+        TestCase.assertEquals("mockfilter", interfaceConfig.getFilter());
     }
 
     @Test
-    public void testListener() {
+    public void testListener() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setListener("mockinvokerlistener");
-        Assertions.assertEquals("mockinvokerlistener", interfaceConfig.getListener());
+        TestCase.assertEquals("mockinvokerlistener", interfaceConfig.getListener());
     }
 
     @Test
-    public void testLayer() {
+    public void testLayer() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setLayer("layer");
-        Assertions.assertEquals("layer", interfaceConfig.getLayer());
+        TestCase.assertEquals("layer", interfaceConfig.getLayer());
     }
 
     @Test
-    public void testApplication() {
+    public void testApplication() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         ApplicationConfig applicationConfig = new ApplicationConfig();
         interfaceConfig.setApplication(applicationConfig);
-        Assertions.assertSame(applicationConfig, interfaceConfig.getApplication());
+        TestCase.assertSame(applicationConfig, interfaceConfig.getApplication());
     }
 
     @Test
-    public void testModule() {
+    public void testModule() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         ModuleConfig moduleConfig = new ModuleConfig();
         interfaceConfig.setModule(moduleConfig);
-        Assertions.assertSame(moduleConfig, interfaceConfig.getModule());
+        TestCase.assertSame(moduleConfig, interfaceConfig.getModule());
     }
 
     @Test
-    public void testRegistry() {
+    public void testRegistry() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         RegistryConfig registryConfig = new RegistryConfig();
         interfaceConfig.setRegistry(registryConfig);
-        Assertions.assertSame(registryConfig, interfaceConfig.getRegistry());
+        TestCase.assertSame(registryConfig, interfaceConfig.getRegistry());
     }
 
     @Test
-    public void testRegistries() {
+    public void testRegistries() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         RegistryConfig registryConfig = new RegistryConfig();
         interfaceConfig.setRegistries(Collections.singletonList(registryConfig));
-        Assertions.assertEquals(1, interfaceConfig.getRegistries().size());
-        Assertions.assertSame(registryConfig, interfaceConfig.getRegistries().get(0));
+        TestCase.assertEquals(1, interfaceConfig.getRegistries().size());
+        TestCase.assertSame(registryConfig, interfaceConfig.getRegistries().get(0));
     }
 
     @Test
-    public void testMonitor() {
+    public void testMonitor() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setMonitor("monitor-addr");
-        Assertions.assertEquals("monitor-addr", interfaceConfig.getMonitor().getAddress());
+        TestCase.assertEquals("monitor-addr", interfaceConfig.getMonitor().getAddress());
         MonitorConfig monitorConfig = new MonitorConfig();
         interfaceConfig.setMonitor(monitorConfig);
-        Assertions.assertSame(monitorConfig, interfaceConfig.getMonitor());
+        TestCase.assertSame(monitorConfig, interfaceConfig.getMonitor());
     }
 
     @Test
-    public void testOwner() {
+    public void testOwner() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setOwner("owner");
-        Assertions.assertEquals("owner", interfaceConfig.getOwner());
+        TestCase.assertEquals("owner", interfaceConfig.getOwner());
     }
 
     @Test
-    public void testCallbacks() {
+    public void testCallbacks() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setCallbacks(2);
-        Assertions.assertEquals(2, interfaceConfig.getCallbacks().intValue());
+        TestCase.assertEquals(2, interfaceConfig.getCallbacks().intValue());
     }
 
     @Test
-    public void testOnconnect() {
+    public void testOnconnect() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setOnconnect("onConnect");
-        Assertions.assertEquals("onConnect", interfaceConfig.getOnconnect());
+        TestCase.assertEquals("onConnect", interfaceConfig.getOnconnect());
     }
 
     @Test
-    public void testOndisconnect() {
+    public void testOndisconnect() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setOndisconnect("onDisconnect");
-        Assertions.assertEquals("onDisconnect", interfaceConfig.getOndisconnect());
+        TestCase.assertEquals("onDisconnect", interfaceConfig.getOndisconnect());
     }
 
     @Test
-    public void testScope() {
+    public void testScope() throws Exception {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setScope("scope");
-        Assertions.assertEquals("scope", interfaceConfig.getScope());
+        TestCase.assertEquals("scope", interfaceConfig.getScope());
     }
 
     private void writeDubboProperties(String key, String value) {

@@ -26,9 +26,6 @@ import io.protostuff.runtime.Delegate;
 import java.io.IOException;
 import java.sql.Time;
 
-/**
- * Custom {@link Time} delegate
- */
 public class TimeDelegate implements Delegate<Time> {
     @Override
     public WireFormat.FieldType getFieldType() {

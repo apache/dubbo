@@ -21,16 +21,14 @@ import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.ResponseFuture;
 import org.apache.dubbo.remoting.exchange.support.Replier;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * ClientToServer
  */
-public abstract class ClientToServerTest {
+public abstract class ClientToServerTest extends TestCase {
 
     protected static final String LOCALHOST = "127.0.0.1";
 
@@ -44,15 +42,17 @@ public abstract class ClientToServerTest {
 
     protected abstract ExchangeChannel newClient(int port) throws RemotingException;
 
-    @BeforeEach
+    @Override
     protected void setUp() throws Exception {
+        super.setUp();
         int port = (int) (1000 * Math.random() + 10000);
         server = newServer(port, handler);
         client = newClient(port);
     }
 
-    @AfterEach
-    protected void tearDown() {
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
         try {
             if (server != null)
                 server.close();
@@ -66,6 +66,6 @@ public abstract class ClientToServerTest {
     public void testFuture() throws Exception {
         ResponseFuture future = client.request(new World("world"));
         Hello result = (Hello) future.get();
-        Assertions.assertEquals("hello,world", result.getName());
+        Assert.assertEquals("hello,world", result.getName());
     }
 }

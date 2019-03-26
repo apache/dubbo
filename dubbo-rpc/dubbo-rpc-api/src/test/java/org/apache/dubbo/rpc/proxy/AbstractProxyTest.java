@@ -25,8 +25,8 @@ import org.apache.dubbo.rpc.support.DemoService;
 import org.apache.dubbo.rpc.support.DemoServiceImpl;
 import org.apache.dubbo.rpc.support.MyInvoker;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import java.util.Arrays;
 
@@ -43,15 +43,15 @@ public abstract class AbstractProxyTest {
 
         DemoService proxy = factory.getProxy(invoker);
 
-        Assertions.assertNotNull(proxy);
+        Assert.assertNotNull(proxy);
 
-        Assertions.assertTrue(Arrays.asList(proxy.getClass().getInterfaces()).contains(DemoService.class));
+        Assert.assertTrue(Arrays.asList(proxy.getClass().getInterfaces()).contains(DemoService.class));
 
         // Not equal
-        //Assertions.assertEquals(proxy.toString(), invoker.toString());
-        //Assertions.assertEquals(proxy.hashCode(), invoker.hashCode());
+        //Assert.assertEquals(proxy.toString(), invoker.toString());
+        //Assert.assertEquals(proxy.hashCode(), invoker.hashCode());
 
-        Assertions.assertEquals(invoker.invoke(new RpcInvocation("echo", new Class[]{String.class}, new Object[]{"aa"})).getValue()
+        Assert.assertEquals(invoker.invoke(new RpcInvocation("echo", new Class[]{String.class}, new Object[]{"aa"})).getValue()
                 , proxy.echo("aa"));
     }
 
@@ -63,9 +63,9 @@ public abstract class AbstractProxyTest {
 
         Invoker<DemoService> invoker = factory.getInvoker(new DemoServiceImpl(), DemoService.class, url);
 
-        Assertions.assertEquals(invoker.getInterface(), DemoService.class);
+        Assert.assertEquals(invoker.getInterface(), DemoService.class);
 
-        Assertions.assertEquals(invoker.invoke(new RpcInvocation("echo", new Class[]{String.class}, new Object[]{"aa"})).getValue(),
+        Assert.assertEquals(invoker.invoke(new RpcInvocation("echo", new Class[]{String.class}, new Object[]{"aa"})).getValue(),
                 origin.echo("aa"));
 
     }

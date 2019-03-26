@@ -31,22 +31,22 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @DubboComponentScan(basePackages = "org.apache.dubbo.config.spring.context.annotation.provider")
-@PropertySource("classpath:/META-INF/default.properties")
+@PropertySource("META-INF/default.properties")
 @EnableTransactionManagement
 public class ProviderConfiguration {
 
     /**
      * Current application configuration, to replace XML config:
      * <prev>
-     * &lt;dubbo:application name="dubbo-demo-application"/&gt;
+     * &lt;dubbo:application name="dubbo-annotation-provider"/&gt;
      * </prev>
      *
      * @return {@link ApplicationConfig} Bean
      */
-    @Bean("dubbo-demo-application")
+    @Bean("dubbo-annotation-test")
     public ApplicationConfig applicationConfig() {
         ApplicationConfig applicationConfig = new ApplicationConfig();
-        applicationConfig.setName("dubbo-demo-application");
+        applicationConfig.setName("dubbo-annotation-test");
         return applicationConfig;
     }
 

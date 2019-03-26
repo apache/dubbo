@@ -21,10 +21,10 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 public class ThreadNameTest {
 
@@ -37,7 +37,7 @@ public class ThreadNameTest {
     private ThreadNameVerifyHandler serverHandler;
     private ThreadNameVerifyHandler clientHandler;
 
-    @BeforeEach
+    @Before
     public void before() throws Exception {
         int port = 55555;
         serverURL = URL.valueOf("netty://localhost").setPort(port);
@@ -50,7 +50,7 @@ public class ThreadNameTest {
         client = new NettyClient(clientURL, clientHandler);
     }
 
-    @AfterEach
+    @After
     public void after() throws Exception {
         if (client != null) {
             client.close();
@@ -68,7 +68,7 @@ public class ThreadNameTest {
         client.send("hello");
         Thread.sleep(1000L * 5L);
         if (!serverHandler.isSuccess() || !clientHandler.isSuccess()) {
-            Assertions.fail();
+            Assert.fail();
         }
     }
 

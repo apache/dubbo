@@ -27,21 +27,21 @@ import com.alibaba.dubbo.config.ReferenceConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.ServiceConfig;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 public class ReferenceConfigTest {
     private ApplicationConfig application = new ApplicationConfig();
     private RegistryConfig registry = new RegistryConfig();
     private ProtocolConfig protocol = new ProtocolConfig();
 
-    @BeforeEach
+    @Before
     public void setUp() {
         ConfigManager.getInstance().clear();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         ConfigManager.getInstance().clear();
     }

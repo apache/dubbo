@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rmi;
 
-import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.RpcContext;
 
 import org.aopalliance.intercept.MethodInvocation;
@@ -36,7 +34,7 @@ public class RmiRemoteInvocation extends RemoteInvocation {
      */
     public RmiRemoteInvocation(MethodInvocation methodInvocation) {
         super(methodInvocation);
-        addAttribute(dubboAttachmentsAttrName, new HashMap<>(RpcContext.getContext().getAttachments()));
+        addAttribute(dubboAttachmentsAttrName, new HashMap<String, String>(RpcContext.getContext().getAttachments()));
     }
 
     /**
@@ -50,10 +48,6 @@ public class RmiRemoteInvocation extends RemoteInvocation {
             InvocationTargetException {
         RpcContext context = RpcContext.getContext();
         context.setAttachments((Map<String, String>) getAttribute(dubboAttachmentsAttrName));
-        String generic = (String) getAttribute(Constants.GENERIC_KEY);
-        if (StringUtils.isNotEmpty(generic)) {
-            context.setAttachment(Constants.GENERIC_KEY, generic);
-        }
         try {
             return super.invoke(targetObject);
         } finally {

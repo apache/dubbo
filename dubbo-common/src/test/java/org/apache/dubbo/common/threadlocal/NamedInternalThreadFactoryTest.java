@@ -17,8 +17,8 @@
 
 package org.apache.dubbo.common.threadlocal;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class NamedInternalThreadFactoryTest {
 
@@ -31,6 +31,6 @@ public class NamedInternalThreadFactoryTest {
 
             }
         });
-        Assertions.assertTrue(t.getClass().equals(InternalThread.class), "thread is not InternalThread");
+        Assert.assertTrue("thread is not InternalThread", t.getClass().equals(InternalThread.class));
     }
 }

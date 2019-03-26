@@ -36,15 +36,15 @@ public class ConsumerConfiguration {
     /**
      * Current application configuration, to replace XML config:
      * <prev>
-     * &lt;dubbo:application name="dubbo-demo-application"/&gt;
+     * &lt;dubbo:application name="dubbo-annotation-consumer"/&gt;
      * </prev>
      *
      * @return {@link ApplicationConfig} Bean
      */
-    @Bean("dubbo-demo-application")
+    @Bean("dubbo-annotation-test")
     public ApplicationConfig applicationConfig() {
         ApplicationConfig applicationConfig = new ApplicationConfig();
-        applicationConfig.setName("dubbo-demo-application");
+        applicationConfig.setName("dubbo-annotation-test");
         return applicationConfig;
     }
 

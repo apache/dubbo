@@ -225,7 +225,7 @@ public class ComplexObject {
             return innerA2;
         }
 
-        public void setInnerA2(String innerA2) {
+        public void setInnerA2(String innerA) {
             this.innerA2 = innerA2;
         }
 
@@ -233,7 +233,7 @@ public class ComplexObject {
             return innerB2;
         }
 
-        public void setInnerB2(int innerB2) {
+        public void setInnerB2(int innerB) {
             this.innerB2 = innerB2;
         }
 

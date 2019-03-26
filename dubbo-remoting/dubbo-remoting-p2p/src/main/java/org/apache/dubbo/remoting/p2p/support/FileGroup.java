@@ -17,7 +17,6 @@
 package org.apache.dubbo.remoting.p2p.support;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.IOUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -68,7 +67,9 @@ public class FileGroup extends AbstractGroup {
     public void close() {
         super.close();
         try {
-            ExecutorUtil.cancelScheduledFuture(checkModifiedFuture);
+            if (!checkModifiedFuture.isCancelled()) {
+                checkModifiedFuture.cancel(true);
+            }
         } catch (Throwable t) {
             logger.error(t.getMessage(), t);
         }

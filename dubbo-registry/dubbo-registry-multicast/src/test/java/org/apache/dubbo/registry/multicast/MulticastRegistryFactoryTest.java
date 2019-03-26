@@ -18,10 +18,10 @@ package org.apache.dubbo.registry.multicast;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.Registry;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThat;
 
 public class MulticastRegistryFactoryTest {
     @Test

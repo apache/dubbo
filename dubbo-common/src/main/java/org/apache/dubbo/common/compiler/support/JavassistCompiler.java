@@ -18,9 +18,17 @@ package org.apache.dubbo.common.compiler.support;
 
 import org.apache.dubbo.common.utils.ClassHelper;
 
+import javassist.ClassPool;
 import javassist.CtClass;
+import javassist.CtField;
+import javassist.CtNewConstructor;
+import javassist.CtNewMethod;
+import javassist.LoaderClassPath;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,46 +49,77 @@ public class JavassistCompiler extends AbstractCompiler {
 
     @Override
     public Class<?> doCompile(String name, String source) throws Throwable {
-        CtClassBuilder builder = new CtClassBuilder();
-        builder.setClassName(name);
-
-        // process imported classes
+        int i = name.lastIndexOf('.');
+        String className = i < 0 ? name : name.substring(i + 1);
+        ClassPool pool = new ClassPool(true);
+        pool.appendClassPath(new LoaderClassPath(ClassHelper.getCallerClassLoader(getClass())));
         Matcher matcher = IMPORT_PATTERN.matcher(source);
+        List<String> importPackages = new ArrayList<String>();
+        Map<String, String> fullNames = new HashMap<String, String>();
         while (matcher.find()) {
-            builder.addImports(matcher.group(1).trim());
+            String pkg = matcher.group(1);
+            if (pkg.endsWith(".*")) {
+                String pkgName = pkg.substring(0, pkg.length() - 2);
+                pool.importPackage(pkgName);
+                importPackages.add(pkgName);
+            } else {
+                int pi = pkg.lastIndexOf('.');
+                if (pi > 0) {
+                    String pkgName = pkg.substring(0, pi);
+                    pool.importPackage(pkgName);
+                    importPackages.add(pkgName);
+                    fullNames.put(pkg.substring(pi + 1), pkg);
+                }
+            }
         }
-        
-        // process extended super class
+        String[] packages = importPackages.toArray(new String[0]);
         matcher = EXTENDS_PATTERN.matcher(source);
+        CtClass cls;
         if (matcher.find()) {
-            builder.setSuperClassName(matcher.group(1).trim());
+            String extend = matcher.group(1).trim();
+            String extendClass;
+            if (extend.contains(".")) {
+                extendClass = extend;
+            } else if (fullNames.containsKey(extend)) {
+                extendClass = fullNames.get(extend);
+            } else {
+                extendClass = ClassUtils.forName(packages, extend).getName();
+            }
+            cls = pool.makeClass(name, pool.get(extendClass));
+        } else {
+            cls = pool.makeClass(name);
         }
-        
-        // process implemented interfaces
         matcher = IMPLEMENTS_PATTERN.matcher(source);
         if (matcher.find()) {
             String[] ifaces = matcher.group(1).trim().split("\\,");
-            Arrays.stream(ifaces).forEach(i -> builder.addInterface(i.trim()));
-        }
-        
-        // process constructors, fields, methods
-        String body = source.substring(source.indexOf('{') + 1, source.length() - 1);
-        String[] methods = METHODS_PATTERN.split(body);
-        String className = ClassUtils.getSimpleClassName(name);
-        Arrays.stream(methods).map(String::trim).filter(m -> !m.isEmpty()).forEach(method-> {
-            if (method.startsWith(className)) {
-                builder.addConstructor("public " + method);
-            } else if (FIELD_PATTERN.matcher(method).matches()) {
-                builder.addField("private " + method);
-            } else {
-                builder.addMethod("public " + method);
+            for (String iface : ifaces) {
+                iface = iface.trim();
+                String ifaceClass;
+                if (iface.contains(".")) {
+                    ifaceClass = iface;
+                } else if (fullNames.containsKey(iface)) {
+                    ifaceClass = fullNames.get(iface);
+                } else {
+                    ifaceClass = ClassUtils.forName(packages, iface).getName();
+                }
+                cls.addInterface(pool.get(ifaceClass));
             }
-        });
-        
-        // compile
-        ClassLoader classLoader = ClassHelper.getCallerClassLoader(getClass());
-        CtClass cls = builder.build(classLoader);
-        return cls.toClass(classLoader, JavassistCompiler.class.getProtectionDomain());
+        }
+        String body = source.substring(source.indexOf("{") + 1, source.length() - 1);
+        String[] methods = METHODS_PATTERN.split(body);
+        for (String method : methods) {
+            method = method.trim();
+            if (method.length() > 0) {
+                if (method.startsWith(className)) {
+                    cls.addConstructor(CtNewConstructor.make("public " + method, cls));
+                } else if (FIELD_PATTERN.matcher(method).matches()) {
+                    cls.addField(CtField.make("private " + method, cls));
+                } else {
+                    cls.addMethod(CtNewMethod.make("public " + method, cls));
+                }
+            }
+        }
+        return cls.toClass(ClassHelper.getCallerClassLoader(getClass()), JavassistCompiler.class.getProtectionDomain());
     }
 
 }

@@ -130,7 +130,7 @@ public class ConfigParser {
             sb.append(item.getSide());
         }
         Map<String, String> parameters = item.getParameters();
-        if (CollectionUtils.isEmptyMap(parameters)) {
+        if (parameters == null || parameters.isEmpty()) {
             throw new IllegalStateException("Invalid configurator rule, please specify at least one parameter " +
                     "you want to change in the rule.");
         }

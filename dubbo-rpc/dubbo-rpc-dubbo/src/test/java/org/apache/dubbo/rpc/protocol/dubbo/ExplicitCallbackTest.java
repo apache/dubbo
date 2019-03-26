@@ -24,11 +24,11 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +46,7 @@ public class ExplicitCallbackTest {
     // ============================A gorgeous line of segmentation================================================
     IDemoService demoProxy = null;
 
-    @AfterEach
+    @After
     public void tearDown() {
         destroyService();
         ProtocolUtils.closeAll();
@@ -64,7 +64,7 @@ public class ExplicitCallbackTest {
         demoProxy = (IDemoService) ProtocolUtils.refer(IDemoService.class, consumerUrl);
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
     }
 
@@ -140,89 +140,85 @@ public class ExplicitCallbackTest {
         };
         {
             demoProxy.xxx2(callback);
-            Assertions.assertEquals(1, demoProxy.getCallbackCount());
+            Assert.assertEquals(1, demoProxy.getCallbackCount());
             Thread.sleep(500);
             demoProxy.unxxx2(callback);
-            Assertions.assertEquals(0, demoProxy.getCallbackCount());
+            Assert.assertEquals(0, demoProxy.getCallbackCount());
 
             demoProxy.xxx2(callback2);
-            Assertions.assertEquals(1, demoProxy.getCallbackCount());
+            Assert.assertEquals(1, demoProxy.getCallbackCount());
             Thread.sleep(500);
             demoProxy.unxxx2(callback2);
-            Assertions.assertEquals(0, demoProxy.getCallbackCount());
+            Assert.assertEquals(0, demoProxy.getCallbackCount());
 
             demoProxy.xxx2(callback);
             Thread.sleep(500);
-            Assertions.assertEquals(1, demoProxy.getCallbackCount());
+            Assert.assertEquals(1, demoProxy.getCallbackCount());
             demoProxy.unxxx2(callback);
-            Assertions.assertEquals(0, demoProxy.getCallbackCount());
+            Assert.assertEquals(0, demoProxy.getCallbackCount());
         }
         {
             demoProxy.xxx2(callback);
-            Assertions.assertEquals(1, demoProxy.getCallbackCount());
+            Assert.assertEquals(1, demoProxy.getCallbackCount());
 
             demoProxy.xxx2(callback);
-            Assertions.assertEquals(1, demoProxy.getCallbackCount());
+            Assert.assertEquals(1, demoProxy.getCallbackCount());
 
             demoProxy.xxx2(callback2);
-            Assertions.assertEquals(2, demoProxy.getCallbackCount());
+            Assert.assertEquals(2, demoProxy.getCallbackCount());
         }
         destroyService();
     }
 
-    @Test
+    @Test(expected = RpcException.class)
     public void TestCallbackConsumerLimit() throws Exception {
-        Assertions.assertThrows(RpcException.class, () -> {
-            initOrResetUrl(1, 1000);
-            // URL cannot be transferred automatically from the server side to the client side by using API, instead,
-            // it needs manually specified.
-            initOrResetService();
-            final AtomicInteger count = new AtomicInteger(0);
-            demoProxy.xxx(new IDemoCallback() {
-                public String yyy(String msg) {
-                    System.out.println("Recived callback: " + msg);
-                    count.incrementAndGet();
-                    return "ok";
-                }
-            }, "other custom args", 10, 100);
+        initOrResetUrl(1, 1000);
+        // URL cannot be transferred automatically from the server side to the client side by using API, instead,
+        // it needs manually specified.
+        initOrResetService();
+        final AtomicInteger count = new AtomicInteger(0);
+        demoProxy.xxx(new IDemoCallback() {
+            public String yyy(String msg) {
+                System.out.println("Recived callback: " + msg);
+                count.incrementAndGet();
+                return "ok";
+            }
+        }, "other custom args", 10, 100);
 
-            demoProxy.xxx(new IDemoCallback() {
-                public String yyy(String msg) {
-                    System.out.println("Recived callback: " + msg);
-                    count.incrementAndGet();
-                    return "ok";
-                }
-            }, "other custom args", 10, 100);
-            destroyService();
-        });
+        demoProxy.xxx(new IDemoCallback() {
+            public String yyy(String msg) {
+                System.out.println("Recived callback: " + msg);
+                count.incrementAndGet();
+                return "ok";
+            }
+        }, "other custom args", 10, 100);
+        destroyService();
     }
 
-    @Test
+    @Test(expected = RpcException.class)
     public void TestCallbackProviderLimit() throws Exception {
-        Assertions.assertThrows(RpcException.class, () -> {
-            initOrResetUrl(1, 1000);
-            // URL cannot be transferred automatically from the server side to the client side by using API, instead,
-            // it needs manually specified.
-            serviceURL = serviceURL.addParameter(Constants.CALLBACK_INSTANCES_LIMIT_KEY, 1 + "");
-            initOrResetService();
-            final AtomicInteger count = new AtomicInteger(0);
-            demoProxy.xxx(new IDemoCallback() {
-                public String yyy(String msg) {
-                    System.out.println("Recived callback: " + msg);
-                    count.incrementAndGet();
-                    return "ok";
-                }
-            }, "other custom args", 10, 100);
+        initOrResetUrl(1, 1000);
+        // URL cannot be transferred automatically from the server side to the client side by using API, instead,
+        // it needs manually specified.
+        serviceURL = serviceURL.addParameter(Constants.CALLBACK_INSTANCES_LIMIT_KEY, 1 + "");
+        initOrResetService();
+        final AtomicInteger count = new AtomicInteger(0);
+        demoProxy.xxx(new IDemoCallback() {
+            public String yyy(String msg) {
+                System.out.println("Recived callback: " + msg);
+                count.incrementAndGet();
+                return "ok";
+            }
+        }, "other custom args", 10, 100);
 
-            demoProxy.xxx(new IDemoCallback() {
-                public String yyy(String msg) {
-                    System.out.println("Recived callback: " + msg);
-                    count.incrementAndGet();
-                    return "ok";
-                }
-            }, "other custom args", 10, 100);
-            destroyService();
-        });
+        demoProxy.xxx(new IDemoCallback() {
+            public String yyy(String msg) {
+                System.out.println("Recived callback: " + msg);
+                count.incrementAndGet();
+                return "ok";
+            }
+        }, "other custom args", 10, 100);
+        destroyService();
     }
 
     private void assertCallbackCount(int runs, int sleep, AtomicInteger count) throws InterruptedException {
@@ -231,14 +227,14 @@ public class ExplicitCallbackTest {
             if (last > runs) break;
             Thread.sleep(sleep * 2);
             System.out.println(count.get() + "  " + last);
-            Assertions.assertTrue(count.get() > last);
+            Assert.assertTrue(count.get() > last);
             last = count.get();
         }
         // has one sync callback
-        Assertions.assertEquals(runs + 1, count.get());
+        Assert.assertEquals(runs + 1, count.get());
     }
 
-    @Disabled("need start with separate process")
+    @Ignore("need start with separate process")
     @Test
     public void startProvider() throws Exception {
         exportService();

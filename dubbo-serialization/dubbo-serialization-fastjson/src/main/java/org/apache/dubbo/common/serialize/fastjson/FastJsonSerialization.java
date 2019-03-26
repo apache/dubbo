@@ -25,13 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-/**
- * FastJson serialization implementation
- *
- * <pre>
- *     e.g. &lt;dubbo:protocol serialization="fastjson" /&gt;
- * </pre>
- */
 public class FastJsonSerialization implements Serialization {
 
     @Override

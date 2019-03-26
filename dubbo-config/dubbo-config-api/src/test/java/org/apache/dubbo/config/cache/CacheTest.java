@@ -31,28 +31,26 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.RpcInvocation;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 /**
  * CacheTest
  */
-public class CacheTest {
+public class CacheTest extends TestCase {
 
-    @BeforeEach
+    @Before
     public void setUp() {
         ConfigManager.getInstance().clear();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         ConfigManager.getInstance().clear();
     }

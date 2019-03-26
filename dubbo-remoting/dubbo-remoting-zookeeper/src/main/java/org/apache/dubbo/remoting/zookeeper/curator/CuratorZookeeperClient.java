@@ -16,24 +16,18 @@
  */
 package org.apache.dubbo.remoting.zookeeper.curator;
 
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.api.CuratorWatcher;
+import org.apache.curator.framework.state.ConnectionState;
+import org.apache.curator.framework.state.ConnectionStateListener;
+import org.apache.curator.retry.RetryNTimes;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.zookeeper.ChildListener;
-import org.apache.dubbo.remoting.zookeeper.DataListener;
-import org.apache.dubbo.remoting.zookeeper.EventType;
 import org.apache.dubbo.remoting.zookeeper.StateListener;
 import org.apache.dubbo.remoting.zookeeper.support.AbstractZookeeperClient;
-
-import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.framework.api.CuratorWatcher;
-import org.apache.curator.framework.recipes.cache.TreeCache;
-import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
-import org.apache.curator.framework.recipes.cache.TreeCacheListener;
-import org.apache.curator.framework.state.ConnectionState;
-import org.apache.curator.framework.state.ConnectionStateListener;
-import org.apache.curator.retry.RetryNTimes;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException.NoNodeException;
 import org.apache.zookeeper.KeeperException.NodeExistsException;
@@ -42,15 +36,11 @@ import org.apache.zookeeper.WatchedEvent;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
 
-public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZookeeperClient.CuratorWatcherImpl, CuratorZookeeperClient.CuratorWatcherImpl> {
+public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatcher> {
 
-    static final Charset charset = Charset.forName("UTF-8");
+    private final Charset charset = Charset.forName("UTF-8");
     private final CuratorFramework client;
-    private Map<String, TreeCache> treeCacheMap = new ConcurrentHashMap<>();
 
 
     public CuratorZookeeperClient(URL url) {
@@ -106,15 +96,10 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
 
     @Override
     protected void createPersistent(String path, String data) {
-        byte[] dataBytes = data.getBytes(charset);
         try {
+            byte[] dataBytes = data.getBytes(charset);
             client.create().forPath(path, dataBytes);
         } catch (NodeExistsException e) {
-            try {
-                client.setData().forPath(path, dataBytes);
-            } catch (Exception e1) {
-                throw new IllegalStateException(e.getMessage(), e1);
-            }
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -122,15 +107,10 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
 
     @Override
     protected void createEphemeral(String path, String data) {
-        byte[] dataBytes = data.getBytes(charset);
         try {
+            byte[] dataBytes = data.getBytes(charset);
             client.create().withMode(CreateMode.EPHEMERAL).forPath(path, dataBytes);
         } catch (NodeExistsException e) {
-            try {
-                client.setData().forPath(path, dataBytes);
-            } catch (Exception e1) {
-                throw new IllegalStateException(e.getMessage(), e1);
-            }
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -192,12 +172,12 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
     }
 
     @Override
-    public CuratorZookeeperClient.CuratorWatcherImpl createTargetChildListener(String path, ChildListener listener) {
-        return new CuratorZookeeperClient.CuratorWatcherImpl(client, listener);
+    public CuratorWatcher createTargetChildListener(String path, ChildListener listener) {
+        return new CuratorWatcherImpl(listener);
     }
 
     @Override
-    public List<String> addTargetChildListener(String path, CuratorWatcherImpl listener) {
+    public List<String> addTargetChildListener(String path, CuratorWatcher listener) {
         try {
             return client.getChildren().usingWatcher(listener).forPath(path);
         } catch (NoNodeException e) {
@@ -208,73 +188,27 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
     }
 
     @Override
-    protected CuratorZookeeperClient.CuratorWatcherImpl createTargetDataListener(String path, DataListener listener) {
-        return new CuratorWatcherImpl(client, listener);
+    public void removeTargetChildListener(String path, CuratorWatcher listener) {
+        ((CuratorWatcherImpl) listener).unwatch();
     }
 
-    @Override
-    protected void addTargetDataListener(String path, CuratorZookeeperClient.CuratorWatcherImpl treeCacheListener) {
-        this.addTargetDataListener(path, treeCacheListener, null);
-    }
+    private class CuratorWatcherImpl implements CuratorWatcher {
 
-    @Override
-    protected void addTargetDataListener(String path, CuratorZookeeperClient.CuratorWatcherImpl treeCacheListener, Executor executor) {
-        try {
-            TreeCache treeCache = TreeCache.newBuilder(client, path).setCacheData(false).build();
-            treeCacheMap.putIfAbsent(path, treeCache);
-            treeCache.start();
-            if (executor == null) {
-                treeCache.getListenable().addListener(treeCacheListener);
-            } else {
-                treeCache.getListenable().addListener(treeCacheListener, executor);
-            }
-        } catch (Exception e) {
-            throw new IllegalStateException("Add treeCache listener for path:" + path, e);
-        }
-    }
+        private volatile ChildListener listener;
 
-    @Override
-    protected void removeTargetDataListener(String path, CuratorZookeeperClient.CuratorWatcherImpl treeCacheListener) {
-        TreeCache treeCache = treeCacheMap.get(path);
-        if (treeCache != null) {
-            treeCache.getListenable().removeListener(treeCacheListener);
-        }
-        treeCacheListener.dataListener = null;
-    }
-
-    @Override
-    public void removeTargetChildListener(String path, CuratorWatcherImpl listener) {
-        listener.unwatch();
-    }
-
-    static class CuratorWatcherImpl implements CuratorWatcher, TreeCacheListener {
-
-        private CuratorFramework client;
-        private volatile ChildListener childListener;
-        private volatile DataListener dataListener;
-
-
-        public CuratorWatcherImpl(CuratorFramework client, ChildListener listener) {
-            this.client = client;
-            this.childListener = listener;
-        }
-
-        public CuratorWatcherImpl(CuratorFramework client, DataListener dataListener) {
-            this.dataListener = dataListener;
-        }
-
-        protected CuratorWatcherImpl() {
+        public CuratorWatcherImpl(ChildListener listener) {
+            this.listener = listener;
         }
 
         public void unwatch() {
-            this.childListener = null;
+            this.listener = null;
         }
 
         @Override
         public void process(WatchedEvent event) throws Exception {
-            if (childListener != null) {
+            if (listener != null) {
                 String path = event.getPath() == null ? "" : event.getPath();
-                childListener.childChanged(path,
+                listener.childChanged(path,
                         // if path is null, curator using watcher will throw NullPointerException.
                         // if client connect or disconnect to server, zookeeper will queue
                         // watched event(Watcher.Event.EventType.None, .., path = null).
@@ -283,54 +217,6 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
                                 : Collections.<String>emptyList());
             }
         }
-
-        @Override
-        public void childEvent(CuratorFramework client, TreeCacheEvent event) throws Exception {
-            if (dataListener != null) {
-                TreeCacheEvent.Type type = event.getType();
-                EventType eventType = null;
-                String content = null;
-                String path = null;
-                switch (type) {
-                    case NODE_ADDED:
-                        eventType = EventType.NodeCreated;
-                        path = event.getData().getPath();
-                        content = new String(event.getData().getData(), charset);
-                        break;
-                    case NODE_UPDATED:
-                        eventType = EventType.NodeDataChanged;
-                        path = event.getData().getPath();
-                        content = new String(event.getData().getData(), charset);
-                        break;
-                    case NODE_REMOVED:
-                        path = event.getData().getPath();
-                        eventType = EventType.NodeDeleted;
-                        break;
-                    case INITIALIZED:
-                        eventType = EventType.INITIALIZED;
-                        break;
-                    case CONNECTION_LOST:
-                        eventType = EventType.CONNECTION_LOST;
-                        break;
-                    case CONNECTION_RECONNECTED:
-                        eventType = EventType.CONNECTION_RECONNECTED;
-                        break;
-                    case CONNECTION_SUSPENDED:
-                        eventType = EventType.CONNECTION_SUSPENDED;
-                        break;
-
-                }
-                dataListener.dataChanged(path, content, eventType);
-            }
-        }
     }
 
-    /**
-     * just for unit test
-     *
-     * @return
-     */
-    CuratorFramework getClient() {
-        return client;
-    }
 }

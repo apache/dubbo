@@ -16,11 +16,10 @@
  */
 package org.apache.dubbo.common.bytecode;
 
-import org.junit.jupiter.api.Test;
+import junit.framework.TestCase;
+import org.junit.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-public class MixinTest {
+public class MixinTest extends TestCase {
 
     @Test
     public void testMain() throws Exception {

@@ -50,7 +50,7 @@ public class ConfigUtils {
     }
 
     public static boolean isEmpty(String value) {
-        return StringUtils.isEmpty(value)
+        return value == null || value.length() == 0
                 || "false".equalsIgnoreCase(value)
                 || "0".equalsIgnoreCase(value)
                 || "null".equalsIgnoreCase(value)
@@ -190,7 +190,7 @@ public class ConfigUtils {
      */
     public static String getSystemProperty(String key) {
         String value = System.getenv(key);
-        if (StringUtils.isEmpty(value)) {
+        if (value == null || value.length() == 0) {
             value = System.getProperty(key);
         }
         return value;

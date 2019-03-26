@@ -23,13 +23,12 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.Server;
 import org.apache.dubbo.remoting.transport.ChannelHandlerAdapter;
-
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThat;
 
 public class NettyTransporterTest {
     @Test
@@ -54,7 +53,7 @@ public class NettyTransporterTest {
         new NettyTransporter().bind(url, new ChannelHandlerAdapter() {
 
             @Override
-            public void connected(Channel channel) {
+            public void connected(Channel channel) throws RemotingException {
                 lock.countDown();
             }
         });

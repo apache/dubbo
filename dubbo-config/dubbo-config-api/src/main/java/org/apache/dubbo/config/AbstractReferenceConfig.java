@@ -56,11 +56,11 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     /**
      * Lazy create connection
      */
-    protected Boolean lazy = false;
+    protected Boolean lazy;
 
     protected String reconnect;
 
-    protected Boolean sticky = false;
+    protected Boolean sticky;
 
     /**
      * Whether to support event in stub.

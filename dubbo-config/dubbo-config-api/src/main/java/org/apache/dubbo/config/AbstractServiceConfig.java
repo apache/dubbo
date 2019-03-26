@@ -18,7 +18,6 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.ExporterListener;
 
@@ -47,7 +46,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     /**
      * whether the service is deprecated
      */
-    protected Boolean deprecated = false;
+    protected Boolean deprecated;
 
     /**
      * The time delay register service (milliseconds)
@@ -74,7 +73,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
      * after the service registered,and it needs to be enabled manually; if you want to disable the service, you also need
      * manual processing
      */
-    protected Boolean dynamic = false;
+    protected Boolean dynamic;
 
     /**
      * Whether to use token
@@ -99,7 +98,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     /**
      * Whether to register
      */
-    private Boolean register = true;
+    private Boolean register;
 
     /**
      * Warm up period
@@ -206,7 +205,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     }
 
     public ProtocolConfig getProtocol() {
-        return CollectionUtils.isEmpty(protocols) ? null : protocols.get(0);
+        return protocols == null || protocols.isEmpty() ? null : protocols.get(0);
     }
 
     public void setProtocol(ProtocolConfig protocol) {

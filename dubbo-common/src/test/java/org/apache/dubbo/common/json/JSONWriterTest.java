@@ -16,12 +16,11 @@
  */
 package org.apache.dubbo.common.json;
 
+import junit.framework.TestCase;
 
 import java.io.StringWriter;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-public class JSONWriterTest {
+public class JSONWriterTest extends TestCase {
     public void testWriteJson() throws Exception {
         StringWriter w = new StringWriter();
         JSONWriter writer = new JSONWriter(w);

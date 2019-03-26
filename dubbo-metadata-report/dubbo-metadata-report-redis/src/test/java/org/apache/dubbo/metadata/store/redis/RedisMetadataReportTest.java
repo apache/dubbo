@@ -24,10 +24,10 @@ import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
 import org.apache.dubbo.rpc.RpcException;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.embedded.RedisServer;
 
@@ -46,7 +46,7 @@ public class RedisMetadataReportTest {
     RedisMetadataReport syncRedisMetadataReport;
     RedisServer redisServer;
 
-    @BeforeEach
+    @Before
     public void constructor() throws IOException {
         int redisPort = NetUtils.getAvailablePort();
         this.redisServer = new RedisServer(redisPort);
@@ -57,7 +57,7 @@ public class RedisMetadataReportTest {
         syncRedisMetadataReport = (RedisMetadataReport) new RedisMetadataReportFactory().createMetadataReport(registryUrl);
     }
 
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
         this.redisServer.stop();
     }
@@ -88,11 +88,11 @@ public class RedisMetadataReportTest {
                 value = jedis.get(keyTmp);
             }
 
-            Assertions.assertNotNull(value);
+            Assert.assertNotNull(value);
 
             Gson gson = new Gson();
             FullServiceDefinition fullServiceDefinition = gson.fromJson(value, FullServiceDefinition.class);
-            Assertions.assertEquals(fullServiceDefinition.getParameters().get("paramTest"), "redisTest");
+            Assert.assertEquals(fullServiceDefinition.getParameters().get("paramTest"), "redisTest");
         } catch (Throwable e) {
             throw new RpcException("Failed to put to redis . cause: " + e.getMessage(), e);
         } finally {
@@ -127,7 +127,7 @@ public class RedisMetadataReportTest {
                 Thread.sleep(moreTime);
                 value = jedis.get(keyTmp);
             }
-            Assertions.assertEquals(value, "{\"paramConsumerTest\":\"redisCm\"}");
+            Assert.assertEquals(value, "{\"paramConsumerTest\":\"redisCm\"}");
         } catch (Throwable e) {
             throw new RpcException("Failed to put to redis . cause: " + e.getMessage(), e);
         } finally {

@@ -268,10 +268,4 @@ public @interface Service {
      * Service tag name
      */
     String tag() default "";
-
-    /**
-     * methods support
-     * @return
-     */
-    Method[] methods() default {};
 }

@@ -22,14 +22,14 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import junit.framework.TestCase;
+import org.junit.Test;
 
 /**
  * RegistryPerformanceTest
  *
  */
-public class PerformanceRegistryTest  {
+public class PerformanceRegistryTest extends TestCase {
 
     private static final Logger logger = LoggerFactory.getLogger(PerformanceRegistryTest.class);
 

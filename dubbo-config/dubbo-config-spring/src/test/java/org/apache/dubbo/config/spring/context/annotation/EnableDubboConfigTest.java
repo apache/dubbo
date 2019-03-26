@@ -23,10 +23,8 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
+import org.junit.Assert;
+import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.PropertySource;
 
@@ -46,33 +44,33 @@ public class EnableDubboConfigTest {
 
         // application
         ApplicationConfig applicationConfig = context.getBean("applicationBean", ApplicationConfig.class);
-        Assertions.assertEquals("dubbo-demo-application", applicationConfig.getName());
+        Assert.assertEquals("dubbo-demo-application", applicationConfig.getName());
 
         // module
         ModuleConfig moduleConfig = context.getBean("moduleBean", ModuleConfig.class);
-        Assertions.assertEquals("dubbo-demo-module", moduleConfig.getName());
+        Assert.assertEquals("dubbo-demo-module", moduleConfig.getName());
 
         // registry
         RegistryConfig registryConfig = context.getBean(RegistryConfig.class);
-        Assertions.assertEquals("zookeeper://192.168.99.100:32770", registryConfig.getAddress());
+        Assert.assertEquals("zookeeper://192.168.99.100:32770", registryConfig.getAddress());
 
         // protocol
         ProtocolConfig protocolConfig = context.getBean(ProtocolConfig.class);
-        Assertions.assertEquals("dubbo", protocolConfig.getName());
-        Assertions.assertEquals(Integer.valueOf(20880), protocolConfig.getPort());
+        Assert.assertEquals("dubbo", protocolConfig.getName());
+        Assert.assertEquals(Integer.valueOf(20880), protocolConfig.getPort());
 
         // monitor
         MonitorConfig monitorConfig = context.getBean(MonitorConfig.class);
-        Assertions.assertEquals("zookeeper://127.0.0.1:32770", monitorConfig.getAddress());
+        Assert.assertEquals("zookeeper://127.0.0.1:32770", monitorConfig.getAddress());
 
         // provider
         ProviderConfig providerConfig = context.getBean(ProviderConfig.class);
-        Assertions.assertEquals("127.0.0.1", providerConfig.getHost());
+        Assert.assertEquals("127.0.0.1", providerConfig.getHost());
 
 
         // consumer
         ConsumerConfig consumerConfig = context.getBean(ConsumerConfig.class);
-        Assertions.assertEquals("netty", consumerConfig.getClient());
+        Assert.assertEquals("netty", consumerConfig.getClient());
 
     }
 
@@ -85,13 +83,13 @@ public class EnableDubboConfigTest {
 
         // application
         ApplicationConfig applicationConfig = context.getBean("applicationBean", ApplicationConfig.class);
-        Assertions.assertEquals("dubbo-demo-application", applicationConfig.getName());
+        Assert.assertEquals("dubbo-demo-application", applicationConfig.getName());
 
         ApplicationConfig applicationBean2 = context.getBean("applicationBean2", ApplicationConfig.class);
-        Assertions.assertEquals("dubbo-demo-application2", applicationBean2.getName());
+        Assert.assertEquals("dubbo-demo-application2", applicationBean2.getName());
 
         ApplicationConfig applicationBean3 = context.getBean("applicationBean3", ApplicationConfig.class);
-        Assertions.assertEquals("dubbo-demo-application3", applicationBean3.getName());
+        Assert.assertEquals("dubbo-demo-application3", applicationBean3.getName());
 
     }
 

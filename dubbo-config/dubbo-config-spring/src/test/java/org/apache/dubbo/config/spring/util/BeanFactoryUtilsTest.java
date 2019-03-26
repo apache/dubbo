@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.config.spring.util;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Component;
 
@@ -33,7 +33,7 @@ public class BeanFactoryUtilsTest {
 
     private AnnotationConfigApplicationContext applicationContext;
 
-    @BeforeEach
+    @Before
     public void init() {
         applicationContext = new AnnotationConfigApplicationContext();
     }
@@ -47,9 +47,9 @@ public class BeanFactoryUtilsTest {
 
         TestBean testBean = BeanFactoryUtils.getOptionalBean(applicationContext, "testBean", TestBean.class);
 
-        Assertions.assertNotNull(testBean);
+        Assert.assertNotNull(testBean);
 
-        Assertions.assertEquals("Hello,World", testBean.getName());
+        Assert.assertEquals("Hello,World", testBean.getName());
 
     }
 
@@ -60,7 +60,7 @@ public class BeanFactoryUtilsTest {
 
         TestBean testBean = BeanFactoryUtils.getOptionalBean(applicationContext, "testBean", TestBean.class);
 
-        Assertions.assertNull(testBean);
+        Assert.assertNull(testBean);
     }
 
     @Test
@@ -72,9 +72,9 @@ public class BeanFactoryUtilsTest {
 
         List<TestBean> testBeans = BeanFactoryUtils.getBeans(applicationContext, new String[]{"testBean"}, TestBean.class);
 
-        Assertions.assertEquals(1, testBeans.size());
+        Assert.assertEquals(1, testBeans.size());
 
-        Assertions.assertEquals("Hello,World", testBeans.get(0).getName());
+        Assert.assertEquals("Hello,World", testBeans.get(0).getName());
 
     }
 
@@ -85,7 +85,7 @@ public class BeanFactoryUtilsTest {
 
         List<TestBean> testBeans = BeanFactoryUtils.getBeans(applicationContext, new String[]{"testBean"}, TestBean.class);
 
-        Assertions.assertTrue(testBeans.isEmpty());
+        Assert.assertTrue(testBeans.isEmpty());
 
     }
 

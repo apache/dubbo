@@ -18,7 +18,6 @@
 package com.alibaba.dubbo.common;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.StringUtils;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
@@ -26,10 +25,6 @@ import java.util.Map;
 
 @Deprecated
 public class URL extends org.apache.dubbo.common.URL {
-
-    protected URL() {
-        super();
-    }
 
     public URL(org.apache.dubbo.common.URL url) {
         super(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(), url.getParameters());
@@ -408,7 +403,7 @@ public class URL extends org.apache.dubbo.common.URL {
 
     @Override
     public URL addParameterAndEncoded(String key, String value) {
-        if (StringUtils.isEmpty(value)) {
+        if (value == null || value.length() == 0) {
             return this;
         }
         return addParameter(key, encode(value));

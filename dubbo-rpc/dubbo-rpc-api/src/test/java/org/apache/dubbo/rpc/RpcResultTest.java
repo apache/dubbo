@@ -17,10 +17,10 @@
 package org.apache.dubbo.rpc;
 
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.Assert.fail;
 
 public class RpcResultTest {
     @Test
@@ -32,8 +32,8 @@ public class RpcResultTest {
             fail();
         } catch (Throwable throwable) {
             StackTraceElement[] stackTrace = throwable.getStackTrace();
-            Assertions.assertNotNull(stackTrace);
-            Assertions.assertTrue(stackTrace.length > 1);
+            Assert.assertNotNull(stackTrace);
+            Assert.assertTrue(stackTrace.length > 1);
         }
     }
 
@@ -70,8 +70,8 @@ public class RpcResultTest {
             fail();
         } catch (Throwable t) {
             StackTraceElement[] stackTrace = t.getStackTrace();
-            Assertions.assertNotNull(stackTrace);
-            Assertions.assertTrue(stackTrace.length == 0);
+            Assert.assertNotNull(stackTrace);
+            Assert.assertTrue(stackTrace.length == 0);
         }
     }
 }

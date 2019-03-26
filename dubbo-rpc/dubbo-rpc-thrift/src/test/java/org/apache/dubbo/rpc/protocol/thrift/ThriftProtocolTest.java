@@ -21,8 +21,8 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.gen.dubbo.Demo;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.After;
+import org.junit.Before;
 
 public class ThriftProtocolTest extends AbstractTest {
 
@@ -34,7 +34,7 @@ public class ThriftProtocolTest extends AbstractTest {
 
     private URL url;
 
-    @BeforeEach
+    @Before
     public void setUp() throws Exception {
 
         init();
@@ -45,7 +45,7 @@ public class ThriftProtocolTest extends AbstractTest {
 
     }
 
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
 
         destroy();
@@ -67,7 +67,7 @@ public class ThriftProtocolTest extends AbstractTest {
         // FIXME
         *//*invoker = protocol.refer( Demo.class, url );
 
-        Assertions.assertNotNull( invoker );
+        Assert.assertNotNull( invoker );
 
         RpcInvocation invocation = new RpcInvocation();
 
@@ -81,7 +81,7 @@ public class ThriftProtocolTest extends AbstractTest {
 
         Result result = invoker.invoke( invocation );
 
-        Assertions.assertEquals( arg, result.getResult() );*//*
+        Assert.assertEquals( arg, result.getResult() );*//*
 
     }*/
 

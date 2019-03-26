@@ -19,9 +19,7 @@ package org.apache.dubbo.rpc;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.common.utils.StringUtils;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -366,7 +364,7 @@ public class RpcContext {
      */
     public String getLocalHostName() {
         String host = localAddress == null ? null : localAddress.getHostName();
-        if (StringUtils.isEmpty(host)) {
+        if (host == null || host.length() == 0) {
             return getLocalHost();
         }
         return host;
@@ -606,7 +604,7 @@ public class RpcContext {
 
     public RpcContext setInvokers(List<Invoker<?>> invokers) {
         this.invokers = invokers;
-        if (CollectionUtils.isNotEmpty(invokers)) {
+        if (invokers != null && !invokers.isEmpty()) {
             List<URL> urls = new ArrayList<URL>(invokers.size());
             for (Invoker<?> invoker : invokers) {
                 urls.add(invoker.getUrl());

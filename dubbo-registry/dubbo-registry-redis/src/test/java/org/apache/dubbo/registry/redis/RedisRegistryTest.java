@@ -20,11 +20,9 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import redis.embedded.RedisServer;
 
 import java.util.List;
@@ -33,7 +31,7 @@ import java.util.Set;
 
 import static org.apache.dubbo.common.Constants.BACKUP_KEY;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThat;
 
 public class RedisRegistryTest {
 
@@ -43,7 +41,7 @@ public class RedisRegistryTest {
     private RedisRegistry redisRegistry;
     private URL registryUrl;
 
-    @BeforeEach
+    @Before
     public void setUp() throws Exception {
         int redisPort = NetUtils.getAvailablePort();
         this.redisServer = new RedisServer(redisPort);
@@ -53,7 +51,7 @@ public class RedisRegistryTest {
         redisRegistry = (RedisRegistry) new RedisRegistryFactory().createRegistry(registryUrl);
     }
 
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
         this.redisServer.stop();
     }
@@ -72,12 +70,10 @@ public class RedisRegistryTest {
         assertThat(registered.size(), is(1));
     }
 
-    @Test
+    @Test(expected = IllegalStateException.class)
     public void testAnyHost() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            URL errorUrl = URL.valueOf("multicast://0.0.0.0/");
-            new RedisRegistryFactory().createRegistry(errorUrl);
-        });
+        URL errorUrl = URL.valueOf("multicast://0.0.0.0/");
+        new RedisRegistryFactory().createRegistry(errorUrl);
     }
 
 

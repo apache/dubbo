@@ -19,14 +19,10 @@ package org.apache.dubbo.common.serialize.support;
 import java.util.Collection;
 
 /**
- * Interface defining serialization optimizer, there are nothing implementations for now.
+ * This class can be replaced with the contents in config file, but for now I think the class is easier to write
+ *
  */
 public interface SerializationOptimizer {
 
-    /**
-     * Get serializable classes
-     *
-     * @return serializable classes
-     * */
     Collection<Class> getSerializableClasses();
 }

@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.filter.tps;
 
-import java.util.concurrent.atomic.LongAdder;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Judge whether a particular invocation of service provider method should be allowed within a configured time interval.
@@ -30,7 +30,7 @@ class StatItem {
 
     private long interval;
 
-    private LongAdder token;
+    private AtomicInteger token;
 
     private int rate;
 
@@ -39,39 +39,32 @@ class StatItem {
         this.rate = rate;
         this.interval = interval;
         this.lastResetTime = System.currentTimeMillis();
-        this.token = buildLongAdder(rate);
+        this.token = new AtomicInteger(rate);
     }
 
     public boolean isAllowable() {
         long now = System.currentTimeMillis();
         if (now > lastResetTime + interval) {
-            token = buildLongAdder(rate);
+            token.set(rate);
             lastResetTime = now;
         }
 
-        if (token.sum() < 0) {
-            return false;
+        int value = token.get();
+        boolean flag = false;
+        while (value > 0 && !flag) {
+            flag = token.compareAndSet(value, value - 1);
+            value = token.get();
         }
-        token.decrement();
-        return true;
+
+        return flag;
     }
-
-    public long getInterval() {
-        return interval;
-    }
-
-
-    public int getRate() {
-        return rate;
-    }
-
 
     long getLastResetTime() {
         return lastResetTime;
     }
 
-    long getToken() {
-        return token.sum();
+    int getToken() {
+        return token.get();
     }
 
     @Override
@@ -81,12 +74,6 @@ class StatItem {
                 .append("rate = ").append(rate).append(", ")
                 .append("interval = ").append(interval).append("]")
                 .toString();
-    }
-
-    private LongAdder buildLongAdder(int rate) {
-        LongAdder adder = new LongAdder();
-        adder.add(rate);
-        return adder;
     }
 
 }

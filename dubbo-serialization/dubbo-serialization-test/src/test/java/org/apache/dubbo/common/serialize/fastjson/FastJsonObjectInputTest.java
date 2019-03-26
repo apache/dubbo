@@ -17,11 +17,8 @@
 package org.apache.dubbo.common.serialize.fastjson;
 
 import com.alibaba.fastjson.JSONObject;
-
 import org.apache.dubbo.common.serialize.model.Person;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
@@ -31,7 +28,7 @@ import java.io.StringReader;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThat;
 
 public class FastJsonObjectInputTest {
     private FastJsonObjectInput fastJsonObjectInput;
@@ -123,22 +120,18 @@ public class FastJsonObjectInputTest {
         assertThat(result.getAge(), is(30));
     }
 
-    @Test
+    @Test(expected = EOFException.class)
     public void testEmptyLine() throws IOException, ClassNotFoundException {
-        Assertions.assertThrows(EOFException.class, () -> {
-            fastJsonObjectInput = new FastJsonObjectInput(new StringReader(""));
+        fastJsonObjectInput = new FastJsonObjectInput(new StringReader(""));
 
-            fastJsonObjectInput.readObject();
-        });
+        fastJsonObjectInput.readObject();
     }
 
-    @Test
+    @Test(expected = EOFException.class)
     public void testEmptySpace() throws IOException, ClassNotFoundException {
-        Assertions.assertThrows(EOFException.class, () -> {
-            fastJsonObjectInput = new FastJsonObjectInput(new StringReader("  "));
+        fastJsonObjectInput = new FastJsonObjectInput(new StringReader("  "));
 
-            fastJsonObjectInput.readObject();
-        });
+        fastJsonObjectInput.readObject();
     }
 
     @Test

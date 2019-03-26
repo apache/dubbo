@@ -18,14 +18,13 @@ package org.apache.dubbo.registry.support;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
-
-import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -47,11 +46,11 @@ public class AbstractRegistryTest {
     private boolean notifySuccess;
     private Map<String, String> parametersConsumer = new LinkedHashMap<>();
 
-    @BeforeEach
+    @Before
     public void init() {
         URL url = URL.valueOf("dubbo://192.168.0.2:2233");
         //sync update cache file
-        url = url.addParameter("save.file", true);
+        url = url.addParameter("save.file",true);
         testUrl = URL.valueOf("http://192.168.0.3:9090/registry?check=false&file=N/A&interface=com.test");
         mockUrl = new URL("dubbo", "192.168.0.1", 2200);
 
@@ -79,7 +78,7 @@ public class AbstractRegistryTest {
         notifySuccess = false;
     }
 
-    @AfterEach
+    @After
     public void after() {
         abstractRegistry.destroy();
     }
@@ -96,22 +95,18 @@ public class AbstractRegistryTest {
         abstractRegistry.register(mockUrl);
         assert abstractRegistry.getRegistered().contains(mockUrl);
         //test multiple urls
-        for (URL url : abstractRegistry.getRegistered()) {
-            abstractRegistry.unregister(url);
-        }
+        abstractRegistry.getRegistered().clear();
         List<URL> urlList = getList();
         for (URL url : urlList) {
             abstractRegistry.register(url);
         }
-        MatcherAssert.assertThat(abstractRegistry.getRegistered().size(), Matchers.equalTo(urlList.size()));
+        Assert.assertThat(abstractRegistry.getRegistered().size(), Matchers.equalTo(urlList.size()));
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testRegisterIfURLNULL() throws Exception {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            abstractRegistry.register(null);
-            Assertions.fail("register url == null");
-        });
+        abstractRegistry.register(null);
+        Assert.fail("register url == null");
     }
 
     /**
@@ -124,29 +119,25 @@ public class AbstractRegistryTest {
     public void testUnregister() throws Exception {
         //test one unregister
         URL url = new URL("dubbo", "192.168.0.1", 2200);
-        abstractRegistry.register(url);
+        abstractRegistry.getRegistered().add(url);
         abstractRegistry.unregister(url);
-        MatcherAssert.assertThat(false, Matchers.equalTo(abstractRegistry.getRegistered().contains(url)));
+        Assert.assertThat(false, Matchers.equalTo(abstractRegistry.getRegistered().contains(url)));
         //test multiple unregisters
-        for (URL u : abstractRegistry.getRegistered()) {
-            abstractRegistry.unregister(u);
-        }
+        abstractRegistry.getRegistered().clear();
         List<URL> urlList = getList();
         for (URL urlSub : urlList) {
-            abstractRegistry.register(urlSub);
+            abstractRegistry.getRegistered().add(urlSub);
         }
         for (URL urlSub : urlList) {
             abstractRegistry.unregister(urlSub);
         }
-        MatcherAssert.assertThat(0, Matchers.equalTo(abstractRegistry.getRegistered().size()));
+        Assert.assertThat(0, Matchers.equalTo(abstractRegistry.getRegistered().size()));
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testUnregisterIfUrlNull() throws Exception {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            abstractRegistry.unregister(null);
-            Assertions.fail("unregister url == null");
-        });
+        abstractRegistry.unregister(null);
+        Assert.fail("unregister url == null");
     }
 
     /**
@@ -160,53 +151,45 @@ public class AbstractRegistryTest {
         URL url = new URL("dubbo", "192.168.0.1", 2200);
         abstractRegistry.subscribe(url, listener);
         Set<NotifyListener> subscribeListeners = abstractRegistry.getSubscribed().get(url);
-        MatcherAssert.assertThat(true, Matchers.equalTo(subscribeListeners.contains(listener)));
+        Assert.assertThat(true, Matchers.equalTo(subscribeListeners.contains(listener)));
         //test unsubscribe
         abstractRegistry.unsubscribe(url, listener);
         Set<NotifyListener> unsubscribeListeners = abstractRegistry.getSubscribed().get(url);
-        MatcherAssert.assertThat(false, Matchers.equalTo(unsubscribeListeners.contains(listener)));
+        Assert.assertThat(false, Matchers.equalTo(unsubscribeListeners.contains(listener)));
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testSubscribeIfUrlNull() throws Exception {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
-            NotifyListener listener = urls -> notified.set(Boolean.TRUE);
-            URL url = new URL("dubbo", "192.168.0.1", 2200);
-            abstractRegistry.subscribe(null, listener);
-            Assertions.fail("subscribe url == null");
-        });
+        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+        NotifyListener listener = urls -> notified.set(Boolean.TRUE);
+        URL url = new URL("dubbo", "192.168.0.1", 2200);
+        abstractRegistry.subscribe(null, listener);
+        Assert.fail("subscribe url == null");
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testSubscribeIfListenerNull() throws Exception {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
-            NotifyListener listener = urls -> notified.set(Boolean.TRUE);
-            URL url = new URL("dubbo", "192.168.0.1", 2200);
-            abstractRegistry.subscribe(url, null);
-            Assertions.fail("listener url == null");
-        });
+        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+        NotifyListener listener = urls -> notified.set(Boolean.TRUE);
+        URL url = new URL("dubbo", "192.168.0.1", 2200);
+        abstractRegistry.subscribe(url, null);
+        Assert.fail("listener url == null");
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testUnsubscribeIfUrlNull() throws Exception {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
-            NotifyListener listener = urls -> notified.set(Boolean.TRUE);
-            abstractRegistry.unsubscribe(null, listener);
-            Assertions.fail("unsubscribe url == null");
-        });
+        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+        NotifyListener listener = urls -> notified.set(Boolean.TRUE);
+        abstractRegistry.unsubscribe(null, listener);
+        Assert.fail("unsubscribe url == null");
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testUnsubscribeIfNotifyNull() throws Exception {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
-            URL url = new URL("dubbo", "192.168.0.1", 2200);
-            abstractRegistry.unsubscribe(url, null);
-            Assertions.fail("unsubscribe listener == null");
-        });
+        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+        URL url = new URL("dubbo", "192.168.0.1", 2200);
+        abstractRegistry.unsubscribe(url, null);
+        Assert.fail("unsubscribe listener == null");
     }
 
     /**
@@ -220,22 +203,22 @@ public class AbstractRegistryTest {
         // check parameters
         try {
             abstractRegistry.subscribe(testUrl, null);
-            Assertions.fail();
+            Assert.fail();
         } catch (Exception e) {
-            Assertions.assertTrue(e instanceof IllegalArgumentException);
+            Assert.assertTrue(e instanceof IllegalArgumentException);
         }
         // check parameters
         try {
             abstractRegistry.subscribe(null, null);
-            Assertions.fail();
+            Assert.fail();
         } catch (Exception e) {
-            Assertions.assertTrue(e instanceof IllegalArgumentException);
+            Assert.assertTrue(e instanceof IllegalArgumentException);
         }
         // check if subscribe successfully
-        Assertions.assertNull(abstractRegistry.getSubscribed().get(testUrl));
+        Assert.assertNull(abstractRegistry.getSubscribed().get(testUrl));
         abstractRegistry.subscribe(testUrl, listener);
-        Assertions.assertNotNull(abstractRegistry.getSubscribed().get(testUrl));
-        Assertions.assertTrue(abstractRegistry.getSubscribed().get(testUrl).contains(listener));
+        Assert.assertNotNull(abstractRegistry.getSubscribed().get(testUrl));
+        Assert.assertTrue(abstractRegistry.getSubscribed().get(testUrl).contains(listener));
     }
 
     /**
@@ -249,25 +232,25 @@ public class AbstractRegistryTest {
         // check parameters
         try {
             abstractRegistry.unsubscribe(testUrl, null);
-            Assertions.fail();
+            Assert.fail();
         } catch (Exception e) {
-            Assertions.assertTrue(e instanceof IllegalArgumentException);
+            Assert.assertTrue(e instanceof IllegalArgumentException);
         }
         // check parameters
         try {
             abstractRegistry.unsubscribe(null, null);
-            Assertions.fail();
+            Assert.fail();
         } catch (Exception e) {
-            Assertions.assertTrue(e instanceof IllegalArgumentException);
+            Assert.assertTrue(e instanceof IllegalArgumentException);
         }
 
-        Assertions.assertNull(abstractRegistry.getSubscribed().get(testUrl));
+        Assert.assertNull(abstractRegistry.getSubscribed().get(testUrl));
         // check if unsubscribe successfully
         abstractRegistry.subscribe(testUrl, listener);
         abstractRegistry.unsubscribe(testUrl, listener);
         // Since we have subscribe testUrl, here should return a empty set instead of null
-        Assertions.assertNotNull(abstractRegistry.getSubscribed().get(testUrl));
-        Assertions.assertFalse(abstractRegistry.getSubscribed().get(testUrl).contains(listener));
+        Assert.assertNotNull(abstractRegistry.getSubscribed().get(testUrl));
+        Assert.assertFalse(abstractRegistry.getSubscribed().get(testUrl).contains(listener));
     }
 
     /**
@@ -278,17 +261,17 @@ public class AbstractRegistryTest {
     public void testRecover() throws Exception {
         // test recover nothing
         abstractRegistry.recover();
-        Assertions.assertFalse(abstractRegistry.getRegistered().contains(testUrl));
-        Assertions.assertNull(abstractRegistry.getSubscribed().get(testUrl));
+        Assert.assertFalse(abstractRegistry.getRegistered().contains(testUrl));
+        Assert.assertNull(abstractRegistry.getSubscribed().get(testUrl));
 
         // test recover
         abstractRegistry.register(testUrl);
         abstractRegistry.subscribe(testUrl, listener);
         abstractRegistry.recover();
         // check if recover successfully
-        Assertions.assertTrue(abstractRegistry.getRegistered().contains(testUrl));
-        Assertions.assertNotNull(abstractRegistry.getSubscribed().get(testUrl));
-        Assertions.assertTrue(abstractRegistry.getSubscribed().get(testUrl).contains(listener));
+        Assert.assertTrue(abstractRegistry.getRegistered().contains(testUrl));
+        Assert.assertNotNull(abstractRegistry.getSubscribed().get(testUrl));
+        Assert.assertTrue(abstractRegistry.getSubscribed().get(testUrl).contains(listener));
 
     }
 
@@ -296,13 +279,13 @@ public class AbstractRegistryTest {
     public void testRecover2() throws Exception {
         List<URL> list = getList();
         abstractRegistry.recover();
-        Assertions.assertEquals(0, abstractRegistry.getRegistered().size());
+        Assert.assertEquals(0, abstractRegistry.getRegistered().size());
         for (URL url : list) {
             abstractRegistry.register(url);
         }
-        Assertions.assertEquals(3, abstractRegistry.getRegistered().size());
+        Assert.assertEquals(3, abstractRegistry.getRegistered().size());
         abstractRegistry.recover();
-        Assertions.assertEquals(3, abstractRegistry.getRegistered().size());
+        Assert.assertEquals(3, abstractRegistry.getRegistered().size());
     }
 
     /**
@@ -327,9 +310,9 @@ public class AbstractRegistryTest {
         urls.add(url3);
         abstractRegistry.notify(url1, listner1, urls);
         Map<URL, Map<String, List<URL>>> map = abstractRegistry.getNotified();
-        MatcherAssert.assertThat(true, Matchers.equalTo(map.containsKey(url1)));
-        MatcherAssert.assertThat(false, Matchers.equalTo(map.containsKey(url2)));
-        MatcherAssert.assertThat(false, Matchers.equalTo(map.containsKey(url3)));
+        Assert.assertThat(true, Matchers.equalTo(map.containsKey(url1)));
+        Assert.assertThat(false, Matchers.equalTo(map.containsKey(url2)));
+        Assert.assertThat(false, Matchers.equalTo(map.containsKey(url3)));
     }
 
     /**
@@ -353,53 +336,49 @@ public class AbstractRegistryTest {
         urls.add(url3);
         abstractRegistry.notify(urls);
         Map<URL, Map<String, List<URL>>> map = abstractRegistry.getNotified();
-        MatcherAssert.assertThat(true, Matchers.equalTo(map.containsKey(url1)));
-        MatcherAssert.assertThat(true, Matchers.equalTo(map.containsKey(url2)));
-        MatcherAssert.assertThat(true, Matchers.equalTo(map.containsKey(url3)));
+        Assert.assertThat(true, Matchers.equalTo(map.containsKey(url1)));
+        Assert.assertThat(true, Matchers.equalTo(map.containsKey(url2)));
+        Assert.assertThat(true, Matchers.equalTo(map.containsKey(url3)));
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testNotifyIfURLNull() throws Exception {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
-            NotifyListener listner1 = urls -> notified.set(Boolean.TRUE);
-            URL url1 = new URL("dubbo", "192.168.0.1", 2200, parametersConsumer);
-            abstractRegistry.subscribe(url1, listner1);
-            NotifyListener listner2 = urls -> notified.set(Boolean.TRUE);
-            URL url2 = new URL("dubbo", "192.168.0.2", 2201, parametersConsumer);
-            abstractRegistry.subscribe(url2, listner2);
-            NotifyListener listner3 = urls -> notified.set(Boolean.TRUE);
-            URL url3 = new URL("dubbo", "192.168.0.3", 2202, parametersConsumer);
-            abstractRegistry.subscribe(url3, listner3);
-            List<URL> urls = new ArrayList<>();
-            urls.add(url1);
-            urls.add(url2);
-            urls.add(url3);
-            abstractRegistry.notify(null, listner1, urls);
-            Assertions.fail("notify url == null");
-        });
+        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+        NotifyListener listner1 = urls -> notified.set(Boolean.TRUE);
+        URL url1 = new URL("dubbo", "192.168.0.1", 2200, parametersConsumer);
+        abstractRegistry.subscribe(url1, listner1);
+        NotifyListener listner2 = urls -> notified.set(Boolean.TRUE);
+        URL url2 = new URL("dubbo", "192.168.0.2", 2201, parametersConsumer);
+        abstractRegistry.subscribe(url2, listner2);
+        NotifyListener listner3 = urls -> notified.set(Boolean.TRUE);
+        URL url3 = new URL("dubbo", "192.168.0.3", 2202, parametersConsumer);
+        abstractRegistry.subscribe(url3, listner3);
+        List<URL> urls = new ArrayList<>();
+        urls.add(url1);
+        urls.add(url2);
+        urls.add(url3);
+        abstractRegistry.notify(null, listner1, urls);
+        Assert.fail("notify url == null");
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testNotifyIfNotifyNull() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
-            NotifyListener listner1 = urls -> notified.set(Boolean.TRUE);
-            URL url1 = new URL("dubbo", "192.168.0.1", 2200, parametersConsumer);
-            abstractRegistry.subscribe(url1, listner1);
-            NotifyListener listner2 = urls -> notified.set(Boolean.TRUE);
-            URL url2 = new URL("dubbo", "192.168.0.2", 2201, parametersConsumer);
-            abstractRegistry.subscribe(url2, listner2);
-            NotifyListener listner3 = urls -> notified.set(Boolean.TRUE);
-            URL url3 = new URL("dubbo", "192.168.0.3", 2202, parametersConsumer);
-            abstractRegistry.subscribe(url3, listner3);
-            List<URL> urls = new ArrayList<>();
-            urls.add(url1);
-            urls.add(url2);
-            urls.add(url3);
-            abstractRegistry.notify(url1, null, urls);
-            Assertions.fail("notify listener == null");
-        });
+        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+        NotifyListener listner1 = urls -> notified.set(Boolean.TRUE);
+        URL url1 = new URL("dubbo", "192.168.0.1", 2200, parametersConsumer);
+        abstractRegistry.subscribe(url1, listner1);
+        NotifyListener listner2 = urls -> notified.set(Boolean.TRUE);
+        URL url2 = new URL("dubbo", "192.168.0.2", 2201, parametersConsumer);
+        abstractRegistry.subscribe(url2, listner2);
+        NotifyListener listner3 = urls -> notified.set(Boolean.TRUE);
+        URL url3 = new URL("dubbo", "192.168.0.3", 2202, parametersConsumer);
+        abstractRegistry.subscribe(url3, listner3);
+        List<URL> urls = new ArrayList<>();
+        urls.add(url1);
+        urls.add(url2);
+        urls.add(url3);
+        abstractRegistry.notify(url1, null, urls);
+        Assert.fail("notify listener == null");
     }
 
 
@@ -414,35 +393,35 @@ public class AbstractRegistryTest {
         // check parameters
         try {
             abstractRegistry.notify(null, null, null);
-            Assertions.fail();
+            Assert.fail();
         } catch (Exception e) {
-            Assertions.assertTrue(e instanceof IllegalArgumentException);
+            Assert.assertTrue(e instanceof IllegalArgumentException);
         }
         // check parameters
         try {
             abstractRegistry.notify(testUrl, null, null);
-            Assertions.fail();
+            Assert.fail();
         } catch (Exception e) {
-            Assertions.assertTrue(e instanceof IllegalArgumentException);
+            Assert.assertTrue(e instanceof IllegalArgumentException);
         }
         // check parameters
         try {
             abstractRegistry.notify(null, listener, null);
-            Assertions.fail();
+            Assert.fail();
         } catch (Exception e) {
-            Assertions.assertTrue(e instanceof IllegalArgumentException);
+            Assert.assertTrue(e instanceof IllegalArgumentException);
         }
 
-        Assertions.assertFalse(notifySuccess);
+        Assert.assertFalse(notifySuccess);
         abstractRegistry.notify(testUrl, listener, null);
-        Assertions.assertFalse(notifySuccess);
+        Assert.assertFalse(notifySuccess);
 
         List<URL> urls = new ArrayList<>();
         urls.add(testUrl);
         // check if notify successfully
-        Assertions.assertFalse(notifySuccess);
+        Assert.assertFalse(notifySuccess);
         abstractRegistry.notify(testUrl, listener, urls);
-        Assertions.assertTrue(notifySuccess);
+        Assert.assertTrue(notifySuccess);
     }
 
     @Test
@@ -450,30 +429,30 @@ public class AbstractRegistryTest {
         // check parameters
         try {
             AbstractRegistry.filterEmpty(null, null);
-            Assertions.fail();
+            Assert.fail();
         } catch (Exception e) {
-            Assertions.assertTrue(e instanceof NullPointerException);
+            Assert.assertTrue(e instanceof NullPointerException);
         }
 
         // check parameters
         List<URL> urls = new ArrayList<>();
         try {
             AbstractRegistry.filterEmpty(null, urls);
-            Assertions.fail();
+            Assert.fail();
         } catch (Exception e) {
-            Assertions.assertTrue(e instanceof NullPointerException);
+            Assert.assertTrue(e instanceof NullPointerException);
         }
 
         // check if the output is generated by a fixed way
         urls.add(testUrl.setProtocol(Constants.EMPTY_PROTOCOL));
-        Assertions.assertEquals(AbstractRegistry.filterEmpty(testUrl, null), urls);
+        Assert.assertEquals(AbstractRegistry.filterEmpty(testUrl, null), urls);
 
         List<URL> testUrls = new ArrayList<>();
-        Assertions.assertEquals(AbstractRegistry.filterEmpty(testUrl, testUrls), urls);
+        Assert.assertEquals(AbstractRegistry.filterEmpty(testUrl, testUrls), urls);
 
         // check if the output equals the input urls
         testUrls.add(testUrl);
-        Assertions.assertEquals(AbstractRegistry.filterEmpty(testUrl, testUrls), testUrls);
+        Assert.assertEquals(AbstractRegistry.filterEmpty(testUrl, testUrls), testUrls);
 
     }
 
@@ -483,18 +462,18 @@ public class AbstractRegistryTest {
         // loop up before registry
         try {
             abstractRegistry.lookup(null);
-            Assertions.fail();
+            Assert.fail();
         } catch (Exception e) {
-            Assertions.assertTrue(e instanceof NullPointerException);
+            Assert.assertTrue(e instanceof NullPointerException);
         }
         List<URL> urlList1 = abstractRegistry.lookup(testUrl);
-        Assertions.assertFalse(urlList1.contains(testUrl));
+        Assert.assertFalse(urlList1.contains(testUrl));
         // loop up after registry
         List<URL> urls = new ArrayList<>();
         urls.add(testUrl);
         abstractRegistry.notify(urls);
         List<URL> urlList2 = abstractRegistry.lookup(testUrl);
-        Assertions.assertTrue(urlList2.contains(testUrl));
+        Assert.assertTrue(urlList2.contains(testUrl));
 
     }
 
@@ -502,12 +481,12 @@ public class AbstractRegistryTest {
     public void destroyTest() throws Exception {
         abstractRegistry.register(testUrl);
         abstractRegistry.subscribe(testUrl, listener);
-        Assertions.assertEquals(1, abstractRegistry.getRegistered().size());
-        Assertions.assertEquals(1, abstractRegistry.getSubscribed().get(testUrl).size());
+        Assert.assertEquals(1, abstractRegistry.getRegistered().size());
+        Assert.assertEquals(1, abstractRegistry.getSubscribed().get(testUrl).size());
         // delete listener and register
         abstractRegistry.destroy();
-        Assertions.assertEquals(0, abstractRegistry.getRegistered().size());
-        Assertions.assertEquals(0, abstractRegistry.getSubscribed().get(testUrl).size());
+        Assert.assertEquals(0, abstractRegistry.getRegistered().size());
+        Assert.assertEquals(0, abstractRegistry.getSubscribed().get(testUrl).size());
     }
 
     @Test
@@ -517,16 +496,16 @@ public class AbstractRegistryTest {
         urls.add(testUrl);
         // register, subscribe, notify, unsubscribe, unregister
         abstractRegistry.register(testUrl);
-        Assertions.assertTrue(abstractRegistry.getRegistered().contains(testUrl));
+        Assert.assertTrue(abstractRegistry.getRegistered().contains(testUrl));
         abstractRegistry.subscribe(testUrl, listener);
-        Assertions.assertTrue(abstractRegistry.getSubscribed().containsKey(testUrl));
-        Assertions.assertFalse(notifySuccess);
+        Assert.assertTrue(abstractRegistry.getSubscribed().containsKey(testUrl));
+        Assert.assertFalse(notifySuccess);
         abstractRegistry.notify(urls);
-        Assertions.assertTrue(notifySuccess);
+        Assert.assertTrue(notifySuccess);
         abstractRegistry.unsubscribe(testUrl, listener);
-        Assertions.assertFalse(abstractRegistry.getSubscribed().containsKey(listener));
+        Assert.assertFalse(abstractRegistry.getSubscribed().containsKey(listener));
         abstractRegistry.unregister(testUrl);
-        Assertions.assertFalse(abstractRegistry.getRegistered().contains(testUrl));
+        Assert.assertFalse(abstractRegistry.getRegistered().contains(testUrl));
     }
 
     private List<URL> getList() {
@@ -541,17 +520,17 @@ public class AbstractRegistryTest {
     }
 
     @Test
-    public void getCacheUrlsTest() {
+    public void getCacheUrlsTest(){
         List<URL> urls = new ArrayList<>();
         urls.add(testUrl);
         // check if notify successfully
-        Assertions.assertFalse(notifySuccess);
+        Assert.assertFalse(notifySuccess);
         abstractRegistry.notify(testUrl, listener, urls);
-        Assertions.assertTrue(notifySuccess);
+        Assert.assertTrue(notifySuccess);
         List<URL> cacheUrl = abstractRegistry.getCacheUrls(testUrl);
-        Assertions.assertTrue(cacheUrl.size() == 1);
+        Assert.assertTrue(cacheUrl.size() == 1);
         URL nullUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A&interface=com.testa");
         cacheUrl = abstractRegistry.getCacheUrls(nullUrl);
-        Assertions.assertTrue(Objects.isNull(cacheUrl));
+        Assert.assertTrue(Objects.isNull(cacheUrl));
     }
 }

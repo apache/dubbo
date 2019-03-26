@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.cluster.configurator.AbstractConfigurator;
 
 /**
- * OverrideConfigurator
+ * AbsentConfigurator
  *
  */
 public class OverrideConfigurator extends AbstractConfigurator {

@@ -22,8 +22,8 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.gen.dubbo.$__DemoStub;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class ServerExceptionTest extends AbstractTest {
 
@@ -69,25 +69,24 @@ public class ServerExceptionTest extends AbstractTest {
 
     }
 
-    @Test
+    @Test(expected = RpcException.class)
     public void testServerException() throws Exception {
-        Assertions.assertThrows(RpcException.class, () -> {
-            Assertions.assertNotNull(invoker);
 
-            RpcInvocation invocation = new RpcInvocation();
+        Assert.assertNotNull(invoker);
 
-            invocation.setMethodName("echoString");
+        RpcInvocation invocation = new RpcInvocation();
 
-            invocation.setParameterTypes(new Class<?>[]{String.class});
+        invocation.setMethodName("echoString");
 
-            String arg = "Hello, World!";
+        invocation.setParameterTypes(new Class<?>[]{String.class});
 
-            invocation.setArguments(new Object[]{arg});
+        String arg = "Hello, World!";
 
-            Result result = invoker.invoke(invocation);
+        invocation.setArguments(new Object[]{arg});
 
-            System.out.println(result);
-        });
+        Result result = invoker.invoke(invocation);
+
+        System.out.println(result);
 
     }
 

@@ -26,13 +26,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-/**
- * Protostuff serialization implementation
- *
- * <pre>
- *     e.g. &lt;dubbo:protocol serialization="protostuff" /&gt;
- * </pre>
- */
 public class ProtostuffSerialization implements Serialization {
     @Override
     public byte getContentTypeId() {

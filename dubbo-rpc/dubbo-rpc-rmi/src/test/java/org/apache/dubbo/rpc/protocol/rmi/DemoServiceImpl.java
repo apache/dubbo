@@ -31,10 +31,6 @@ public class DemoServiceImpl implements DemoService {
         System.out.println("hello " + name);
     }
 
-    public String sayHi(String name) {
-        return "Hi, " + name;
-    }
-
     public String echo(String text) {
         return text;
     }

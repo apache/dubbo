@@ -43,6 +43,9 @@ import java.io.InputStream;
 
 /**
  * ExchangeCodec.
+ *
+ *
+ *
  */
 public class ExchangeCodec extends TelnetCodec {
 
@@ -142,7 +145,7 @@ public class ExchangeCodec extends TelnetCodec {
             // decode response.
             Response res = new Response(id);
             if ((flag & FLAG_EVENT) != 0) {
-                res.setEvent(true);
+                res.setEvent(Response.HEARTBEAT_EVENT);
             }
             // get status.
             byte status = header[3];
@@ -173,7 +176,7 @@ public class ExchangeCodec extends TelnetCodec {
             req.setVersion(Version.getProtocolVersion());
             req.setTwoWay((flag & FLAG_TWOWAY) != 0);
             if ((flag & FLAG_EVENT) != 0) {
-                req.setEvent(true);
+                req.setEvent(Request.HEARTBEAT_EVENT);
             }
             try {
                 ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);

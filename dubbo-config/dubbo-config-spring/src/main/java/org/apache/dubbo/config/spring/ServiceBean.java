@@ -17,7 +17,6 @@
 package org.apache.dubbo.config.spring;
 
 import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
@@ -29,7 +28,6 @@ import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.annotation.Service;
-import org.apache.dubbo.config.spring.context.event.ServiceBeanExportedEvent;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
 
 import org.springframework.aop.support.AopUtils;
@@ -39,8 +37,6 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 
@@ -56,10 +52,7 @@ import static org.apache.dubbo.config.spring.util.BeanFactoryUtils.addApplicatio
  *
  * @export
  */
-public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean, DisposableBean,
-        ApplicationContextAware, ApplicationListener<ContextRefreshedEvent>, BeanNameAware,
-        ApplicationEventPublisherAware {
-
+public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean, DisposableBean, ApplicationContextAware, ApplicationListener<ContextRefreshedEvent>, BeanNameAware {
 
     private static final long serialVersionUID = 213195494150089726L;
 
@@ -70,8 +63,6 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
     private transient String beanName;
 
     private transient boolean supportedApplicationListener;
-
-    private ApplicationEventPublisher applicationEventPublisher;
 
     public ServiceBean() {
         super();
@@ -121,7 +112,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             Map<String, ProviderConfig> providerConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProviderConfig.class, false, false);
             if (providerConfigMap != null && providerConfigMap.size() > 0) {
                 Map<String, ProtocolConfig> protocolConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProtocolConfig.class, false, false);
-                if (CollectionUtils.isEmptyMap(protocolConfigMap)
+                if ((protocolConfigMap == null || protocolConfigMap.size() == 0)
                         && providerConfigMap.size() > 1) { // backward compatibility
                     List<ProviderConfig> providerConfigs = new ArrayList<ProviderConfig>();
                     for (ProviderConfig config : providerConfigMap.values()) {
@@ -192,11 +183,11 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             }
         }
 
-        if ((CollectionUtils.isEmpty(getRegistries()))
-                && (getProvider() == null || CollectionUtils.isEmpty(getProvider().getRegistries()))
-                && (getApplication() == null || CollectionUtils.isEmpty(getApplication().getRegistries()))) {
+        if ((getRegistries() == null || getRegistries().isEmpty())
+                && (getProvider() == null || getProvider().getRegistries() == null || getProvider().getRegistries().isEmpty())
+                && (getApplication() == null || getApplication().getRegistries() == null || getApplication().getRegistries().isEmpty())) {
             Map<String, RegistryConfig> registryConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, RegistryConfig.class, false, false);
-            if (CollectionUtils.isNotEmptyMap(registryConfigMap)) {
+            if (registryConfigMap != null && registryConfigMap.size() > 0) {
                 List<RegistryConfig> registryConfigs = new ArrayList<>();
                 if (StringUtils.isNotEmpty(registryIds)) {
                     Arrays.stream(Constants.COMMA_SPLIT_PATTERN.split(registryIds)).forEach(id -> {
@@ -262,8 +253,8 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             }
         }
 
-        if (CollectionUtils.isEmpty(getProtocols())
-                && (getProvider() == null || CollectionUtils.isEmpty(getProvider().getProtocols()))) {
+        if ((getProtocols() == null || getProtocols().isEmpty())
+                && (getProvider() == null || getProvider().getProtocols() == null || getProvider().getProtocols().isEmpty())) {
             Map<String, ProtocolConfig> protocolConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProtocolConfig.class, false, false);
             if (protocolConfigMap != null && protocolConfigMap.size() > 0) {
                 List<ProtocolConfig> protocolConfigs = new ArrayList<ProtocolConfig>();
@@ -289,9 +280,9 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                 }
             }
         }
-        if (StringUtils.isEmpty(getPath())) {
-            if (StringUtils.isNotEmpty(beanName)
-                    && StringUtils.isNotEmpty(getInterface())
+        if (getPath() == null || getPath().length() == 0) {
+            if (beanName != null && beanName.length() > 0
+                    && getInterface() != null && getInterface().length() > 0
                     && beanName.startsWith(getInterface())) {
                 setPath(beanName);
             }
@@ -299,34 +290,6 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         if (!supportedApplicationListener) {
             export();
         }
-    }
-
-    /**
-     * Get the name of {@link ServiceBean}
-     *
-     * @return {@link ServiceBean}'s name
-     * @since 2.6.5
-     */
-    public String getBeanName() {
-        return this.beanName;
-    }
-
-    /**
-     * @since 2.6.5
-     */
-    @Override
-    public void export() {
-        super.export();
-        // Publish ServiceBeanExportedEvent
-        publishExportEvent();
-    }
-
-    /**
-     * @since 2.6.5
-     */
-    private void publishExportEvent() {
-        ServiceBeanExportedEvent exportEvent = new ServiceBeanExportedEvent(this);
-        applicationEventPublisher.publishEvent(exportEvent);
     }
 
     @Override
@@ -342,14 +305,5 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             return AopUtils.getTargetClass(ref);
         }
         return super.getServiceClass(ref);
-    }
-
-    /**
-     * @param applicationEventPublisher
-     * @since 2.6.5
-     */
-    @Override
-    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
-        this.applicationEventPublisher = applicationEventPublisher;
     }
 }

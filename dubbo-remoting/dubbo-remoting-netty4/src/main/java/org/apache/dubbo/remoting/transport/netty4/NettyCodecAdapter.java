@@ -33,7 +33,7 @@ import java.util.List;
 /**
  * NettyCodecAdapter.
  */
-final public class NettyCodecAdapter {
+final class NettyCodecAdapter {
 
     private final ChannelHandler encoder = new InternalEncoder();
 
@@ -83,11 +83,19 @@ final public class NettyCodecAdapter {
 
             NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
 
+            Object msg;
+
+            int saveReaderIndex;
+
             try {
                 // decode object.
                 do {
-                    int saveReaderIndex = message.readerIndex();
-                    Object msg = codec.decode(channel, message);
+                    saveReaderIndex = message.readerIndex();
+                    try {
+                        msg = codec.decode(channel, message);
+                    } catch (IOException e) {
+                        throw e;
+                    }
                     if (msg == Codec2.DecodeResult.NEED_MORE_INPUT) {
                         message.readerIndex(saveReaderIndex);
                         break;

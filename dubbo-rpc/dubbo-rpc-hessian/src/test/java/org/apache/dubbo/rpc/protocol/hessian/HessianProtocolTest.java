@@ -33,14 +33,14 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.hessian.HessianServiceImpl.MyException;
 
 import org.apache.dubbo.rpc.service.GenericService;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.Assert.fail;
 
 /**
  * HessianProtocolTest
@@ -50,7 +50,7 @@ public class HessianProtocolTest {
     @Test
     public void testHessianProtocol() {
         HessianServiceImpl server = new HessianServiceImpl();
-        Assertions.assertFalse(server.isCalled());
+        Assert.assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         URL url = URL.valueOf("hessian://127.0.0.1:5342/" + HessianService.class.getName() + "?version=1.0.0&hessian.overload.method=true");
@@ -58,8 +58,8 @@ public class HessianProtocolTest {
         Invoker<HessianService> invoker = protocol.refer(HessianService.class, url);
         HessianService client = proxyFactory.getProxy(invoker);
         String result = client.sayHello("haha");
-        Assertions.assertTrue(server.isCalled());
-        Assertions.assertEquals("Hello, haha", result);
+        Assert.assertTrue(server.isCalled());
+        Assert.assertEquals("Hello, haha", result);
         invoker.destroy();
         exporter.unexport();
     }
@@ -67,7 +67,7 @@ public class HessianProtocolTest {
     @Test
     public void testGenericInvoke() {
         HessianServiceImpl server = new HessianServiceImpl();
-        Assertions.assertFalse(server.isCalled());
+        Assert.assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         URL url = URL.valueOf("hessian://127.0.0.1:5342/" + HessianService.class.getName() + "?version=1.0.0");
@@ -75,8 +75,8 @@ public class HessianProtocolTest {
         Invoker<GenericService> invoker = protocol.refer(GenericService.class, url);
         GenericService client = proxyFactory.getProxy(invoker, true);
         String result = (String) client.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{"haha"});
-        Assertions.assertTrue(server.isCalled());
-        Assertions.assertEquals("Hello, haha", result);
+        Assert.assertTrue(server.isCalled());
+        Assert.assertEquals("Hello, haha", result);
         invoker.destroy();
         exporter.unexport();
     }
@@ -84,7 +84,7 @@ public class HessianProtocolTest {
     @Test
     public void testGenericInvokeWithNativeJava() throws IOException, ClassNotFoundException {
         HessianServiceImpl server = new HessianServiceImpl();
-        Assertions.assertFalse(server.isCalled());
+        Assert.assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         URL url = URL.valueOf("hessian://127.0.0.1:5342/" + HessianService.class.getName() + "?version=1.0.0&generic=nativejava");
@@ -102,8 +102,8 @@ public class HessianProtocolTest {
         Object result = client.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{byteArrayOutputStream.toByteArray()});
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream((byte[]) result);
         ObjectInput objectInput = serialization.deserialize(url, byteArrayInputStream);
-        Assertions.assertTrue(server.isCalled());
-        Assertions.assertEquals("Hello, haha", objectInput.readObject());
+        Assert.assertTrue(server.isCalled());
+        Assert.assertEquals("Hello, haha", objectInput.readObject());
         invoker.destroy();
         exporter.unexport();
     }
@@ -120,7 +120,7 @@ public class HessianProtocolTest {
         Invoker<GenericService> invoker = protocol.refer(GenericService.class, url);
         GenericService client = proxyFactory.getProxy(invoker, true);
         String result = (String) client.$invoke("context", new String[]{"java.lang.String"}, new Object[]{"haha"});
-        Assertions.assertEquals("Hello, haha context, 123", result);
+        Assert.assertEquals("Hello, haha context, 123", result);
         invoker.destroy();
         exporter.unexport();
     }
@@ -128,7 +128,7 @@ public class HessianProtocolTest {
     @Test
     public void testGenericInvokeWithBean() {
         HessianServiceImpl server = new HessianServiceImpl();
-        Assertions.assertFalse(server.isCalled());
+        Assert.assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         URL url = URL.valueOf("hessian://127.0.0.1:5342/" + HessianService.class.getName() + "?version=1.0.0&generic=bean");
@@ -139,8 +139,8 @@ public class HessianProtocolTest {
         JavaBeanDescriptor javaBeanDescriptor = JavaBeanSerializeUtil.serialize("haha");
 
         Object result = client.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{javaBeanDescriptor});
-        Assertions.assertTrue(server.isCalled());
-        Assertions.assertEquals("Hello, haha", JavaBeanSerializeUtil.deserialize((JavaBeanDescriptor) result));
+        Assert.assertTrue(server.isCalled());
+        Assert.assertEquals("Hello, haha", JavaBeanSerializeUtil.deserialize((JavaBeanDescriptor) result));
         invoker.destroy();
         exporter.unexport();
     }
@@ -148,7 +148,7 @@ public class HessianProtocolTest {
     @Test
     public void testOverload() {
         HessianServiceImpl server = new HessianServiceImpl();
-        Assertions.assertFalse(server.isCalled());
+        Assert.assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         URL url = URL.valueOf("hessian://127.0.0.1:5342/" + HessianService.class.getName() + "?version=1.0.0&hessian.overload.method=true&hessian2.request=false");
@@ -156,9 +156,9 @@ public class HessianProtocolTest {
         Invoker<HessianService> invoker = protocol.refer(HessianService.class, url);
         HessianService client = proxyFactory.getProxy(invoker);
         String result = client.sayHello("haha");
-        Assertions.assertEquals("Hello, haha", result);
+        Assert.assertEquals("Hello, haha", result);
         result = client.sayHello("haha", 1);
-        Assertions.assertEquals("Hello, haha. ", result);
+        Assert.assertEquals("Hello, haha. ", result);
         invoker.destroy();
         exporter.unexport();
     }
@@ -166,7 +166,7 @@ public class HessianProtocolTest {
     @Test
     public void testHttpClient() {
         HessianServiceImpl server = new HessianServiceImpl();
-        Assertions.assertFalse(server.isCalled());
+        Assert.assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         URL url = URL.valueOf("hessian://127.0.0.1:5342/" + HessianService.class.getName() + "?version=1.0.0&client=httpclient&hessian.overload.method=true");
@@ -174,8 +174,8 @@ public class HessianProtocolTest {
         Invoker<HessianService> invoker = protocol.refer(HessianService.class, url);
         HessianService client = proxyFactory.getProxy(invoker);
         String result = client.sayHello("haha");
-        Assertions.assertTrue(server.isCalled());
-        Assertions.assertEquals("Hello, haha", result);
+        Assert.assertTrue(server.isCalled());
+        Assert.assertEquals("Hello, haha", result);
         invoker.destroy();
         exporter.unexport();
     }
@@ -193,7 +193,7 @@ public class HessianProtocolTest {
             client.timeOut(6000);
             fail();
         } catch (RpcException expected) {
-            Assertions.assertTrue(expected.isTimeout());
+            Assert.assertTrue(expected.isTimeout());
         } finally {
             invoker.destroy();
             exporter.unexport();

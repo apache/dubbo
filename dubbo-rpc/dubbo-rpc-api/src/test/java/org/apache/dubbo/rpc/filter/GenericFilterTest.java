@@ -22,9 +22,8 @@ import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.DemoService;
 import org.apache.dubbo.rpc.support.Person;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.lang.reflect.Method;
@@ -49,7 +48,7 @@ public class GenericFilterTest {
         RpcInvocation invocation = new RpcInvocation(Constants.$INVOKE, genericInvoke.getParameterTypes(),
                 new Object[]{"getPerson", new String[]{Person.class.getCanonicalName()}, new Object[]{person}});
 
-        URL url = URL.valueOf("test://test:11/org.apache.dubbo.rpc.support.DemoService?" +
+        URL url = URL.valueOf("test://test:11/com.alibaba.dubbo.rpc.support.DemoService?" +
                 "accesslog=true&group=dubbo&version=1.1");
         Invoker invoker = Mockito.mock(Invoker.class);
         when(invoker.invoke(any(Invocation.class))).thenReturn(new RpcResult(new Person("person", 10)));
@@ -58,33 +57,32 @@ public class GenericFilterTest {
 
         Result result = genericFilter.invoke(invoker, invocation);
 
-        Assertions.assertEquals(HashMap.class, result.getValue().getClass());
-        Assertions.assertEquals(10, ((HashMap) result.getValue()).get("age"));
+        Assert.assertEquals(HashMap.class, result.getValue().getClass());
+        Assert.assertEquals(10, ((HashMap) result.getValue()).get("age"));
 
     }
 
-    @Test
+    @Test(expected = RpcException.class)
     public void testInvokeWithJavaException() throws Exception {
-        Assertions.assertThrows(RpcException.class, () -> {
-            Method genericInvoke = GenericService.class.getMethods()[0];
 
-            Map<String, Object> person = new HashMap<String, Object>();
-            person.put("name", "dubbo");
-            person.put("age", 10);
+        Method genericInvoke = GenericService.class.getMethods()[0];
 
-            RpcInvocation invocation = new RpcInvocation(Constants.$INVOKE, genericInvoke.getParameterTypes(),
-                    new Object[]{"getPerson", new String[]{Person.class.getCanonicalName()}, new Object[]{person}});
-            invocation.setAttachment(Constants.GENERIC_KEY, Constants.GENERIC_SERIALIZATION_NATIVE_JAVA);
+        Map<String, Object> person = new HashMap<String, Object>();
+        person.put("name", "dubbo");
+        person.put("age", 10);
 
-            URL url = URL.valueOf("test://test:11/org.apache.dubbo.rpc.support.DemoService?" +
-                    "accesslog=true&group=dubbo&version=1.1");
-            Invoker invoker = Mockito.mock(Invoker.class);
-            when(invoker.invoke(any(Invocation.class))).thenReturn(new RpcResult(new Person("person", 10)));
-            when(invoker.getUrl()).thenReturn(url);
-            when(invoker.getInterface()).thenReturn(DemoService.class);
+        RpcInvocation invocation = new RpcInvocation(Constants.$INVOKE, genericInvoke.getParameterTypes(),
+                new Object[]{"getPerson", new String[]{Person.class.getCanonicalName()}, new Object[]{person}});
+        invocation.setAttachment(Constants.GENERIC_KEY, Constants.GENERIC_SERIALIZATION_NATIVE_JAVA);
 
-            genericFilter.invoke(invoker, invocation);
-        });
+        URL url = URL.valueOf("test://test:11/com.alibaba.dubbo.rpc.support.DemoService?" +
+                "accesslog=true&group=dubbo&version=1.1");
+        Invoker invoker = Mockito.mock(Invoker.class);
+        when(invoker.invoke(any(Invocation.class))).thenReturn(new RpcResult(new Person("person", 10)));
+        when(invoker.getUrl()).thenReturn(url);
+        when(invoker.getInterface()).thenReturn(DemoService.class);
+
+        genericFilter.invoke(invoker, invocation);
     }
 
     @Test
@@ -99,7 +97,7 @@ public class GenericFilterTest {
         RpcInvocation invocation = new RpcInvocation("sayHi", genericInvoke.getParameterTypes()
                 , new Object[]{"getPerson", new String[]{Person.class.getCanonicalName()}, new Object[]{person}});
 
-        URL url = URL.valueOf("test://test:11/org.apache.dubbo.rpc.support.DemoService?" +
+        URL url = URL.valueOf("test://test:11/com.alibaba.dubbo.rpc.support.DemoService?" +
                 "accesslog=true&group=dubbo&version=1.1");
         Invoker invoker = Mockito.mock(Invoker.class);
         when(invoker.invoke(any(Invocation.class))).thenReturn(new RpcResult(new Person("person", 10)));
@@ -107,8 +105,8 @@ public class GenericFilterTest {
         when(invoker.getInterface()).thenReturn(DemoService.class);
 
         Result result = genericFilter.invoke(invoker, invocation);
-        Assertions.assertEquals(Person.class, result.getValue().getClass());
-        Assertions.assertEquals(10, ((Person) (result.getValue())).getAge());
+        Assert.assertEquals(Person.class, result.getValue().getClass());
+        Assert.assertEquals(10, ((Person) (result.getValue())).getAge());
     }
 
     @Test
@@ -123,7 +121,7 @@ public class GenericFilterTest {
         RpcInvocation invocation = new RpcInvocation(Constants.$INVOKE, genericInvoke.getParameterTypes()
                 , new Object[]{"getPerson", new String[]{Person.class.getCanonicalName()}});
 
-        URL url = URL.valueOf("test://test:11/org.apache.dubbo.rpc.support.DemoService?" +
+        URL url = URL.valueOf("test://test:11/com.alibaba.dubbo.rpc.support.DemoService?" +
                 "accesslog=true&group=dubbo&version=1.1");
         Invoker invoker = Mockito.mock(Invoker.class);
         when(invoker.invoke(any(Invocation.class))).thenReturn(new RpcResult(new Person("person", 10)));
@@ -131,8 +129,8 @@ public class GenericFilterTest {
         when(invoker.getInterface()).thenReturn(DemoService.class);
 
         Result result = genericFilter.invoke(invoker, invocation);
-        Assertions.assertEquals(Person.class, result.getValue().getClass());
-        Assertions.assertEquals(10, ((Person) (result.getValue())).getAge());
+        Assert.assertEquals(Person.class, result.getValue().getClass());
+        Assert.assertEquals(10, ((Person) (result.getValue())).getAge());
     }
 
 }

@@ -17,26 +17,22 @@
 package org.apache.dubbo.common.serialize.fst;
 
 import org.apache.dubbo.common.serialize.model.person.FullAddress;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThat;
 
 public class FstObjectInputTest {
     private FstObjectInput fstObjectInput;
 
-    @Test
+    @Test(expected = IOException.class)
     public void testWrongClassInput() throws IOException, ClassNotFoundException {
-        Assertions.assertThrows(IOException.class, () -> {
-            this.fstObjectInput = new FstObjectInput(new ByteArrayInputStream("{animal: 'cat'}".getBytes()));
+        this.fstObjectInput = new FstObjectInput(new ByteArrayInputStream("{animal: 'cat'}".getBytes()));
 
-            fstObjectInput.readObject(FullAddress.class);
-        });
+        fstObjectInput.readObject(FullAddress.class);
     }
 
     @Test

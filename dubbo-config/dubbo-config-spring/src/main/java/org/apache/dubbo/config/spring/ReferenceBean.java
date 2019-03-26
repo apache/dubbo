@@ -17,7 +17,6 @@
 package org.apache.dubbo.config.spring;
 
 import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
@@ -150,9 +149,9 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
             }
         }
 
-        if (CollectionUtils.isEmpty(getRegistries())
-                && (getConsumer() == null || CollectionUtils.isEmpty(getConsumer().getRegistries()))
-                && (getApplication() == null || CollectionUtils.isEmpty(getApplication().getRegistries()))) {
+        if ((getRegistries() == null || getRegistries().isEmpty())
+                && (getConsumer() == null || getConsumer().getRegistries() == null || getConsumer().getRegistries().isEmpty())
+                && (getApplication() == null || getApplication().getRegistries() == null || getApplication().getRegistries().isEmpty())) {
             Map<String, RegistryConfig> registryConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, RegistryConfig.class, false, false);
             if (registryConfigMap != null && registryConfigMap.size() > 0) {
                 List<RegistryConfig> registryConfigs = new ArrayList<>();
@@ -216,7 +215,11 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
             }
         }
 
-        if (shouldInit()) {
+        Boolean b = isInit();
+        if (b == null && getConsumer() != null) {
+            b = getConsumer().isInit();
+        }
+        if (b != null && b) {
             getObject();
         }
     }

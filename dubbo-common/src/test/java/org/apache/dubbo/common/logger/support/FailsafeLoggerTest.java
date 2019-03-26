@@ -17,9 +17,7 @@
 package org.apache.dubbo.common.logger.support;
 
 import org.apache.dubbo.common.logger.Logger;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -93,14 +91,12 @@ public class FailsafeLoggerTest {
         failsafeLogger.trace("trace", new Exception("trace"));
     }
 
-    @Test
+    @Test(expected = RuntimeException.class)
     public void testGetLogger() {
-        Assertions.assertThrows(RuntimeException.class, () -> {
-            Logger failLogger = mock(Logger.class);
-            FailsafeLogger failsafeLogger = new FailsafeLogger(failLogger);
+        Logger failLogger = mock(Logger.class);
+        FailsafeLogger failsafeLogger = new FailsafeLogger(failLogger);
 
-            doThrow(new RuntimeException()).when(failLogger).error(anyString());
-            failsafeLogger.getLogger().error("should get error");
-        });
+        doThrow(new RuntimeException()).when(failLogger).error(anyString());
+        failsafeLogger.getLogger().error("should get error");
     }
 }

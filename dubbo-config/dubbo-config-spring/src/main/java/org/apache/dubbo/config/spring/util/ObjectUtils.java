@@ -17,18 +17,18 @@
 package org.apache.dubbo.config.spring.util;
 
 /**
- * Object Utilities
+ * Object Utilities Class
  *
- * @since 2.6.6
+ * @since 2.5.11
  */
-public abstract class ObjectUtils {
+public class ObjectUtils {
 
     /**
-     * Convert from variable arguments to array
+     * of factory method
      *
-     * @param values variable arguments
-     * @param <T>    The class
-     * @return array
+     * @param values
+     * @param <T>
+     * @return
      */
     public static <T> T[] of(T... values) {
         return values;

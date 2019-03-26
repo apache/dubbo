@@ -75,16 +75,16 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         beanDefinition.setBeanClass(beanClass);
         beanDefinition.setLazyInit(false);
         String id = element.getAttribute("id");
-        if (StringUtils.isEmpty(id) && required) {
+        if ((id == null || id.length() == 0) && required) {
             String generatedBeanName = element.getAttribute("name");
-            if (StringUtils.isEmpty(generatedBeanName)) {
+            if (generatedBeanName == null || generatedBeanName.length() == 0) {
                 if (ProtocolConfig.class.equals(beanClass)) {
                     generatedBeanName = "dubbo";
                 } else {
                     generatedBeanName = element.getAttribute("interface");
                 }
             }
-            if (StringUtils.isEmpty(generatedBeanName)) {
+            if (generatedBeanName == null || generatedBeanName.length() == 0) {
                 generatedBeanName = beanClass.getName();
             }
             id = generatedBeanName;
@@ -258,7 +258,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                         if (first) {
                             first = false;
                             String isDefault = element.getAttribute("default");
-                            if (StringUtils.isEmpty(isDefault)) {
+                            if (isDefault == null || isDefault.length() == 0) {
                                 beanDefinition.getPropertyValues().addPropertyValue("default", "false");
                             }
                         }
@@ -335,7 +335,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                     Element element = (Element) node;
                     if ("method".equals(node.getNodeName()) || "method".equals(node.getLocalName())) {
                         String methodName = element.getAttribute("name");
-                        if (StringUtils.isEmpty(methodName)) {
+                        if (methodName == null || methodName.length() == 0) {
                             throw new IllegalStateException("<dubbo:method> name attribute == null");
                         }
                         if (methods == null) {

@@ -32,7 +32,12 @@ public class ArrayTypeBuilder implements TypeBuilder {
         if (clazz == null) {
             return false;
         }
-        return clazz.isArray();
+
+        if (clazz.isArray()) {
+            return true;
+        }
+
+        return false;
     }
 
     @Override
@@ -42,7 +47,8 @@ public class ArrayTypeBuilder implements TypeBuilder {
         TypeDefinitionBuilder.build(componentType, componentType, typeCache);
 
         final String canonicalName = clazz.getCanonicalName();
-        return new TypeDefinition(canonicalName);
+        TypeDefinition td = new TypeDefinition(canonicalName);
+        return td;
     }
 
 }

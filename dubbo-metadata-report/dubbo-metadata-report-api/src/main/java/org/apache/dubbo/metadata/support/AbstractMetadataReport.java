@@ -40,19 +40,18 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- *
  */
 public abstract class AbstractMetadataReport implements MetadataReport {
 
@@ -62,13 +61,13 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     // Log output
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    // Local disk cache, where the special key value.registries records the list of metadata centers, and the others are the list of notified service providers
+    // Local disk cache, where the special key value.registies records the list of registry centers, and the others are the list of notified service providers
     final Properties properties = new Properties();
     private final ExecutorService reportCacheExecutor = Executors.newFixedThreadPool(1, new NamedThreadFactory("DubboSaveMetadataReport", true));
-    final Map<MetadataIdentifier, Object> allMetadataReports = new ConcurrentHashMap<>(4);
+    final Map<MetadataIdentifier, Object> allMetadataReports = new ConcurrentHashMap<MetadataIdentifier, Object>(4);
 
     private final AtomicLong lastCacheChanged = new AtomicLong();
-    final Map<MetadataIdentifier, Object> failedReports = new ConcurrentHashMap<>(4);
+    final Map<MetadataIdentifier, Object> failedReports = new ConcurrentHashMap<MetadataIdentifier, Object>(4);
     private URL reportURL;
     boolean syncReport;
     // Local disk cache file
@@ -101,7 +100,12 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         // cycle report the data switch
         if (reportServerURL.getParameter(Constants.CYCLE_REPORT_KEY, Constants.DEFAULT_METADATA_REPORT_CYCLE_REPORT)) {
             ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboMetadataReportTimer", true));
-            scheduler.scheduleAtFixedRate(this::publishAll, calculateStartTime(), ONE_DAY_IN_MIll, TimeUnit.MILLISECONDS);
+            scheduler.scheduleAtFixedRate(new Runnable() {
+                @Override
+                public void run() {
+                    publishAll();
+                }
+            }, calculateStartTime(), ONE_DAY_IN_MIll, TimeUnit.MILLISECONDS);
         }
     }
 
@@ -129,23 +133,27 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             if (!lockfile.exists()) {
                 lockfile.createNewFile();
             }
-            try (RandomAccessFile raf = new RandomAccessFile(lockfile, "rw");
-                 FileChannel channel = raf.getChannel()) {
-                FileLock lock = channel.tryLock();
-                if (lock == null) {
-                    throw new IOException("Can not lock the metadataReport cache file " + file.getAbsolutePath() + ", ignore and retry later, maybe multi java process use the file, please config: dubbo.metadata.file=xxx.properties");
-                }
-                // Save
-                try {
-                    if (!file.exists()) {
-                        file.createNewFile();
+            RandomAccessFile raf = new RandomAccessFile(lockfile, "rw");
+            try {
+                try (FileChannel channel = raf.getChannel()) {
+                    FileLock lock = channel.tryLock();
+                    if (lock == null) {
+                        throw new IOException("Can not lock the metadataReport cache file " + file.getAbsolutePath() + ", ignore and retry later, maybe multi java process use the file, please config: dubbo.metadata.file=xxx.properties");
                     }
-                    try (FileOutputStream outputFile = new FileOutputStream(file)) {
-                        properties.store(outputFile, "Dubbo metadataReport Cache");
+                    // Save
+                    try {
+                        if (!file.exists()) {
+                            file.createNewFile();
+                        }
+                        try (FileOutputStream outputFile = new FileOutputStream(file)) {
+                            properties.store(outputFile, "Dubbo metadataReport Cache");
+                        }
+                    } finally {
+                        lock.release();
                     }
-                } finally {
-                    lock.release();
                 }
+            } finally {
+                raf.close();
             }
         } catch (Throwable e) {
             if (version < lastCacheChanged.get()) {
@@ -159,13 +167,23 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
     void loadProperties() {
         if (file != null && file.exists()) {
-            try (InputStream in = new FileInputStream(file)) {
+            InputStream in = null;
+            try {
+                in = new FileInputStream(file);
                 properties.load(in);
                 if (logger.isInfoEnabled()) {
                     logger.info("Load service store file " + file + ", data: " + properties);
                 }
             } catch (Throwable e) {
                 logger.warn("Failed to load service store file " + file, e);
+            } finally {
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (IOException e) {
+                        logger.warn(e.getMessage(), e);
+                    }
+                }
             }
         }
     }
@@ -211,7 +229,6 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
-    @Override
     public void storeProviderMetadata(MetadataIdentifier providerMetadataIdentifier, FullServiceDefinition serviceDefinition) {
         if (syncReport) {
             storeProviderMetadataTask(providerMetadataIdentifier, serviceDefinition);
@@ -244,7 +261,6 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
-    @Override
     public void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap) {
         if (syncReport) {
             storeConsumerMetadataTask(consumerMetadataIdentifier, serviceParameterMap);
@@ -330,14 +346,15 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
         long subtract = calendar.getTimeInMillis() + ONE_DAY_IN_MIll - nowMill;
-        return subtract + (FOUR_HOURS_IN_MIll / 2) + ThreadLocalRandom.current().nextInt(FOUR_HOURS_IN_MIll);
+        Random r = new Random();
+        return subtract + (FOUR_HOURS_IN_MIll / 2) + r.nextInt(FOUR_HOURS_IN_MIll);
     }
 
     class MetadataReportRetry {
         protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-        final ScheduledExecutorService retryExecutor = Executors.newScheduledThreadPool(0, new NamedThreadFactory("DubboMetadataReportRetryTimer", true));
-        volatile ScheduledFuture retryScheduledFuture;
+        final ScheduledExecutorService retryExecutor = Executors.newScheduledThreadPool(0, new NamedThreadFactory("DubboRegistryFailedRetryTimer", true));
+        ScheduledFuture retryScheduledFuture;
         AtomicInteger retryCounter = new AtomicInteger(0);
         // retry task schedule period
         long retryPeriod;
@@ -358,7 +375,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
                         retryScheduledFuture = retryExecutor.scheduleWithFixedDelay(new Runnable() {
                             @Override
                             public void run() {
-                                // Check and connect to the metadata
+                                // Check and connect to the registry
                                 try {
                                     int times = retryCounter.incrementAndGet();
                                     logger.info("start to retry task for metadata report. retry times:" + times);

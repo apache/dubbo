@@ -28,9 +28,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
 
-/**
- * FastJson object output implementation
- */
 public class FastJsonObjectOutput implements ObjectOutput {
 
     private final PrintWriter writer;

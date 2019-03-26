@@ -17,8 +17,6 @@
 package org.apache.dubbo.remoting.transport.netty4.logging;
 
 
-import org.apache.dubbo.common.utils.ArrayUtils;
-
 /**
  * Holds the results of formatting done by {@link MessageFormatter}.
  */
@@ -45,7 +43,7 @@ class FormattingTuple {
     }
 
     static Object[] trimmedCopy(Object[] argArray) {
-        if (ArrayUtils.isEmpty(argArray)) {
+        if (argArray == null || argArray.length == 0) {
             throw new IllegalStateException("non-sensical empty or null argument array");
         }
         final int trimmedLen = argArray.length - 1;

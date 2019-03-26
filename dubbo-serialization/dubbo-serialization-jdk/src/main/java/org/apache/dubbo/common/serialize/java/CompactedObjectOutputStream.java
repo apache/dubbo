@@ -22,7 +22,7 @@ import java.io.ObjectStreamClass;
 import java.io.OutputStream;
 
 /**
- * Compacted java object output implementation
+ * Compacted java object output stream.
  */
 public class CompactedObjectOutputStream extends ObjectOutputStream {
     public CompactedObjectOutputStream(OutputStream out) throws IOException {

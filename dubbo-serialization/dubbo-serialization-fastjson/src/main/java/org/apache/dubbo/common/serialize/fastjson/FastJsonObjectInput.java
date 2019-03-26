@@ -29,9 +29,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.Type;
 
-/**
- * FastJson object input implementation
- */
 public class FastJsonObjectInput implements ObjectInput {
 
     private final BufferedReader reader;
