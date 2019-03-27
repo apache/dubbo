@@ -42,10 +42,10 @@ public class ExecutionChannelHandler extends WrappedChannelHandler {
 
     @Override
     public void received(Channel channel, Object message) throws RemotingException {
-        ExecutorService cexecutor = getExecutorService();
+        ExecutorService executor = getExecutorService();
         if (message instanceof Request) {
             try {
-                cexecutor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
+                executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
             } catch (Throwable t) {
                 // FIXME: when the thread pool is full, SERVER_THREADPOOL_EXHAUSTED_ERROR cannot return properly,
                 // therefore the consumer side has to wait until gets timeout. This is a temporary solution to prevent
