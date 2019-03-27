@@ -47,7 +47,7 @@ public class ConditionRouter extends AbstractRouter {
     public static final String NAME = "condition";
 
     private static final Logger logger = LoggerFactory.getLogger(ConditionRouter.class);
-    protected static Pattern ROUTE_PATTERN = Pattern.compile("([&!=,]*)\\s*([^&!=,\\s]+)");
+    protected static final Pattern ROUTE_PATTERN = Pattern.compile("([&!=,]*)\\s*([^&!=,\\s]+)");
     protected Map<String, MatchPair> whenCondition;
     protected Map<String, MatchPair> thenCondition;
 
