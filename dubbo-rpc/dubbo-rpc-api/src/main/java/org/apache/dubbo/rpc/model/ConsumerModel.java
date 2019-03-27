@@ -39,6 +39,14 @@ public class ConsumerModel {
         }
     }
 
+    public ConsumerModel(ServiceMetadata serviceMetadata) {
+        this.serviceMetadata = serviceMetadata;
+        Method[] methods = serviceMetadata.getServiceType().getMethods();
+        for (Method method : methods) {
+            methodModels.put(method, new ConsumerMethodModel(method));
+        }
+    }
+
     /**
      * @return serviceMetadata
      */

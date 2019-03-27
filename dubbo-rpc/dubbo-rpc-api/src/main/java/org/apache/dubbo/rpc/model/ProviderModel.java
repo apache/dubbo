@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.model;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ import java.util.Map;
 public class ProviderModel {
     private final Object serviceInstance;
     private final ServiceMetadata serviceMetadata;
+    private final String serivceKey;
     private final Map<String, List<ProviderMethodModel>> methods = new HashMap<String, List<ProviderMethodModel>>();
 
     public ProviderModel(String serviceName, String group, String version, Object serviceInstance, Class<?> serviceInterfaceClass) {
@@ -38,9 +40,16 @@ public class ProviderModel {
 
         this.serviceInstance = serviceInstance;
         this.serviceMetadata = new ServiceMetadata(serviceName, group, version, serviceInterfaceClass);
+        this.serivceKey = serviceMetadata.getServiceKey();
         initMethod(serviceInterfaceClass);
     }
 
+    public ProviderModel(Object serviceInstance, ServiceMetadata serviceMetadata) {
+        this.serviceInstance = serviceInstance;
+        this.serviceMetadata = serviceMetadata;
+        this.serivceKey = serviceMetadata.getServiceKey();
+        initMethod(serviceMetadata.getServiceType());
+    }
 
     public String getServiceName() {
         return this.serviceMetadata.getServiceKey();
@@ -75,12 +84,13 @@ public class ProviderModel {
     }
 
     public List<ProviderMethodModel> getMethodModelList(String methodName) {
-        return methods.get(methodName);
+        List<ProviderMethodModel> resultList = methods.get(methodName);
+        return resultList == null ? Collections.emptyList() : resultList;
     }
 
 
     private void initMethod(Class<?> serviceInterfaceClass) {
-        Method[] methodsToExport = null;
+        Method[] methodsToExport;
         methodsToExport = serviceInterfaceClass.getMethods();
 
         for (Method method : methodsToExport) {
@@ -88,7 +98,7 @@ public class ProviderModel {
 
             List<ProviderMethodModel> methodModels = methods.get(method.getName());
             if (methodModels == null) {
-                methodModels = new ArrayList<ProviderMethodModel>(1);
+                methodModels = new ArrayList<ProviderMethodModel>();
                 methods.put(method.getName(), methodModels);
             }
             methodModels.add(new ProviderMethodModel(method));

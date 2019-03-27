@@ -40,6 +40,7 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
@@ -165,10 +166,16 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
      */
     private volatile String generic;
 
+    private ServiceMetadata serviceMetadata;
+
     public ServiceConfig() {
+        serviceMetadata = new ServiceMetadata();
+        serviceMetadata.addAttribute("ORIGIN_CONFIG", this);
     }
 
     public ServiceConfig(Service service) {
+        serviceMetadata = new ServiceMetadata();
+        serviceMetadata.addAttribute("ORIGIN_CONFIG", this);
         appendAnnotation(Service.class, service);
         setMethods(MethodConfig.constructMethodConfig(service.methods()));
     }
@@ -334,6 +341,17 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     public synchronized void export() {
         checkAndUpdateSubConfigs();
 
+        //init serviceMetadata
+        serviceMetadata.setVersion(version);
+        serviceMetadata.setGroup(group);
+        serviceMetadata.setDefaultGroup(group);
+        serviceMetadata.setServiceType(interfaceClass);
+        serviceMetadata.setServiceInterfaceName(interfaceName);
+        serviceMetadata.setTarget(ref);
+
+        ProviderModel providerModel = new ProviderModel(ref, serviceMetadata);
+        ApplicationModel.initProviderModel(URL.buildKey(interfaceName, group, version), providerModel);
+
         if (!shouldExport()) {
             return;
         }
@@ -379,8 +397,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (StringUtils.isEmpty(path)) {
             path = interfaceName;
         }
-        ProviderModel providerModel = new ProviderModel(interfaceName, group, version, ref, interfaceClass);
-        ApplicationModel.initProviderModel(URL.buildKey(interfaceName, group, version), providerModel);
+
         doExportUrls();
     }
 
@@ -518,6 +535,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 map.put(Constants.TOKEN_KEY, token);
             }
         }
+        //init serviceMetadata attachments
+        serviceMetadata.getAttachments().putAll(map);
+
         // export service
         String host = this.findConfigedHosts(protocolConfig, registryURLs, map);
         Integer port = this.findConfigedPorts(protocolConfig, name, map);
