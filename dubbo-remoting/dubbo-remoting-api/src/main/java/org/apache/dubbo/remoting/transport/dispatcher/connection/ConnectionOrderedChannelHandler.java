@@ -75,9 +75,9 @@ public class ConnectionOrderedChannelHandler extends WrappedChannelHandler {
 
     @Override
     public void received(Channel channel, Object message) throws RemotingException {
-        ExecutorService cexecutor = getExecutorService();
+        ExecutorService executor = getExecutorService();
         try {
-            cexecutor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
+            executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
         } catch (Throwable t) {
             //fix, reject exception can not be sent to consumer because thread pool is full, resulting in consumers waiting till timeout.
             if (message instanceof Request && t instanceof RejectedExecutionException) {
@@ -97,9 +97,9 @@ public class ConnectionOrderedChannelHandler extends WrappedChannelHandler {
 
     @Override
     public void caught(Channel channel, Throwable exception) throws RemotingException {
-        ExecutorService cexecutor = getExecutorService();
+        ExecutorService executor = getExecutorService();
         try {
-            cexecutor.execute(new ChannelEventRunnable(channel, handler, ChannelState.CAUGHT, exception));
+            executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.CAUGHT, exception));
         } catch (Throwable t) {
             throw new ExecutionException("caught event", channel, getClass() + " error when process caught event .", t);
         }
