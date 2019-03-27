@@ -47,12 +47,12 @@ public class ActiveLimitFilter implements Filter {
         String methodName = invocation.getMethodName();
         int max = invoker.getUrl().getMethodParameter(methodName, Constants.ACTIVES_KEY, 0);
         RpcStatus count = RpcStatus.getStatus(invoker.getUrl(), invocation.getMethodName());
-        if (!RpcStatus.beginCount(url, methodName, max)) {
+        if (!count.beginCount(url, methodName, max)) {
             long timeout = invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.TIMEOUT_KEY, 0);
             long start = System.currentTimeMillis();
             long remain = timeout;
             synchronized (count) {
-                while (!RpcStatus.beginCount(url, methodName, max)) {
+                while (!count.beginCount(url, methodName, max)) {
                     try {
                         count.wait(remain);
                     } catch (InterruptedException e) {
@@ -79,7 +79,7 @@ public class ActiveLimitFilter implements Filter {
             isSuccess = false;
             throw t;
         } finally {
-            RpcStatus.endCount(url, methodName, System.currentTimeMillis() - begin, isSuccess);
+            count.endCount(url, methodName, System.currentTimeMillis() - begin, isSuccess);
             if (max > 0) {
                 synchronized (count) {
                     count.notifyAll();

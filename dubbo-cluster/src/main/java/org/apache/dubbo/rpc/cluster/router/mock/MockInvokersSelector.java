@@ -30,11 +30,15 @@ import java.util.List;
 /**
  * A specific Router designed to realize mock feature.
  * If a request is configured to use mock, then this router guarantees that only the invokers with protocol MOCK appear in final the invoker list, all other invokers will be excluded.
- *
  */
 public class MockInvokersSelector extends AbstractRouter {
 
     public static final String NAME = "MOCK_ROUTER";
+    private static final int MOCK_INVOKERS_DEFAULT_PRIORITY = Integer.MIN_VALUE;
+
+    public MockInvokersSelector() {
+        this.priority = MOCK_INVOKERS_DEFAULT_PRIORITY;
+    }
 
     @Override
     public <T> List<Invoker<T>> route(final List<Invoker<T>> invokers,
@@ -92,11 +96,6 @@ public class MockInvokersSelector extends AbstractRouter {
             }
         }
         return hasMockProvider;
-    }
-
-    @Override
-    public int getPriority() {
-        return Integer.MAX_VALUE;
     }
 
 }

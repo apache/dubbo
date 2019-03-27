@@ -468,6 +468,12 @@ public class AbstractConfigTest {
     }
 
     @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.ANNOTATION_TYPE})
+    public @interface ConfigField {
+        String value() default "";
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE})
     public @interface Config {
         Class<?> interfaceClass() default void.class;
@@ -479,6 +485,10 @@ public class AbstractConfigTest {
         String[] listener() default {};
 
         String[] parameters() default {};
+
+        ConfigField[] configFields() default {};
+
+        ConfigField configField() default @ConfigField;
     }
 
     private static class OverrideConfig extends AbstractInterfaceConfig {
@@ -735,6 +745,7 @@ public class AbstractConfigTest {
         private String filter;
         private String listener;
         private Map<String, String> parameters;
+        private String[] configFields;
 
         public Class getInterface() {
             return interfaceClass;
@@ -766,6 +777,14 @@ public class AbstractConfigTest {
 
         public void setParameters(Map<String, String> parameters) {
             this.parameters = parameters;
+        }
+
+        public String[] getConfigFields() {
+            return configFields;
+        }
+
+        public void setConfigFields(String[] configFields) {
+            this.configFields = configFields;
         }
     }
 }

@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-parent</artifactId>
-        <version>2.7.1-SNAPSHOT</version>
+        <version>2.7.2-SNAPSHOT</version>
     </parent>
     <artifactId>dubbo-distribution</artifactId>
     <packaging>pom</packaging>
@@ -267,7 +267,7 @@
                         <version>3.1.0</version>
                         <executions>
                             <execution>
-                                <id>bin-release</id>
+                                <id>bin</id>
                                 <phase>package</phase>
                                 <goals>
                                     <goal>single</goal>
@@ -279,7 +279,7 @@
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>source-release</id>
+                                <id>src</id>
                                 <phase>package</phase>
                                 <goals>
                                     <goal>single</goal>

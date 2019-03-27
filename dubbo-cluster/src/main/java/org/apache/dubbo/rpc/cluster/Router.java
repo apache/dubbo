@@ -32,6 +32,9 @@ import java.util.List;
  * @see org.apache.dubbo.rpc.cluster.Directory#list(Invocation)
  */
 public interface Router extends Comparable<Router> {
+
+    int DEFAULT_PRIORITY = Integer.MAX_VALUE;
+
     /**
      * Get the router url.
      *
@@ -91,16 +94,6 @@ public interface Router extends Comparable<Router> {
         if (o == null) {
             throw new IllegalArgumentException();
         }
-        if (this.getPriority() == o.getPriority()) {
-            if (o.getUrl() == null) {
-                return 1;
-            }
-            if (getUrl() == null) {
-                return -1;
-            }
-            return getUrl().toFullString().compareTo(o.getUrl().toFullString());
-        } else {
-            return getPriority() > o.getPriority() ? 1 : -1;
-        }
+        return Integer.compare(this.getPriority(), o.getPriority());
     }
 }

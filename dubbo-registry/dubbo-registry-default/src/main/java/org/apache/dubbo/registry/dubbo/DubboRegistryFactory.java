@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.dubbo;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.bytecode.Wrapper;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -47,7 +48,8 @@ public class DubboRegistryFactory extends AbstractRegistryFactory {
     private Cluster cluster;
 
     private static URL getRegistryURL(URL url) {
-        return url.setPath(RegistryService.class.getName())
+        return URLBuilder.from(url)
+                .setPath(RegistryService.class.getName())
                 .removeParameter(Constants.EXPORT_KEY).removeParameter(Constants.REFER_KEY)
                 .addParameter(Constants.INTERFACE_KEY, RegistryService.class.getName())
                 .addParameter(Constants.CLUSTER_STICKY_KEY, "true")
@@ -61,7 +63,8 @@ public class DubboRegistryFactory extends AbstractRegistryFactory {
                 //.addParameter(Constants.STUB_EVENT_KEY, Boolean.TRUE.toString()) //for event dispatch
                 //.addParameter(Constants.ON_DISCONNECT_KEY, "disconnect")
                 .addParameter("subscribe.1.callback", "true")
-                .addParameter("unsubscribe.1.callback", "false");
+                .addParameter("unsubscribe.1.callback", "false")
+                .build();
     }
 
     public void setProtocol(Protocol protocol) {

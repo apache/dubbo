@@ -16,15 +16,26 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 
-public class DemoService implements IDemoService {
-    @Override
-    public Integer hello(Integer a, Integer b) {
-        return a + b;
-    }
 
-    @Override
-    public String error() {
-        throw new RuntimeException();
-    }
+@Path("/demoService")
+public interface DemoService {
+    @GET
+    @Path("/hello")
+    Integer hello(@QueryParam("a") Integer a, @QueryParam("b") Integer b);
+
+    @GET
+    @Path("/error")
+    String error();
+
+    @POST
+    @Path("/say")
+    @Consumes({MediaType.TEXT_PLAIN})
+    String sayHello(String name);
 }

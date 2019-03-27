@@ -287,4 +287,12 @@ public class StringUtilsTest {
         assertThat(s, containsString("0,"));
         assertThat(s, containsString("{\"enabled\":true}"));
     }
+
+    @Test
+    public void testTrim() {
+        assertEquals("left blank", StringUtils.trim(" left blank"));
+        assertEquals("right blank", StringUtils.trim("right blank "));
+        assertEquals("bi-side blank", StringUtils.trim(" bi-side blank "));
+
+    }
 }
