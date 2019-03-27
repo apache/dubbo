@@ -26,7 +26,7 @@ import java.io.ObjectStreamClass;
 import java.io.StreamCorruptedException;
 
 /**
- * Compacted java object input stream.
+ * Compacted java object input implementation
  */
 public class CompactedObjectInputStream extends ObjectInputStream {
     private ClassLoader mClassLoader;

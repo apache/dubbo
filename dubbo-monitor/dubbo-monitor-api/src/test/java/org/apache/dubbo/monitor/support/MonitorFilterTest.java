@@ -28,8 +28,8 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.io.UnsupportedEncodingException;
@@ -119,16 +119,16 @@ public class MonitorFilterTest {
         while (lastStatistics == null) {
             Thread.sleep(10);
         }
-        Assert.assertEquals("abc", lastStatistics.getParameter(MonitorService.APPLICATION));
-        Assert.assertEquals(MonitorService.class.getName(), lastStatistics.getParameter(MonitorService.INTERFACE));
-        Assert.assertEquals("aaa", lastStatistics.getParameter(MonitorService.METHOD));
-        Assert.assertEquals(NetUtils.getLocalHost() + ":20880", lastStatistics.getParameter(MonitorService.PROVIDER));
-        Assert.assertEquals(NetUtils.getLocalHost(), lastStatistics.getAddress());
-        Assert.assertEquals(null, lastStatistics.getParameter(MonitorService.CONSUMER));
-        Assert.assertEquals(1, lastStatistics.getParameter(MonitorService.SUCCESS, 0));
-        Assert.assertEquals(0, lastStatistics.getParameter(MonitorService.FAILURE, 0));
-        Assert.assertEquals(1, lastStatistics.getParameter(MonitorService.CONCURRENT, 0));
-        Assert.assertEquals(invocation, lastInvocation);
+        Assertions.assertEquals("abc", lastStatistics.getParameter(MonitorService.APPLICATION));
+        Assertions.assertEquals(MonitorService.class.getName(), lastStatistics.getParameter(MonitorService.INTERFACE));
+        Assertions.assertEquals("aaa", lastStatistics.getParameter(MonitorService.METHOD));
+        Assertions.assertEquals(NetUtils.getLocalHost() + ":20880", lastStatistics.getParameter(MonitorService.PROVIDER));
+        Assertions.assertEquals(NetUtils.getLocalHost(), lastStatistics.getAddress());
+        Assertions.assertEquals(null, lastStatistics.getParameter(MonitorService.CONSUMER));
+        Assertions.assertEquals(1, lastStatistics.getParameter(MonitorService.SUCCESS, 0));
+        Assertions.assertEquals(0, lastStatistics.getParameter(MonitorService.FAILURE, 0));
+        Assertions.assertEquals(1, lastStatistics.getParameter(MonitorService.CONCURRENT, 0));
+        Assertions.assertEquals(invocation, lastInvocation);
     }
 
     @Test
@@ -155,16 +155,16 @@ public class MonitorFilterTest {
         while (lastStatistics == null) {
             Thread.sleep(10);
         }
-        Assert.assertEquals("abc", lastStatistics.getParameter(MonitorService.APPLICATION));
-        Assert.assertEquals(MonitorService.class.getName(), lastStatistics.getParameter(MonitorService.INTERFACE));
-        Assert.assertEquals("xxx", lastStatistics.getParameter(MonitorService.METHOD));
-        Assert.assertEquals(NetUtils.getLocalHost() + ":20880", lastStatistics.getParameter(MonitorService.PROVIDER));
-        Assert.assertEquals(NetUtils.getLocalHost(), lastStatistics.getAddress());
-        Assert.assertEquals(null, lastStatistics.getParameter(MonitorService.CONSUMER));
-        Assert.assertEquals(1, lastStatistics.getParameter(MonitorService.SUCCESS, 0));
-        Assert.assertEquals(0, lastStatistics.getParameter(MonitorService.FAILURE, 0));
-        Assert.assertEquals(1, lastStatistics.getParameter(MonitorService.CONCURRENT, 0));
-        Assert.assertEquals(invocation, lastInvocation);
+        Assertions.assertEquals("abc", lastStatistics.getParameter(MonitorService.APPLICATION));
+        Assertions.assertEquals(MonitorService.class.getName(), lastStatistics.getParameter(MonitorService.INTERFACE));
+        Assertions.assertEquals("xxx", lastStatistics.getParameter(MonitorService.METHOD));
+        Assertions.assertEquals(NetUtils.getLocalHost() + ":20880", lastStatistics.getParameter(MonitorService.PROVIDER));
+        Assertions.assertEquals(NetUtils.getLocalHost(), lastStatistics.getAddress());
+        Assertions.assertEquals(null, lastStatistics.getParameter(MonitorService.CONSUMER));
+        Assertions.assertEquals(1, lastStatistics.getParameter(MonitorService.SUCCESS, 0));
+        Assertions.assertEquals(0, lastStatistics.getParameter(MonitorService.FAILURE, 0));
+        Assertions.assertEquals(1, lastStatistics.getParameter(MonitorService.CONCURRENT, 0));
+        Assertions.assertEquals(invocation, lastInvocation);
     }
 
     @Test

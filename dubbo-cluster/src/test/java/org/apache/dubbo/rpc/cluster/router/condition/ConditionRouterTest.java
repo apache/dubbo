@@ -26,10 +26,10 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.router.MockInvoker;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,11 +38,11 @@ public class ConditionRouterTest {
 
     private URL SCRIPT_URL = URL.valueOf("condition://0.0.0.0/com.foo.BarService");
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpBeforeClass() throws Exception {
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
     }
 
@@ -56,31 +56,31 @@ public class ConditionRouterTest {
 
         Router router = new ConditionRouterFactory().getRouter(getRouteUrl(" => host = 1.2.3.4"));
         boolean matchWhen = ((ConditionRouter) router).matchWhen(URL.valueOf("consumer://1.1.1.1/com.foo.BarService"), invocation);
-        Assert.assertEquals(true, matchWhen);
+        Assertions.assertEquals(true, matchWhen);
 
         router = new ConditionRouterFactory().getRouter(getRouteUrl("host = 2.2.2.2,1.1.1.1,3.3.3.3 => host = 1.2.3.4"));
         matchWhen = ((ConditionRouter) router).matchWhen(URL.valueOf("consumer://1.1.1.1/com.foo.BarService"), invocation);
-        Assert.assertEquals(true, matchWhen);
+        Assertions.assertEquals(true, matchWhen);
 
         router = new ConditionRouterFactory().getRouter(getRouteUrl("host = 2.2.2.2,1.1.1.1,3.3.3.3 & host !=1.1.1.1 => host = 1.2.3.4"));
         matchWhen = ((ConditionRouter) router).matchWhen(URL.valueOf("consumer://1.1.1.1/com.foo.BarService"), invocation);
-        Assert.assertEquals(false, matchWhen);
+        Assertions.assertEquals(false, matchWhen);
 
         router = new ConditionRouterFactory().getRouter(getRouteUrl("host !=4.4.4.4 & host = 2.2.2.2,1.1.1.1,3.3.3.3 => host = 1.2.3.4"));
         matchWhen = ((ConditionRouter) router).matchWhen(URL.valueOf("consumer://1.1.1.1/com.foo.BarService"), invocation);
-        Assert.assertEquals(true, matchWhen);
+        Assertions.assertEquals(true, matchWhen);
 
         router = new ConditionRouterFactory().getRouter(getRouteUrl("host !=4.4.4.* & host = 2.2.2.2,1.1.1.1,3.3.3.3 => host = 1.2.3.4"));
         matchWhen = ((ConditionRouter) router).matchWhen(URL.valueOf("consumer://1.1.1.1/com.foo.BarService"), invocation);
-        Assert.assertEquals(true, matchWhen);
+        Assertions.assertEquals(true, matchWhen);
 
         router = new ConditionRouterFactory().getRouter(getRouteUrl("host = 2.2.2.2,1.1.1.*,3.3.3.3 & host != 1.1.1.1 => host = 1.2.3.4"));
         matchWhen = ((ConditionRouter) router).matchWhen(URL.valueOf("consumer://1.1.1.1/com.foo.BarService"), invocation);
-        Assert.assertEquals(false, matchWhen);
+        Assertions.assertEquals(false, matchWhen);
 
         router = new ConditionRouterFactory().getRouter(getRouteUrl("host = 2.2.2.2,1.1.1.*,3.3.3.3 & host != 1.1.1.2 => host = 1.2.3.4"));
         matchWhen = ((ConditionRouter) router).matchWhen(URL.valueOf("consumer://1.1.1.1/com.foo.BarService"), invocation);
-        Assert.assertEquals(true, matchWhen);
+        Assertions.assertEquals(true, matchWhen);
     }
 
     @Test
@@ -121,12 +121,12 @@ public class ConditionRouterTest {
         List<Invoker<String>> filteredInvokers4 = router4.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
         List<Invoker<String>> filteredInvokers5 = router5.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
         List<Invoker<String>> filteredInvokers6 = router6.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
-        Assert.assertEquals(1, filteredInvokers1.size());
-        Assert.assertEquals(0, filteredInvokers2.size());
-        Assert.assertEquals(0, filteredInvokers3.size());
-        Assert.assertEquals(1, filteredInvokers4.size());
-        Assert.assertEquals(2, filteredInvokers5.size());
-        Assert.assertEquals(1, filteredInvokers6.size());
+        Assertions.assertEquals(1, filteredInvokers1.size());
+        Assertions.assertEquals(0, filteredInvokers2.size());
+        Assertions.assertEquals(0, filteredInvokers3.size());
+        Assertions.assertEquals(1, filteredInvokers4.size());
+        Assertions.assertEquals(2, filteredInvokers5.size());
+        Assertions.assertEquals(1, filteredInvokers6.size());
     }
 
     @Test
@@ -136,23 +136,23 @@ public class ConditionRouterTest {
         Router router = new ConditionRouterFactory().getRouter(getRouteUrl("methods=getFoo => host = 1.2.3.4"));
         boolean matchWhen = ((ConditionRouter) router).matchWhen(
                 URL.valueOf("consumer://1.1.1.1/com.foo.BarService?methods=setFoo,getFoo,findFoo"), invocation);
-        Assert.assertEquals(true, matchWhen);
+        Assertions.assertEquals(true, matchWhen);
         // Exactly one method, match
         matchWhen = ((ConditionRouter) router).matchWhen(
                 URL.valueOf("consumer://1.1.1.1/com.foo.BarService?methods=getFoo"), invocation);
-        Assert.assertEquals(true, matchWhen);
+        Assertions.assertEquals(true, matchWhen);
         // Method routing and Other condition routing can work together
         Router router2 = new ConditionRouterFactory()
                 .getRouter(getRouteUrl("methods=getFoo & host!=1.1.1.1 => host = 1.2.3.4"));
         matchWhen = ((ConditionRouter) router2).matchWhen(
                 URL.valueOf("consumer://1.1.1.1/com.foo.BarService?methods=getFoo"), invocation);
-        Assert.assertEquals(false, matchWhen);
+        Assertions.assertEquals(false, matchWhen);
 
         Router router3 = new ConditionRouterFactory()
                 .getRouter(getRouteUrl("methods=getFoo & host=1.1.1.1 => host = 1.2.3.4"));
         matchWhen = ((ConditionRouter) router3).matchWhen(
                 URL.valueOf("consumer://1.1.1.1/com.foo.BarService?methods=getFoo"), invocation);
-        Assert.assertEquals(true, matchWhen);
+        Assertions.assertEquals(true, matchWhen);
         // Test filter condition
         List<Invoker<String>> invokers = new ArrayList<Invoker<String>>();
         Invoker<String> invoker1 = new MockInvoker<String>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"));
@@ -169,14 +169,14 @@ public class ConditionRouterTest {
                 Constants.FORCE_KEY, String.valueOf(true)));
         List<Invoker<String>> filteredInvokers1 = router4.route(invokers,
                 URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), invocation);
-        Assert.assertEquals(1, filteredInvokers1.size());
+        Assertions.assertEquals(1, filteredInvokers1.size());
 
         Router router5 = new ConditionRouterFactory().getRouter(getRouteUrl(
                 "host = " + NetUtils.getLocalHost() + " & methods = unvalidmethod => " + " host = 10.20.3.3")
                 .addParameter(Constants.FORCE_KEY, String.valueOf(true)));
         List<Invoker<String>> filteredInvokers2 = router5.route(invokers,
                 URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), invocation);
-        Assert.assertEquals(3, filteredInvokers2.size());
+        Assertions.assertEquals(3, filteredInvokers2.size());
         // Request a non-exists method
     }
 
@@ -188,7 +188,7 @@ public class ConditionRouterTest {
         invokers.add(new MockInvoker<String>());
         invokers.add(new MockInvoker<String>());
         List<Invoker<String>> filteredInvokers = router.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
-        Assert.assertEquals(0, filteredInvokers.size());
+        Assertions.assertEquals(0, filteredInvokers.size());
     }
 
     @Test
@@ -199,7 +199,7 @@ public class ConditionRouterTest {
         invokers.add(new MockInvoker<String>());
         invokers.add(new MockInvoker<String>());
         List<Invoker<String>> filteredInvokers = router.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
-        Assert.assertEquals(0, filteredInvokers.size());
+        Assertions.assertEquals(0, filteredInvokers.size());
     }
 
     @Test
@@ -210,7 +210,7 @@ public class ConditionRouterTest {
         invokers.add(new MockInvoker<String>(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880/com.foo.BarService")));
         invokers.add(new MockInvoker<String>(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880/com.foo.BarService")));
         List<Invoker<String>> filteredInvokers = router.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
-        Assert.assertEquals(invokers, filteredInvokers);
+        Assertions.assertEquals(invokers, filteredInvokers);
     }
 
     @Test
@@ -224,9 +224,9 @@ public class ConditionRouterTest {
         invokers.add(invoker2);
         invokers.add(invoker3);
         List<Invoker<String>> filteredInvokers = router.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
-        Assert.assertEquals(2, filteredInvokers.size());
-        Assert.assertEquals(invoker2, filteredInvokers.get(0));
-        Assert.assertEquals(invoker3, filteredInvokers.get(1));
+        Assertions.assertEquals(2, filteredInvokers.size());
+        Assertions.assertEquals(invoker2, filteredInvokers.get(0));
+        Assertions.assertEquals(invoker3, filteredInvokers.get(1));
     }
 
     @Test
@@ -240,9 +240,9 @@ public class ConditionRouterTest {
         invokers.add(invoker2);
         invokers.add(invoker3);
         List<Invoker<String>> filteredInvokers = router.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
-        Assert.assertEquals(2, filteredInvokers.size());
-        Assert.assertEquals(invoker2, filteredInvokers.get(0));
-        Assert.assertEquals(invoker3, filteredInvokers.get(1));
+        Assertions.assertEquals(2, filteredInvokers.size());
+        Assertions.assertEquals(invoker2, filteredInvokers.get(0));
+        Assertions.assertEquals(invoker3, filteredInvokers.get(1));
     }
 
     @Test
@@ -256,9 +256,9 @@ public class ConditionRouterTest {
         invokers.add(invoker2);
         invokers.add(invoker3);
         List<Invoker<String>> filteredInvokers = router.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
-        Assert.assertEquals(2, filteredInvokers.size());
-        Assert.assertEquals(invoker2, filteredInvokers.get(0));
-        Assert.assertEquals(invoker3, filteredInvokers.get(1));
+        Assertions.assertEquals(2, filteredInvokers.size());
+        Assertions.assertEquals(invoker2, filteredInvokers.get(0));
+        Assertions.assertEquals(invoker3, filteredInvokers.get(1));
     }
 
     @Test
@@ -272,9 +272,9 @@ public class ConditionRouterTest {
         invokers.add(invoker2);
         invokers.add(invoker3);
         List<Invoker<String>> filteredInvokers = router.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
-        Assert.assertEquals(2, filteredInvokers.size());
-        Assert.assertEquals(invoker2, filteredInvokers.get(0));
-        Assert.assertEquals(invoker3, filteredInvokers.get(1));
+        Assertions.assertEquals(2, filteredInvokers.size());
+        Assertions.assertEquals(invoker2, filteredInvokers.get(0));
+        Assertions.assertEquals(invoker3, filteredInvokers.get(1));
     }
 
     @Test
@@ -288,7 +288,7 @@ public class ConditionRouterTest {
         invokers.add(invoker2);
         invokers.add(invoker3);
         List<Invoker<String>> filteredInvokers = router.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
-        Assert.assertEquals(invokers, filteredInvokers);
+        Assertions.assertEquals(invokers, filteredInvokers);
     }
 
     @Test
@@ -302,7 +302,7 @@ public class ConditionRouterTest {
         invokers.add(invoker2);
         invokers.add(invoker3);
         List<Invoker<String>> filteredInvokers = router.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
-        Assert.assertEquals(0, filteredInvokers.size());
+        Assertions.assertEquals(0, filteredInvokers.size());
     }
 
 }

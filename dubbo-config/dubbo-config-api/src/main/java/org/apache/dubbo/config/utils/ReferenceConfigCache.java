@@ -39,28 +39,25 @@ public class ReferenceConfigCache {
      * <p>
      * key example: <code>group1/org.apache.dubbo.foo.FooService:1.0.0</code>.
      */
-    public static final KeyGenerator DEFAULT_KEY_GENERATOR = new KeyGenerator() {
-        @Override
-        public String generateKey(ReferenceConfig<?> referenceConfig) {
-            String iName = referenceConfig.getInterface();
-            if (StringUtils.isBlank(iName)) {
-                Class<?> clazz = referenceConfig.getInterfaceClass();
-                iName = clazz.getName();
-            }
-            if (StringUtils.isBlank(iName)) {
-                throw new IllegalArgumentException("No interface info in ReferenceConfig" + referenceConfig);
-            }
-
-            StringBuilder ret = new StringBuilder();
-            if (!StringUtils.isBlank(referenceConfig.getGroup())) {
-                ret.append(referenceConfig.getGroup()).append("/");
-            }
-            ret.append(iName);
-            if (!StringUtils.isBlank(referenceConfig.getVersion())) {
-                ret.append(":").append(referenceConfig.getVersion());
-            }
-            return ret.toString();
+    public static final KeyGenerator DEFAULT_KEY_GENERATOR = referenceConfig -> {
+        String iName = referenceConfig.getInterface();
+        if (StringUtils.isBlank(iName)) {
+            Class<?> clazz = referenceConfig.getInterfaceClass();
+            iName = clazz.getName();
         }
+        if (StringUtils.isBlank(iName)) {
+            throw new IllegalArgumentException("No interface info in ReferenceConfig" + referenceConfig);
+        }
+
+        StringBuilder ret = new StringBuilder();
+        if (!StringUtils.isBlank(referenceConfig.getGroup())) {
+            ret.append(referenceConfig.getGroup()).append("/");
+        }
+        ret.append(iName);
+        if (!StringUtils.isBlank(referenceConfig.getVersion())) {
+            ret.append(":").append(referenceConfig.getVersion());
+        }
+        return ret.toString();
     };
     static final ConcurrentMap<String, ReferenceConfigCache> cacheHolder = new ConcurrentHashMap<String, ReferenceConfigCache>();
     private final String name;
@@ -113,6 +110,22 @@ public class ReferenceConfigCache {
         cache.putIfAbsent(key, referenceConfig);
         config = cache.get(key);
         return (T) config.get();
+    }
+
+    /**
+     * Fetch cache with the specified key. The key is decided by KeyGenerator passed-in. If the default KeyGenerator is
+     * used, then the key is in the format of <code>group/interfaceClass:version</code>
+     *
+     * @param key  cache key
+     * @param type object class
+     * @param <T>  object type
+     * @return object from the cached ReferenceConfig
+     * @see KeyGenerator#generateKey(ReferenceConfig)
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T get(String key, Class<T> type) {
+        ReferenceConfig<?> config = cache.get(key);
+        return (config != null) ? (T) config.get() : null;
     }
 
     void destroyKey(String key) {

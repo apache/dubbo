@@ -20,13 +20,13 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
 
 import java.text.ParseException;
@@ -43,7 +43,7 @@ import java.util.regex.Pattern;
  * ConditionRouter
  *
  */
-public class ConditionRouter extends AbstractRouter implements Comparable<Router> {
+public class ConditionRouter extends AbstractRouter {
     public static final String NAME = "condition";
 
     private static final Logger logger = LoggerFactory.getLogger(ConditionRouter.class);
@@ -101,7 +101,7 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
             String separator = matcher.group(1);
             String content = matcher.group(2);
             // Start part of the condition expression.
-            if (separator == null || separator.length() == 0) {
+            if (StringUtils.isEmpty(separator)) {
                 pair = new MatchPair();
                 condition.put(content, pair);
             }
@@ -163,7 +163,7 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
             return invokers;
         }
 
-        if (invokers == null || invokers.isEmpty()) {
+        if (CollectionUtils.isEmpty(invokers)) {
             return invokers;
         }
         try {
@@ -205,11 +205,11 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
     }
 
     boolean matchWhen(URL url, Invocation invocation) {
-        return whenCondition == null || whenCondition.isEmpty() || matchCondition(whenCondition, url, null, invocation);
+        return CollectionUtils.isEmptyMap(whenCondition) || matchCondition(whenCondition, url, null, invocation);
     }
 
     private boolean matchThen(URL url, URL param) {
-        return !(thenCondition == null || thenCondition.isEmpty()) && matchCondition(thenCondition, url, param, null);
+        return CollectionUtils.isNotEmptyMap(thenCondition) && matchCondition(thenCondition, url, param, null);
     }
 
     private boolean matchCondition(Map<String, MatchPair> condition, URL url, URL param, Invocation invocation) {

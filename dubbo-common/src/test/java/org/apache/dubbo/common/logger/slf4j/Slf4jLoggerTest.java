@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.common.logger.slf4j;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Marker;
 import org.slf4j.spi.LocationAwareLogger;
 

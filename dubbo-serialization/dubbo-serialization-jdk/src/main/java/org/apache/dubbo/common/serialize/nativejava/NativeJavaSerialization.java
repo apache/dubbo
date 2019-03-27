@@ -26,6 +26,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * Native java serialization implementation
+ *
+ * <pre>
+ *     e.g. &lt;dubbo:protocol serialization="nativejava" /&gt;
+ * </pre>
+ */
 public class NativeJavaSerialization implements Serialization {
 
     public static final String NAME = "nativejava";

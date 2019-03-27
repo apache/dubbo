@@ -23,8 +23,8 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.support.BlockMyInvoker;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import static org.mockito.Mockito.any;
@@ -46,7 +46,7 @@ public class TimeoutFilterTest {
         when(invocation.getMethodName()).thenReturn("testInvokeWithoutTimeout");
 
         Result result = timeoutFilter.invoke(invoker, invocation);
-        Assert.assertEquals("result", result.getValue());
+        Assertions.assertEquals("result", result.getValue());
     }
 
     @Test
@@ -60,7 +60,7 @@ public class TimeoutFilterTest {
         when(invocation.getMethodName()).thenReturn("testInvokeWithTimeout");
 
         Result result = timeoutFilter.invoke(invoker, invocation);
-        Assert.assertEquals("alibaba", result.getValue());
+        Assertions.assertEquals("alibaba", result.getValue());
 
     }
 }

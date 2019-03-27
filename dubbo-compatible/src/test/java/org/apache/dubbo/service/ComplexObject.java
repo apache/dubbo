@@ -16,13 +16,12 @@
  */
 package org.apache.dubbo.service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * ON 2018/11/5
@@ -46,7 +45,7 @@ public class ComplexObject {
         InnerObject2 io22 = new InnerObject2();
         io22.setInnerA2(var1 + "_22");
         io22.setInnerB2(var2 + 200000);
-        this.setInnerObject2(new HashSet<InnerObject2>(Arrays.asList(io21, io22)));
+        this.setInnerObject2(new ArrayList<>(Arrays.asList(io21, io22)));
 
         InnerObject3 io31 = new InnerObject3();
         io31.setInnerA3(var1 + "_31");
@@ -61,7 +60,7 @@ public class ComplexObject {
     }
 
     private InnerObject innerObject;
-    private Set<InnerObject2> innerObject2;
+    private List<InnerObject2> innerObject2;
     private InnerObject3[] innerObject3;
     private String[] strArrays;
     private List<Integer> intList;
@@ -109,11 +108,11 @@ public class ComplexObject {
         this.testEnum = testEnum;
     }
 
-    public Set<InnerObject2> getInnerObject2() {
+    public List<InnerObject2> getInnerObject2() {
         return innerObject2;
     }
 
-    public void setInnerObject2(Set<InnerObject2> innerObject2) {
+    public void setInnerObject2(List<InnerObject2> innerObject2) {
         this.innerObject2 = innerObject2;
     }
 
@@ -225,7 +224,7 @@ public class ComplexObject {
             return innerA2;
         }
 
-        public void setInnerA2(String innerA) {
+        public void setInnerA2(String innerA2) {
             this.innerA2 = innerA2;
         }
 
@@ -233,7 +232,7 @@ public class ComplexObject {
             return innerB2;
         }
 
-        public void setInnerB2(int innerB) {
+        public void setInnerB2(int innerB2) {
             this.innerB2 = innerB2;
         }
 

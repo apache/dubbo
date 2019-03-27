@@ -18,11 +18,11 @@ package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.threadpool.ThreadPool;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.List;
@@ -33,16 +33,16 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class ConfigUtilsTest {
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         ConfigUtils.setProperties(null);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         ConfigUtils.setProperties(null);
     }
@@ -228,12 +228,12 @@ public class ConfigUtilsTest {
     }
 
 
-    @Ignore("see http://code.alibabatech.com/jira/browse/DUBBO-133")
+    @Disabled("see http://code.alibabatech.com/jira/browse/DUBBO-133")
     @Test
     public void testLoadPropertiesMultiFileNotRootPathException() throws Exception {
         try {
             ConfigUtils.loadProperties("META-INF/services/org.apache.dubbo.common.status.StatusChecker", false);
-            Assert.fail();
+            Assertions.fail();
         } catch (IllegalStateException expected) {
             assertThat(expected.getMessage(), containsString("only 1 META-INF/services/org.apache.dubbo.common.status.StatusChecker file is expected, but 2 dubbo.properties files found on class path:"));
         }
