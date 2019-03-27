@@ -174,6 +174,10 @@ public abstract class AbstractRegistry implements Registry {
                 }
             }
         } catch (Throwable e) {
+            if (e instanceof IOException) { // may not be recoverable when IOException throws, give up retrying
+                logger.warn("Failed to save registry cache file, cause: " + e.getMessage(), e);
+                return;
+            }
             if (version < lastCacheChanged.get()) {
                 return;
             } else {
