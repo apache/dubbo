@@ -825,6 +825,16 @@ public class Constants {
      * Production environment key.
      */
     public static final String PRODUCTION_ENVIRONMENT = "product";
+
+    /**
+     * Hash nodes name
+     */
+    public static final String HASH_NODES = "hash.nodes";
+
+    /**
+     * Hash arguments name
+     */
+    public static final String HASH_ARGUMENTS = "hash.arguments";
     /*
      * private Constants(){ }
      */
