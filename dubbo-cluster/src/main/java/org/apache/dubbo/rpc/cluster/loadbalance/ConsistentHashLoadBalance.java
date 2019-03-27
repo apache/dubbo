@@ -31,6 +31,9 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static org.apache.dubbo.common.Constants.HASH_ARGUMENTS;
+import static org.apache.dubbo.common.Constants.HASH_NODES;
+
 /**
  * ConsistentHashLoadBalance
  */
@@ -67,8 +70,8 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
             this.virtualInvokers = new TreeMap<Long, Invoker<T>>();
             this.identityHashCode = identityHashCode;
             URL url = invokers.get(0).getUrl();
-            this.replicaNumber = url.getMethodParameter(methodName, "hash.nodes", 160);
-            String[] index = Constants.COMMA_SPLIT_PATTERN.split(url.getMethodParameter(methodName, "hash.arguments", "0"));
+            this.replicaNumber = url.getMethodParameter(methodName, HASH_NODES, 160);
+            String[] index = Constants.COMMA_SPLIT_PATTERN.split(url.getMethodParameter(methodName, HASH_ARGUMENTS, "0"));
             argumentIndex = new int[index.length];
             for (int i = 0; i < index.length; i++) {
                 argumentIndex[i] = Integer.parseInt(index[i]);
