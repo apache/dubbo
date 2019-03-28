@@ -185,6 +185,7 @@ public abstract class AbstractRegistry implements Registry {
                 return;
             }
             if (version < lastCacheChanged.get()) {
+                savePropertiesRetryTimes.set(0);
                 return;
             } else {
                 registryCacheExecutor.execute(new SaveProperties(lastCacheChanged.incrementAndGet()));
