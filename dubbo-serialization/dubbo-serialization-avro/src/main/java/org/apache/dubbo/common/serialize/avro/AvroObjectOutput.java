@@ -27,7 +27,7 @@ import java.io.OutputStream;
 import java.util.Arrays;
 
 public class AvroObjectOutput implements ObjectOutput {
-    private EncoderFactory encoderFactory = EncoderFactory.get();
+    private static EncoderFactory encoderFactory = EncoderFactory.get();
     private BinaryEncoder encoder;
 
     public AvroObjectOutput(OutputStream out) {
