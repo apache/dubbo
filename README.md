@@ -42,21 +42,9 @@ There's a [README](https://github.com/apache/incubator-dubbo-samples/tree/master
 
 ```xml
 <properties>
-    <dubbo.version>2.7.0</dubbo.version>
+    <dubbo.version>2.7.1</dubbo.version>
 </properties>
     
-<dependencyManagement>
-    <dependencies>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-dependencies-bom</artifactId>
-            <version>${dubbo.version}</version>
-            <type>pom</type>
-            <scope>import</scope>
-        </dependency>
-    </dependencies>
-</dependencyManagement>
-
 <dependencies>
     <dependency>
         <groupId>org.apache.dubbo</groupId>
@@ -64,20 +52,9 @@ There's a [README](https://github.com/apache/incubator-dubbo-samples/tree/master
         <version>${dubbo.version}</version>
     </dependency>
     <dependency>
-        <groupId>io.netty</groupId>
-        <artifactId>netty-all</artifactId>
-    </dependency>
-    <dependency>
-        <groupId>org.apache.curator</groupId>
-        <artifactId>curator-framework</artifactId>
-    </dependency>
-    <dependency>
-        <groupId>org.apache.curator</groupId>
-        <artifactId>curator-recipes</artifactId>
-    </dependency>
-    <dependency>
-        <groupId>org.apache.zookeeper</groupId>
-        <artifactId>zookeeper</artifactId>
+        <groupId>org.apache.dubbo</groupId>
+        <artifactId>dubbo-dependencies-zookeeper</artifactId>
+        <version>${dubbo.version}</version>
     </dependency>
 </dependencies>
 ```

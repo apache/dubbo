@@ -23,6 +23,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import javax.validation.ConstraintViolationException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class JValidatorTest {
     @Test
@@ -55,5 +59,28 @@ public class JValidatorTest {
         URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
         JValidator jValidator = new JValidator(url);
         jValidator.validate("someMethod2", new Class<?>[]{ValidationParameter.class}, new Object[]{new ValidationParameter("NotBeNull")});
+    }
+
+    @Test
+    public void testItWithArrayArg() throws Exception {
+        URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
+        JValidator jValidator = new JValidator(url);
+        jValidator.validate("someMethod3", new Class<?>[]{ValidationParameter[].class}, new Object[]{new ValidationParameter[]{new ValidationParameter("parameter")}});
+    }
+
+    @Test
+    public void testItWithCollectionArg() throws Exception {
+        URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
+        JValidator jValidator = new JValidator(url);
+        jValidator.validate("someMethod4", new Class<?>[]{List.class}, new Object[]{Arrays.asList("parameter")});
+    }
+
+    @Test
+    public void testItWithMapArg() throws Exception {
+        URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
+        JValidator jValidator = new JValidator(url);
+        Map<String, String> map = new HashMap<>();
+        map.put("key", "value");
+        jValidator.validate("someMethod5", new Class<?>[]{Map.class}, new Object[]{map});
     }
 }

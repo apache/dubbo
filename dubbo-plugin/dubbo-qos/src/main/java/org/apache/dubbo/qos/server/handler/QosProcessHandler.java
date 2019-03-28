@@ -43,7 +43,7 @@ public class QosProcessHandler extends ByteToMessageDecoder {
     // true means to accept foreign IP
     private boolean acceptForeignIp;
 
-    public static String prompt = "dubbo>";
+    public static final String prompt = "dubbo>";
 
     public QosProcessHandler(String welcome, boolean acceptForeignIp) {
         this.welcome = welcome;
