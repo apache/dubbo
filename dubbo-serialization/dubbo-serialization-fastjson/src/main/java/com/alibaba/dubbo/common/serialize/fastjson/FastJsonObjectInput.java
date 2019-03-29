@@ -17,7 +17,6 @@
 package com.alibaba.dubbo.common.serialize.fastjson;
 
 import com.alibaba.dubbo.common.serialize.ObjectInput;
-import com.alibaba.dubbo.common.utils.PojoUtils;
 import com.alibaba.fastjson.JSON;
 
 import java.io.BufferedReader;
