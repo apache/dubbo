@@ -17,7 +17,6 @@
 package org.apache.dubbo.common.serialize.fastjson;
 
 import org.apache.dubbo.common.serialize.ObjectInput;
-import org.apache.dubbo.common.utils.PojoUtils;
 
 import com.alibaba.fastjson.JSON;
 
