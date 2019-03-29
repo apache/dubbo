@@ -24,7 +24,11 @@ import java.io.Serializable;
 /**
  * The method arguments configuration
  *
+ * <p>
+ * ArgumentConfig is a special config. Unlike AbstractConfig, he always describes the methodConfig in an embedded way.
+ *
  * @export
+ * @see MethodConfig
  */
 public class ArgumentConfig implements Serializable {
 

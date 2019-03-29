@@ -29,9 +29,19 @@ import java.util.Map;
 
 
 /**
+ * <h1>
  * The application info
+ * </h1>
+ * <p>
+ * ApplicationConfig provides support related to options at the application level
+ * <p>
+ * Mainly used for Monitor and Registry centers,Other configuration items are unique to ApplicationConfig
  *
  * @export
+ * @see ProviderConfig
+ * @see ConsumerConfig
+ * @see ApplicationConfig self
+ * @see ModuleConfig
  */
 public class ApplicationConfig extends AbstractConfig {
 

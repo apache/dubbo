@@ -26,9 +26,20 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * AbstractServiceConfig
+ * <h1>
+ * AbstractProviderConfig
+ * </h1>
+ *
+ * <p>
+ * Abstract definition of explicit provider interface configuration under interface configuration class
+ * <p>
+ * In order to distinguish the conceptual understanding and the practical application of coding,
+ * we use <code>AbstractProviderConfig</code> to describe the concept, but the encoding uses <code>AbstractServiceConfig</code>, they are consistent.
  *
  * @export
+ * @see AbstractReferenceConfig
+ * @see ProviderConfig
+ * @see ServiceConfig
  */
 public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 

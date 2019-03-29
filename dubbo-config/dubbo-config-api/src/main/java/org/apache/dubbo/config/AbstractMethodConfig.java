@@ -23,9 +23,18 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 import java.util.Map;
 
 /**
+ * <h1>
  * AbstractMethodConfig
+ * </h1>
+ *
+ * <p>
+ * The abstract definition of the method level.
+ * <p>
+ * for dubbo，the smallest unit created for the service(consumer or provider) is the interface, but the smallest unit of scheduling is the method.
  *
  * @export
+ * @see AbstractInterfaceConfig Interface is the representation of the methods
+ * @see MethodConfig Specific configuration class for the method, used to describe the method
  */
 public abstract class AbstractMethodConfig extends AbstractConfig {
 
@@ -64,7 +73,7 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
 
     /**
      * The name of mock class which gets called when a service fails to execute
-     *
+     * <p>
      * note that: the mock doesn't support on the provider side，and the mock is executed when a non-business exception
      * occurs after a remote service call
      */

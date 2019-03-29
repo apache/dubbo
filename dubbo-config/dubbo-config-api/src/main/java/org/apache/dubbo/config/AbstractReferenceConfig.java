@@ -22,9 +22,18 @@ import org.apache.dubbo.rpc.InvokerListener;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 /**
+ * <h1>
  * AbstractConsumerConfig
+ * </h1>
+ *
+ * <p>
+ * Abstract definition of explicit consumer interface configuration under interface configuration class
+ * <p>
+ * In order to distinguish the conceptual understanding and the practical application of coding,
+ * we use <code>AbstractConsumerConfig</code> to describe the concept, but the encoding uses <code>AbstractReferenceConfig</code>, they are consistent.
  *
  * @export
+ * @see AbstractServiceConfig
  * @see org.apache.dubbo.config.ReferenceConfig
  */
 public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {

@@ -23,9 +23,15 @@ import org.apache.dubbo.config.support.Parameter;
 import java.util.Map;
 
 /**
+ * <h1>
  * RegistryConfig
+ * </h1>
+ *
+ * <p>
+ * This configuration is used to host different registry configuration information for dubbo, which is conceptually unrelated based on the service(provider or consumer) method, so he does not inherit from <code>AbstractMethodConfig</code>.
  *
  * @export
+ * @see MethodConfig
  */
 public class RegistryConfig extends AbstractConfig {
 

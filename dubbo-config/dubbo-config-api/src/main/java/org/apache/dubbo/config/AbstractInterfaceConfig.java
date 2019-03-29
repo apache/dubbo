@@ -57,9 +57,19 @@ import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
 /**
+ * <h1>
  * AbstractDefaultConfig
+ * </h1>
+ * <p>
+ * For dubbo，the smallest unit created for the service(consumer or provider) is the interface.
+ * <p>
+ * Interface level configuration item abstract definition, whether it is the consumer or the provider, it is a specific distinction on our interface configuration item
+ * <p>
+ * Under this, let us clearly distinguish between the consumer or the server.
  *
  * @export
+ * @see AbstractServiceConfig
+ * @see AbstractReferenceConfig
  */
 public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
@@ -255,7 +265,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             if (StringUtils.isNotEmpty(appGroup)) {
                 appConfigContent = dynamicConfiguration.getConfig
                         (StringUtils.isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile(),
-                         appGroup
+                                appGroup
                         );
             }
             try {
@@ -278,7 +288,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     /**
-     *
      * Load the registry and conversion it to {@link URL}, the priority order is: system property > dubbo registry config
      *
      * @param provider whether it is the provider side
@@ -321,7 +330,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     /**
-     *
      * Load the monitor config from the system properties and conversation it to {@link URL}
      *
      * @param registryURL
@@ -396,7 +404,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      * methods configured in the configuration file are included in the interface of remote service
      *
      * @param interfaceClass the interface of remote service
-     * @param methods the methods configured
+     * @param methods        the methods configured
      */
     protected void checkInterfaceAndMethods(Class<?> interfaceClass, List<MethodConfig> methods) {
         // interface cannot be null
@@ -516,12 +524,12 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             if (CollectionUtils.isEmpty(registries)) {
                 setRegistries(
                         ConfigManager.getInstance().getDefaultRegistries()
-                        .filter(CollectionUtils::isNotEmpty)
-                        .orElseGet(() -> {
-                            RegistryConfig registryConfig = new RegistryConfig();
-                            registryConfig.refresh();
-                            return Arrays.asList(registryConfig);
-                        })
+                                .filter(CollectionUtils::isNotEmpty)
+                                .orElseGet(() -> {
+                                    RegistryConfig registryConfig = new RegistryConfig();
+                                    registryConfig.refresh();
+                                    return Arrays.asList(registryConfig);
+                                })
                 );
             }
         } else {

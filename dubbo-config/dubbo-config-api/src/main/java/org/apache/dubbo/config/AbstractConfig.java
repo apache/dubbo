@@ -42,9 +42,16 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
+ * <p>
  * Utility methods and public methods for parsing configuration
  *
+ * <p>
+ * Basic base class for almost all configuration classes.<code>otherConfig</code> almost directly extends AbstractConfig
+ * <p>
+ * Has two instance fields: <code>id, prefix</code> to identify the configuration class, and to extract the configuration class to use when constructing meta information
+ *
  * @export
+ * @see AbstractMethodConfig
  */
 public abstract class AbstractConfig implements Serializable {
 
@@ -245,6 +252,12 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
+    /**
+     * todo this method can't be put here. Because Does not match the semantics of AbstractConfig
+     *
+     * @param methodConfig
+     * @return
+     */
     protected static ConsumerMethodModel.AsyncMethodInfo convertMethodConfig2AyncInfo(MethodConfig methodConfig) {
         if (methodConfig == null || (methodConfig.getOninvoke() == null && methodConfig.getOnreturn() == null && methodConfig.getOnthrow() == null)) {
             return null;

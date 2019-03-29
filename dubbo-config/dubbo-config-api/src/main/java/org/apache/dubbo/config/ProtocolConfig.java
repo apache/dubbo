@@ -33,9 +33,15 @@ import org.apache.dubbo.rpc.Protocol;
 import java.util.Map;
 
 /**
+ * <h1>
  * ProtocolConfig
+ * </h1>
+ * <p>
+ * This config is used to host different protocol configuration information for dubbo, which is conceptually unrelated based on the service(provider or consumer) method, so he does not inherit from <code>AbstractMethodConfig</code>.
+ * <p>
  *
  * @export
+ * @see AbstractMethodConfig
  */
 public class ProtocolConfig extends AbstractConfig {
 

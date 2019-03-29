@@ -26,9 +26,14 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * <h1>
  * The method configuration
+ * </h1>
+ * <p>
+ * The specific MethodConfig is used to describe the method under the interfaceConfig constraint.
  *
  * @export
+ * @see AbstractInterfaceConfig
  */
 public class MethodConfig extends AbstractMethodConfig {
 
@@ -128,13 +133,13 @@ public class MethodConfig extends AbstractMethodConfig {
 
         this.setReturn(method.isReturn());
 
-        if(!"".equals(method.oninvoke())){
+        if (!"".equals(method.oninvoke())) {
             this.setOninvoke(method.oninvoke());
         }
-        if(!"".equals(method.onreturn())){
+        if (!"".equals(method.onreturn())) {
             this.setOnreturn(method.onreturn());
         }
-        if(!"".equals(method.onthrow())){
+        if (!"".equals(method.onthrow())) {
             this.setOnthrow(method.onthrow());
         }
 

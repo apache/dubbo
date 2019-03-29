@@ -25,9 +25,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The module info
+ * <h1>
+ * Module Info
+ * </h1>
+ * <ul>
+ * <li>A interface service(consumer or provider) belong to interface services level(consumer or provider)</li>
+ * <li>A interface services(consumer or provider) belong to application level(consumer or provider)</li>
+ * <li>A application belong to namespace level(module info)</li>
+ * </ul>
+ * <p>
+ * We decide a interface's config item。 when interface has config item we use itself otherwise use services level otherwise use application level otherwise use namespace level
+ * <p>
+ * Mainly used for Monitor and Registry centers,Other configuration items are unique to ModuleConfig
  *
  * @export
+ * @see ProviderConfig
+ * @see ConsumerConfig
+ * @see ApplicationConfig
+ * @see ModuleConfig self
  */
 public class ModuleConfig extends AbstractConfig {
 

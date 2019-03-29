@@ -22,9 +22,16 @@ import org.apache.dubbo.config.support.Parameter;
 import java.util.Map;
 
 /**
+ * <h1>
  * MonitorConfig
+ * <h1>
+ * <p>
+ * Used to provide monitoring-related configuration for dubbo, which is conceptually unrelated based on the service(provider or consumer) method, so he does not inherit from <code>AbstractMethodConfig</code>.
+ * <p>
+ * For dubbo, it is optional and not required.
  *
  * @export
+ * @see AbstractMethodConfig
  */
 public class MonitorConfig extends AbstractConfig {
 

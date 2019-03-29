@@ -19,9 +19,18 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.utils.StringUtils;
 
 /**
- * The service consumer default configuration
+ * <h1>
+ * ConsumerConfig
+ * </h1>
+ * <p>
+ * ConsumerConfig provides support related to options at the interface services level. Provide support for the interface service(Consumer side)
+ * <p>
+ * ReferenceConfig configuration template class, which provides a number of common configuration templates for the configuration of the service configuration.
+ * <p>
+ * Another form of expression can be thought of as providing a default value that is used as a fallback option when the value of ReferenceConfig does not exist.
  *
  * @export
+ * @see ReferenceConfig
  */
 public class ConsumerConfig extends AbstractReferenceConfig {
 

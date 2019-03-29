@@ -65,9 +65,16 @@ import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidPort;
 
 /**
+ * <h1>
  * ServiceConfig
+ * </h1>
+ * <p>
+ * The specific service provider object, a ServiceConfig instance represents the exposure of an interface service
+ * <p>
+ * This class can be programmed directly at the application scope
  *
  * @export
+ * @see ReferenceConfig
  */
 public class ServiceConfig<T> extends AbstractServiceConfig {
 
@@ -791,7 +798,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (provider != null) {
             return;
         }
-        setProvider (
+        setProvider(
                 ConfigManager.getInstance()
                         .getDefaultProvider()
                         .orElseGet(() -> {
@@ -822,15 +829,15 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
         if (StringUtils.isEmpty(protocolIds)) {
             if (CollectionUtils.isEmpty(protocols)) {
-               setProtocols(
-                       ConfigManager.getInstance().getDefaultProtocols()
-                        .filter(CollectionUtils::isNotEmpty)
-                        .orElseGet(() -> {
-                            ProtocolConfig protocolConfig = new ProtocolConfig();
-                            protocolConfig.refresh();
-                            return Arrays.asList(protocolConfig);
-                        })
-               );
+                setProtocols(
+                        ConfigManager.getInstance().getDefaultProtocols()
+                                .filter(CollectionUtils::isNotEmpty)
+                                .orElseGet(() -> {
+                                    ProtocolConfig protocolConfig = new ProtocolConfig();
+                                    protocolConfig.refresh();
+                                    return Arrays.asList(protocolConfig);
+                                })
+                );
             }
         } else {
             String[] arr = Constants.COMMA_SPLIT_PATTERN.split(protocolIds);

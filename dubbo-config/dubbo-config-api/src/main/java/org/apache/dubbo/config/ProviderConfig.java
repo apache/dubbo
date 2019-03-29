@@ -28,7 +28,15 @@ import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import java.util.Arrays;
 
 /**
- * The service provider default configuration
+ * <h1>
+ * ProviderConfig
+ * </h1>
+ * <p>
+ * ProviderConfig provides support related to options at the interface services level. Provide support for the interface service(Provide side)
+ * <p>
+ * ServiceConfig configuration template class, which provides a number of common configuration templates for the configuration of the service configuration.
+ * <p>
+ * Another form of expression can be thought of as providing a default value that is used as a fallback option when the value of ServiceConfig does not exist.
  *
  * @export
  * @see org.apache.dubbo.config.ProtocolConfig

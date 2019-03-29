@@ -55,11 +55,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-
 /**
+ * <h1>
  * ReferenceConfig
+ * </h1>
+ * <p>
+ * The specific service consumer object, a ReferenceConfig instance represents the reference of an interface service
+ * <p>
+ * This class can be programmed directly at the application scope
  *
  * @export
+ * @see ConsumerConfig
+ * @see ServiceConfig
  */
 public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
@@ -321,6 +328,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
         return new ConsumerModel(serviceKey, serviceInterface, ref, methods, attributes);
     }
+
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
     private T createProxy(Map<String, String> map) {
         if (shouldJvmRefer(map)) {
@@ -432,7 +440,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     protected boolean shouldCheck() {
         Boolean shouldCheck = isCheck();
-        if (shouldCheck == null && getConsumer()!= null) {
+        if (shouldCheck == null && getConsumer() != null) {
             shouldCheck = getConsumer().isCheck();
         }
         if (shouldCheck == null) {
@@ -463,14 +471,14 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             return;
         }
         setConsumer(
-                        ConfigManager.getInstance()
-                            .getDefaultConsumer()
-                            .orElseGet(() -> {
-                                ConsumerConfig consumerConfig = new ConsumerConfig();
-                                consumerConfig.refresh();
-                                return consumerConfig;
-                            })
-                );
+                ConfigManager.getInstance()
+                        .getDefaultConsumer()
+                        .orElseGet(() -> {
+                            ConsumerConfig consumerConfig = new ConsumerConfig();
+                            consumerConfig.refresh();
+                            return consumerConfig;
+                        })
+        );
     }
 
     private void completeCompoundConfigs() {
