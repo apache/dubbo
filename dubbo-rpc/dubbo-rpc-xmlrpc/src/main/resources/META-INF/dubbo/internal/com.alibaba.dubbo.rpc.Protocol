@@ -1,0 +1,1 @@
+xmlrpc=io.github.kimmking.dubbo.rpc.protocol.xmlrpc.XmlRpcProtocol
