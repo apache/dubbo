@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.support;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionFactory;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.PojoUtils;
@@ -42,6 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 final public class MockInvoker<T> implements Invoker<T> {
     private final static ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+    private final static ExtensionFactory extensionFactory = ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getAdaptiveExtension();
     private final static Map<String, Invoker<?>> mocks = new ConcurrentHashMap<String, Invoker<?>>();
     private final static Map<String, Throwable> throwables = new ConcurrentHashMap<String, Throwable>();
 
@@ -177,7 +179,11 @@ final public class MockInvoker<T> implements Invoker<T> {
         }
 
         try {
-            return mockClass.newInstance();
+            Object mockInstance = extensionFactory.getExtension(mockClass, null);
+            if (mockInstance == null) {
+                return mockClass.newInstance();
+            }
+            return mockInstance;
         } catch (InstantiationException e) {
             throw new IllegalStateException("No default constructor from mock class " + mockClass.getName(), e);
         } catch (IllegalAccessException e) {

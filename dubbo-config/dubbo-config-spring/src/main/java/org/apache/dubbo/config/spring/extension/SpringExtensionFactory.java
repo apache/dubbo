@@ -66,7 +66,6 @@ public class SpringExtensionFactory implements ExtensionFactory {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <T> T getExtension(Class<T> type, String name) {
 
         //SPI should be get from SpiExtensionFactory
@@ -74,21 +73,23 @@ public class SpringExtensionFactory implements ExtensionFactory {
             return null;
         }
 
-        for (ApplicationContext context : contexts) {
-            if (context.containsBean(name)) {
-                Object bean = context.getBean(name);
-                if (type.isInstance(bean)) {
-                    return (T) bean;
-                }
-            }
+        T t = getExtensionByTypeAndName(type, name);
+        if (t != null) {
+            return t;
         }
-
-        logger.warn("No spring extension (bean) named:" + name + ", try to find an extension (bean) of type " + type.getName());
-
         if (Object.class == type) {
             return null;
         }
+        return getExtensionByType(type);
+    }
 
+    /**
+     * use type to find a bean
+     * @param type bean type
+     * @param <T> bean instance
+     * @return bean instance or null
+     */
+    private <T> T getExtensionByType(Class<T> type) {
         for (ApplicationContext context : contexts) {
             try {
                 return context.getBean(type);
@@ -100,9 +101,31 @@ public class SpringExtensionFactory implements ExtensionFactory {
                 }
             }
         }
+        logger.warn("No spring extension (bean) type:" + type.getName() + " found, stop get bean.");
+        return null;
+    }
 
-        logger.warn("No spring extension (bean) named:" + name + ", type:" + type.getName() + " found, stop get bean.");
-
+    /**
+     * use type and name to find a bean
+     * @param type bean type
+     * @param name bean name
+     * @param <T> beanInstance
+     * @return null if name is null or no bean Instance
+     */
+    @SuppressWarnings("unchecked")
+    private <T> T getExtensionByTypeAndName(Class<T> type, String name) {
+        if (name == null){
+            return null;
+        }
+        for (ApplicationContext context : contexts) {
+            if (context.containsBean(name)) {
+                Object bean = context.getBean(name);
+                if (type.isInstance(bean)) {
+                    return (T) bean;
+                }
+            }
+        }
+        logger.warn("No spring extension (bean) named:" + name + ", try to find an extension (bean) of type " + type.getName());
         return null;
     }
 
