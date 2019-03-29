@@ -18,6 +18,10 @@ package org.apache.dubbo.common.serialize.fastjson;
 
 import com.alibaba.fastjson.JSONObject;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.List;
+import org.apache.dubbo.common.serialize.model.Organization;
 import org.apache.dubbo.common.serialize.model.Person;
 
 import org.junit.jupiter.api.Assertions;
@@ -32,6 +36,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FastJsonObjectInputTest {
     private FastJsonObjectInput fastJsonObjectInput;
@@ -150,5 +155,45 @@ public class FastJsonObjectInputTest {
         assertThat(readObject, not(nullValue()));
         assertThat(readObject.getString("name"), is("John"));
         assertThat(readObject.getInteger("age"), is(30));
+    }
+
+
+    @Test
+    public void testReadObjectWithTowType() throws Exception {
+        fastJsonObjectInput = new FastJsonObjectInput(new StringReader("[{\"name\":\"John\",\"age\":30},{\"name\":\"Born\",\"age\":24}]"));
+
+        Method methodReturnType = getClass().getMethod("towLayer");
+        Type type = methodReturnType.getGenericReturnType();
+        List<Person> o = fastJsonObjectInput.readObject(List.class, type);
+
+        assertTrue(o instanceof List);
+        assertTrue(o.get(0) instanceof Person);
+
+        assertThat(o.size(), is(2));
+        assertThat(o.get(1).getName(), is("Born"));
+    }
+
+    @Test
+    public void testReadObjectWithThreeType() throws Exception {
+        fastJsonObjectInput = new FastJsonObjectInput(new StringReader("{\"data\":[{\"name\":\"John\",\"age\":30},{\"name\":\"Born\",\"age\":24}]}"));
+
+        Method methodReturnType = getClass().getMethod("threeLayer");
+        Type type = methodReturnType.getGenericReturnType();
+        Organization<List<Person>> o = fastJsonObjectInput.readObject(Organization.class, type);
+
+        assertTrue(o instanceof Organization);
+        assertTrue(o.getData() instanceof List);
+        assertTrue(o.getData().get(0) instanceof Person);
+
+        assertThat(o.getData().size(), is(2));
+        assertThat(o.getData().get(1).getName(), is("Born"));
+    }
+
+    public List<Person> towLayer() {
+        return null;
+    }
+
+    public Organization<List<Person>> threeLayer() {
+        return null;
     }
 }
