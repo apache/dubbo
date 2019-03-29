@@ -24,7 +24,7 @@
 
     <groupId>org.apache.dubbo</groupId>
     <artifactId>dubbo-rpc-xmlrpc</artifactId>
-    <version>1.0.2-SNAPSHOT</version>
+    <version>2.7.2-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
     <description>The xml rpc module of dubbo project</description>

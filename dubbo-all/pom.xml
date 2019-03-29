@@ -201,6 +201,13 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-rpc-xmlrpc</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-registry-api</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
@@ -499,6 +506,7 @@
                                     <include>org.apache.dubbo:dubbo-rpc-memcached</include>
                                     <include>org.apache.dubbo:dubbo-rpc-redis</include>
                                     <include>org.apache.dubbo:dubbo-rpc-rest</include>
+                                    <include>org.apache.dubbo:dubbo-rpc-xmlrpc</include>
                                     <include>org.apache.dubbo:dubbo-filter-validation</include>
                                     <include>org.apache.dubbo:dubbo-filter-cache</include>
                                     <include>org.apache.dubbo:dubbo-cluster</include>
