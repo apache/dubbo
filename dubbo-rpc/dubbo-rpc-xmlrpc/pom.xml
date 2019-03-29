@@ -22,14 +22,14 @@
         <version>7</version>
     </parent>
 
-    <groupId>io.github.kimmking</groupId>
+    <groupId>org.apache.dubbo</groupId>
     <artifactId>dubbo-rpc-xmlrpc</artifactId>
     <version>1.0.2-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
     <description>The xml rpc module of dubbo project</description>
 
-    <url>https://github.com/kimmking/incubator-dubbo-rpc-xmlrpc</url>
+    <url>https://github.com/apache/incubator-dubbo</url>
 
     <licenses>
         <license>
