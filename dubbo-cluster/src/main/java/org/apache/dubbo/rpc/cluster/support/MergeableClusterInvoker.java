@@ -176,17 +176,6 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
         return new RpcResult(result);
     }
 
-
-    @Override
-    public Class<T> getInterface() {
-        return directory.getInterface();
-    }
-
-    @Override
-    public URL getUrl() {
-        return directory.getUrl();
-    }
-
     @Override
     public boolean isAvailable() {
         return directory.isAvailable();
