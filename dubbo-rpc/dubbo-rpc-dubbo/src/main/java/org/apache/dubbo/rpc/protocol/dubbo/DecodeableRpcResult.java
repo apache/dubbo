@@ -55,9 +55,9 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
     private volatile boolean hasDecoded;
 
     public DecodeableRpcResult(Channel channel, Response response, InputStream is, Invocation invocation, byte id) {
-        Assert.notNull(channel, "channel == null");
-        Assert.notNull(response, "response == null");
-        Assert.notNull(is, "inputStream == null");
+        Assert.notNull(channel, "channel is null");
+        Assert.notNull(response, "response is null");
+        Assert.notNull(is, "inputStream is null");
         this.channel = channel;
         this.response = response;
         this.inputStream = is;

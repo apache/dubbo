@@ -39,7 +39,7 @@ public class ProtocolListenerWrapper implements Protocol {
 
     public ProtocolListenerWrapper(Protocol protocol) {
         if (protocol == null) {
-            throw new IllegalArgumentException("protocol == null");
+            throw new IllegalArgumentException("protocol is null");
         }
         this.protocol = protocol;
     }

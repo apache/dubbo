@@ -61,7 +61,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     public ZookeeperRegistry(URL url, ZookeeperTransporter zookeeperTransporter) {
         super(url);
         if (url.isAnyHost()) {
-            throw new IllegalStateException("registry address == null");
+            throw new IllegalStateException("registry address is null");
         }
         String group = url.getParameter(Constants.GROUP_KEY, DEFAULT_ROOT);
         if (!group.startsWith(Constants.PATH_SEPARATOR)) {
@@ -194,7 +194,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     @Override
     public List<URL> lookup(URL url) {
         if (url == null) {
-            throw new IllegalArgumentException("lookup url == null");
+            throw new IllegalArgumentException("lookup url is null");
         }
         try {
             List<String> providers = new ArrayList<>();

@@ -111,7 +111,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
     protected void setUrl(URL url) {
         if (url == null) {
-            throw new IllegalArgumentException("metadataReport url == null");
+            throw new IllegalArgumentException("metadataReport url is null");
         }
         this.reportURL = url;
     }

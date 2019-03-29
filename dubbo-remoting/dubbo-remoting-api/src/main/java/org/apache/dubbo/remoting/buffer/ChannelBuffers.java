@@ -51,7 +51,7 @@ public final class ChannelBuffers {
 
     public static ChannelBuffer wrappedBuffer(byte[] array, int offset, int length) {
         if (array == null) {
-            throw new NullPointerException("array == null");
+            throw new NullPointerException("array is null");
         }
         byte[] dest = new byte[length];
         System.arraycopy(array, offset, dest, 0, length);
@@ -60,7 +60,7 @@ public final class ChannelBuffers {
 
     public static ChannelBuffer wrappedBuffer(byte[] array) {
         if (array == null) {
-            throw new NullPointerException("array == null");
+            throw new NullPointerException("array is null");
         }
         if (array.length == 0) {
             return EMPTY_BUFFER;

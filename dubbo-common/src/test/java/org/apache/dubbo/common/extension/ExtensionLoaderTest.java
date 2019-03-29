@@ -76,7 +76,7 @@ public class ExtensionLoaderTest {
             fail();
         } catch (IllegalArgumentException expected) {
             assertThat(expected.getMessage(),
-                    containsString("Extension type == null"));
+                    containsString("Extension type is null"));
         }
     }
 
@@ -172,7 +172,7 @@ public class ExtensionLoaderTest {
             ExtensionLoader.getExtensionLoader(SimpleExt.class).getExtension(null);
             fail();
         } catch (IllegalArgumentException expected) {
-            assertThat(expected.getMessage(), containsString("Extension name == null"));
+            assertThat(expected.getMessage(), containsString("Extension name is null"));
         }
     }
 
@@ -186,7 +186,7 @@ public class ExtensionLoaderTest {
             ExtensionLoader.getExtensionLoader(SimpleExt.class).hasExtension(null);
             fail();
         } catch (IllegalArgumentException expected) {
-            assertThat(expected.getMessage(), containsString("Extension name == null"));
+            assertThat(expected.getMessage(), containsString("Extension name is null"));
         }
     }
 
@@ -202,7 +202,7 @@ public class ExtensionLoaderTest {
             ExtensionLoader.getExtensionLoader(WrappedExt.class).hasExtension(null);
             fail();
         } catch (IllegalArgumentException expected) {
-            assertThat(expected.getMessage(), containsString("Extension name == null"));
+            assertThat(expected.getMessage(), containsString("Extension name is null"));
         }
     }
 

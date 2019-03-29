@@ -38,7 +38,7 @@ public class ListenerExporterWrapper<T> implements Exporter<T> {
 
     public ListenerExporterWrapper(Exporter<T> exporter, List<ExporterListener> listeners) {
         if (exporter == null) {
-            throw new IllegalArgumentException("exporter == null");
+            throw new IllegalArgumentException("exporter is null");
         }
         this.exporter = exporter;
         this.listeners = listeners;

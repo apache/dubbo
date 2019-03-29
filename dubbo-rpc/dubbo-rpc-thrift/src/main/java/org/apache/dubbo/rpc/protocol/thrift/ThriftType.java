@@ -41,7 +41,7 @@ public enum ThriftType {
         if (key != null) {
             return types.get(key);
         }
-        throw new NullPointerException("key == null");
+        throw new NullPointerException("key is null");
     }
 
     private static void put(Class<?> key, ThriftType value) {

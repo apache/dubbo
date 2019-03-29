@@ -36,7 +36,7 @@ public abstract class AbstractConfigurator implements Configurator {
 
     public AbstractConfigurator(URL url) {
         if (url == null) {
-            throw new IllegalArgumentException("configurator url == null");
+            throw new IllegalArgumentException("configurator url is null");
         }
         this.configuratorUrl = url;
     }

@@ -42,10 +42,10 @@ public class Transporters {
 
     public static Server bind(URL url, ChannelHandler... handlers) throws RemotingException {
         if (url == null) {
-            throw new IllegalArgumentException("url == null");
+            throw new IllegalArgumentException("url is null");
         }
         if (handlers == null || handlers.length == 0) {
-            throw new IllegalArgumentException("handlers == null");
+            throw new IllegalArgumentException("handlers is null");
         }
         ChannelHandler handler;
         if (handlers.length == 1) {
@@ -62,7 +62,7 @@ public class Transporters {
 
     public static Client connect(URL url, ChannelHandler... handlers) throws RemotingException {
         if (url == null) {
-            throw new IllegalArgumentException("url == null");
+            throw new IllegalArgumentException("url is null");
         }
         ChannelHandler handler;
         if (handlers == null || handlers.length == 0) {

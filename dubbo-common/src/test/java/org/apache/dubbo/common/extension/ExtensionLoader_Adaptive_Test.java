@@ -136,7 +136,7 @@ public class ExtensionLoader_Adaptive_Test {
             ext.echo(null, "haha");
             fail();
         } catch (IllegalArgumentException e) {
-            assertEquals("url == null", e.getMessage());
+            assertEquals("url is null", e.getMessage());
         }
     }
 
@@ -239,14 +239,14 @@ public class ExtensionLoader_Adaptive_Test {
             ext.echo(null, "haha");
             fail();
         } catch (IllegalArgumentException e) {
-            assertEquals("org.apache.dubbo.common.extension.ext2.UrlHolder argument == null", e.getMessage());
+            assertEquals("org.apache.dubbo.common.extension.ext2.UrlHolder argument is null", e.getMessage());
         }
 
         try {
             ext.echo(new UrlHolder(), "haha");
             fail();
         } catch (IllegalArgumentException e) {
-            assertEquals("org.apache.dubbo.common.extension.ext2.UrlHolder argument getUrl() == null", e.getMessage());
+            assertEquals("org.apache.dubbo.common.extension.ext2.UrlHolder argument getUrl() is null", e.getMessage());
         }
     }
 

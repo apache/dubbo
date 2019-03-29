@@ -109,7 +109,7 @@ public class ExtensionLoader<T> {
     @SuppressWarnings("unchecked")
     public static <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
         if (type == null) {
-            throw new IllegalArgumentException("Extension type == null");
+            throw new IllegalArgumentException("Extension type is null");
         }
         if (!type.isInterface()) {
             throw new IllegalArgumentException("Extension type (" + type + ") is not an interface!");
@@ -296,7 +296,7 @@ public class ExtensionLoader<T> {
     @SuppressWarnings("unchecked")
     public T getLoadedExtension(String name) {
         if (StringUtils.isEmpty(name)) {
-            throw new IllegalArgumentException("Extension name == null");
+            throw new IllegalArgumentException("Extension name is null");
         }
         Holder<Object> holder = getOrCreateHolder(name);
         return (T) holder.get();
@@ -333,7 +333,7 @@ public class ExtensionLoader<T> {
     @SuppressWarnings("unchecked")
     public T getExtension(String name) {
         if (StringUtils.isEmpty(name)) {
-            throw new IllegalArgumentException("Extension name == null");
+            throw new IllegalArgumentException("Extension name is null");
         }
         if ("true".equals(name)) {
             return getDefaultExtension();
@@ -365,7 +365,7 @@ public class ExtensionLoader<T> {
 
     public boolean hasExtension(String name) {
         if (StringUtils.isEmpty(name)) {
-            throw new IllegalArgumentException("Extension name == null");
+            throw new IllegalArgumentException("Extension name is null");
         }
         Class<?> c = this.getExtensionClass(name);
         return c != null;
@@ -602,10 +602,10 @@ public class ExtensionLoader<T> {
 
     private Class<?> getExtensionClass(String name) {
         if (type == null) {
-            throw new IllegalArgumentException("Extension type == null");
+            throw new IllegalArgumentException("Extension type is null");
         }
         if (name == null) {
-            throw new IllegalArgumentException("Extension name == null");
+            throw new IllegalArgumentException("Extension name is null");
         }
         return getExtensionClasses().get(name);
     }

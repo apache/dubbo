@@ -195,7 +195,7 @@ public abstract class AbstractConfig implements Serializable {
                         }
                         parameters.put(key, str);
                     } else if (parameter != null && parameter.required()) {
-                        throw new IllegalStateException(config.getClass().getSimpleName() + "." + key + " == null");
+                        throw new IllegalStateException(config.getClass().getSimpleName() + "." + key + " is null");
                     }
                 } else if ("getParameters".equals(name)
                         && Modifier.isPublic(method.getModifiers())

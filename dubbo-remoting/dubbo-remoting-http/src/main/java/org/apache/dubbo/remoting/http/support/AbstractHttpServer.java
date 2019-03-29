@@ -35,10 +35,10 @@ public abstract class AbstractHttpServer implements HttpServer {
 
     public AbstractHttpServer(URL url, HttpHandler handler) {
         if (url == null) {
-            throw new IllegalArgumentException("url == null");
+            throw new IllegalArgumentException("url is null");
         }
         if (handler == null) {
-            throw new IllegalArgumentException("handler == null");
+            throw new IllegalArgumentException("handler is null");
         }
         this.url = url;
         this.handler = handler;

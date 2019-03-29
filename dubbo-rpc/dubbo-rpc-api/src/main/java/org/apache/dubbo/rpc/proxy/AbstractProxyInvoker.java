@@ -46,10 +46,10 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
 
     public AbstractProxyInvoker(T proxy, Class<T> type, URL url) {
         if (proxy == null) {
-            throw new IllegalArgumentException("proxy == null");
+            throw new IllegalArgumentException("proxy is null");
         }
         if (type == null) {
-            throw new IllegalArgumentException("interface == null");
+            throw new IllegalArgumentException("interface is null");
         }
         if (!type.isInstance(proxy)) {
             throw new IllegalArgumentException(proxy.getClass().getName() + " not implement interface " + type);

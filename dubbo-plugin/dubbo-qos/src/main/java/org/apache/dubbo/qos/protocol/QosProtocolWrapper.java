@@ -44,7 +44,7 @@ public class QosProtocolWrapper implements Protocol {
 
     public QosProtocolWrapper(Protocol protocol) {
         if (protocol == null) {
-            throw new IllegalArgumentException("protocol == null");
+            throw new IllegalArgumentException("protocol is null");
         }
         this.protocol = protocol;
     }

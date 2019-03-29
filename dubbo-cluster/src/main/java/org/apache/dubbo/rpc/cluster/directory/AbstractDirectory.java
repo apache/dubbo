@@ -59,7 +59,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     public AbstractDirectory(URL url, URL consumerUrl, RouterChain<T> routerChain) {
         if (url == null) {
-            throw new IllegalArgumentException("url == null");
+            throw new IllegalArgumentException("url is null");
         }
 
         if (url.getProtocol().equals(Constants.REGISTRY_PROTOCOL)) {

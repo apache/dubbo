@@ -110,7 +110,7 @@ public class AbstractRegistryTest {
     public void testRegisterIfURLNULL() throws Exception {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             abstractRegistry.register(null);
-            Assertions.fail("register url == null");
+            Assertions.fail("register url is null");
         });
     }
 
@@ -145,7 +145,7 @@ public class AbstractRegistryTest {
     public void testUnregisterIfUrlNull() throws Exception {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             abstractRegistry.unregister(null);
-            Assertions.fail("unregister url == null");
+            Assertions.fail("unregister url is null");
         });
     }
 
@@ -174,7 +174,7 @@ public class AbstractRegistryTest {
             NotifyListener listener = urls -> notified.set(Boolean.TRUE);
             URL url = new URL("dubbo", "192.168.0.1", 2200);
             abstractRegistry.subscribe(null, listener);
-            Assertions.fail("subscribe url == null");
+            Assertions.fail("subscribe url is null");
         });
     }
 
@@ -185,7 +185,7 @@ public class AbstractRegistryTest {
             NotifyListener listener = urls -> notified.set(Boolean.TRUE);
             URL url = new URL("dubbo", "192.168.0.1", 2200);
             abstractRegistry.subscribe(url, null);
-            Assertions.fail("listener url == null");
+            Assertions.fail("listener url is null");
         });
     }
 
@@ -195,7 +195,7 @@ public class AbstractRegistryTest {
             final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
             NotifyListener listener = urls -> notified.set(Boolean.TRUE);
             abstractRegistry.unsubscribe(null, listener);
-            Assertions.fail("unsubscribe url == null");
+            Assertions.fail("unsubscribe url is null");
         });
     }
 
@@ -205,7 +205,7 @@ public class AbstractRegistryTest {
             final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
             URL url = new URL("dubbo", "192.168.0.1", 2200);
             abstractRegistry.unsubscribe(url, null);
-            Assertions.fail("unsubscribe listener == null");
+            Assertions.fail("unsubscribe listener is null");
         });
     }
 
@@ -376,7 +376,7 @@ public class AbstractRegistryTest {
             urls.add(url2);
             urls.add(url3);
             abstractRegistry.notify(null, listner1, urls);
-            Assertions.fail("notify url == null");
+            Assertions.fail("notify url is null");
         });
     }
 
@@ -398,7 +398,7 @@ public class AbstractRegistryTest {
             urls.add(url2);
             urls.add(url3);
             abstractRegistry.notify(url1, null, urls);
-            Assertions.fail("notify listener == null");
+            Assertions.fail("notify listener is null");
         });
     }
 

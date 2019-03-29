@@ -61,7 +61,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
     public AbstractClusterInvoker(Directory<T> directory, URL url) {
         if (directory == null) {
-            throw new IllegalArgumentException("service directory == null");
+            throw new IllegalArgumentException("service directory is null");
         }
 
         this.directory = directory;

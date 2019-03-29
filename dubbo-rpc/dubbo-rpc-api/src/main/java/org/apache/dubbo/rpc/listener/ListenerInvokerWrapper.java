@@ -41,7 +41,7 @@ public class ListenerInvokerWrapper<T> implements Invoker<T> {
 
     public ListenerInvokerWrapper(Invoker<T> invoker, List<InvokerListener> listeners) {
         if (invoker == null) {
-            throw new IllegalArgumentException("invoker == null");
+            throw new IllegalArgumentException("invoker is null");
         }
         this.invoker = invoker;
         this.listeners = listeners;

@@ -45,7 +45,7 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
     public ZookeeperMetadataReport(URL url, ZookeeperTransporter zookeeperTransporter) {
         super(url);
         if (url.isAnyHost()) {
-            throw new IllegalStateException("registry address == null");
+            throw new IllegalStateException("registry address is null");
         }
         String group = url.getParameter(Constants.GROUP_KEY, DEFAULT_ROOT);
         if (!group.startsWith(Constants.PATH_SEPARATOR)) {

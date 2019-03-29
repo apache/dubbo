@@ -113,7 +113,7 @@ public abstract class AbstractRegistry implements Registry {
 
     protected void setUrl(URL url) {
         if (url == null) {
-            throw new IllegalArgumentException("registry url == null");
+            throw new IllegalArgumentException("registry url is null");
         }
         this.registryUrl = url;
     }
@@ -255,7 +255,7 @@ public abstract class AbstractRegistry implements Registry {
     @Override
     public void register(URL url) {
         if (url == null) {
-            throw new IllegalArgumentException("register url == null");
+            throw new IllegalArgumentException("register url is null");
         }
         if (logger.isInfoEnabled()) {
             logger.info("Register: " + url);
@@ -266,7 +266,7 @@ public abstract class AbstractRegistry implements Registry {
     @Override
     public void unregister(URL url) {
         if (url == null) {
-            throw new IllegalArgumentException("unregister url == null");
+            throw new IllegalArgumentException("unregister url is null");
         }
         if (logger.isInfoEnabled()) {
             logger.info("Unregister: " + url);
@@ -277,10 +277,10 @@ public abstract class AbstractRegistry implements Registry {
     @Override
     public void subscribe(URL url, NotifyListener listener) {
         if (url == null) {
-            throw new IllegalArgumentException("subscribe url == null");
+            throw new IllegalArgumentException("subscribe url is null");
         }
         if (listener == null) {
-            throw new IllegalArgumentException("subscribe listener == null");
+            throw new IllegalArgumentException("subscribe listener is null");
         }
         if (logger.isInfoEnabled()) {
             logger.info("Subscribe: " + url);
@@ -292,10 +292,10 @@ public abstract class AbstractRegistry implements Registry {
     @Override
     public void unsubscribe(URL url, NotifyListener listener) {
         if (url == null) {
-            throw new IllegalArgumentException("unsubscribe url == null");
+            throw new IllegalArgumentException("unsubscribe url is null");
         }
         if (listener == null) {
-            throw new IllegalArgumentException("unsubscribe listener == null");
+            throw new IllegalArgumentException("unsubscribe listener is null");
         }
         if (logger.isInfoEnabled()) {
             logger.info("Unsubscribe: " + url);
@@ -366,10 +366,10 @@ public abstract class AbstractRegistry implements Registry {
      */
     protected void notify(URL url, NotifyListener listener, List<URL> urls) {
         if (url == null) {
-            throw new IllegalArgumentException("notify url == null");
+            throw new IllegalArgumentException("notify url is null");
         }
         if (listener == null) {
-            throw new IllegalArgumentException("notify listener == null");
+            throw new IllegalArgumentException("notify listener is null");
         }
         if ((CollectionUtils.isEmpty(urls))
                 && !Constants.ANY_VALUE.equals(url.getServiceInterface())) {

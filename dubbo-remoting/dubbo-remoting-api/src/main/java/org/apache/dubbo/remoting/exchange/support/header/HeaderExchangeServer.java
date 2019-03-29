@@ -58,7 +58,7 @@ public class HeaderExchangeServer implements ExchangeServer {
     private CloseTimerTask closeTimerTask;
 
     public HeaderExchangeServer(Server server) {
-        Assert.notNull(server, "server == null");
+        Assert.notNull(server, "server is null");
         this.server = server;
         startIdleCheckTask(getUrl());
     }

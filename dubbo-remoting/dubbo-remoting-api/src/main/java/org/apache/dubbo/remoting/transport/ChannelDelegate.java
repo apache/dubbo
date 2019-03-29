@@ -43,7 +43,7 @@ public class ChannelDelegate implements Channel {
 
     public void setChannel(Channel channel) {
         if (channel == null) {
-            throw new IllegalArgumentException("channel == null");
+            throw new IllegalArgumentException("channel is null");
         }
         this.channel = channel;
     }

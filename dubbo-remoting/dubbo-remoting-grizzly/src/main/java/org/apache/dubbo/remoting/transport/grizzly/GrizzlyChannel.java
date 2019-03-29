@@ -56,7 +56,7 @@ final class GrizzlyChannel extends AbstractChannel {
     private GrizzlyChannel(Connection<?> connection, URL url, ChannelHandler handler) {
         super(url, handler);
         if (connection == null) {
-            throw new IllegalArgumentException("grizzly connection == null");
+            throw new IllegalArgumentException("grizzly connection is null");
         }
         this.connection = connection;
     }

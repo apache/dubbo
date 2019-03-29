@@ -346,10 +346,10 @@ public abstract class FailbackRegistry extends AbstractRegistry {
     @Override
     protected void notify(URL url, NotifyListener listener, List<URL> urls) {
         if (url == null) {
-            throw new IllegalArgumentException("notify url == null");
+            throw new IllegalArgumentException("notify url is null");
         }
         if (listener == null) {
-            throw new IllegalArgumentException("notify listener == null");
+            throw new IllegalArgumentException("notify listener is null");
         }
         try {
             doNotify(url, listener, urls);

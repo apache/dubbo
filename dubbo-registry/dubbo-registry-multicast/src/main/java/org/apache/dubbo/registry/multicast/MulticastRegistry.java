@@ -78,7 +78,7 @@ public class MulticastRegistry extends FailbackRegistry {
     public MulticastRegistry(URL url) {
         super(url);
         if (url.isAnyHost()) {
-            throw new IllegalStateException("registry address == null");
+            throw new IllegalStateException("registry address is null");
         }
         try {
             multicastAddress = InetAddress.getByName(url.getHost());

@@ -39,7 +39,7 @@ public class ProtocolFilterWrapper implements Protocol {
 
     public ProtocolFilterWrapper(Protocol protocol) {
         if (protocol == null) {
-            throw new IllegalArgumentException("protocol == null");
+            throw new IllegalArgumentException("protocol is null");
         }
         this.protocol = protocol;
     }

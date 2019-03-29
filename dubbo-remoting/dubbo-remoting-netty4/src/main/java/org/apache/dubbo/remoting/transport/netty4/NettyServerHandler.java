@@ -47,10 +47,10 @@ public class NettyServerHandler extends ChannelDuplexHandler {
 
     public NettyServerHandler(URL url, ChannelHandler handler) {
         if (url == null) {
-            throw new IllegalArgumentException("url == null");
+            throw new IllegalArgumentException("url is null");
         }
         if (handler == null) {
-            throw new IllegalArgumentException("handler == null");
+            throw new IllegalArgumentException("handler is null");
         }
         this.url = url;
         this.handler = handler;

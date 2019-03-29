@@ -25,7 +25,7 @@ public class InputStreamWrapper extends InputStream {
 
     public InputStreamWrapper(InputStream is) {
         if (is == null) {
-            throw new NullPointerException("is == null");
+            throw new NullPointerException("is is null");
         }
         this.is = is;
     }

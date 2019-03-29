@@ -182,7 +182,7 @@ class URL implements Serializable {
      */
     public static URL valueOf(String url) {
         if (url == null || (url = url.trim()).length() == 0) {
-            throw new IllegalArgumentException("url == null");
+            throw new IllegalArgumentException("url is null");
         }
         String protocol = null;
         String username = null;

@@ -50,7 +50,7 @@ public abstract class AbstractGroup implements Group {
 
     public AbstractGroup(URL url) {
         if (url == null) {
-            throw new IllegalArgumentException("url == null");
+            throw new IllegalArgumentException("url is null");
         }
         this.url = url;
     }

@@ -37,7 +37,7 @@ public class ClientsTest {
             ExtensionLoader.getExtensionLoader(Transporter.class).getExtension("");
             fail();
         } catch (IllegalArgumentException expected) {
-            assertThat(expected.getMessage(), containsString("Extension name == null"));
+            assertThat(expected.getMessage(), containsString("Extension name is null"));
         }
     }
 

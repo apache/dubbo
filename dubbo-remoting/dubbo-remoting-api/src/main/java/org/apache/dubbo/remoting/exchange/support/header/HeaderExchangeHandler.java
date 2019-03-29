@@ -52,7 +52,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
 
     public HeaderExchangeHandler(ExchangeHandler handler) {
         if (handler == null) {
-            throw new IllegalArgumentException("handler == null");
+            throw new IllegalArgumentException("handler is null");
         }
         this.handler = handler;
     }

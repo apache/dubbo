@@ -336,7 +336,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                     if ("method".equals(node.getNodeName()) || "method".equals(node.getLocalName())) {
                         String methodName = element.getAttribute("name");
                         if (StringUtils.isEmpty(methodName)) {
-                            throw new IllegalStateException("<dubbo:method> name attribute == null");
+                            throw new IllegalStateException("<dubbo:method> name attribute is null");
                         }
                         if (methods == null) {
                             methods = new ManagedList();

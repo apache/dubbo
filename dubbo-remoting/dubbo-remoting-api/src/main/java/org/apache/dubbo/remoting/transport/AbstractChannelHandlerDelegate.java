@@ -26,7 +26,7 @@ public abstract class AbstractChannelHandlerDelegate implements ChannelHandlerDe
     protected ChannelHandler handler;
 
     protected AbstractChannelHandlerDelegate(ChannelHandler handler) {
-        Assert.notNull(handler, "handler == null");
+        Assert.notNull(handler, "handler is null");
         this.handler = handler;
     }
 

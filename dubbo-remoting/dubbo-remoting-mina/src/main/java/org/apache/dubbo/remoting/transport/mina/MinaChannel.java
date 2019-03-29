@@ -43,7 +43,7 @@ final class MinaChannel extends AbstractChannel {
     private MinaChannel(IoSession session, URL url, ChannelHandler handler) {
         super(url, handler);
         if (session == null) {
-            throw new IllegalArgumentException("mina session == null");
+            throw new IllegalArgumentException("mina session is null");
         }
         this.session = session;
     }

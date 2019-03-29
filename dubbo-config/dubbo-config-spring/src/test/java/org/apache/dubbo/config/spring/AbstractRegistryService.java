@@ -95,10 +95,10 @@ public abstract class AbstractRegistryService implements RegistryService {
 
     public void register(String service, URL url) {
         if (service == null) {
-            throw new IllegalArgumentException("service == null");
+            throw new IllegalArgumentException("service is null");
         }
         if (url == null) {
-            throw new IllegalArgumentException("url == null");
+            throw new IllegalArgumentException("url is null");
         }
         List<URL> urls = registered.get(service);
         if (urls == null) {
@@ -112,10 +112,10 @@ public abstract class AbstractRegistryService implements RegistryService {
 
     public void unregister(String service, URL url) {
         if (service == null) {
-            throw new IllegalArgumentException("service == null");
+            throw new IllegalArgumentException("service is null");
         }
         if (url == null) {
-            throw new IllegalArgumentException("url == null");
+            throw new IllegalArgumentException("url is null");
         }
         List<URL> urls = registered.get(service);
         if (urls != null) {
@@ -134,13 +134,13 @@ public abstract class AbstractRegistryService implements RegistryService {
 
     public void subscribe(String service, URL url, NotifyListener listener) {
         if (service == null) {
-            throw new IllegalArgumentException("service == null");
+            throw new IllegalArgumentException("service is null");
         }
         if (url == null) {
-            throw new IllegalArgumentException("parameters == null");
+            throw new IllegalArgumentException("parameters is null");
         }
         if (listener == null) {
-            throw new IllegalArgumentException("listener == null");
+            throw new IllegalArgumentException("listener is null");
         }
         subscribed.put(service, url.getParameters());
         addListener(service, listener);
@@ -148,13 +148,13 @@ public abstract class AbstractRegistryService implements RegistryService {
 
     public void unsubscribe(String service, URL url, NotifyListener listener) {
         if (service == null) {
-            throw new IllegalArgumentException("service == null");
+            throw new IllegalArgumentException("service is null");
         }
         if (url == null) {
-            throw new IllegalArgumentException("parameters == null");
+            throw new IllegalArgumentException("parameters is null");
         }
         if (listener == null) {
-            throw new IllegalArgumentException("listener == null");
+            throw new IllegalArgumentException("listener is null");
         }
         subscribed.remove(service);
         removeListener(service, listener);

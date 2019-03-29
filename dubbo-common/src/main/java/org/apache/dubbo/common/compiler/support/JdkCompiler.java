@@ -134,7 +134,7 @@ public class JdkCompiler extends AbstractCompiler {
         @Override
         public CharSequence getCharContent(final boolean ignoreEncodingErrors) throws UnsupportedOperationException {
             if (source == null) {
-                throw new UnsupportedOperationException("source == null");
+                throw new UnsupportedOperationException("source is null");
             }
             return source;
         }

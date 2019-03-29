@@ -43,7 +43,7 @@ public class ClientDelegate implements Client {
 
     public void setClient(Client client) {
         if (client == null) {
-            throw new IllegalArgumentException("client == null");
+            throw new IllegalArgumentException("client is null");
         }
         this.client = client;
     }

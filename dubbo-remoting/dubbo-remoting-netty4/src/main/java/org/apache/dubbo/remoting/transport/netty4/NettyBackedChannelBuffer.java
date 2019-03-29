@@ -33,7 +33,7 @@ public class NettyBackedChannelBuffer implements ChannelBuffer {
     private ByteBuf buffer;
 
     public NettyBackedChannelBuffer(ByteBuf buffer) {
-        Assert.notNull(buffer, "buffer == null");
+        Assert.notNull(buffer, "buffer is null");
         this.buffer = buffer;
     }
 

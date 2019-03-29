@@ -54,7 +54,7 @@ public abstract class AbstractExchangeGroup implements ExchangeGroup {
 
     public AbstractExchangeGroup(URL url) {
         if (url == null) {
-            throw new IllegalArgumentException("url == null");
+            throw new IllegalArgumentException("url is null");
         }
         this.url = url;
     }

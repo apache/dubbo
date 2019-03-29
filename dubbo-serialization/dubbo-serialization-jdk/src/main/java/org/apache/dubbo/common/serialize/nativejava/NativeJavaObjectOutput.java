@@ -36,7 +36,7 @@ public class NativeJavaObjectOutput implements ObjectOutput {
     }
 
     protected NativeJavaObjectOutput(ObjectOutputStream out) {
-        Assert.notNull(out, "output == null");
+        Assert.notNull(out, "output is null");
         this.outputStream = out;
     }
 

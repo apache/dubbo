@@ -48,7 +48,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
 
     HeaderExchangeChannel(Channel channel) {
         if (channel == null) {
-            throw new IllegalArgumentException("channel == null");
+            throw new IllegalArgumentException("channel is null");
         }
         this.channel = channel;
     }

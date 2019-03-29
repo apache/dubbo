@@ -86,7 +86,7 @@ public class RedisRegistry extends FailbackRegistry {
     public RedisRegistry(URL url) {
         super(url);
         if (url.isAnyHost()) {
-            throw new IllegalStateException("registry address == null");
+            throw new IllegalStateException("registry address is null");
         }
         GenericObjectPoolConfig config = new GenericObjectPoolConfig();
         config.setTestOnBorrow(url.getParameter("test.on.borrow", true));

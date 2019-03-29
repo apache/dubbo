@@ -376,7 +376,7 @@ public class ClassUtils {
 
     public static Method searchMethod(Class<?> currentClass, String name, Class<?>[] parameterTypes) throws NoSuchMethodException {
         if (currentClass == null) {
-            throw new NoSuchMethodException("class == null");
+            throw new NoSuchMethodException("class is null");
         }
         try {
             return currentClass.getMethod(name, parameterTypes);
