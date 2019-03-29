@@ -30,13 +30,16 @@ import java.util.List;
  * </h1>
  * <ul>
  * <li>A interface service(consumer or provider) belong to interface services level(consumer or provider)</li>
+ * <li>A interface services(consumer or provider) belong to namespace level(module info)</li>
  * <li>A interface services(consumer or provider) belong to application level(consumer or provider)</li>
- * <li>A application belong to namespace level(module info)</li>
  * </ul>
  * <p>
- * We decide a interface's config item。 when interface has config item we use itself otherwise use services level otherwise use application level otherwise use namespace level
+ * We decide a interface's config item。 when interface has config item we use itself otherwise use services level otherwise use namespace level otherwise use application level
  * <p>
  * Mainly used for Monitor and Registry centers,Other configuration items are unique to ModuleConfig
+ * <p>
+ * ex:
+ *  if a interface service didn't set registry config，first we try use services level(consumer or provider) to get，then we try use module to get ，last we use application to get
  *
  * @export
  * @see ProviderConfig
