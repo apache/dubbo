@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.cluster.support;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -119,7 +120,7 @@ public class MergeableClusterInvokerTest {
                     return MenuService.class;
                 }
                 if ("invoke".equals(method.getName())) {
-                    return new RpcResult(firstMenu);
+                    return AsyncRpcResult.newDefaultAsyncResult(firstMenu, invocation);
                 }
                 return null;
             }
@@ -135,7 +136,7 @@ public class MergeableClusterInvokerTest {
                     return MenuService.class;
                 }
                 if ("invoke".equals(method.getName())) {
-                    return new RpcResult(secondMenu);
+                    return AsyncRpcResult.newDefaultAsyncResult(secondMenu, invocation);
                 }
                 return null;
             }
