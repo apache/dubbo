@@ -23,6 +23,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.ListenableFilter;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcStatus;
@@ -41,9 +42,13 @@ import org.apache.dubbo.rpc.RpcStatus;
  * @see Filter
  */
 @Activate(group = Constants.CONSUMER, value = Constants.ACTIVES_KEY)
-public class ActiveLimitFilter implements Filter {
+public class ActiveLimitFilter extends ListenableFilter {
 
     private static final String ACTIVELIMIT_FILTER_START_TIME = "activelimit_filter_start_time";
+
+    public ActiveLimitFilter() {
+        super.listener = new ActiveLimitListener();
+    }
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -76,36 +81,37 @@ public class ActiveLimitFilter implements Filter {
         return invoker.invoke(invocation);
     }
 
-    @Override
-    public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-        String methodName = invocation.getMethodName();
-        URL url = invoker.getUrl();
-        int max = invoker.getUrl().getMethodParameter(methodName, Constants.ACTIVES_KEY, 0);
+    static class ActiveLimitListener implements Listener {
+        @Override
+        public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
+            String methodName = invocation.getMethodName();
+            URL url = invoker.getUrl();
+            int max = invoker.getUrl().getMethodParameter(methodName, Constants.ACTIVES_KEY, 0);
 
-        RpcStatus.endCount(url, methodName, getElapsed(invocation), true);
-        notifyFinish(RpcStatus.getStatus(url, methodName), max);
-    }
+            RpcStatus.endCount(url, methodName, getElapsed(invocation), true);
+            notifyFinish(RpcStatus.getStatus(url, methodName), max);
+        }
 
-    @Override
-    public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-        String methodName = invocation.getMethodName();
-        URL url = invoker.getUrl();
-        int max = invoker.getUrl().getMethodParameter(methodName, Constants.ACTIVES_KEY, 0);
+        @Override
+        public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
+            String methodName = invocation.getMethodName();
+            URL url = invoker.getUrl();
+            int max = invoker.getUrl().getMethodParameter(methodName, Constants.ACTIVES_KEY, 0);
 
-        RpcStatus.endCount(url, methodName, getElapsed(invocation), false);
-        notifyFinish(RpcStatus.getStatus(url, methodName), max);
-    }
+            RpcStatus.endCount(url, methodName, getElapsed(invocation), false);
+            notifyFinish(RpcStatus.getStatus(url, methodName), max);
+        }
 
+        private long getElapsed(Invocation invocation) {
+            String beginTime = invocation.getAttachment(ACTIVELIMIT_FILTER_START_TIME);
+            return StringUtils.isNotEmpty(beginTime) ? System.currentTimeMillis() - Long.parseLong(beginTime) : 0;
+        }
 
-    private long getElapsed(Invocation invocation) {
-        String beginTime = invocation.getAttachment(ACTIVELIMIT_FILTER_START_TIME);
-        return StringUtils.isNotEmpty(beginTime) ? System.currentTimeMillis() - Long.parseLong(beginTime) : 0;
-    }
-
-    private void notifyFinish(RpcStatus rpcStatus, int max) {
-        if (max > 0) {
-            synchronized (rpcStatus) {
-                rpcStatus.notifyAll();
+        private void notifyFinish(RpcStatus rpcStatus, int max) {
+            if (max > 0) {
+                synchronized (rpcStatus) {
+                    rpcStatus.notifyAll();
+                }
             }
         }
     }

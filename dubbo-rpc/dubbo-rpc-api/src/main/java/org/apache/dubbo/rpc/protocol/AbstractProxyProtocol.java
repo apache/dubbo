@@ -92,8 +92,8 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
     }
 
     @Override
-    public <T> Invoker<T> refer(final Class<T> type, final URL url) throws RpcException {
-        final Invoker<T> target = proxyFactory.getInvoker(doRefer(type, url), type, url);
+    public <T> Invoker<T> doRefer(final Class<T> type, final URL url) throws RpcException {
+        final Invoker<T> target = proxyFactory.getInvoker(getFrameworkProxy(type, url), type, url);
         Invoker<T> invoker = new AbstractInvoker<T>(type, url) {
             @Override
             protected Result doInvoke(Invocation invocation) throws Throwable {
@@ -144,6 +144,6 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
 
     protected abstract <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException;
 
-    protected abstract <T> T doRefer(Class<T> type, URL url) throws RpcException;
+    protected abstract <T> T getFrameworkProxy(Class<T> type, URL url) throws RpcException;
 
 }

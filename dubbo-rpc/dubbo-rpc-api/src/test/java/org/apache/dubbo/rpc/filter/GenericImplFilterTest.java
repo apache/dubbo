@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -35,6 +36,7 @@ import org.mockito.Mockito;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
@@ -58,11 +60,14 @@ public class GenericImplFilterTest {
         person.put("name", "dubbo");
         person.put("age", 10);
 
-        when(invoker.invoke(any(Invocation.class))).thenReturn(new RpcResult(person));
+        Result mockRpcResult = new RpcResult(person);
+        when(invoker.invoke(any(Invocation.class))).thenReturn(new AsyncRpcResult(CompletableFuture.completedFuture(mockRpcResult), invocation));
         when(invoker.getUrl()).thenReturn(url);
         when(invoker.getInterface()).thenReturn(DemoService.class);
 
-        Result result = genericImplFilter.invoke(invoker, invocation);
+        Result asyncResult = genericImplFilter.invoke(invoker, invocation);
+        Result result = asyncResult.get();
+        genericImplFilter.listener().onResponse(result, invoker, invocation);
 
         Assertions.assertEquals(Person.class, result.getValue().getClass());
         Assertions.assertEquals(10, ((Person) result.getValue()).getAge());
@@ -78,12 +83,14 @@ public class GenericImplFilterTest {
                 "accesslog=true&group=dubbo&version=1.1&generic=true");
         Invoker invoker = Mockito.mock(Invoker.class);
 
-        when(invoker.invoke(any(Invocation.class))).thenReturn(
-                new RpcResult(new GenericException(new RuntimeException("failed"))));
+        Result mockRpcResult = new RpcResult(new GenericException(new RuntimeException("failed")));
+        when(invoker.invoke(any(Invocation.class))).thenReturn(new AsyncRpcResult(CompletableFuture.completedFuture(mockRpcResult), invocation));
         when(invoker.getUrl()).thenReturn(url);
         when(invoker.getInterface()).thenReturn(DemoService.class);
 
-        Result result = genericImplFilter.invoke(invoker, invocation);
+        Result asyncResult = genericImplFilter.invoke(invoker, invocation);
+        Result result = asyncResult.get();
+        genericImplFilter.listener().onResponse(result, invoker, invocation);
         Assertions.assertEquals(RuntimeException.class, result.getException().getClass());
 
     }

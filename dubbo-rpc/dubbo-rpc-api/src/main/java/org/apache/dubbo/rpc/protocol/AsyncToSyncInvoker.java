@@ -36,7 +36,7 @@ public class AsyncToSyncInvoker<T> implements Invoker<T> {
 
     private Invoker<T> invoker;
 
-    AsyncToSyncInvoker(Invoker<T> invoker) {
+    public AsyncToSyncInvoker(Invoker<T> invoker) {
         this.invoker = invoker;
     }
 
@@ -62,6 +62,8 @@ public class AsyncToSyncInvoker<T> implements Invoker<T> {
             } else if (t instanceof RemotingException) {
                 throw new RpcException(RpcException.NETWORK_EXCEPTION, "Failed to invoke remote method: " + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
             }
+        } catch (Throwable e) {
+            throw new RpcException(e.getMessage(), e);
         }
         return asyncResult;
     }
@@ -79,5 +81,9 @@ public class AsyncToSyncInvoker<T> implements Invoker<T> {
     @Override
     public void destroy() {
         invoker.destroy();
+    }
+
+    public Invoker<T> getInvoker() {
+        return invoker;
     }
 }

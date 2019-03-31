@@ -19,9 +19,9 @@ package org.apache.dubbo.rpc.filter;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.ListenableFilter;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
@@ -35,7 +35,11 @@ import org.apache.dubbo.rpc.RpcInvocation;
  * @see RpcContext
  */
 @Activate(group = Constants.CONSUMER, order = -10000)
-public class ConsumerContextFilter implements Filter {
+public class ConsumerContextFilter extends ListenableFilter {
+
+    public ConsumerContextFilter() {
+        super.listener = new ConsumerContextListener();
+    }
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -56,8 +60,15 @@ public class ConsumerContextFilter implements Filter {
         }
     }
 
-    @Override
-    public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-        RpcContext.getServerContext().setAttachments(result.getAttachments());
+    static class ConsumerContextListener implements Listener {
+        @Override
+        public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
+            RpcContext.getServerContext().setAttachments(result.getAttachments());
+        }
+
+        @Override
+        public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
+
+        }
     }
 }

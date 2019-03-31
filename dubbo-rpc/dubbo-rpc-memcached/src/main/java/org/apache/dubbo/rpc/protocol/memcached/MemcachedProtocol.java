@@ -56,7 +56,7 @@ public class MemcachedProtocol extends AbstractProtocol {
     }
 
     @Override
-    public <T> Invoker<T> refer(final Class<T> type, final URL url) throws RpcException {
+    public <T> Invoker<T> doRefer(final Class<T> type, final URL url) throws RpcException {
         try {
             String address = url.getAddress();
             String backup = url.getParameter(Constants.BACKUP_KEY);

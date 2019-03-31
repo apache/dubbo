@@ -86,8 +86,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 RpcContext.getContext().setFuture(null);
                 return AsyncRpcResult.newDefaultAsyncResult(invocation);
             } else {
-                CompletableFuture<Object> responseFuture = currentClient.request(inv, timeout);
-                CompletableFuture<Result> resultFuture = responseFuture.thenApply(obj -> (Result)obj);
+                CompletableFuture<Result> resultFuture = currentClient.request(inv, timeout).thenApply(obj -> (Result) obj);
                 RpcContext.getContext().setFuture(new FutureAdapter(resultFuture));
                 return new AsyncRpcResult(resultFuture, inv);
             }

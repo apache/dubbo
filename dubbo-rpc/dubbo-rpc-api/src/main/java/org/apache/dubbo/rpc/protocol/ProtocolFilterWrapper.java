@@ -23,6 +23,7 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.ListenableFilter;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
@@ -69,16 +70,27 @@ public class ProtocolFilterWrapper implements Protocol {
 
                     @Override
                     public Result invoke(Invocation invocation) throws RpcException {
-                        // For compatibility, otherwise, we should call 'invoker.invoke()' directly.
                         Result asyncResult;
                         try {
-                            asyncResult = filter.invoke(invoker, invocation);
+                            asyncResult = filter.invoke(next, invocation);
                         } catch (Exception e) {
-                            filter.onError(e, invoker, invocation);
+                            // onError callback
+                            if (filter instanceof ListenableFilter) {
+                                Filter.Listener listener = ((ListenableFilter) filter).listener();
+                                if (listener != null) {
+                                    listener.onError(e, invoker, invocation);
+                                }
+                            }
                             throw e;
                         }
                         return asyncResult.thenApplyWithContext(r -> {
-                            filter.onResponse(r, invoker, invocation);
+                            // onResponse callback
+                            if (filter instanceof ListenableFilter) {
+                                Filter.Listener listener = ((ListenableFilter) filter).listener();
+                                if (listener != null) {
+                                    listener.onResponse(r, invoker, invocation);
+                                }
+                            }
                             return r;
                         });
                     }

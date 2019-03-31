@@ -60,7 +60,7 @@ public class TimeoutFilterTest {
         when(invocation.getMethodName()).thenReturn("testInvokeWithTimeout");
 
         Result result = timeoutFilter.invoke(invoker, invocation);
-        Assertions.assertEquals("alibaba", result.getValue());
+        Assertions.assertEquals("Dubbo", result.getValue());
 
     }
 }

@@ -160,7 +160,7 @@ public class ThriftProtocol extends AbstractProtocol {
     } // ~ end of method destroy
 
     @Override
-    public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
+    protected <T> Invoker<T> doRefer(Class<T> type, URL url) throws RpcException {
 
         ThriftInvoker<T> invoker = new ThriftInvoker<T>(type, url, getClients(url), invokers);
 

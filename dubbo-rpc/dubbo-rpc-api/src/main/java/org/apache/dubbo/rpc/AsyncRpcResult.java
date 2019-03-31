@@ -183,6 +183,10 @@ public class AsyncRpcResult implements Result {
         return result;
     };
 
+    public static AsyncRpcResult newDefaultAsyncResult(RpcResult result, Invocation invocation) {
+        return new AsyncRpcResult(CompletableFuture.completedFuture(result), invocation);
+    }
+
     public static AsyncRpcResult newDefaultAsyncResult(Invocation invocation) {
         return newDefaultAsyncResult(null, null, invocation);
     }
