@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.bytecode;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.utils.ClassHelper;
 import org.apache.dubbo.common.utils.ReflectUtils;
 
@@ -38,12 +39,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 
 public abstract class Proxy {
-    public static final InvocationHandler RETURN_NULL_INVOKER = new InvocationHandler() {
-        @Override
-        public Object invoke(Object proxy, Method method, Object[] args) {
-            return null;
-        }
-    };
+    public static final InvocationHandler RETURN_NULL_INVOKER = (proxy, method, args) -> null;
     public static final InvocationHandler THROW_UNSUPPORTED_INVOKER = new InvocationHandler() {
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) {
@@ -77,7 +73,7 @@ public abstract class Proxy {
      * @return Proxy instance.
      */
     public static Proxy getProxy(ClassLoader cl, Class<?>... ics) {
-        if (ics.length > 65535) {
+        if (ics.length > Constants.MAX_PROXY_COUNT) {
             throw new IllegalArgumentException("interface limit exceeded");
         }
 
@@ -107,11 +103,7 @@ public abstract class Proxy {
         // get cache by class loader.
         Map<String, Object> cache;
         synchronized (ProxyCacheMap) {
-            cache = ProxyCacheMap.get(cl);
-            if (cache == null) {
-                cache = new HashMap<String, Object>();
-                ProxyCacheMap.put(cl, cache);
-            }
+            cache = ProxyCacheMap.computeIfAbsent(cl, k -> new HashMap<>());
         }
 
         Proxy proxy = null;
@@ -144,8 +136,8 @@ public abstract class Proxy {
         try {
             ccp = ClassGenerator.newInstance(cl);
 
-            Set<String> worked = new HashSet<String>();
-            List<Method> methods = new ArrayList<Method>();
+            Set<String> worked = new HashSet<>();
+            List<Method> methods = new ArrayList<>();
 
             for (int i = 0; i < ics.length; i++) {
                 if (!Modifier.isPublic(ics[i].getModifiers())) {
@@ -175,7 +167,7 @@ public abstract class Proxy {
                     for (int j = 0; j < pts.length; j++) {
                         code.append(" args[").append(j).append("] = ($w)$").append(j + 1).append(";");
                     }
-                    code.append(" Object ret = handler.invoke(this, methods[" + ix + "], args);");
+                    code.append(" Object ret = handler.invoke(this, methods[").append(ix).append("], args);");
                     if (!Void.TYPE.equals(rt)) {
                         code.append(" return ").append(asArgument(rt, "ret")).append(";");
                     }

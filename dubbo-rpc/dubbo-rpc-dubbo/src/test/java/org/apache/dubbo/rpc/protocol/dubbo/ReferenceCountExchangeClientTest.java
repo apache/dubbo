@@ -27,14 +27,19 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
-
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+
 
 public class ReferenceCountExchangeClientTest {
 
@@ -50,11 +55,11 @@ public class ReferenceCountExchangeClientTest {
     ExchangeClient helloClient;
     String errorMsg = "safe guard client , should not be called ,must have a bug";
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpBeforeClass() throws Exception {
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownAfterClass() {
         ProtocolUtils.closeAll();
     }
@@ -71,7 +76,7 @@ public class ReferenceCountExchangeClientTest {
         return protocol.export(proxy.getInvoker(instance, type, url));
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
     }
 
@@ -80,9 +85,9 @@ public class ReferenceCountExchangeClientTest {
      */
     @Test
     public void test_share_connect() {
-        init(0);
-        Assert.assertEquals(demoClient.getLocalAddress(), helloClient.getLocalAddress());
-        Assert.assertEquals(demoClient, helloClient);
+        init(0, 1);
+        Assertions.assertEquals(demoClient.getLocalAddress(), helloClient.getLocalAddress());
+        Assertions.assertEquals(demoClient, helloClient);
         destoy();
     }
 
@@ -91,9 +96,34 @@ public class ReferenceCountExchangeClientTest {
      */
     @Test
     public void test_not_share_connect() {
-        init(1);
-        Assert.assertNotSame(demoClient.getLocalAddress(), helloClient.getLocalAddress());
-        Assert.assertNotSame(demoClient, helloClient);
+        init(1, 1);
+        Assertions.assertNotSame(demoClient.getLocalAddress(), helloClient.getLocalAddress());
+        Assertions.assertNotSame(demoClient, helloClient);
+        destoy();
+    }
+
+    /**
+     * test using multiple shared connections
+     */
+    @Test
+    public void test_mult_share_connect() {
+        // here a three shared connection is established between a consumer process and a provider process.
+        final int shareConnectionNum = 3;
+
+        init(0, shareConnectionNum);
+
+        List<ReferenceCountExchangeClient> helloReferenceClientList = getReferenceClientList(helloServiceInvoker);
+        Assertions.assertEquals(shareConnectionNum, helloReferenceClientList.size());
+
+        List<ReferenceCountExchangeClient> demoReferenceClientList = getReferenceClientList(demoServiceInvoker);
+        Assertions.assertEquals(shareConnectionNum, demoReferenceClientList.size());
+
+        // because helloServiceInvoker and demoServiceInvoker use share connect， so client list must be equal
+        Assertions.assertTrue(Objects.equals(helloReferenceClientList, demoReferenceClientList));
+
+        Assertions.assertEquals(demoClient.getLocalAddress(), helloClient.getLocalAddress());
+        Assertions.assertEquals(demoClient, helloClient);
+
         destoy();
     }
 
@@ -102,13 +132,13 @@ public class ReferenceCountExchangeClientTest {
      */
     @Test
     public void test_multi_destory() {
-        init(0);
+        init(0, 1);
         DubboAppender.doStart();
         DubboAppender.clear();
         demoServiceInvoker.destroy();
         demoServiceInvoker.destroy();
-        Assert.assertEquals("hello", helloService.hello());
-        Assert.assertEquals("should not  warning message", 0, LogUtil.findMessage(errorMsg));
+        Assertions.assertEquals("hello", helloService.hello());
+        Assertions.assertEquals(0, LogUtil.findMessage(errorMsg), "should not  warning message");
         LogUtil.checkNoError();
         DubboAppender.doStop();
         destoy();
@@ -119,61 +149,78 @@ public class ReferenceCountExchangeClientTest {
      */
     @Test
     public void test_counter_error() {
-        init(0);
+        init(0, 1);
         DubboAppender.doStart();
         DubboAppender.clear();
 
+        // because the two interfaces are initialized, the ReferenceCountExchangeClient reference counter is 2
         ReferenceCountExchangeClient client = getReferenceClient(helloServiceInvoker);
+
         // close once, counter counts down from 2 to 1, no warning occurs
         client.close();
-        Assert.assertEquals("hello", helloService.hello());
-        Assert.assertEquals("should not warning message", 0, LogUtil.findMessage(errorMsg));
-        // counter is incorrect, invocation still succeeds
+        Assertions.assertEquals("hello", helloService.hello());
+        Assertions.assertEquals(0, LogUtil.findMessage(errorMsg), "should not warning message");
+
+        // generally a client can only be closed once, here it is closed twice, counter is incorrect
         client.close();
 
         // wait close done.
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
-            Assert.fail();
+            Assertions.fail();
         }
 
-        Assert.assertEquals("hello", helloService.hello());
-        Assert.assertEquals("should warning message", 1, LogUtil.findMessage(errorMsg));
+        // due to the effect of LazyConnectExchangeClient, the client will be "revived" whenever there is a call.
+        Assertions.assertEquals("hello", helloService.hello());
+        Assertions.assertEquals(1, LogUtil.findMessage(errorMsg), "should warning message");
 
         // output one error every 5000 invocations.
-        Assert.assertEquals("hello", helloService.hello());
-        Assert.assertEquals("should warning message", 1, LogUtil.findMessage(errorMsg));
+        Assertions.assertEquals("hello", helloService.hello());
+        Assertions.assertEquals(1, LogUtil.findMessage(errorMsg), "should warning message");
 
         DubboAppender.doStop();
 
         // status switch to available once invoke again
-        Assert.assertEquals("client status available", true, helloServiceInvoker.isAvailable());
+        Assertions.assertEquals(true, helloServiceInvoker.isAvailable(), "client status available");
 
+        /**
+         * This is the third time to close the same client. Under normal circumstances,
+         * a client value should be closed once (that is, the shutdown operation is irreversible).
+         * After closing, the value of the reference counter of the client has become -1.
+         *
+         * But this is a bit special, because after the client is closed twice, there are several calls to helloService,
+         * that is, the client inside the ReferenceCountExchangeClient is actually active, so the third shutdown here is still effective,
+         * let the resurrection After the client is really closed.
+         */
         client.close();
+
         // client has been replaced with lazy client. lazy client is fetched from referenceclientmap, and since it's
         // been invoked once, it's close status is false
-        Assert.assertEquals("client status close", false, client.isClosed());
-        Assert.assertEquals("client status close", false, helloServiceInvoker.isAvailable());
+        Assertions.assertEquals(false, client.isClosed(), "client status close");
+        Assertions.assertEquals(false, helloServiceInvoker.isAvailable(), "client status close");
         destoy();
     }
 
     @SuppressWarnings("unchecked")
-    private void init(int connections) {
+    private void init(int connections, int shareConnections) {
+        Assertions.assertTrue(connections >= 0);
+        Assertions.assertTrue(shareConnections >= 1);
+
         int port = NetUtils.getAvailablePort();
-        URL demoUrl = URL.valueOf("dubbo://127.0.0.1:" + port + "/demo?" + Constants.CONNECTIONS_KEY + "=" + connections);
-        URL helloUrl = URL.valueOf("dubbo://127.0.0.1:" + port + "/hello?" + Constants.CONNECTIONS_KEY + "=" + connections);
+        URL demoUrl = URL.valueOf("dubbo://127.0.0.1:" + port + "/demo?" + Constants.CONNECTIONS_KEY + "=" + connections + "&" + Constants.SHARE_CONNECTIONS_KEY + "=" + shareConnections);
+        URL helloUrl = URL.valueOf("dubbo://127.0.0.1:" + port + "/hello?" + Constants.CONNECTIONS_KEY + "=" + connections + "&" + Constants.SHARE_CONNECTIONS_KEY + "=" + shareConnections);
 
         demoExporter = export(new DemoServiceImpl(), IDemoService.class, demoUrl);
         helloExporter = export(new HelloServiceImpl(), IHelloService.class, helloUrl);
 
         demoServiceInvoker = (Invoker<IDemoService>) referInvoker(IDemoService.class, demoUrl);
         demoService = proxy.getProxy(demoServiceInvoker);
-        Assert.assertEquals("demo", demoService.demo());
+        Assertions.assertEquals("demo", demoService.demo());
 
         helloServiceInvoker = (Invoker<IHelloService>) referInvoker(IHelloService.class, helloUrl);
         helloService = proxy.getProxy(helloServiceInvoker);
-        Assert.assertEquals("hello", helloService.hello());
+        Assertions.assertEquals("hello", helloService.hello());
 
         demoClient = getClient(demoServiceInvoker);
         helloClient = getClient(helloServiceInvoker);
@@ -197,28 +244,53 @@ public class ReferenceCountExchangeClientTest {
                 return (ExchangeClient) clientField.get(client);
             } catch (Exception e) {
                 e.printStackTrace();
-                Assert.fail(e.getMessage());
+                Assertions.fail(e.getMessage());
                 throw new RuntimeException(e);
             }
         }
     }
 
     private ReferenceCountExchangeClient getReferenceClient(Invoker<?> invoker) {
-        return (ReferenceCountExchangeClient) getInvokerClient(invoker);
+        return getReferenceClientList(invoker).get(0);
+    }
+
+    private List<ReferenceCountExchangeClient> getReferenceClientList(Invoker<?> invoker) {
+        List<ExchangeClient> invokerClientList = getInvokerClientList(invoker);
+
+        List<ReferenceCountExchangeClient> referenceCountExchangeClientList = new ArrayList<>(invokerClientList.size());
+        for (ExchangeClient exchangeClient : invokerClientList) {
+            Assertions.assertTrue(exchangeClient instanceof ReferenceCountExchangeClient);
+            referenceCountExchangeClientList.add((ReferenceCountExchangeClient) exchangeClient);
+        }
+
+        return referenceCountExchangeClientList;
     }
 
     private ExchangeClient getInvokerClient(Invoker<?> invoker) {
+        return getInvokerClientList(invoker).get(0);
+    }
+
+    private List<ExchangeClient> getInvokerClientList(Invoker<?> invoker) {
         @SuppressWarnings("rawtypes")
         DubboInvoker dInvoker = (DubboInvoker) invoker;
         try {
             Field clientField = DubboInvoker.class.getDeclaredField("clients");
             clientField.setAccessible(true);
             ExchangeClient[] clients = (ExchangeClient[]) clientField.get(dInvoker);
-            return clients[0];
+
+            List<ExchangeClient> clientList = new ArrayList<ExchangeClient>(clients.length);
+            for (ExchangeClient client : clients) {
+                clientList.add(client);
+            }
+
+            // sorting makes it easy to compare between lists
+            Collections.sort(clientList, Comparator.comparing(c -> Integer.valueOf(Objects.hashCode(c))));
+
+            return clientList;
 
         } catch (Exception e) {
             e.printStackTrace();
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
             throw new RuntimeException(e);
         }
     }

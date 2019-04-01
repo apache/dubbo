@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.utils.Assert;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
@@ -29,20 +31,43 @@ import java.util.Optional;
 public class ConsumerModel {
     private final Object proxyObject;
     private final String serviceName;
+    private final Class<?> serviceInterfaceClass;
 
     private final Map<Method, ConsumerMethodModel> methodModels = new IdentityHashMap<Method, ConsumerMethodModel>();
 
-    public ConsumerModel(String serviceName, Object proxyObject, Method[] methods, Map<String, Object> attributes) {
-        this.serviceName = serviceName;
-        this.proxyObject = proxyObject;
+    /**
+     *  This constructor create an instance of ConsumerModel and passed objects should not be null.
+     *  If service name, service instance, proxy object,methods should not be null. If these are null
+     *  then this constructor will throw {@link IllegalArgumentException}
+     * @param serviceName Name of the service.
+     * @param serviceInterfaceClass Service interface class.
+     * @param proxyObject  Proxy object.
+     * @param methods Methods of service class
+     * @param attributes Attributes of methods.
+     */
+    public ConsumerModel(String serviceName
+            , Class<?> serviceInterfaceClass
+            , Object proxyObject
+            , Method[] methods
+            , Map<String, Object> attributes) {
 
-        if (proxyObject != null) {
-            for (Method method : methods) {
-                methodModels.put(method, new ConsumerMethodModel(method, attributes));
-            }
+        Assert.notEmptyString(serviceName, "Service name can't be null or blank");
+        Assert.notNull(serviceInterfaceClass, "Service interface class can't null");
+        Assert.notNull(proxyObject, "Proxy object can't be null");
+        Assert.notNull(methods, "Methods can't be null");
+
+        this.serviceName = serviceName;
+        this.serviceInterfaceClass = serviceInterfaceClass;
+        this.proxyObject = proxyObject;
+        for (Method method : methods) {
+            methodModels.put(method, new ConsumerMethodModel(method, attributes));
         }
     }
 
+    /**
+     * Return the proxy object used by called while creating instance of ConsumerModel
+     * @return
+     */
     public Object getProxyObject() {
         return proxyObject;
     }
@@ -75,6 +100,10 @@ public class ConsumerModel {
      */
     public List<ConsumerMethodModel> getAllMethods() {
         return new ArrayList<ConsumerMethodModel>(methodModels.values());
+    }
+
+    public Class<?> getServiceInterfaceClass() {
+        return serviceInterfaceClass;
     }
 
     public String getServiceName() {

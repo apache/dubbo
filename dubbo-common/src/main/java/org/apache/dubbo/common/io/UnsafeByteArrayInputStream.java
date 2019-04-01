@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * UnsafeByteArrayInputStrem.
+ * UnsafeByteArrayInputStream.
  */
 public class UnsafeByteArrayInputStream extends InputStream {
     protected byte mData[];

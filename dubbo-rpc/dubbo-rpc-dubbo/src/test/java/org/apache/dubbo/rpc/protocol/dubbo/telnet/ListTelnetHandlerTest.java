@@ -16,27 +16,25 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo.telnet;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcResult;
-import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
+import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
-import org.junit.After;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -46,120 +44,97 @@ import static org.mockito.Mockito.mock;
 public class ListTelnetHandlerTest {
 
     private static TelnetHandler list = new ListTelnetHandler();
-    private static String detailMethods;
-    private static String methodsName;
     private Channel mockChannel;
-    private Invoker<DemoService> mockInvoker;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
-        StringBuilder buf = new StringBuilder();
-        StringBuilder buf2 = new StringBuilder();
-        Method[] methods = DemoService.class.getMethods();
-        for (Method method : methods) {
-            if (buf.length() > 0) {
-                buf.append("\r\n");
-            }
-            if (buf2.length() > 0) {
-                buf2.append("\r\n");
-            }
-            buf2.append(method.getName());
-            buf.append(ReflectUtils.getName(method));
-        }
-        detailMethods = buf.toString();
-        methodsName = buf2.toString();
-
         ProtocolUtils.closeAll();
     }
 
-    @After
+    @BeforeEach
+    public void init() {
+        ApplicationModel.reset();
+    }
+
+    @AfterEach
     public void after() {
         ProtocolUtils.closeAll();
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testListDetailService() throws RemotingException {
-        mockInvoker = mock(Invoker.class);
-        given(mockInvoker.getInterface()).willReturn(DemoService.class);
-        given(mockInvoker.getUrl()).willReturn(URL.valueOf("dubbo://127.0.0.1:30005/demo"));
-        given(mockInvoker.invoke(any(Invocation.class))).willReturn(new RpcResult("ok"));
         mockChannel = mock(Channel.class);
         given(mockChannel.getAttribute("telnet.service")).willReturn("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService");
 
-        DubboProtocol.getDubboProtocol().export(mockInvoker);
+        ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", new DemoServiceImpl(), DemoService.class);
+        ApplicationModel.initProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", providerModel);
+
         String result = list.telnet(mockChannel, "-l DemoService");
-        assertEquals(detailMethods, result);
+        for (Method method : DemoService.class.getMethods()) {
+            assertTrue(result.contains(ReflectUtils.getName(method)));
+        }
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testListService() throws RemotingException {
-        mockInvoker = mock(Invoker.class);
-        given(mockInvoker.getInterface()).willReturn(DemoService.class);
-        given(mockInvoker.getUrl()).willReturn(URL.valueOf("dubbo://127.0.0.1:30006/demo"));
-        given(mockInvoker.invoke(any(Invocation.class))).willReturn(new RpcResult("ok"));
         mockChannel = mock(Channel.class);
         given(mockChannel.getAttribute("telnet.service")).willReturn("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService");
 
-        DubboProtocol.getDubboProtocol().export(mockInvoker);
+        ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", new DemoServiceImpl(), DemoService.class);
+        ApplicationModel.initProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", providerModel);
+
         String result = list.telnet(mockChannel, "DemoService");
-        assertEquals(methodsName, result);
+        for (Method method : DemoService.class.getMethods()) {
+            assertTrue(result.contains(method.getName()));
+        }
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testList() throws RemotingException {
-        mockInvoker = mock(Invoker.class);
-        given(mockInvoker.getInterface()).willReturn(DemoService.class);
-        given(mockInvoker.getUrl()).willReturn(URL.valueOf("dubbo://127.0.0.1:30007/demo"));
-        given(mockInvoker.invoke(any(Invocation.class))).willReturn(new RpcResult("ok"));
         mockChannel = mock(Channel.class);
         given(mockChannel.getAttribute("telnet.service")).willReturn(null);
 
-        DubboProtocol.getDubboProtocol().export(mockInvoker);
+        ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", new DemoServiceImpl(), DemoService.class);
+        ApplicationModel.initProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", providerModel);
+
         String result = list.telnet(mockChannel, "");
-        assertEquals("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", result);
+        assertEquals("PROVIDER:\r\norg.apache.dubbo.rpc.protocol.dubbo.support.DemoService\r\n", result);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testListDetail() throws RemotingException {
-        int port = NetUtils.getAvailablePort();
-        mockInvoker = mock(Invoker.class);
-        given(mockInvoker.getInterface()).willReturn(DemoService.class);
-        given(mockInvoker.getUrl()).willReturn(URL.valueOf("dubbo://127.0.0.1:" + port + "/demo"));
-        given(mockInvoker.invoke(any(Invocation.class))).willReturn(new RpcResult("ok"));
         mockChannel = mock(Channel.class);
         given(mockChannel.getAttribute("telnet.service")).willReturn(null);
 
-        DubboProtocol.getDubboProtocol().export(mockInvoker);
+        ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", new DemoServiceImpl(), DemoService.class);
+        ApplicationModel.initProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", providerModel);
+
         String result = list.telnet(mockChannel, "-l");
-        assertEquals("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService -> dubbo://127.0.0.1:" + port + "/demo", result);
+        assertEquals("PROVIDER:\r\norg.apache.dubbo.rpc.protocol.dubbo.support.DemoService ->  published: N\r\n", result);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testListDefault() throws RemotingException {
-        mockInvoker = mock(Invoker.class);
-        given(mockInvoker.getInterface()).willReturn(DemoService.class);
-        given(mockInvoker.getUrl()).willReturn(URL.valueOf("dubbo://127.0.0.1:30008/demo"));
-        given(mockInvoker.invoke(any(Invocation.class))).willReturn(new RpcResult("ok"));
         mockChannel = mock(Channel.class);
         given(mockChannel.getAttribute("telnet.service")).willReturn("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService");
 
-        DubboProtocol.getDubboProtocol().export(mockInvoker);
+        ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", new DemoServiceImpl(), DemoService.class);
+        ApplicationModel.initProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", providerModel);
+
         String result = list.telnet(mockChannel, "");
-        assertEquals("Use default service org.apache.dubbo.rpc.protocol.dubbo.support.DemoService.\r\n\r\n"
-                + methodsName, result);
+        assertTrue(result.startsWith("Use default service org.apache.dubbo.rpc.protocol.dubbo.support.DemoService.\r\n" +
+                "org.apache.dubbo.rpc.protocol.dubbo.support.DemoService (as provider):\r\n"));
+        for (Method method : DemoService.class.getMethods()) {
+            assertTrue(result.contains(method.getName()));
+        }
     }
 
     @Test
-    public void testInvaildMessage() throws RemotingException {
+    public void testInvalidMessage() throws RemotingException {
         mockChannel = mock(Channel.class);
         given(mockChannel.getAttribute("telnet.service")).willReturn(null);
 
         String result = list.telnet(mockChannel, "xx");
-        assertEquals("No such service xx", result);
+        assertEquals("No such service: xx", result);
     }
 }

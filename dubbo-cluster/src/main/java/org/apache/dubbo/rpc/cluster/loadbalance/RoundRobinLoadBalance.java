@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class RoundRobinLoadBalance extends AbstractLoadBalance {
     public static final String NAME = "roundrobin";
     
-    private static int RECYCLE_PERIOD = 60000;
+    private static final int RECYCLE_PERIOD = 60000;
     
     protected static class WeightedRoundRobin {
         private int weight;
@@ -101,9 +101,7 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
             String identifyString = invoker.getUrl().toIdentityString();
             WeightedRoundRobin weightedRoundRobin = map.get(identifyString);
             int weight = getWeight(invoker, invocation);
-            if (weight < 0) {
-                weight = 0;
-            }
+
             if (weightedRoundRobin == null) {
                 weightedRoundRobin = new WeightedRoundRobin();
                 weightedRoundRobin.setWeight(weight);

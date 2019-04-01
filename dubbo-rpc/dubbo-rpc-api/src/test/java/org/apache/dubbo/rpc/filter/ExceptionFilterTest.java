@@ -28,11 +28,12 @@ import org.apache.dubbo.rpc.support.DemoService;
 import org.apache.dubbo.rpc.support.LocalException;
 
 import com.alibaba.com.caucho.hessian.HessianException;
-import org.junit.Assert;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -84,7 +85,7 @@ public class ExceptionFilterTest {
 
         Result newResult = exceptionFilter.invoke(invoker, invocation);
 
-        Assert.assertEquals(rpcResult.getException(), newResult.getException());
+        Assertions.assertEquals(rpcResult.getException(), newResult.getException());
 
     }
 
@@ -104,7 +105,7 @@ public class ExceptionFilterTest {
 
         Result newResult = exceptionFilter.invoke(invoker, invocation);
 
-        Assert.assertEquals(rpcResult.getException(), newResult.getException());
+        Assertions.assertEquals(rpcResult.getException(), newResult.getException());
 
     }
 
@@ -124,10 +125,12 @@ public class ExceptionFilterTest {
 
         Result newResult = exceptionFilter.invoke(invoker, invocation);
 
-        Assert.assertFalse(newResult.getException() instanceof HessianException);
+        newResult = exceptionFilter.onResponse(newResult, invoker, invocation);
 
-        Assert.assertEquals(newResult.getException().getClass(), RuntimeException.class);
-        Assert.assertEquals(newResult.getException().getMessage(), StringUtils.toString(rpcResult.getException()));
+        Assertions.assertFalse(newResult.getException() instanceof HessianException);
+
+        Assertions.assertEquals(newResult.getException().getClass(), RuntimeException.class);
+        Assertions.assertEquals(newResult.getException().getMessage(), StringUtils.toString(rpcResult.getException()));
 
     }
 

@@ -126,7 +126,7 @@ public class DefaultFuture implements ResponseFuture {
      * @param channel channel to close
      */
     public static void closeChannel(Channel channel) {
-        for (Map.Entry<Long, Channel> entry: CHANNELS.entrySet()) {
+        for (Map.Entry<Long, Channel> entry : CHANNELS.entrySet()) {
             if (channel.equals(entry.getValue())) {
                 DefaultFuture future = getFuture(entry.getKey());
                 if (future != null && !future.isDone()) {
@@ -255,7 +255,6 @@ public class DefaultFuture implements ResponseFuture {
         if (callbackCopy == null) {
             throw new NullPointerException("callback cannot be null.");
         }
-        c = null;
         Response res = response;
         if (res == null) {
             throw new IllegalStateException("response cannot be null. url:" + channel.getUrl());
@@ -265,7 +264,7 @@ public class DefaultFuture implements ResponseFuture {
             try {
                 callbackCopy.done(res.getResult());
             } catch (Exception e) {
-                logger.error("callback invoke error .reasult:" + res.getResult() + ",url:" + channel.getUrl(), e);
+                logger.error("callback invoke error .result:" + res.getResult() + ",url:" + channel.getUrl(), e);
             }
         } else if (res.getStatus() == Response.CLIENT_TIMEOUT || res.getStatus() == Response.SERVER_TIMEOUT) {
             try {
@@ -330,9 +329,7 @@ public class DefaultFuture implements ResponseFuture {
         lock.lock();
         try {
             response = res;
-            if (done != null) {
-                done.signal();
-            }
+            done.signalAll();
         } finally {
             lock.unlock();
         }

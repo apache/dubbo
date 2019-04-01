@@ -25,22 +25,20 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.cluster.Directory;
 
-import org.junit.Assert;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
 /**
  * FailfastClusterInvokerTest
- *
  */
 @SuppressWarnings("unchecked")
 public class FailfastClusterInvokerTest {
@@ -55,7 +53,7 @@ public class FailfastClusterInvokerTest {
      * @throws java.lang.Exception
      */
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
 
         dic = mock(Directory.class);
@@ -81,12 +79,14 @@ public class FailfastClusterInvokerTest {
         given(invoker1.getInterface()).willReturn(FailfastClusterInvokerTest.class);
     }
 
-    @Test(expected = RpcException.class)
+    @Test
     public void testInvokeExceptoin() {
-        resetInvoker1ToException();
-        FailfastClusterInvoker<FailfastClusterInvokerTest> invoker = new FailfastClusterInvoker<FailfastClusterInvokerTest>(dic);
-        invoker.invoke(invocation);
-        Assert.assertSame(invoker1, RpcContext.getContext().getInvoker());
+        Assertions.assertThrows(RpcException.class, () -> {
+            resetInvoker1ToException();
+            FailfastClusterInvoker<FailfastClusterInvokerTest> invoker = new FailfastClusterInvoker<FailfastClusterInvokerTest>(dic);
+            invoker.invoke(invocation);
+            Assertions.assertSame(invoker1, RpcContext.getContext().getInvoker());
+        });
     }
 
     @Test()
@@ -96,7 +96,7 @@ public class FailfastClusterInvokerTest {
 
         FailfastClusterInvoker<FailfastClusterInvokerTest> invoker = new FailfastClusterInvoker<FailfastClusterInvokerTest>(dic);
         Result ret = invoker.invoke(invocation);
-        Assert.assertSame(result, ret);
+        Assertions.assertSame(result, ret);
     }
 
     @Test()

@@ -54,7 +54,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
         String bindIp = getUrl().getParameter(Constants.BIND_IP_KEY, getUrl().getHost());
         int bindPort = getUrl().getParameter(Constants.BIND_PORT_KEY, getUrl().getPort());
         if (url.getParameter(Constants.ANYHOST_KEY, false) || NetUtils.isInvalidLocalHost(bindIp)) {
-            bindIp = NetUtils.ANYHOST;
+            bindIp = Constants.ANYHOST_VALUE;
         }
         bindAddress = new InetSocketAddress(bindIp, bindPort);
         this.accepts = url.getParameter(Constants.ACCEPTS_KEY, Constants.DEFAULT_ACCEPTS);
@@ -202,7 +202,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
     public void disconnected(Channel ch) throws RemotingException {
         Collection<Channel> channels = getChannels();
         if (channels.isEmpty()) {
-            logger.warn("All clients has discontected from " + ch.getLocalAddress() + ". You can graceful shutdown now.");
+            logger.warn("All clients has disconnected from " + ch.getLocalAddress() + ". You can graceful shutdown now.");
         }
         super.disconnected(ch);
     }

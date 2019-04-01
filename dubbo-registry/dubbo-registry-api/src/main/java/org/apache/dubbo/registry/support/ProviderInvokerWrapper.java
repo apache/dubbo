@@ -87,4 +87,13 @@ public class ProviderInvokerWrapper<T> implements Invoker {
     public void setReg(boolean reg) {
         isReg = reg;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || !(o instanceof ProviderInvokerWrapper)) {
+            return false;
+        }
+        ProviderInvokerWrapper other = (ProviderInvokerWrapper) o;
+        return other.getInvoker().equals(this.getInvoker());
+    }
 }

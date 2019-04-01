@@ -20,15 +20,14 @@ import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
 import org.apache.dubbo.qos.textui.TTable;
-import org.apache.dubbo.registry.support.ConsumerInvokerWrapper;
-import org.apache.dubbo.registry.support.ProviderConsumerRegTable;
-import org.apache.dubbo.registry.support.ProviderInvokerWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
 
 import java.util.Collection;
-import java.util.Set;
+
+import static org.apache.dubbo.registry.support.ProviderConsumerRegTable.getConsumerAddressNum;
+import static org.apache.dubbo.registry.support.ProviderConsumerRegTable.isRegistered;
 
 @Cmd(name = "ls", summary = "ls service", example = {
         "ls"
@@ -45,7 +44,7 @@ public class Ls implements BaseCommand {
 
     public String listProvider() {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("As Provider side:\n");
+        stringBuilder.append("As Provider side:" + System.lineSeparator());
         Collection<ProviderModel> ProviderModelList = ApplicationModel.allProviderModels();
 
         TTable tTable = new TTable(new TTable.ColumnDefine[]{
@@ -58,7 +57,7 @@ public class Ls implements BaseCommand {
 
         //Content
         for (ProviderModel providerModel : ProviderModelList) {
-            tTable.addRow(providerModel.getServiceName(), isReg(providerModel.getServiceName()) ? "Y" : "N");
+            tTable.addRow(providerModel.getServiceName(), isRegistered(providerModel.getServiceName()) ? "Y" : "N");
         }
         stringBuilder.append(tTable.rendering());
 
@@ -67,7 +66,7 @@ public class Ls implements BaseCommand {
 
     public String listConsumer() {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("As Consumer side:\n");
+        stringBuilder.append("As Consumer side:" + System.lineSeparator());
         Collection<ConsumerModel> consumerModelList = ApplicationModel.allConsumerModels();
 
         TTable tTable = new TTable(new TTable.ColumnDefine[]{
@@ -87,30 +86,5 @@ public class Ls implements BaseCommand {
         stringBuilder.append(tTable.rendering());
 
         return stringBuilder.toString();
-    }
-
-    private boolean isReg(String serviceUniqueName) {
-        Set<ProviderInvokerWrapper> providerInvokerWrapperSet = ProviderConsumerRegTable.getProviderInvoker(serviceUniqueName);
-        for (ProviderInvokerWrapper providerInvokerWrapper : providerInvokerWrapperSet) {
-            if (providerInvokerWrapper.isReg()) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private int getConsumerAddressNum(String serviceUniqueName) {
-        int count = 0;
-        Set<ConsumerInvokerWrapper> providerInvokerWrapperSet = ProviderConsumerRegTable.getConsumerInvoker(serviceUniqueName);
-        for (ConsumerInvokerWrapper consumerInvokerWrapper : providerInvokerWrapperSet) {
-            //TODO not thread safe,fixme
-            int addNum = 0;
-            if (consumerInvokerWrapper.getRegistryDirectory().getUrlInvokerMap() != null) {
-                addNum = consumerInvokerWrapper.getRegistryDirectory().getUrlInvokerMap().size();
-            }
-            count += addNum;
-        }
-        return count;
     }
 }

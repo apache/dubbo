@@ -30,7 +30,7 @@ import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 
 import java.util.Arrays;
 
-import static junit.framework.TestCase.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 @SuppressWarnings("unused")
 public class UrlTestBase {
@@ -50,8 +50,7 @@ public class UrlTestBase {
     private static final int TESTVALUE5 = 8;
     private static final int TESTVALUE6 = 9;
     private static final int TESTVALUE7 = 10;
-    protected ApplicationConfig appConfForProvider;
-    protected ApplicationConfig appConfForService;
+    protected ApplicationConfig application = new ApplicationConfig();
     protected RegistryConfig regConfForProvider;
     protected RegistryConfig regConfForService;
     protected ProviderConfig provConf;
@@ -119,7 +118,7 @@ public class UrlTestBase {
 
     // ======================================================
     //   data table manipulation utils
-    // ====================================================== 
+    // ======================================================
     protected String genParamString(Object urlKey, Object value) {
 
         return (String) urlKey + "=" + value.toString();
@@ -141,19 +140,16 @@ public class UrlTestBase {
 
     @SuppressWarnings("deprecation")
     protected void initServConf() {
-
-        appConfForProvider = new ApplicationConfig();
-        appConfForService = new ApplicationConfig();
         regConfForProvider = new RegistryConfig();
         regConfForService = new RegistryConfig();
         provConf = new ProviderConfig();
-        protoConfForProvider = new ProtocolConfig();
-        protoConfForService = new ProtocolConfig();
+        protoConfForProvider = new ProtocolConfig("mockprotocol");
+        protoConfForService = new ProtocolConfig("mockprotocol");
         methodConfForService = new MethodConfig();
         servConf = new ServiceConfig<DemoService>();
 
-        provConf.setApplication(appConfForProvider);
-        servConf.setApplication(appConfForService);
+//        provConf.setApplication(appConfForProvider);
+        servConf.setApplication(application);
 
         provConf.setRegistry(regConfForProvider);
         servConf.setRegistry(regConfForService);
@@ -170,7 +166,7 @@ public class UrlTestBase {
         methodConfForService.setName("sayName");
         regConfForService.setAddress("127.0.0.1:9090");
         regConfForService.setProtocol("mockregistry");
-        appConfForService.setName("ConfigTests");
+        application.setName("ConfigTests");
     }
 
     protected String getProviderParamString() {
