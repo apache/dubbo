@@ -128,8 +128,7 @@ public class ProtocolFilterWrapper implements Protocol {
         if (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) {
             return protocol.refer(type, url);
         }
-        Invoker<T> syncableInvoker = new AsyncToSyncInvoker<>(protocol.refer(type, url));
-        return buildInvokerChain(syncableInvoker, Constants.REFERENCE_FILTER_KEY, Constants.CONSUMER);
+        return buildInvokerChain(protocol.refer(type, url), Constants.REFERENCE_FILTER_KEY, Constants.CONSUMER);
     }
 
     @Override
