@@ -28,4 +28,12 @@
     <properties>
         <skip_maven_deploy>true</skip_maven_deploy>
     </properties>
+    <dependencies>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
+            <version>3.2.8.RELEASE</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 </project>

@@ -862,5 +862,7 @@ public class Constants {
     public static final String DUBBO_GROUP = "dubbo";
     public static final String METRICS_KEY = "metrics";
 
-
+    public static final String KEY_PUBLISHER_TYPE = "Publisher";
+    public static final String VALUE_PUBLISHER_MONO = "mono";
+    public static final String VALUE_PUBLISHER_FLUX = "flux";
 }

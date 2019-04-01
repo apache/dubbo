@@ -24,11 +24,15 @@ import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.RpcInvocation;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -95,6 +99,40 @@ public class RpcUtils {
                         } else {
                             returnType = null;
                             genericReturnType = null;
+                        }
+                    }
+                    //if there is no dependency of reactor-core,this block will not work
+                    try {
+                        Class monoClass = Class.forName("reactor.core.publisher.Mono");
+                        Class fluxClass = Class.forName("reactor.core.publisher.Flux");
+                        if (monoClass.isAssignableFrom(returnType)) {
+                            if (genericReturnType instanceof ParameterizedType) {
+                                Type actualArgType = ((ParameterizedType) genericReturnType).getActualTypeArguments()[0];
+                                if (actualArgType instanceof ParameterizedType) {
+                                    returnType = (Class<?>) ((ParameterizedType) actualArgType).getRawType();
+                                    genericReturnType = actualArgType;
+                                } else {
+                                    returnType = (Class<?>) actualArgType;
+                                    genericReturnType = returnType;
+                                }
+                            } else {
+                                returnType = null;
+                                genericReturnType = null;
+                            }
+                        } else if (fluxClass.isAssignableFrom(returnType)) {
+                            if (genericReturnType instanceof ParameterizedType) {
+                                Type actualArgType = ((ParameterizedType) genericReturnType).getActualTypeArguments()[0];
+                                returnType = List.class;
+                                genericReturnType = ParameterizedTypeImpl.make(List.class,new Type[]{actualArgType},null);
+                            } else {
+                                returnType = null;
+                                genericReturnType = null;
+                            }
+                        }
+                    } catch (ClassNotFoundException ex) {
+                        //do nothing
+                        if (logger.isDebugEnabled()) {
+                            logger.debug(ex);
                         }
                     }
                     return new Type[]{returnType, genericReturnType};
