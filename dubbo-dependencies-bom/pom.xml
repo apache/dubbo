@@ -143,6 +143,7 @@
 
         <metrics_version>2.0.1</metrics_version>
         <gson_version>2.8.5</gson_version>
+        <jsonrpc_version>1.2.0</jsonrpc_version>
     </properties>
 
     <dependencyManagement>
@@ -528,11 +529,15 @@
                 <version>${spring_test_version}</version>
                 <scope>test</scope>
             </dependency>
-
             <dependency>
                 <groupId>com.google.code.gson</groupId>
                 <artifactId>gson</artifactId>
                 <version>${gson_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.briandilley.jsonrpc4j</groupId>
+                <artifactId>jsonrpc4j</artifactId>
+                <version>${jsonrpc_version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
