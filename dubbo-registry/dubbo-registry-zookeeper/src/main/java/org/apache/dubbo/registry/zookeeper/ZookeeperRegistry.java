@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.zookeeper;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -272,7 +273,10 @@ public class ZookeeperRegistry extends FailbackRegistry {
         if (urls == null || urls.isEmpty()) {
             int i = path.lastIndexOf(Constants.PATH_SEPARATOR);
             String category = i < 0 ? path : path.substring(i + 1);
-            URL empty = consumer.setProtocol(Constants.EMPTY_PROTOCOL).addParameter(Constants.CATEGORY_KEY, category);
+            URL empty = URLBuilder.from(consumer)
+                    .setProtocol(Constants.EMPTY_PROTOCOL)
+                    .addParameter(Constants.CATEGORY_KEY, category)
+                    .build();
             urls.add(empty);
         }
         return urls;

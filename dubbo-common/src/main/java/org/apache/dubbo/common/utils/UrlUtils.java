@@ -63,22 +63,22 @@ public class UrlUtils {
                 url += URL_PARAM_STARTING_SYMBOL + Constants.BACKUP_KEY + "=" + backup.toString();
             }
         }
-        String defaultProtocol = defaults == null ? null : defaults.get("protocol");
+        String defaultProtocol = defaults == null ? null : defaults.get(Constants.PROTOCOL_KEY);
         if (defaultProtocol == null || defaultProtocol.length() == 0) {
-            defaultProtocol = "dubbo";
+            defaultProtocol = Constants.DUBBO_PROTOCOL;
         }
-        String defaultUsername = defaults == null ? null : defaults.get("username");
-        String defaultPassword = defaults == null ? null : defaults.get("password");
-        int defaultPort = StringUtils.parseInteger(defaults == null ? null : defaults.get("port"));
-        String defaultPath = defaults == null ? null : defaults.get("path");
+        String defaultUsername = defaults == null ? null : defaults.get(Constants.USERNAME_KEY);
+        String defaultPassword = defaults == null ? null : defaults.get(Constants.PASSWORD_KEY);
+        int defaultPort = StringUtils.parseInteger(defaults == null ? null : defaults.get(Constants.PORT_KEY));
+        String defaultPath = defaults == null ? null : defaults.get(Constants.PATH_KEY);
         Map<String, String> defaultParameters = defaults == null ? null : new HashMap<String, String>(defaults);
         if (defaultParameters != null) {
-            defaultParameters.remove("protocol");
-            defaultParameters.remove("username");
-            defaultParameters.remove("password");
-            defaultParameters.remove("host");
-            defaultParameters.remove("port");
-            defaultParameters.remove("path");
+            defaultParameters.remove(Constants.PROTOCOL_KEY);
+            defaultParameters.remove(Constants.USERNAME_KEY);
+            defaultParameters.remove(Constants.PASSWORD_KEY);
+            defaultParameters.remove(Constants.HOST_KEY);
+            defaultParameters.remove(Constants.PORT_KEY);
+            defaultParameters.remove(Constants.PATH_KEY);
         }
         URL u = URL.valueOf(url);
         boolean changed = false;

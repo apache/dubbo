@@ -220,3 +220,8 @@ This product contains a modified portion of 'Netty', an event-driven asynchronou
  * io.netty.util.Timeout
  * io.netty.util.HashedWheelTimer
 
+For the org.apache.dubbo.common.utils.CIDRUtils :
+
+This product contains a modified portion of 'edazdarevic.commons.net.CIDRUtils',
+ under a "MIT License" license, see https://github.com/edazdarevic/CIDRUtils/blob/master/CIDRUtils.java
+

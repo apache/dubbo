@@ -59,6 +59,14 @@ public class ReferenceConfigCacheTest {
     }
 
     @Test
+    public void testGetCacheWithKey() throws Exception {
+        ReferenceConfigCache cache = ReferenceConfigCache.getCache();
+        MockReferenceConfig config = buildMockReferenceConfig("FooService", "group1", "1.0.0");
+        String value = cache.get(config);
+        assertEquals(value, cache.get("group1/FooService:1.0.0", String.class));
+    }
+
+    @Test
     public void testGetCacheDiffName() throws Exception {
         ReferenceConfigCache cache = ReferenceConfigCache.getCache();
         MockReferenceConfig config = buildMockReferenceConfig("FooService", "group1", "1.0.0");

@@ -22,10 +22,10 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.bytecode.Wrapper;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ClassHelper;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
@@ -46,6 +46,7 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -54,7 +55,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
 
 /**
  * ReferenceConfig
@@ -107,7 +107,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
      * The interface class of the reference service
      */
     private Class<?> interfaceClass;
-    
+
     /**
      * client type
      */
@@ -178,6 +178,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     public ReferenceConfig(Reference reference) {
         appendAnnotation(Reference.class, reference);
+        setMethods(MethodConfig.constructMethodConfig(reference.methods()));
     }
 
     public URL toUrl() {
@@ -298,33 +299,31 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         String hostToRegistry = ConfigUtils.getSystemProperty(Constants.DUBBO_IP_TO_REGISTRY);
         if (StringUtils.isEmpty(hostToRegistry)) {
             hostToRegistry = NetUtils.getLocalHost();
-        } else if (isInvalidLocalHost(hostToRegistry)) {
-            throw new IllegalArgumentException("Specified invalid registry ip from property:" + Constants.DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
         }
         map.put(Constants.REGISTER_IP_KEY, hostToRegistry);
 
         ref = createProxy(map);
 
-        ConsumerModel consumerModel = new ConsumerModel(getUniqueServiceName(), interfaceClass, ref, interfaceClass.getMethods(), attributes);
-        ApplicationModel.initConsumerModel(getUniqueServiceName(), consumerModel);
+        String serviceKey = URL.buildKey(interfaceName, group, version);
+        ApplicationModel.initConsumerModel(serviceKey, buildConsumerModel(serviceKey, attributes));
     }
 
+    private ConsumerModel buildConsumerModel(String serviceKey, Map<String, Object> attributes) {
+        Method[] methods = interfaceClass.getMethods();
+        Class serviceInterface = interfaceClass;
+        if (interfaceClass == GenericService.class) {
+            try {
+                serviceInterface = Class.forName(interfaceName);
+                methods = serviceInterface.getMethods();
+            } catch (ClassNotFoundException e) {
+                methods = interfaceClass.getMethods();
+            }
+        }
+        return new ConsumerModel(serviceKey, serviceInterface, ref, methods, attributes);
+    }
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
     private T createProxy(Map<String, String> map) {
-        URL tmpUrl = new URL("temp", "localhost", 0, map);
-        final boolean isJvmRefer;
-        if (isInjvm() == null) {
-            if (url != null && url.length() > 0) { // if a url is specified, don't do local reference
-                isJvmRefer = false;
-            } else {
-                // by default, reference local service if there is
-                isJvmRefer = InjvmProtocol.getInjvmProtocol().isInjvmRefer(tmpUrl);
-            }
-        } else {
-            isJvmRefer = isInjvm();
-        }
-
-        if (isJvmRefer) {
+        if (shouldJvmRefer(map)) {
             URL url = new URL(Constants.LOCAL_PROTOCOL, Constants.LOCALHOST_VALUE, 0, interfaceClass.getName()).addParameters(map);
             invoker = refprotocol.refer(interfaceClass, url);
             if (logger.isInfoEnabled()) {
@@ -385,14 +384,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
         }
 
-        Boolean c = check;
-        if (c == null && consumer != null) {
-            c = consumer.isCheck();
-        }
-        if (c == null) {
-            c = true; // default true
-        }
-        if (c && !invoker.isAvailable()) {
+        if (shouldCheck() && !invoker.isAvailable()) {
             // make it possible for consumer to retry later if provider is temporarily unavailable
             initialized = false;
             throw new IllegalStateException("Failed to check the status of the service " + interfaceName + ". No provider available for the service " + (group == null ? "" : group + "/") + interfaceName + (version == null ? "" : ":" + version) + " from the url " + invoker.getUrl() + " to the consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion());
@@ -411,6 +403,55 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
         // create service proxy
         return (T) proxyFactory.getProxy(invoker);
+    }
+
+    /**
+     * Figure out should refer the service in the same JVM from configurations. The default behavior is true
+     * 1. if injvm is specified, then use it
+     * 2. then if a url is specified, then assume it's a remote call
+     * 3. otherwise, check scope parameter
+     * 4. if scope is not specified but the target service is provided in the same JVM, then prefer to make the local
+     * call, which is the default behavior
+     */
+    protected boolean shouldJvmRefer(Map<String, String> map) {
+        URL tmpUrl = new URL("temp", "localhost", 0, map);
+        boolean isJvmRefer;
+        if (isInjvm() == null) {
+            // if a url is specified, don't do local reference
+            if (url != null && url.length() > 0) {
+                isJvmRefer = false;
+            } else {
+                // by default, reference local service if there is
+                isJvmRefer = InjvmProtocol.getInjvmProtocol().isInjvmRefer(tmpUrl);
+            }
+        } else {
+            isJvmRefer = isInjvm();
+        }
+        return isJvmRefer;
+    }
+
+    protected boolean shouldCheck() {
+        Boolean shouldCheck = isCheck();
+        if (shouldCheck == null && getConsumer()!= null) {
+            shouldCheck = getConsumer().isCheck();
+        }
+        if (shouldCheck == null) {
+            // default true
+            shouldCheck = true;
+        }
+        return shouldCheck;
+    }
+
+    protected boolean shouldInit() {
+        Boolean shouldInit = isInit();
+        if (shouldInit == null && getConsumer() != null) {
+            shouldInit = getConsumer().isInit();
+        }
+        if (shouldInit == null) {
+            // default is false
+            return false;
+        }
+        return shouldInit;
     }
 
     private void checkDefault() {
@@ -559,19 +600,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     // just for test
     Invoker<?> getInvoker() {
         return invoker;
-    }
-
-    @Parameter(excluded = true)
-    public String getUniqueServiceName() {
-        StringBuilder buf = new StringBuilder();
-        if (group != null && group.length() > 0) {
-            buf.append(group).append("/");
-        }
-        buf.append(interfaceName);
-        if (StringUtils.isNotEmpty(version)) {
-            buf.append(":").append(version);
-        }
-        return buf.toString();
     }
 
     @Override
