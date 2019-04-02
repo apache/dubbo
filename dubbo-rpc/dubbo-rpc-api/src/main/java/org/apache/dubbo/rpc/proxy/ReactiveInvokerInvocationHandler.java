@@ -13,7 +13,9 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import static org.apache.dubbo.common.Constants.*;
+import static org.apache.dubbo.common.Constants.KEY_PUBLISHER_TYPE;
+import static org.apache.dubbo.common.Constants.VALUE_PUBLISHER_MONO;
+import static org.apache.dubbo.common.Constants.VALUE_PUBLISHER_FLUX;
 
 /**
  * Reactive implementation of InvokerInvocationHandler which actually communicate with the real providers.

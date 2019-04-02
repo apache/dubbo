@@ -12,7 +12,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
 
-import static org.apache.dubbo.common.Constants.*;
+import static org.apache.dubbo.common.Constants.KEY_PUBLISHER_TYPE;
+import static org.apache.dubbo.common.Constants.VALUE_PUBLISHER_MONO;
+import static org.apache.dubbo.common.Constants.VALUE_PUBLISHER_FLUX;
 
 
 /**

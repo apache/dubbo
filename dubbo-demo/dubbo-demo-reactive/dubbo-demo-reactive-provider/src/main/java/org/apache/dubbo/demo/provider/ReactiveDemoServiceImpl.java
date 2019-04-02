@@ -21,6 +21,7 @@ package org.apache.dubbo.demo.provider;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.demo.ReactiveDemoService;
 import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.proxy.javassist.ReactiveJavassistProxyFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
@@ -30,7 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 
 //specify a reactive proxy factory
-@Service(proxy = "reactivejavassist")
+@Service(proxy = ReactiveJavassistProxyFactory.NAME)
 public class ReactiveDemoServiceImpl implements ReactiveDemoService {
     private static final Logger logger = LoggerFactory.getLogger(ReactiveDemoServiceImpl.class);
 
