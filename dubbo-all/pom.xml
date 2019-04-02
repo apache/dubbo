@@ -201,7 +201,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-rpc-xmlrpc</artifactId>
+            <artifactId>dubbo-rpc-xml</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
             <optional>true</optional>
