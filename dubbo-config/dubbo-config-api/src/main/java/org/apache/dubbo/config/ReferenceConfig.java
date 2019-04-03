@@ -264,15 +264,15 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         if (!isGeneric()) {
             String revision = Version.getVersion(interfaceClass, version);
             if (revision != null && revision.length() > 0) {
-                map.put("revision", revision);
+                map.put(Constants.REVISION_KEY, revision);
             }
 
             String[] methods = Wrapper.getWrapper(interfaceClass).getMethodNames();
             if (methods.length == 0) {
                 logger.warn("No method found in service interface " + interfaceClass.getName());
-                map.put("methods", Constants.ANY_VALUE);
+                map.put(Constants.METHODS_KEY, Constants.ANY_VALUE);
             } else {
-                map.put("methods", StringUtils.join(new HashSet<String>(Arrays.asList(methods)), ","));
+                map.put(Constants.METHODS_KEY, StringUtils.join(new HashSet<String>(Arrays.asList(methods)), Constants.COMMA_SEPARATOR));
             }
         }
         map.put(Constants.INTERFACE_KEY, interfaceName);
@@ -558,7 +558,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     }
 
     public void setClient(String client) {
-        checkName("client", client);
+        checkName(Constants.CLIENT_KEY, client);
         this.client = client;
     }
 
