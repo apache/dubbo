@@ -166,4 +166,21 @@ public class ListTelnetHandlerTest {
         assertEquals("No such service xx", result);
         EasyMock.reset(mockChannel);
     }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testListGroup() throws RemotingException {
+        String group = "dev";
+        mockInvoker = EasyMock.createMock(Invoker.class);
+        EasyMock.expect(mockInvoker.getInterface()).andReturn(DemoService.class).anyTimes();
+        EasyMock.expect(mockInvoker.getUrl()).andReturn(URL.valueOf("dubbo://127.0.0.1:20885/demo&group=" + group)).anyTimes();
+        EasyMock.expect(mockInvoker.invoke((Invocation) EasyMock.anyObject())).andReturn(new RpcResult("ok")).anyTimes();
+        mockChannel = EasyMock.createMock(Channel.class);
+        EasyMock.expect(mockChannel.getAttribute("telnet.service")).andReturn(null).anyTimes();
+        EasyMock.replay(mockChannel, mockInvoker);
+        DubboProtocol.getDubboProtocol().export(mockInvoker);
+        String result = list.telnet(mockChannel, "");
+        assertEquals(group + "/" + "com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService", result);
+        EasyMock.reset(mockChannel);
+    }
 }

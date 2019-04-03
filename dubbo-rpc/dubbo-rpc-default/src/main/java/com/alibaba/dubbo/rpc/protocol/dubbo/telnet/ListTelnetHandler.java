@@ -16,8 +16,10 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo.telnet;
 
+import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
+import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
 import com.alibaba.dubbo.remoting.telnet.support.Help;
@@ -26,6 +28,7 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 import java.lang.reflect.Method;
+import java.util.Map;
 
 /**
  * ListTelnetHandler
@@ -61,10 +64,16 @@ public class ListTelnetHandler implements TelnetHandler {
                 if (buf.length() > 0) {
                     buf.append("\r\n");
                 }
+                URL exportUrl = exporter.getInvoker().getUrl();
+                Map<String, String> params = StringUtils.parseQueryString(exportUrl.toFullString());
+                String group = params.get("group");
+                if (StringUtils.isNotEmpty(group)) {
+                    buf.append(group.concat("/"));
+                }
                 buf.append(exporter.getInvoker().getInterface().getName());
                 if (detail) {
                     buf.append(" -> ");
-                    buf.append(exporter.getInvoker().getUrl());
+                    buf.append(exportUrl);
                 }
             }
         } else {
