@@ -22,13 +22,8 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 import org.apache.dubbo.rpc.*;
 
-
-/**
- * Created by kimmking(kimmking@163.com) on 2018/3/28.
- */
 public class XmlRpcProtocolTest {
 
     @Test
