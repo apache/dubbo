@@ -45,6 +45,20 @@ public class RpcUtils {
     private static final Logger logger = LoggerFactory.getLogger(RpcUtils.class);
     private static final AtomicLong INVOKE_ID = new AtomicLong(0);
 
+    private static Class monoClass;
+    private static Class fluxClass;
+    private static boolean reactorReady;
+    static {
+        try {
+            monoClass = Class.forName("reactor.core.publisher.Mono");
+            fluxClass = Class.forName("reactor.core.publisher.Flux");
+            reactorReady = true;
+            logger.info("reactor is ready");
+        } catch (ClassNotFoundException e) {
+            logger.warn("reactor not involved",e);
+        }
+    }
+
     public static Class<?> getReturnType(Invocation invocation) {
         try {
             if (invocation != null && invocation.getInvoker() != null
@@ -99,11 +113,8 @@ public class RpcUtils {
                             returnType = null;
                             genericReturnType = null;
                         }
-                    }
-                    //if there is no dependency of reactor-core,this block will not work
-                    try {
-                        Class monoClass = Class.forName("reactor.core.publisher.Mono");
-                        Class fluxClass = Class.forName("reactor.core.publisher.Flux");
+                    } else if(reactorReady) {
+                        //if there is no dependency of reactor-core,this block will not work
                         if (monoClass.isAssignableFrom(returnType)) {
                             if (genericReturnType instanceof ParameterizedType) {
                                 Type actualArgType = ((ParameterizedType) genericReturnType).getActualTypeArguments()[0];
@@ -122,16 +133,11 @@ public class RpcUtils {
                             if (genericReturnType instanceof ParameterizedType) {
                                 Type actualArgType = ((ParameterizedType) genericReturnType).getActualTypeArguments()[0];
                                 returnType = List.class;
-                                genericReturnType = ParameterizedTypeImpl.make(List.class,new Type[]{actualArgType},null);
+                                genericReturnType = ParameterizedTypeImpl.make(List.class, new Type[]{actualArgType}, null);
                             } else {
                                 returnType = null;
                                 genericReturnType = null;
                             }
-                        }
-                    } catch (ClassNotFoundException ex) {
-                        //do nothing
-                        if (logger.isDebugEnabled()) {
-                            logger.debug(ex);
                         }
                     }
                     return new Type[]{returnType, genericReturnType};
