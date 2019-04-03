@@ -42,21 +42,9 @@ There's a [README](https://github.com/apache/incubator-dubbo-samples/tree/master
 
 ```xml
 <properties>
-    <dubbo.version>2.7.0</dubbo.version>
+    <dubbo.version>2.7.1</dubbo.version>
 </properties>
     
-<dependencyManagement>
-    <dependencies>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-dependencies-bom</artifactId>
-            <version>${dubbo.version}</version>
-            <type>pom</type>
-            <scope>import</scope>
-        </dependency>
-    </dependencies>
-</dependencyManagement>
-
 <dependencies>
     <dependency>
         <groupId>org.apache.dubbo</groupId>
@@ -64,20 +52,9 @@ There's a [README](https://github.com/apache/incubator-dubbo-samples/tree/master
         <version>${dubbo.version}</version>
     </dependency>
     <dependency>
-        <groupId>io.netty</groupId>
-        <artifactId>netty-all</artifactId>
-    </dependency>
-    <dependency>
-        <groupId>org.apache.curator</groupId>
-        <artifactId>curator-framework</artifactId>
-    </dependency>
-    <dependency>
-        <groupId>org.apache.curator</groupId>
-        <artifactId>curator-recipes</artifactId>
-    </dependency>
-    <dependency>
-        <groupId>org.apache.zookeeper</groupId>
-        <artifactId>zookeeper</artifactId>
+        <groupId>org.apache.dubbo</groupId>
+        <artifactId>dubbo-dependencies-zookeeper</artifactId>
+        <version>${dubbo.version}</version>
     </dependency>
 </dependencies>
 ```
@@ -184,6 +161,14 @@ The consumer will print out `Hello world` on the screen.
 * [Dubbo user manual](http://dubbo.apache.org/en-us/docs/user/preface/background.html) - How to use Dubbo and all its features.
 * [Dubbo developer guide](http://dubbo.apache.org/en-us/docs/dev/build.html) - How to involve in Dubbo development.
 * [Dubbo admin manual](http://dubbo.apache.org/en-us/docs/admin/install/provider-demo.html) - How to admin and manage Dubbo services.
+
+## Building
+
+If you want to try out the cutting-edge features, you can built with the following commands. (Java 1.8 is required to build the master branch)
+
+```
+  mvn clean install
+```
 
 ## Contact
 

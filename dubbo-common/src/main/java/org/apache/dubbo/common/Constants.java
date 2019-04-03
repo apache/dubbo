@@ -793,6 +793,16 @@ public class Constants {
     public static final String TELNET = "telnet";
 
     /**
+     * Hash nodes name
+     */
+    public static final String HASH_NODES = "hash.nodes";
+
+    /**
+     * Hash arguments name
+     */
+    public static final String HASH_ARGUMENTS = "hash.arguments";
+
+    /**
      * Application name;
      */
     public static final String NAME = "name";
