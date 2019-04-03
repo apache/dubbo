@@ -42,9 +42,6 @@ import org.apache.xmlrpc.webserver.XmlRpcServletServer;
 import org.springframework.remoting.RemoteAccessException;
 
 
-/**
- * Created by wuwen on 15/4/1.
- */
 public class XmlRpcProtocol extends AbstractProxyProtocol {
     
     public static final String ACCESS_CONTROL_ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin";

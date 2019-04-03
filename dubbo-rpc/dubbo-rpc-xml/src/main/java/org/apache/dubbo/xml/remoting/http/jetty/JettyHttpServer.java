@@ -31,11 +31,6 @@ import org.apache.dubbo.remoting.http.HttpHandler;
 import org.apache.dubbo.remoting.http.servlet.DispatcherServlet;
 import org.apache.dubbo.remoting.http.support.AbstractHttpServer;
 
-/**
- * @author sdcuike
- *
- *         time 2016年2月14日 下午3:07:34
- */
 public class JettyHttpServer extends AbstractHttpServer {
     private static final Logger logger = LoggerFactory.getLogger(JettyHttpServer.class);
 
