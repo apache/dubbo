@@ -34,7 +34,6 @@ import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-
 public class XmlRpcProxyFactoryBean extends UrlBasedRemoteAccessor
         implements MethodInterceptor,
         InitializingBean,
