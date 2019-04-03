@@ -18,11 +18,14 @@ package org.apache.dubbo.xml.rpc.protocol.xmlrpc;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.rpc.Exporter;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.ProxyFactory;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import org.apache.dubbo.rpc.*;
 
 public class XmlRpcProtocolTest {
 

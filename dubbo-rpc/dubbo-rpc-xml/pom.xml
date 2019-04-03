@@ -47,13 +47,6 @@
         </license>
     </licenses>
 
-    <developers>
-        <developer>
-            <name>kimmking</name>
-            <email>kimmking@163.com</email>
-        </developer>
-    </developers>
-
     <dependencies>
         <dependency>
             <groupId>javax.servlet</groupId>
