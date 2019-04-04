@@ -16,9 +16,7 @@
  */
 package org.apache.dubbo.common.bytecode;
 
-import org.apache.dubbo.common.utils.ArrayUtils;
-import org.apache.dubbo.common.utils.ClassHelper;
-import org.apache.dubbo.common.utils.ReflectUtils;
+import org.apache.dubbo.common.utils.*;
 
 import javassist.CannotCompileException;
 import javassist.ClassPool;
@@ -30,7 +28,6 @@ import javassist.CtNewConstructor;
 import javassist.CtNewMethod;
 import javassist.LoaderClassPath;
 import javassist.NotFoundException;
-import org.apache.dubbo.common.utils.StringUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -285,7 +282,7 @@ public final class ClassGenerator {
     }
 
     public Class<?> toClass() {
-        return toClass(ClassHelper.getClassLoader(ClassGenerator.class),
+        return toClass(ClassUtils.getClassLoader(ClassGenerator.class),
                 getClass().getProtectionDomain());
     }
 

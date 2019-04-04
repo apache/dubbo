@@ -17,7 +17,7 @@
 package org.apache.dubbo.common.bytecode;
 
 import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.common.utils.ClassHelper;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 
 import java.lang.ref.Reference;
@@ -62,7 +62,7 @@ public abstract class Proxy {
      * @return Proxy instance.
      */
     public static Proxy getProxy(Class<?>... ics) {
-        return getProxy(ClassHelper.getClassLoader(Proxy.class), ics);
+        return getProxy(ClassUtils.getClassLoader(Proxy.class), ics);
     }
 
     /**
