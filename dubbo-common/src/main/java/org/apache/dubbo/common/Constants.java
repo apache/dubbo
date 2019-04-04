@@ -79,6 +79,14 @@ public class Constants {
 
     public static final String DYNAMIC_KEY = "dynamic";
 
+    public static final String STATUS_KEY = "status";
+
+    public static final String CONTEXTPATH_KEY = "contextpath";
+
+    public static final String LISTENER_KEY = "listener";
+
+    public static final String LAYER_KEY = "layer";
+
     public static final String DUBBO_PROPERTIES_KEY = "dubbo.properties.file";
 
     public static final String DEFAULT_DUBBO_PROPERTIES = "dubbo.properties";
@@ -246,6 +254,8 @@ public class Constants {
     public static final String MOCK_KEY = "mock";
 
     public static final String PROTOCOL_KEY = "protocol";
+
+    public static final String LOGSTAT_PROTOCOL = "logstat";
 
     public static final String DUBBO_PROTOCOL = DUBBO;
 
