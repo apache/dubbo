@@ -33,6 +33,10 @@ import org.apache.dubbo.rpc.RpcException;
 import java.util.function.Supplier;
 
 /**
+ * MetadataReportService
+ *
+ * <p>to publish provider {@link FullServiceDefinition} and consumer define</p>
+ *
  * @since 2.7.0
  */
 public class MetadataReportService {
@@ -40,10 +44,11 @@ public class MetadataReportService {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private static volatile MetadataReportService metadataReportService;
-    private static Object lock = new Object();
 
-    private MetadataReportFactory metadataReportFactory = ExtensionLoader.getExtensionLoader(MetadataReportFactory.class).getAdaptiveExtension();
+    private static final Object LOCK = new Object();
+
     MetadataReport metadataReport;
+
     URL metadataReportUrl;
 
     MetadataReportService(URL metadataReportURL) {
@@ -55,6 +60,7 @@ public class MetadataReportService {
                     .build();
         }
         this.metadataReportUrl = metadataReportURL;
+        MetadataReportFactory metadataReportFactory = ExtensionLoader.getExtensionLoader(MetadataReportFactory.class).getAdaptiveExtension();
         metadataReport = metadataReportFactory.getMetadataReport(this.metadataReportUrl);
 
     }
@@ -62,7 +68,7 @@ public class MetadataReportService {
 
     public static MetadataReportService instance(Supplier<URL> metadataReportUrl) {
         if (metadataReportService == null) {
-            synchronized (lock) {
+            synchronized (LOCK) {
                 if (metadataReportService == null) {
                     URL metadataReportURLTmp = metadataReportUrl.get();
                     if (metadataReportURLTmp == null) {
@@ -76,18 +82,16 @@ public class MetadataReportService {
     }
 
     public void publishProvider(URL providerUrl) throws RpcException {
-        //first add into the list
+        // first add into the list
         // remove the individul param
-        providerUrl = providerUrl.removeParameters(Constants.PID_KEY, Constants.TIMESTAMP_KEY, Constants.BIND_IP_KEY, Constants.BIND_PORT_KEY, Constants.TIMESTAMP_KEY);
+        providerUrl = removeIndividulParameters(providerUrl);
 
         try {
             String interfaceName = providerUrl.getParameter(Constants.INTERFACE_KEY);
             if (StringUtils.isNotEmpty(interfaceName)) {
                 Class interfaceClass = Class.forName(interfaceName);
                 FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass, providerUrl.getParameters());
-                metadataReport.storeProviderMetadata(new MetadataIdentifier(providerUrl.getServiceInterface(),
-                        providerUrl.getParameter(Constants.VERSION_KEY), providerUrl.getParameter(Constants.GROUP_KEY),
-                        Constants.PROVIDER_SIDE,providerUrl.getParameter(Constants.APPLICATION_KEY)), fullServiceDefinition);
+                metadataReport.storeProviderMetadata(generateMetadataIdentifierByURL(providerUrl, Constants.PROVIDER_SIDE), fullServiceDefinition);
                 return;
             }
             logger.error("publishProvider interfaceName is empty . providerUrl: " + providerUrl.toFullString());
@@ -97,11 +101,39 @@ public class MetadataReportService {
         }
     }
 
+
+
+
     public void publishConsumer(URL consumerURL) throws RpcException {
-        consumerURL = consumerURL.removeParameters(Constants.PID_KEY, Constants.TIMESTAMP_KEY, Constants.BIND_IP_KEY, Constants.BIND_PORT_KEY, Constants.TIMESTAMP_KEY);
-        metadataReport.storeConsumerMetadata(new MetadataIdentifier(consumerURL.getServiceInterface(),
-                consumerURL.getParameter(Constants.VERSION_KEY), consumerURL.getParameter(Constants.GROUP_KEY),Constants.CONSUMER_SIDE,
-                consumerURL.getParameter(Constants.APPLICATION_KEY)), consumerURL.getParameters());
+        consumerURL = removeIndividulParameters(consumerURL);
+        metadataReport.storeConsumerMetadata(generateMetadataIdentifierByURL(consumerURL, Constants.CONSUMER_SIDE),
+                consumerURL.getParameters());
+    }
+
+    /**
+     * according to {@link URL} to generate {@link MetadataIdentifier}
+     *
+     * @param url {@link URL}
+     * @param side provider/consumer
+     * @return MetadataIdentifier
+     */
+    private MetadataIdentifier generateMetadataIdentifierByURL(URL url, String side) {
+        return new MetadataIdentifier(url.getServiceInterface(),
+                url.getParameter(Constants.VERSION_KEY), url.getParameter(Constants.GROUP_KEY),
+                side, url.getParameter(Constants.APPLICATION_KEY));
+    }
+
+    /**
+     * remove the individul param
+     *
+     * <p>such as {pid_key, timestamp, etc..}, those keys do not need to store metadata center,
+     * because it can not to help user to know something. </p>
+     *
+     * @param url {@link URL}
+     * @return url
+     */
+    private URL removeIndividulParameters(URL url) {
+        return url.removeParameters(Constants.PID_KEY, Constants.TIMESTAMP_KEY, Constants.BIND_IP_KEY, Constants.BIND_PORT_KEY, Constants.TIMESTAMP_KEY);
     }
 
 }
