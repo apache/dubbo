@@ -6,9 +6,9 @@ A RPC Extension for XML-RPC(http://ws.apache.org/xmlrpc)
 ## Maven dependency：
 ```xml
 <dependency>
-    <groupId>io.github.kimmking</groupId>
-    <artifactId>dubbo-rpc-xmlrpc</artifactId>
-    <version>1.0.2-SNAPSHOT</version>
+    <groupId>org.apache.dubbo</groupId>
+    <artifactId>dubbo-rpc</artifactId>
+    <version>2.7.2-SNAPSHOT</version>
 </dependency>
 
 ```
@@ -41,7 +41,7 @@ Multi protocol:
 ```
 <!-- multi protocols -->
 ```xml
-<dubbo:service id="helloService" interface="com.alibaba.hello.api.HelloService" version="1.0.0" protocol="dubbo,xmlrpc" />
+<dubbo:service id="helloService" interface="org.apache.hello.api.HelloService" version="1.0.0" protocol="dubbo,xmlrpc" />
 ```
 
 
