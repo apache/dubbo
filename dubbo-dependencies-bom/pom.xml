@@ -149,7 +149,7 @@
         <dependencies>
             <!-- Common libs -->
             <dependency>
-<groupId>org.springframework</groupId>
+                <groupId>org.springframework</groupId>
                 <artifactId>spring-framework-bom</artifactId>
                 <version>${spring_version}</version>
                 <type>pom</type>
