@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
@@ -28,12 +29,18 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.embedded.RedisServer;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import static org.apache.dubbo.common.Constants.SYNC_REPORT_KEY;
 import static org.apache.dubbo.metadata.store.MetadataReport.META_DATA_STORE_TAG;
@@ -77,7 +84,7 @@ public class RedisMetadataReportTest {
         String interfaceName = "org.apache.dubbo.metadata.store.redis.RedisMetadata4TstService";
         String group = null;
         String application = "vic.redis.md";
-        MetadataIdentifier providerMetadataIdentifier = storePrivider(redisMetadataReport, interfaceName, version, group, application);
+        MetadataIdentifier providerMetadataIdentifier = storeProvider(redisMetadataReport, interfaceName, version, group, application);
         Jedis jedis = null;
         try {
             jedis = redisMetadataReport.pool.getResource();
@@ -138,7 +145,7 @@ public class RedisMetadataReportTest {
         }
     }
 
-    private MetadataIdentifier storePrivider(RedisMetadataReport redisMetadataReport, String interfaceName, String version, String group, String application) throws ClassNotFoundException {
+    private MetadataIdentifier storeProvider(RedisMetadataReport redisMetadataReport, String interfaceName, String version, String group, String application) throws ClassNotFoundException {
         URL url = URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":4444/" + interfaceName + "?paramTest=redisTest&version=" + version + "&application="
                 + application + (group == null ? "" : "&group=" + group));
 
@@ -172,5 +179,30 @@ public class RedisMetadataReportTest {
         }
         return consumerMetadataIdentifier;
     }
+
+    public static class RedisMetadataReportInnerTest {
+
+        @Test
+        public void testParseSingletonUrl() {
+            URL url = URL.valueOf("redis://127.0.0.1:6379");
+            RedisMetadataReport redisMetadataReport = new RedisMetadataReport(url);
+            Assertions.assertNotNull(redisMetadataReport.pool);
+        }
+
+        @Test
+        public void testParseClusterUrlWithClusterConfig() {
+            URL url = URL.valueOf("redis://127.0.0.1:6379?cluster=true");
+            RedisMetadataReport redisMetadataReport = new RedisMetadataReport(url);
+            Assertions.assertNotNull(redisMetadataReport.cluster);
+        }
+
+        @Test
+        public void testParseClusterUrl() {
+            URL url = URL.valueOf("redis://127.0.0.1:6379,127.0.0.1:6380,127.0.0.1:6381,127.0.0.1:6382,127.0.0.1:6383,127.0.0.1:6384");
+            RedisMetadataReport redisMetadataReport = new RedisMetadataReport(url);
+            Assertions.assertNotNull(redisMetadataReport.cluster);
+        }
+    }
+
 
 }

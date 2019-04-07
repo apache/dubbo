@@ -51,6 +51,11 @@ public class MetadataReportConfig extends AbstractConfig {
     private Integer timeout;
 
     /**
+     *  It is the same as registry
+     */
+    private String cluster;
+
+    /**
      * The group the metadata in . It is the same as registry
      */
     private String group;
@@ -109,6 +114,14 @@ public class MetadataReportConfig extends AbstractConfig {
 
     public void setTimeout(Integer timeout) {
         this.timeout = timeout;
+    }
+
+    public String getCluster() {
+        return cluster;
+    }
+
+    public void setCluster(String cluster) {
+        this.cluster = cluster;
     }
 
     public Map<String, String> getParameters() {

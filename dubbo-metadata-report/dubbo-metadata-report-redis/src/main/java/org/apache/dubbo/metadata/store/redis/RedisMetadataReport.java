@@ -16,15 +16,17 @@
  */
 package org.apache.dubbo.metadata.store.redis;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
+import org.apache.dubbo.metadata.store.redis.support.RedisUrlUtils;
 import org.apache.dubbo.metadata.support.AbstractMetadataReport;
 import org.apache.dubbo.rpc.RpcException;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.*;
+
+import java.util.Set;
 
 /**
  * RedisMetadataReport
@@ -33,11 +35,26 @@ public class RedisMetadataReport extends AbstractMetadataReport {
 
     private final static Logger logger = LoggerFactory.getLogger(RedisMetadataReport.class);
 
-    final JedisPool pool;
+    JedisPool pool;
+
+    JedisCluster cluster;
 
     public RedisMetadataReport(URL url) {
         super(url);
-        pool = new JedisPool(new JedisPoolConfig(), url.getHost(), url.getPort());
+        if (isSingleton(url)) {
+            pool = new JedisPool(parsePoolConfig(url), url.getHost(), url.getPort());
+        } else {
+            Set<HostAndPort> hostAndPortsSet = RedisUrlUtils.parseHostAndPorts(url);
+            cluster = new JedisCluster(hostAndPortsSet, parsePoolConfig(url));
+        }
+    }
+
+    private boolean isSingleton(URL url) {
+        // if address contains split char ",", return false
+        if (Constants.COMMA_SPLIT_PATTERN.matcher(url.getAddress()).find()) {
+            return false;
+        }
+        return url.getParameter("cluster") == null || "false".equals(url.getParameter("cluster"));
     }
 
     @Override
@@ -51,13 +68,32 @@ public class RedisMetadataReport extends AbstractMetadataReport {
     }
 
     private void storeMetadata(MetadataIdentifier metadataIdentifier, String v) {
-        try (Jedis jedis = pool.getResource()) {
-            jedis.set(metadataIdentifier.getIdentifierKey() + META_DATA_STORE_TAG, v);
+        try {
+            doStoreMetadata(metadataIdentifier, v);
         } catch (Throwable e) {
             logger.error("Failed to put " + metadataIdentifier + " to redis " + v + ", cause: " + e.getMessage(), e);
             throw new RpcException("Failed to put " + metadataIdentifier + " to redis " + v + ", cause: " + e.getMessage(), e);
         }
     }
+
+    private void doStoreMetadata(MetadataIdentifier metadataIdentifier, String v) {
+        if (cluster == null) {
+            try (Jedis jedis = pool.getResource()) {
+                jedis.set(metadataIdentifier.getIdentifierKey() + META_DATA_STORE_TAG, v);
+            } catch (Throwable e) {
+                throw e;
+            }
+        } else {
+            cluster.set(metadataIdentifier.getIdentifierKey() + META_DATA_STORE_TAG, v);
+        }
+    }
+
+    private JedisPoolConfig parsePoolConfig(URL url) {
+        JedisPoolConfig jpc = new JedisPoolConfig();
+        //FIXME should add some config
+        return jpc;
+    }
+
 
 
 }
