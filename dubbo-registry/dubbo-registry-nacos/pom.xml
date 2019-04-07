@@ -23,7 +23,6 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.apache.dubbo</groupId>
     <artifactId>dubbo-registry-nacos</artifactId>
     <name>${project.artifactId}</name>
     <description>The Nacos registry module of Dubbo project</description>
