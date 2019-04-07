@@ -54,7 +54,7 @@ public class NacosRegistryFactory extends AbstractRegistryFactory {
 
     private NamingService buildNamingService(URL url) {
         Properties nacosProperties = buildNacosProperties(url);
-        NamingService namingService = null;
+        NamingService namingService;
         try {
             namingService = NacosFactory.createNamingService(nacosProperties);
         } catch (NacosException e) {
