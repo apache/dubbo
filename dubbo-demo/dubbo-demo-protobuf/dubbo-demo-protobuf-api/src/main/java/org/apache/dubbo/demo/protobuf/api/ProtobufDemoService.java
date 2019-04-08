@@ -14,16 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.definition.service;
+package org.apache.dubbo.demo.protobuf.api;
 
-import java.util.List;
+import org.apache.dubbo.demo.protobuf.api.GooglePb.GooglePBRequestType;
+import org.apache.dubbo.demo.protobuf.api.GooglePb.GooglePBResponseType;
 
-/**
- * for test
- */
-public interface DemoService {
+public interface ProtobufDemoService {
 
-    String complexCompute(String input, ComplexObject co);
+    GooglePBResponseType sayHello(GooglePBRequestType request);
 
-    ComplexObject findComplexObject(String var1, int var2, long l, String[] var3, List<Integer> var4, ComplexObject.TestEnum testEnum);
 }

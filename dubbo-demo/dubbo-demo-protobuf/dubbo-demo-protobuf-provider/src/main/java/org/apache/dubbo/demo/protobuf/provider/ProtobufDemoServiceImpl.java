@@ -14,16 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.definition.service;
+package org.apache.dubbo.demo.protobuf.provider;
 
-import java.util.List;
+import org.apache.dubbo.demo.protobuf.api.GooglePb.GooglePBRequestType;
+import org.apache.dubbo.demo.protobuf.api.GooglePb.GooglePBResponseType;
+import org.apache.dubbo.demo.protobuf.api.ProtobufDemoService;
 
 /**
- * for test
+ * 2019/4/8
  */
-public interface DemoService {
-
-    String complexCompute(String input, ComplexObject co);
-
-    ComplexObject findComplexObject(String var1, int var2, long l, String[] var3, List<Integer> var4, ComplexObject.TestEnum testEnum);
+public class ProtobufDemoServiceImpl implements ProtobufDemoService {
+  @Override
+  public GooglePBResponseType sayHello(GooglePBRequestType request) {
+    GooglePBResponseType response = GooglePBResponseType.newBuilder().setResponse("message from server :"+request.getReq()).build();
+    return response;
+  }
 }

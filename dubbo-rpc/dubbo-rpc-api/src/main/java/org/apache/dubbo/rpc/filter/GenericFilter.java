@@ -26,6 +26,7 @@ import org.apache.dubbo.common.io.UnsafeByteArrayInputStream;
 import org.apache.dubbo.common.io.UnsafeByteArrayOutputStream;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.utils.PojoUtils;
+import org.apache.dubbo.common.utils.ProtobufUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Filter;
@@ -107,6 +108,16 @@ public class GenericFilter implements Filter {
                                             args[i].getClass().getName());
                         }
                     }
+                }else if (ProtocolUtils.isProtobufGenericSerialization(generic)) {
+                    //as proto3 only accept one parameter
+                    if (args.length == 1 && args[0] instanceof String) {
+                        args[0] = ProtobufUtils.deserialize((String) args[0], method.getParameterTypes()[0]);
+                    } else {
+                        throw new RpcException(
+                                new StringBuilder("Generic serialization [").append(Constants.GENERIC_SERIALIZATION_PROTO)
+                                        .append("] only support one").append(String.class.getName()).append(" argument ")
+                                        .append(" and your message size is ").append(args.length).append(" and type is").append(args[0].getClass().getName()).toString());
+                    }
                 }
                 Result result = invoker.invoke(new RpcInvocation(method, args, inv.getAttachments()));
                 if (result.hasException()
@@ -125,7 +136,9 @@ public class GenericFilter implements Filter {
                     }
                 } else if (ProtocolUtils.isBeanGenericSerialization(generic)) {
                     return new RpcResult(JavaBeanSerializeUtil.serialize(result.getValue(), JavaBeanAccessor.METHOD));
-                } else {
+                } else if(ProtocolUtils.isProtobufGenericSerialization(generic)) {
+                    return new RpcResult(ProtobufUtils.serialize(result.getValue()));
+                }else {
                     return new RpcResult(PojoUtils.generalize(result.getValue()));
                 }
             } catch (NoSuchMethodException e) {

@@ -14,16 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.definition.service;
+package org.apache.dubbo.demo.protobuf.provider;
 
-import java.util.List;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-/**
- * for test
- */
-public interface DemoService {
-
-    String complexCompute(String input, ComplexObject co);
-
-    ComplexObject findComplexObject(String var1, int var2, long l, String[] var3, List<Integer> var4, ComplexObject.TestEnum testEnum);
+public class Application {
+  /**
+   * In order to make sure multicast registry works, need to specify '-Djava.net.preferIPv4Stack=true' before
+   * launch the application
+   */
+  public static void main(String[] args) throws Exception {
+    ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("spring/dubbo-provider.xml");
+    context.start();
+    System.in.read();
+  }
 }

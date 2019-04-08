@@ -34,13 +34,13 @@ import java.util.List;
 public class ServiceDefinitionBuildderTest {
 
     @Test
-    public void testBuilderComplextObject() {
+    public void testBuilderComplexObject() {
         FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(DemoService.class);
-        checkComplextObjectAsParam(fullServiceDefinition);
+        checkComplexObjectAsParam(fullServiceDefinition);
     }
 
 
-    void checkComplextObjectAsParam(FullServiceDefinition fullServiceDefinition) {
+    void checkComplexObjectAsParam(FullServiceDefinition fullServiceDefinition) {
         List<MethodDefinition> methodDefinitions = fullServiceDefinition.getMethods();
         MethodDefinition complexCompute = null;
         MethodDefinition findComplexObject = null;
