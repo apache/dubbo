@@ -28,7 +28,7 @@
     <description>The Nacos registry module of Dubbo project</description>
 
     <properties>
-        <nacos.version>0.9.0</nacos.version>
+        <nacos.version>1.0.0-RC3</nacos.version>
     </properties>
 
     <dependencies>
