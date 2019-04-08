@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.cluster.support;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 
+import org.apache.dubbo.common.URLBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -31,7 +32,8 @@ public class ClusterUtilsTest {
                 .setUsername("username")
                 .setPassword("password");
 
-        providerURL = providerURL.addParameter(Constants.GROUP_KEY, "dubbo")
+        providerURL = URLBuilder.from(providerURL)
+                .addParameter(Constants.GROUP_KEY, "dubbo")
                 .addParameter(Constants.VERSION_KEY, "1.2.3")
                 .addParameter(Constants.DUBBO_VERSION_KEY, "2.3.7")
                 .addParameter(Constants.THREADPOOL_KEY, "fixed")
@@ -45,11 +47,13 @@ public class ClusterUtilsTest {
                 .addParameter(Constants.DEFAULT_KEY_PREFIX + Constants.CORE_THREADS_KEY, Integer.MAX_VALUE)
                 .addParameter(Constants.DEFAULT_KEY_PREFIX + Constants.QUEUES_KEY, Integer.MAX_VALUE)
                 .addParameter(Constants.DEFAULT_KEY_PREFIX + Constants.ALIVE_KEY, Integer.MAX_VALUE)
-                .addParameter(Constants.DEFAULT_KEY_PREFIX + Constants.THREAD_NAME_KEY, "test");
+                .addParameter(Constants.DEFAULT_KEY_PREFIX + Constants.THREAD_NAME_KEY, "test")
+                .build();
 
-        URL consumerURL = URL.valueOf("dubbo://localhost:55555");
-        consumerURL = consumerURL.addParameter(Constants.PID_KEY, "1234");
-        consumerURL = consumerURL.addParameter(Constants.THREADPOOL_KEY, "foo");
+        URL consumerURL = new URLBuilder(Constants.DUBBO_PROTOCOL, "localhost", 55555)
+                .addParameter(Constants.PID_KEY, "1234")
+                .addParameter(Constants.THREADPOOL_KEY, "foo")
+                .build();
 
         URL url = ClusterUtils.mergeUrl(providerURL, consumerURL.getParameters());
 

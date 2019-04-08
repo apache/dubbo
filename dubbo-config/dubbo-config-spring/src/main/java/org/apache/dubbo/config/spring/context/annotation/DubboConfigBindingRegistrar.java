@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.context.annotation;
 
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigBindingBeanPostProcessor;
+import org.apache.dubbo.config.spring.context.config.NamePropertyDefaultValueDubboConfigBeanCustomizer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -41,6 +42,8 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static org.apache.dubbo.config.spring.context.config.NamePropertyDefaultValueDubboConfigBeanCustomizer.BEAN_NAME;
+import static org.apache.dubbo.config.spring.util.BeanRegistrar.registerInfrastructureBean;
 import static org.apache.dubbo.config.spring.util.PropertySourcesUtils.getSubProperties;
 import static org.apache.dubbo.config.spring.util.PropertySourcesUtils.normalizePrefix;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
@@ -107,6 +110,8 @@ public class DubboConfigBindingRegistrar implements ImportBeanDefinitionRegistra
 
         }
 
+        registerDubboConfigBeanCustomizers(registry);
+
     }
 
     private void registerDubboConfigBean(String beanName, Class<? extends AbstractConfig> configClass,
@@ -147,6 +152,10 @@ public class DubboConfigBindingRegistrar implements ImportBeanDefinitionRegistra
                     + "] for dubbo config bean [name : " + beanName + "] has been registered.");
         }
 
+    }
+
+    private void registerDubboConfigBeanCustomizers(BeanDefinitionRegistry registry) {
+        registerInfrastructureBean(registry, BEAN_NAME, NamePropertyDefaultValueDubboConfigBeanCustomizer.class);
     }
 
     @Override

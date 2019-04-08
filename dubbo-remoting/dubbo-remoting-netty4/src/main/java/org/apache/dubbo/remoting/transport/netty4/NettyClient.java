@@ -78,7 +78,7 @@ public class NettyClient extends AbstractClient {
 
             @Override
             protected void initChannel(Channel ch) throws Exception {
-                int heartbeatInterval = UrlUtils.getIdleTimeout(getUrl());
+                int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
                 NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyClient.this);
                 ch.pipeline()//.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
                         .addLast("decoder", adapter.getDecoder())

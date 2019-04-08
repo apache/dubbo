@@ -206,7 +206,7 @@ public class ProviderConfig extends AbstractServiceConfig {
     }
 
     public void setContextpath(String contextpath) {
-        checkPathName("contextpath", contextpath);
+        checkPathName(Constants.CONTEXTPATH_KEY, contextpath);
         this.contextpath = contextpath;
     }
 
@@ -322,7 +322,7 @@ public class ProviderConfig extends AbstractServiceConfig {
     }
 
     public void setStatus(String status) {
-        checkMultiExtension(StatusChecker.class, "status", status);
+        checkMultiExtension(StatusChecker.class, Constants.STATUS_KEY, status);
         this.status = status;
     }
 
@@ -405,8 +405,8 @@ public class ProviderConfig extends AbstractServiceConfig {
     }
 
     public void setDispatcher(String dispatcher) {
-        checkExtension(Dispatcher.class, Constants.DISPATCHER_KEY, exchanger);
-        checkExtension(Dispatcher.class, "dispather", exchanger);
+        checkExtension(Dispatcher.class, Constants.DISPATCHER_KEY, dispatcher);
+        checkExtension(Dispatcher.class, "dispather", dispatcher);
         this.dispatcher = dispatcher;
     }
 
