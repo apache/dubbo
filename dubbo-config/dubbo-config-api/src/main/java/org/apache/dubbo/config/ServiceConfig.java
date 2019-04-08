@@ -494,7 +494,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         } else {
             String revision = Version.getVersion(interfaceClass, version);
             if (revision != null && revision.length() > 0) {
-                map.put("revision", revision);
+                map.put(Constants.REVISION_KEY, revision);
             }
 
             String[] methods = Wrapper.getWrapper(interfaceClass).getMethodNames();
@@ -655,7 +655,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private String findHostToBindByConnectRegistries(List<URL> registryURLs) {
         if (CollectionUtils.isNotEmpty(registryURLs)) {
             for (URL registryURL : registryURLs) {
-                if (Constants.MULTICAST.equalsIgnoreCase(registryURL.getParameter("registry"))) {
+                if (Constants.MULTICAST.equalsIgnoreCase(registryURL.getParameter(Constants.REGISTRY_KEY))) {
                     // skip multicast registry since we cannot connect to it via Socket
                     continue;
                 }

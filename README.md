@@ -79,6 +79,7 @@ package org.apache.dubbo.samples.provider;
 import org.apache.dubbo.samples.api.GreetingService;
  
 public class GreetingServiceImpl implements GreetingService {
+    @Override
     public String sayHello(String name) {
         return "Hello " + name;
     }
@@ -161,6 +162,14 @@ The consumer will print out `Hello world` on the screen.
 * [Dubbo user manual](http://dubbo.apache.org/en-us/docs/user/preface/background.html) - How to use Dubbo and all its features.
 * [Dubbo developer guide](http://dubbo.apache.org/en-us/docs/dev/build.html) - How to involve in Dubbo development.
 * [Dubbo admin manual](http://dubbo.apache.org/en-us/docs/admin/install/provider-demo.html) - How to admin and manage Dubbo services.
+
+## Building
+
+If you want to try out the cutting-edge features, you can built with the following commands. (Java 1.8 is required to build the master branch)
+
+```
+  mvn clean install
+```
 
 ## Contact
 

@@ -14,23 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.store;
+package org.apache.dubbo.common.serialize.model;
 
+public class Organization<T> {
 
-import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
-import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
+    private T data;
 
-import java.util.Map;
+    public T getData() {
+        return data;
+    }
 
-/**
- */
-public interface MetadataReport {
-
-    public static final String META_DATA_STORE_TAG = ".metaData";
-
-
-    void storeProviderMetadata(MetadataIdentifier providerMetadataIdentifier, FullServiceDefinition serviceDefinition);
-
-    void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap);
-
+    public void setData(T data) {
+        this.data = data;
+    }
 }

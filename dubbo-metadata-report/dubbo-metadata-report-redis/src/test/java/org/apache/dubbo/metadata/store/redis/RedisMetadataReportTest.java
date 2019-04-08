@@ -36,7 +36,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.Constants.SYNC_REPORT_KEY;
-import static org.apache.dubbo.metadata.store.MetadataReport.META_DATA_SOTRE_TAG;
+import static org.apache.dubbo.metadata.store.MetadataReport.META_DATA_STORE_TAG;
 
 /**
  * 2018/10/9
@@ -81,7 +81,7 @@ public class RedisMetadataReportTest {
         Jedis jedis = null;
         try {
             jedis = redisMetadataReport.pool.getResource();
-            String keyTmp = providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY) + META_DATA_SOTRE_TAG;
+            String keyTmp = providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY) + META_DATA_STORE_TAG;
             String value = jedis.get(keyTmp);
             if (value == null) {
                 Thread.sleep(moreTime);
@@ -97,7 +97,7 @@ public class RedisMetadataReportTest {
             throw new RpcException("Failed to put to redis . cause: " + e.getMessage(), e);
         } finally {
             if (jedis != null) {
-                jedis.del(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY) + META_DATA_SOTRE_TAG);
+                jedis.del(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY) + META_DATA_STORE_TAG);
             }
             redisMetadataReport.pool.close();
         }
@@ -121,7 +121,7 @@ public class RedisMetadataReportTest {
         Jedis jedis = null;
         try {
             jedis = redisMetadataReport.pool.getResource();
-            String keyTmp = consumerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY) + META_DATA_SOTRE_TAG;
+            String keyTmp = consumerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY) + META_DATA_STORE_TAG;
             String value = jedis.get(keyTmp);
             if (value == null) {
                 Thread.sleep(moreTime);
@@ -132,7 +132,7 @@ public class RedisMetadataReportTest {
             throw new RpcException("Failed to put to redis . cause: " + e.getMessage(), e);
         } finally {
             if (jedis != null) {
-                jedis.del(consumerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY) + META_DATA_SOTRE_TAG);
+                jedis.del(consumerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY) + META_DATA_STORE_TAG);
             }
             redisMetadataReport.pool.close();
         }

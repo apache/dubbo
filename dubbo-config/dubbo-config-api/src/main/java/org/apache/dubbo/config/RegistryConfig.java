@@ -190,7 +190,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setUsername(String username) {
-        checkName("username", username);
+        checkName(Constants.USERNAME_KEY, username);
         this.username = username;
     }
 
@@ -199,7 +199,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setPassword(String password) {
-        checkLength("password", password);
+        checkLength(Constants.PASSWORD_KEY, password);
         this.password = password;
     }
 
@@ -239,7 +239,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setFile(String file) {
-        checkPathLength("file", file);
+        checkPathLength(Constants.FILE_KEY, file);
         this.file = file;
     }
 
@@ -293,7 +293,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setClient(String client) {
-        checkName("client", client);
+        checkName(Constants.CLIENT_KEY, client);
         /*if(client != null && client.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(client)){
             throw new IllegalStateException("No such client type : " + client);
         }*/
