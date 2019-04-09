@@ -171,9 +171,8 @@ public class RSocketProtocol extends AbstractProtocol {
         }
     }
 
-
     @Override
-    public <T> Invoker<T> refer(Class<T> serviceType, URL url) throws RpcException {
+    protected <T> Invoker<T> doRefer(Class<T> serviceType, URL url) throws RpcException {
         // create rpc invoker.
         RSocketInvoker<T> invoker = new RSocketInvoker<T>(serviceType, url, getClients(url), invokers);
         invokers.add(invoker);
