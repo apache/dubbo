@@ -124,24 +124,26 @@ public class GenericFilter extends ListenableFilter {
     static class GenericListener implements Listener {
 
         @Override
-        public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-            String generic = invocation.getAttachment(Constants.GENERIC_KEY);
+        public void onResponse(Result result, Invoker<?> invoker, Invocation inv) {
+            if ((inv.getMethodName().equals(Constants.$INVOKE) || inv.getMethodName().equals(Constants.$INVOKE_ASYNC)) && inv.getArguments() != null && inv.getArguments().length == 3 && !GenericService.class.isAssignableFrom(invoker.getInterface())) {
 
-            if (result.hasException() && !(result.getException() instanceof GenericException)) {
-                result.setException(new GenericException(result.getException()));
-            }
-            if (ProtocolUtils.isJavaGenericSerialization(generic)) {
-                try {
-                    UnsafeByteArrayOutputStream os = new UnsafeByteArrayOutputStream(512);
-                    ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(Constants.GENERIC_SERIALIZATION_NATIVE_JAVA).serialize(null, os).writeObject(result.getValue());
-                    result.setValue(os.toByteArray());
-                } catch (IOException e) {
-                    throw new RpcException("Serialize result failed.", e);
+                String generic = inv.getAttachment(Constants.GENERIC_KEY);
+                if (result.hasException() && !(result.getException() instanceof GenericException)) {
+                    result.setException(new GenericException(result.getException()));
                 }
-            } else if (ProtocolUtils.isBeanGenericSerialization(generic)) {
-                result.setValue(JavaBeanSerializeUtil.serialize(result.getValue(), JavaBeanAccessor.METHOD));
-            } else {
-                result.setValue(PojoUtils.generalize(result.getValue()));
+                if (ProtocolUtils.isJavaGenericSerialization(generic)) {
+                    try {
+                        UnsafeByteArrayOutputStream os = new UnsafeByteArrayOutputStream(512);
+                        ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(Constants.GENERIC_SERIALIZATION_NATIVE_JAVA).serialize(null, os).writeObject(result.getValue());
+                        result.setValue(os.toByteArray());
+                    } catch (IOException e) {
+                        throw new RpcException("Serialize result failed.", e);
+                    }
+                } else if (ProtocolUtils.isBeanGenericSerialization(generic)) {
+                    result.setValue(JavaBeanSerializeUtil.serialize(result.getValue(), JavaBeanAccessor.METHOD));
+                } else {
+                    result.setValue(PojoUtils.generalize(result.getValue()));
+                }
             }
         }
 
