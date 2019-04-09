@@ -121,13 +121,19 @@ public class MetricsFilter implements Filter {
         }
         method.append(")");
         Class<?> returnType = RpcUtils.getReturnType(invocation);
+        String typeName = null;
+        if(returnType != null) {
+            typeName = returnType.getTypeName();
+            typeName = typeName.substring(typeName.lastIndexOf(".") + 1);
+        }
 
-        return (returnType == null ? "void" : returnType.getClass().getSimpleName()) + " " + method;
+        return (typeName == null ? "void" : typeName) + " " + method;
     }
 
     private void reportMetrics(Invoker<?> invoker, Invocation invocation, long duration, String result, boolean isProvider) {
         String serviceName = invoker.getInterface().getName();
         String methodName = buildMethodName(invocation);
+        System.out.println(methodName);
         MetricName global;
         MetricName method;
         if (isProvider) {

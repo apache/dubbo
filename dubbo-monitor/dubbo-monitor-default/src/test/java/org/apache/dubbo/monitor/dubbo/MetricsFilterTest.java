@@ -207,7 +207,6 @@ public class MetricsFilterTest {
             String metric = object.getMetric().substring(object.getMetric().lastIndexOf(".") + 1);
             if((double)object.getValue() > 0.0 && object.getMetricLevel().equals(MetricLevel.MAJOR))
                 metricMap.put(metric, object.getValue());
-            System.out.println(metric +" " + object.getValue());
         }
 
         Assertions.assertEquals(50.0, metricMap.get("success_bucket_count"));
