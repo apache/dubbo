@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
@@ -83,7 +84,7 @@ public class ProtocolFilterWrapper implements Protocol {
                             }
                             throw e;
                         }
-                        return asyncResult.thenApplyWithContext(r -> {
+                        return ((AsyncRpcResult) asyncResult).thenApplyWithContext(r -> {
                             // onResponse callback
                             if (filter instanceof ListenableFilter) {
                                 Filter.Listener listener = ((ListenableFilter) filter).listener();

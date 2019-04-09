@@ -35,6 +35,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 public class HeartbeatHandlerTest {
 
@@ -117,7 +118,7 @@ public class HeartbeatHandlerTest {
         public int disconnectCount = 0;
         public int connectCount = 0;
 
-        public CompletableFuture<Object> reply(ExchangeChannel channel, Object request) throws RemotingException {
+        public CompletionStage<Object> reply(ExchangeChannel channel, Object request) throws RemotingException {
             return CompletableFuture.completedFuture(request);
         }
 

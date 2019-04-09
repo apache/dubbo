@@ -40,7 +40,7 @@ import org.apache.dubbo.rpc.protocol.dubbo.DubboExporter;
 
 import java.util.ArrayList;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
@@ -62,7 +62,7 @@ public class ThriftProtocol extends AbstractProtocol {
     private ExchangeHandler handler = new ExchangeHandlerAdapter() {
 
         @Override
-        public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) throws RemotingException {
+        public CompletionStage<Object> reply(ExchangeChannel channel, Object msg) throws RemotingException {
 
             if (msg instanceof Invocation) {
                 Invocation inv = (Invocation) msg;

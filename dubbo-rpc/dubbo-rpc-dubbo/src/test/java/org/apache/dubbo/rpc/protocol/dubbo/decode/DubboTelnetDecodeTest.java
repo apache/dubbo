@@ -40,7 +40,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -80,7 +80,7 @@ public class DubboTelnetDecodeTest {
                             new DecodeHandler(
                                     new HeaderExchangeHandler(new ExchangeHandlerAdapter() {
                                         @Override
-                                        public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) {
+                                        public CompletionStage<Object> reply(ExchangeChannel channel, Object msg) {
                                             if (checkDubboDecoded(msg)) {
                                                 dubbo.incrementAndGet();
                                             }
@@ -131,7 +131,7 @@ public class DubboTelnetDecodeTest {
                             new DecodeHandler(
                                     new HeaderExchangeHandler(new ExchangeHandlerAdapter() {
                                         @Override
-                                        public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) {
+                                        public CompletionStage<Object> reply(ExchangeChannel channel, Object msg) {
                                             return null;
                                         }
                                     }))));
@@ -194,7 +194,7 @@ public class DubboTelnetDecodeTest {
                             new DecodeHandler(
                                     new HeaderExchangeHandler(new ExchangeHandlerAdapter() {
                                         @Override
-                                        public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) {
+                                        public CompletionStage<Object> reply(ExchangeChannel channel, Object msg) {
                                             if (checkDubboDecoded(msg)) {
                                                 telnetDubbo.incrementAndGet();
                                             }
@@ -264,7 +264,7 @@ public class DubboTelnetDecodeTest {
                             new DecodeHandler(
                                     new HeaderExchangeHandler(new ExchangeHandlerAdapter() {
                                         @Override
-                                        public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) {
+                                        public CompletionStage<Object> reply(ExchangeChannel channel, Object msg) {
                                             return null;
                                         }
                                     }))));
@@ -331,7 +331,7 @@ public class DubboTelnetDecodeTest {
                             new DecodeHandler(
                                     new HeaderExchangeHandler(new ExchangeHandlerAdapter() {
                                         @Override
-                                        public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) {
+                                        public CompletionStage<Object> reply(ExchangeChannel channel, Object msg) {
                                             if (checkDubboDecoded(msg)) {
                                                 dubboDubbo.incrementAndGet();
                                             }
@@ -402,7 +402,7 @@ public class DubboTelnetDecodeTest {
                             new DecodeHandler(
                                     new HeaderExchangeHandler(new ExchangeHandlerAdapter() {
                                         @Override
-                                        public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) {
+                                        public CompletionStage<Object> reply(ExchangeChannel channel, Object msg) {
                                             if (checkDubboDecoded(msg)) {
                                                 dubboTelnet.incrementAndGet();
                                             }

@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 
 public class AsyncRpcResult extends AbstractResult {
@@ -114,13 +115,13 @@ public class AsyncRpcResult extends AbstractResult {
     }
 
     public AsyncRpcResult thenApplyWithContext(Function<Result, Result> fn) {
-        CompletableFuture<Result> future = this.thenApply(fn.compose(beforeContext).andThen(afterContext));
+        CompletionStage<Result> future = this.thenApply(fn.compose(beforeContext).andThen(afterContext));
         AsyncRpcResult nextAsyncRpcResult = new AsyncRpcResult(this);
         nextAsyncRpcResult.subscribeTo(future);
         return nextAsyncRpcResult;
     }
 
-    public void subscribeTo(CompletableFuture<?> future) {
+    public void subscribeTo(CompletionStage<?> future) {
         future.whenComplete((obj, t) -> {
             if (t != null) {
                 this.completeExceptionally(t);

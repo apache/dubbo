@@ -26,6 +26,7 @@ import org.apache.dubbo.remoting.telnet.support.TelnetHandlerAdapter;
 import org.apache.dubbo.remoting.transport.ChannelHandlerDispatcher;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 /**
  * ExchangeHandlerDispatcher
@@ -84,7 +85,7 @@ public class ExchangeHandlerDispatcher implements ExchangeHandler {
 
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public CompletableFuture<Object> reply(ExchangeChannel channel, Object request) throws RemotingException {
+    public CompletionStage<Object> reply(ExchangeChannel channel, Object request) throws RemotingException {
         return CompletableFuture.completedFuture(((Replier) replierDispatcher).reply(channel, request));
     }
 

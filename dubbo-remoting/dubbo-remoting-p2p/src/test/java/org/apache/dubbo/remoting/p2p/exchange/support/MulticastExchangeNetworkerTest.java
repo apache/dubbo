@@ -16,10 +16,6 @@
  */
 package org.apache.dubbo.remoting.p2p.exchange.support;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
@@ -30,12 +26,16 @@ import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 import org.apache.dubbo.remoting.p2p.Group;
 import org.apache.dubbo.remoting.p2p.Networkers;
 import org.apache.dubbo.remoting.p2p.Peer;
+
 import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -50,7 +50,7 @@ public class MulticastExchangeNetworkerTest {
         Peer peer1 = multicastExchangeNetworker.lookup(URL.valueOf(groupURL))
                 .join(URL.valueOf("dubbo://0.0.0.0:" + NetUtils.getAvailablePort()), new ExchangeHandlerAdapter() {
                     @Override
-                    public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) throws RemotingException {
+                    public CompletionStage<Object> reply(ExchangeChannel channel, Object msg) throws RemotingException {
                         countDownLatch.countDown();
                         return super.reply(channel, msg);
                     }

@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 /**
  * PerformanceServer
@@ -78,7 +79,7 @@ public class PerformanceServerTest  {
                 return "echo: " + message + "\r\ntelnet> ";
             }
 
-            public CompletableFuture<Object> reply(ExchangeChannel channel, Object request) throws RemotingException {
+            public CompletionStage<Object> reply(ExchangeChannel channel, Object request) throws RemotingException {
                 if ("environment".equals(request)) {
                     return CompletableFuture.completedFuture(PerformanceUtils.getEnvironment());
                 }

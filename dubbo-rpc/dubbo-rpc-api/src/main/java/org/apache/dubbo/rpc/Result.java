@@ -19,6 +19,8 @@ package org.apache.dubbo.rpc;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.Future;
+import java.util.function.Function;
 
 
 /**
@@ -28,7 +30,7 @@ import java.util.concurrent.CompletionStage;
  * @see org.apache.dubbo.rpc.Invoker#invoke(Invocation)
  * @see org.apache.dubbo.rpc.RpcResult
  */
-public interface Result extends CompletionStage<Result>, Serializable {
+public interface Result extends CompletionStage<Result>, Future<Result>, Serializable {
 
     /**
      * Get invoke result.
@@ -108,4 +110,6 @@ public interface Result extends CompletionStage<Result>, Serializable {
 
     void setAttachment(String key, String value);
 
+    @Override
+    <U> CompletionStage<U> thenApply(Function<? super Result, ? extends U> fn);
 }
