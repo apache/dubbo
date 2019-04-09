@@ -145,6 +145,13 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-rpc-jsonrpc</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-rpc-rmi</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
@@ -491,6 +498,7 @@
                                     <include>org.apache.dubbo:dubbo-rpc-api</include>
                                     <include>org.apache.dubbo:dubbo-rpc-dubbo</include>
                                     <include>org.apache.dubbo:dubbo-rpc-injvm</include>
+                                    <include>org.apache.dubbo:dubbo-rpc-jsonrpc</include>
                                     <include>org.apache.dubbo:dubbo-rpc-rmi</include>
                                     <include>org.apache.dubbo:dubbo-rpc-hessian</include>
                                     <include>org.apache.dubbo:dubbo-rpc-http</include>
