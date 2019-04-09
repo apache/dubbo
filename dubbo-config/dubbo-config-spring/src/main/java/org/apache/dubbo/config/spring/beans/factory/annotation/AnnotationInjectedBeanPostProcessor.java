@@ -82,7 +82,7 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
     private final ConcurrentMap<String, AnnotationInjectedBeanPostProcessor.AnnotatedInjectionMetadata> injectionMetadataCache =
             new ConcurrentHashMap<String, AnnotationInjectedBeanPostProcessor.AnnotatedInjectionMetadata>(CACHE_SIZE);
 
-    private final ConcurrentMap<String, Object> injectedObjectsCache = new ConcurrentHashMap<String, Object>(CACHE_SIZE);
+    private final ConcurrentMap<String, Object> injectedObjectsCache = new ConcurrentHashMap<>(CACHE_SIZE);
 
     private ConfigurableListableBeanFactory beanFactory;
 
@@ -96,8 +96,9 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
         this.annotationType = resolveGenericType(getClass());
     }
 
+    @SafeVarargs
     private static <T> Collection<T> combine(Collection<? extends T>... elements) {
-        List<T> allElements = new ArrayList<T>();
+        List<T> allElements = new ArrayList<>();
         for (Collection<? extends T> e : elements) {
             allElements.addAll(e);
         }
@@ -147,25 +148,22 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
 
         final List<AnnotationInjectedBeanPostProcessor.AnnotatedFieldElement> elements = new LinkedList<AnnotationInjectedBeanPostProcessor.AnnotatedFieldElement>();
 
-        ReflectionUtils.doWithFields(beanClass, new ReflectionUtils.FieldCallback() {
-            @Override
-            public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
+        ReflectionUtils.doWithFields(beanClass, field -> {
 
-                A annotation = getAnnotation(field, getAnnotationType());
+            A annotation = getAnnotation(field, getAnnotationType());
 
-                if (annotation != null) {
+            if (annotation != null) {
 
-                    if (Modifier.isStatic(field.getModifiers())) {
-                        if (logger.isWarnEnabled()) {
-                            logger.warn("@" + getAnnotationType().getName() + " is not supported on static fields: " + field);
-                        }
-                        return;
+                if (Modifier.isStatic(field.getModifiers())) {
+                    if (logger.isWarnEnabled()) {
+                        logger.warn("@" + getAnnotationType().getName() + " is not supported on static fields: " + field);
                     }
-
-                    elements.add(new AnnotationInjectedBeanPostProcessor.AnnotatedFieldElement(field, annotation));
+                    return;
                 }
 
+                elements.add(new AnnotatedFieldElement(field, annotation));
             }
+
         });
 
         return elements;
@@ -182,34 +180,31 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
 
         final List<AnnotationInjectedBeanPostProcessor.AnnotatedMethodElement> elements = new LinkedList<AnnotationInjectedBeanPostProcessor.AnnotatedMethodElement>();
 
-        ReflectionUtils.doWithMethods(beanClass, new ReflectionUtils.MethodCallback() {
-            @Override
-            public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
+        ReflectionUtils.doWithMethods(beanClass, method -> {
 
-                Method bridgedMethod = findBridgedMethod(method);
+            Method bridgedMethod = findBridgedMethod(method);
 
-                if (!isVisibilityBridgeMethodPair(method, bridgedMethod)) {
+            if (!isVisibilityBridgeMethodPair(method, bridgedMethod)) {
+                return;
+            }
+
+            A annotation = findAnnotation(bridgedMethod, getAnnotationType());
+
+            if (annotation != null && method.equals(ClassUtils.getMostSpecificMethod(method, beanClass))) {
+                if (Modifier.isStatic(method.getModifiers())) {
+                    if (logger.isWarnEnabled()) {
+                        logger.warn("@" + getAnnotationType().getSimpleName() + " annotation is not supported on static methods: " + method);
+                    }
                     return;
                 }
-
-                A annotation = findAnnotation(bridgedMethod, getAnnotationType());
-
-                if (annotation != null && method.equals(ClassUtils.getMostSpecificMethod(method, beanClass))) {
-                    if (Modifier.isStatic(method.getModifiers())) {
-                        if (logger.isWarnEnabled()) {
-                            logger.warn("@" + getAnnotationType().getSimpleName() + " annotation is not supported on static methods: " + method);
-                        }
-                        return;
+                if (method.getParameterTypes().length == 0) {
+                    if (logger.isWarnEnabled()) {
+                        logger.warn("@" + getAnnotationType().getSimpleName() + " annotation should only be used on methods with parameters: " +
+                                method);
                     }
-                    if (method.getParameterTypes().length == 0) {
-                        if (logger.isWarnEnabled()) {
-                            logger.warn("@" + getAnnotationType().getSimpleName() + " annotation should only be used on methods with parameters: " +
-                                    method);
-                        }
-                    }
-                    PropertyDescriptor pd = BeanUtils.findPropertyForMethod(bridgedMethod, beanClass);
-                    elements.add(new AnnotationInjectedBeanPostProcessor.AnnotatedMethodElement(method, pd, annotation));
                 }
+                PropertyDescriptor pd = BeanUtils.findPropertyForMethod(bridgedMethod, beanClass);
+                elements.add(new AnnotatedMethodElement(method, pd, annotation));
             }
         });
 
