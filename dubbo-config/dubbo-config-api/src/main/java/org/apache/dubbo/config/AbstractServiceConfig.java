@@ -74,7 +74,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
      * after the service registered,and it needs to be enabled manually; if you want to disable the service, you also need
      * manual processing
      */
-    protected Boolean dynamic = false;
+    protected Boolean dynamic = true;
 
     /**
      * Whether to use token

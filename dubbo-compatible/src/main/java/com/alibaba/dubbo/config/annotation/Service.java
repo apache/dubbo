@@ -47,7 +47,7 @@ public @interface Service {
 
     boolean deprecated() default false;
 
-    boolean dynamic() default false;
+    boolean dynamic() default true;
 
     String accesslog() default "";
 
