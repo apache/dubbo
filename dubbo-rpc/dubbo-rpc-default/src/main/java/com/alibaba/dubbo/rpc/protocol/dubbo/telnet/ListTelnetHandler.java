@@ -65,10 +65,9 @@ public class ListTelnetHandler implements TelnetHandler {
                     buf.append("\r\n");
                 }
                 URL exportUrl = exporter.getInvoker().getUrl();
-                Map<String, String> params = StringUtils.parseQueryString(exportUrl.toFullString());
-                String group = params.get("group");
+                String group = exportUrl.getParameter("group", "");
                 if (StringUtils.isNotEmpty(group)) {
-                    buf.append(group.concat("/"));
+                    buf.append(group).append("/");
                 }
                 buf.append(exporter.getInvoker().getInterface().getName());
                 if (detail) {

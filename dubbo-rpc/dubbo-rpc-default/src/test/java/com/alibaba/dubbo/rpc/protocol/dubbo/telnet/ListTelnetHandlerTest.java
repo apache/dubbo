@@ -173,7 +173,7 @@ public class ListTelnetHandlerTest {
         String group = "dev";
         mockInvoker = EasyMock.createMock(Invoker.class);
         EasyMock.expect(mockInvoker.getInterface()).andReturn(DemoService.class).anyTimes();
-        EasyMock.expect(mockInvoker.getUrl()).andReturn(URL.valueOf("dubbo://127.0.0.1:20885/demo&group=" + group)).anyTimes();
+        EasyMock.expect(mockInvoker.getUrl()).andReturn(URL.valueOf("dubbo://127.0.0.1:20885/demo?group=" + group)).anyTimes();
         EasyMock.expect(mockInvoker.invoke((Invocation) EasyMock.anyObject())).andReturn(new RpcResult("ok")).anyTimes();
         mockChannel = EasyMock.createMock(Channel.class);
         EasyMock.expect(mockChannel.getAttribute("telnet.service")).andReturn(null).anyTimes();
