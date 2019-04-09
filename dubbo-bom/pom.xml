@@ -25,7 +25,6 @@
         <version>2.7.2-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.apache.dubbo</groupId>
     <artifactId>dubbo-bom</artifactId>
     <version>2.7.2-SNAPSHOT</version>
     <packaging>pom</packaging>
