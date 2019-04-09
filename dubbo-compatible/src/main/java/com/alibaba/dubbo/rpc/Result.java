@@ -18,9 +18,6 @@
 package com.alibaba.dubbo.rpc;
 
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.function.Function;
 
 @Deprecated
 public interface Result extends org.apache.dubbo.rpc.Result {
@@ -35,23 +32,11 @@ public interface Result extends org.apache.dubbo.rpc.Result {
 
     }
 
-    @Override
-    default org.apache.dubbo.rpc.Result thenApplyWithContext(Function<org.apache.dubbo.rpc.Result, org.apache.dubbo.rpc.Result> fn) {
-        return this;
+    abstract class AbstractResult extends org.apache.dubbo.rpc.AbstractResult implements Result {
+
     }
 
-    @Override
-    default <U> CompletableFuture<U> thenApply(Function<org.apache.dubbo.rpc.Result, ? extends U> fn) {
-        return null;
-    }
-
-    @Override
-    default org.apache.dubbo.rpc.Result get() throws InterruptedException, ExecutionException {
-        return this;
-    }
-
-
-    class CompatibleResult implements Result {
+    class CompatibleResult extends AbstractResult {
         private org.apache.dubbo.rpc.Result delegate;
 
         public CompatibleResult(org.apache.dubbo.rpc.Result result) {
@@ -68,8 +53,18 @@ public interface Result extends org.apache.dubbo.rpc.Result {
         }
 
         @Override
+        public void setValue(Object value) {
+            delegate.setValue(value);
+        }
+
+        @Override
         public Throwable getException() {
             return delegate.getException();
+        }
+
+        @Override
+        public void setException(Throwable t) {
+            delegate.setException(t);
         }
 
         @Override
