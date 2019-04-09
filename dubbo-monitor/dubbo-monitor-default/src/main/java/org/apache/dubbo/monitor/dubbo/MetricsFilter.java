@@ -43,8 +43,12 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.support.RpcUtils;
-
-import java.util.*;
+import java.util.Collections;
+import java.util.SortedMap;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -105,9 +109,25 @@ public class MetricsFilter implements Filter {
         }
     }
 
+    private String buildMethodName(Invocation invocation) {
+        String methodName = RpcUtils.getMethodName(invocation);
+        StringBuilder method = new StringBuilder(methodName);
+        Class<?>[] argTypes = RpcUtils.getParameterTypes(invocation);
+
+        method.append("(");
+
+        for (int i = 0; i < argTypes.length; i++) {
+            method.append((i == 0 ? "" : ", ") + argTypes[i].getSimpleName());
+        }
+        method.append(")");
+        Class<?> returnType = RpcUtils.getReturnType(invocation);
+
+        return (returnType == null ? "void" : returnType.getClass().getSimpleName()) + " " + method;
+    }
+
     private void reportMetrics(Invoker<?> invoker, Invocation invocation, long duration, String result, boolean isProvider) {
         String serviceName = invoker.getInterface().getName();
-        String methodName = RpcUtils.getMethodName(invocation);
+        String methodName = buildMethodName(invocation);
         MetricName global;
         MetricName method;
         if (isProvider) {
