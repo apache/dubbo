@@ -133,7 +133,6 @@ public class MetricsFilter implements Filter {
     private void reportMetrics(Invoker<?> invoker, Invocation invocation, long duration, String result, boolean isProvider) {
         String serviceName = invoker.getInterface().getName();
         String methodName = buildMethodName(invocation);
-        System.out.println(methodName);
         MetricName global;
         MetricName method;
         if (isProvider) {
