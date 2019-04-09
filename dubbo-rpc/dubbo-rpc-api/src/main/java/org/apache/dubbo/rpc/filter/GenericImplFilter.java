@@ -125,7 +125,9 @@ public class GenericImplFilter extends ListenableFilter {
             String generic = invoker.getUrl().getParameter(Constants.GENERIC_KEY);
             String methodName = invocation.getMethodName();
             Class<?>[] parameterTypes = invocation.getParameterTypes();
-            if (ProtocolUtils.isGeneric(generic) && (!Constants.$INVOKE.equals(invocation.getMethodName()) && !Constants.$INVOKE_ASYNC.equals(invocation.getMethodName())) && invocation instanceof RpcInvocation) {
+            if (ProtocolUtils.isGeneric(generic)
+                    && (!Constants.$INVOKE.equals(invocation.getMethodName()) && !Constants.$INVOKE_ASYNC.equals(invocation.getMethodName()))
+                    && invocation instanceof RpcInvocation) {
                 if (!result.hasException()) {
                     Object value = result.getValue();
                     try {

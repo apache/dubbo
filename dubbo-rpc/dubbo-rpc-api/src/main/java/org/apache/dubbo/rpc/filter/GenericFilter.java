@@ -125,9 +125,16 @@ public class GenericFilter extends ListenableFilter {
 
         @Override
         public void onResponse(Result result, Invoker<?> invoker, Invocation inv) {
-            if ((inv.getMethodName().equals(Constants.$INVOKE) || inv.getMethodName().equals(Constants.$INVOKE_ASYNC)) && inv.getArguments() != null && inv.getArguments().length == 3 && !GenericService.class.isAssignableFrom(invoker.getInterface())) {
+            if ((inv.getMethodName().equals(Constants.$INVOKE) || inv.getMethodName().equals(Constants.$INVOKE_ASYNC))
+                    && inv.getArguments() != null
+                    && inv.getArguments().length == 3
+                    && !GenericService.class.isAssignableFrom(invoker.getInterface())) {
 
                 String generic = inv.getAttachment(Constants.GENERIC_KEY);
+                if (StringUtils.isBlank(generic)) {
+                    generic = RpcContext.getContext().getAttachment(Constants.GENERIC_KEY);
+                }
+
                 if (result.hasException() && !(result.getException() instanceof GenericException)) {
                     result.setException(new GenericException(result.getException()));
                 }
