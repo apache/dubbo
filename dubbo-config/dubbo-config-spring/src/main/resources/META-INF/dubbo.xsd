@@ -387,6 +387,11 @@
                 <xsd:documentation><![CDATA[ The application monitor. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="prefer-public-address" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ prefer public address. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="default" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>

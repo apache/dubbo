@@ -123,9 +123,10 @@ public class ApplicationConfig extends AbstractConfig {
      */
     private String shutwait;
 
-
-    private Boolean preferPublicIp;
-
+    /**
+     * Config the dubbo.prefer.public.address
+     */
+    private Boolean preferPublicAddress;
 
     public ApplicationConfig() {
     }
@@ -331,11 +332,14 @@ public class ApplicationConfig extends AbstractConfig {
         return !StringUtils.isEmpty(name);
     }
 
-    public Boolean getPreferPublicIp() {
-        return preferPublicIp;
+    @Parameter(key = Constants.PREFER_PUBLIC_ADDRESS)
+    public Boolean getPreferPublicAddress() {
+        return preferPublicAddress;
     }
 
-    public void setPreferPublicIp(Boolean preferPublicIp) {
-        this.preferPublicIp = preferPublicIp;
+    public void setPreferPublicAddress(Boolean preferPublicAddress) {
+        System.setProperty(Constants.PREFER_PUBLIC_ADDRESS, Boolean.toString(preferPublicAddress));
+        this.preferPublicAddress = preferPublicAddress;
     }
+
 }

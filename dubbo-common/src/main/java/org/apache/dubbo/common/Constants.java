@@ -860,6 +860,8 @@ public class Constants {
 
     public static final int DEFAULT_GRPC_QUEUES = 300_0000;
 
+    public static final String PREFER_PUBLIC_ADDRESS = "dubbo.prefer.public.address";
+
     /**
      * metrics
      */

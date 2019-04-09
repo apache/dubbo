@@ -41,6 +41,7 @@ import java.util.regex.Pattern;
  * IP and Port Helper for RPC
  */
 public class NetUtils {
+
     private static final Logger logger = LoggerFactory.getLogger(NetUtils.class);
 
     // returned port range is [30000, 39999]
@@ -152,7 +153,7 @@ public class NetUtils {
         return false;
     }
 
-    static boolean isValidPublicAddress(InetAddress address) {
+    private static boolean isValidPublicAddress(InetAddress address) {
         return !address.isSiteLocalAddress() && !address.isLoopbackAddress();
     }
 
@@ -235,7 +236,7 @@ public class NetUtils {
     }
 
     private static Optional<InetAddress> toValidAddress(InetAddress address) {
-        if (isValidPublicAddress(address)) {
+        if (!address.isLoopbackAddress()) {
             if (address instanceof Inet6Address) {
                 Inet6Address v6Address = (Inet6Address) address;
                 if (isValidV6Address(v6Address)) {
@@ -266,15 +267,22 @@ public class NetUtils {
             if (null == interfaces) {
                 return localAddress;
             }
+            Boolean preferPublicAddress = Boolean.valueOf(ConfigUtils.getProperty(Constants.PREFER_PUBLIC_ADDRESS, "true"));
             while (interfaces.hasMoreElements()) {
                 try {
                     NetworkInterface network = interfaces.nextElement();
+                    if (network.isLoopback() || network.isVirtual() || !network.isUp()) {
+                        continue;
+                    }
                     Enumeration<InetAddress> addresses = network.getInetAddresses();
                     while (addresses.hasMoreElements()) {
                         try {
-                            Optional<InetAddress> addressOp = toValidAddress(addresses.nextElement());
-                            if (addressOp.isPresent()) {
-                                return addressOp.get();
+                            Optional<InetAddress> interfaceAddressOp = toValidAddress(addresses.nextElement());
+                            if (interfaceAddressOp.isPresent()) {
+                                // preferPublicAddress matches the found address
+                                if (preferPublicAddress.equals(isValidPublicAddress(interfaceAddressOp.get()))) {
+                                    return interfaceAddressOp.get();
+                                }
                             }
                         } catch (Throwable e) {
                             logger.warn(e);
@@ -287,6 +295,7 @@ public class NetUtils {
         } catch (Throwable e) {
             logger.warn(e);
         }
+
         return localAddress;
     }
 
