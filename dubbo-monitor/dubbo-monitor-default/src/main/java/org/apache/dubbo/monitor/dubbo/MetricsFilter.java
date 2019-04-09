@@ -14,31 +14,102 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.monitor.support;
+package org.apache.dubbo.monitor.dubbo;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.metrics.FastCompass;
 import com.alibaba.metrics.MetricLevel;
 import com.alibaba.metrics.MetricManager;
 import com.alibaba.metrics.MetricName;
+import com.alibaba.metrics.MetricRegistry;
+import com.alibaba.metrics.common.CollectLevel;
+import com.alibaba.metrics.common.MetricsCollector;
+import com.alibaba.metrics.common.MetricsCollectorFactory;
 import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.monitor.MetricsService;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.concurrent.TimeUnit;
 
 public class MetricsFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(MetricsFilter.class);
+    private static volatile boolean exported = false;
+    private URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":20880/" + MetricsService.class.getName());
+
+    private Invoker<MetricsService> metricsInvoker = new Invoker<MetricsService>() {
+        @Override
+        public Class<MetricsService> getInterface() {
+            return MetricsService.class;
+        }
+
+        @Override
+        public Result invoke(Invocation invocation) throws RpcException {
+            String group = invocation.getArguments()[0].toString();
+            MetricRegistry registry = MetricManager.getIMetricManager().getMetricRegistryByGroup(group);
+
+            SortedMap<MetricName, FastCompass> fastCompasses = registry.getFastCompasses();
+
+            long timestamp  = System.currentTimeMillis();
+            double rateFactor = TimeUnit.SECONDS.toSeconds(1);
+            double durationFactor = 1.0 / TimeUnit.MILLISECONDS.toNanos(1);
+
+
+            MetricsCollector collector = MetricsCollectorFactory.createNew(
+                    CollectLevel.NORMAL, Collections.EMPTY_MAP, rateFactor, durationFactor, null);
+
+            for (Map.Entry<MetricName, FastCompass> entry : fastCompasses.entrySet()) {
+                collector.collect(entry.getKey(), entry.getValue(), timestamp);
+            }
+
+            RpcResult result = new RpcResult();
+
+            result.setValue(JSON.toJSONString(collector.build()));
+            return result;
+        }
+
+        @Override
+        public URL getUrl() {
+            return url;
+        }
+
+        @Override
+        public boolean isAvailable() {
+            return false;
+        }
+
+        @Override
+        public void destroy() {
+
+        }
+    };
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+        if(!exported) {
+            String protocolName = metricsInvoker.getUrl().getProtocol();
+            Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(protocolName);
+            //TODO GET protocol by configuration file support rest protocol
+            protocol.export(metricsInvoker);
+            exported = true;
+        }
         RpcContext context = RpcContext.getContext();
         boolean isProvider = context.isProviderSide();
         long start = System.currentTimeMillis();

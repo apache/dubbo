@@ -871,6 +871,8 @@ public class Constants {
     public static final String METHOD = "method";
     public static final String DUBBO_GROUP = "dubbo";
     public static final String METRICS_KEY = "metrics";
+    public static final String METRICS_PORT = "metrics.port";
+    public static final String METRICS_PROTOCOL = "metrics.protocol";
 
 
 }

@@ -260,6 +260,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         Map<String, String> map = new HashMap<String, String>();
 
         map.put(Constants.SIDE_KEY, Constants.CONSUMER_SIDE);
+        MetricsConfig.addMetricsDataToMap(map);
         appendRuntimeParameters(map);
         if (!isGeneric()) {
             String revision = Version.getVersion(interfaceClass, version);
