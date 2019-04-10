@@ -145,6 +145,13 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-rpc-jsonrpc</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-rpc-rmi</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
@@ -334,6 +341,13 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-serialization-avro</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-serialization-protostuff</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
@@ -491,6 +505,7 @@
                                     <include>org.apache.dubbo:dubbo-rpc-api</include>
                                     <include>org.apache.dubbo:dubbo-rpc-dubbo</include>
                                     <include>org.apache.dubbo:dubbo-rpc-injvm</include>
+                                    <include>org.apache.dubbo:dubbo-rpc-jsonrpc</include>
                                     <include>org.apache.dubbo:dubbo-rpc-rmi</include>
                                     <include>org.apache.dubbo:dubbo-rpc-hessian</include>
                                     <include>org.apache.dubbo:dubbo-rpc-http</include>
@@ -523,6 +538,7 @@
                                     <include>org.apache.dubbo:dubbo-serialization-hessian2</include>
                                     <include>org.apache.dubbo:dubbo-serialization-fst</include>
                                     <include>org.apache.dubbo:dubbo-serialization-kryo</include>
+                                    <include>org.apache.dubbo:dubbo-serialization-avro</include>
                                     <include>org.apache.dubbo:dubbo-serialization-jdk</include>
                                     <include>org.apache.dubbo:dubbo-serialization-protostuff</include>
                                     <include>org.apache.dubbo:dubbo-configcenter-api</include>
