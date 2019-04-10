@@ -225,4 +225,8 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
     public void destroy() {
         // do nothing
     }
+
+    public ApplicationContext getApplicationContext() {
+        return applicationContext;
+    }
 }
