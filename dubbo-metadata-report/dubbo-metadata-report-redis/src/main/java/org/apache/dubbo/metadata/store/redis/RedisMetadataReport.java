@@ -16,15 +16,23 @@
  */
 package org.apache.dubbo.metadata.store.redis;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.support.AbstractMetadataReport;
 import org.apache.dubbo.rpc.RpcException;
+
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * RedisMetadataReport
@@ -33,11 +41,21 @@ public class RedisMetadataReport extends AbstractMetadataReport {
 
     private final static Logger logger = LoggerFactory.getLogger(RedisMetadataReport.class);
 
-    final JedisPool pool;
+    JedisPool pool;
+    Set<HostAndPort> jedisClusterNodes;
+
 
     public RedisMetadataReport(URL url) {
         super(url);
-        pool = new JedisPool(new JedisPoolConfig(), url.getHost(), url.getPort());
+        if (url.getParameter(Constants.CLUSTER_KEY, false)) {
+            jedisClusterNodes = new HashSet<HostAndPort>();
+            List<URL> urls = url.getBackupUrls();
+            for (URL tmpUrl : urls) {
+                jedisClusterNodes.add(new HostAndPort(tmpUrl.getHost(), tmpUrl.getPort()));
+            }
+        } else {
+            pool = new JedisPool(new JedisPoolConfig(), url.getHost(), url.getPort());
+        }
     }
 
     @Override
@@ -51,6 +69,23 @@ public class RedisMetadataReport extends AbstractMetadataReport {
     }
 
     private void storeMetadata(MetadataIdentifier metadataIdentifier, String v) {
+        if (pool != null) {
+            storeMetadataStandalone(metadataIdentifier, v);
+        } else {
+            storeMetadataInCluster(metadataIdentifier, v);
+        }
+    }
+
+    private void storeMetadataInCluster(MetadataIdentifier metadataIdentifier, String v) {
+        try (JedisCluster jedisCluster = new JedisCluster(jedisClusterNodes)) {
+            jedisCluster.set(metadataIdentifier.getIdentifierKey() + META_DATA_STORE_TAG, v);
+        } catch (Throwable e) {
+            logger.error("Failed to put " + metadataIdentifier + " to redis cluster " + v + ", cause: " + e.getMessage(), e);
+            throw new RpcException("Failed to put " + metadataIdentifier + " to redis " + v + ", cause: " + e.getMessage(), e);
+        }
+    }
+
+    private void storeMetadataStandalone(MetadataIdentifier metadataIdentifier, String v) {
         try (Jedis jedis = pool.getResource()) {
             jedis.set(metadataIdentifier.getIdentifierKey() + META_DATA_STORE_TAG, v);
         } catch (Throwable e) {
@@ -58,6 +93,5 @@ public class RedisMetadataReport extends AbstractMetadataReport {
             throw new RpcException("Failed to put " + metadataIdentifier + " to redis " + v + ", cause: " + e.getMessage(), e);
         }
     }
-
 
 }

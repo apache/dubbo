@@ -626,6 +626,11 @@
                 <xsd:documentation><![CDATA[ Sync or Async report. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="cluster" type="xsd:boolean" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Need cluster support, default false. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="configCenterType">
