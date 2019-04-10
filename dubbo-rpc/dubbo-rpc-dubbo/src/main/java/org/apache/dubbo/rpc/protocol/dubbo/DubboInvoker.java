@@ -23,6 +23,7 @@ import org.apache.dubbo.common.utils.AtomicPositiveInteger;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -86,9 +87,9 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 RpcContext.getContext().setFuture(null);
                 return AsyncRpcResult.newDefaultAsyncResult(invocation);
             } else {
-                CompletableFuture<Result> resultFuture = currentClient.request(inv, timeout).thenApply(obj -> (Result) obj);
-                RpcContext.getContext().setFuture(new FutureAdapter(resultFuture));
-                return new AsyncRpcResult(resultFuture, inv);
+                CompletableFuture<AppResponse> appResponseFuture = currentClient.request(inv, timeout).thenApply(obj -> (AppResponse) obj);
+                RpcContext.getContext().setFuture(new FutureAdapter(appResponseFuture));
+                return new AsyncRpcResult(appResponseFuture, inv);
             }
         } catch (TimeoutException e) {
             throw new RpcException(RpcException.TIMEOUT_EXCEPTION, "Invoke remote method timeout. method: " + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);

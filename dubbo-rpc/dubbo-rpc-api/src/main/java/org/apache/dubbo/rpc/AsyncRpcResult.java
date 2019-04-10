@@ -35,11 +35,11 @@ public class AsyncRpcResult implements Result {
     private RpcContext storedContext;
     private RpcContext storedServerContext;
 
-    private CompletableFuture<Result> resultFuture;
+    private CompletableFuture<AppResponse> responseFuture;
     private Invocation invocation;
 
-    public AsyncRpcResult(CompletableFuture<Result> future, Invocation invocation) {
-        this.resultFuture = future;
+    public AsyncRpcResult(CompletableFuture<AppResponse> future, Invocation invocation) {
+        this.responseFuture = future;
         this.invocation = invocation;
         this.storedContext = RpcContext.getContext();
         this.storedServerContext = RpcContext.getServerContext();
@@ -70,34 +70,34 @@ public class AsyncRpcResult implements Result {
         return getRpcResult().hasException();
     }
 
-    public CompletableFuture<Result> getResultFuture() {
-        return resultFuture;
+    public CompletableFuture<AppResponse> getResponseFuture() {
+        return responseFuture;
     }
 
-    public void setResultFuture(CompletableFuture<Result> resultFuture) {
-        this.resultFuture = resultFuture;
+    public void setResponseFuture(CompletableFuture<AppResponse> responseFuture) {
+        this.responseFuture = responseFuture;
     }
 
     public Result getRpcResult() {
         try {
-            if (resultFuture.isDone()) {
-                return resultFuture.get();
+            if (responseFuture.isDone()) {
+                return responseFuture.get();
             }
         } catch (Exception e) {
             // This should never happen;
             logger.error("Got exception when trying to fetch the underlying result from AsyncRpcResult.", e);
         }
-        return new RpcResult();
+        return new AppResponse();
     }
 
     @Override
     public Object recreate() throws Throwable {
         RpcInvocation rpcInvocation = (RpcInvocation) invocation;
         if (InvokeMode.FUTURE == rpcInvocation.getInvokeMode()) {
-            RpcResult rpcResult = new RpcResult();
+            AppResponse rpcResult = new AppResponse();
             CompletableFuture<Object> future = new CompletableFuture<>();
             rpcResult.setValue(future);
-            resultFuture.whenComplete((result, t) -> {
+            responseFuture.whenComplete((result, t) -> {
                 if (t != null) {
                     if (t instanceof CompletionException) {
                         t = t.getCause();
@@ -112,25 +112,25 @@ public class AsyncRpcResult implements Result {
                 }
             });
             return rpcResult.recreate();
-        } else if (resultFuture.isDone()) {
-            return resultFuture.get().recreate();
+        } else if (responseFuture.isDone()) {
+            return responseFuture.get().recreate();
         }
-        return (new RpcResult()).recreate();
+        return (new AppResponse()).recreate();
     }
 
     public Result get() throws InterruptedException, ExecutionException {
-        return resultFuture.get();
+        return responseFuture.get();
     }
 
     @Override
-    public Result thenApplyWithContext(Function<Result, Result> fn) {
-        this.resultFuture = resultFuture.thenApply(fn.compose(beforeContext).andThen(afterContext));
+    public Result thenApplyWithContext(Function<AppResponse, AppResponse> fn) {
+        this.responseFuture = responseFuture.thenApply(fn.compose(beforeContext).andThen(afterContext));
         return this;
     }
 
     @Override
     public <U> CompletableFuture<U> thenApply(Function<Result,? extends U> fn) {
-        return this.resultFuture.thenApply(fn);
+        return this.responseFuture.thenApply(fn);
     }
 
     @Override
@@ -169,21 +169,24 @@ public class AsyncRpcResult implements Result {
     private RpcContext tmpContext;
     private RpcContext tmpServerContext;
 
-    private Function<Result, Result> beforeContext = (result) -> {
+    private Function<AppResponse, AppResponse> beforeContext = (appResponse) -> {
         tmpContext = RpcContext.getContext();
         tmpServerContext = RpcContext.getServerContext();
         RpcContext.restoreContext(storedContext);
         RpcContext.restoreServerContext(storedServerContext);
-        return result;
+        return appResponse;
     };
 
-    private Function<Result, Result> afterContext = (result) -> {
+    private Function<AppResponse, AppResponse> afterContext = (appResponse) -> {
         RpcContext.restoreContext(tmpContext);
         RpcContext.restoreServerContext(tmpServerContext);
-        return result;
+        return appResponse;
     };
 
-    public static AsyncRpcResult newDefaultAsyncResult(RpcResult result, Invocation invocation) {
+    /**
+     * Some utility methods used to quickly generate default AsyncRpcResult instance.
+     */
+    public static AsyncRpcResult newDefaultAsyncResult(AppResponse result, Invocation invocation) {
         return new AsyncRpcResult(CompletableFuture.completedFuture(result), invocation);
     }
 
@@ -200,8 +203,8 @@ public class AsyncRpcResult implements Result {
     }
 
     public static AsyncRpcResult newDefaultAsyncResult(Object value, Throwable t, Invocation invocation) {
-        CompletableFuture<Result> future = new CompletableFuture<>();
-        RpcResult result = new RpcResult();
+        CompletableFuture<AppResponse> future = new CompletableFuture<>();
+        AppResponse result = new AppResponse();
         if (t != null) {
             result.setException(t);
         } else {

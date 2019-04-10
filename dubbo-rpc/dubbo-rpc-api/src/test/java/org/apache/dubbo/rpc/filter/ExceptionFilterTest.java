@@ -17,13 +17,13 @@
 package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.support.DemoService;
 import org.apache.dubbo.rpc.support.LocalException;
 
@@ -80,7 +80,7 @@ public class ExceptionFilterTest {
         ExceptionFilter exceptionFilter = new ExceptionFilter();
         RpcInvocation invocation = new RpcInvocation("sayHello", new Class<?>[]{String.class}, new Object[]{"world"});
 
-        RpcResult rpcResult = new RpcResult();
+        AppResponse rpcResult = new AppResponse();
         rpcResult.setException(new IllegalArgumentException("java"));
 
         Invoker<DemoService> invoker = mock(Invoker.class);
@@ -100,7 +100,7 @@ public class ExceptionFilterTest {
         ExceptionFilter exceptionFilter = new ExceptionFilter();
         RpcInvocation invocation = new RpcInvocation("sayHello", new Class<?>[]{String.class}, new Object[]{"world"});
 
-        RpcResult rpcResult = new RpcResult();
+        AppResponse rpcResult = new AppResponse();
         rpcResult.setException(new LocalException("localException"));
 
         Invoker<DemoService> invoker = mock(Invoker.class);
@@ -120,7 +120,7 @@ public class ExceptionFilterTest {
         ExceptionFilter exceptionFilter = new ExceptionFilter();
         RpcInvocation invocation = new RpcInvocation("sayHello", new Class<?>[]{String.class}, new Object[]{"world"});
 
-        Result mockRpcResult = new RpcResult();
+        AppResponse mockRpcResult = new AppResponse();
         mockRpcResult.setException(new HessianException("hessian"));
         Result mockAsyncResult = new AsyncRpcResult(CompletableFuture.completedFuture(mockRpcResult), invocation);
 

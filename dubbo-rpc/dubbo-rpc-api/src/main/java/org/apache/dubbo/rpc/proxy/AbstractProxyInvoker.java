@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.proxy;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncContextImpl;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
@@ -26,7 +27,6 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -84,8 +84,8 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
         try {
             Object value = doInvoke(proxy, invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
             CompletableFuture<Object> future = wrapWithFuture(value, invocation);
-            CompletableFuture<Result> resultFuture = future.handle((obj, t) -> {
-                RpcResult result = new RpcResult();
+            CompletableFuture<AppResponse> appResponseFuture = future.handle((obj, t) -> {
+                AppResponse result = new AppResponse();
                 if (t != null) {
                     if (t instanceof CompletionException) {
                         result.setException(t.getCause());
@@ -97,7 +97,7 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
                 }
                 return result;
             });
-            return new AsyncRpcResult(resultFuture, invocation);
+            return new AsyncRpcResult(appResponseFuture, invocation);
         } catch (InvocationTargetException e) {
             if (RpcContext.getContext().isAsyncStarted() && !RpcContext.getContext().stopAsync()) {
                 logger.error("Provider async started, but got an exception from the original method, cannot write the exception back to consumer because an async result may have returned the new thread.", e);

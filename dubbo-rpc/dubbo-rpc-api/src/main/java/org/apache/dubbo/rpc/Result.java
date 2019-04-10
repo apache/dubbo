@@ -28,7 +28,7 @@ import java.util.function.Function;
  *
  * @serial Don't change the class name and package name.
  * @see org.apache.dubbo.rpc.Invoker#invoke(Invocation)
- * @see org.apache.dubbo.rpc.RpcResult
+ * @see AppResponse
  */
 public interface Result extends Serializable {
 
@@ -110,7 +110,7 @@ public interface Result extends Serializable {
 
     void setAttachment(String key, String value);
 
-    Result thenApplyWithContext(Function<Result, Result> fn);
+    Result thenApplyWithContext(Function<AppResponse, AppResponse> fn);
 
     <U> CompletableFuture<U> thenApply(Function<Result, ? extends U> fn);
 

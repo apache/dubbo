@@ -24,11 +24,27 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
 /**
- * RPC Result.
+ * {@link AsyncRpcResult} is introduced in 3.0.0 to replace RpcResult, and RpcResult is replaced with {@link AppResponse}:
+ * <ul>
+ *     <li>AsyncRpcResult is the object that is actually passed in the call chain</li>
+ *     <li>AppResponse only simply represents the business result</li>
+ * </ul>
  *
- * @serial Don't change the class name and properties.
+ *  The relationship between them can be reflected in the definition of AsyncRpcResult:
+ *  <pre>
+ *  {@code
+ *   Public class AsyncRpcResult implements Result {
+ *      private CompletableFuture <AppResponse> resultFuture;
+ *       ......
+ *   }
+ *  }
+ * </pre>
+ *
+ * In theory, AppResponse does not need to implement the {@link Result} interface, this is done mainly for compatibility purpose.
+ *
+ * @serial Do not change the class name and properties.
  */
-public class RpcResult implements Result, Serializable {
+public class AppResponse implements Result, Serializable {
 
     private static final long serialVersionUID = -6925924956850004727L;
 
@@ -38,14 +54,14 @@ public class RpcResult implements Result, Serializable {
 
     private Map<String, String> attachments = new HashMap<String, String>();
 
-    public RpcResult() {
+    public AppResponse() {
     }
 
-    public RpcResult(Object result) {
+    public AppResponse(Object result) {
         this.result = result;
     }
 
-    public RpcResult(Throwable exception) {
+    public AppResponse(Throwable exception) {
         this.exception = exception;
     }
 
@@ -123,22 +139,22 @@ public class RpcResult implements Result, Serializable {
     }
 
     @Override
-    public Result thenApplyWithContext(Function<Result, Result> fn) {
-        throw new UnsupportedOperationException("RpcResult represents an concrete response, there will be no status changes, you should get internal values directly.");
+    public Result thenApplyWithContext(Function<AppResponse, AppResponse> fn) {
+        throw new UnsupportedOperationException("AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
     }
 
     @Override
     public <U> CompletableFuture<U> thenApply(Function<Result, ? extends U> fn) {
-        throw new UnsupportedOperationException("RpcResult represents an concrete response, there will be no status changes, you should get internal values directly.");
+        throw new UnsupportedOperationException("AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
     }
 
     @Override
     public Result get() throws InterruptedException, ExecutionException {
-        throw new UnsupportedOperationException("RpcResult represents an concrete response, there will be no status changes, you should get internal values directly.");
+        throw new UnsupportedOperationException("AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
     }
 
     @Override
     public String toString() {
-        return "RpcResult [result=" + result + ", exception=" + exception + "]";
+        return "AppResponse [value=" + result + ", exception=" + exception + "]";
     }
 }

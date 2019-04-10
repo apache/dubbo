@@ -25,6 +25,7 @@ import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeClient;
 import org.apache.dubbo.remoting.transport.ClientDelegate;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
@@ -65,8 +66,8 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
                 currentClient.send(inv, getUrl().getMethodParameter(invocation.getMethodName(), Constants.SENT_KEY, false));
                 return AsyncRpcResult.newDefaultAsyncResult(invocation);
             } else {
-                CompletableFuture<Result> resultFuture = currentClient.request(inv).thenApply(obj -> (Result) obj);
-                return new AsyncRpcResult(resultFuture, inv);
+                CompletableFuture<AppResponse> appResponseFuture = currentClient.request(inv).thenApply(obj -> (AppResponse) obj);
+                return new AsyncRpcResult(appResponseFuture, inv);
             }
         } catch (RpcException e) {
             throw e;

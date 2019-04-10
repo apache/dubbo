@@ -17,6 +17,8 @@
 
 package com.alibaba.dubbo.rpc;
 
+import org.apache.dubbo.rpc.AppResponse;
+
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -36,7 +38,7 @@ public interface Result extends org.apache.dubbo.rpc.Result {
     }
 
     @Override
-    default org.apache.dubbo.rpc.Result thenApplyWithContext(Function<org.apache.dubbo.rpc.Result, org.apache.dubbo.rpc.Result> fn) {
+    default org.apache.dubbo.rpc.Result thenApplyWithContext(Function<AppResponse, AppResponse> fn) {
         return this;
     }
 
