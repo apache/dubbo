@@ -50,7 +50,7 @@ public class FutureSubscriber extends CompletableFuture<AppResponse> implements 
     @Override
     public void onNext(Payload payload) {
         try {
-            AppResponse rpcResult = new AppResponse();
+            AppResponse appResponse = new AppResponse();
             ByteBuffer dataBuffer = payload.getData();
             byte[] dataBytes = new byte[dataBuffer.remaining()];
             dataBuffer.get(dataBytes, dataBuffer.position(), dataBuffer.remaining());
@@ -60,7 +60,7 @@ public class FutureSubscriber extends CompletableFuture<AppResponse> implements 
             int flag = in.readByte();
             if ((flag & RSocketConstants.FLAG_ERROR) != 0) {
                 Throwable t = (Throwable) in.readObject();
-                rpcResult.setException(t);
+                appResponse.setException(t);
             } else {
                 Object value = null;
                 if ((flag & RSocketConstants.FLAG_NULL_VALUE) == 0) {
@@ -69,17 +69,17 @@ public class FutureSubscriber extends CompletableFuture<AppResponse> implements 
                     } else {
                         value = in.readObject(retType);
                     }
-                    rpcResult.setValue(value);
+                    appResponse.setValue(value);
                 }
             }
 
             if ((flag & RSocketConstants.FLAG_HAS_ATTACHMENT) != 0) {
                 Map<String, String> attachment = in.readObject(Map.class);
-                rpcResult.setAttachments(attachment);
+                appResponse.setAttachments(attachment);
 
             }
 
-            this.complete(rpcResult);
+            this.complete(appResponse);
 
 
         } catch (Throwable t) {

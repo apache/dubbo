@@ -25,7 +25,7 @@ import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.utils.AtomicPositiveInteger;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.remoting.transport.CodecSupport;
-import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -108,17 +108,15 @@ public class RSocketInvoker<T> extends AbstractInvoker<T> {
                         return decodeData(payload);
                     }
                 });
-                AppResponse rpcResult = new AppResponse();
-                rpcResult.setValue(bizMono);
-                return rpcResult;
+                return AsyncRpcResult.newDefaultAsyncResult(bizMono, invocation);
             } else if (retType != null && retType.isAssignableFrom(Flux.class)) {
-                return requestStream(currentClient, requestPayload);
+                return AsyncRpcResult.newDefaultAsyncResult(requestStream(currentClient, requestPayload), invocation);
             } else {
                 //request-reponse
                 Mono<Payload> responseMono = currentClient.requestResponse(requestPayload);
                 FutureSubscriber futureSubscriber = new FutureSubscriber(serialization, retType);
                 responseMono.subscribe(futureSubscriber);
-                return (Result) futureSubscriber.get();
+                return AsyncRpcResult.newDefaultAsyncResult(futureSubscriber.get(), invocation);
             }
 
             //TODO support stream arg
@@ -128,7 +126,7 @@ public class RSocketInvoker<T> extends AbstractInvoker<T> {
     }
 
 
-    private Result requestStream(RSocket currentClient, Payload requestPayload) {
+    private Flux<Object> requestStream(RSocket currentClient, Payload requestPayload) {
         Flux<Payload> responseFlux = currentClient.requestStream(requestPayload);
         Flux<Object> retFlux = responseFlux.map(new Function<Payload, Object>() {
 
@@ -140,9 +138,7 @@ public class RSocketInvoker<T> extends AbstractInvoker<T> {
             }
         });
 
-        AppResponse rpcResult = new AppResponse();
-        rpcResult.setValue(retFlux);
-        return rpcResult;
+        return retFlux;
     }
 
 
