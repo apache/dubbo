@@ -226,7 +226,5 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
         // do nothing
     }
 
-    public ApplicationContext getApplicationContext() {
-        return applicationContext;
-    }
+
 }

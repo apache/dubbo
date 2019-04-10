@@ -143,7 +143,6 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                     try {
                         getter = beanClass.getMethod("is" + name.substring(3), new Class<?>[0]);
                     } catch (NoSuchMethodException e2) {
-                        logger.error("Method " + name + " parse error,  cause: " + e2.getMessage(), e2);
                     }
                 }
                 if (getter == null

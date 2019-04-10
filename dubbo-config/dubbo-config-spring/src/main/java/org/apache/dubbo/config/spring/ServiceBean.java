@@ -352,12 +352,5 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
     public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
         this.applicationEventPublisher = applicationEventPublisher;
     }
-
-    public ApplicationContext getApplicationContext() {
-        return applicationContext;
-    }
-
-    public ApplicationEventPublisher getApplicationEventPublisher() {
-        return applicationEventPublisher;
-    }
+    
 }
