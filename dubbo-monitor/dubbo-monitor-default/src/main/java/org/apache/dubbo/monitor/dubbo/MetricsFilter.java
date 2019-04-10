@@ -69,9 +69,9 @@ public class MetricsFilter implements Filter {
 
         this.protocolName = invoker.getUrl().getParameter(Constants.METRICS_PROTOCOL) == null ?
                 Constants.DEFAULT_PROTOCOL : invoker.getUrl().getParameter(Constants.METRICS_PROTOCOL);
-        initMetricsInvoker();
 
         if (exported.compareAndSet(false, true)) {
+            initMetricsInvoker();
             Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(protocolName);
             try {
                 protocol.export(metricsInvoker);
