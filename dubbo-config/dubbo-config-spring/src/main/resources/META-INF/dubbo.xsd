@@ -1371,12 +1371,22 @@
     <xsd:element name="metadata-report" type="metadataReportType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ The metadataReport config ]]></xsd:documentation>
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports type="org.apache.dubbo.config.MetadataReportConfig"/>
+                </tool:annotation>
+            </xsd:appinfo>
         </xsd:annotation>
     </xsd:element>
 
     <xsd:element name="config-center" type="configCenterType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ The config center config ]]></xsd:documentation>
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports type="org.apache.dubbo.config.ConfigCenterConfig"/>
+                </tool:annotation>
+            </xsd:appinfo>
         </xsd:annotation>
     </xsd:element>
 
