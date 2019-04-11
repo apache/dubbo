@@ -235,7 +235,7 @@ public class MetricsFilter implements Filter {
 
             @Override
             public URL getUrl() {
-                return URL.valueOf(protocolName + "://" + NetUtils.getLocalAddress().getHostName() + ":" + port + "/" + MetricsService.class.getName());
+                return URL.valueOf(protocolName + "://" + NetUtils.getIpByConfig() + ":" + port + "/" + MetricsService.class.getName());
             }
 
             @Override

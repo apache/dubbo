@@ -18,6 +18,7 @@ package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
@@ -208,6 +209,15 @@ public class NetUtils {
             }
         }
         return host;
+    }
+
+    public static String getIpByConfig() {
+        String configIp = ConfigurationUtils.getProperty(Constants.DUBBO_IP_TO_BIND);
+        if (configIp != null) {
+            return configIp;
+        }
+
+        return getIpByHost(getLocalAddress().getHostName());
     }
 
     /**
