@@ -282,7 +282,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
         }
         map.put(Constants.INTERFACE_KEY, interfaceName);
-        appendParameters(map, metrics);
+        appendParameters(map, metrics, Constants.METRICS_KEY);
         appendParameters(map, application);
         appendParameters(map, module);
         appendParameters(map, consumer, Constants.DEFAULT_KEY);

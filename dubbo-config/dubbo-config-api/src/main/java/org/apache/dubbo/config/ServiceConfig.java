@@ -433,7 +433,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         map.put(Constants.SIDE_KEY, Constants.PROVIDER_SIDE);
 
         appendRuntimeParameters(map);
-        appendParameters(map, metrics);
+        appendParameters(map, metrics, Constants.METRICS_KEY);
         appendParameters(map, application);
         appendParameters(map, module);
         appendParameters(map, provider, Constants.DEFAULT_KEY);
