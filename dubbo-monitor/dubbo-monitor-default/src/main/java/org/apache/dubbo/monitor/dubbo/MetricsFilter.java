@@ -64,13 +64,13 @@ public class MetricsFilter implements Filter {
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         if (exported.compareAndSet(false, true)) {
+            this.protocolName = invoker.getUrl().getParameter(Constants.METRICS_PROTOCOL) == null ?
+                    Constants.DEFAULT_PROTOCOL : invoker.getUrl().getParameter(Constants.METRICS_PROTOCOL);
+
             Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(protocolName);
 
             this.port = invoker.getUrl().getParameter(Constants.METRICS_PORT) == null ?
                     protocol.getDefaultPort() : Integer.valueOf(invoker.getUrl().getParameter(Constants.METRICS_PORT));
-
-            this.protocolName = invoker.getUrl().getParameter(Constants.METRICS_PROTOCOL) == null ?
-                    Constants.DEFAULT_PROTOCOL : invoker.getUrl().getParameter(Constants.METRICS_PROTOCOL);
 
             Invoker<MetricsService> metricsInvoker = initMetricsInvoker();
 
