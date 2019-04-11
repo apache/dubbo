@@ -58,21 +58,22 @@ public class MetricsFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(MetricsFilter.class);
     private static volatile AtomicBoolean exported = new AtomicBoolean(false);
-    private Integer port = 20880;
-    private String protocolName = Constants.DEFAULT_PROTOCOL;
-    private Invoker<MetricsService> metricsInvoker;
+    private Integer port;
+    private String protocolName;
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        this.port = invoker.getUrl().getParameter(Constants.METRICS_PORT) == null ?
-                20880 : Integer.valueOf(invoker.getUrl().getParameter(Constants.METRICS_PORT));
-
-        this.protocolName = invoker.getUrl().getParameter(Constants.METRICS_PROTOCOL) == null ?
-                Constants.DEFAULT_PROTOCOL : invoker.getUrl().getParameter(Constants.METRICS_PROTOCOL);
-
         if (exported.compareAndSet(false, true)) {
-            initMetricsInvoker();
             Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(protocolName);
+
+            this.port = invoker.getUrl().getParameter(Constants.METRICS_PORT) == null ?
+                    protocol.getDefaultPort() : Integer.valueOf(invoker.getUrl().getParameter(Constants.METRICS_PORT));
+
+            this.protocolName = invoker.getUrl().getParameter(Constants.METRICS_PROTOCOL) == null ?
+                    Constants.DEFAULT_PROTOCOL : invoker.getUrl().getParameter(Constants.METRICS_PROTOCOL);
+
+            Invoker<MetricsService> metricsInvoker = initMetricsInvoker();
+
             try {
                 protocol.export(metricsInvoker);
             } catch (RuntimeException e) {
@@ -198,8 +199,8 @@ public class MetricsFilter implements Filter {
                 .build();
     }
 
-    private void initMetricsInvoker() {
-        metricsInvoker = new Invoker<MetricsService>() {
+    private Invoker<MetricsService> initMetricsInvoker() {
+        Invoker<MetricsService> metricsInvoker = new Invoker<MetricsService>() {
             @Override
             public Class<MetricsService> getInterface() {
                 return MetricsService.class;
@@ -247,5 +248,7 @@ public class MetricsFilter implements Filter {
 
             }
         };
+
+        return metricsInvoker;
     }
 }

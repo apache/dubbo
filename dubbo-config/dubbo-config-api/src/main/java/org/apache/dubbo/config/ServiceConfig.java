@@ -146,6 +146,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private ProviderConfig provider;
 
     /**
+     * The metrics configuration
+     */
+    private MetricsConfig metrics;
+
+    /**
      * The providerIds
      */
     private String providerIds;
@@ -426,8 +431,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
         Map<String, String> map = new HashMap<String, String>();
         map.put(Constants.SIDE_KEY, Constants.PROVIDER_SIDE);
-        MetricsConfig.addMetricsDataToMap(map);
+
         appendRuntimeParameters(map);
+        appendParameters(map, metrics);
         appendParameters(map, application);
         appendParameters(map, module);
         appendParameters(map, provider, Constants.DEFAULT_KEY);
@@ -996,5 +1002,13 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     @Parameter(excluded = true)
     public String getPrefix() {
         return Constants.DUBBO + ".service." + interfaceName;
+    }
+
+    public MetricsConfig getMetrics() {
+        return metrics;
+    }
+
+    public void setMetrics(MetricsConfig metrics) {
+        this.metrics = metrics;
     }
 }

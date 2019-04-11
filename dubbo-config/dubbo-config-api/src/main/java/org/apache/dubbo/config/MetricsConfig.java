@@ -17,37 +17,30 @@
 
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
-
-import java.util.Map;
-
 public class MetricsConfig extends AbstractConfig {
 
     private static final long serialVersionUID = -9089919311611546383L;
 
-    private static String port;
-    private static String protocol;
+    private String port;
+    private String protocol;
 
-    public static String getPort() {
+    public MetricsConfig() {
+    }
+
+    public String getPort() {
         return port;
     }
 
-    public static void setPort(String port) {
-        MetricsConfig.port = port;
+    public void setPort(String port) {
+        this.port = port;
     }
 
-    public static String getProtocol() {
+    public String getProtocol() {
         return protocol;
     }
 
-    public static void setProtocol(String protocol) {
-        MetricsConfig.protocol = protocol;
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
     }
 
-    public static void addMetricsDataToMap(Map map) {
-        if(MetricsConfig.getPort() != null && MetricsConfig.getProtocol() != null) {
-            map.put(Constants.METRICS_PORT, MetricsConfig.getPort());
-            map.put(Constants.METRICS_PROTOCOL, MetricsConfig.getProtocol());
-        }
-    }
 }
