@@ -18,7 +18,7 @@
     <parent>
         <artifactId>dubbo-parent</artifactId>
         <groupId>org.apache.dubbo</groupId>
-        <version>2.7.1-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
