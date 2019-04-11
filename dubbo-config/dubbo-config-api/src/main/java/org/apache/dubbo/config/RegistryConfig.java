@@ -420,7 +420,7 @@ public class RegistryConfig extends AbstractConfig {
     @Parameter(excluded = true)
     public boolean isValid() {
         // empty protocol will default to 'dubbo'
-        return !StringUtils.isEmpty(address);
+        return !StringUtils.isEmpty(address) & !NO_AVAILABLE.equals(address);
     }
 
 }
