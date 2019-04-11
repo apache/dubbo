@@ -1,0 +1,7 @@
+file=org.apache.dubbo.rpc.cluster.router.file.FileRouterFactory
+script=org.apache.dubbo.rpc.cluster.router.script.ScriptRouterFactory
+condition=org.apache.dubbo.rpc.cluster.router.condition.ConditionRouterFactory
+service=org.apache.dubbo.rpc.cluster.router.condition.config.ServiceRouterFactory
+app=org.apache.dubbo.rpc.cluster.router.condition.config.AppRouterFactory
+tag=org.apache.dubbo.rpc.cluster.router.tag.TagRouterFactory
+mock=org.apache.dubbo.rpc.cluster.router.mock.MockRouterFactory

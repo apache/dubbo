@@ -1,0 +1,4 @@
+impl1=org.apache.dubbo.common.extension.ext6_wrap.impl.Ext5Impl1
+impl2=org.apache.dubbo.common.extension.ext6_wrap.impl.Ext5Impl2
+wrapper1=org.apache.dubbo.common.extension.ext6_wrap.impl.Ext5Wrapper1
+wrapper2=org.apache.dubbo.common.extension.ext6_wrap.impl.Ext5Wrapper2

@@ -1,0 +1,5 @@
+online=org.apache.dubbo.qos.command.impl.Online
+help=org.apache.dubbo.qos.command.impl.Help
+quit=org.apache.dubbo.qos.command.impl.Quit
+ls=org.apache.dubbo.qos.command.impl.Ls
+offline=org.apache.dubbo.qos.command.impl.Offline
