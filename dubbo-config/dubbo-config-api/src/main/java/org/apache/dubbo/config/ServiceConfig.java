@@ -266,9 +266,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         // Config Center should always being started first.
         startConfigCenter();
         checkDefault();
-        checkApplication();
-        checkRegistry();
         checkProtocol();
+        checkApplication();
+        // if protocol is not injvm checkRegistry
+        if (!isJvm()){
+            checkRegistry();
+        }
         this.refresh();
         checkMetadataReport();
 
@@ -322,6 +325,14 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
         checkStubAndLocal(interfaceClass);
         checkMock(interfaceClass);
+    }
+
+    /**
+     * Determine if it is injvm
+     * @return
+     */
+    private boolean isJvm() {
+        return getProtocols().size() == 1 && Constants.LOCAL_PROTOCOL.equalsIgnoreCase(getProtocols().get(0).getName());
     }
 
     public synchronized void export() {
@@ -583,7 +594,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void exportLocal(URL url) {
-        if (!Constants.LOCAL_PROTOCOL.equalsIgnoreCase(url.getProtocol())) {
+        if (Constants.LOCAL_PROTOCOL.equalsIgnoreCase(url.getProtocol())) {
             URL local = URLBuilder.from(url)
                     .setProtocol(Constants.LOCAL_PROTOCOL)
                     .setHost(LOCALHOST_VALUE)
@@ -592,7 +603,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             Exporter<?> exporter = protocol.export(
                     proxyFactory.getInvoker(ref, (Class) interfaceClass, local));
             exporters.add(exporter);
-            logger.info("Export dubbo service " + interfaceClass.getName() + " to local registry");
+            logger.info("Export dubbo service " + interfaceClass.getName() + " to local registry url : "+local);
         }
     }
 
