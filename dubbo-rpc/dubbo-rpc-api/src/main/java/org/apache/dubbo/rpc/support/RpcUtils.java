@@ -175,10 +175,15 @@ public class RpcUtils {
 
     public static boolean isAsync(URL url, Invocation inv) {
         boolean isAsync;
-        if (Boolean.TRUE.toString().equals(inv.getAttachment(Constants.ASYNC_KEY))) {
-            isAsync = true;
+        String config;
+        if ((config = inv.getAttachment(getMethodName(inv) + Constants.HIDE_KEY_PREFIX + Constants.ASYNC_KEY)) != null) {
+            isAsync = Boolean.valueOf(config);
+        } else if ((config = inv.getAttachment(Constants.ASYNC_KEY)) != null) {
+            isAsync = Boolean.valueOf(config);
+        } else if ((config = url.getMethodParameter(getMethodName(inv), Constants.ASYNC_KEY)) != null) {
+            isAsync = Boolean.valueOf(config);
         } else {
-            isAsync = url.getMethodParameter(getMethodName(inv), Constants.ASYNC_KEY, false);
+            isAsync = url.getParameter(Constants.ASYNC_KEY, false);
         }
         return isAsync;
     }
@@ -193,8 +198,11 @@ public class RpcUtils {
 
     public static boolean isOneway(URL url, Invocation inv) {
         boolean isOneway;
-        if (Boolean.FALSE.toString().equals(inv.getAttachment(Constants.RETURN_KEY))) {
-            isOneway = true;
+        String config;
+        if ((config = inv.getAttachment(getMethodName(inv) + Constants.HIDE_KEY_PREFIX + Constants.RETURN_KEY)) != null) {
+            isOneway =  Boolean.valueOf(config);
+        } else if ((config = inv.getAttachment(Constants.RETURN_KEY)) != null) {
+            isOneway =  Boolean.valueOf(config);
         } else {
             isOneway = !url.getMethodParameter(getMethodName(inv), Constants.RETURN_KEY, true);
         }
