@@ -24,7 +24,7 @@
     <dubbo:application name="demo-provider"/>
 
     <!-- registry center configuration -->
-    <dubbo:registry address="N/A"/>
+    <dubbo:registry address="N/A" check="false"/>
 
     <!-- protocol configuration -->
     <dubbo:protocol id="dubbo1" name="dubbo" port="20813"/>

@@ -24,7 +24,7 @@
     <dubbo:application name="dubbo-annotation-provider"/>
 
     <!-- registry center config -->
-    <dubbo:registry id="my-registry" address="N/A"/>
+    <dubbo:registry id="my-registry" address="N/A" check="false"/>
 
     <!-- protocol config -->
     <dubbo:protocol name="dubbo" port="12345"/>

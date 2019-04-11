@@ -50,7 +50,7 @@
     <dubbo:application name="consumer"/>
 
     <!-- 连接注册中心配置 -->
-    <dubbo:registry address="N/A"/>
+    <dubbo:registry address="N/A" check="false"/>
 
     <!-- 引用服务配置 -->
     <dubbo:reference id="demoService" interface="org.apache.dubbo.config.spring.api.DemoService"

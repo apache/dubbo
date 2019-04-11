@@ -551,6 +551,7 @@ public class ConfigTest {
 
         RegistryConfig registry = new RegistryConfig();
         registry.setAddress("N/A");
+        registry.setCheck(false);
 
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setName("dubbo");
@@ -629,6 +630,7 @@ public class ConfigTest {
         System.setProperty("dubbo.registry.address", "N/A");
         System.setProperty("dubbo.protocol.name", "dubbo");
         System.setProperty("dubbo.protocol.port", "20819");
+        System.setProperty("dubbo.registry.check", "false");
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/system-properties-override-default.xml");
         providerContext.start();
         try {
@@ -743,6 +745,7 @@ public class ConfigTest {
         System.setProperty("dubbo.registry.address", "N/A");
         System.setProperty("dubbo.protocol.name", "dubbo");
         System.setProperty("dubbo.protocol.port", "20834");
+        System.setProperty("dubbo.registry.check", "false");
         try {
             ApplicationConfig application = new ApplicationConfig();
             application.setName("aaa");
@@ -792,6 +795,7 @@ public class ConfigTest {
 
             RegistryConfig registry = new RegistryConfig();
             registry.setAddress("N/A");
+            registry.setCheck(false);
 
             ProtocolConfig protocol = new ProtocolConfig();
             protocol.setName("rmi");
@@ -885,6 +889,7 @@ public class ConfigTest {
 
             RegistryConfig registry = new RegistryConfig();
             registry.setAddress("N/A");
+            registry.setCheck(false);
 
             ProtocolConfig protocol = new ProtocolConfig();
 
@@ -917,6 +922,7 @@ public class ConfigTest {
 
         RegistryConfig registry = new RegistryConfig();
         registry.setAddress("N/A");
+        registry.setCheck(false);
 
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setName("dubbo");

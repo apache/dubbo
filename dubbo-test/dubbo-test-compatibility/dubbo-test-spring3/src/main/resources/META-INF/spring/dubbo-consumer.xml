@@ -25,6 +25,6 @@
     <dubbo:application name="dubbo-annotation-consumer"/>
 
     <!-- registry center config -->
-    <dubbo:registry address="N/A"/>
+    <dubbo:registry address="N/A" check="false"/>
 
 </beans>

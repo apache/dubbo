@@ -60,6 +60,7 @@ public class ConsumerConfiguration {
     public RegistryConfig registryConfig() {
         RegistryConfig registryConfig = new RegistryConfig();
         registryConfig.setAddress("N/A");
+        registryConfig.setCheck(false);
         return registryConfig;
     }
 

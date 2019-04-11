@@ -25,6 +25,6 @@
     <dubbo:application name="dubbo-spring-test"/>
 
     <!-- 连接注册中心配置 -->
-    <dubbo:registry address="N/A"/>
+    <dubbo:registry address="N/A" check="false"/>
 
 </beans>

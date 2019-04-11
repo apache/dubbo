@@ -23,7 +23,7 @@
 
     <dubbo:application name="service-class"/>
 
-    <dubbo:registry address="N/A"/>
+    <dubbo:registry address="N/A" check="false"/>
 
     <dubbo:protocol name="dubbo" port="20887"/>
 

@@ -51,6 +51,8 @@ public class ValidationTest {
     @BeforeEach
     public void setUp() {
         ConfigManager.getInstance().clear();
+        registryNA.setCheck(false);
+
     }
 
     @AfterEach

@@ -82,6 +82,7 @@ public class ServiceConfigTest {
         RegistryConfig registry = new RegistryConfig();
         registry.setProtocol("mockprotocol2");
         registry.setAddress("N/A");
+        registry.setCheck(false);
 
         ArgumentConfig argument = new ArgumentConfig();
         argument.setIndex(0);

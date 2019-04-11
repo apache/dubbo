@@ -25,7 +25,7 @@
     <dubbo:application name="demo-provider"/>
 
     <!-- registry center configuration -->
-    <dubbo:registry address="N/A"/>
+    <dubbo:registry address="N/A" check="false"/>
 
     <!-- service configuration -->
     <dubbo:service id="service" interface="org.apache.dubbo.config.spring.api.DemoServiceSon" ref="demoService"/>

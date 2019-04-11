@@ -60,6 +60,7 @@ public class CacheTest {
     private void testCache(String type) throws Exception {
         ApplicationConfig applicationConfig = new ApplicationConfig("cache-test");
         RegistryConfig registryConfig = new RegistryConfig("N/A");
+        registryConfig.setCheck(false);
         ProtocolConfig protocolConfig = new ProtocolConfig("injvm");
         ServiceConfig<CacheService> service = new ServiceConfig<CacheService>();
         service.setApplication(applicationConfig);

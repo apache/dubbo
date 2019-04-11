@@ -24,7 +24,7 @@
 
     <dubbo:application name="customize-parameter"/>
 
-    <dubbo:registry address="N/A" id="naRegistry"/>
+    <dubbo:registry address="N/A" id="naRegistry" check="false"/>
 
     <dubbo:protocol p:protocol-paramA="protocol-paramA"/>
 

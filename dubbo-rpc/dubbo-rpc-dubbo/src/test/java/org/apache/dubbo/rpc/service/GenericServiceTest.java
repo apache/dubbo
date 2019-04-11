@@ -53,7 +53,9 @@ public class GenericServiceTest {
     public void testGenericServiceException() {
         ServiceConfig<GenericService> service = new ServiceConfig<GenericService>();
         service.setApplication(new ApplicationConfig("generic-provider"));
-        service.setRegistry(new RegistryConfig("N/A"));
+        RegistryConfig registryConfig = new RegistryConfig("N/A");
+        registryConfig.setCheck(false);
+        service.setRegistry(registryConfig);
         service.setProtocol(new ProtocolConfig("dubbo", 29581));
         service.setInterface(DemoService.class.getName());
         service.setRef(new GenericService() {
@@ -107,7 +109,9 @@ public class GenericServiceTest {
     public void testGenericReferenceException() {
         ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
         service.setApplication(new ApplicationConfig("generic-provider"));
-        service.setRegistry(new RegistryConfig("N/A"));
+        RegistryConfig registryConfig = new RegistryConfig("N/A");
+        registryConfig.setCheck(false);
+        service.setRegistry(registryConfig);
         service.setProtocol(new ProtocolConfig("dubbo", 29581));
         service.setInterface(DemoService.class.getName());
         service.setRef(new DemoServiceImpl());
@@ -140,7 +144,9 @@ public class GenericServiceTest {
     public void testGenericSerializationJava() throws Exception {
         ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
         service.setApplication(new ApplicationConfig("generic-provider"));
-        service.setRegistry(new RegistryConfig("N/A"));
+        RegistryConfig registryConfig = new RegistryConfig("N/A");
+        registryConfig.setCheck(false);
+        service.setRegistry(registryConfig);
         service.setProtocol(new ProtocolConfig("dubbo", 29581));
         service.setInterface(DemoService.class.getName());
         DemoServiceImpl ref = new DemoServiceImpl();
@@ -209,7 +215,9 @@ public class GenericServiceTest {
         ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
         service.setApplication(new ApplicationConfig("bean-provider"));
         service.setInterface(DemoService.class);
-        service.setRegistry(new RegistryConfig("N/A"));
+        RegistryConfig registryConfig = new RegistryConfig("N/A");
+        registryConfig.setCheck(false);
+        service.setRegistry(registryConfig);
         DemoServiceImpl impl = new DemoServiceImpl();
         service.setRef(impl);
         service.setProtocol(new ProtocolConfig("dubbo", 29581));
@@ -247,7 +255,9 @@ public class GenericServiceTest {
         final AtomicReference reference = new AtomicReference();
         ServiceConfig<GenericService> service = new ServiceConfig<GenericService>();
         service.setApplication(new ApplicationConfig("bean-provider"));
-        service.setRegistry(new RegistryConfig("N/A"));
+        RegistryConfig registryConfig = new RegistryConfig("N/A");
+        registryConfig.setCheck(false);
+        service.setRegistry(registryConfig);
         service.setProtocol(new ProtocolConfig("dubbo", 29581));
         service.setInterface(DemoService.class.getName());
         service.setRef(new GenericService() {
