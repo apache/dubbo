@@ -168,21 +168,46 @@ public abstract class AbstractMethodBuilder<T extends AbstractMethodConfig, B ex
         return getThis();
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public void build(T instance) {
         super.build(instance);
 
-        if (actives != null) instance.setActives(actives);
-        if (async != null) instance.setAsync(async);
-        if (!StringUtils.isEmpty(cache)) instance.setCache(cache);
-        if (forks != null) instance.setForks(forks);
-        if (!StringUtils.isEmpty(loadbalance)) instance.setLoadbalance(loadbalance);
-        if (!StringUtils.isEmpty(merger)) instance.setMerger(merger);
-        if(!StringUtils.isEmpty(mock)) instance.setMock(mock);
-        if (retries != null) instance.setRetries(retries);
-        if (sent != null) instance.setSent(sent);
-        if (timeout != null) instance.setTimeout(timeout);
-        if (!StringUtils.isEmpty(validation)) instance.setValidation(validation);
-        if (parameters != null) instance.setParameters(parameters);
+        if (actives != null) {
+            instance.setActives(actives);
+        }
+        if (async != null) {
+            instance.setAsync(async);
+        }
+        if (!StringUtils.isEmpty(cache)) {
+            instance.setCache(cache);
+        }
+        if (forks != null) {
+            instance.setForks(forks);
+        }
+        if (!StringUtils.isEmpty(loadbalance)) {
+            instance.setLoadbalance(loadbalance);
+        }
+        if (!StringUtils.isEmpty(merger)) {
+            instance.setMerger(merger);
+        }
+        if(!StringUtils.isEmpty(mock)) {
+            instance.setMock(mock);
+        }
+        if (retries != null) {
+            instance.setRetries(retries);
+        }
+        if (sent != null) {
+            instance.setSent(sent);
+        }
+        if (timeout != null) {
+            instance.setTimeout(timeout);
+        }
+        if (!StringUtils.isEmpty(validation)) {
+            instance.setValidation(validation);
+        }
+        if (parameters != null) {
+            instance.setParameters(parameters);
+        }
     }
 }
