@@ -773,6 +773,19 @@
         </xsd:attribute>
     </xsd:complexType>
 
+    <xsd:complexType name="metricsType">
+        <xsd:attribute name="port" type="xsd:string" use="required">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The metrics service port. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="protocol" type="xsd:string" use="required">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The metrics service protocol. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
     <xsd:complexType name="methodType">
         <xsd:complexContent>
             <xsd:extension base="abstractMethodType">
@@ -1456,6 +1469,17 @@
     <xsd:element name="parameter" type="parameterType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ The service url parameter ]]></xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="metrics" type="metricsType">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[ The metrics service ]]></xsd:documentation>
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports type="org.apache.dubbo.config.MetricsConfig"/>
+                </tool:annotation>
+            </xsd:appinfo>
         </xsd:annotation>
     </xsd:element>
 
