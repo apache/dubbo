@@ -22,12 +22,12 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcResult;
 
 import java.io.Serializable;
 
@@ -95,9 +95,9 @@ public class CacheFilter implements Filter {
                 Object value = cache.get(key);
                 if (value != null) {
                     if (value instanceof ValueWrapper) {
-                        return new RpcResult(((ValueWrapper)value).get());
+                        return AsyncRpcResult.newDefaultAsyncResult(((ValueWrapper) value).get(), invocation);
                     } else {
-                        return new RpcResult(value);
+                        return AsyncRpcResult.newDefaultAsyncResult(value, invocation);
                     }
                 }
                 Result result = invoker.invoke(invocation);

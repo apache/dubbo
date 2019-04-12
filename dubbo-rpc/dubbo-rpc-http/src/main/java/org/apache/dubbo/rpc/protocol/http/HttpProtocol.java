@@ -18,8 +18,8 @@ package org.apache.dubbo.rpc.protocol.http;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http.HttpBinder;
 import org.apache.dubbo.remoting.http.HttpHandler;
 import org.apache.dubbo.remoting.http.HttpServer;
@@ -110,7 +110,7 @@ public class HttpProtocol extends AbstractProxyProtocol {
 
     @Override
     @SuppressWarnings("unchecked")
-    protected <T> T doRefer(final Class<T> serviceType, final URL url) throws RpcException {
+    protected <T> T getFrameworkProxy(final Class<T> serviceType, final URL url) throws RpcException {
         final String generic = url.getParameter(Constants.GENERIC_KEY);
         final boolean isGeneric = ProtocolUtils.isGeneric(generic) || serviceType.equals(GenericService.class);
 

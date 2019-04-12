@@ -14,28 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.demo.provider;
+package org.apache.dubbo.common.config;
 
-import org.apache.dubbo.demo.DemoService;
-import org.apache.dubbo.rpc.RpcContext;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.CompletableFuture;
+public class PropertiesConfigurationTest {
 
-public class DemoServiceImpl implements DemoService {
-    private static final Logger logger = LoggerFactory.getLogger(DemoServiceImpl.class);
-
-    @Override
-    public String sayHello(String name) {
-        logger.info("Hello " + name + ", request from consumer: " + RpcContext.getContext().getRemoteAddress());
-        return "Hello " + name + ", response from provider: " + RpcContext.getContext().getLocalAddress();
-    }
-
-    @Override
-    public CompletableFuture<String> sayHelloAsync(String name) {
-        return null;
+    @Test
+    public void testOrderPropertiesProviders() {
+        PropertiesConfiguration configuration = new PropertiesConfiguration("test", null);
+        Assertions.assertTrue(configuration.getInternalProperty("testKey").equals("999"));
     }
 
 }

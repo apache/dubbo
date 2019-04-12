@@ -94,7 +94,7 @@ public class HessianProtocol extends AbstractProxyProtocol {
 
     @Override
     @SuppressWarnings("unchecked")
-    protected <T> T doRefer(Class<T> serviceType, URL url) throws RpcException {
+    protected <T> T getFrameworkProxy(Class<T> serviceType, URL url) throws RpcException {
         String generic = url.getParameter(Constants.GENERIC_KEY);
         boolean isGeneric = ProtocolUtils.isGeneric(generic) || serviceType.equals(GenericService.class);
         if (isGeneric) {

@@ -22,6 +22,8 @@ import org.apache.dubbo.common.utils.AtomicPositiveInteger;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
+import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -29,8 +31,10 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
+import org.apache.dubbo.rpc.protocol.dubbo.FutureAdapter;
 
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.locks.ReentrantLock;
 /**
  * @since 2.7.0, use https://github.com/dubbo/dubbo-rpc-native-thrift instead
@@ -85,10 +89,9 @@ public class ThriftInvoker<T> extends AbstractInvoker<T> {
             int timeout = getUrl().getMethodParameter(
                     methodName, Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
 
-            RpcContext.getContext().setFuture(null);
-
-            return (Result) currentClient.request(inv, timeout).get();
-
+            CompletableFuture<AppResponse> appResponseFuture = currentClient.request(inv, timeout).thenApply(obj -> (AppResponse) obj);
+            RpcContext.getContext().setFuture(new FutureAdapter(appResponseFuture));
+            return new AsyncRpcResult(appResponseFuture, invocation);
         } catch (TimeoutException e) {
             throw new RpcException(RpcException.TIMEOUT_EXCEPTION, e.getMessage(), e);
         } catch (RemotingException e) {

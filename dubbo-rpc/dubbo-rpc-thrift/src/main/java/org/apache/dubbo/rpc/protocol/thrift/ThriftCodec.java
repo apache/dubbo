@@ -26,9 +26,9 @@ import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 import org.apache.dubbo.remoting.buffer.ChannelBufferInputStream;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.protocol.thrift.io.RandomAccessByteArrayOutputStream;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TBase;
@@ -284,7 +284,7 @@ public class ThriftCodec implements Codec2 {
                 throw new IOException(e.getMessage(), e);
             }
 
-            RpcResult result = new RpcResult();
+            AppResponse result = new AppResponse();
 
             result.setException(new RpcException(exception.getMessage()));
 
@@ -375,7 +375,7 @@ public class ThriftCodec implements Codec2 {
 
             response.setId(id);
 
-            RpcResult rpcResult = new RpcResult();
+            AppResponse rpcResult = new AppResponse();
 
             if (realResult instanceof Throwable) {
                 rpcResult.setException((Throwable) realResult);
@@ -536,7 +536,7 @@ public class ThriftCodec implements Codec2 {
     private void encodeResponse(Channel channel, ChannelBuffer buffer, Response response)
             throws IOException {
 
-        RpcResult result = (RpcResult) response.getResult();
+        AppResponse result = (AppResponse) response.getResult();
 
         RequestData rd = CACHED_REQUEST.get(response.getId());
 
@@ -610,7 +610,7 @@ public class ThriftCodec implements Codec2 {
             }
 
         } else {
-            Object realResult = result.getResult();
+            Object realResult = result.getValue();
             // result field id is 0
             String fieldName = resultObj.fieldForId(0).getFieldName();
             String setMethodName = ThriftUtils.generateSetMethodName(fieldName);

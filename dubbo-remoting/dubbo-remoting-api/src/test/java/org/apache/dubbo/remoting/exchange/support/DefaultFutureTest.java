@@ -74,7 +74,7 @@ public class DefaultFutureTest {
         try {
             f.get();
         } catch (Exception e) {
-            Assertions.assertTrue(e instanceof TimeoutException, "catch exception is not timeout exception!");
+            Assertions.assertTrue(e.getCause() instanceof TimeoutException, "catch exception is not timeout exception!");
             System.out.println(e.getMessage());
         }
     }
@@ -108,7 +108,7 @@ public class DefaultFutureTest {
         try {
             f.get();
         } catch (Exception e) {
-            Assertions.assertTrue(e instanceof TimeoutException, "catch exception is not timeout exception!");
+            Assertions.assertTrue(e.getCause() instanceof TimeoutException, "catch exception is not timeout exception!");
             System.out.println(e.getMessage());
         }
     }

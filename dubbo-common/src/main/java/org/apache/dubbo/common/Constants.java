@@ -99,6 +99,8 @@ public class Constants {
 
     public static final String $INVOKE = "$invoke";
 
+    public static final String $INVOKE_ASYNC = "$invokeAsync";
+
     public static final String $ECHO = "$echo";
 
     public static final int DEFAULT_IO_THREADS = Math.min(Runtime.getRuntime().availableProcessors() + 1, 32);
@@ -846,6 +848,11 @@ public class Constants {
      * Development environment key.
      */
     public static final String DEVELOPMENT_ENVIRONMENT = "develop";
+
+    /**
+     * Consumer side 's proxy class
+     */
+    public static final String PROXY_CLASS_REF = "refClass";
 
     /**
      * Production environment key.

@@ -17,10 +17,41 @@
 
 package com.alibaba.dubbo.rpc;
 
+import org.apache.dubbo.rpc.AppResponse;
+
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
 
 @Deprecated
 public interface Result extends org.apache.dubbo.rpc.Result {
+
+    @Override
+    default void setValue(Object value) {
+
+    }
+
+    @Override
+    default void setException(Throwable t) {
+
+    }
+
+    @Override
+    default org.apache.dubbo.rpc.Result thenApplyWithContext(Function<AppResponse, AppResponse> fn) {
+        return this;
+    }
+
+    @Override
+    default <U> CompletableFuture<U> thenApply(Function<org.apache.dubbo.rpc.Result, ? extends U> fn) {
+        return null;
+    }
+
+    @Override
+    default org.apache.dubbo.rpc.Result get() throws InterruptedException, ExecutionException {
+        return this;
+    }
+
 
     class CompatibleResult implements Result {
         private org.apache.dubbo.rpc.Result delegate;
@@ -51,11 +82,6 @@ public interface Result extends org.apache.dubbo.rpc.Result {
         @Override
         public Object recreate() throws Throwable {
             return delegate.recreate();
-        }
-
-        @Override
-        public Object getResult() {
-            return delegate.getResult();
         }
 
         @Override
