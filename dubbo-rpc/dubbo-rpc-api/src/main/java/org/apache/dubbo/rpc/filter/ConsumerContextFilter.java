@@ -54,7 +54,14 @@ public class ConsumerContextFilter implements Filter {
             return invoker.invoke(invocation);
         } finally {
             // TODO removeContext? but we need to save future for RpcContext.getFuture() API. If clear attachments here, attachments will not available when postProcessResult is invoked.
+            String tag = null;
+            if (RpcContext.getContext().getAttachments() != null && RpcContext.getContext().getAttachment(Constants.TAG_KEY) != null) {
+                tag = RpcContext.getContext().getAttachment(Constants.TAG_KEY);
+            }
             RpcContext.getContext().clearAttachments();
+            if (tag != null) {
+                RpcContext.getContext().setAttachment(Constants.TAG_KEY, tag);
+            }
         }
     }
 
