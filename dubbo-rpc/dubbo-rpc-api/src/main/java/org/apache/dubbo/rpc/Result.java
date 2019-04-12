@@ -18,6 +18,9 @@ package org.apache.dubbo.rpc;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
 
 
 /**
@@ -25,7 +28,7 @@ import java.util.Map;
  *
  * @serial Don't change the class name and package name.
  * @see org.apache.dubbo.rpc.Invoker#invoke(Invocation)
- * @see org.apache.dubbo.rpc.RpcResult
+ * @see AppResponse
  */
 public interface Result extends Serializable {
 
@@ -36,12 +39,16 @@ public interface Result extends Serializable {
      */
     Object getValue();
 
+    void setValue(Object value);
+
     /**
      * Get exception.
      *
      * @return exception. if no exception return null.
      */
     Throwable getException();
+
+    void setException(Throwable t);
 
     /**
      * Has exception.
@@ -65,14 +72,6 @@ public interface Result extends Serializable {
      * @throws if has exception throw it.
      */
     Object recreate() throws Throwable;
-
-    /**
-     * @see org.apache.dubbo.rpc.Result#getValue()
-     * @deprecated Replace to getValue()
-     */
-    @Deprecated
-    Object getResult();
-
 
     /**
      * get attachments.
@@ -110,5 +109,11 @@ public interface Result extends Serializable {
     String getAttachment(String key, String defaultValue);
 
     void setAttachment(String key, String value);
+
+    Result thenApplyWithContext(Function<AppResponse, AppResponse> fn);
+
+    <U> CompletableFuture<U> thenApply(Function<Result, ? extends U> fn);
+
+    Result get() throws InterruptedException, ExecutionException;
 
 }

@@ -265,7 +265,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         checkStubAndLocal(interfaceClass);
         checkMock(interfaceClass);
 
-        ConsumerModel consumerModel = new ConsumerModel(interfaceName, group, version, interfaceClass);
+        ConsumerModel consumerModel = new ConsumerModel(interfaceName, group, version, getActualInterface());
         ApplicationModel.initConsumerModel(URL.buildKey(interfaceName, group, version), consumerModel);
 
         Map<String, String> map = new HashMap<String, String>();
@@ -321,6 +321,17 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         consumerModel.getServiceMetadata().addAttribute(Constants.PROXY_CLASS_REF, ref);
     }
 
+    private Class<?> getActualInterface() {
+        Class actualInterface = interfaceClass;
+        if (interfaceClass == GenericService.class) {
+            try {
+                actualInterface = Class.forName(interfaceName);
+            } catch (ClassNotFoundException e) {
+                // ignore
+            }
+        }
+        return actualInterface;
+    }
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
     private T createProxy(Map<String, String> map) {
         if (shouldJvmRefer(map)) {

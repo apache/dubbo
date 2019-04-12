@@ -25,16 +25,20 @@ import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeClient;
 import org.apache.dubbo.remoting.transport.ClientDelegate;
+import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.CompletableFuture;
 
 /**
+ * Server push uses this Invoker to continuously push data to client.
  * Wrap the existing invoker on the channel.
  */
 class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
@@ -58,15 +62,12 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
         inv.setAttachment(Constants.CALLBACK_SERVICE_KEY, serviceKey);
 
         try {
-            if (getUrl().getMethodParameter(invocation.getMethodName(), Constants.ASYNC_KEY, false)) { // may have concurrency issue
+            if (RpcUtils.isOneway(getUrl(), inv)) { // may have concurrency issue
                 currentClient.send(inv, getUrl().getMethodParameter(invocation.getMethodName(), Constants.SENT_KEY, false));
-                return new RpcResult();
-            }
-            int timeout = getUrl().getMethodParameter(invocation.getMethodName(), Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
-            if (timeout > 0) {
-                return (Result) currentClient.request(inv, timeout).get();
+                return AsyncRpcResult.newDefaultAsyncResult(invocation);
             } else {
-                return (Result) currentClient.request(inv).get();
+                CompletableFuture<AppResponse> appResponseFuture = currentClient.request(inv).thenApply(obj -> (AppResponse) obj);
+                return new AsyncRpcResult(appResponseFuture, inv);
             }
         } catch (RpcException e) {
             throw e;

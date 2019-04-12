@@ -17,12 +17,12 @@
 package org.apache.dubbo.rpc.cluster.support;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
@@ -55,7 +55,7 @@ public class FailoverClusterInvokerTest {
     private Invoker<FailoverClusterInvokerTest> invoker2 = mock(Invoker.class);
     private RpcInvocation invocation = new RpcInvocation();
     private Directory<FailoverClusterInvokerTest> dic;
-    private Result result = new RpcResult();
+    private Result result = new AppResponse();
 
     /**
      * @throws java.lang.Exception

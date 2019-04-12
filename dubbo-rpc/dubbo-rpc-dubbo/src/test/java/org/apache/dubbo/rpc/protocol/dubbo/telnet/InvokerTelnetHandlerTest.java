@@ -102,7 +102,6 @@ public class InvokerTelnetHandlerTest {
         ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", "Dubbo", "1.0.0", new DemoServiceImpl(), DemoService.class);
         ApplicationModel.initProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", providerModel);
 
-        // pass null value to parameter of primitive type
         try {
             invoke.telnet(mockChannel, "sayHello(null)");
         } catch (Exception ex) {

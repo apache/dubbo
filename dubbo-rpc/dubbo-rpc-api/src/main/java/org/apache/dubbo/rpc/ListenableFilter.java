@@ -14,28 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.validation.support.jvalidation.mock;
+package org.apache.dubbo.rpc;
 
-import org.apache.dubbo.validation.MethodValidated;
+/**
+ *
+ */
+public abstract class ListenableFilter implements Filter {
 
-import javax.validation.constraints.NotNull;
-import java.util.List;
-import java.util.Map;
+    protected Listener listener = null;
 
-public interface JValidatorTestTarget {
-    @MethodValidated
-    public void someMethod1(String anything);
-
-    @MethodValidated(Test2.class)
-    public void someMethod2(@NotNull ValidationParameter validationParameter);
-
-    public void someMethod3(ValidationParameter[] parameters);
-
-    public void someMethod4(List<String> strings);
-
-    public void someMethod5(Map<String, String> map);
-
-    @interface Test2 {
+    public Listener listener() {
+        return listener;
     }
-
 }

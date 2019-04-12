@@ -24,9 +24,9 @@ import org.apache.dubbo.remoting.buffer.ChannelBuffers;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.gen.thrift.Demo;
 import org.apache.dubbo.rpc.protocol.thrift.io.RandomAccessByteArrayOutputStream;
 
@@ -187,13 +187,13 @@ public class ThriftCodecTest {
 
         Assertions.assertEquals(request.getId(), response.getId());
 
-        Assertions.assertTrue(response.getResult() instanceof RpcResult);
+        Assertions.assertTrue(response.getResult() instanceof AppResponse);
 
-        RpcResult result = (RpcResult) response.getResult();
+        AppResponse result = (AppResponse) response.getResult();
 
-        Assertions.assertTrue(result.getResult() instanceof String);
+        Assertions.assertTrue(result.getValue() instanceof String);
 
-        Assertions.assertEquals(methodResult.success, result.getResult());
+        Assertions.assertEquals(methodResult.success, result.getValue());
 
     }
 
@@ -257,9 +257,9 @@ public class ThriftCodecTest {
 
         Response response = (Response) obj;
 
-        Assertions.assertTrue(response.getResult() instanceof RpcResult);
+        Assertions.assertTrue(response.getResult() instanceof AppResponse);
 
-        RpcResult result = (RpcResult) response.getResult();
+        AppResponse result = (AppResponse) response.getResult();
 
         Assertions.assertTrue(result.hasException());
 
@@ -276,8 +276,8 @@ public class ThriftCodecTest {
 
         Request request = createRequest();
 
-        RpcResult rpcResult = new RpcResult();
-        rpcResult.setResult("Hello, World!");
+        AppResponse rpcResult = new AppResponse();
+        rpcResult.setValue("Hello, World!");
 
         Response response = new Response();
         response.setResult(rpcResult);
@@ -334,7 +334,7 @@ public class ThriftCodecTest {
 
         Request request = createRequest();
 
-        RpcResult rpcResult = new RpcResult();
+        AppResponse rpcResult = new AppResponse();
         String exceptionMessage = "failed";
         rpcResult.setException(new RuntimeException(exceptionMessage));
 

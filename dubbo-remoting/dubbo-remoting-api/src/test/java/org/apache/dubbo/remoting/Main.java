@@ -19,12 +19,12 @@ package org.apache.dubbo.remoting;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.Exchangers;
-import org.apache.dubbo.remoting.exchange.ResponseFuture;
 import org.apache.dubbo.remoting.exchange.support.Replier;
 import org.apache.dubbo.remoting.exchange.support.ReplierDispatcher;
 
 import java.io.Serializable;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -94,7 +94,7 @@ public class Main {
 
         System.out.println("=====test invoke=====");
         for (int i = 0; i < 100; i++) {
-            ResponseFuture future = client.request(new Main.Data());
+            CompletableFuture<Object> future = client.request(new Main.Data());
             System.out.println("invoke and get");
             System.out.println("invoke result:" + future.get());
         }

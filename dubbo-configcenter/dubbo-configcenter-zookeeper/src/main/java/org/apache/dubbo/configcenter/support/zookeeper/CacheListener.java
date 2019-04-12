@@ -35,6 +35,8 @@ import java.util.concurrent.CountDownLatch;
  */
 
 public class CacheListener implements DataListener {
+    private static final int MIN_PATH_DEPTH = 5;
+
     private Map<String, Set<ConfigurationListener>> keyListeners = new ConcurrentHashMap<>();
     private CountDownLatch initializedLatch;
     private String rootPath;
@@ -89,7 +91,7 @@ public class CacheListener implements DataListener {
         // TODO We limit the notification of config changes to a specific path level, for example
         //  /dubbo/config/service/configurators, other config changes not in this level will not get notified,
         //  say /dubbo/config/dubbo.properties
-        if (path.split("/").length >= 5) {
+        if (path.split("/").length >= MIN_PATH_DEPTH) {
             String key = pathToKey(path);
             ConfigChangeType changeType;
             switch (eventType) {
