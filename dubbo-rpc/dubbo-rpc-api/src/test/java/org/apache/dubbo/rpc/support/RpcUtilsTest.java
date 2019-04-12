@@ -20,7 +20,6 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -180,6 +179,11 @@ public class RpcUtilsTest {
         Invocation inv6 = new RpcInvocation("test", new Class[]{}, new String[]{});
         ((RpcInvocation) inv6).setAttachment("test." + Constants.RETURN_KEY, Boolean.FALSE.toString());
         assertTrue(RpcUtils.isOneway(url6, inv6));
+
+        URL url7 = URL.valueOf("dubbo://localhost/?test");
+        Invocation inv7 = new RpcInvocation("test", new Class[]{}, new String[]{});
+        ((RpcInvocation) inv7).setAttachment("testB." + Constants.RETURN_KEY, Boolean.FALSE.toString());
+        assertFalse(RpcUtils.isOneway(url7, inv7));
     }
 
     @Test
@@ -219,6 +223,11 @@ public class RpcUtilsTest {
         URL url8 = URL.valueOf("dubbo://localhost/?test.async=false&async=true");
         Invocation inv8 = new RpcInvocation("test", new Class[]{}, new String[]{});
         assertFalse(RpcUtils.isAsync(url8, inv8));
+
+        URL url9 = URL.valueOf("dubbo://localhost/?test.async=true");
+        Invocation inv9 = new RpcInvocation("test", new Class[]{}, new String[]{});
+        ((RpcInvocation) inv9).setAttachment("testB." + Constants.ASYNC_KEY, Boolean.FALSE.toString());
+        assertTrue(RpcUtils.isAsync(url9, inv9));
     }
 
 }
