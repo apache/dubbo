@@ -134,11 +134,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     private String protocol;
 
     /**
-     * The metrics configuration
-     */
-    private MetricsConfig metrics;
-
-    /**
      * The interface proxy reference
      */
     private transient volatile T ref;
@@ -282,7 +277,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
         }
         map.put(Constants.INTERFACE_KEY, interfaceName);
-        appendParameters(map, metrics, Constants.METRICS_KEY);
+        appendParameters(map, metrics);
         appendParameters(map, application);
         appendParameters(map, module);
         appendParameters(map, consumer, Constants.DEFAULT_KEY);
@@ -647,13 +642,5 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 }
             }
         }
-    }
-
-    public MetricsConfig getMetrics() {
-        return metrics;
-    }
-
-    public void setMetrics(MetricsConfig metrics) {
-        this.metrics = metrics;
     }
 }

@@ -17,6 +17,9 @@
 
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.config.support.Parameter;
+
 public class MetricsConfig extends AbstractConfig {
 
     private static final long serialVersionUID = -9089919311611546383L;
@@ -27,6 +30,7 @@ public class MetricsConfig extends AbstractConfig {
     public MetricsConfig() {
     }
 
+    @Parameter(key = Constants.METRICS_PORT)
     public String getPort() {
         return port;
     }
@@ -35,6 +39,7 @@ public class MetricsConfig extends AbstractConfig {
         this.port = port;
     }
 
+    @Parameter(key = Constants.METRICS_PROTOCOL)
     public String getProtocol() {
         return protocol;
     }

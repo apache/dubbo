@@ -141,6 +141,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      * Disconnection events
      */
     protected String ondisconnect;
+
+    /**
+     * The metrics configuration
+     */
+    protected MetricsConfig metrics;
     protected MetadataReportConfig metadataReportConfig;
 
     protected ConfigCenterConfig configCenter;
@@ -825,4 +830,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         this.metadataReportConfig = metadataReportConfig;
     }
 
+    public MetricsConfig getMetrics() {
+        return metrics;
+    }
+
+    public void setMetrics(MetricsConfig metrics) {
+        this.metrics = metrics;
+    }
 }
