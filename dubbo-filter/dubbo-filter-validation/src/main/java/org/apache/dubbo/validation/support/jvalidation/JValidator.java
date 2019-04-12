@@ -140,7 +140,7 @@ public class JValidator implements Validator {
                                 if (Modifier.isPublic(member.getModifiers())
                                         && member.getParameterTypes().length == 0
                                         && member.getDeclaringClass() == annotation.annotationType()) {
-                                    Object value = member.invoke(annotation, new Object[0]);
+                                    Object value = member.invoke(annotation);
                                     if (null != value) {
                                         MemberValue memberValue = createMemberValue(
                                                 classFile.getConstPool(), pool.get(member.getReturnType().getName()), value);
@@ -295,15 +295,15 @@ public class JValidator implements Validator {
 
     private void validate(Set<ConstraintViolation<?>> violations, Object arg, Class<?>... groups) {
         if (arg != null && !isPrimitives(arg.getClass())) {
-            if (Object[].class.isInstance(arg)) {
+            if (arg instanceof Object[]) {
                 for (Object item : (Object[]) arg) {
                     validate(violations, item, groups);
                 }
-            } else if (Collection.class.isInstance(arg)) {
+            } else if (arg instanceof Collection) {
                 for (Object item : (Collection<?>) arg) {
                     validate(violations, item, groups);
                 }
-            } else if (Map.class.isInstance(arg)) {
+            } else if (arg instanceof Map) {
                 for (Map.Entry<?, ?> entry : ((Map<?, ?>) arg).entrySet()) {
                     validate(violations, entry.getKey(), groups);
                     validate(violations, entry.getValue(), groups);
