@@ -96,6 +96,10 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-rpc-jsonrpc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-rpc-dubbo</artifactId>
         </dependency>
         <dependency>
@@ -197,6 +201,10 @@
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-serialization-kryo</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-serialization-avro</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>

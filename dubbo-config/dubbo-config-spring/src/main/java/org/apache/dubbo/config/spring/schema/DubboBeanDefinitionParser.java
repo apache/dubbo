@@ -125,7 +125,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         } else if (ConsumerConfig.class.equals(beanClass)) {
             parseNested(element, parserContext, ReferenceBean.class, false, "reference", "consumer", id, beanDefinition);
         }
-        Set<String> props = new HashSet<String>();
+        Set<String> props = new HashSet<>();
         ManagedMap parameters = null;
         for (Method setter : beanClass.getMethods()) {
             String name = setter.getName();
@@ -143,6 +143,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                     try {
                         getter = beanClass.getMethod("is" + name.substring(3), new Class<?>[0]);
                     } catch (NoSuchMethodException e2) {
+                        logger.error("Method " + name + " parse error,  cause: " + e2.getMessage(), e2);
                     }
                 }
                 if (getter == null
