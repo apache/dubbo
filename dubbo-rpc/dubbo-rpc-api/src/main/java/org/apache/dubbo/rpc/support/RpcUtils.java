@@ -200,9 +200,9 @@ public class RpcUtils {
         boolean isOneway;
         String config;
         if ((config = inv.getAttachment(getMethodName(inv) + Constants.HIDE_KEY_PREFIX + Constants.RETURN_KEY)) != null) {
-            isOneway =  Boolean.valueOf(config);
+            isOneway = !Boolean.valueOf(config);
         } else if ((config = inv.getAttachment(Constants.RETURN_KEY)) != null) {
-            isOneway =  Boolean.valueOf(config);
+            isOneway = !Boolean.valueOf(config);
         } else {
             isOneway = !url.getMethodParameter(getMethodName(inv), Constants.RETURN_KEY, true);
         }

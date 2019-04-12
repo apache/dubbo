@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -148,4 +150,75 @@ public class RpcUtilsTest {
         java.lang.reflect.Type genericReturnType5 = DemoService.class.getMethod("testReturnType5", new Class<?>[]{String.class}).getGenericReturnType();
         Assertions.assertEquals(((ParameterizedType) genericReturnType5).getActualTypeArguments()[0], types5[1]);
     }
+
+    @Test
+    public void testIsOneway() {
+        URL url1 = URL.valueOf("dubbo://localhost/?test.return=false");
+        Invocation inv1 = new RpcInvocation("test", new Class[]{}, new String[]{});
+        ((RpcInvocation) inv1).setAttachment("test." + Constants.RETURN_KEY, Boolean.TRUE.toString());
+        assertFalse(RpcUtils.isOneway(url1, inv1));
+
+        URL url2 = URL.valueOf("dubbo://localhost/?test.return=false");
+        Invocation inv2 = new RpcInvocation("test", new Class[]{}, new String[]{});
+        ((RpcInvocation) inv2).setAttachment(Constants.RETURN_KEY, Boolean.TRUE.toString());
+        assertFalse(RpcUtils.isOneway(url2, inv2));
+
+        URL url3 = URL.valueOf("dubbo://localhost/?test");
+        Invocation inv3 = new RpcInvocation("test", new Class[]{}, new String[]{});
+        ((RpcInvocation) inv3).setAttachment(Constants.RETURN_KEY, Boolean.FALSE.toString());
+        assertTrue(RpcUtils.isOneway(url3, inv3));
+
+        URL url4 = URL.valueOf("dubbo://localhost/?test.return=false");
+        Invocation inv4 = new RpcInvocation("test", new Class[]{}, new String[]{});
+        assertTrue(RpcUtils.isOneway(url4, inv4));
+
+        URL url5 = URL.valueOf("dubbo://localhost/?test");
+        Invocation inv5 = new RpcInvocation("test", new Class[]{}, new String[]{});
+        assertFalse(RpcUtils.isOneway(url5, inv5));
+
+        URL url6 = URL.valueOf("dubbo://localhost/?test");
+        Invocation inv6 = new RpcInvocation("test", new Class[]{}, new String[]{});
+        ((RpcInvocation) inv6).setAttachment("test." + Constants.RETURN_KEY, Boolean.FALSE.toString());
+        assertTrue(RpcUtils.isOneway(url6, inv6));
+    }
+
+    @Test
+    public void testIsAsync() {
+        URL url1 = URL.valueOf("dubbo://localhost/?test.async=true");
+        Invocation inv1 = new RpcInvocation("test", new Class[]{}, new String[]{});
+        ((RpcInvocation) inv1).setAttachment("test." + Constants.ASYNC_KEY, Boolean.FALSE.toString());
+        assertFalse(RpcUtils.isAsync(url1, inv1));
+
+        URL url2 = URL.valueOf("dubbo://localhost/?test.async=true");
+        Invocation inv2 = new RpcInvocation("test", new Class[]{}, new String[]{});
+        ((RpcInvocation) inv2).setAttachment(Constants.ASYNC_KEY, Boolean.FALSE.toString());
+        assertFalse(RpcUtils.isAsync(url2, inv2));
+
+        URL url3 = URL.valueOf("dubbo://localhost/?test");
+        Invocation inv3 = new RpcInvocation("test", new Class[]{}, new String[]{});
+        ((RpcInvocation) inv3).setAttachment(Constants.ASYNC_KEY, Boolean.TRUE.toString());
+        assertTrue(RpcUtils.isAsync(url3, inv3));
+
+        URL url4 = URL.valueOf("dubbo://localhost/?test.async=true");
+        Invocation inv4 = new RpcInvocation("test", new Class[]{}, new String[]{});
+        assertTrue(RpcUtils.isAsync(url4, inv4));
+
+        URL url5 = URL.valueOf("dubbo://localhost/?test");
+        Invocation inv5 = new RpcInvocation("test", new Class[]{}, new String[]{});
+        assertFalse(RpcUtils.isAsync(url5, inv5));
+
+        URL url6 = URL.valueOf("dubbo://localhost/?test");
+        Invocation inv6 = new RpcInvocation("test", new Class[]{}, new String[]{});
+        ((RpcInvocation) inv6).setAttachment("test." + Constants.ASYNC_KEY, Boolean.TRUE.toString());
+        assertTrue(RpcUtils.isAsync(url6, inv6));
+
+        URL url7 = URL.valueOf("dubbo://localhost/?test.async=true&async=false");
+        Invocation inv7 = new RpcInvocation("test", new Class[]{}, new String[]{});
+        assertTrue(RpcUtils.isAsync(url7, inv7));
+
+        URL url8 = URL.valueOf("dubbo://localhost/?test.async=false&async=true");
+        Invocation inv8 = new RpcInvocation("test", new Class[]{}, new String[]{});
+        assertFalse(RpcUtils.isAsync(url8, inv8));
+    }
+
 }
