@@ -86,6 +86,7 @@ public class EtcdRegistry extends FailbackRegistry {
         }
         this.root = group;
         etcdClient = etcdTransporter.connect(url);
+
         etcdClient.addStateListener(state -> {
             if (state == StateListener.CONNECTED) {
                 try {
