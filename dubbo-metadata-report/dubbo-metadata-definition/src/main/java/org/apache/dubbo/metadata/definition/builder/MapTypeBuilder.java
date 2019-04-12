@@ -48,8 +48,7 @@ public class MapTypeBuilder implements TypeBuilder {
         Type[] actualTypeArgs = parameterizedType.getActualTypeArguments();
         if (actualTypeArgs == null || actualTypeArgs.length != 2) {
             throw new IllegalArgumentException(MessageFormat.format(
-                    "[ServiceDefinitionBuilder] Map type [{0}] with unexpected amount of arguments [{1}]." + Arrays.toString(actualTypeArgs), new Object[]{
-                            type, actualTypeArgs}));
+                    "[ServiceDefinitionBuilder] Map type [{0}] with unexpected amount of arguments [{1}]." + Arrays.toString(actualTypeArgs), type, actualTypeArgs));
         }
 
         for (Type actualType : actualTypeArgs) {
