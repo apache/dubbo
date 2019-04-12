@@ -55,6 +55,7 @@ There's a [README](https://github.com/apache/incubator-dubbo-samples/tree/master
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-dependencies-zookeeper</artifactId>
         <version>${dubbo.version}</version>
+        <type>pom</type>
     </dependency>
 </dependencies>
 ```
@@ -86,7 +87,7 @@ public class GreetingServiceImpl implements GreetingService {
 }
 ```
 
-*See [provider/GreetingServiceImpl.java](https://github.com/apache/incubator-dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/provider/GreetingsServiceImpl.java) on GitHub.*
+*See [provider/GreetingServiceImpl.java](https://github.com/apache/incubator-dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/server/GreetingsServiceImpl.java) on GitHub.*
 
 ### Start service provider
 
@@ -114,7 +115,7 @@ public class Application {
 }
 ```
 
-*See [provider/Application.java](https://github.com/apache/incubator-dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/provider/Application.java) on GitHub.*
+*See [provider/Application.java](https://github.com/apache/incubator-dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/server/Application.java) on GitHub.*
 
 ### Build and run the provider
 
@@ -154,7 +155,7 @@ public class Application {
 
 The consumer will print out `Hello world` on the screen.
 
-*See [consumer/Application.java](https://github.com/apache/incubator-dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/consumer/Application.java) on GitHub.*
+*See [consumer/Application.java](https://github.com/apache/incubator-dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/client/Application.java) on GitHub.*
 
 ### Next steps
 

@@ -14,32 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.etcd;
+package org.apache.dubbo.monitor.dubbo.service;
 
-public abstract class AbstractRetryPolicy implements RetryPolicy {
+public interface DemoService {
 
-    private final int maxRetried;
+    String sayName(String name);
 
-    protected AbstractRetryPolicy(int maxRetried) {
-        this.maxRetried = maxRetried;
-    }
+    void timeoutException();
 
-    @Override
-    public boolean shouldRetry(int retried, long elapsed, boolean sleep) {
-        if (retried < maxRetried) {
-            try {
-                if (sleep) {
-                    Thread.sleep(getSleepTime(retried, elapsed));
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return false;
-            }
-            return true;
-        }
-        return false;
-    }
+    void throwDemoException() throws Exception;
 
-    protected abstract long getSleepTime(int retried, long elapsed);
+    int echo(int i);
+
 
 }

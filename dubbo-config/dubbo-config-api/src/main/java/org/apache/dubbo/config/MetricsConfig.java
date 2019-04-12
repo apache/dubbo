@@ -14,32 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.etcd;
 
-public abstract class AbstractRetryPolicy implements RetryPolicy {
+package org.apache.dubbo.config;
 
-    private final int maxRetried;
+import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.config.support.Parameter;
 
-    protected AbstractRetryPolicy(int maxRetried) {
-        this.maxRetried = maxRetried;
+public class MetricsConfig extends AbstractConfig {
+
+    private static final long serialVersionUID = -9089919311611546383L;
+
+    private String port;
+    private String protocol;
+
+    public MetricsConfig() {
     }
 
-    @Override
-    public boolean shouldRetry(int retried, long elapsed, boolean sleep) {
-        if (retried < maxRetried) {
-            try {
-                if (sleep) {
-                    Thread.sleep(getSleepTime(retried, elapsed));
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return false;
-            }
-            return true;
-        }
-        return false;
+    @Parameter(key = Constants.METRICS_PORT)
+    public String getPort() {
+        return port;
     }
 
-    protected abstract long getSleepTime(int retried, long elapsed);
+    public void setPort(String port) {
+        this.port = port;
+    }
+
+    @Parameter(key = Constants.METRICS_PROTOCOL)
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
+    }
 
 }
