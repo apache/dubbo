@@ -426,7 +426,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
         Map<String, String> map = new HashMap<String, String>();
         map.put(Constants.SIDE_KEY, Constants.PROVIDER_SIDE);
+
         appendRuntimeParameters(map);
+        appendParameters(map, metrics);
         appendParameters(map, application);
         appendParameters(map, module);
         appendParameters(map, provider, Constants.DEFAULT_KEY);
