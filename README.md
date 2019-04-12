@@ -55,6 +55,7 @@ There's a [README](https://github.com/apache/incubator-dubbo-samples/tree/master
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-dependencies-zookeeper</artifactId>
         <version>${dubbo.version}</version>
+        <type>pom</type>
     </dependency>
 </dependencies>
 ```
