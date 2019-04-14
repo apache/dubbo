@@ -85,6 +85,9 @@ public class RpcContext {
     private InetSocketAddress localAddress;
 
     private InetSocketAddress remoteAddress;
+
+    private String remoteApplicationName;
+
     @Deprecated
     private List<Invoker<?>> invokers;
     @Deprecated
@@ -149,6 +152,7 @@ public class RpcContext {
         copy.arguments = this.arguments;
         copy.localAddress = this.localAddress;
         copy.remoteAddress = this.remoteAddress;
+        copy.remoteApplicationName = this.remoteApplicationName;
         copy.invokers = this.invokers;
         copy.invoker = this.invoker;
         copy.invocation = this.invocation;
@@ -404,6 +408,15 @@ public class RpcContext {
      */
     public RpcContext setRemoteAddress(InetSocketAddress address) {
         this.remoteAddress = address;
+        return this;
+    }
+
+    public String getRemoteApplicationName() {
+        return remoteApplicationName;
+    }
+
+    public RpcContext setRemoteApplicationName(String remoteApplicationName) {
+        this.remoteApplicationName = remoteApplicationName;
         return this;
     }
 

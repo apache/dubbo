@@ -72,7 +72,7 @@ public abstract class PropertySourcesUtils {
      */
     public static Map<String, Object> getSubProperties(ConfigurableEnvironment environment, String prefix) {
 
-        Map<String, Object> subProperties = new LinkedHashMap<String, Object>();
+        Map<String, Object> subProperties = new LinkedHashMap<>();
 
         MutablePropertySources propertySources = environment.getPropertySources();
 

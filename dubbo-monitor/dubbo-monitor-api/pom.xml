@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-monitor</artifactId>
-        <version>2.7.2-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
     <artifactId>dubbo-monitor-api</artifactId>
     <packaging>jar</packaging>
@@ -36,18 +36,17 @@
         </dependency>
 
         <dependency>
-            <groupId>com.alibaba.middleware</groupId>
-            <artifactId>metrics-core-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.alibaba.middleware</groupId>
-            <artifactId>metrics-core-impl</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.alibaba.middleware</groupId>
-            <artifactId>metrics-common</artifactId>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-remoting-netty4</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
         </dependency>
 
-
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-serialization-hessian2</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

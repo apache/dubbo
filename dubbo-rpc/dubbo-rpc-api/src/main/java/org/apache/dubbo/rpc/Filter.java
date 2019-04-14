@@ -61,6 +61,14 @@ public interface Filter {
      */
     Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException;
 
+    /**
+     * Return processing result
+     *
+     * @param result     result
+     * @param invoker    invoker
+     * @param invocation invocation
+     * @return Return {@link Result}
+     */
     default Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
         return result;
     }

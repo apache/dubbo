@@ -61,14 +61,14 @@ public class RegistryProtocolTest {
 
     @Test
     public void testDefaultPort() {
-        RegistryProtocol registryProtocol = new RegistryProtocol();
+        RegistryProtocol registryProtocol = RegistryProtocol.getRegistryProtocol();
         assertEquals(9090, registryProtocol.getDefaultPort());
     }
 
     @Test
     public void testExportUrlNull() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            RegistryProtocol registryProtocol = new RegistryProtocol();
+            RegistryProtocol registryProtocol = RegistryProtocol.getRegistryProtocol();
             registryProtocol.setCluster(new FailfastCluster());
 
             Protocol dubboProtocol = DubboProtocol.getDubboProtocol();
@@ -81,7 +81,7 @@ public class RegistryProtocolTest {
 
     @Test
     public void testExport() {
-        RegistryProtocol registryProtocol = new RegistryProtocol();
+        RegistryProtocol registryProtocol = RegistryProtocol.getRegistryProtocol();
         registryProtocol.setCluster(new FailfastCluster());
         registryProtocol.setRegistryFactory(ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension());
 
@@ -165,7 +165,7 @@ public class RegistryProtocolTest {
 
     @Test
     public void testGetParamsToRegistry() {
-        RegistryProtocol registryProtocol = new RegistryProtocol();
+        RegistryProtocol registryProtocol = RegistryProtocol.getRegistryProtocol();
         String[] additionalParams = new String[]{"key1", "key2"};
         String[] registryParams = registryProtocol.getParamsToRegistry(DEFAULT_REGISTER_PROVIDER_KEYS, additionalParams);
         String[] expectParams = ArrayUtils.addAll(DEFAULT_REGISTER_PROVIDER_KEYS, additionalParams);
