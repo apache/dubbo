@@ -121,4 +121,9 @@ public class DemoServiceImpl implements DemoService {
     public String getPerson(Man man) {
         return man.getName();
     }
+
+    @Override
+    public Float getFloatNumber(Float f) {
+        return f;
+    }
 }

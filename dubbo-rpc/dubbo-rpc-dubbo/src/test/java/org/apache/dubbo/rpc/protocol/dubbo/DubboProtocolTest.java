@@ -20,9 +20,7 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.rpc.Protocol;
-import org.apache.dubbo.rpc.ProxyFactory;
-import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
 import org.apache.dubbo.rpc.protocol.dubbo.support.NonSerialized;
@@ -32,6 +30,7 @@ import org.apache.dubbo.rpc.protocol.dubbo.support.RemoteServiceImpl;
 import org.apache.dubbo.rpc.protocol.dubbo.support.Type;
 import org.apache.dubbo.rpc.service.EchoService;
 
+import org.apache.dubbo.rpc.service.GenericService;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -187,5 +186,20 @@ public class DubboProtocolTest {
         } catch (RpcException e) {
             Assertions.assertTrue(e.getMessage().contains("org.apache.dubbo.rpc.protocol.dubbo.support.NonSerialized must implement java.io.Serializable"));
         }
+    }
+
+    @Test
+    public void testGenericFloat() {
+        DemoService service = new DemoServiceImpl();
+        URL url = URL.valueOf("dubbo://127.0.0.1:9010/" + DemoService.class.getName() + "?release=2.7.0");
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(service, DemoService.class, url));
+        Invoker<GenericService> invoker = protocol.refer(GenericService.class, url);
+        GenericService client = proxy.getProxy(invoker, true);
+        Float fData = 99.8F;
+        Double dData = 99.8D;
+        Double result = (Double) client.$invoke("getFloatNumber", new String[]{"java.lang.Float"}, new Object[]{fData});
+        Assertions.assertEquals(dData, result);
+        invoker.destroy();
+        exporter.unexport();
     }
 }
