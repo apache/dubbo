@@ -70,7 +70,6 @@ public class RpcContext {
 
     private final Map<String, String> attachments = new HashMap<String, String>();
     private final Map<String, Object> values = new HashMap<String, Object>();
-    private Future<?> future;
 
     private List<URL> urls;
 
@@ -135,31 +134,6 @@ public class RpcContext {
     public static void restoreContext(RpcContext oldContext) {
         LOCAL.set(oldContext);
     }
-
-
-    public RpcContext copyOf() {
-        RpcContext copy = new RpcContext();
-        copy.attachments.putAll(this.attachments);
-        copy.values.putAll(this.values);
-        copy.future = this.future;
-        copy.urls = this.urls;
-        copy.url = this.url;
-        copy.methodName = this.methodName;
-        copy.parameterTypes = this.parameterTypes;
-        copy.arguments = this.arguments;
-        copy.localAddress = this.localAddress;
-        copy.remoteAddress = this.remoteAddress;
-        copy.invokers = this.invokers;
-        copy.invoker = this.invoker;
-        copy.invocation = this.invocation;
-
-        copy.request = this.request;
-        copy.response = this.response;
-        copy.asyncContext = this.asyncContext;
-
-        return copy;
-    }
-
 
     /**
      * remove context.
@@ -242,7 +216,7 @@ public class RpcContext {
      */
     @SuppressWarnings("unchecked")
     public <T> CompletableFuture<T> getCompletableFuture() {
-        return (CompletableFuture<T>) future;
+        return FutureContext.getCompletableFuture();
     }
 
     /**
@@ -253,7 +227,7 @@ public class RpcContext {
      */
     @SuppressWarnings("unchecked")
     public <T> Future<T> getFuture() {
-        return (Future<T>) future;
+        return FutureContext.getCompletableFuture();
     }
 
     /**
@@ -261,8 +235,8 @@ public class RpcContext {
      *
      * @param future
      */
-    public void setFuture(Future<?> future) {
-        this.future = future;
+    public void setFuture(CompletableFuture<?> future) {
+        FutureContext.setFuture(future);
     }
 
     public List<URL> getUrls() {

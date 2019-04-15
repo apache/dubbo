@@ -27,6 +27,6 @@
 
     <!-- generate proxy for the remote service, then demoService can be used in the same way as the
     local regular interface -->
-    <dubbo:reference id="demoService" check="false" interface="org.apache.dubbo.demo.DemoService"/>
+    <dubbo:reference timeout="600000" id="demoService" check="false" interface="org.apache.dubbo.demo.DemoService"/>
 
 </beans>

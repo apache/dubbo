@@ -50,6 +50,7 @@
                 <exclude>**/.mvn/**</exclude>
                 <exclude>**/*.jar</exclude>
                 <exclude>**/mvnw*</exclude>
+                <exclude>**/.flattened-pom.xml</exclude>
             </excludes>
         </fileSet>
     </fileSets>

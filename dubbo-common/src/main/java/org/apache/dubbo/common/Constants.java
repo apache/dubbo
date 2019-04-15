@@ -91,6 +91,8 @@ public class Constants {
 
     public static final String $INVOKE = "$invoke";
 
+    public static final String $INVOKE_ASYNC = "$invokeAsync";
+
     public static final String $ECHO = "$echo";
 
     public static final int DEFAULT_IO_THREADS = Math.min(Runtime.getRuntime().availableProcessors() + 1, 32);
@@ -828,14 +830,14 @@ public class Constants {
     public static final String DEVELOPMENT_ENVIRONMENT = "develop";
 
     /**
-     * Production environment key.
-     */
-    public static final String PRODUCTION_ENVIRONMENT = "product";
-
-    /**
      * Consumer side 's proxy class
      */
     public static final String PROXY_CLASS_REF = "refClass";
+
+    /**
+     * Production environment key.
+     */
+    public static final String PRODUCTION_ENVIRONMENT = "product";
 
     public static final String ETCD3_NOTIFY_MAXTHREADS_KEYS = "etcd3.notify.maxthreads";
 

@@ -17,10 +17,11 @@
 package org.apache.dubbo.rpc.support;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcResult;
 
 public class BlockMyInvoker<T> extends MyInvoker<T> {
 
@@ -38,19 +39,18 @@ public class BlockMyInvoker<T> extends MyInvoker<T> {
 
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
-        RpcResult result = new RpcResult();
+        AppResponse result = new AppResponse();
         if (hasException == false) {
             try {
                 Thread.sleep(blockTime);
             } catch (InterruptedException e) {
             }
-            result.setValue("alibaba");
-            return result;
+            result.setValue("Dubbo");
         } else {
             result.setException(new RuntimeException("mocked exception"));
-            return result;
         }
 
+        return AsyncRpcResult.newDefaultAsyncResult(result, invocation);
     }
 
     public long getBlockTime() {

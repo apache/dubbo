@@ -16,10 +16,11 @@
  */
 package org.apache.dubbo.rpc.protocol.rsocket;
 
-import io.rsocket.Payload;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.Serialization;
-import org.apache.dubbo.rpc.RpcResult;
+import org.apache.dubbo.rpc.AppResponse;
+
+import io.rsocket.Payload;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
@@ -29,7 +30,7 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-public class FutureSubscriber extends CompletableFuture<RpcResult> implements Subscriber<Payload> {
+public class FutureSubscriber extends CompletableFuture<AppResponse> implements Subscriber<Payload> {
 
     private final Serialization serialization;
 
@@ -49,7 +50,7 @@ public class FutureSubscriber extends CompletableFuture<RpcResult> implements Su
     @Override
     public void onNext(Payload payload) {
         try {
-            RpcResult rpcResult = new RpcResult();
+            AppResponse appResponse = new AppResponse();
             ByteBuffer dataBuffer = payload.getData();
             byte[] dataBytes = new byte[dataBuffer.remaining()];
             dataBuffer.get(dataBytes, dataBuffer.position(), dataBuffer.remaining());
@@ -59,7 +60,7 @@ public class FutureSubscriber extends CompletableFuture<RpcResult> implements Su
             int flag = in.readByte();
             if ((flag & RSocketConstants.FLAG_ERROR) != 0) {
                 Throwable t = (Throwable) in.readObject();
-                rpcResult.setException(t);
+                appResponse.setException(t);
             } else {
                 Object value = null;
                 if ((flag & RSocketConstants.FLAG_NULL_VALUE) == 0) {
@@ -68,17 +69,17 @@ public class FutureSubscriber extends CompletableFuture<RpcResult> implements Su
                     } else {
                         value = in.readObject(retType);
                     }
-                    rpcResult.setValue(value);
+                    appResponse.setValue(value);
                 }
             }
 
             if ((flag & RSocketConstants.FLAG_HAS_ATTACHMENT) != 0) {
                 Map<String, String> attachment = in.readObject(Map.class);
-                rpcResult.setAttachments(attachment);
+                appResponse.setAttachments(attachment);
 
             }
 
-            this.complete(rpcResult);
+            this.complete(appResponse);
 
 
         } catch (Throwable t) {
