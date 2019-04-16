@@ -182,7 +182,9 @@ public class ApplicationBuilder extends AbstractBuilder<ApplicationConfig, Appli
         config.setQosPort(this.qosPort);
         config.setQosAcceptForeignIp(this.qosAcceptForeignIp);
         config.setParameters(this.parameters);
-        if (!StringUtils.isEmpty(shutwait)) config.setShutwait(shutwait);
+        if (!StringUtils.isEmpty(shutwait)) {
+            config.setShutwait(shutwait);
+        }
         return config;
     }
 

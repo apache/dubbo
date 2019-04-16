@@ -136,6 +136,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                 String beanProperty = name.substring(3, 4).toLowerCase() + name.substring(4);
                 String property = StringUtils.camelToSplitName(beanProperty, "-");
                 props.add(property);
+                // check the setter/getter whether match
                 Method getter = null;
                 try {
                     getter = beanClass.getMethod("get" + name.substring(3), new Class<?>[0]);
@@ -143,7 +144,8 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                     try {
                         getter = beanClass.getMethod("is" + name.substring(3), new Class<?>[0]);
                     } catch (NoSuchMethodException e2) {
-                        logger.error("Method " + name + " parse error,  cause: " + e2.getMessage(), e2);
+                        // ignore, there is no need any log here since some class implement the interface: EnvironmentAware,
+                        // ApplicationAware, etc. They only have setter method, otherwise will cause the error log during application start up.
                     }
                 }
                 if (getter == null

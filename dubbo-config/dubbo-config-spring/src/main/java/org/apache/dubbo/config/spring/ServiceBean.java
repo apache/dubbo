@@ -19,15 +19,16 @@ package org.apache.dubbo.config.spring;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.ConfigCenterConfig;
-import org.apache.dubbo.config.MetadataReportConfig;
-import org.apache.dubbo.config.ModuleConfig;
-import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
-import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.MetricsConfig;
+import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.ConfigCenterConfig;
+import org.apache.dubbo.config.MetadataReportConfig;
+import org.apache.dubbo.config.MonitorConfig;
+import org.apache.dubbo.config.ModuleConfig;
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.context.event.ServiceBeanExportedEvent;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
@@ -252,6 +253,22 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                 }
                 if (monitorConfig != null) {
                     setMonitor(monitorConfig);
+                }
+            }
+        }
+
+        if (getMetrics() == null) {
+            Map<String, MetricsConfig> metricsConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, MetricsConfig.class, false, false);
+            if (metricsConfigMap != null && metricsConfigMap.size() > 0) {
+                MetricsConfig metricsConfig = null;
+                for (MetricsConfig config : metricsConfigMap.values()) {
+                    if (metricsConfig != null) {
+                        throw new IllegalStateException("Duplicate metrics configs: " + metricsConfig + " and " + config);
+                    }
+                    metricsConfig = config;
+                }
+                if (metricsConfig != null) {
+                    setMetrics(metricsConfig);
                 }
             }
         }
