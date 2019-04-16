@@ -431,7 +431,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         appendParameters(map, metrics);
         appendParameters(map, application);
         appendParameters(map, module);
-        appendParameters(map, provider, Constants.DEFAULT_KEY);
+        // remove 'default.' prefix for configs from ProviderConfig
+        // appendParameters(map, provider, Constants.DEFAULT_KEY);
+        appendParameters(map, provider);
         appendParameters(map, protocolConfig);
         appendParameters(map, this);
         if (CollectionUtils.isNotEmpty(methods)) {
