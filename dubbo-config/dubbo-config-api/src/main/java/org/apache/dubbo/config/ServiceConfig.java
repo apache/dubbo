@@ -830,7 +830,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         .orElseGet(() -> {
                             ProtocolConfig protocolConfig = new ProtocolConfig();
                             protocolConfig.refresh();
-                            return Arrays.asList(protocolConfig);
+                            return new ArrayList<>(Arrays.asList(protocolConfig));
                         })
                );
             }
