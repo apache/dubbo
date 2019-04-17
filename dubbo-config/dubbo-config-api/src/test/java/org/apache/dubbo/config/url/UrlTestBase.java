@@ -155,8 +155,8 @@ public class UrlTestBase {
         provConf.setRegistry(regConfForProvider);
         servConf.setRegistry(regConfForService);
 
-        provConf.setProtocols(new ArrayList<>(Arrays.asList(new ProtocolConfig[]{protoConfForProvider})));
-        servConf.setProtocols(new ArrayList<>(Arrays.asList(new ProtocolConfig[]{protoConfForService})));
+        provConf.setProtocols(new ArrayList<>(Arrays.asList(protoConfForProvider)));
+        servConf.setProtocols(new ArrayList<>(Arrays.asList(protoConfForService)));
 
         servConf.setMethods(Arrays.asList(new MethodConfig[]{methodConfForService}));
         servConf.setProvider(provConf);
