@@ -32,11 +32,9 @@ import com.ecwid.consul.v1.agent.model.NewService;
 import com.ecwid.consul.v1.catalog.CatalogServicesRequest;
 import com.ecwid.consul.v1.health.HealthServicesRequest;
 import com.ecwid.consul.v1.health.model.HealthService;
+import org.apache.dubbo.rpc.RpcException;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -55,6 +53,7 @@ public class ConsulRegistry extends FailbackRegistry {
     private static final String URL_META_KEY = "url";
     private static final String WATCH_TIMEOUT = "consul-watch-timeout";
     private static final String CHECK_INTERVAL = "consul-check-interval";
+    private static final String CONSUL_TTL = "consul_ttl";
     private static final String CHECK_TIMEOUT = "consul-check-timeout";
     private static final String DEREGISTER_AFTER = "consul-deregister-critical-service-after";
 
@@ -62,11 +61,13 @@ public class ConsulRegistry extends FailbackRegistry {
     // default watch timeout in millisecond
     private static final int DEFAULT_WATCH_TIMEOUT = 60 * 1000;
     // default tcp check interval
-    private static final String DEFAULT_CHECK_INTERVAL = "10s";
+    private static final String DEFAULT_CHECK_INTERVAL = "3s";
     // default tcp check timeout
     private static final String DEFAULT_CHECK_TIMEOUT = "1s";
     // default deregister critical server after
     private static final String DEFAULT_DEREGISTER_TIME = "20s";
+
+    private static final String CONSUL_TTL_PARAMS = "30s";
 
     private ConsulClient client;
 
@@ -155,6 +156,33 @@ public class ConsulRegistry extends FailbackRegistry {
     }
 
     @Override
+    public List<URL> lookup(URL url) {
+        if (url == null) {
+            throw new IllegalArgumentException("lookup url == null");
+        }
+        try {
+
+            String service = url.getServiceKey();
+            getHealthServices(service, 0, 600);
+
+            Response<Map<String, List<String>>> response = getAllServices(-1, buildWatchTimeout(url));
+
+            if (response == null || response.getValue() == null || response.getValue().isEmpty()) {
+                return new ArrayList<>();
+            } else {
+//                return response.getValue()
+                List<HealthService> services = getHealthServices(response.getValue());
+
+                services.isEmpty();
+            }
+            return new ArrayList<>();
+
+        } catch (Throwable e) {
+            throw new RpcException("Failed to lookup " + url + " from consul " + getUrl() + ", cause: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
     public boolean isAvailable() {
         return client.getAgentSelf() != null;
     }
@@ -198,6 +226,13 @@ public class ConsulRegistry extends FailbackRegistry {
         return url.getProtocol().equals(Constants.PROVIDER_PROTOCOL);
     }
 
+    private List<URL> filter(List<HealthService> services) {
+        return services.stream()
+                .map(s -> s.getService().getMeta().get(URL_META_KEY))
+                .map(URL::valueOf)
+                .collect(Collectors.toList());
+    }
+
     private List<URL> convert(List<HealthService> services) {
         return services.stream()
                 .map(s -> s.getService().getMeta().get(URL_META_KEY))
@@ -234,6 +269,7 @@ public class ConsulRegistry extends FailbackRegistry {
     private NewService.Check buildCheck(URL url) {
         NewService.Check check = new NewService.Check();
         check.setTcp(url.getAddress());
+//        check.setTtl(url.getParameter(CONSUL_TTL, CONSUL_TTL_PARAMS));
         check.setInterval(url.getParameter(CHECK_INTERVAL, DEFAULT_CHECK_INTERVAL));
         check.setTimeout(url.getParameter(CHECK_TIMEOUT, DEFAULT_CHECK_TIMEOUT));
         check.setDeregisterCriticalServiceAfter(url.getParameter(DEREGISTER_AFTER, DEFAULT_DEREGISTER_TIME));
