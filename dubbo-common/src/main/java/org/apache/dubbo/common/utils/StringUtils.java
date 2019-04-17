@@ -48,7 +48,7 @@ public final class StringUtils {
     private static final Pattern INT_PATTERN = Pattern.compile("^\\d+$");
     private static final int PAD_LIMIT = 8192;
 
-    private StringUtils() {
+    protected StringUtils() {
     }
 
     /**
