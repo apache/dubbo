@@ -24,7 +24,11 @@ import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.*;
+import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.MethodUtils;
+import org.apache.dubbo.common.utils.ReflectUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 
@@ -643,7 +647,7 @@ public abstract class AbstractConfig implements Serializable {
 
         Method[] methods = this.getClass().getMethods();
         for (Method method1 : methods) {
-            if (ClassUtils.isGetter(method1) && ClassUtils.isPrimitive(method1.getReturnType())) {
+            if (MethodUtils.isGetter(method1) && ClassUtils.isPrimitive(method1.getReturnType())) {
                 Parameter parameter = method1.getAnnotation(Parameter.class);
                 if (parameter != null && parameter.excluded()) {
                     continue;
