@@ -276,11 +276,11 @@ public class ThriftCodecTest {
 
         Request request = createRequest();
 
-        AppResponse rpcResult = new AppResponse();
-        rpcResult.setValue("Hello, World!");
+        AppResponse appResponse = new AppResponse();
+        appResponse.setValue("Hello, World!");
 
         Response response = new Response();
-        response.setResult(rpcResult);
+        response.setResult(appResponse);
         response.setId(request.getId());
         ChannelBuffer bos = ChannelBuffers.dynamicBuffer(1024);
 
@@ -322,7 +322,7 @@ public class ThriftCodecTest {
         result.read(protocol);
         protocol.readMessageEnd();
 
-        Assertions.assertEquals(rpcResult.getValue(), result.getSuccess());
+        Assertions.assertEquals(appResponse.getValue(), result.getSuccess());
     }
 
     @Test
@@ -334,12 +334,12 @@ public class ThriftCodecTest {
 
         Request request = createRequest();
 
-        AppResponse rpcResult = new AppResponse();
+        AppResponse appResponse = new AppResponse();
         String exceptionMessage = "failed";
-        rpcResult.setException(new RuntimeException(exceptionMessage));
+        appResponse.setException(new RuntimeException(exceptionMessage));
 
         Response response = new Response();
-        response.setResult(rpcResult);
+        response.setResult(appResponse);
         response.setId(request.getId());
         ChannelBuffer bos = ChannelBuffers.dynamicBuffer(1024);
 

@@ -28,7 +28,6 @@ import org.apache.dubbo.rpc.support.DemoService;
 import org.apache.dubbo.rpc.support.LocalException;
 
 import com.alibaba.com.caucho.hessian.HessianException;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -80,16 +79,16 @@ public class ExceptionFilterTest {
         ExceptionFilter exceptionFilter = new ExceptionFilter();
         RpcInvocation invocation = new RpcInvocation("sayHello", new Class<?>[]{String.class}, new Object[]{"world"});
 
-        AppResponse rpcResult = new AppResponse();
-        rpcResult.setException(new IllegalArgumentException("java"));
+        AppResponse appResponse = new AppResponse();
+        appResponse.setException(new IllegalArgumentException("java"));
 
         Invoker<DemoService> invoker = mock(Invoker.class);
-        when(invoker.invoke(invocation)).thenReturn(rpcResult);
+        when(invoker.invoke(invocation)).thenReturn(appResponse);
         when(invoker.getInterface()).thenReturn(DemoService.class);
 
         Result newResult = exceptionFilter.invoke(invoker, invocation);
 
-        Assertions.assertEquals(rpcResult.getException(), newResult.getException());
+        Assertions.assertEquals(appResponse.getException(), newResult.getException());
 
     }
 
@@ -100,16 +99,16 @@ public class ExceptionFilterTest {
         ExceptionFilter exceptionFilter = new ExceptionFilter();
         RpcInvocation invocation = new RpcInvocation("sayHello", new Class<?>[]{String.class}, new Object[]{"world"});
 
-        AppResponse rpcResult = new AppResponse();
-        rpcResult.setException(new LocalException("localException"));
+        AppResponse appResponse = new AppResponse();
+        appResponse.setException(new LocalException("localException"));
 
         Invoker<DemoService> invoker = mock(Invoker.class);
-        when(invoker.invoke(invocation)).thenReturn(rpcResult);
+        when(invoker.invoke(invocation)).thenReturn(appResponse);
         when(invoker.getInterface()).thenReturn(DemoService.class);
 
         Result newResult = exceptionFilter.invoke(invoker, invocation);
 
-        Assertions.assertEquals(rpcResult.getException(), newResult.getException());
+        Assertions.assertEquals(appResponse.getException(), newResult.getException());
 
     }
 
@@ -131,12 +130,12 @@ public class ExceptionFilterTest {
 
         Result asyncResult = exceptionFilter.invoke(invoker, invocation);
 
-        Result rpcResult = asyncResult.get();
-        exceptionFilter.listener().onResponse(rpcResult, invoker, invocation);
+        AppResponse appResponse = (AppResponse) asyncResult.get();
+        exceptionFilter.listener().onResponse(appResponse, invoker, invocation);
 
-        Assertions.assertFalse(rpcResult.getException() instanceof HessianException);
+        Assertions.assertFalse(appResponse.getException() instanceof HessianException);
 
-        Assertions.assertEquals(rpcResult.getException().getClass(), RuntimeException.class);
+        Assertions.assertEquals(appResponse.getException().getClass(), RuntimeException.class);
     }
 
 }

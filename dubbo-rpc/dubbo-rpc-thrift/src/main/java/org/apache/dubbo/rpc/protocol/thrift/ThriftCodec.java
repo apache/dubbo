@@ -376,15 +376,15 @@ public class ThriftCodec implements Codec2 {
 
             response.setId(id);
 
-            AppResponse rpcResult = new AppResponse();
+            AppResponse appResponse = new AppResponse();
 
             if (realResult instanceof Throwable) {
-                rpcResult.setException((Throwable) realResult);
+                appResponse.setException((Throwable) realResult);
             } else {
-                rpcResult.setValue(realResult);
+                appResponse.setValue(realResult);
             }
 
-            response.setResult(rpcResult);
+            response.setResult(appResponse);
 
             return response;
 
