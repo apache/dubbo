@@ -118,20 +118,19 @@ public class SofaRegistry extends FailbackRegistry {
         String serviceName = buildServiceName(url);
         String serviceData = url.toFullString();
 
-        PublisherRegistration dsrRegistration;
-        dsrRegistration = new PublisherRegistration(serviceName);
-        addAttributesForPub(dsrRegistration);
+        PublisherRegistration registration = new PublisherRegistration(serviceName);
+        addAttributesForPub(registration);
 
-        registryClient.register(dsrRegistration, serviceData);
+        registryClient.register(registration, serviceData);
     }
 
     /**
      * Add attributes for pub.
      *
-     * @param dsrRegistration the dsr registration
+     * @param publisherRegistration the publisher registration
      */
-    protected void addAttributesForPub(PublisherRegistration dsrRegistration) {
-        dsrRegistration.setGroup(DEFAULT_GROUP);
+    protected void addAttributesForPub(PublisherRegistration publisherRegistration) {
+        publisherRegistration.setGroup(DEFAULT_GROUP);
     }
 
     @Override
@@ -235,7 +234,7 @@ public class SofaRegistry extends FailbackRegistry {
         if (StringUtils.isNotEmpty(group)) {
             buf.append(":").append(group);
         }
-        buf.append("@dubbo");
+        buf.append("@").append(Constants.DUBBO);
         return buf.toString();
     }
 
@@ -268,11 +267,11 @@ public class SofaRegistry extends FailbackRegistry {
     /**
      * Add attributes for sub.
      *
-     * @param dsrRegistration the dsr registration
+     * @param subscriberRegistration the subscriber registration
      */
-    protected void addAttributesForSub(SubscriberRegistration dsrRegistration) {
-        dsrRegistration.setGroup(DEFAULT_GROUP);
-        dsrRegistration.setScopeEnum(ScopeEnum.global);
+    protected void addAttributesForSub(SubscriberRegistration subscriberRegistration) {
+        subscriberRegistration.setGroup(DEFAULT_GROUP);
+        subscriberRegistration.setScopeEnum(ScopeEnum.global);
     }
 
     /**
