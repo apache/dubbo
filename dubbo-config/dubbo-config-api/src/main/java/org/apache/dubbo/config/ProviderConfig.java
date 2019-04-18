@@ -25,6 +25,7 @@ import org.apache.dubbo.remoting.Transporter;
 import org.apache.dubbo.remoting.exchange.Exchanger;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
@@ -157,7 +158,7 @@ public class ProviderConfig extends AbstractServiceConfig {
 
     @Deprecated
     public void setProtocol(String protocol) {
-        this.protocols = Arrays.asList(new ProtocolConfig[]{new ProtocolConfig(protocol)});
+        this.protocols = new ArrayList<>(Arrays.asList(new ProtocolConfig(protocol)));
     }
 
     @Parameter(excluded = true)
