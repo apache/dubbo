@@ -60,9 +60,9 @@ public class CompatibleFilter extends ListenableFilter {
 
     static class CompatibleListener implements Listener {
         @Override
-        public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-            if (!invocation.getMethodName().startsWith("$") && !result.hasException()) {
-                Object value = result.getValue();
+        public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
+            if (!invocation.getMethodName().startsWith("$") && !appResponse.hasException()) {
+                Object value = appResponse.getValue();
                 if (value != null) {
                     try {
                         Method method = invoker.getInterface().getMethod(invocation.getMethodName(), invocation.getParameterTypes());
@@ -81,7 +81,7 @@ public class CompatibleFilter extends ListenableFilter {
                             newValue = value;
                         }
                         if (newValue != value) {
-                            result.setValue(newValue);
+                            appResponse.setValue(newValue);
                         }
                     } catch (Throwable t) {
                         logger.warn(t.getMessage(), t);

@@ -68,7 +68,7 @@ public class ExecuteLimitFilter extends ListenableFilter {
 
     static class ExecuteLimitListener implements Listener {
         @Override
-        public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
+        public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
             RpcStatus.endCount(invoker.getUrl(), invocation.getMethodName(), getElapsed(invocation), true);
         }
 

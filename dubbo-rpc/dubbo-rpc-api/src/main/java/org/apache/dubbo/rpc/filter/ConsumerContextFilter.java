@@ -62,8 +62,8 @@ public class ConsumerContextFilter extends ListenableFilter {
 
     static class ConsumerContextListener implements Listener {
         @Override
-        public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-            RpcContext.getServerContext().setAttachments(result.getAttachments());
+        public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
+            RpcContext.getServerContext().setAttachments(appResponse.getAttachments());
         }
 
         @Override

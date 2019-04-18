@@ -47,7 +47,7 @@ public class AsyncRpcResult implements Result {
 
     @Override
     public Object getValue() {
-        return getRpcResult().getValue();
+        return getAppResponse().getValue();
     }
 
     @Override
@@ -57,7 +57,7 @@ public class AsyncRpcResult implements Result {
 
     @Override
     public Throwable getException() {
-        return getRpcResult().getException();
+        return getAppResponse().getException();
     }
 
     @Override
@@ -67,7 +67,7 @@ public class AsyncRpcResult implements Result {
 
     @Override
     public boolean hasException() {
-        return getRpcResult().hasException();
+        return getAppResponse().hasException();
     }
 
     public CompletableFuture<AppResponse> getResponseFuture() {
@@ -78,7 +78,7 @@ public class AsyncRpcResult implements Result {
         this.responseFuture = responseFuture;
     }
 
-    public Result getRpcResult() {
+    public Result getAppResponse() {
         try {
             if (responseFuture.isDone()) {
                 return responseFuture.get();
@@ -94,9 +94,9 @@ public class AsyncRpcResult implements Result {
     public Object recreate() throws Throwable {
         RpcInvocation rpcInvocation = (RpcInvocation) invocation;
         if (InvokeMode.FUTURE == rpcInvocation.getInvokeMode()) {
-            AppResponse rpcResult = new AppResponse();
+            AppResponse appResponse = new AppResponse();
             CompletableFuture<Object> future = new CompletableFuture<>();
-            rpcResult.setValue(future);
+            appResponse.setValue(future);
             responseFuture.whenComplete((result, t) -> {
                 if (t != null) {
                     if (t instanceof CompletionException) {
@@ -111,7 +111,7 @@ public class AsyncRpcResult implements Result {
                     }
                 }
             });
-            return rpcResult.recreate();
+            return appResponse.recreate();
         } else if (responseFuture.isDone()) {
             return responseFuture.get().recreate();
         }
@@ -135,32 +135,32 @@ public class AsyncRpcResult implements Result {
 
     @Override
     public Map<String, String> getAttachments() {
-        return getRpcResult().getAttachments();
+        return getAppResponse().getAttachments();
     }
 
     @Override
     public void setAttachments(Map<String, String> map) {
-        getRpcResult().setAttachments(map);
+        getAppResponse().setAttachments(map);
     }
 
     @Override
     public void addAttachments(Map<String, String> map) {
-        getRpcResult().addAttachments(map);
+        getAppResponse().addAttachments(map);
     }
 
     @Override
     public String getAttachment(String key) {
-        return getRpcResult().getAttachment(key);
+        return getAppResponse().getAttachment(key);
     }
 
     @Override
     public String getAttachment(String key, String defaultValue) {
-        return getRpcResult().getAttachment(key, defaultValue);
+        return getAppResponse().getAttachment(key, defaultValue);
     }
 
     @Override
     public void setAttachment(String key, String value) {
-        getRpcResult().setAttachment(key, value);
+        getAppResponse().setAttachment(key, value);
     }
 
     /**

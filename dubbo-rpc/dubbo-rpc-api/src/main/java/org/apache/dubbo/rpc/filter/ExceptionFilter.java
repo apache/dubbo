@@ -60,10 +60,10 @@ public class ExceptionFilter extends ListenableFilter {
         private Logger logger = LoggerFactory.getLogger(ExceptionListener.class);
 
         @Override
-        public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-            if (result.hasException() && GenericService.class != invoker.getInterface()) {
+        public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
+            if (appResponse.hasException() && GenericService.class != invoker.getInterface()) {
                 try {
-                    Throwable exception = result.getException();
+                    Throwable exception = appResponse.getException();
 
                     // directly throw if it's checked exception
                     if (!(exception instanceof RuntimeException) && (exception instanceof Exception)) {
@@ -102,7 +102,7 @@ public class ExceptionFilter extends ListenableFilter {
                     }
 
                     // otherwise, wrap with RuntimeException and throw back to the client
-                    result.setException(new RuntimeException(StringUtils.toString(exception)));
+                    appResponse.setException(new RuntimeException(StringUtils.toString(exception)));
                     return;
                 } catch (Throwable e) {
                     logger.warn("Fail to ExceptionFilter when called by " + RpcContext.getContext().getRemoteHost() + ". service: " + invoker.getInterface().getName() + ", method: " + invocation.getMethodName() + ", exception: " + e.getClass().getName() + ": " + e.getMessage(), e);

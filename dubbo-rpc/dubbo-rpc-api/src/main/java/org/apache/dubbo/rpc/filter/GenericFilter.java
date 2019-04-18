@@ -124,7 +124,7 @@ public class GenericFilter extends ListenableFilter {
     static class GenericListener implements Listener {
 
         @Override
-        public void onResponse(Result result, Invoker<?> invoker, Invocation inv) {
+        public void onResponse(Result appResponse, Invoker<?> invoker, Invocation inv) {
             if ((inv.getMethodName().equals(Constants.$INVOKE) || inv.getMethodName().equals(Constants.$INVOKE_ASYNC))
                     && inv.getArguments() != null
                     && inv.getArguments().length == 3
@@ -135,21 +135,21 @@ public class GenericFilter extends ListenableFilter {
                     generic = RpcContext.getContext().getAttachment(Constants.GENERIC_KEY);
                 }
 
-                if (result.hasException() && !(result.getException() instanceof GenericException)) {
-                    result.setException(new GenericException(result.getException()));
+                if (appResponse.hasException() && !(appResponse.getException() instanceof GenericException)) {
+                    appResponse.setException(new GenericException(appResponse.getException()));
                 }
                 if (ProtocolUtils.isJavaGenericSerialization(generic)) {
                     try {
                         UnsafeByteArrayOutputStream os = new UnsafeByteArrayOutputStream(512);
-                        ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(Constants.GENERIC_SERIALIZATION_NATIVE_JAVA).serialize(null, os).writeObject(result.getValue());
-                        result.setValue(os.toByteArray());
+                        ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(Constants.GENERIC_SERIALIZATION_NATIVE_JAVA).serialize(null, os).writeObject(appResponse.getValue());
+                        appResponse.setValue(os.toByteArray());
                     } catch (IOException e) {
                         throw new RpcException("Serialize result failed.", e);
                     }
                 } else if (ProtocolUtils.isBeanGenericSerialization(generic)) {
-                    result.setValue(JavaBeanSerializeUtil.serialize(result.getValue(), JavaBeanAccessor.METHOD));
+                    appResponse.setValue(JavaBeanSerializeUtil.serialize(appResponse.getValue(), JavaBeanAccessor.METHOD));
                 } else {
-                    result.setValue(PojoUtils.generalize(result.getValue()));
+                    appResponse.setValue(PojoUtils.generalize(appResponse.getValue()));
                 }
             }
         }

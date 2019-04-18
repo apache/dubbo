@@ -90,9 +90,9 @@ public class ContextFilter extends ListenableFilter {
 
     static class ContextListener implements Listener {
         @Override
-        public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
+        public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
             // pass attachments to result
-            result.addAttachments(RpcContext.getServerContext().getAttachments());
+            appResponse.addAttachments(RpcContext.getServerContext().getAttachments());
         }
 
         @Override
