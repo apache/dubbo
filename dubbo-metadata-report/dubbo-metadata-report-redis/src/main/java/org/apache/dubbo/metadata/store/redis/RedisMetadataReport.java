@@ -25,6 +25,7 @@ import org.apache.dubbo.rpc.RpcException;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.Protocol;
 
 /**
  * RedisMetadataReport
@@ -37,7 +38,7 @@ public class RedisMetadataReport extends AbstractMetadataReport {
 
     public RedisMetadataReport(URL url) {
         super(url);
-        pool = new JedisPool(new JedisPoolConfig(), url.getHost(), url.getPort());
+        pool = new JedisPool(new JedisPoolConfig(), url.getHost(), url.getPort(), Protocol.DEFAULT_TIMEOUT, url.getPassword());
     }
 
     @Override
