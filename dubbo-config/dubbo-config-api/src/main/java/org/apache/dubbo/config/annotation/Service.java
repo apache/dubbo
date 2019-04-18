@@ -79,9 +79,9 @@ public @interface Service {
     boolean deprecated() default false;
 
     /**
-     * Whether the service is dynamic, default value is false
+     * Whether the service is dynamic, default value is true
      */
-    boolean dynamic() default false;
+    boolean dynamic() default true;
 
     /**
      * Access log for the service, default value is ""

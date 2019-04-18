@@ -40,7 +40,7 @@ public class EnumTypeBuilder implements TypeBuilder {
         TypeDefinition td = new TypeDefinition(clazz.getCanonicalName());
 
         try {
-            Method methodValues = clazz.getDeclaredMethod("values", new Class<?>[0]);
+            Method methodValues = clazz.getDeclaredMethod("values");
             Object[] values = (Object[]) methodValues.invoke(clazz, new Object[0]);
             int length = values.length;
             for (int i = 0; i < length; i++) {

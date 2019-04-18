@@ -79,6 +79,14 @@ public class Constants {
 
     public static final String DYNAMIC_KEY = "dynamic";
 
+    public static final String STATUS_KEY = "status";
+
+    public static final String CONTEXTPATH_KEY = "contextpath";
+
+    public static final String LISTENER_KEY = "listener";
+
+    public static final String LAYER_KEY = "layer";
+
     public static final String DUBBO_PROPERTIES_KEY = "dubbo.properties.file";
 
     public static final String DEFAULT_DUBBO_PROPERTIES = "dubbo.properties";
@@ -246,6 +254,8 @@ public class Constants {
     public static final String MOCK_KEY = "mock";
 
     public static final String PROTOCOL_KEY = "protocol";
+
+    public static final String LOGSTAT_PROTOCOL = "logstat";
 
     public static final String DUBBO_PROTOCOL = DUBBO;
 
@@ -793,6 +803,16 @@ public class Constants {
     public static final String TELNET = "telnet";
 
     /**
+     * Hash nodes name
+     */
+    public static final String HASH_NODES = "hash.nodes";
+
+    /**
+     * Hash arguments name
+     */
+    public static final String HASH_ARGUMENTS = "hash.arguments";
+
+    /**
      * Application name;
      */
     public static final String NAME = "name";
@@ -851,6 +871,8 @@ public class Constants {
     public static final String METHOD = "method";
     public static final String DUBBO_GROUP = "dubbo";
     public static final String METRICS_KEY = "metrics";
+    public static final String METRICS_PORT = "metrics.port";
+    public static final String METRICS_PROTOCOL = "metrics.protocol";
 
 
 }

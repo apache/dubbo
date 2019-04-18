@@ -20,28 +20,62 @@ package org.apache.dubbo.rpc;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.fail;
-
 public class RpcResultTest {
     @Test
-    public void testRecreateWithNormalException() {
+    public void testRpcResultWithNormalException() {
         NullPointerException npe = new NullPointerException();
         RpcResult rpcResult = new RpcResult(npe);
-        try {
-            rpcResult.recreate();
-            fail();
-        } catch (Throwable throwable) {
-            StackTraceElement[] stackTrace = throwable.getStackTrace();
-            Assertions.assertNotNull(stackTrace);
-            Assertions.assertTrue(stackTrace.length > 1);
-        }
+
+        StackTraceElement[] stackTrace = rpcResult.getException().getStackTrace();
+        Assertions.assertNotNull(stackTrace);
+        Assertions.assertTrue(stackTrace.length > 1);
     }
 
     /**
      * please run this test in Run mode
      */
     @Test
-    public void testRecreateWithEmptyStackTraceException() {
+    public void testRpcResultWithEmptyStackTraceException() {
+        Throwable throwable = buildEmptyStackTraceException();
+        if (throwable == null) {
+            return;
+        }
+        RpcResult rpcResult = new RpcResult(throwable);
+
+        StackTraceElement[] stackTrace = rpcResult.getException().getStackTrace();
+        Assertions.assertNotNull(stackTrace);
+        Assertions.assertTrue(stackTrace.length == 0);
+    }
+
+    @Test
+    public void testSetExceptionWithNormalException() {
+        NullPointerException npe = new NullPointerException();
+        RpcResult rpcResult = new RpcResult();
+        rpcResult.setException(npe);
+
+        StackTraceElement[] stackTrace = rpcResult.getException().getStackTrace();
+        Assertions.assertNotNull(stackTrace);
+        Assertions.assertTrue(stackTrace.length > 1);
+    }
+
+    /**
+     * please run this test in Run mode
+     */
+    @Test
+    public void testSetExceptionWithEmptyStackTraceException() {
+        Throwable throwable = buildEmptyStackTraceException();
+        if (throwable == null) {
+            return;
+        }
+        RpcResult rpcResult = new RpcResult();
+        rpcResult.setException(throwable);
+
+        StackTraceElement[] stackTrace = rpcResult.getException().getStackTrace();
+        Assertions.assertNotNull(stackTrace);
+        Assertions.assertTrue(stackTrace.length == 0);
+    }
+
+    private Throwable buildEmptyStackTraceException() {
         // begin to construct a NullPointerException with empty stackTrace
         Throwable throwable = null;
         Long begin = System.currentTimeMillis();
@@ -59,19 +93,11 @@ public class RpcResultTest {
          * may be there is -XX:-OmitStackTraceInFastThrow or run in Debug mode
          */
         if (throwable == null) {
-            System.out.println("###testRecreateWithEmptyStackTraceException fail to construct NPE");
-            return;
+            System.out.println("###buildEmptyStackTraceException fail to construct NPE");
+            return null;
         }
         // end construct a NullPointerException with empty stackTrace
 
-        RpcResult rpcResult = new RpcResult(throwable);
-        try {
-            rpcResult.recreate();
-            fail();
-        } catch (Throwable t) {
-            StackTraceElement[] stackTrace = t.getStackTrace();
-            Assertions.assertNotNull(stackTrace);
-            Assertions.assertTrue(stackTrace.length == 0);
-        }
+        return throwable;
     }
 }

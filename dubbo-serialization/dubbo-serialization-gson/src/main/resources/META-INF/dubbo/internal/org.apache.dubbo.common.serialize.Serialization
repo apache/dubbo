@@ -1,0 +1,1 @@
+gson=org.apache.dubbo.common.serialize.gson.GsonSerialization
