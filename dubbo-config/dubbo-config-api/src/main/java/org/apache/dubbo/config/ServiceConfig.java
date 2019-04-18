@@ -426,7 +426,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
         Map<String, String> map = new HashMap<String, String>();
         map.put(Constants.SIDE_KEY, Constants.PROVIDER_SIDE);
+
         appendRuntimeParameters(map);
+        appendParameters(map, metrics);
         appendParameters(map, application);
         appendParameters(map, module);
         appendParameters(map, provider, Constants.DEFAULT_KEY);
@@ -791,7 +793,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (provider != null) {
             return;
         }
-        setProvider(
+        setProvider (
                 ConfigManager.getInstance()
                         .getDefaultProvider()
                         .orElseGet(() -> {
@@ -822,15 +824,15 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
         if (StringUtils.isEmpty(protocolIds)) {
             if (CollectionUtils.isEmpty(protocols)) {
-                setProtocols(
-                        ConfigManager.getInstance().getDefaultProtocols()
-                                .filter(CollectionUtils::isNotEmpty)
-                                .orElseGet(() -> {
-                                    ProtocolConfig protocolConfig = new ProtocolConfig();
-                                    protocolConfig.refresh();
-                                    return Arrays.asList(protocolConfig);
-                                })
-                );
+               setProtocols(
+                       ConfigManager.getInstance().getDefaultProtocols()
+                        .filter(CollectionUtils::isNotEmpty)
+                        .orElseGet(() -> {
+                            ProtocolConfig protocolConfig = new ProtocolConfig();
+                            protocolConfig.refresh();
+                            return new ArrayList<>(Arrays.asList(protocolConfig));
+                        })
+               );
             }
         } else {
             String[] arr = Constants.COMMA_SPLIT_PATTERN.split(protocolIds);

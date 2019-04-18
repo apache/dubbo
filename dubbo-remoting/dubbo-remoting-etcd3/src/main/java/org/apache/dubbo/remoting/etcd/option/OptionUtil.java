@@ -60,7 +60,9 @@ public class OptionUtil {
     }
 
     public static boolean isProtocolError(Throwable e) {
-        if (e == null) return false;
+        if (e == null) {
+            return false;
+        }
         Throwable cause = e.getCause();
         while (cause != null) {
             if (cause instanceof Http2Exception) {

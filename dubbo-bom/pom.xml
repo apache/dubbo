@@ -22,12 +22,10 @@
     <parent>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-parent</artifactId>
-        <version>2.7.2-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
 
-    <groupId>org.apache.dubbo</groupId>
     <artifactId>dubbo-bom</artifactId>
-    <version>2.7.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>dubbo-bom</name>
@@ -176,6 +174,11 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-rpc-jsonrpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-rpc-rmi</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -312,6 +315,16 @@
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-serialization-protostuff</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-serialization-avro</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-serialization-gson</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

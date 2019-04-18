@@ -67,7 +67,7 @@ public class NamePropertyDefaultValueDubboConfigBeanCustomizer implements DubboC
             }
 
             Method setNameMethod = propertyDescriptor.getWriteMethod();
-            if (setNameMethod != null && getNameMethod != null) { // "setName" and "getName" methods are present
+            if (setNameMethod != null) { // "setName" and "getName" methods are present
                 if (Arrays.equals(of(String.class), setNameMethod.getParameterTypes())) { // the param type is String
                     // set bean name to the value of the "name" property
                     ReflectionUtils.invokeMethod(setNameMethod, dubboConfigBean, beanName);

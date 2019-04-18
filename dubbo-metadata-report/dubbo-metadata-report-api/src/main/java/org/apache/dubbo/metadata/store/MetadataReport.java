@@ -26,7 +26,7 @@ import java.util.Map;
  */
 public interface MetadataReport {
 
-    public static final String META_DATA_SOTRE_TAG = ".metaData";
+    public static final String META_DATA_STORE_TAG = ".metaData";
 
 
     void storeProviderMetadata(MetadataIdentifier providerMetadataIdentifier, FullServiceDefinition serviceDefinition);
