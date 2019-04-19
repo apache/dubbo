@@ -17,6 +17,8 @@
 
 package org.apache.dubbo.registry.consul;
 
+import com.ecwid.consul.v1.health.HealthChecksForServiceRequest;
+import com.ecwid.consul.v1.health.model.Check;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
@@ -163,7 +165,8 @@ public class ConsulRegistry extends FailbackRegistry {
         try {
 
             String service = url.getServiceKey();
-            getHealthServices(service, 0, 600);
+
+            Response<List<Check>> check = getHealthCheckService(service, -1, buildWatchTimeout(url));
 
             Response<Map<String, List<String>>> response = getAllServices(-1, buildWatchTimeout(url));
 
@@ -173,9 +176,8 @@ public class ConsulRegistry extends FailbackRegistry {
 //                return response.getValue()
                 List<HealthService> services = getHealthServices(response.getValue());
 
-                services.isEmpty();
+                return  convert(services);
             }
-            return new ArrayList<>();
 
         } catch (Throwable e) {
             throw new RpcException("Failed to lookup " + url + " from consul " + getUrl() + ", cause: " + e.getMessage(), e);
@@ -202,6 +204,17 @@ public class ConsulRegistry extends FailbackRegistry {
         return client.getHealthServices(service, request);
     }
 
+    private Response<List<Check>> getHealthCheckService(String service, long index, int watchTimeout) {
+        HealthChecksForServiceRequest request = HealthChecksForServiceRequest.newBuilder()
+                .setQueryParams(new QueryParams(watchTimeout, index)).build();
+
+        Response<List<Check>> check = client.getHealthChecksForService(service, request);
+
+
+        return check;
+
+    }
+
     private Response<Map<String, List<String>>> getAllServices(long index, int watchTimeout) {
         CatalogServicesRequest request = CatalogServicesRequest.newBuilder()
                 .setQueryParams(new QueryParams(watchTimeout, index))
@@ -226,16 +239,16 @@ public class ConsulRegistry extends FailbackRegistry {
         return url.getProtocol().equals(Constants.PROVIDER_PROTOCOL);
     }
 
-    private List<URL> filter(List<HealthService> services) {
+    private List<URL> convert(List<HealthService> services) {
         return services.stream()
                 .map(s -> s.getService().getMeta().get(URL_META_KEY))
                 .map(URL::valueOf)
                 .collect(Collectors.toList());
     }
 
-    private List<URL> convert(List<HealthService> services) {
-        return services.stream()
-                .map(s -> s.getService().getMeta().get(URL_META_KEY))
+    private List<URL> convertFromCheck(List<Check> checks) {
+        return checks.stream()
+                .map(s -> s.getCheckId())
                 .map(URL::valueOf)
                 .collect(Collectors.toList());
     }
@@ -268,11 +281,16 @@ public class ConsulRegistry extends FailbackRegistry {
 
     private NewService.Check buildCheck(URL url) {
         NewService.Check check = new NewService.Check();
-        check.setTcp(url.getAddress());
+//        check.setTcp(url.getAddress());
+//        check.setInterval(url.getParameter(CHECK_INTERVAL, DEFAULT_CHECK_INTERVAL));
+
 //        check.setTtl(url.getParameter(CONSUL_TTL, CONSUL_TTL_PARAMS));
-        check.setInterval(url.getParameter(CHECK_INTERVAL, DEFAULT_CHECK_INTERVAL));
-        check.setTimeout(url.getParameter(CHECK_TIMEOUT, DEFAULT_CHECK_TIMEOUT));
-        check.setDeregisterCriticalServiceAfter(url.getParameter(DEREGISTER_AFTER, DEFAULT_DEREGISTER_TIME));
+//        check.setTimeout(url.getParameter(CHECK_TIMEOUT, DEFAULT_CHECK_TIMEOUT));
+//        check.setDeregisterCriticalServiceAfter(url.getParameter(DEREGISTER_AFTER, DEFAULT_DEREGISTER_TIME));
+
+
+        check.setTtl("30s");
+        check.setDeregisterCriticalServiceAfter("3m");
         return check;
     }
 

@@ -50,17 +50,12 @@ public class ConsulRegistryTest {
     private URL anyUrl = URL.valueOf("consul://consul/*");
     private URL registryUrl;
     private ConsulRegistryFactory consulRegistryFactory;
-    private String customConfiguration =
-            "{\n" +
-                    "  \"datacenter\": \"dc-test\",\n" +
-                    "  \"log_level\": \"info\"\n" +
-                    "}\n";
 
     @BeforeEach
     public void setUp() throws Exception {
         this.consul = ConsulStarterBuilder.consulStarter()
-                .withConsulVersion("1.2.1")
-                .withCustomConfig(customConfiguration)
+//                .withConsulVersion("1.2.1")
+//                .withCustomConfig(customConfiguration)
                 .build()
                 .start();
         this.registryUrl = URL.valueOf("consul://localhost:" + consul.getHttpPort());
@@ -86,6 +81,7 @@ public class ConsulRegistryTest {
         }
 
         registered = consulRegistry.getRegistered();
+
         assertThat(registered.size(), is(1));
     }
 
@@ -124,7 +120,17 @@ public class ConsulRegistryTest {
         Thread.sleep(10000);
         lookup = consulRegistry.lookup(serviceUrl);
 //        assertThat(lookup.size(), is(1));
+//        assertThat(lookup.size(), is(1));
+
+        System.out.println(lookup.size());
+
+        Thread.sleep(10000);
+        lookup = consulRegistry.lookup(serviceUrl);
+//        assertThat(lookup.size(), is(1));
         assertThat(lookup.size(), is(1));
+
+
+
     }
 
 //    @Disabled
