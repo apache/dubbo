@@ -24,6 +24,7 @@ public abstract class AbstractRetryPolicy implements RetryPolicy {
         this.maxRetried = maxRetried;
     }
 
+    @Override
     public boolean shouldRetry(int retried, long elapsed, boolean sleep) {
         if (retried < maxRetried) {
             try {
