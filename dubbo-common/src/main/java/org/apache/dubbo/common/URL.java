@@ -1297,7 +1297,7 @@ class URL implements Serializable {
     }
 
     /**
-     * The format is '{group}/{interfaceName/path}*{version}'
+     * The format is '{group}*{interfaceName}:{version}'
      *
      * @return
      */
@@ -1307,18 +1307,36 @@ class URL implements Serializable {
         return serviceKey;
     }
 
+    /**
+     * The format of return value is '{group}/{interfaceName}:{version}'
+     * @return
+     */
     public String getServiceKey() {
         String inf = getServiceInterface();
         if (inf == null) {
             return null;
         }
+        return buildKey(inf, getParameter(Constants.GROUP_KEY), getParameter(Constants.VERSION_KEY));
+    }
+
+    /**
+     * The format of return value is '{group}/{path/interfaceName}:{version}'
+     * @return
+     */
+    public String getPathKey() {
+        String inf = StringUtils.isNotEmpty(path) ? path : getServiceInterface();
+        if (inf == null) {
+            return null;
+        }
+        return buildKey(inf, getParameter(Constants.GROUP_KEY), getParameter(Constants.VERSION_KEY));
+    }
+
+    public static String buildKey(String path, String group, String version) {
         StringBuilder buf = new StringBuilder();
-        String group = getParameter(Constants.GROUP_KEY);
         if (group != null && group.length() > 0) {
             buf.append(group).append("/");
         }
-        buf.append(inf);
-        String version = getParameter(Constants.VERSION_KEY);
+        buf.append(path);
         if (version != null && version.length() > 0) {
             buf.append(":").append(version);
         }

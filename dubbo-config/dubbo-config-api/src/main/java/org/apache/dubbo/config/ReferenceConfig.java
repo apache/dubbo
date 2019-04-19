@@ -22,10 +22,10 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.bytecode.Wrapper;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ClassHelper;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
@@ -178,6 +178,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     public ReferenceConfig(Reference reference) {
         appendAnnotation(Reference.class, reference);
+        setMethods(MethodConfig.constructMethodConfig(reference.methods()));
     }
 
     public URL toUrl() {
@@ -259,22 +260,24 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         Map<String, String> map = new HashMap<String, String>();
 
         map.put(Constants.SIDE_KEY, Constants.CONSUMER_SIDE);
+
         appendRuntimeParameters(map);
         if (!isGeneric()) {
             String revision = Version.getVersion(interfaceClass, version);
             if (revision != null && revision.length() > 0) {
-                map.put("revision", revision);
+                map.put(Constants.REVISION_KEY, revision);
             }
 
             String[] methods = Wrapper.getWrapper(interfaceClass).getMethodNames();
             if (methods.length == 0) {
                 logger.warn("No method found in service interface " + interfaceClass.getName());
-                map.put("methods", Constants.ANY_VALUE);
+                map.put(Constants.METHODS_KEY, Constants.ANY_VALUE);
             } else {
-                map.put("methods", StringUtils.join(new HashSet<String>(Arrays.asList(methods)), ","));
+                map.put(Constants.METHODS_KEY, StringUtils.join(new HashSet<String>(Arrays.asList(methods)), Constants.COMMA_SEPARATOR));
             }
         }
         map.put(Constants.INTERFACE_KEY, interfaceName);
+        appendParameters(map, metrics);
         appendParameters(map, application);
         appendParameters(map, module);
         appendParameters(map, consumer, Constants.DEFAULT_KEY);
@@ -303,10 +306,11 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
         ref = createProxy(map);
 
-        ApplicationModel.initConsumerModel(getUniqueServiceName(), buildConsumerModel(attributes));
+        String serviceKey = URL.buildKey(interfaceName, group, version);
+        ApplicationModel.initConsumerModel(serviceKey, buildConsumerModel(serviceKey, attributes));
     }
 
-    private ConsumerModel buildConsumerModel(Map<String, Object> attributes) {
+    private ConsumerModel buildConsumerModel(String serviceKey, Map<String, Object> attributes) {
         Method[] methods = interfaceClass.getMethods();
         Class serviceInterface = interfaceClass;
         if (interfaceClass == GenericService.class) {
@@ -317,9 +321,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 methods = interfaceClass.getMethods();
             }
         }
-        return new ConsumerModel(getUniqueServiceName(), serviceInterface, ref, methods, attributes);
+        return new ConsumerModel(serviceKey, serviceInterface, ref, methods, attributes);
     }
-
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
     private T createProxy(Map<String, String> map) {
         if (shouldJvmRefer(map)) {
@@ -557,7 +560,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     }
 
     public void setClient(String client) {
-        checkName("client", client);
+        checkName(Constants.CLIENT_KEY, client);
         this.client = client;
     }
 
@@ -599,19 +602,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     // just for test
     Invoker<?> getInvoker() {
         return invoker;
-    }
-
-    @Parameter(excluded = true)
-    public String getUniqueServiceName() {
-        StringBuilder buf = new StringBuilder();
-        if (group != null && group.length() > 0) {
-            buf.append(group).append("/");
-        }
-        buf.append(interfaceName);
-        if (StringUtils.isNotEmpty(version)) {
-            buf.append(":").append(version);
-        }
-        return buf.toString();
     }
 
     @Override

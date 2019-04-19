@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.ExporterListener;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -74,7 +75,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
      * after the service registered,and it needs to be enabled manually; if you want to disable the service, you also need
      * manual processing
      */
-    protected Boolean dynamic = false;
+    protected Boolean dynamic = true;
 
     /**
      * Whether to use token
@@ -210,7 +211,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     }
 
     public void setProtocol(ProtocolConfig protocol) {
-        setProtocols(Arrays.asList(protocol));
+        setProtocols(new ArrayList<>(Arrays.asList(protocol)));
     }
 
     @Parameter(excluded = true)
