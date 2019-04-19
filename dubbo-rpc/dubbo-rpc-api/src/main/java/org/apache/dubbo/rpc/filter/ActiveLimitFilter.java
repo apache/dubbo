@@ -83,7 +83,7 @@ public class ActiveLimitFilter extends ListenableFilter {
 
     static class ActiveLimitListener implements Listener {
         @Override
-        public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
+        public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
             String methodName = invocation.getMethodName();
             URL url = invoker.getUrl();
             int max = invoker.getUrl().getMethodParameter(methodName, Constants.ACTIVES_KEY, 0);

@@ -26,9 +26,9 @@ public class RpcResultTest {
     @Test
     public void testRecreateWithNormalException() {
         NullPointerException npe = new NullPointerException();
-        AppResponse rpcResult = new AppResponse(npe);
+        AppResponse appResponse = new AppResponse(npe);
         try {
-            rpcResult.recreate();
+            appResponse.recreate();
             fail();
         } catch (Throwable throwable) {
             StackTraceElement[] stackTrace = throwable.getStackTrace();
@@ -64,9 +64,9 @@ public class RpcResultTest {
         }
         // end construct a NullPointerException with empty stackTrace
 
-        AppResponse rpcResult = new AppResponse(throwable);
+        AppResponse appResponse = new AppResponse(throwable);
         try {
-            rpcResult.recreate();
+            appResponse.recreate();
             fail();
         } catch (Throwable t) {
             StackTraceElement[] stackTrace = t.getStackTrace();

@@ -51,7 +51,7 @@ public class TimeoutFilter extends ListenableFilter {
     static class TimeoutListener implements Listener {
 
         @Override
-        public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
+        public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
             String startAttach = invocation.getAttachment(TIMEOUT_FILTER_START_TIME);
             if (startAttach != null) {
                 long elapsed = System.currentTimeMillis() - Long.valueOf(startAttach);

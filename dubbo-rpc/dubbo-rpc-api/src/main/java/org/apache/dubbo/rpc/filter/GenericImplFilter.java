@@ -121,34 +121,34 @@ public class GenericImplFilter extends ListenableFilter {
 
     static class GenericImplListener implements Listener {
         @Override
-        public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
+        public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
             String generic = invoker.getUrl().getParameter(Constants.GENERIC_KEY);
             String methodName = invocation.getMethodName();
             Class<?>[] parameterTypes = invocation.getParameterTypes();
             if (ProtocolUtils.isGeneric(generic)
                     && (!Constants.$INVOKE.equals(invocation.getMethodName()) && !Constants.$INVOKE_ASYNC.equals(invocation.getMethodName()))
                     && invocation instanceof RpcInvocation) {
-                if (!result.hasException()) {
-                    Object value = result.getValue();
+                if (!appResponse.hasException()) {
+                    Object value = appResponse.getValue();
                     try {
                         Method method = invoker.getInterface().getMethod(methodName, parameterTypes);
                         if (ProtocolUtils.isBeanGenericSerialization(generic)) {
                             if (value == null) {
-                                result.setValue(value);
+                                appResponse.setValue(value);
                             } else if (value instanceof JavaBeanDescriptor) {
-                                result.setValue(JavaBeanSerializeUtil.deserialize((JavaBeanDescriptor) value));
+                                appResponse.setValue(JavaBeanSerializeUtil.deserialize((JavaBeanDescriptor) value));
                             } else {
                                 throw new RpcException("The type of result value is " + value.getClass().getName() + " other than " + JavaBeanDescriptor.class.getName() + ", and the result is " + value);
                             }
                         } else {
                             Type[] types = ReflectUtils.getReturnTypes(method);
-                            result.setValue(PojoUtils.realize(value, (Class<?>) types[0], types[1]));
+                            appResponse.setValue(PojoUtils.realize(value, (Class<?>) types[0], types[1]));
                         }
                     } catch (NoSuchMethodException e) {
                         throw new RpcException(e.getMessage(), e);
                     }
-                } else if (result.getException() instanceof GenericException) {
-                    GenericException exception = (GenericException) result.getException();
+                } else if (appResponse.getException() instanceof GenericException) {
+                    GenericException exception = (GenericException) appResponse.getException();
                     try {
                         String className = exception.getExceptionClass();
                         Class<?> clazz = ReflectUtils.forName(className);
@@ -177,7 +177,7 @@ public class GenericImplFilter extends ListenableFilter {
                             } catch (Throwable e) {
                                 logger.warn(e.getMessage(), e);
                             }
-                            result.setException(targetException);
+                            appResponse.setException(targetException);
                         } else if (lastException != null) {
                             throw lastException;
                         }
