@@ -64,10 +64,10 @@ public class GenericFilterTest {
 
         Result asyncResult = genericFilter.invoke(invoker, invocation);
 
-        Result rpcResult = asyncResult.get();
-        genericFilter.listener().onResponse(rpcResult, invoker, invocation);
-        Assertions.assertEquals(HashMap.class, rpcResult.getValue().getClass());
-        Assertions.assertEquals(10, ((HashMap) rpcResult.getValue()).get("age"));
+        AppResponse appResponse = (AppResponse) asyncResult.get();
+        genericFilter.listener().onResponse(appResponse, invoker, invocation);
+        Assertions.assertEquals(HashMap.class, appResponse.getValue().getClass());
+        Assertions.assertEquals(10, ((HashMap) appResponse.getValue()).get("age"));
 
     }
 
