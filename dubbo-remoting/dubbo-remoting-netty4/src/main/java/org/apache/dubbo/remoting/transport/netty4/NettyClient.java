@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.remoting.ChannelHandler;
@@ -56,7 +57,7 @@ public class NettyClient extends AbstractClient {
 
     private static final String SOCKS_PROXY_PORT = "socksProxyPort";
 
-    private static final int DEFAULT_SOCKS_PROXY_PORT = 1080;
+    private static final String DEFAULT_SOCKS_PROXY_PORT = "1080";
 
     private Bootstrap bootstrap;
 
@@ -94,9 +95,9 @@ public class NettyClient extends AbstractClient {
                         .addLast("encoder", adapter.getEncoder())
                         .addLast("client-idle-handler", new IdleStateHandler(heartbeatInterval, 0, 0, MILLISECONDS))
                         .addLast("handler", nettyClientHandler);
-                String socksProxyHost = System.getProperty(SOCKS_PROXY_HOST);
+                String socksProxyHost = ConfigUtils.getProperty(SOCKS_PROXY_HOST);
                 if(socksProxyHost != null) {
-                    Integer socksProxyPort = Integer.getInteger(SOCKS_PROXY_PORT, DEFAULT_SOCKS_PROXY_PORT);
+                    int socksProxyPort = Integer.parseInt(ConfigUtils.getProperty(SOCKS_PROXY_PORT, DEFAULT_SOCKS_PROXY_PORT));
                     Socks5ProxyHandler socks5ProxyHandler = new Socks5ProxyHandler(new InetSocketAddress(socksProxyHost, socksProxyPort));
                     ch.pipeline().addFirst(socks5ProxyHandler);
                 }
