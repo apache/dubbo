@@ -168,6 +168,10 @@ public class ConsulRegistry extends FailbackRegistry {
 
             Response<List<Check>> check = getHealthCheckService(service, -1, buildWatchTimeout(url));
 
+            Object ob = client.getAgentServices();
+
+            Object ob3 = client.getHealthChecksState(QueryParams.DEFAULT);
+
             Response<Map<String, List<String>>> response = getAllServices(-1, buildWatchTimeout(url));
 
             if (response == null || response.getValue() == null || response.getValue().isEmpty()) {
