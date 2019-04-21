@@ -1,44 +1,33 @@
 # Apache Dubbo (incubating) Project
 
-[![Build Status](https://travis-ci.org/apache/incubator-dubbo.svg?branch=master)](https://travis-ci.org/apache/incubator-dubbo)
-[![codecov](https://codecov.io/gh/apache/incubator-dubbo/branch/master/graph/badge.svg)](https://codecov.io/gh/apache/incubator-dubbo)
-![maven](https://img.shields.io/maven-central/v/org.apache.dubbo/dubbo.svg)
-![license](https://img.shields.io/github/license/alibaba/dubbo.svg)
-[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/apache/incubator-dubbo.svg)](http://isitmaintained.com/project/apache/incubator-dubbo "Average time to resolve an issue")
-[![Percentage of issues still open](http://isitmaintained.com/badge/open/apache/incubator-dubbo.svg)](http://isitmaintained.com/project/apache/incubator-dubbo "Percentage of issues still open")
-[![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=Apache%20Dubbo%20(incubating)%20is%20a%20high-performance%2C%20java%20based%2C%20open%20source%20RPC%20framework.&url=http://dubbo.incubator.apache.org/&via=ApacheDubbo&hashtags=rpc,java,dubbo,micro-service)
-[![](https://img.shields.io/twitter/follow/ApacheDubbo.svg?label=Follow&style=social&logoWidth=0)](https://twitter.com/intent/follow?screen_name=ApacheDubbo)
-[![Gitter](https://badges.gitter.im/alibaba/dubbo.svg)](https://gitter.im/alibaba/dubbo?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-Apache Dubbo (incubating) is a high-performance, Java based open source RPC framework. Please visit [official site](http://dubbo.incubator.apache.org) for quick start and documentations, as well as [Wiki](https://github.com/apache/incubator-dubbo/wiki) for news, FAQ, and release notes.
-
-We are now collecting dubbo user info in order to help us to improve Dubbo better, pls. kindly help us by providing yours on [issue#1012: Wanted: who's using dubbo](https://github.com/apache/incubator-dubbo/issues/1012), thanks :)
-
+Apache Dubbo(孵化)是一种基于Java的高性能开源RPC框架。请访问[官方网站](http://dubbo.incubator.apache.org)以获取快速入门和文档，以及[Wiki](https://github.com/apache/incubator-dubbo/wiki)获取新闻，常见问题和发行说明。我们现在正在收集dubbo用户信息，以帮助我们更好地改进Dubbo，请参阅。亲切地帮助我们提供你的[问题＃1012：通缉：谁在使用dubbo](https://github.com/apache/incubator-dubbo/issues/1012)，谢谢:)
 ## Architecture
 
 ![Architecture](http://dubbo.apache.org/img/architecture.png)
 
 ## Features
 
-* Transparent interface based RPC
-* Intelligent load balancing
-* Automatic service registration and discovery
-* High extensibility
-* Runtime traffic routing
-* Visualized service governance
+* 基于透明接口的RPC
+* 智能负载平衡
+* 自动服务注册和发现
+* 高扩展性
+* 运行时流量路由
+* 可视化的服务治理
 
 ## Getting started
 
-The following code snippet comes from [Dubbo Samples](https://github.com/apache/incubator-dubbo-samples/tree/master/dubbo-samples-api). You may clone the sample project and step into `dubbo-samples-api` sub directory before read on.
-
+以下代码段来自[Dubbo Samples](https://github.com/apache/incubator-dubbo-samples/tree/master/dubbo-samples-api)。在继续阅读之前，您可以克隆示例项目并进入`dubbo-samples-api`子目录。
 ```bash
 # git clone https://github.com/apache/incubator-dubbo-samples.git
 # cd incubator-dubbo-samples/dubbo-samples-api
 ```
 
-There's a [README](https://github.com/apache/incubator-dubbo-samples/tree/master/dubbo-samples-api/README.md) file under `dubbo-samples-api` directory. Read it and try this sample out by following the instructions.
+There's a [README](https://github.com/apache/incubator-dubbo-samples/tree/master/dubbo-samples-api/README.md) file under `dubbo-samples-api` directory. 阅读并按照说明尝试此示例。
 
 ### Maven dependency
+
+[master分支的版本是 2.7.x]()
 
 ```xml
 <properties>
@@ -159,9 +148,9 @@ The consumer will print out `Hello world` on the screen.
 
 ### Next steps
 
-* [Your first Dubbo application](http://dubbo.apache.org/en-us/blog/dubbo-101.html) - A 101 tutorial to reveal more details, with the same code above.
+* [Your first Dubbo application](http://dubbo.apache.org/en-us/blog/dubbo-101.html) - 这是一个101教程，用于显示更多详细信息，使用相同的代码。
 * [Dubbo user manual](http://dubbo.apache.org/en-us/docs/user/preface/background.html) - How to use Dubbo and all its features.
-* [Dubbo developer guide](http://dubbo.apache.org/en-us/docs/dev/build.html) - How to involve in Dubbo development.
+* [Dubbo developer guide](http://dubbo.apache.org/en-us/docs/dev/build.html) - 如何参与dubbo开发。
 * [Dubbo admin manual](http://dubbo.apache.org/en-us/docs/admin/install/provider-demo.html) - How to admin and manage Dubbo services.
 
 ## Building
@@ -172,10 +161,10 @@ If you want to try out the cutting-edge features, you can built with the followi
   mvn clean install
 ```
 
-## Contact
+## Contact(联系)
 
-* Mailing list: 
-  * dev list: for dev/user discussion. [subscribe](mailto:dev-subscribe@dubbo.incubator.apache.org), [unsubscribe](mailto:dev-unsubscribe@dubbo.incubator.apache.org), [archive](https://lists.apache.org/list.html?dev@dubbo.apache.org),  [guide](https://github.com/apache/incubator-dubbo/wiki/Mailing-list-subscription-guide)
+* Mailing(邮件) list: 
+  * dev list: for dev/user discussion(讨论). [subscribe(订阅)](mailto:dev-subscribe@dubbo.incubator.apache.org), [unsubscribe](mailto:dev-unsubscribe@dubbo.incubator.apache.org), [archive(档案)](https://lists.apache.org/list.html?dev@dubbo.apache.org),  [guide](https://github.com/apache/incubator-dubbo/wiki/Mailing-list-subscription-guide)
   
 * Bugs: [Issues](https://github.com/apache/incubator-dubbo/issues/new?template=dubbo-issue-report-template.md)
 * Gitter: [Gitter channel](https://gitter.im/alibaba/dubbo) 
@@ -183,39 +172,38 @@ If you want to try out the cutting-edge features, you can built with the followi
 
 ## Contributing
 
-See [CONTRIBUTING](https://github.com/apache/incubator-dubbo/blob/master/CONTRIBUTING.md) for details on submitting patches and the contribution workflow.
+有关提交补丁和贡献工作流程的详细信息，请参阅[贡献](https://github.com/apache/incubator-dubbo/blob/master/CONTRIBUTING.md)。
 
 ### How can I contribute?
 
-* Take a look at issues with tag called [`Good first issue`](https://github.com/apache/incubator-dubbo/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22) or [`Help wanted`](https://github.com/apache/incubator-dubbo/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22).
-* Join the discussion on mailing list, subscription [guide](https://github.com/apache/incubator-dubbo/wiki/Mailing-list-subscription-guide).
-* Answer questions on [issues](https://github.com/apache/incubator-dubbo/issues).
-* Fix bugs reported on [issues](https://github.com/apache/incubator-dubbo/issues), and send us pull request.
-* Review the existing [pull request](https://github.com/apache/incubator-dubbo/pulls).
-* Improve the [website](https://github.com/apache/incubator-dubbo-website), typically we need
-  * blog post
-  * translation on documentation
-  * use cases about how Dubbo is being used in enterprise system.
-* Improve the [dubbo-admin/dubbo-monitor](https://github.com/apache/incubator-dubbo-admin).
-* Contribute to the projects listed in [ecosystem](https://github.com/dubbo).
-* Any form of contribution that is not mentioned above.
-* If you would like to contribute, please send an email to dev@dubbo.incubator.apache.org to let us know!
-
+* 看一下名为[`Good first issue`](https://github.com/apache/incubator-dubbo/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue％22) 或[`Help wanted`](https://github.com/apache/incubator-dubbo/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)的标签问题。
+* 加入关于邮件列表的讨论，订阅[指南](https://github.com/apache/incubator-dubbo/wiki/Mailing-list-subscription-guide)。
+* 回答有关[问题](https://github.com/apache/incubator-dubbo/issues)的问题。
+* 修复[问题](https://github.com/apache/incubator-dubbo/issues)上报告的错误，并向我们发送拉取请求。
+* 查看现有的[pull request](https://github.com/apache/incubator-dubbo/pulls)。
+* 改进[网站](https://github.com/apache/incubator-dubbo-website)，通常我们需要
+   * 博文
+   * 文件翻译
+   * 使用有关如何在企业系统中使用Dubbo的案例。
+* 改进[dubbo-admin / dubbo-monitor](https://github.com/apache/incubator-dubbo-admin)。
+* 参与[生态系统](https://github.com/dubbo)中列出的项目。
+* 上述未提及的任何形式的贡献。
+* 如果您想贡献，请发送电子邮件至dev@dubbo.incubator.apache.org告诉我们！
 ## Reporting bugs
 
 Please follow the [template](https://github.com/apache/incubator-dubbo/issues/new?template=dubbo-issue-report-template.md) for reporting any issues.
 
-## Reporting a security vulnerability
+## Reporting a security vulnerability(漏洞)
 
 Please report security vulnerability to [us](mailto:security@dubbo.incubator.apache.org) privately.
 
-## Dubbo ecosystem
+## Dubbo ecosystem(生态系统)
 
 * [Dubbo Ecosystem Entry](https://github.com/dubbo) - A GitHub group `dubbo` to gather all Dubbo relevant projects not appropriate in [apache](https://github.com/apache) group yet
-* [Dubbo Website](https://github.com/apache/incubator-dubbo-website) - Apache Dubbo (incubating) official website
+* [Dubbo Website](https://github.com/apache/incubator-dubbo-website) - Apache Dubbo（孵化）官方网站
 * [Dubbo Samples](https://github.com/apache/incubator-dubbo-samples) - samples for Apache Dubbo (incubating)
 * [Dubbo Spring Boot](https://github.com/apache/incubator-dubbo-spring-boot-project) - Spring Boot Project for Dubbo
-* [Dubbo Admin](https://github.com/apache/incubator-dubbo-admin) - The reference implementation for Dubbo admin
+* [Dubbo Admin](https://github.com/apache/incubator-dubbo-admin) - The reference(参考) implementation(实现) for Dubbo admin
 
 #### Language
 

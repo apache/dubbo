@@ -4,8 +4,7 @@
 
 ### Notice
 
-'zkclient' extension for 'org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter' is removed from Dubbo 2.7.1, and 'curator' extension becomes the default extension. If you happen to config your application to use 'zkclient' explicitly, pls. switch to use 'curator' instead.
-
+'org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter'的'zkclient'扩展名从Dubbo 2.7.1中删除，'curator'扩展名成为默认扩展名。如果您碰巧将应用程序配置为明确使用'zkclient'，请参阅。切换到使用'策展人'代替。
 ### New Features
 
 - service register support on nacos [#3582](https://github.com/apache/incubator-dubbo/issues/3582)
@@ -89,46 +88,45 @@ Please check [here](https://github.com/apache/incubator-dubbo/blob/2.7.0-release
 
 ### New Features
 
-- Enhancement of service governance rules.
-  - Enriched Routing Rules.
-    1. Conditional Routing. Supports both application-level and service-level conditions.
-    2. Tag Routing. Newly introduced to better support traffic isolation, such as grey deployment.
-  - Decoupling governance rules with the registry, making it easier to extend. Apollo and Zookeeper are available in this version. Nacos support is on the way...
-  - Application-level Dynamic Configuration support.
-  - Use YAML as the configuration language, which is more friendly to read and use.
+ - 加强服务治理规则。
+   - 丰富的路由规则。
+    1.条件路由。支持应用程序级别和服务级别条件。
+    2.标签路由。新引入以更好地支持流量隔离，例如灰色部署。
+   - 将治理规则与注册表分离，使其更容易扩展。这个版本有Apollo和Zookeeper。 Nacos的支持正在进行中......
+   - 应用程序级动态配置支持。
+   - 使用YAML作为配置语言，阅读和使用更友好。
 
-- Externalized Configuration. Supports reading `dubbo.properties` hosted in remote centralized configuration center - centralized configuration.
+ - 外部配置。支持读取远程集中配置中心托管的`dubbo.properties`  - 集中配置。
 
-- Simplified registry URL. With lower Registry memory use and less notification pressure from Service Directory, separates Configuration notification from Service Discovery.
+ - 简化的注册网址。使用较少的注册表内存并减少来自Service Directory的通知压力，将配置通知与Service Discovery分开。
 
-- Metadata Center. A totally new concept since 2.7.0,  used to store service metadata including static configuration, service definition, method signature, etc.. By default, Zookeeper and Redis are supported as the backend storage. Will work as the basis of service testing, mock and other service governance features going to be supported in [Dubbo-Admin](https://github.com/apache/incubator-dubbo-admin).
+ - 元数据中心。自2.7.0以来的一个全新概念，用于存储服务元数据，包括静态配置，服务定义，方法签名等。默认情况下，支持Zookeeper和Redis作为后端存储。将作为[Dubbo-Admin](https://github.com/apache/incubator-dubbo-admin)支持的服务测试，模拟和其他服务治理功能的基础。
 
-- Asynchronous Programming Model (only works for Dubbo protocol now)
-  - Built-in support for the method with CompletableFuture<T> signature.
-  - Server-side asynchronous support, with an AsyncContext API works like Servlet 3.0.
-  - Asynchronous filter chain callback.
+ - 异步编程模型（现在仅适用于Dubbo协议）
+   - 具有CompletableFuture <T>签名的方法的内置支持。
+   - 服务器端异步支持，AsyncContext API与Servlet 3.0类似。
+   - 异步过滤器链回调。
 
-- Serialization Extension: Protobuf.
+ - 序列化扩展：Protobuf。
 
-- Caching Policy Extension: Expiring Cache.
+ - 缓存策略扩展：使缓存失效。
 
 ### Enhancements / Bugfixes
 
-- Load Balancing strategy enhancement: ConsitentHash #2190, LeastActive #2171, Random #2597, RoundRobin #2650.
+ - 负载平衡策略增强：ConsitentHash＃2190，LeastActive＃2171，Random＃2597，RoundRobin＃2650。
 
-- Third-party dependency upgrading.
-  - Switch default remoting to Netty 4.
-  - Switch default Zookeeper client to Curator.
-  - Upgrade Jetty to 9.x.
+ - 第三方依赖性升级。
+   - 将默认远程切换到Netty 4。
+   - 将默认的Zookeeper客户端切换到Curator。
+   - 将Jetty升级到9.x.
 
-- IPV6 support #2079.
+ -  IPV6支持＃2079。
 
-- Performance tuning, check hanging requests on a closed channel, make them return directly #2185.
+ - 性能调整，检查关闭通道上的挂起请求，直接返回＃2185。
 
-- Fixed the serialization problem of JDK primitive types in Kryo #2178.
+ - 修正了Kryo＃2178中JDK原语类型的序列化问题。
 
-- Fixed the problem of failing to notify Consumer as early as possible after the Provider side deserialization failed #1903.
-
+ - 修复了在提供商端反序列化失败后＃1903无法尽早通知消费者的问题。
 ### Upgrading and Compatibility Notifications
 
 We have always keep compatibility in mind during the whole process of 2.7.0. We even want old users to upgrade with only on pom version upgrade, but it's hard to achieve that, especially when considering that we have the package renamed in this version, so we had some tradeoffs. If you only used the Dubbo's most basic features, you may have little problems of upgrading, but if you have used some advanced features or have some SPI extensions inside, you'd better read the upgrade notifications carefully. The compatibility issues can be classified into the following 5 categories, for each part, there will have detailed dos and don'ts published later in the official website.
@@ -164,7 +162,7 @@ Enhancement / New feature：
 BugFix：
  
 * update hessian-lite to 2.3.5, fix unnecessary class load #3538 
-* Fix unregister when client destroyed（referenceconfig#destroy) #3502 
+* Fix unregister when client destroyed(referenceconfig#destroy) #3502 
 * SPI entires dup by 3 times #3315 
 * fix Consumer throws RpcException after RegistryDirectory notify in high QPS #2016 
 * fix NPE in @Reference when using Junit to test dubbo service #3429 
