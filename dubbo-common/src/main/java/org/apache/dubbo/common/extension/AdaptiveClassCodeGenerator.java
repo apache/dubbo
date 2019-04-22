@@ -224,7 +224,7 @@ public class AdaptiveClassCodeGenerator {
             code.append(generateExtensionAssignment());
 
             // return statement
-            code.append(generateReturnAndInovation(method));
+            code.append(generateReturnAndInvocation(method));
         }
         
         return code.toString();
@@ -292,10 +292,12 @@ public class AdaptiveClassCodeGenerator {
     /**
      * generate method invocation statement and return it if necessary
      */
-    private String generateReturnAndInovation(Method method) {
+    private String generateReturnAndInvocation(Method method) {
         String returnStatement = method.getReturnType().equals(void.class) ? "" : "return ";
-        
-        String args = Arrays.stream(method.getParameters()).map(Parameter::getName).collect(Collectors.joining(", "));
+        Parameter[] parameters = method.getParameters();
+        String args = IntStream.range(0, parameters.length)
+                .mapToObj(i -> String.format("arg%d", i))
+                .collect(Collectors.joining(", "));
 
         return returnStatement + String.format("extension.%s(%s);\n", method.getName(), args);
     }
