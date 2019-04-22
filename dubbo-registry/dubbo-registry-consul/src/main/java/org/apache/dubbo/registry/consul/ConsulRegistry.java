@@ -36,7 +36,11 @@ import com.ecwid.consul.v1.health.HealthServicesRequest;
 import com.ecwid.consul.v1.health.model.HealthService;
 import org.apache.dubbo.rpc.RpcException;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -163,26 +167,13 @@ public class ConsulRegistry extends FailbackRegistry {
             throw new IllegalArgumentException("lookup url == null");
         }
         try {
-
             String service = url.getServiceKey();
-
-            Response<List<Check>> check = getHealthCheckService(service, -1, buildWatchTimeout(url));
-
-            Object ob = client.getAgentServices();
-
-            Object ob3 = client.getHealthChecksState(QueryParams.DEFAULT);
-
-            Response<Map<String, List<String>>> response = getAllServices(-1, buildWatchTimeout(url));
-
-            if (response == null || response.getValue() == null || response.getValue().isEmpty()) {
+            Response<List<HealthService>> result = client.getHealthServices(service, HealthServicesRequest.newBuilder().build());
+            if (result == null || result.getValue() == null || result.getValue().isEmpty()) {
                 return new ArrayList<>();
             } else {
-//                return response.getValue()
-                List<HealthService> services = getHealthServices(response.getValue());
-
-                return  convert(services);
+                return  convert(result.getValue());
             }
-
         } catch (Throwable e) {
             throw new RpcException("Failed to lookup " + url + " from consul " + getUrl() + ", cause: " + e.getMessage(), e);
         }
@@ -206,17 +197,6 @@ public class ConsulRegistry extends FailbackRegistry {
                 .setPassing(true)
                 .build();
         return client.getHealthServices(service, request);
-    }
-
-    private Response<List<Check>> getHealthCheckService(String service, long index, int watchTimeout) {
-        HealthChecksForServiceRequest request = HealthChecksForServiceRequest.newBuilder()
-                .setQueryParams(new QueryParams(watchTimeout, index)).build();
-
-        Response<List<Check>> check = client.getHealthChecksForService(service, request);
-
-
-        return check;
-
     }
 
     private Response<Map<String, List<String>>> getAllServices(long index, int watchTimeout) {

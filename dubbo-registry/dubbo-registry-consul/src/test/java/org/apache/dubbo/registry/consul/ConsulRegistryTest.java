@@ -25,15 +25,12 @@ import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.status.RegistryStatusChecker;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -46,16 +43,13 @@ public class ConsulRegistryTest {
     private static ConsulProcess consul;
     private ConsulRegistry consulRegistry;
     private String service = "org.apache.dubbo.test.injvmServie";
-    private URL serviceUrl = URL.valueOf("consul://consul/" + service + "?notify=false&methods=test1,test2");
-    private URL anyUrl = URL.valueOf("consul://consul/*");
+    private URL serviceUrl = URL.valueOf("consul://127.0.0.1:8012/" + service + "?notify=false&methods=test1,test2");
     private URL registryUrl;
     private ConsulRegistryFactory consulRegistryFactory;
 
     @BeforeEach
     public void setUp() throws Exception {
         this.consul = ConsulStarterBuilder.consulStarter()
-//                .withConsulVersion("1.2.1")
-//                .withCustomConfig(customConfiguration)
                 .build()
                 .start();
         this.registryUrl = URL.valueOf("consul://localhost:" + consul.getHttpPort());
@@ -94,12 +88,10 @@ public class ConsulRegistryTest {
         assertThat(subscribed.size(), is(1));
         assertThat(subscribed.get(serviceUrl).size(), is(1));
 
-
-
-//        consulRegistry.unsubscribe(serviceUrl, listener);
-//        subscribed = consulRegistry.getSubscribed();
-//        assertThat(subscribed.size(), is(1));
-//        assertThat(subscribed.get(serviceUrl).size(), is(0));
+        consulRegistry.unsubscribe(serviceUrl, listener);
+        subscribed = consulRegistry.getSubscribed();
+        assertThat(subscribed.size(), is(1));
+        assertThat(subscribed.get(serviceUrl).size(), is(0));
     }
 
     @Test
@@ -117,25 +109,12 @@ public class ConsulRegistryTest {
         assertThat(lookup.size(), is(0));
 
         consulRegistry.register(serviceUrl);
-        Thread.sleep(10000);
+        Thread.sleep(5000);
         lookup = consulRegistry.lookup(serviceUrl);
-//        assertThat(lookup.size(), is(1));
-//        assertThat(lookup.size(), is(1));
-
-        System.out.println(lookup.size());
-
-        Thread.sleep(10000);
-        lookup = consulRegistry.lookup(serviceUrl);
-//        assertThat(lookup.size(), is(1));
         assertThat(lookup.size(), is(1));
-
-
-
     }
 
-//    @Disabled
     @Test
-
     public void testStatusChecker() {
         RegistryStatusChecker registryStatusChecker = new RegistryStatusChecker();
         Status status = registryStatusChecker.check();
@@ -145,7 +124,6 @@ public class ConsulRegistryTest {
         assertThat(registry, not(nullValue()));
 
         status = registryStatusChecker.check();
-//        assertThat(status.getLevel(), is(Status.Level.ERROR));
         assertThat(status.getLevel(), is(Status.Level.OK));
 
         registry.register(serviceUrl);
@@ -153,12 +131,4 @@ public class ConsulRegistryTest {
         assertThat(status.getLevel(), is(Status.Level.OK));
     }
 
-//    @Test
-//    public void testSubscribeAnyValue() throws InterruptedException {
-//        final CountDownLatch latch = new CountDownLatch(1);
-//        consulRegistry.register(serviceUrl);
-//        consulRegistry.subscribe(anyUrl, urls -> latch.countDown());
-//        consulRegistry.register(serviceUrl);
-//        latch.await();
-//    }
 }
