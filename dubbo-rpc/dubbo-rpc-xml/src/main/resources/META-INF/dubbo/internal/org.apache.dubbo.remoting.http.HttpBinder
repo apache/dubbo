@@ -1,1 +1,1 @@
-jetty9=JettyHttpBinder
+jetty9=org.apache.dubbo.xml.remoting.http.jetty.JettyHttpBinder
