@@ -17,11 +17,8 @@
 
 package com.alibaba.dubbo.rpc;
 
-import org.apache.dubbo.rpc.AbstractResult;
-
-import org.apache.dubbo.rpc.AppResponse;
-
 import java.util.Map;
+import java.util.function.Function;
 
 @Deprecated
 public interface Result extends org.apache.dubbo.rpc.Result {
@@ -34,6 +31,14 @@ public interface Result extends org.apache.dubbo.rpc.Result {
     @Override
     default void setException(Throwable t) {
 
+    }
+
+    abstract class AbstractResult extends org.apache.dubbo.rpc.AbstractResult implements Result {
+
+        @Override
+        public org.apache.dubbo.rpc.Result thenApplyWithContext(Function<org.apache.dubbo.rpc.Result, org.apache.dubbo.rpc.Result> fn) {
+            return null;
+        }
     }
 
     class CompatibleResult extends AbstractResult {

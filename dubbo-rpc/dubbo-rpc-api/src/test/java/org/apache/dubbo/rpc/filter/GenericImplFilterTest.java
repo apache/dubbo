@@ -36,7 +36,6 @@ import org.mockito.Mockito;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
@@ -61,7 +60,7 @@ public class GenericImplFilterTest {
         person.put("age", 10);
 
         AppResponse mockRpcResult = new AppResponse(person);
-        when(invoker.invoke(any(Invocation.class))).thenReturn(new AsyncRpcResult(CompletableFuture.completedFuture(mockRpcResult), invocation));
+        when(invoker.invoke(any(Invocation.class))).thenReturn(AsyncRpcResult.newDefaultAsyncResult(mockRpcResult, invocation));
         when(invoker.getUrl()).thenReturn(url);
         when(invoker.getInterface()).thenReturn(DemoService.class);
 
@@ -84,7 +83,7 @@ public class GenericImplFilterTest {
         Invoker invoker = Mockito.mock(Invoker.class);
 
         AppResponse mockRpcResult = new AppResponse(new GenericException(new RuntimeException("failed")));
-        when(invoker.invoke(any(Invocation.class))).thenReturn(new AsyncRpcResult(CompletableFuture.completedFuture(mockRpcResult), invocation));
+        when(invoker.invoke(any(Invocation.class))).thenReturn(AsyncRpcResult.newDefaultAsyncResult(mockRpcResult, invocation));
         when(invoker.getUrl()).thenReturn(url);
         when(invoker.getInterface()).thenReturn(DemoService.class);
 

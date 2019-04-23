@@ -137,7 +137,7 @@ public class AppResponse extends AbstractResult implements Serializable {
     }
 
     @Override
-    public Result thenApplyWithContext(Function<AppResponse, AppResponse> fn) {
+    public Result thenApplyWithContext(Function<Result, Result> fn) {
         throw new UnsupportedOperationException("AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
     }
 

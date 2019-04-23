@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.Future;
 import java.util.function.Function;
 
 
@@ -30,7 +31,7 @@ import java.util.function.Function;
  * @see org.apache.dubbo.rpc.Invoker#invoke(Invocation)
  * @see AppResponse
  */
-public interface Result extends CompletionStage<Result>, Serializable {
+public interface Result extends CompletionStage<Result>, Future<Result>, Serializable {
 
     /**
      * Get invoke result.
@@ -116,9 +117,9 @@ public interface Result extends CompletionStage<Result>, Serializable {
      *
      * @see CompletableFuture#getNow(Object)
      */
-    Object getNow(Object valueIfAbsent);
+    Result getNow(Result valueIfAbsent);
 
-    Result thenApplyWithContext(Function<AppResponse, AppResponse> fn);
+    Result thenApplyWithContext(Function<Result, Result> fn);
 
     default CompletableFuture<Result> completionFuture() {
         return toCompletableFuture();
