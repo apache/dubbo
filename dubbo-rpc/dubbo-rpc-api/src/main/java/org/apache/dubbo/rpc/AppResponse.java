@@ -19,8 +19,6 @@ package org.apache.dubbo.rpc;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
 /**
@@ -140,16 +138,6 @@ public class AppResponse extends AbstractResult implements Serializable {
 
     @Override
     public Result thenApplyWithContext(Function<AppResponse, AppResponse> fn) {
-        throw new UnsupportedOperationException("AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
-    }
-
-    @Override
-    public <U> CompletableFuture<U> thenApply(Function<Result, ? extends U> fn) {
-        throw new UnsupportedOperationException("AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
-    }
-
-    @Override
-    public Result get() throws InterruptedException, ExecutionException {
         throw new UnsupportedOperationException("AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
     }
 

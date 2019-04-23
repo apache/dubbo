@@ -118,7 +118,7 @@ public class AsyncRpcResult extends AbstractResult {
         return (new AppResponse()).recreate();
     }
 
-    public Result get() throws InterruptedException, ExecutionException {
+    public AppResponse get() throws InterruptedException, ExecutionException {
         return responseFuture.get();
     }
 
@@ -126,11 +126,6 @@ public class AsyncRpcResult extends AbstractResult {
     public Result thenApplyWithContext(Function<AppResponse, AppResponse> fn) {
         this.responseFuture = responseFuture.thenApply(fn.compose(beforeContext).andThen(afterContext));
         return this;
-    }
-
-    @Override
-    public <U> CompletableFuture<U> thenApply(Function<Result,? extends U> fn) {
-        return this.responseFuture.thenApply(fn);
     }
 
     @Override
