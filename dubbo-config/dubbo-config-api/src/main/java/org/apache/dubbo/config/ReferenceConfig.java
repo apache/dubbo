@@ -40,6 +40,7 @@ import org.apache.dubbo.rpc.cluster.support.RegistryAwareCluster;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
+import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
@@ -153,6 +154,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
      */
     private transient volatile boolean destroyed;
 
+    private ServiceMetadata serviceMetadata;
+
     @SuppressWarnings("unused")
     private final Object finalizerGuardian = new Object() {
         @Override
@@ -174,9 +177,13 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     };
 
     public ReferenceConfig() {
+        serviceMetadata = new ServiceMetadata();
+        serviceMetadata.addAttribute("ORIGIN_CONFIG", this);
     }
 
     public ReferenceConfig(Reference reference) {
+        serviceMetadata = new ServiceMetadata();
+        serviceMetadata.addAttribute("ORIGIN_CONFIG", this);
         appendAnnotation(Reference.class, reference);
         setMethods(MethodConfig.constructMethodConfig(reference.methods()));
     }
@@ -265,7 +272,18 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         checkStubAndLocal(interfaceClass);
         checkMock(interfaceClass);
 
+
+        //init serivceMetadata
+        serviceMetadata.setVersion(version);
+        serviceMetadata.setGroup(group);
+        serviceMetadata.setDefaultGroup(group);
+        serviceMetadata.setServiceType(interfaceClass);
+        serviceMetadata.setServiceInterfaceName(interfaceName);
+
+
+
         ConsumerModel consumerModel = new ConsumerModel(interfaceName, group, version, getActualInterface());
+
         ApplicationModel.initConsumerModel(URL.buildKey(interfaceName, group, version), consumerModel);
 
         Map<String, String> map = new HashMap<String, String>();
@@ -316,8 +334,11 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
         map.put(Constants.REGISTER_IP_KEY, hostToRegistry);
 
+        serviceMetadata.getAttachments().putAll(map);
+
         ref = createProxy(map);
 
+        serviceMetadata.setTarget(ref);
         consumerModel.getServiceMetadata().addAttribute(Constants.PROXY_CLASS_REF, ref);
     }
 
