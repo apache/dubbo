@@ -18,6 +18,7 @@ package org.apache.dubbo.common.timer;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import org.apache.dubbo.common.utils.ClassHelper;
 
 import java.util.Collections;
@@ -26,10 +27,12 @@ import java.util.Locale;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -115,6 +118,32 @@ public class HashedWheelTimer implements Timer {
     private final long maxPendingTimeouts;
 
     private volatile long startTime;
+
+    /**
+     * Why we need a executor?
+     * <p>
+     * Currently the tasks in all buckets will be executed synchronously at expiration.
+     * This can cause a problem:
+     * When the task execution time in our `n` bucket is long,
+     * it may cause the task delay execution in `n + 1` bucket (although we do not recommend adding time-consuming tasks to HashedWheelTimer).
+     * <p>
+     * So we use an asynchronous executor to handle the task, which will avoid the delay of the task in the `n + 1` bucket to some extent.
+     * <p>
+     * <p>
+     * Why we config this executor like this?
+     * <p>
+     * First of all, this is a global executor, we don't want to create threads repeatedly.
+     * Second, because it is a global executor, it is difficult to grasp the value of `keepAliveTime`.
+     * Third, we don't want the size of the queue to have a certain limit.
+     * <p>
+     * When the submit task has a `RejectedExecutionException`, we will execute the task in synchronous mode.
+     */
+    private static final ExecutorService TIMEOUT_EXPIRER = new ThreadPoolExecutor(10,
+            10,
+            0,
+            TimeUnit.SECONDS,
+            new LinkedBlockingQueue<>(20),
+            new NamedInternalThreadFactory("hashedwheeltimer-expirer", true));
 
     /**
      * Creates a new timer with the default thread factory
@@ -724,7 +753,7 @@ public class HashedWheelTimer implements Timer {
                 if (timeout.remainingRounds <= 0) {
                     next = remove(timeout);
                     if (timeout.deadline <= deadline) {
-                        timeout.expire();
+                        expireTimeout(timeout);
                     } else {
                         // The timeout was placed into a wrong slot. This should never happen.
                         throw new IllegalStateException(String.format(
@@ -737,6 +766,22 @@ public class HashedWheelTimer implements Timer {
                 }
                 timeout = next;
             }
+        }
+
+        private void expireTimeout(HashedWheelTimeout timeout) {
+            if (!tryAsyncExpire(timeout)) {
+                timeout.expire();
+            }
+        }
+
+        private boolean tryAsyncExpire(HashedWheelTimeout timeout) {
+            try {
+                TIMEOUT_EXPIRER.execute(timeout::expire);
+            } catch (RejectedExecutionException e) {
+                // Degenerate to synchronous execution
+                return false;
+            }
+            return true;
         }
 
         public HashedWheelTimeout remove(HashedWheelTimeout timeout) {
