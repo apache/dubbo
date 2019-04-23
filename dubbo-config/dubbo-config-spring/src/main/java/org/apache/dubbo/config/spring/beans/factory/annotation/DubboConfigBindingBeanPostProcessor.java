@@ -186,7 +186,7 @@ public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, A
         Collection<DubboConfigBeanCustomizer> configBeanCustomizers =
                 beansOfTypeIncludingAncestors(applicationContext, DubboConfigBeanCustomizer.class).values();
 
-        this.configBeanCustomizers = new ArrayList<DubboConfigBeanCustomizer>(configBeanCustomizers);
+        this.configBeanCustomizers = new ArrayList<>(configBeanCustomizers);
 
         AnnotationAwareOrderComparator.sort(this.configBeanCustomizers);
     }

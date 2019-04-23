@@ -121,6 +121,7 @@ public class JEtcdClientWrapper {
 
         this.failed = new IllegalStateException("Etcd3 registry is not connected yet, url:" + url);
         int retryPeriod = url.getParameter(Constants.REGISTRY_RETRY_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RETRY_PERIOD);
+
         this.retryFuture = retryExecutor.scheduleWithFixedDelay(() -> {
             try {
                 retry();
@@ -414,7 +415,9 @@ public class JEtcdClientWrapper {
             /**
              * The client is processing reconnection
              */
-            if (cancelKeepAlive) return;
+            if (cancelKeepAlive) {
+                return;
+            }
 
             cancelKeepAlive();
 
@@ -427,7 +430,9 @@ public class JEtcdClientWrapper {
                          * The client is processing reconnection,
                          * cancel remaining service registration
                          */
-                        if (cancelKeepAlive) return;
+                        if (cancelKeepAlive) {
+                            return;
+                        }
 
                         createEphemeral(path);
                         failedRegistered.remove(path);
@@ -574,7 +579,9 @@ public class JEtcdClientWrapper {
             logger.warn(t.getMessage(), t);
         }
 
-        if (getClient() != null) getClient().close();
+        if (getClient() != null) {
+            getClient().close();
+        }
     }
 
     /**
@@ -655,7 +662,9 @@ public class JEtcdClientWrapper {
             Set<String> failed = new HashSet<String>(failedRegistered);
             if (!failed.isEmpty()) {
 
-                if (cancelKeepAlive) return;
+                if (cancelKeepAlive) {
+                    return;
+                }
 
                 if (logger.isWarnEnabled()) {
                     logger.warn("Retry failed register(keep alive) for path '" + failed
@@ -668,7 +677,9 @@ public class JEtcdClientWrapper {
                             /**
                              * Is it currently reconnecting ?
                              */
-                            if (cancelKeepAlive) return;
+                            if (cancelKeepAlive) {
+                                return;
+                            }
 
                             createEphemeral(path);
                             failedRegistered.remove(path);
