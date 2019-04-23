@@ -28,17 +28,15 @@ import java.util.function.Function;
  *     <li>AppResponse only simply represents the business result</li>
  * </ul>
  *
- *  The relationship between them can be reflected in the definition of AsyncRpcResult:
+ *  The relationship between them can be described as follow, an abstraction of the definition of AsyncRpcResult:
  *  <pre>
  *  {@code
- *   Public class AsyncRpcResult implements Result {
- *      private CompletableFuture <AppResponse> resultFuture;
+ *   Public class AsyncRpcResult implements CompletionStage<AppResponse> {
  *       ......
- *   }
  *  }
  * </pre>
- *
- * In theory, AppResponse does not need to implement the {@link Result} interface, this is done mainly for compatibility purpose.
+ * AsyncRpcResult is a future representing an unfinished RPC call, while AppResponse is the actual return type of this call.
+ * In theory, AppResponse does'n have to implement the {@link Result} interface, this is done mainly for compatibility purpose.
  *
  * @serial Do not change the class name and properties.
  */

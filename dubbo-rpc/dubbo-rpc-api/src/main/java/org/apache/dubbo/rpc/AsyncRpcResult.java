@@ -48,6 +48,11 @@ public class AsyncRpcResult extends AbstractResult {
         this.storedServerContext = asyncRpcResult.getStoredServerContext();
     }
 
+    /**
+     * Notice the return type of {@link #getValue} is the actual type of the RPC method, not {@link AppResponse}
+     *
+     * @return
+     */
     @Override
     public Object getValue() {
         return getAppResponse().getValue();
@@ -201,7 +206,7 @@ public class AsyncRpcResult extends AbstractResult {
      */
     public static AsyncRpcResult newDefaultAsyncResult(AppResponse appResponse, Invocation invocation) {
         AsyncRpcResult asyncRpcResult = new AsyncRpcResult(invocation);
-        asyncRpcResult.setValue(appResponse);
+        asyncRpcResult.complete(appResponse);
         return asyncRpcResult;
     }
 
