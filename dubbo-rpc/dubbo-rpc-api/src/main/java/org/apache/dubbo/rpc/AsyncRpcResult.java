@@ -24,6 +24,20 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.function.Function;
 
+/**
+ * This class represents an unfinished RPC call, it will hold some context information for this call, for example RpcContext and Invocation,
+ * so that when the call finishes and the result returns, it can guarantee all the contexts being recovered as the same as when the call was made
+ * before any callback is invoked.
+ * <p>
+ * TODO if it's reasonable or even right to keep a reference to Invocation?
+ * <p>
+ * As {@link Result} implements CompletionStage, {@link AsyncRpcResult} allows you to easily build a async filter chain whose status will be
+ * driven entirely by the state of the underlying RPC call.
+ * <p>
+ * AsyncRpcResult does not contain any concrete value (except the underlying value bring by CompletableFuture), consider it as a status transfer node.
+ * In this case, {@link #getValue()} and {@link #getException()} are all inherited from {@link Result} interface, implementing them are mainly
+ * for compatibility consideration. Because many legacy {@link Filter} implementation are most possibly to call getValue directly.
+ */
 public class AsyncRpcResult extends AbstractResult {
     private static final Logger logger = LoggerFactory.getLogger(AsyncRpcResult.class);
 
