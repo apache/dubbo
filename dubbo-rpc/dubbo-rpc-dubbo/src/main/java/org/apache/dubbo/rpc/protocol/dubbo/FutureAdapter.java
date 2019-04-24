@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo;
 
-import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.util.concurrent.CompletableFuture;
@@ -30,21 +30,21 @@ import java.util.concurrent.TimeoutException;
  */
 public class FutureAdapter<V> extends CompletableFuture<V> {
 
-    private CompletableFuture<Result> resultFuture;
+    private CompletableFuture<AppResponse> resultFuture;
 
-    public FutureAdapter(CompletableFuture<Result> future) {
+    public FutureAdapter(CompletableFuture<AppResponse> future) {
         this.resultFuture = future;
-        future.whenComplete((result, t) -> {
+        future.whenComplete((appResponse, t) -> {
             if (t != null) {
                 if (t instanceof CompletionException) {
                     t = t.getCause();
                 }
                 this.completeExceptionally(t);
             } else {
-                if (result.hasException()) {
-                    this.completeExceptionally(result.getException());
+                if (appResponse.hasException()) {
+                    this.completeExceptionally(appResponse.getException());
                 } else {
-                    this.complete((V)result.getValue());
+                    this.complete((V) appResponse.getValue());
                 }
             }
         });
