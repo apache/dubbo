@@ -87,9 +87,17 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 RpcContext.getContext().setFuture(null);
                 return AsyncRpcResult.newDefaultAsyncResult(invocation);
             } else {
-                CompletableFuture<AppResponse> appResponseFuture = currentClient.request(inv, timeout).thenApply(obj -> (AppResponse) obj);
-                RpcContext.getContext().setFuture(new FutureAdapter(appResponseFuture));
-                return new AsyncRpcResult(appResponseFuture, inv);
+                AsyncRpcResult asyncRpcResult = new AsyncRpcResult(inv);
+                CompletableFuture<Object> responseFuture = currentClient.request(inv, timeout);
+                responseFuture.whenComplete((obj, t) -> {
+                    if (t != null) {
+                        asyncRpcResult.completeExceptionally(t);
+                    } else {
+                        asyncRpcResult.complete((AppResponse) obj);
+                    }
+                });
+                RpcContext.getContext().setFuture(new FutureAdapter(asyncRpcResult));
+                return asyncRpcResult;
             }
         } catch (TimeoutException e) {
             throw new RpcException(RpcException.TIMEOUT_EXCEPTION, "Invoke remote method timeout. method: " + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
