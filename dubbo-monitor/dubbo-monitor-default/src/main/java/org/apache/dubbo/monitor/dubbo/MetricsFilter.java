@@ -173,10 +173,6 @@ public class MetricsFilter implements Filter {
             ExecutorService executor = (ExecutorService) entry.getValue();
             if (executor instanceof ThreadPoolExecutor) {
                 ThreadPoolExecutor tp = (ThreadPoolExecutor) executor;
-                // ignore metrcis service
-                if (port.equals(this.port + "")) {
-                    continue;
-                }
 
                 threadPoolMtricList.add(value2MetricObject("threadPool.active", tp.getActiveCount(), MetricLevel.MAJOR));
                 threadPoolMtricList.add(value2MetricObject("threadPool.core", tp.getCorePoolSize(), MetricLevel.MAJOR));
