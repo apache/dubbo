@@ -90,6 +90,8 @@ public class ProtocolFilterWrapper implements Protocol {
                                 if (listener != null) {
                                     listener.onResponse(r, invoker, invocation);
                                 }
+                            } else {
+                                filter.onResponse(r, invoker, invocation);
                             }
                             return r;
                         });
