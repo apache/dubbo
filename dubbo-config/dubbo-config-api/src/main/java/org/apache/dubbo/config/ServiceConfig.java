@@ -1022,4 +1022,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     public String getPrefix() {
         return Constants.DUBBO + ".service." + interfaceName;
     }
+
+    @Parameter(excluded = true)
+    public String getUniqueServiceName() {
+        return URL.buildKey(interfaceName, group, version);
+    }
 }

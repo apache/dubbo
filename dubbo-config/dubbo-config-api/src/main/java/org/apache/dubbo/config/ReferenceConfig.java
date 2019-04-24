@@ -673,4 +673,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
         }
     }
+
+    @Parameter(excluded = true)
+    public String getUniqueServiceName() {
+        return URL.buildKey(interfaceName, group, version);
+    }
 }
