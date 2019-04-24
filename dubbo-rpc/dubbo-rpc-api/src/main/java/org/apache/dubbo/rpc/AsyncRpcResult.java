@@ -35,7 +35,7 @@ import java.util.function.Function;
  * driven entirely by the state of the underlying RPC call.
  * <p>
  * AsyncRpcResult does not contain any concrete value (except the underlying value bring by CompletableFuture), consider it as a status transfer node.
- * In this case, {@link #getValue()} and {@link #getException()} are all inherited from {@link Result} interface, implementing them are mainly
+ * {@link #getValue()} and {@link #getException()} are all inherited from {@link Result} interface, implementing them are mainly
  * for compatibility consideration. Because many legacy {@link Filter} implementation are most possibly to call getValue directly.
  */
 public class AsyncRpcResult extends AbstractResult {
