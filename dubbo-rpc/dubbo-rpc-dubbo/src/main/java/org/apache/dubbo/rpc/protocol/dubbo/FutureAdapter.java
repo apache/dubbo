@@ -30,10 +30,10 @@ import java.util.concurrent.TimeoutException;
  */
 public class FutureAdapter<V> extends CompletableFuture<V> {
 
-    private CompletableFuture<AppResponse> resultFuture;
+    private CompletableFuture<AppResponse> appResponseFuture;
 
     public FutureAdapter(CompletableFuture<AppResponse> future) {
-        this.resultFuture = future;
+        this.appResponseFuture = future;
         future.whenComplete((appResponse, t) -> {
             if (t != null) {
                 if (t instanceof CompletionException) {
@@ -53,12 +53,12 @@ public class FutureAdapter<V> extends CompletableFuture<V> {
     // TODO figure out the meaning of cancel in DefaultFuture.
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
-        return resultFuture.cancel(mayInterruptIfRunning);
+        return appResponseFuture.cancel(mayInterruptIfRunning);
     }
 
     @Override
     public boolean isCancelled() {
-        return resultFuture.isCancelled();
+        return appResponseFuture.isCancelled();
     }
 
     @Override
