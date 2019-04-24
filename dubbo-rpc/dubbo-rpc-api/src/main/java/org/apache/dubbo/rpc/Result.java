@@ -19,7 +19,8 @@ package org.apache.dubbo.rpc;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.Future;
 import java.util.function.Function;
 
 
@@ -30,7 +31,7 @@ import java.util.function.Function;
  * @see org.apache.dubbo.rpc.Invoker#invoke(Invocation)
  * @see AppResponse
  */
-public interface Result extends Serializable {
+public interface Result extends CompletionStage<Result>, Future<Result>, Serializable {
 
     /**
      * Get invoke result.
@@ -110,10 +111,17 @@ public interface Result extends Serializable {
 
     void setAttachment(String key, String value);
 
-    Result thenApplyWithContext(Function<AppResponse, AppResponse> fn);
+    /**
+     * Returns the specified {@code valueIfAbsent} when not complete, or
+     * returns the result value or throws an exception when complete.
+     *
+     * @see CompletableFuture#getNow(Object)
+     */
+    Result getNow(Result valueIfAbsent);
 
-    <U> CompletableFuture<U> thenApply(Function<Result, ? extends U> fn);
+    Result thenApplyWithContext(Function<Result, Result> fn);
 
-    Result get() throws InterruptedException, ExecutionException;
-
+    default CompletableFuture<Result> completionFuture() {
+        return toCompletableFuture();
+    }
 }

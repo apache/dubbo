@@ -47,6 +47,19 @@ public interface Filter {
      */
     Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException;
 
+    /**
+     * Filter itself should only be response for passing invocation, all callbacks has been placed into {@link Listener}
+     *
+     * @param appResponse
+     * @param invoker
+     * @param invocation
+     * @return
+     */
+    @Deprecated
+    default Result onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
+        return appResponse;
+    }
+
     interface Listener {
 
         void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation);
