@@ -95,24 +95,11 @@ public class ClusterUtils {
         }
         if (remoteMap != null && remoteMap.size() > 0) {
             // Use version passed from provider side
-            String dubbo = remoteMap.get(Constants.DUBBO_VERSION_KEY);
-            if (dubbo != null && dubbo.length() > 0) {
-                map.put(Constants.DUBBO_VERSION_KEY, dubbo);
-            }
-            String version = remoteMap.get(Constants.VERSION_KEY);
-            if (version != null && version.length() > 0) {
-                map.put(Constants.VERSION_KEY, version);
-            }
-            String methods = remoteMap.get(Constants.METHODS_KEY);
-            if (methods != null && methods.length() > 0) {
-                map.put(Constants.METHODS_KEY, methods);
-            }
-            // Reserve timestamp of provider url.
-            String remoteTimestamp = remoteMap.get(Constants.TIMESTAMP_KEY);
-            if (remoteTimestamp != null && remoteTimestamp.length() > 0) {
-                map.put(Constants.REMOTE_TIMESTAMP_KEY, remoteMap.get(Constants.TIMESTAMP_KEY));
-            }
-
+            reserveRemoteValue(Constants.DUBBO_VERSION_KEY, map, remoteMap);
+            reserveRemoteValue(Constants.VERSION_KEY, map, remoteMap);
+            reserveRemoteValue(Constants.METHODS_KEY, map, remoteMap);
+            reserveRemoteValue(Constants.TIMESTAMP_KEY, map, remoteMap);
+            reserveRemoteValue(Constants.TAG_KEY, map, remoteMap);
             // TODO, for compatibility consideration, we cannot simply change the value behind APPLICATION_KEY from Consumer to Provider. So just add an extra key here.
             // Reserve application name from provider.
             map.put(Constants.REMOTE_APPLICATION_KEY, remoteMap.get(Constants.APPLICATION_KEY));
@@ -133,6 +120,13 @@ public class ClusterUtils {
         }
 
         return remoteUrl.clearParameters().addParameters(map);
+    }
+
+    private static void reserveRemoteValue(String key, Map<String, String> map, Map<String, String> remoteMap) {
+        String remoteValue = remoteMap.get(key);
+        if (StringUtils.isNotEmpty(remoteValue)) {
+            map.put(key, remoteValue);
+        }
     }
 
 }

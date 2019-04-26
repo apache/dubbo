@@ -17,8 +17,8 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.ExporterListener;
 
@@ -92,8 +92,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
      */
     protected List<ProtocolConfig> protocols;
     protected String protocolIds;
-    // provider tag
-    protected String tag;
+
     // max allowed execute times
     private Integer executes;
 
@@ -287,14 +286,5 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
     public void setSerialization(String serialization) {
         this.serialization = serialization;
-    }
-
-    @Parameter(key = Constants.TAG_KEY, useKeyAsProperty = false)
-    public String getTag() {
-        return tag;
-    }
-
-    public void setTag(String tag) {
-        this.tag = tag;
     }
 }
