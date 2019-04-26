@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
 
 /**
  * ReferenceConfig
@@ -107,7 +108,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
      * The interface class of the reference service
      */
     private Class<?> interfaceClass;
-
+    
     /**
      * client type
      */
@@ -303,6 +304,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         String hostToRegistry = ConfigUtils.getSystemProperty(Constants.DUBBO_IP_TO_REGISTRY);
         if (StringUtils.isEmpty(hostToRegistry)) {
             hostToRegistry = NetUtils.getLocalHost();
+        } else if (isInvalidLocalHost(hostToRegistry)) {
+            throw new IllegalArgumentException("Specified invalid registry ip from property:" + Constants.DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
         }
         map.put(Constants.REGISTER_IP_KEY, hostToRegistry);
 
