@@ -58,7 +58,7 @@ public abstract class AbstractEtcdClient<WatcherListener> implements EtcdClient 
     private final Set<StateListener> stateListeners = new ConcurrentHashSet<>();
 
     private final ConcurrentMap<String, ConcurrentMap<ChildListener, WatcherListener>> childListeners = new ConcurrentHashMap<>();
-    private final List<String> categroies = Arrays.asList(Constants.PROVIDERS_CATEGORY
+    private final List<String> categories = Arrays.asList(Constants.PROVIDERS_CATEGORY
             , Constants.CONSUMERS_CATEGORY
             , Constants.ROUTERS_CATEGORY
             , Constants.CONFIGURATORS_CATEGORY);
@@ -158,11 +158,11 @@ public abstract class AbstractEtcdClient<WatcherListener> implements EtcdClient 
         int i = fixedPath.lastIndexOf('/');
         if (i > 0) {
             String parentPath = fixedPath.substring(0, i);
-            if (categroies.stream().anyMatch(c -> fixedPath.endsWith(c))) {
+            if (categories.stream().anyMatch(c -> fixedPath.endsWith(c))) {
                 if (!checkExists(parentPath)) {
                     this.doCreatePersistent(parentPath);
                 }
-            } else if (categroies.stream().anyMatch(c -> parentPath.endsWith(c))) {
+            } else if (categories.stream().anyMatch(c -> parentPath.endsWith(c))) {
                 String grandfather = parentPath.substring(0, parentPath.lastIndexOf('/'));
                 if (!checkExists(grandfather)) {
                     this.doCreatePersistent(grandfather);
