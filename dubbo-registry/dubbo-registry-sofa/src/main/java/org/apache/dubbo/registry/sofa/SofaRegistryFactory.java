@@ -21,8 +21,6 @@ import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 
 /**
- *
- * @author <a href="mailto:ujjboy@qq.com">Geng Zhang</a>
  * @since 2.7.2
  */
 public class SofaRegistryFactory extends AbstractRegistryFactory {
