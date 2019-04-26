@@ -126,6 +126,15 @@ public interface Result extends CompletionStage<Result>, Future<Result>, Seriali
      */
     Result getNow(Result valueIfAbsent);
 
+    /**
+     * Add a callback which can be triggered when the RPC call finishes.
+     * <p>
+     * Just as the method name implies, this method will guarantee the callback being triggered under the same context as when the call was started,
+     * see implementation in {@link AsyncRpcResult#thenApplyWithContext(Function)}
+     *
+     * @param fn
+     * @return
+     */
     Result thenApplyWithContext(Function<Result, Result> fn);
 
     default CompletableFuture<Result> completionFuture() {
