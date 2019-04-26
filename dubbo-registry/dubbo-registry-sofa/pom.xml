@@ -28,12 +28,6 @@
     <name>${project.artifactId}</name>
     <description>The SOFARegistry module of Dubbo project</description>
 
-    <properties>
-        <sofa.registry.version>5.2.0</sofa.registry.version>
-        <jersey.version>2.26</jersey.version>
-        <javax.ws.rs.version>2.1</javax.ws.rs.version>
-    </properties>
-
     <dependencies>
 
         <dependency>
@@ -53,7 +47,6 @@
         <dependency>
             <groupId>com.alipay.sofa</groupId>
             <artifactId>registry-client-all</artifactId>
-            <version>${sofa.registry.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.alipay.sofa</groupId>
@@ -74,7 +67,6 @@
         <dependency>
             <groupId>com.alipay.sofa</groupId>
             <artifactId>registry-test</artifactId>
-            <version>${sofa.registry.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -94,33 +86,6 @@
                     <groupId>org.apache.logging.log4j</groupId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-jaxrs</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-netty4</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-json-jackson</artifactId>
-            <version>${jersey.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-jaxb</artifactId>
-            <version>${jersey.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
-            <version>${javax.ws.rs.version}</version>
         </dependency>
 
         <dependency>
