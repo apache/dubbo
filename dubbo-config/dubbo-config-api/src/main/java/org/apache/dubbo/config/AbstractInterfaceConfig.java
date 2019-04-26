@@ -155,6 +155,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     // the scope for referring/exporting a service, if it's local, it means searching in current JVM only.
     private String scope;
 
+    protected String tag;
+
     /**
      * Check whether the registry config is exists, and then conversion it to {@link RegistryConfig}
      */
@@ -836,5 +838,14 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     public void setMetrics(MetricsConfig metrics) {
         this.metrics = metrics;
+    }
+
+    @Parameter(key = Constants.TAG_KEY, useKeyAsProperty = false)
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
     }
 }
