@@ -280,7 +280,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         appendParameters(map, metrics);
         appendParameters(map, application);
         appendParameters(map, module);
-        appendParameters(map, consumer, Constants.DEFAULT_KEY);
+        // remove 'default.' prefix for configs from ConsumerConfig
+        // appendParameters(map, consumer, Constants.DEFAULT_KEY);
+        appendParameters(map, consumer);
         appendParameters(map, this);
         Map<String, Object> attributes = null;
         if (CollectionUtils.isNotEmpty(methods)) {
@@ -457,22 +459,14 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     }
 
     private void checkDefault() {
-        createConsumerIfAbsent();
-    }
-
-    private void createConsumerIfAbsent() {
         if (consumer != null) {
             return;
         }
-        setConsumer(
-                        ConfigManager.getInstance()
-                            .getDefaultConsumer()
-                            .orElseGet(() -> {
-                                ConsumerConfig consumerConfig = new ConsumerConfig();
-                                consumerConfig.refresh();
-                                return consumerConfig;
-                            })
-                );
+        setConsumer(ConfigManager.getInstance().getDefaultConsumer().orElseGet(() -> {
+            ConsumerConfig consumerConfig = new ConsumerConfig();
+            consumerConfig.refresh();
+            return consumerConfig;
+        }));
     }
 
     private void completeCompoundConfigs() {
