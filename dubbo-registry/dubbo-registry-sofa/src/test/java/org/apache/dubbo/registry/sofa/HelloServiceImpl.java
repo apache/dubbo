@@ -19,7 +19,6 @@ package org.apache.dubbo.registry.sofa;
 import com.alipay.sofa.registry.server.test.TestRegistryMain;
 
 /**
- * @author <a href="mailto:ujjboy@qq.com">GengZhang</a>
  */
 public class HelloServiceImpl implements HelloService {
 

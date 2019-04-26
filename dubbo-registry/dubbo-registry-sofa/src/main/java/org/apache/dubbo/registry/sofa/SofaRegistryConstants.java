@@ -17,7 +17,6 @@
 package org.apache.dubbo.registry.sofa;
 
 /**
- * @author <a href="mailto:ujjboy@qq.com">GengZhang</a>
  * @since 2.7.2
  */
 public class SofaRegistryConstants {

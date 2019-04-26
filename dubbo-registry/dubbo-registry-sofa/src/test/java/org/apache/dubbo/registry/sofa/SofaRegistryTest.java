@@ -30,7 +30,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * @author <a href="mailto:ujjboy@qq.com">GengZhang</a>
  */
 public class SofaRegistryTest {
 

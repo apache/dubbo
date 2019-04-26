@@ -50,7 +50,6 @@ import static org.apache.dubbo.registry.sofa.SofaRegistryConstants.LOCAL_REGION;
 /**
  * The Sofa registry.
  *
- * @author <a href="mailto:ujjboy@qq.com">GengZhang</a>
  * @since 2.7.2
  */
 public class SofaRegistry extends FailbackRegistry {

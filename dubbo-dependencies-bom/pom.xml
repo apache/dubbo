@@ -142,6 +142,10 @@
         <spring_test_version>4.3.16.RELEASE</spring_test_version>
         <junit_version>4.12</junit_version>
         <metrics_version>2.0.1</metrics_version>
+        <sofa_bolt_version>1.4.6</sofa_bolt_version>
+        <sofa_hessian_version>3.3.6</sofa_hessian_version>
+        <sofa_common_version>1.0.12</sofa_common_version>
+        <sofa_lookout_version>1.5.2</sofa_lookout_version>
         <gson_version>2.8.5</gson_version>
         <jsonrpc_version>1.2.0</jsonrpc_version>
         <portlet_version>2.0</portlet_version>
@@ -450,7 +454,6 @@
                 <version>${commons_lang3_version}</version>
             </dependency>
 
-
             <!-- for dubbo-rpc-webservice -->
             <dependency>
                 <groupId>javax.xml.bind</groupId>
@@ -510,6 +513,28 @@
                 <groupId>com.alibaba.middleware</groupId>
                 <artifactId>metrics-rest</artifactId>
                 <version>${metrics_version}</version>
+            </dependency>
+            
+            <!-- for dubbo-registry-sofa -->
+            <dependency>
+                <groupId>com.alipay.sofa</groupId>
+                <artifactId>bolt</artifactId>
+                <version>${sofa_bolt_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alipay.sofa</groupId>
+                <artifactId>hessian</artifactId>
+                <version>${sofa_hessian_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alipay.sofa.common</groupId>
+                <artifactId>sofa-common-tools</artifactId>
+                <version>${sofa_common_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alipay.sofa.lookout</groupId>
+                <artifactId>lookout-api</artifactId>
+                <version>${sofa_lookout_version}</version>
             </dependency>
 
             <!-- Test lib -->
