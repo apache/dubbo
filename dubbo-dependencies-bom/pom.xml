@@ -137,6 +137,8 @@
 
         <jaxb_version>2.2.7</jaxb_version>
         <activation_version>1.2.0</activation_version>
+        <test_container_version>1.11.2</test_container_version>
+        <etcd_launcher_version>0.3.0</etcd_launcher_version>
         <hessian_lite_version>3.2.5</hessian_lite_version>
         <swagger_version>1.5.19</swagger_version>
         <spring_test_version>4.3.16.RELEASE</spring_test_version>
@@ -551,6 +553,17 @@
                 <groupId>javax.portlet</groupId>
                 <artifactId>portlet-api</artifactId>
                 <version>${portlet_version}</version>
+            </dependency>
+            <!-- for dubbo-configcenter-etcd -->
+            <dependency>
+                <groupId>io.etcd</groupId>
+                <artifactId>jetcd-launcher</artifactId>
+                <version>${etcd_launcher_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers</artifactId>
+                <version>${test_container_version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
