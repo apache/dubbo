@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata.store.redis;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -37,7 +38,8 @@ public class RedisMetadataReport extends AbstractMetadataReport {
 
     public RedisMetadataReport(URL url) {
         super(url);
-        pool = new JedisPool(new JedisPoolConfig(), url.getHost(), url.getPort());
+        int timeout = url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+        pool = new JedisPool(new JedisPoolConfig(), url.getHost(), url.getPort(), timeout, url.getPassword());
     }
 
     @Override
