@@ -81,13 +81,7 @@ public class UrlTestBase {
             //            {"subscribe", "subscribe", "boolean", true, false, "", "", "", "", ""},
             {"dynamic", "dynamic", "boolean", true, false, "", "", "", "", ""},
     };
-    protected Object provConfTable[][] = {
-            {"cluster", "default.cluster", "string", "string", "failover", "failfast", "failsafe", "", "", ""},
-            {"async", "default.async", "boolean", false, true, "", "", "", "", ""},
-            {"loadbalance", "default.loadbalance", "string", "random", "leastactive", "", "", "", "", ""},
-            {"connections", "default.connections", "int", 0, 60, "", "", "", "", ""},
-            {"retries", "default.retries", "int", 2, 60, "", "", "", "", ""},
-            {"timeout", "default.timeout", "int", 5000, 60, "", "", "", "", ""},
+    protected Object provConfTable[][] = {{"cluster", "cluster", "string", "string", "failover", "failfast", "failsafe", "", "", ""}, {"async", "async", "boolean", false, true, "", "", "", "", ""}, {"loadbalance", "loadbalance", "string", "random", "leastactive", "", "", "", "", ""}, {"connections", "connections", "int", 0, 60, "", "", "", "", ""}, {"retries", "retries", "int", 2, 60, "", "", "", "", ""}, {"timeout", "timeout", "int", 5000, 60, "", "", "", "", ""},
             //change by fengting listener 没有缺省值
             //{"listener", "exporter.listener", "string", "", "", "", "", "", "", ""},
             //{"filter", "service.filter", "string", "", "", "", "", "", "", ""},
