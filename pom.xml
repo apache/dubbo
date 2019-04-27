@@ -327,7 +327,7 @@
                                         </licenseMerge>
                                         <licenseMerge>The MIT License|MIT License</licenseMerge>
                                         <licenseMerge>The 3-Clause BSD License|New BSD License|3-Clause BSD
-                                            License|BSD
+                                            License|BSD|3-Clause BSD License
                                         </licenseMerge>
                                     </licenseMerges>
                                 </configuration>
