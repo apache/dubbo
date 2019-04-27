@@ -1,8 +1,8 @@
-namespace dubbo_java com.alibaba.dubbo.rpc.gen.dubbo
-namespace dubbo_cpp  com.alibaba.dubbo.rpc.gen.dubbo
+namespace dubbo_java org.apache.dubbo.rpc.gen.dubbo
+namespace dubbo_cpp  org.apache.dubbo.rpc.gen.dubbo
 
-namespace java com.alibaba.dubbo.rpc.gen.thrift
-namespace cpp  com.alibaba.dubbo.rpc.gen.thrift
+namespace java org.apache.dubbo.rpc.gen.thrift
+namespace cpp  org.apache.dubbo.rpc.gen.thrift
 
 service Demo {
     bool echoBool( 1:required bool arg );

@@ -1,0 +1,1 @@
+apollo=org.apache.dubbo.configcenter.support.apollo.ApolloDynamicConfigurationFactory
