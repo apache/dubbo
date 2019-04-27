@@ -24,10 +24,10 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  */
@@ -45,9 +45,9 @@ public class SofaRegistryTest {
 
     private static RegistryConfig registryConfig;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
-        
+
         protocolConfig1 = new ProtocolConfig();
         protocolConfig1.setName("dubbo");
         protocolConfig1.setPort(20890);
@@ -59,7 +59,7 @@ public class SofaRegistryTest {
         registryConfig = new RegistryConfig();
         registryConfig.setAddress("sofa://127.0.0.1:9603");
         registryConfig.setProtocol("sofa");
-        
+
         registryMain = new TestRegistryMain();
         try {
             registryMain.startRegistry();
@@ -79,7 +79,7 @@ public class SofaRegistryTest {
         serviceConfig1.setGroup("g1");
         serviceConfig1.setApplication(applicationConfig);
         serviceConfig1.export();
-        
+
         ServiceConfig<HelloService> serviceConfig2 = new ServiceConfig<>();
         serviceConfig2.setInterface(HelloService.class);
         serviceConfig2.setRef(new HelloServiceImpl("rrr22"));
@@ -90,8 +90,8 @@ public class SofaRegistryTest {
         serviceConfig2.setRegister(false);
         serviceConfig2.export();
 
-        Thread.sleep(1000); 
-        
+        Thread.sleep(1000);
+
         // do refer
         ReferenceConfig<HelloService> referenceConfig1 = new ReferenceConfig<>();
         referenceConfig1.setInterface(HelloService.class);
@@ -101,7 +101,7 @@ public class SofaRegistryTest {
         referenceConfig1.setRegistry(registryConfig);
         referenceConfig1.setApplication(applicationConfig);
         HelloService service = referenceConfig1.get();
-        Assert.assertEquals("rrr11", service.sayHello("xxx"));
+        Assertions.assertEquals("rrr11", service.sayHello("xxx"));
 
         // do refer duplicated
         ReferenceConfig<HelloService> referenceConfig2 = new ReferenceConfig<>();
@@ -112,9 +112,9 @@ public class SofaRegistryTest {
         referenceConfig2.setRegistry(registryConfig);
         referenceConfig2.setApplication(applicationConfig);
         HelloService service2 = referenceConfig2.get();
-        Assert.assertEquals("rrr11", service2.sayHello("xxx"));
+        Assertions.assertEquals("rrr11", service2.sayHello("xxx"));
 
-        // export on service
+        // export one service
         ServiceConfig<HelloService> serviceConfig3 = new ServiceConfig<>();
         serviceConfig3.setInterface(HelloService.class);
         serviceConfig3.setRef(new HelloServiceImpl("rrr12"));
@@ -123,19 +123,19 @@ public class SofaRegistryTest {
         serviceConfig3.setGroup("g1");
         serviceConfig3.setApplication(applicationConfig);
         serviceConfig3.export();
-        Assert.assertTrue(service2.sayHello("xxx").startsWith("rrr1"));
+        Assertions.assertTrue(service2.sayHello("xxx").startsWith("rrr1"));
 
         // unrefer
         referenceConfig1.destroy();
-        Assert.assertTrue(service2.sayHello("xxx").startsWith("rrr1"));
-        
-        // unexport on service
+        Assertions.assertTrue(service2.sayHello("xxx").startsWith("rrr1"));
+
+        // unexport one service
         serviceConfig1.unexport();
         Thread.sleep(2000);
-        Assert.assertTrue(service2.sayHello("xxx").startsWith("rrr1"));
+        Assertions.assertTrue(service2.sayHello("xxx").startsWith("rrr1"));
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() {
         try {
             registryMain.stopRegistry();
