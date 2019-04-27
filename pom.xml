@@ -321,7 +321,6 @@
                                     <includeOptional>false</includeOptional>
                                     <useMissingFile>true</useMissingFile>
                                     <failOnMissing>true</failOnMissing>
-                                    <missingFile>${user.dir}/THIRD-PARTY.properties</missingFile>
                                     <licenseMerges>
                                         <licenseMerge>Apache License, Version 2.0|The Apache Software License, Version
                                             2.0|ASF 2.0|Apache 2|Apache License 2.0|The Apache License, Version 2.0
