@@ -82,11 +82,6 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class HashedWheelTimer implements Timer {
 
-    /**
-     * may be in spi?
-     */
-    public static final String NAME = "hased";
-
     private static final Logger logger = LoggerFactory.getLogger(HashedWheelTimer.class);
 
     private static final AtomicInteger INSTANCE_COUNTER = new AtomicInteger();
