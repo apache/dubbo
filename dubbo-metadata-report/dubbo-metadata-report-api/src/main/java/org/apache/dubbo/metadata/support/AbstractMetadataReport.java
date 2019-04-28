@@ -56,6 +56,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public abstract class AbstractMetadataReport implements MetadataReport {
 
+    protected final static String DEFAULT_ROOT = "dubbo";
 
     private static final int ONE_DAY_IN_MIll = 60 * 24 * 60 * 1000;
     private static final int FOUR_HOURS_IN_MIll = 60 * 4 * 60 * 1000;
@@ -216,12 +217,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         if (syncReport) {
             storeProviderMetadataTask(providerMetadataIdentifier, serviceDefinition);
         } else {
-            reportCacheExecutor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    storeProviderMetadataTask(providerMetadataIdentifier, serviceDefinition);
-                }
-            });
+            reportCacheExecutor.execute(() -> storeProviderMetadataTask(providerMetadataIdentifier, serviceDefinition));
         }
     }
 
@@ -249,12 +245,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         if (syncReport) {
             storeConsumerMetadataTask(consumerMetadataIdentifier, serviceParameterMap);
         } else {
-            reportCacheExecutor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    storeConsumerMetadataTask(consumerMetadataIdentifier, serviceParameterMap);
-                }
-            });
+            reportCacheExecutor.execute(() -> storeConsumerMetadataTask(consumerMetadataIdentifier, serviceParameterMap));
         }
     }
 
