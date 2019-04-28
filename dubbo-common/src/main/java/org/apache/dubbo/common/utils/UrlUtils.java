@@ -480,6 +480,16 @@ public class UrlUtils {
         return idleTimeout;
     }
 
+    public static int getWriteIdleTimeout(URL url) {
+        int writeIdleTimeout = url.getParameter(Constants.WRITEIDLE_TIMEOUT_KEY, 0);
+        return writeIdleTimeout;
+    }
+
+    public static int getReadIdleTimeout(URL url) {
+        int readIdleTimeout = url.getParameter(Constants.READIDLE_TIMEOUT_KEY, 0);
+        return readIdleTimeout;
+    }
+
     /**
      * Check if the given value matches the given pattern. The pattern supports wildcard "*".
      *

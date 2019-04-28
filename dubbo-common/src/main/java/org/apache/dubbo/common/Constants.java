@@ -330,6 +330,10 @@ public class Constants {
 
     public static final String HEARTBEAT_TIMEOUT_KEY = "heartbeat.timeout";
 
+    public static final String WRITEIDLE_TIMEOUT_KEY = "writeidle.timeout";
+
+    public static final String READIDLE_TIMEOUT_KEY = "readidle.timeout";
+
     public static final String CONNECT_TIMEOUT_KEY = "connect.timeout";
 
     public static final String TIMEOUT_KEY = "timeout";
