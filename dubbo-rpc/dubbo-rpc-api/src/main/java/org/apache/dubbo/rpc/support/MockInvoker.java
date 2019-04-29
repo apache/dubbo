@@ -46,9 +46,11 @@ final public class MockInvoker<T> implements Invoker<T> {
     private final static Map<String, Throwable> throwables = new ConcurrentHashMap<String, Throwable>();
 
     private final URL url;
+    private final Class<T> type;
 
-    public MockInvoker(URL url) {
+    public MockInvoker(URL url, Class<T> type) {
         this.url = url;
+        this.type = type;
     }
 
     public static Object parseMockValue(String mock) throws Exception {
@@ -251,7 +253,6 @@ final public class MockInvoker<T> implements Invoker<T> {
 
     @Override
     public Class<T> getInterface() {
-        //FIXME
-        return null;
+        return type;
     }
 }

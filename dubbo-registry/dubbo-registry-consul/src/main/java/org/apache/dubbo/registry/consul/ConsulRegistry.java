@@ -32,10 +32,12 @@ import com.ecwid.consul.v1.agent.model.NewService;
 import com.ecwid.consul.v1.catalog.CatalogServicesRequest;
 import com.ecwid.consul.v1.health.HealthServicesRequest;
 import com.ecwid.consul.v1.health.model.HealthService;
+import org.apache.dubbo.rpc.RpcException;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -153,6 +155,24 @@ public class ConsulRegistry extends FailbackRegistry {
     public void doUnsubscribe(URL url, NotifyListener listener) {
         ConsulNotifier notifier = notifiers.remove(url);
         notifier.stop();
+    }
+
+    @Override
+    public List<URL> lookup(URL url) {
+        if (url == null) {
+            throw new IllegalArgumentException("lookup url == null");
+        }
+        try {
+            String service = url.getServiceKey();
+            Response<List<HealthService>> result = client.getHealthServices(service, HealthServicesRequest.newBuilder().setTag(SERVICE_TAG).build());
+            if (result == null || result.getValue() == null || result.getValue().isEmpty()) {
+                return new ArrayList<>();
+            } else {
+                return  convert(result.getValue());
+            }
+        } catch (Throwable e) {
+            throw new RpcException("Failed to lookup " + url + " from consul " + getUrl() + ", cause: " + e.getMessage(), e);
+        }
     }
 
     @Override
