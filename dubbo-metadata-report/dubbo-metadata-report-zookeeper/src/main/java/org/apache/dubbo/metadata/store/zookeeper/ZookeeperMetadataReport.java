@@ -52,16 +52,6 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
         zkClient = zookeeperTransporter.connect(url);
     }
 
-    void deletePath(String category) {
-        List<String> urlStrs = zkClient.getChildren(category);
-        if (CollectionUtils.isEmpty(urlStrs)) {
-            return;
-        }
-        for (String urlStr : urlStrs) {
-            zkClient.delete(category + Constants.PATH_SEPARATOR + urlStr);
-        }
-    }
-
     String toRootDir() {
         if (root.equals(Constants.PATH_SEPARATOR)) {
             return root;
