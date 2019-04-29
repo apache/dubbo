@@ -111,7 +111,7 @@ public class NettyServerHandler extends ChannelDuplexHandler {
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent e = (IdleStateEvent) evt;
-            if (!e.isFirst() && e.state() == IdleState.ALL_IDLE) {
+            if (e.state() == IdleState.ALL_IDLE) {
                 NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
                 try {
                     logger.info("IdleStateEvent triggered, close channel " + channel);
