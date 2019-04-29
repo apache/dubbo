@@ -128,10 +128,18 @@ public class NetUtils {
             return false;
         }
         String name = address.getHostAddress();
-        return (name != null
+        boolean result = (name != null
                 && IP_PATTERN.matcher(name).matches()
                 && !Constants.ANYHOST_VALUE.equals(name)
                 && !Constants.LOCALHOST_VALUE.equals(name));
+        if (result) {
+            try {
+                return address.isReachable(100);
+            } catch (IOException e) {
+                // ignore
+            }
+        }
+        return result;
     }
 
     /**
