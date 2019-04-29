@@ -37,6 +37,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -200,7 +201,11 @@ public class ConsulRegistry extends FailbackRegistry {
 
     private List<URL> convert(List<HealthService> services) {
         return services.stream()
-                .map(s -> s.getService().getMeta().get(URL_META_KEY))
+                .map(HealthService::getService)
+                .filter(Objects::nonNull)
+                .map(HealthService.Service::getMeta)
+                .filter(m -> m != null && m.containsKey(URL_META_KEY))
+                .map(m -> m.get(URL_META_KEY))
                 .map(URL::valueOf)
                 .collect(Collectors.toList());
     }

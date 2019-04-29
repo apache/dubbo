@@ -306,7 +306,7 @@ public class AbstractConfigTest {
 
             System.setProperty("dubbo.override.address", "system://127.0.0.1:2181");
             System.setProperty("dubbo.override.protocol", "system");
-            // this will not override, use 'key' instread, @Parameter(key="key1", useKeyAsProperty=false)
+            // this will not override, use 'key' instead, @Parameter(key="key1", useKeyAsProperty=false)
             System.setProperty("dubbo.override.key1", "system");
             System.setProperty("dubbo.override.key2", "system");
 

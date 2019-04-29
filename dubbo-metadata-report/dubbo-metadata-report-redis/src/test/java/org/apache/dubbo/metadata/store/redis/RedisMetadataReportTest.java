@@ -28,7 +28,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.embedded.RedisServer;
 
 import java.io.IOException;
@@ -45,13 +48,22 @@ public class RedisMetadataReportTest {
     RedisMetadataReport redisMetadataReport;
     RedisMetadataReport syncRedisMetadataReport;
     RedisServer redisServer;
+    URL registryUrl;
 
     @BeforeEach
-    public void constructor() throws IOException {
+    public void constructor(TestInfo testInfo) throws IOException {
         int redisPort = NetUtils.getAvailablePort();
-        this.redisServer = new RedisServer(redisPort);
+        String methodName = testInfo.getTestMethod().get().getName();
+        if ("testAuthRedisMetadata".equals(methodName) || ("testWrongAuthRedisMetadata".equals(methodName))) {
+            String password = "チェリー";
+            redisServer = RedisServer.builder().port(redisPort).setting("requirepass " + password).build();
+            registryUrl = URL.valueOf("redis://username:" + password + "@localhost:" + redisPort);
+        } else {
+            redisServer = RedisServer.builder().port(redisPort).build();
+            registryUrl = URL.valueOf("redis://localhost:" + redisPort);
+        }
+
         this.redisServer.start();
-        URL registryUrl = URL.valueOf("redis://localhost:" + redisPort);
         redisMetadataReport = (RedisMetadataReport) new RedisMetadataReportFactory().createMetadataReport(registryUrl);
         URL asyncRegistryUrl = URL.valueOf("redis://localhost:" + redisPort + "?" + SYNC_REPORT_KEY + "=true");
         syncRedisMetadataReport = (RedisMetadataReport) new RedisMetadataReportFactory().createMetadataReport(registryUrl);
@@ -173,4 +185,23 @@ public class RedisMetadataReportTest {
         return consumerMetadataIdentifier;
     }
 
+    @Test
+    public void testAuthRedisMetadata() throws ClassNotFoundException {
+        testStoreProvider(redisMetadataReport, "1.0.0.redis.md.p1", 3000);
+    }
+
+    @Test
+    public void testWrongAuthRedisMetadata() throws ClassNotFoundException {
+        registryUrl = registryUrl.setPassword("123456");
+        redisMetadataReport = (RedisMetadataReport) new RedisMetadataReportFactory().createMetadataReport(registryUrl);
+        try {
+            testStoreProvider(redisMetadataReport, "1.0.0.redis.md.p1", 3000);
+        } catch (RpcException e) {
+            if (e.getCause() instanceof JedisConnectionException && e.getCause().getCause() instanceof JedisDataException) {
+                Assertions.assertEquals("ERR invalid password", e.getCause().getCause().getMessage());
+            } else {
+                Assertions.fail("no invalid password exception!");
+            }
+        }
+    }
 }

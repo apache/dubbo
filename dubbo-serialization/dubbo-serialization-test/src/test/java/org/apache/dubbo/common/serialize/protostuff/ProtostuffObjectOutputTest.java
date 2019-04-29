@@ -16,12 +16,14 @@
  */
 package org.apache.dubbo.common.serialize.protostuff;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.nullValue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.sql.Timestamp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -44,6 +46,16 @@ public class ProtostuffObjectOutputTest {
         this.flushToInput();
 
         assertThat(protostuffObjectInput.readObject(), nullValue());
+    }
+
+    @Test
+    public void testSerializeTimestamp() throws IOException, ClassNotFoundException {
+        Timestamp originTime = new Timestamp(System.currentTimeMillis());
+        this.protostuffObjectOutput.writeObject(originTime);
+        this.flushToInput();
+
+        Timestamp serializedTime = protostuffObjectInput.readObject(Timestamp.class);
+        assertThat(serializedTime, is(originTime));
     }
 
     private void flushToInput() throws IOException {
