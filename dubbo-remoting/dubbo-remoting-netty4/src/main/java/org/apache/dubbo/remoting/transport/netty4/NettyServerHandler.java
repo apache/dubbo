@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
+import io.netty.handler.timeout.IdleState;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -109,12 +110,15 @@ public class NettyServerHandler extends ChannelDuplexHandler {
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent) {
-            NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
-            try {
-                logger.info("IdleStateEvent triggered, close channel " + channel);
-                channel.close();
-            } finally {
-                NettyChannel.removeChannelIfDisconnected(ctx.channel());
+            IdleStateEvent e = (IdleStateEvent) evt;
+            if (!e.isFirst() && e.state() == IdleState.ALL_IDLE) {
+                NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
+                try {
+                    logger.info("IdleStateEvent triggered, close channel " + channel);
+                    channel.close();
+                } finally {
+                    NettyChannel.removeChannelIfDisconnected(ctx.channel());
+                }
             }
         }
         super.userEventTriggered(ctx, evt);
