@@ -21,9 +21,11 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.common.status.StatusChecker;
-import org.apache.dubbo.config.spring.ServiceBean;
+import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.Lifecycle;
+import org.springframework.web.context.support.GenericWebApplicationContext;
 
 import java.lang.reflect.Method;
 
@@ -37,10 +39,24 @@ public class SpringStatusChecker implements StatusChecker {
 
     @Override
     public Status check() {
-        ApplicationContext context = ServiceBean.getSpringContext();
+        ApplicationContext context = null;
+        for (ApplicationContext c : SpringExtensionFactory.getContexts()) {
+            // [Issue] SpringStatusChecker execute errors on non-XML Spring configuration
+            // issue : https://github.com/apache/incubator-dubbo/issues/3615
+            if(c instanceof GenericWebApplicationContext) { // ignore GenericXmlApplicationContext
+                continue;
+            }
+
+            if (c != null) {
+                context = c;
+                break;
+            }
+        }
+
         if (context == null) {
             return new Status(Status.Level.UNKNOWN);
         }
+
         Status.Level level = Status.Level.OK;
         if (context instanceof Lifecycle) {
             if (((Lifecycle) context).isRunning()) {

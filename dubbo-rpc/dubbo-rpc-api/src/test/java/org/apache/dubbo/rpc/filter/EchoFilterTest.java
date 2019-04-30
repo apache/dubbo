@@ -24,9 +24,9 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.support.DemoService;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 

@@ -25,6 +25,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * Java serialization implementation
+ *
+ * <pre>
+ *     e.g. &lt;dubbo:protocol serialization="java" /&gt;
+ * </pre>
+ */
 public class JavaSerialization implements Serialization {
 
     @Override

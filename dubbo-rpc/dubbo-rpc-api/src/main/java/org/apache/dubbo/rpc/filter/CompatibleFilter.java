@@ -32,7 +32,18 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
 /**
- * CompatibleFilter
+ * CompatibleFilter make the remote method's return value compatible to invoker's version of object.
+ * To make return object compatible it does
+ * <pre>
+ *    1)If the url contain serialization key of type <b>json</b> or <b>fastjson</b> then transform
+ *    the return value to instance of {@link java.util.Map}
+ *    2)If the return value is not a instance of invoked method's return type available at
+ *    local jvm then POJO conversion.
+ *    3)If return value is other than above return value as it is.
+ * </pre>
+ *
+ * @see Filter
+ *
  */
 public class CompatibleFilter implements Filter {
 
@@ -51,9 +62,11 @@ public class CompatibleFilter implements Filter {
                     String serialization = invoker.getUrl().getParameter(Constants.SERIALIZATION_KEY);
                     if ("json".equals(serialization)
                             || "fastjson".equals(serialization)) {
+                        // If the serialization key is json or fastjson
                         Type gtype = method.getGenericReturnType();
                         newValue = PojoUtils.realize(value, type, gtype);
                     } else if (!type.isInstance(value)) {
+                        //if local service interface's method's return type is not instance of return value
                         newValue = PojoUtils.isPojo(type)
                                 ? PojoUtils.realize(value, type)
                                 : CompatibleTypeUtils.compatibleTypeConvert(value, type);

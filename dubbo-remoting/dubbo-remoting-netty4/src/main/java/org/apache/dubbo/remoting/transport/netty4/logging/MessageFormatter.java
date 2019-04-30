@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.remoting.transport.netty4.logging;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ArrayUtils;
 
 import java.text.MessageFormat;
 import java.util.HashMap;
@@ -87,6 +90,7 @@ import java.util.Map;
  * {@link #arrayFormat(String, Object[])} methods for more details.
  */
 final class MessageFormatter {
+    private static final Logger logger = LoggerFactory.getLogger(MessageFormatter.class);
     static final char DELIM_START = '{';
     static final char DELIM_STOP = '}';
     static final String DELIM_STR = "{}";
@@ -138,7 +142,7 @@ final class MessageFormatter {
     }
 
     static Throwable getThrowableCandidate(Object[] argArray) {
-        if (argArray == null || argArray.length == 0) {
+        if (ArrayUtils.isEmpty(argArray)) {
             return null;
         }
 
@@ -176,8 +180,8 @@ final class MessageFormatter {
         int j;
         StringBuffer sbuf = new StringBuffer(messagePattern.length() + 50);
 
-        int L;
-        for (L = 0; L < argArray.length; L++) {
+        int l;
+        for (l = 0; l < argArray.length; l++) {
 
             j = messagePattern.indexOf(DELIM_STR, i);
 
@@ -195,7 +199,7 @@ final class MessageFormatter {
             } else {
                 if (isEscapedDelimeter(messagePattern, j)) {
                     if (!isDoubleEscaped(messagePattern, j)) {
-                        L--; // DELIM_START was escaped, thus should not be incremented
+                        l--; // DELIM_START was escaped, thus should not be incremented
                         sbuf.append(messagePattern.substring(i, j - 1));
                         sbuf.append(DELIM_START);
                         i = j + 1;
@@ -204,20 +208,20 @@ final class MessageFormatter {
                         // itself escaped: "abc x:\\{}"
                         // we have to consume one backward slash
                         sbuf.append(messagePattern.substring(i, j - 1));
-                        deeplyAppendParameter(sbuf, argArray[L], new HashMap<Object[], Void>());
+                        deeplyAppendParameter(sbuf, argArray[l], new HashMap<Object[], Void>());
                         i = j + 2;
                     }
                 } else {
                     // normal case
                     sbuf.append(messagePattern.substring(i, j));
-                    deeplyAppendParameter(sbuf, argArray[L], new HashMap<Object[], Void>());
+                    deeplyAppendParameter(sbuf, argArray[l], new HashMap<Object[], Void>());
                     i = j + 2;
                 }
             }
         }
         // append the characters following the last {} pair.
         sbuf.append(messagePattern.substring(i, messagePattern.length()));
-        if (L < argArray.length - 1) {
+        if (l < argArray.length - 1) {
             return new FormattingTuple(sbuf.toString(), argArray, throwableCandidate);
         } else {
             return new FormattingTuple(sbuf.toString(), argArray, null);
@@ -280,7 +284,7 @@ final class MessageFormatter {
             System.err
                     .println("SLF4J: Failed toString() invocation on an object of type ["
                             + o.getClass().getName() + ']');
-            t.printStackTrace();
+            logger.error(t.getMessage(), t);
             sbuf.append("[FAILED toString()]");
         }
     }

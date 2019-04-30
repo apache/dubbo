@@ -22,11 +22,16 @@ import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
 
 /**
- * Validation
+ * Instance of Validation interface provide instance of {@link Validator} based on the value of <b>validation</b> attribute.
  */
 @SPI("jvalidation")
 public interface Validation {
 
+    /**
+     * Return the instance of {@link Validator} for a given url.
+     * @param url Invocation url
+     * @return Instance of {@link Validator}
+     */
     @Adaptive(Constants.VALIDATION_KEY)
     Validator getValidator(URL url);
 

@@ -17,20 +17,20 @@
 package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.config.model.ApplicationModel;
-import org.apache.dubbo.config.model.ProviderModel;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.support.ProviderConsumerRegTable;
 import org.apache.dubbo.registry.support.ProviderInvokerWrapper;
 import org.apache.dubbo.rpc.Invoker;
-import org.junit.Test;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ProviderModel;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import static org.apache.dubbo.registry.support.ProviderConsumerRegTable.getProviderInvoker;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

@@ -35,14 +35,14 @@ public class MockRegistry implements Registry {
         return subscribedUrl;
     }
 
-    /* 
+    /*
      * @see org.apache.dubbo.common.Node#getUrl()
      */
     public URL getUrl() {
         return null;
     }
 
-    /* 
+    /*
      * @see org.apache.dubbo.common.Node#isAvailable()
      */
     @Override
@@ -50,7 +50,7 @@ public class MockRegistry implements Registry {
         return true;
     }
 
-    /* 
+    /*
      * @see org.apache.dubbo.common.Node#destroy()
      */
     @Override
@@ -58,7 +58,7 @@ public class MockRegistry implements Registry {
 
     }
 
-    /* 
+    /*
      * @see org.apache.dubbo.registry.RegistryService#register(org.apache.dubbo.common.URL)
      */
     @Override
@@ -66,7 +66,7 @@ public class MockRegistry implements Registry {
 
     }
 
-    /* 
+    /*
      * @see org.apache.dubbo.registry.RegistryService#unregister(org.apache.dubbo.common.URL)
      */
     @Override
@@ -74,7 +74,7 @@ public class MockRegistry implements Registry {
 
     }
 
-    /* 
+    /*
      * @see org.apache.dubbo.registry.RegistryService#subscribe(org.apache.dubbo.common.URL, org.apache.dubbo.registry.NotifyListener)
      */
     @Override
@@ -89,7 +89,7 @@ public class MockRegistry implements Registry {
         listener.notify(urls);
     }
 
-    /* 
+    /*
      * @see org.apache.dubbo.registry.RegistryService#unsubscribe(org.apache.dubbo.common.URL, org.apache.dubbo.registry.NotifyListener)
      */
     @Override
@@ -97,7 +97,7 @@ public class MockRegistry implements Registry {
 
     }
 
-    /* 
+    /*
      * @see org.apache.dubbo.registry.RegistryService#lookup(org.apache.dubbo.common.URL)
      */
     @Override

@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.zookeeper.ChildListener;
+import org.apache.dubbo.remoting.zookeeper.DataListener;
 import org.apache.dubbo.remoting.zookeeper.StateListener;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 
@@ -28,8 +29,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.Executor;
 
-public abstract class AbstractZookeeperClient<TargetChildListener> implements ZookeeperClient {
+public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildListener> implements ZookeeperClient {
 
     protected static final Logger logger = LoggerFactory.getLogger(AbstractZookeeperClient.class);
 
@@ -38,6 +40,8 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
     private final Set<StateListener> stateListeners = new CopyOnWriteArraySet<StateListener>();
 
     private final ConcurrentMap<String, ConcurrentMap<ChildListener, TargetChildListener>> childListeners = new ConcurrentHashMap<String, ConcurrentMap<ChildListener, TargetChildListener>>();
+
+    private final ConcurrentMap<String, ConcurrentMap<DataListener, TargetDataListener>> listeners = new ConcurrentHashMap<String, ConcurrentMap<DataListener, TargetDataListener>>();
 
     private volatile boolean closed = false;
 
@@ -98,6 +102,37 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
     }
 
     @Override
+    public void addDataListener(String path, DataListener listener) {
+        this.addDataListener(path, listener, null);
+    }
+
+    @Override
+    public void addDataListener(String path, DataListener listener, Executor executor) {
+        ConcurrentMap<DataListener, TargetDataListener> dataListenerMap = listeners.get(path);
+        if (dataListenerMap == null) {
+            listeners.putIfAbsent(path, new ConcurrentHashMap<DataListener, TargetDataListener>());
+            dataListenerMap = listeners.get(path);
+        }
+        TargetDataListener targetListener = dataListenerMap.get(listener);
+        if (targetListener == null) {
+            dataListenerMap.putIfAbsent(listener, createTargetDataListener(path, listener));
+            targetListener = dataListenerMap.get(listener);
+        }
+        addTargetDataListener(path, targetListener, executor);
+    }
+
+    @Override
+    public void removeDataListener(String path, DataListener listener ){
+        ConcurrentMap<DataListener, TargetDataListener> dataListenerMap = listeners.get(path);
+        if (dataListenerMap != null) {
+            TargetDataListener targetListener = dataListenerMap.remove(listener);
+            if(targetListener != null){
+                removeTargetDataListener(path, targetListener);
+            }
+        }
+    }
+
+    @Override
     public void removeChildListener(String path, ChildListener listener) {
         ConcurrentMap<ChildListener, TargetChildListener> listeners = childListeners.get(path);
         if (listeners != null) {
@@ -127,11 +162,39 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
         }
     }
 
+    @Override
+    public void create(String path, String content, boolean ephemeral) {
+        if (checkExists(path)) {
+            delete(path);
+        }
+        int i = path.lastIndexOf('/');
+        if (i > 0) {
+            create(path.substring(0, i), false);
+        }
+        if (ephemeral) {
+            createEphemeral(path, content);
+        } else {
+            createPersistent(path, content);
+        }
+    }
+
+    @Override
+    public String getContent(String path) {
+        if (!checkExists(path)) {
+            return null;
+        }
+        return doGetContent(path);
+    }
+
     protected abstract void doClose();
 
     protected abstract void createPersistent(String path);
 
     protected abstract void createEphemeral(String path);
+
+    protected abstract void createPersistent(String path, String data);
+
+    protected abstract void createEphemeral(String path, String data);
 
     protected abstract boolean checkExists(String path);
 
@@ -139,6 +202,16 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
 
     protected abstract List<String> addTargetChildListener(String path, TargetChildListener listener);
 
+    protected abstract TargetDataListener createTargetDataListener(String path, DataListener listener);
+
+    protected abstract void addTargetDataListener(String path, TargetDataListener listener);
+
+    protected abstract void addTargetDataListener(String path, TargetDataListener listener, Executor executor);
+
+    protected abstract void removeTargetDataListener(String path, TargetDataListener listener);
+
     protected abstract void removeTargetChildListener(String path, TargetChildListener listener);
+
+    protected abstract String doGetContent(String path);
 
 }

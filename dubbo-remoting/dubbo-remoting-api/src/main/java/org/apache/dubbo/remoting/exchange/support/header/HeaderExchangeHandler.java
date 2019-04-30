@@ -44,9 +44,9 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
 
     protected static final Logger logger = LoggerFactory.getLogger(HeaderExchangeHandler.class);
 
-    public static String KEY_READ_TIMESTAMP = HeartbeatHandler.KEY_READ_TIMESTAMP;
+    public static final String KEY_READ_TIMESTAMP = HeartbeatHandler.KEY_READ_TIMESTAMP;
 
-    public static String KEY_WRITE_TIMESTAMP = HeartbeatHandler.KEY_WRITE_TIMESTAMP;
+    public static final String KEY_WRITE_TIMESTAMP = HeartbeatHandler.KEY_WRITE_TIMESTAMP;
 
     private final ExchangeHandler handler;
 
@@ -83,9 +83,13 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
             Object data = req.getData();
 
             String msg;
-            if (data == null) msg = null;
-            else if (data instanceof Throwable) msg = StringUtils.toString((Throwable) data);
-            else msg = data.toString();
+            if (data == null) {
+                msg = null;
+            } else if (data instanceof Throwable) {
+                msg = StringUtils.toString((Throwable) data);
+            } else {
+                msg = data.toString();
+            }
             res.setErrorMessage("Fail to decode request due to: " + msg);
             res.setStatus(Response.BAD_REQUEST);
 

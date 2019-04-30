@@ -19,6 +19,7 @@ package org.apache.dubbo.common.logger.jcl;
 import org.apache.dubbo.common.logger.Level;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerAdapter;
+
 import org.apache.commons.logging.LogFactory;
 
 import java.io.File;

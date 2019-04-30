@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.monitor.Monitor;
 import org.apache.dubbo.monitor.MonitorService;
@@ -42,16 +43,28 @@ public class DubboMonitor implements Monitor {
 
     private static final Logger logger = LoggerFactory.getLogger(DubboMonitor.class);
 
+    /**
+     * The length of the array which is a container of the statistics
+     */
     private static final int LENGTH = 10;
 
+    /**
+     * The timer for sending statistics
+     */
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(3, new NamedThreadFactory("DubboMonitorSendTimer", true));
 
+    /**
+     * The future that can cancel the <b>scheduledExecutorService</b>
+     */
     private final ScheduledFuture<?> sendFuture;
 
     private final Invoker<MonitorService> monitorInvoker;
 
     private final MonitorService monitorService;
 
+    /**
+     * The time interval for timer <b>scheduledExecutorService</b> to send data
+     */
     private final long monitorInterval;
 
     private final ConcurrentMap<Statistics, AtomicReference<long[]>> statisticsMap = new ConcurrentHashMap<Statistics, AtomicReference<long[]>>();
@@ -61,15 +74,12 @@ public class DubboMonitor implements Monitor {
         this.monitorService = monitorService;
         this.monitorInterval = monitorInvoker.getUrl().getPositiveParameter("interval", 60000);
         // collect timer for collecting statistics data
-        sendFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
-            @Override
-            public void run() {
+        sendFuture = scheduledExecutorService.scheduleWithFixedDelay(() -> {
+            try {
                 // collect data
-                try {
-                    send();
-                } catch (Throwable t) {
-                    logger.error("Unexpected error occur at send statistic, cause: " + t.getMessage(), t);
-                }
+                send();
+            } catch (Throwable t) {
+                logger.error("Unexpected error occur at send statistic, cause: " + t.getMessage(), t);
             }
         }, monitorInterval, monitorInterval, TimeUnit.MILLISECONDS);
     }
@@ -92,7 +102,7 @@ public class DubboMonitor implements Monitor {
             long maxOutput = numbers[7];
             long maxElapsed = numbers[8];
             long maxConcurrent = numbers[9];
-            String version = getUrl().getParameter(Constants.DEFAULT_PROTOCOL);
+            String protocol = getUrl().getParameter(Constants.DEFAULT_PROTOCOL);
 
             // send statistics data
             URL url = statistics.getUrl()
@@ -107,7 +117,7 @@ public class DubboMonitor implements Monitor {
                             MonitorService.MAX_OUTPUT, String.valueOf(maxOutput),
                             MonitorService.MAX_ELAPSED, String.valueOf(maxElapsed),
                             MonitorService.MAX_CONCURRENT, String.valueOf(maxConcurrent),
-                            Constants.DEFAULT_PROTOCOL, version
+                            Constants.DEFAULT_PROTOCOL, protocol
                     );
             monitorService.collect(url);
 
@@ -200,7 +210,7 @@ public class DubboMonitor implements Monitor {
     @Override
     public void destroy() {
         try {
-            sendFuture.cancel(true);
+            ExecutorUtil.cancelScheduledFuture(sendFuture);
         } catch (Throwable t) {
             logger.error("Unexpected error occur at cancel sender timer, cause: " + t.getMessage(), t);
         }

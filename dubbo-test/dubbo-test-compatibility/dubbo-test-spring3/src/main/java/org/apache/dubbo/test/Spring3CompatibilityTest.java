@@ -19,6 +19,7 @@ package org.apache.dubbo.test;
 import org.apache.dubbo.demo.DemoService;
 import org.apache.dubbo.test.consumer.ConsumerConfiguration;
 import org.apache.dubbo.test.provider.ProviderConfiguration;
+
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.util.Assert;

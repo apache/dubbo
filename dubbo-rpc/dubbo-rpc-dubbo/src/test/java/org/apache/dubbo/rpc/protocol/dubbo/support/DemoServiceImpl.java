@@ -72,7 +72,7 @@ public class DemoServiceImpl implements DemoService {
         return types[0];
     }
 
-    public Type enumlength(Type type) {
+    public Type getType(Type type) {
         return type;
     }
 
@@ -107,4 +107,18 @@ public class DemoServiceImpl implements DemoService {
         return a + b;
     }
 
+    @Override
+    public int getPerson(Person person) {
+        return person.getAge();
+    }
+
+    @Override
+    public int getPerson(Person person1, Person perso2) {
+        return person1.getAge() + perso2.getAge();
+    }
+
+    @Override
+    public String getPerson(Man man) {
+        return man.getName();
+    }
 }

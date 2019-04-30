@@ -15,34 +15,47 @@
  * limitations under the License.
  */
 package org.apache.dubbo.remoting.zookeeper.curator;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.zookeeper.ChildListener;
-import org.apache.curator.framework.api.CuratorWatcher;
+
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
+import org.apache.curator.framework.recipes.cache.TreeCacheListener;
+import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.test.TestingServer;
 import org.apache.zookeeper.WatchedEvent;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 
 public class CuratorZookeeperClientTest {
     private TestingServer zkServer;
     private CuratorZookeeperClient curatorClient;
+    CuratorFramework client = null;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         int zkServerPort = NetUtils.getAvailablePort();
         zkServer = new TestingServer(zkServerPort, true);
         curatorClient = new CuratorZookeeperClient(URL.valueOf("zookeeper://127.0.0.1:" +
                 zkServerPort + "/org.apache.dubbo.registry.RegistryService"));
+        client = CuratorFrameworkFactory.newClient(zkServer.getConnectString(), new ExponentialBackoffRetry(1000, 3));
+        client.start();
     }
 
     @Test
@@ -69,7 +82,8 @@ public class CuratorZookeeperClientTest {
         String path = "/dubbo/org.apache.dubbo.demo.DemoService/providers";
         curatorClient.create(path, false);
         final CountDownLatch countDownLatch = new CountDownLatch(1);
-        curatorClient.addTargetChildListener(path, new CuratorWatcher() {
+        curatorClient.addTargetChildListener(path, new CuratorZookeeperClient.CuratorWatcherImpl() {
+
             @Override
             public void process(WatchedEvent watchedEvent) throws Exception {
                 countDownLatch.countDown();
@@ -80,17 +94,21 @@ public class CuratorZookeeperClientTest {
     }
 
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testWithInvalidServer() {
-        curatorClient = new CuratorZookeeperClient(URL.valueOf("zookeeper://127.0.0.1:1/service"));
-        curatorClient.create("/testPath", true);
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            curatorClient = new CuratorZookeeperClient(URL.valueOf("zookeeper://127.0.0.1:1/service"));
+            curatorClient.create("/testPath", true);
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testWithStoppedServer() throws IOException {
-        curatorClient.create("/testPath", true);
-        zkServer.stop();
-        curatorClient.delete("/testPath");
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            curatorClient.create("/testPath", true);
+            zkServer.stop();
+            curatorClient.delete("/testPath");
+        });
     }
 
     @Test
@@ -113,9 +131,66 @@ public class CuratorZookeeperClientTest {
         assertThat(connected, is(true));
     }
 
-    @After
+    @Test
+    public void testCreateContent4Persistent() {
+        String path = "/curatorTest4CrContent/content.data";
+        String content = "createContentTest";
+        curatorClient.delete(path);
+        assertThat(curatorClient.checkExists(path), is(false));
+        assertNull(curatorClient.getContent(path));
+
+        curatorClient.create(path, content, false);
+        assertThat(curatorClient.checkExists(path), is(true));
+        assertEquals(curatorClient.getContent(path), content);
+    }
+
+    @Test
+    public void testCreateContent4Temp() {
+        String path = "/curatorTest4CrContent/content.data";
+        String content = "createContentTest";
+        curatorClient.delete(path);
+        assertThat(curatorClient.checkExists(path), is(false));
+        assertNull(curatorClient.getContent(path));
+
+        curatorClient.create(path, content, true);
+        assertThat(curatorClient.checkExists(path), is(true));
+        assertEquals(curatorClient.getContent(path), content);
+    }
+
+    @AfterEach
     public void tearDown() throws Exception {
         curatorClient.close();
         zkServer.stop();
+    }
+
+    @Test
+    public void testAddTargetDataListener() throws Exception {
+        String listenerPath = "/dubbo/service.name/configuration";
+        String path = listenerPath + "/dat/data";
+        String value = "vav";
+
+        curatorClient.create(path + "/d.json", value, true);
+        String valueFromCache = curatorClient.getContent(path + "/d.json");
+        Assertions.assertEquals(value, valueFromCache);
+        final AtomicInteger atomicInteger = new AtomicInteger(0);
+        curatorClient.addTargetDataListener(listenerPath, new CuratorZookeeperClient.CuratorWatcherImpl() {
+            @Override
+            public void childEvent(CuratorFramework client, TreeCacheEvent event) throws Exception {
+                System.out.println("===" + event);
+                atomicInteger.incrementAndGet();
+            }
+        });
+
+        valueFromCache = curatorClient.getContent(path + "/d.json");
+        Assertions.assertNotNull(valueFromCache);
+        curatorClient.getClient().setData().forPath(path + "/d.json", "sdsdf".getBytes());
+        curatorClient.getClient().setData().forPath(path + "/d.json", "dfsasf".getBytes());
+        curatorClient.delete(path + "/d.json");
+        curatorClient.delete(path);
+        valueFromCache = curatorClient.getContent(path + "/d.json");
+        Assertions.assertNull(valueFromCache);
+        Thread.sleep(2000l);
+        Assertions.assertTrue(9l >= atomicInteger.get());
+        Assertions.assertTrue(2l <= atomicInteger.get());
     }
 }

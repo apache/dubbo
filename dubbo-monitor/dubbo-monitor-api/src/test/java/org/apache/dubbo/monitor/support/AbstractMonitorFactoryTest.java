@@ -21,8 +21,8 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.monitor.Monitor;
 import org.apache.dubbo.monitor.MonitorFactory;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
@@ -70,7 +70,7 @@ public class AbstractMonitorFactoryTest {
             monitor1 = monitorFactory.getMonitor(url);
             monitor2 = monitorFactory.getMonitor(url);
         }
-        Assert.assertEquals(monitor1, monitor2);
+        Assertions.assertEquals(monitor1, monitor2);
     }
 
     @Test
@@ -83,7 +83,7 @@ public class AbstractMonitorFactoryTest {
             monitor1 = monitorFactory.getMonitor(url);
             monitor2 = monitorFactory.getMonitor(url);
         }
-        Assert.assertEquals(monitor1, monitor2);
+        Assertions.assertEquals(monitor1, monitor2);
     }
 
     @Test
@@ -97,7 +97,7 @@ public class AbstractMonitorFactoryTest {
             monitor1 = monitorFactory.getMonitor(url1);
             monitor2 = monitorFactory.getMonitor(url2);
         }
-        Assert.assertNotSame(monitor1, monitor2);
+        Assertions.assertNotSame(monitor1, monitor2);
     }
 
 }

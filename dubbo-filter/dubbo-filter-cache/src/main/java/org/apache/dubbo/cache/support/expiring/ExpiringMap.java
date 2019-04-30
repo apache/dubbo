@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.cache.support.expiring;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -60,7 +60,7 @@ public class ExpiringMap<K, V> implements Map<K, V> {
     }
 
     public ExpiringMap(int timeToLive, int expirationInterval) {
-        this(new ConcurrentHashMap<K, ExpiryObject>(), timeToLive, expirationInterval);
+        this(new ConcurrentHashMap<>(), timeToLive, expirationInterval);
     }
 
     private ExpiringMap(ConcurrentHashMap<K, ExpiryObject> delegateMap, int timeToLive, int expirationInterval) {

@@ -25,7 +25,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 
 /**
- * ClassLoaderInvokerFilter
+ * Set the current execution thread class loader to service interface's class loader.
  */
 @Activate(group = Constants.PROVIDER, order = -30000)
 public class ClassLoaderFilter implements Filter {

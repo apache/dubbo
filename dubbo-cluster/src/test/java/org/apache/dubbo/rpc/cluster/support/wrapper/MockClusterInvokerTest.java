@@ -26,15 +26,14 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 import org.apache.dubbo.rpc.support.MockProtocol;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,7 +43,7 @@ public class MockClusterInvokerTest {
 
     List<Invoker<IHelloService>> invokers = new ArrayList<Invoker<IHelloService>>();
 
-    @Before
+    @BeforeEach
     public void beforeMethod() {
         invokers.clear();
     }
@@ -68,13 +67,13 @@ public class MockClusterInvokerTest {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
         Result ret = cluster.invoke(invocation);
-        Assert.assertEquals("something", ret.getValue());
+        Assertions.assertEquals("something", ret.getValue());
 
         // If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("sayHello");
         ret = cluster.invoke(invocation);
-        Assert.assertEquals(null, ret.getValue());
+        Assertions.assertEquals(null, ret.getValue());
     }
 
     /**
@@ -85,31 +84,30 @@ public class MockClusterInvokerTest {
         URL url = URL.valueOf("remote://1.2.3.4/" + IHelloService.class.getName())
                 .addParameter(Constants.MOCK_KEY, "fail:return null")
                 .addParameter("invoke_return_error", "true");
-        Invoker<IHelloService> cluster = getClusterInvoker(url);
         URL mockUrl = URL.valueOf("mock://localhost/" + IHelloService.class.getName()
                 + "?getSomething.mock=return aa").addParameters(url.getParameters());
 
         Protocol protocol = new MockProtocol();
         Invoker<IHelloService> mInvoker1 = protocol.refer(IHelloService.class, mockUrl);
-        invokers.add(mInvoker1);
+        Invoker<IHelloService> cluster = getClusterInvokerMock(url, mInvoker1);
 
         //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
         Result ret = cluster.invoke(invocation);
-        Assert.assertEquals("aa", ret.getValue());
+        Assertions.assertEquals("aa", ret.getValue());
 
         // If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("getSomething2");
         ret = cluster.invoke(invocation);
-        Assert.assertEquals(null, ret.getValue());
+        Assertions.assertEquals(null, ret.getValue());
 
         // If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("sayHello");
         ret = cluster.invoke(invocation);
-        Assert.assertEquals(null, ret.getValue());
+        Assertions.assertEquals(null, ret.getValue());
     }
 
 
@@ -120,32 +118,32 @@ public class MockClusterInvokerTest {
     public void testMockInvokerInvoke_forcemock() {
         URL url = URL.valueOf("remote://1.2.3.4/" + IHelloService.class.getName());
         url = url.addParameter(Constants.MOCK_KEY, "force:return null");
-        Invoker<IHelloService> cluster = getClusterInvoker(url);
+
         URL mockUrl = URL.valueOf("mock://localhost/" + IHelloService.class.getName()
                 + "?getSomething.mock=return aa&getSomething3xx.mock=return xx")
                 .addParameters(url.getParameters());
 
         Protocol protocol = new MockProtocol();
         Invoker<IHelloService> mInvoker1 = protocol.refer(IHelloService.class, mockUrl);
-        invokers.add(mInvoker1);
+        Invoker<IHelloService> cluster = getClusterInvokerMock(url, mInvoker1);
 
         //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
         Result ret = cluster.invoke(invocation);
-        Assert.assertEquals("aa", ret.getValue());
+        Assertions.assertEquals("aa", ret.getValue());
 
         // If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("getSomething2");
         ret = cluster.invoke(invocation);
-        Assert.assertEquals(null, ret.getValue());
+        Assertions.assertEquals(null, ret.getValue());
 
         // If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("sayHello");
         ret = cluster.invoke(invocation);
-        Assert.assertEquals(null, ret.getValue());
+        Assertions.assertEquals(null, ret.getValue());
     }
 
     @Test
@@ -164,7 +162,7 @@ public class MockClusterInvokerTest {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("sayHello");
         Result ret = cluster.invoke(invocation);
-        Assert.assertEquals(null, ret.getValue());
+        Assertions.assertEquals(null, ret.getValue());
     }
 
     /**
@@ -180,25 +178,25 @@ public class MockClusterInvokerTest {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
         Result ret = cluster.invoke(invocation);
-        Assert.assertEquals("something", ret.getValue());
+        Assertions.assertEquals("something", ret.getValue());
 
         // If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("getSomething2");
         ret = cluster.invoke(invocation);
-        Assert.assertEquals("y", ret.getValue());
+        Assertions.assertEquals("y", ret.getValue());
 
         // If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("getSomething3");
         ret = cluster.invoke(invocation);
-        Assert.assertEquals("something3", ret.getValue());
+        Assertions.assertEquals("something3", ret.getValue());
 
         // If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("sayHello");
         ret = cluster.invoke(invocation);
-        Assert.assertEquals(null, ret.getValue());
+        Assertions.assertEquals(null, ret.getValue());
     }
 
     /**
@@ -215,20 +213,20 @@ public class MockClusterInvokerTest {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
         Result ret = cluster.invoke(invocation);
-        Assert.assertEquals("x", ret.getValue());
+        Assertions.assertEquals("x", ret.getValue());
 
         // If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("getSomething2");
         ret = cluster.invoke(invocation);
-        Assert.assertEquals("y", ret.getValue());
+        Assertions.assertEquals("y", ret.getValue());
 
         // If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("getSomething3");
         try {
             ret = cluster.invoke(invocation);
-            Assert.fail();
+            Assertions.fail();
         } catch (RpcException e) {
 
         }
@@ -249,25 +247,25 @@ public class MockClusterInvokerTest {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
         Result ret = cluster.invoke(invocation);
-        Assert.assertEquals("x", ret.getValue());
+        Assertions.assertEquals("x", ret.getValue());
 
         // If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("getSomething2");
         ret = cluster.invoke(invocation);
-        Assert.assertEquals("y", ret.getValue());
+        Assertions.assertEquals("y", ret.getValue());
 
         // If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("getSomething3");
         ret = cluster.invoke(invocation);
-        Assert.assertEquals(null, ret.getValue());
+        Assertions.assertEquals(null, ret.getValue());
 
         // If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("sayHello");
         ret = cluster.invoke(invocation);
-        Assert.assertEquals(null, ret.getValue());
+        Assertions.assertEquals(null, ret.getValue());
     }
 
     /**
@@ -285,25 +283,25 @@ public class MockClusterInvokerTest {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
         Result ret = cluster.invoke(invocation);
-        Assert.assertEquals("x", ret.getValue());
+        Assertions.assertEquals("x", ret.getValue());
 
         // If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("getSomething2");
         ret = cluster.invoke(invocation);
-        Assert.assertEquals("y", ret.getValue());
+        Assertions.assertEquals("y", ret.getValue());
 
         // If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("getSomething3");
         ret = cluster.invoke(invocation);
-        Assert.assertEquals("z", ret.getValue());
+        Assertions.assertEquals("z", ret.getValue());
 
         //If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("sayHello");
         ret = cluster.invoke(invocation);
-        Assert.assertEquals("z", ret.getValue());
+        Assertions.assertEquals("z", ret.getValue());
     }
 
     /**
@@ -321,25 +319,25 @@ public class MockClusterInvokerTest {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
         Result ret = cluster.invoke(invocation);
-        Assert.assertEquals("x", ret.getValue());
+        Assertions.assertEquals("x", ret.getValue());
 
         //If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("getSomething2");
         ret = cluster.invoke(invocation);
-        Assert.assertEquals("y", ret.getValue());
+        Assertions.assertEquals("y", ret.getValue());
 
         //If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("getSomething3");
         ret = cluster.invoke(invocation);
-        Assert.assertEquals("z", ret.getValue());
+        Assertions.assertEquals("z", ret.getValue());
 
         //If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("sayHello");
         ret = cluster.invoke(invocation);
-        Assert.assertEquals("z", ret.getValue());
+        Assertions.assertEquals("z", ret.getValue());
     }
 
     /**
@@ -355,19 +353,19 @@ public class MockClusterInvokerTest {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
         Result ret = cluster.invoke(invocation);
-        Assert.assertEquals("x", ret.getValue());
+        Assertions.assertEquals("x", ret.getValue());
 
         //If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("getSomething2");
         ret = cluster.invoke(invocation);
-        Assert.assertEquals("x", ret.getValue());
+        Assertions.assertEquals("x", ret.getValue());
 
         //If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("sayHello");
         ret = cluster.invoke(invocation);
-        Assert.assertEquals("x", ret.getValue());
+        Assertions.assertEquals("x", ret.getValue());
     }
 
     /**
@@ -383,14 +381,14 @@ public class MockClusterInvokerTest {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
         Result ret = cluster.invoke(invocation);
-        Assert.assertEquals("x", ret.getValue());
+        Assertions.assertEquals("x", ret.getValue());
 
         //If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("getSomething3");
         try {
             ret = cluster.invoke(invocation);
-            Assert.fail("fail invoke");
+            Assertions.fail("fail invoke");
         } catch (RpcException e) {
 
         }
@@ -409,7 +407,7 @@ public class MockClusterInvokerTest {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
         Result ret = cluster.invoke(invocation);
-        Assert.assertEquals("somethingmock", ret.getValue());
+        Assertions.assertEquals("somethingmock", ret.getValue());
     }
 
     /**
@@ -425,7 +423,7 @@ public class MockClusterInvokerTest {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
         Result ret = cluster.invoke(invocation);
-        Assert.assertEquals("somethingmock", ret.getValue());
+        Assertions.assertEquals("somethingmock", ret.getValue());
     }
 
     /**
@@ -440,7 +438,7 @@ public class MockClusterInvokerTest {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
         Result ret = cluster.invoke(invocation);
-        Assert.assertEquals("somethingmock", ret.getValue());
+        Assertions.assertEquals("somethingmock", ret.getValue());
     }
 
     @Test
@@ -453,8 +451,8 @@ public class MockClusterInvokerTest {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
         Result ret = cluster.invoke(invocation);
-        Assert.assertTrue("result type must be String but was : " + ret.getValue().getClass(), ret.getValue() instanceof String);
-        Assert.assertEquals("1688", (String) ret.getValue());
+        Assertions.assertTrue(ret.getValue() instanceof String, "result type must be String but was : " + ret.getValue().getClass());
+        Assertions.assertEquals("1688", (String) ret.getValue());
     }
 
     @Test
@@ -467,8 +465,8 @@ public class MockClusterInvokerTest {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getInt1");
         Result ret = cluster.invoke(invocation);
-        Assert.assertTrue("result type must be integer but was : " + ret.getValue().getClass(), ret.getValue() instanceof Integer);
-        Assert.assertEquals(new Integer(1688), (Integer) ret.getValue());
+        Assertions.assertTrue(ret.getValue() instanceof Integer, "result type must be integer but was : " + ret.getValue().getClass());
+        Assertions.assertEquals(new Integer(1688), (Integer) ret.getValue());
     }
 
     @Test
@@ -481,8 +479,8 @@ public class MockClusterInvokerTest {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getBoolean1");
         Result ret = cluster.invoke(invocation);
-        Assert.assertTrue("result type must be Boolean but was : " + ret.getValue().getClass(), ret.getValue() instanceof Boolean);
-        Assert.assertEquals(true, Boolean.parseBoolean(ret.getValue().toString()));
+        Assertions.assertTrue(ret.getValue() instanceof Boolean, "result type must be Boolean but was : " + ret.getValue().getClass());
+        Assertions.assertEquals(true, Boolean.parseBoolean(ret.getValue().toString()));
     }
 
     @Test
@@ -495,7 +493,7 @@ public class MockClusterInvokerTest {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getBoolean2");
         Result ret = cluster.invoke(invocation);
-        Assert.assertEquals(true, Boolean.parseBoolean(ret.getValue().toString()));
+        Assertions.assertEquals(true, Boolean.parseBoolean(ret.getValue().toString()));
     }
 
     @SuppressWarnings("unchecked")
@@ -509,7 +507,7 @@ public class MockClusterInvokerTest {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getListString");
         Result ret = cluster.invoke(invocation);
-        Assert.assertEquals(0, ((List<String>) ret.getValue()).size());
+        Assertions.assertEquals(0, ((List<String>) ret.getValue()).size());
     }
 
     @SuppressWarnings("unchecked")
@@ -524,8 +522,8 @@ public class MockClusterInvokerTest {
         invocation.setMethodName("getListString");
         Result ret = cluster.invoke(invocation);
         List<String> rl = (List<String>) ret.getValue();
-        Assert.assertEquals(2, rl.size());
-        Assert.assertEquals("hi", rl.get(0));
+        Assertions.assertEquals(2, rl.size());
+        Assertions.assertEquals("hi", rl.get(0));
     }
 
     @SuppressWarnings("unchecked")
@@ -539,7 +537,7 @@ public class MockClusterInvokerTest {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getUsers");
         Result ret = cluster.invoke(invocation);
-        Assert.assertEquals(0, ((List<User>) ret.getValue()).size());
+        Assertions.assertEquals(0, ((List<User>) ret.getValue()).size());
     }
 
     @SuppressWarnings("unchecked")
@@ -555,8 +553,8 @@ public class MockClusterInvokerTest {
         Result ret = cluster.invoke(invocation);
         List<User> rl = (List<User>) ret.getValue();
         System.out.println(rl);
-        Assert.assertEquals(2, rl.size());
-        Assert.assertEquals("hi1", ((User) rl.get(0)).getName());
+        Assertions.assertEquals(2, rl.size());
+        Assertions.assertEquals("hi1", ((User) rl.get(0)).getName());
     }
 
     @Test
@@ -585,9 +583,9 @@ public class MockClusterInvokerTest {
         invocation.setMethodName("getBoolean2");
         try {
             cluster.invoke(invocation);
-            Assert.fail();
+            Assertions.fail();
         } catch (RpcException e) {
-            Assert.assertFalse("not custem exception", e.isBiz());
+            Assertions.assertFalse(e.isBiz(), "not custem exception");
         }
     }
 
@@ -602,7 +600,7 @@ public class MockClusterInvokerTest {
         invocation.setMethodName("getBoolean2");
         try {
             cluster.invoke(invocation).recreate();
-            Assert.fail();
+            Assertions.fail();
         } catch (MyMockException e) {
 
         }
@@ -619,9 +617,9 @@ public class MockClusterInvokerTest {
         invocation.setMethodName("getBoolean2");
         try {
             cluster.invoke(invocation);
-            Assert.fail();
+            Assertions.fail();
         } catch (Exception e) {
-            Assert.assertTrue(e.getCause() instanceof IllegalStateException);
+            Assertions.assertTrue(e.getCause() instanceof IllegalStateException);
         }
     }
 
@@ -636,22 +634,25 @@ public class MockClusterInvokerTest {
         invocation.setMethodName("getBoolean2");
         try {
             cluster.invoke(invocation);
-            Assert.fail();
+            Assertions.fail();
         } catch (RpcException e) {
-            Assert.assertTrue(e.isTimeout());
+            Assertions.assertTrue(e.isTimeout());
         }
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private Invoker<IHelloService> getClusterInvoker(URL url) {
+    private Invoker<IHelloService> getClusterInvokerMock(URL url, Invoker<IHelloService> mockInvoker) {
         // As `javassist` have a strict restriction of argument types, request will fail if Invocation do not contains complete parameter type information
         final URL durl = url.addParameter("proxy", "jdk");
         invokers.clear();
         ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getExtension("jdk");
         Invoker<IHelloService> invoker1 = proxy.getInvoker(new HelloService(), IHelloService.class, durl);
         invokers.add(invoker1);
+        if (mockInvoker != null) {
+            invokers.add(mockInvoker);
+        }
 
-        Directory<IHelloService> dic = new StaticDirectory<IHelloService>(durl, invokers, null);
+        StaticDirectory<IHelloService> dic = new StaticDirectory<IHelloService>(durl, invokers, null);
+        dic.buildRouterChain();
         AbstractClusterInvoker<IHelloService> cluster = new AbstractClusterInvoker(dic) {
             @Override
             protected Result doInvoke(Invocation invocation, List invokers, LoadBalance loadbalance)
@@ -664,6 +665,11 @@ public class MockClusterInvokerTest {
             }
         };
         return new MockClusterInvoker<IHelloService>(dic, cluster);
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private Invoker<IHelloService> getClusterInvoker(URL url) {
+        return getClusterInvokerMock(url, null);
     }
 
     public static interface IHelloService {

@@ -2,13 +2,14 @@ language: java
 sudo: false # faster builds
 
 jdk:
-  - oraclejdk10
-  - oraclejdk9
+  - openjdk11
+  - oraclejdk11
+  - openjdk8
   - oraclejdk8
 
 cache:
   directories:
-    - '$HOME/.m2/repository'
+    - $HOME/.m2
 
 install: true
 
@@ -17,3 +18,6 @@ script:
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
+
+after_failure:
+  - if [ -f dubbo.log ]; then echo "------TAIL of dubbo.log------"; tail -n 1000 dubbo.log; echo "------END of dubbo.log------"; fi

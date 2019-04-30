@@ -1,0 +1,1 @@
+jsonrpc=org.apache.dubbo.rpc.protocol.jsonrpc.JsonRpcProtocol

@@ -19,6 +19,7 @@ package org.apache.dubbo.qos.server;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.qos.server.handler.QosProcessHandler;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -81,7 +82,7 @@ public class Server {
         if (!started.compareAndSet(false, true)) {
             return;
         }
-        boss = new NioEventLoopGroup(0, new DefaultThreadFactory("qos-boss", true));
+        boss = new NioEventLoopGroup(1, new DefaultThreadFactory("qos-boss", true));
         worker = new NioEventLoopGroup(0, new DefaultThreadFactory("qos-worker", true));
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         serverBootstrap.group(boss, worker);

@@ -147,8 +147,9 @@ public class IOUtils {
      * @throws IOException
      */
     public static String[] readLines(File file) throws IOException {
-        if (file == null || !file.exists() || !file.canRead())
+        if (file == null || !file.exists() || !file.canRead()) {
             return new String[0];
+        }
 
         return readLines(new FileInputStream(file));
     }
@@ -165,8 +166,9 @@ public class IOUtils {
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         try {
             String line;
-            while ((line = reader.readLine()) != null)
+            while ((line = reader.readLine()) != null) {
                 lines.add(line);
+            }
             return lines.toArray(new String[0]);
         } finally {
             reader.close();
@@ -183,8 +185,9 @@ public class IOUtils {
     public static void writeLines(OutputStream os, String[] lines) throws IOException {
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(os));
         try {
-            for (String line : lines)
+            for (String line : lines) {
                 writer.println(line);
+            }
             writer.flush();
         } finally {
             writer.close();
@@ -199,8 +202,9 @@ public class IOUtils {
      * @throws IOException
      */
     public static void writeLines(File file, String[] lines) throws IOException {
-        if (file == null)
+        if (file == null) {
             throw new IOException("File is null.");
+        }
         writeLines(new FileOutputStream(file), lines);
     }
 
@@ -212,8 +216,9 @@ public class IOUtils {
      * @throws IOException
      */
     public static void appendLines(File file, String[] lines) throws IOException {
-        if (file == null)
+        if (file == null) {
             throw new IOException("File is null.");
+        }
         writeLines(new FileOutputStream(file, true), lines);
     }
 

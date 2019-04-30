@@ -19,22 +19,23 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Check available status for dubboInvoker
@@ -43,12 +44,17 @@ public class DubboInvokerAvilableTest {
     private static DubboProtocol protocol = DubboProtocol.getDubboProtocol();
     private static ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpBeforeClass() throws Exception {
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
+    }
+
+    @AfterAll
+    public static void tearDownAfterClass() {
+        ProtocolUtils.closeAll();
     }
 
     @Test
@@ -57,9 +63,9 @@ public class DubboInvokerAvilableTest {
         ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
 
         DubboInvoker<?> invoker = (DubboInvoker<?>) protocol.refer(IDemoService.class, url);
-        Assert.assertEquals(true, invoker.isAvailable());
+        Assertions.assertEquals(true, invoker.isAvailable());
         invoker.destroy();
-        Assert.assertEquals(false, invoker.isAvailable());
+        Assertions.assertEquals(false, invoker.isAvailable());
     }
 
     @Test
@@ -68,17 +74,17 @@ public class DubboInvokerAvilableTest {
         ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
 
         DubboInvoker<?> invoker = (DubboInvoker<?>) protocol.refer(IDemoService.class, url);
-        Assert.assertEquals(true, invoker.isAvailable());
+        Assertions.assertEquals(true, invoker.isAvailable());
 
         getClients(invoker)[0].setAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY, Boolean.TRUE);
 
-        Assert.assertEquals(false, invoker.isAvailable());
+        Assertions.assertEquals(false, invoker.isAvailable());
 
         // reset status since connection is shared among invokers
         getClients(invoker)[0].removeAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY);
     }
 
-    @Ignore
+    @Disabled
     public void test_normal_channel_close_wait_gracefully() throws Exception {
         int testPort = NetUtils.getAvailablePort();
         URL url = URL.valueOf("dubbo://127.0.0.1:" + testPort + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?scope=true&lazy=false");
@@ -91,7 +97,6 @@ public class DubboInvokerAvilableTest {
 
         try{
             System.setProperty(Constants.SHUTDOWN_WAIT_KEY, "2000");
-            System.out.println("------------ConfigUtils.getServerShutdownTimeout(): " + ConfigUtils.getServerShutdownTimeout());
             protocol.destroy();
         }finally {
             System.getProperties().remove(Constants.SHUTDOWN_WAIT_KEY);
@@ -99,8 +104,8 @@ public class DubboInvokerAvilableTest {
 
         long waitTime = System.currentTimeMillis() - start;
 
-        Assert.assertTrue(waitTime >= 2000);
-        Assert.assertEquals(false, invoker.isAvailable());
+        Assertions.assertTrue(waitTime >= 2000);
+        Assertions.assertEquals(false, invoker.isAvailable());
     }
 
     @Test
@@ -112,7 +117,7 @@ public class DubboInvokerAvilableTest {
 
         ExchangeClient[] clients = getClients(invoker);
         clients[0].close();
-        Assert.assertEquals(false, invoker.isAvailable());
+        Assertions.assertEquals(false, invoker.isAvailable());
 
     }
 
@@ -122,7 +127,7 @@ public class DubboInvokerAvilableTest {
         ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
 
         DubboInvoker<?> invoker = (DubboInvoker<?>) protocol.refer(IDemoService.class, url);
-        Assert.assertEquals(true, invoker.isAvailable());
+        Assertions.assertEquals(true, invoker.isAvailable());
 
         try {
             getClients(invoker)[0].setAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY, Boolean.TRUE);
@@ -132,18 +137,18 @@ public class DubboInvokerAvilableTest {
         }
         //invoke method --> init client
         IDemoService service = (IDemoService) proxy.getProxy(invoker);
-        Assert.assertEquals("ok", service.get());
+        Assertions.assertEquals("ok", service.get());
 
-        Assert.assertEquals(true, invoker.isAvailable());
+        Assertions.assertEquals(true, invoker.isAvailable());
         getClients(invoker)[0].setAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY, Boolean.TRUE);
-        Assert.assertEquals(false, invoker.isAvailable());
+        Assertions.assertEquals(false, invoker.isAvailable());
     }
 
     private ExchangeClient[] getClients(DubboInvoker<?> invoker) throws Exception {
         Field field = DubboInvoker.class.getDeclaredField("clients");
         field.setAccessible(true);
         ExchangeClient[] clients = (ExchangeClient[]) field.get(invoker);
-        Assert.assertEquals(1, clients.length);
+        Assertions.assertEquals(1, clients.length);
         return clients;
     }
 

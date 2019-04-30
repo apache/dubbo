@@ -21,6 +21,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
@@ -49,7 +50,7 @@ public class ConfigUtils {
     }
 
     public static boolean isEmpty(String value) {
-        return value == null || value.length() == 0
+        return StringUtils.isEmpty(value)
                 || "false".equalsIgnoreCase(value)
                 || "0".equalsIgnoreCase(value)
                 || "null".equalsIgnoreCase(value)
@@ -189,7 +190,7 @@ public class ConfigUtils {
      */
     public static String getSystemProperty(String key) {
         String value = System.getenv(key);
-        if (value == null || value.length() == 0) {
+        if (StringUtils.isEmpty(value)) {
             value = System.getProperty(key);
         }
         return value;
@@ -213,11 +214,12 @@ public class ConfigUtils {
      * <li>return empty Properties if no file found.
      * <li>merge multi properties file if found multi file
      * </ul>
-     * @throws IllegalStateException not allow multi-file, but multi-file exsit on class path.
+     * @throws IllegalStateException not allow multi-file, but multi-file exist on class path.
      */
     public static Properties loadProperties(String fileName, boolean allowMultiFile, boolean optional) {
         Properties properties = new Properties();
-        if (fileName.startsWith("/")) {
+        // add scene judgement in windows environment Fix 2557
+        if (checkFileNameExist(fileName)) {
             try {
                 FileInputStream input = new FileInputStream(fileName);
                 try {
@@ -233,7 +235,7 @@ public class ConfigUtils {
 
         List<java.net.URL> list = new ArrayList<java.net.URL>();
         try {
-            Enumeration<java.net.URL> urls = ClassHelper.getClassLoader().getResources(fileName);
+            Enumeration<java.net.URL> urls = ClassUtils.getClassLoader().getResources(fileName);
             list = new ArrayList<java.net.URL>();
             while (urls.hasMoreElements()) {
                 list.add(urls.nextElement());
@@ -259,7 +261,7 @@ public class ConfigUtils {
 
             // fall back to use method getResourceAsStream
             try {
-                properties.load(ClassHelper.getClassLoader().getResourceAsStream(fileName));
+                properties.load(ClassUtils.getClassLoader().getResourceAsStream(fileName));
             } catch (Throwable e) {
                 logger.warn("Failed to load " + fileName + " file from " + fileName + "(ignore this file): " + e.getMessage(), e);
             }
@@ -291,6 +293,18 @@ public class ConfigUtils {
         return properties;
     }
 
+    /**
+     * check if the fileName can be found in filesystem
+     *
+     * @param fileName
+     * @return
+     */
+    private static boolean checkFileNameExist(String fileName) {
+        File file = new File(fileName);
+        return file.exists();
+    }
+
+
     public static int getPid() {
         if (PID < 0) {
             try {
@@ -303,29 +317,4 @@ public class ConfigUtils {
         }
         return PID;
     }
-
-    @SuppressWarnings("deprecation")
-    public static int getServerShutdownTimeout() {
-        int timeout = Constants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
-        String value = ConfigUtils.getProperty(Constants.SHUTDOWN_WAIT_KEY);
-        if (value != null && value.length() > 0) {
-            try {
-                timeout = Integer.parseInt(value);
-            } catch (Exception e) {
-                // ignore
-            }
-        } else {
-            value = ConfigUtils.getProperty(Constants.SHUTDOWN_WAIT_SECONDS_KEY);
-            if (value != null && value.length() > 0) {
-                try {
-                    timeout = Integer.parseInt(value) * 1000;
-                } catch (Exception e) {
-                    // ignore
-                }
-            }
-        }
-
-        return timeout;
-    }
-
 }

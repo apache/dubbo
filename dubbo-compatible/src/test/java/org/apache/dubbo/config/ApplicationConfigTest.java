@@ -21,7 +21,9 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.config.ApplicationConfig;
 import com.alibaba.dubbo.config.MonitorConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,7 +35,7 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class ApplicationConfigTest {
     @Test
@@ -90,10 +92,12 @@ public class ApplicationConfigTest {
         assertThat(application.getEnvironment(), equalTo("product"));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testEnvironment2() throws Exception {
-        ApplicationConfig application = new ApplicationConfig("app");
-        application.setEnvironment("illegal-env");
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            ApplicationConfig application = new ApplicationConfig("app");
+            application.setEnvironment("illegal-env");
+        });
     }
 
     @Test

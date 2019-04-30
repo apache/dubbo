@@ -44,14 +44,21 @@ import java.util.concurrent.locks.ReentrantLock;
 public abstract class AbstractMonitorFactory implements MonitorFactory {
     private static final Logger logger = LoggerFactory.getLogger(AbstractMonitorFactory.class);
 
-    // lock for getting monitor center
+    /**
+     * The lock for getting monitor center
+     */
     private static final ReentrantLock LOCK = new ReentrantLock();
 
-    // monitor centers Map<RegistryAddress, Registry>
+    /**
+     * The monitor centers Map<RegistryAddress, Registry>
+     */
     private static final Map<String, Monitor> MONITORS = new ConcurrentHashMap<String, Monitor>();
 
     private static final Map<String, CompletableFuture<Monitor>> FUTURES = new ConcurrentHashMap<String, CompletableFuture<Monitor>>();
 
+    /**
+     * The monitor create executor
+     */
     private static final ExecutorService executor = new ThreadPoolExecutor(0, 10, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new NamedThreadFactory("DubboMonitorCreator", true));
 
     public static Collection<Monitor> getMonitors() {
@@ -78,8 +85,8 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
 
             final URL monitorUrl = url;
             final CompletableFuture<Monitor> completableFuture = CompletableFuture.supplyAsync(() -> AbstractMonitorFactory.this.createMonitor(monitorUrl));
-            completableFuture.thenRunAsync(new MonitorListener(key), executor);
             FUTURES.put(key, completableFuture);
+            completableFuture.thenRunAsync(new MonitorListener(key), executor);
 
             return null;
         } finally {

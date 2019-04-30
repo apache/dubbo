@@ -25,7 +25,7 @@ import org.apache.dubbo.rpc.cluster.RouterFactory;
  * <p>
  * Example URLS used by Script Router Factory：
  * <ol>
- * <li> script://registyAddress?type=js&rule=xxxx
+ * <li> script://registryAddress?type=js&rule=xxxx
  * <li> script:///path/to/routerfile.js?type=js&rule=xxxx
  * <li> script://D:\path\to\routerfile.js?type=js&rule=xxxx
  * <li> script://C:/path/to/routerfile.js?type=js&rule=xxxx

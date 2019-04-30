@@ -17,16 +17,17 @@
 package org.apache.dubbo.rpc.protocol.rest.integration.swagger;
 
 import org.apache.dubbo.config.annotation.Service;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.jaxrs.listing.BaseApiListingResource;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Application;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 @Service
 public class DubboSwaggerApiListingResource extends BaseApiListingResource implements DubboSwaggerService {

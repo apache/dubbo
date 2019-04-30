@@ -142,8 +142,12 @@ public class AtomicPositiveInteger extends Number {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (!(obj instanceof AtomicPositiveInteger)) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof AtomicPositiveInteger)) {
+            return false;
+        }
         AtomicPositiveInteger other = (AtomicPositiveInteger) obj;
         return intValue() == other.intValue();
     }

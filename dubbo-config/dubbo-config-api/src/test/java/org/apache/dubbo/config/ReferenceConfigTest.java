@@ -17,13 +17,29 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.config.annotation.Argument;
+import org.apache.dubbo.config.annotation.Method;
+import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.api.DemoService;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class ReferenceConfigTest {
+
+    @BeforeEach
+    public void setUp() {
+        ConfigManager.getInstance().clear();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        ConfigManager.getInstance().clear();
+    }
 
     @Test
     public void testInjvm() throws Exception {
@@ -34,7 +50,7 @@ public class ReferenceConfigTest {
         registry.setAddress("multicast://224.5.6.7:1234");
 
         ProtocolConfig protocol = new ProtocolConfig();
-        protocol.setName("dubbo");
+        protocol.setName("mockprotocol");
 
         ServiceConfig<DemoService> demoService;
         demoService = new ServiceConfig<DemoService>();
@@ -51,14 +67,17 @@ public class ReferenceConfigTest {
         rc.setInjvm(false);
 
         try {
+            System.setProperty("java.net.preferIPv4Stack", "true");
             demoService.export();
             rc.get();
-            Assert.assertTrue(!Constants.LOCAL_PROTOCOL.equalsIgnoreCase(
+            Assertions.assertTrue(!Constants.LOCAL_PROTOCOL.equalsIgnoreCase(
                     rc.getInvoker().getUrl().getProtocol()));
         } finally {
+            System.clearProperty("java.net.preferIPv4Stack");
             demoService.unexport();
         }
     }
+
     /**
      * unit test for dubbo-1765
      */
@@ -69,7 +88,7 @@ public class ReferenceConfigTest {
         RegistryConfig registry = new RegistryConfig();
         registry.setAddress("multicast://224.5.6.7:1234");
         ProtocolConfig protocol = new ProtocolConfig();
-        protocol.setName("dubbo");
+        protocol.setName("mockprotocol");
 
         ReferenceConfig<DemoService> rc = new ReferenceConfig<DemoService>();
         rc.setApplication(application);
@@ -84,8 +103,8 @@ public class ReferenceConfigTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Assert.assertFalse(success);
-        Assert.assertNull(demoService);
+        Assertions.assertFalse(success);
+        Assertions.assertNull(demoService);
 
         ServiceConfig<DemoService> sc = new ServiceConfig<DemoService>();
         sc.setInterface(DemoService.class);
@@ -95,14 +114,45 @@ public class ReferenceConfigTest {
         sc.setProtocol(protocol);
 
         try {
+            System.setProperty("java.net.preferIPv4Stack", "true");
             sc.export();
             demoService = rc.get();
             success = true;
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            System.clearProperty("java.net.preferIPv4Stack");
         }
-        Assert.assertTrue(success);
-        Assert.assertNotNull(demoService);
+        Assertions.assertTrue(success);
+        Assertions.assertNotNull(demoService);
+
+    }
+
+    @Test
+    public void testConstructWithReferenceAnnotation() throws NoSuchFieldException {
+        Reference reference = getClass().getDeclaredField("innerTest").getAnnotation(Reference.class);
+        ReferenceConfig referenceConfig = new ReferenceConfig(reference);
+        Assertions.assertTrue(referenceConfig.getMethods().size() == 1);
+        Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getName(), "sayHello");
+        Assertions.assertTrue(((MethodConfig) referenceConfig.getMethods().get(0)).getTimeout() == 1300);
+        Assertions.assertTrue(((MethodConfig) referenceConfig.getMethods().get(0)).getRetries() == 4);
+        Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getLoadbalance(), "random");
+        Assertions.assertTrue(((MethodConfig) referenceConfig.getMethods().get(0)).getActives() == 3);
+        Assertions.assertTrue(((MethodConfig) referenceConfig.getMethods().get(0)).getExecutes() == 5);
+        Assertions.assertTrue(((MethodConfig) referenceConfig.getMethods().get(0)).isAsync());
+        Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getOninvoke(), "i");
+        Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getOnreturn(), "r");
+        Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getOnthrow(), "t");
+        Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getCache(), "c");
+    }
+
+
+    @Reference(methods = {@Method(name = "sayHello", timeout = 1300, retries = 4, loadbalance = "random", async = true,
+            actives = 3, executes = 5, deprecated = true, sticky = true, oninvoke = "i", onthrow = "t", onreturn = "r", cache = "c", validation = "v",
+            arguments = {@Argument(index = 24, callback = true, type = "sss")})})
+    private InnerTest innerTest;
+
+    private class InnerTest {
 
     }
 }

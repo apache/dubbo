@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-parent</artifactId>
-        <version>2.7.0-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
     <artifactId>dubbo-distribution</artifactId>
     <packaging>pom</packaging>
@@ -108,6 +108,11 @@
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-rpc-injvm</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-rpc-jsonrpc</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -237,17 +242,27 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-serialization-protostuff</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-serialization-avro</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-serialization-gson</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-compatible</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-bootstrap</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -260,14 +275,14 @@
         <profile>
             <id>release</id>
             <build>
-                <finalName>dubbo-incubating-${project.version}</finalName>
+                <finalName>apache-dubbo-incubating-${project.version}</finalName>
                 <plugins>
                     <plugin>
                         <artifactId>maven-assembly-plugin</artifactId>
                         <version>3.1.0</version>
                         <executions>
                             <execution>
-                                <id>bin-release</id>
+                                <id>bin</id>
                                 <phase>package</phase>
                                 <goals>
                                     <goal>single</goal>
@@ -279,7 +294,7 @@
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>source-release</id>
+                                <id>src</id>
                                 <phase>package</phase>
                                 <goals>
                                     <goal>single</goal>

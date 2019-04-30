@@ -22,7 +22,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.rpc.AbstractPostProcessFilter;
+import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -45,7 +45,7 @@ import java.lang.reflect.Method;
  * </ol>
  */
 @Activate(group = Constants.PROVIDER)
-public class ExceptionFilter extends AbstractPostProcessFilter {
+public class ExceptionFilter implements Filter {
 
     private final Logger logger;
 
@@ -60,7 +60,7 @@ public class ExceptionFilter extends AbstractPostProcessFilter {
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         try {
-            return postProcessResult(invoker.invoke(invocation), invoker, invocation);
+            return invoker.invoke(invocation);
         } catch (RuntimeException e) {
             logger.error("Got unchecked and undeclared exception which called by " + RpcContext.getContext().getRemoteHost()
                     + ". service: " + invoker.getInterface().getName() + ", method: " + invocation.getMethodName()
@@ -70,7 +70,7 @@ public class ExceptionFilter extends AbstractPostProcessFilter {
     }
 
     @Override
-    protected Result doPostProcess(Result result, Invoker<?> invoker, Invocation invocation) {
+    public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
         if (result.hasException() && GenericService.class != invoker.getInterface()) {
             try {
                 Throwable exception = result.getException();

@@ -16,7 +16,8 @@
  */
 package org.apache.dubbo.common.serialize.java;
 
-import org.apache.dubbo.common.utils.ClassHelper;
+
+import org.apache.dubbo.common.utils.ClassUtils;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -26,7 +27,7 @@ import java.io.ObjectStreamClass;
 import java.io.StreamCorruptedException;
 
 /**
- * Compacted java object input stream.
+ * Compacted java object input implementation
  */
 public class CompactedObjectInputStream extends ObjectInputStream {
     private ClassLoader mClassLoader;
@@ -37,14 +38,15 @@ public class CompactedObjectInputStream extends ObjectInputStream {
 
     public CompactedObjectInputStream(InputStream in, ClassLoader cl) throws IOException {
         super(in);
-        mClassLoader = cl == null ? ClassHelper.getClassLoader() : cl;
+        mClassLoader = cl == null ? ClassUtils.getClassLoader() : cl;
     }
 
     @Override
     protected ObjectStreamClass readClassDescriptor() throws IOException, ClassNotFoundException {
         int type = read();
-        if (type < 0)
+        if (type < 0) {
             throw new EOFException();
+        }
         switch (type) {
             case 0:
                 return super.readClassDescriptor();

@@ -16,11 +16,14 @@
  */
 package org.apache.dubbo.config.spring.util;
 
-import org.apache.dubbo.common.utils.StringUtils;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.support.AbstractApplicationContext;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,6 +31,7 @@ import java.util.Map;
 
 import static org.springframework.beans.factory.BeanFactoryUtils.beanNamesForTypeIncludingAncestors;
 import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncludingAncestors;
+import static org.springframework.util.ObjectUtils.containsElement;
 
 /**
  * {@link BeanFactory} Utilities class
@@ -39,6 +43,29 @@ import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncl
  */
 public class BeanFactoryUtils {
 
+    public static boolean addApplicationListener(ApplicationContext applicationContext, ApplicationListener listener) {
+        try {
+            // backward compatibility to spring 2.0.1
+            Method method = applicationContext.getClass().getMethod("addApplicationListener", ApplicationListener.class);
+            method.invoke(applicationContext, listener);
+            return true;
+        } catch (Throwable t) {
+            if (applicationContext instanceof AbstractApplicationContext) {
+                try {
+                    // backward compatibility to spring 2.0.1
+                    Method method = AbstractApplicationContext.class.getDeclaredMethod("addListener", ApplicationListener.class);
+                    if (!method.isAccessible()) {
+                        method.setAccessible(true);
+                    }
+                    method.invoke(applicationContext, listener);
+                    return true;
+                } catch (Throwable t2) {
+                    // ignore
+                }
+            }
+        }
+        return false;
+    }
 
     /**
      * Get optional Bean
@@ -48,12 +75,13 @@ public class BeanFactoryUtils {
      * @param beanType    the {@link Class type} of Bean
      * @param <T>         the {@link Class type} of Bean
      * @return A bean if present , or <code>null</code>
+     * @since 2.6.6
      */
     public static <T> T getOptionalBean(ListableBeanFactory beanFactory, String beanName, Class<T> beanType) {
 
         String[] allBeanNames = beanNamesForTypeIncludingAncestors(beanFactory, beanType);
 
-        if (!StringUtils.isContains(allBeanNames, beanName)) {
+        if (!containsElement(allBeanNames, beanName)) {
             return null;
         }
 
@@ -71,7 +99,8 @@ public class BeanFactoryUtils {
      * @param beanNames   the names of Bean
      * @param beanType    the {@link Class type} of Bean
      * @param <T>         the {@link Class type} of Bean
-     * @return
+     * @return the read-only and non-null {@link List} of Bean names
+     * @since 2.6.6
      */
     public static <T> List<T> getBeans(ListableBeanFactory beanFactory, String[] beanNames, Class<T> beanType) {
 
@@ -80,13 +109,11 @@ public class BeanFactoryUtils {
         List<T> beans = new ArrayList<T>(beanNames.length);
 
         for (String beanName : beanNames) {
-            if (StringUtils.isContains(allBeanNames, beanName)) {
+            if (containsElement(allBeanNames, beanName)) {
                 beans.add(beanFactory.getBean(beanName, beanType));
             }
         }
 
         return Collections.unmodifiableList(beans);
-
     }
-
 }

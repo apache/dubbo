@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.context.annotation.DubboClassPathBeanDefinitionScanner;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -71,7 +72,6 @@ import static org.springframework.util.ClassUtils.resolveClassName;
 public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistryPostProcessor, EnvironmentAware,
         ResourceLoaderAware, BeanClassLoaderAware {
 
-    private static final String SEPARATOR = ":";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -88,7 +88,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
     }
 
     public ServiceAnnotationBeanPostProcessor(Collection<String> packagesToScan) {
-        this(new LinkedHashSet<String>(packagesToScan));
+        this(new LinkedHashSet<>(packagesToScan));
     }
 
     public ServiceAnnotationBeanPostProcessor(Set<String> packagesToScan) {
@@ -218,7 +218,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
         Set<BeanDefinition> beanDefinitions = scanner.findCandidateComponents(packageToScan);
 
-        Set<BeanDefinitionHolder> beanDefinitionHolders = new LinkedHashSet<BeanDefinitionHolder>(beanDefinitions.size());
+        Set<BeanDefinitionHolder> beanDefinitionHolders = new LinkedHashSet<>(beanDefinitions.size());
 
         for (BeanDefinition beanDefinition : beanDefinitions) {
 
@@ -262,7 +262,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
             registry.registerBeanDefinition(beanName, serviceBeanDefinition);
 
             if (logger.isInfoEnabled()) {
-                logger.warn("The BeanDefinition[" + serviceBeanDefinition +
+                logger.info("The BeanDefinition[" + serviceBeanDefinition +
                         "] of ServiceBean has been registered with name : " + beanName);
             }
 
@@ -289,27 +289,11 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
      */
     private String generateServiceBeanName(Service service, Class<?> interfaceClass, String annotatedServiceBeanName) {
 
-        StringBuilder beanNameBuilder = new StringBuilder(ServiceBean.class.getSimpleName());
+        AnnotationBeanNameBuilder builder = AnnotationBeanNameBuilder.create(service, interfaceClass);
 
-        beanNameBuilder.append(SEPARATOR).append(annotatedServiceBeanName);
+        builder.environment(environment);
 
-        String interfaceClassName = interfaceClass.getName();
-
-        beanNameBuilder.append(SEPARATOR).append(interfaceClassName);
-
-        String version = service.version();
-
-        if (StringUtils.hasText(version)) {
-            beanNameBuilder.append(SEPARATOR).append(version);
-        }
-
-        String group = service.group();
-
-        if (StringUtils.hasText(group)) {
-            beanNameBuilder.append(SEPARATOR).append(group);
-        }
-
-        return beanNameBuilder.toString();
+        return builder.build();
 
     }
 
@@ -332,8 +316,9 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         }
 
         if (interfaceClass == null) {
-
-            Class<?>[] allInterfaces = annotatedServiceBeanClass.getInterfaces();
+            // Find all interfaces from the annotated class
+            // To resolve an issue : https://github.com/apache/incubator-dubbo/issues/3251
+            Class<?>[] allInterfaces = ClassUtils.getAllInterfacesForClass(annotatedServiceBeanClass);
 
             if (allInterfaces.length > 0) {
                 interfaceClass = allInterfaces[0];
@@ -386,7 +371,8 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
         MutablePropertyValues propertyValues = beanDefinition.getPropertyValues();
 
-        String[] ignoreAttributeNames = of("provider", "monitor", "application", "module", "registry", "protocol", "interface");
+        String[] ignoreAttributeNames = of("provider", "monitor", "application", "module", "registry", "protocol",
+                "interface", "interfaceName");
 
         propertyValues.addPropertyValues(new AnnotationPropertyValuesAdapter(service, environment, ignoreAttributeNames));
 
@@ -457,7 +443,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
     private ManagedList<RuntimeBeanReference> toRuntimeBeanReferences(String... beanNames) {
 
-        ManagedList<RuntimeBeanReference> runtimeBeanReferences = new ManagedList<RuntimeBeanReference>();
+        ManagedList<RuntimeBeanReference> runtimeBeanReferences = new ManagedList<>();
 
         if (!ObjectUtils.isEmpty(beanNames)) {
 

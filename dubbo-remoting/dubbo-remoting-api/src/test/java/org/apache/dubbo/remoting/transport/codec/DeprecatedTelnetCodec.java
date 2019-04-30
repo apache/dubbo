@@ -81,7 +81,7 @@ public class DeprecatedTelnetCodec implements Codec {
             URL url = channel.getUrl();
             if (url != null) {
                 String parameter = url.getParameter(Constants.CHARSET_KEY);
-                if (parameter != null && parameter.length() > 0) {
+                if (StringUtils.isNotEmpty(parameter)) {
                     try {
                         return Charset.forName(parameter);
                     } catch (Throwable t) {

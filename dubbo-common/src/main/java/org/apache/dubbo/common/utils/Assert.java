@@ -28,9 +28,14 @@ public abstract class Assert {
         }
     }
 
-    public static void notNull(Object obj, RuntimeException exeception) {
+    public static void notEmptyString(String str,String message) {
+        if(StringUtils.isEmpty(str)) {
+            throw new IllegalArgumentException(message);
+        }
+    }
+    public static void notNull(Object obj, RuntimeException exception) {
         if (obj == null) {
-            throw exeception;
+            throw exception;
         }
     }
 

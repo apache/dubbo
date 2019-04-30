@@ -18,8 +18,10 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
-import org.junit.Test;
 
+import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +32,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class AbstractServiceConfigTest {
     @Test
@@ -109,7 +111,7 @@ public class AbstractServiceConfigTest {
         assertThat(serviceConfig.getProtocol(), nullValue());
         serviceConfig.setProtocol(new ProtocolConfig());
         assertThat(serviceConfig.getProtocol(), notNullValue());
-        serviceConfig.setProtocols(Collections.singletonList(new ProtocolConfig()));
+        serviceConfig.setProtocols(new ArrayList<>(Collections.singletonList(new ProtocolConfig())));
         assertThat(serviceConfig.getProtocols(), hasSize(1));
     }
 

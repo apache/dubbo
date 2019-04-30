@@ -19,6 +19,8 @@ package org.apache.dubbo.config.spring;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.RegistryService;
 
@@ -205,8 +207,8 @@ public abstract class AbstractRegistryService implements RegistryService {
     }
 
     protected final void notify(String service, List<URL> urls) {
-        if (service == null || service.length() == 0
-                || urls == null || urls.size() == 0) {
+        if (StringUtils.isEmpty(service)
+                || CollectionUtils.isEmpty(urls)) {
             return;
         }
         doNotify(service, urls);

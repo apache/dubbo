@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc;
 
+import java.lang.reflect.Field;
+
 /**
  * RPC Result.
  *
@@ -33,7 +35,7 @@ public class RpcResult extends AbstractResult {
     }
 
     public RpcResult(Throwable exception) {
-        this.exception = exception;
+        this.exception = handleStackTraceNull(exception);
     }
 
     @Override
@@ -78,7 +80,7 @@ public class RpcResult extends AbstractResult {
     }
 
     public void setException(Throwable e) {
-        this.exception = e;
+        this.exception = handleStackTraceNull(e);
     }
 
     @Override
@@ -89,5 +91,38 @@ public class RpcResult extends AbstractResult {
     @Override
     public String toString() {
         return "RpcResult [result=" + result + ", exception=" + exception + "]";
+    }
+
+    /**
+     * we need to deal the exception whose stack trace is null.
+     * <p>
+     * see https://github.com/apache/incubator-dubbo/pull/2956
+     * and https://github.com/apache/incubator-dubbo/pull/3634
+     * and https://github.com/apache/incubator-dubbo/issues/619
+     *
+     * @param e exception
+     * @return exception after deal with stack trace
+     */
+    private Throwable handleStackTraceNull(Throwable e) {
+        if (e != null) {
+            try {
+                // get Throwable class
+                Class clazz = e.getClass();
+                while (!clazz.getName().equals(Throwable.class.getName())) {
+                    clazz = clazz.getSuperclass();
+                }
+                // get stackTrace value
+                Field stackTraceField = clazz.getDeclaredField("stackTrace");
+                stackTraceField.setAccessible(true);
+                Object stackTrace = stackTraceField.get(e);
+                if (stackTrace == null) {
+                    e.setStackTrace(new StackTraceElement[0]);
+                }
+            } catch (Throwable t) {
+                // ignore
+            }
+        }
+
+        return e;
     }
 }

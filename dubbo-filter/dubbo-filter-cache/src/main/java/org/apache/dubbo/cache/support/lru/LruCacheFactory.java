@@ -21,10 +21,20 @@ import org.apache.dubbo.cache.support.AbstractCacheFactory;
 import org.apache.dubbo.common.URL;
 
 /**
- * LruCacheFactory
+ * Implement {@link org.apache.dubbo.cache.CacheFactory} by extending {@link AbstractCacheFactory} and provide
+ * instance of new {@link LruCache}.
+ *
+ * @see AbstractCacheFactory
+ * @see LruCache
+ * @see Cache
  */
 public class LruCacheFactory extends AbstractCacheFactory {
 
+    /**
+     * Takes url as an method argument and return new instance of cache store implemented by LruCache.
+     * @param url url of the method
+     * @return ThreadLocalCache instance of cache
+     */
     @Override
     protected Cache createCache(URL url) {
         return new LruCache(url);

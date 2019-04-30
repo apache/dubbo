@@ -24,7 +24,7 @@ import org.apache.dubbo.config.spring.api.HelloService;
  *
  * @since 2.5.9
  */
-@Service
+@Service(interfaceName = "org.apache.dubbo.config.spring.api.HelloService")
 public class HelloServiceImpl implements HelloService {
 
     @Override

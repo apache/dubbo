@@ -17,6 +17,7 @@
 package org.apache.dubbo.test.provider;
 
 import org.apache.dubbo.config.spring.context.annotation.DubboComponentScan;
+
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 
