@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
 
 /**
  * ReferenceConfig
@@ -280,7 +281,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         appendParameters(map, metrics);
         appendParameters(map, application);
         appendParameters(map, module);
-        appendParameters(map, consumer, Constants.DEFAULT_KEY);
+        // remove 'default.' prefix for configs from ConsumerConfig
+        // appendParameters(map, consumer, Constants.DEFAULT_KEY);
+        appendParameters(map, consumer);
         appendParameters(map, this);
         Map<String, Object> attributes = null;
         if (CollectionUtils.isNotEmpty(methods)) {
@@ -301,6 +304,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         String hostToRegistry = ConfigUtils.getSystemProperty(Constants.DUBBO_IP_TO_REGISTRY);
         if (StringUtils.isEmpty(hostToRegistry)) {
             hostToRegistry = NetUtils.getLocalHost();
+        } else if (isInvalidLocalHost(hostToRegistry)) {
+            throw new IllegalArgumentException("Specified invalid registry ip from property:" + Constants.DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
         }
         map.put(Constants.REGISTER_IP_KEY, hostToRegistry);
 
@@ -458,22 +463,14 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     }
 
     private void checkDefault() {
-        createConsumerIfAbsent();
-    }
-
-    private void createConsumerIfAbsent() {
         if (consumer != null) {
             return;
         }
-        setConsumer(
-                ConfigManager.getInstance()
-                        .getDefaultConsumer()
-                        .orElseGet(() -> {
-                            ConsumerConfig consumerConfig = new ConsumerConfig();
-                            consumerConfig.refresh();
-                            return consumerConfig;
-                        })
-        );
+        setConsumer(ConfigManager.getInstance().getDefaultConsumer().orElseGet(() -> {
+            ConsumerConfig consumerConfig = new ConsumerConfig();
+            consumerConfig.refresh();
+            return consumerConfig;
+        }));
     }
 
     private void completeCompoundConfigs() {
