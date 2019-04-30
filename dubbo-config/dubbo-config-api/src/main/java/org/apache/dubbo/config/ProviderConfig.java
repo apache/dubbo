@@ -25,6 +25,7 @@ import org.apache.dubbo.remoting.Transporter;
 import org.apache.dubbo.remoting.exchange.Exchanger;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
@@ -157,7 +158,7 @@ public class ProviderConfig extends AbstractServiceConfig {
 
     @Deprecated
     public void setProtocol(String protocol) {
-        this.protocols = Arrays.asList(new ProtocolConfig[]{new ProtocolConfig(protocol)});
+        this.protocols = new ArrayList<>(Arrays.asList(new ProtocolConfig(protocol)));
     }
 
     @Parameter(excluded = true)
@@ -206,7 +207,7 @@ public class ProviderConfig extends AbstractServiceConfig {
     }
 
     public void setContextpath(String contextpath) {
-        checkPathName("contextpath", contextpath);
+        checkPathName(Constants.CONTEXTPATH_KEY, contextpath);
         this.contextpath = contextpath;
     }
 
@@ -322,7 +323,7 @@ public class ProviderConfig extends AbstractServiceConfig {
     }
 
     public void setStatus(String status) {
-        checkMultiExtension(StatusChecker.class, "status", status);
+        checkMultiExtension(StatusChecker.class, Constants.STATUS_KEY, status);
         this.status = status;
     }
 

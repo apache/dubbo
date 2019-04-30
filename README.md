@@ -55,6 +55,7 @@ There's a [README](https://github.com/apache/incubator-dubbo-samples/tree/master
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-dependencies-zookeeper</artifactId>
         <version>${dubbo.version}</version>
+        <type>pom</type>
     </dependency>
 </dependencies>
 ```
@@ -79,13 +80,14 @@ package org.apache.dubbo.samples.provider;
 import org.apache.dubbo.samples.api.GreetingService;
  
 public class GreetingServiceImpl implements GreetingService {
+    @Override
     public String sayHello(String name) {
         return "Hello " + name;
     }
 }
 ```
 
-*See [provider/GreetingServiceImpl.java](https://github.com/apache/incubator-dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/provider/GreetingsServiceImpl.java) on GitHub.*
+*See [provider/GreetingServiceImpl.java](https://github.com/apache/incubator-dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/server/GreetingsServiceImpl.java) on GitHub.*
 
 ### Start service provider
 
@@ -113,7 +115,7 @@ public class Application {
 }
 ```
 
-*See [provider/Application.java](https://github.com/apache/incubator-dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/provider/Application.java) on GitHub.*
+*See [provider/Application.java](https://github.com/apache/incubator-dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/server/Application.java) on GitHub.*
 
 ### Build and run the provider
 
@@ -153,7 +155,7 @@ public class Application {
 
 The consumer will print out `Hello world` on the screen.
 
-*See [consumer/Application.java](https://github.com/apache/incubator-dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/consumer/Application.java) on GitHub.*
+*See [consumer/Application.java](https://github.com/apache/incubator-dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/client/Application.java) on GitHub.*
 
 ### Next steps
 
@@ -161,6 +163,14 @@ The consumer will print out `Hello world` on the screen.
 * [Dubbo user manual](http://dubbo.apache.org/en-us/docs/user/preface/background.html) - How to use Dubbo and all its features.
 * [Dubbo developer guide](http://dubbo.apache.org/en-us/docs/dev/build.html) - How to involve in Dubbo development.
 * [Dubbo admin manual](http://dubbo.apache.org/en-us/docs/admin/install/provider-demo.html) - How to admin and manage Dubbo services.
+
+## Building
+
+If you want to try out the cutting-edge features, you can built with the following commands. (Java 1.8 is required to build the master branch)
+
+```
+  mvn clean install
+```
 
 ## Contact
 
@@ -213,6 +223,7 @@ Please report security vulnerability to [us](mailto:security@dubbo.incubator.apa
 * [Python](https://github.com/dubbo/dubbo-client-py)
 * [PHP](https://github.com/dubbo/dubbo-php-framework)
 * [Go](https://github.com/dubbo/dubbo-go)
+* [Erlang](https://github.com/dubboerl/dubboerl)
 
 ## License
 

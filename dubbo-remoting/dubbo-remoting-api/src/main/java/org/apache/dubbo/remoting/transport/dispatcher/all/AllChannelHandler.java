@@ -38,9 +38,9 @@ public class AllChannelHandler extends WrappedChannelHandler {
 
     @Override
     public void connected(Channel channel) throws RemotingException {
-        ExecutorService cexecutor = getExecutorService();
+        ExecutorService executor = getExecutorService();
         try {
-            cexecutor.execute(new ChannelEventRunnable(channel, handler, ChannelState.CONNECTED));
+            executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.CONNECTED));
         } catch (Throwable t) {
             throw new ExecutionException("connect event", channel, getClass() + " error when process connected event .", t);
         }
@@ -48,9 +48,9 @@ public class AllChannelHandler extends WrappedChannelHandler {
 
     @Override
     public void disconnected(Channel channel) throws RemotingException {
-        ExecutorService cexecutor = getExecutorService();
+        ExecutorService executor = getExecutorService();
         try {
-            cexecutor.execute(new ChannelEventRunnable(channel, handler, ChannelState.DISCONNECTED));
+            executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.DISCONNECTED));
         } catch (Throwable t) {
             throw new ExecutionException("disconnect event", channel, getClass() + " error when process disconnected event .", t);
         }
@@ -58,9 +58,9 @@ public class AllChannelHandler extends WrappedChannelHandler {
 
     @Override
     public void received(Channel channel, Object message) throws RemotingException {
-        ExecutorService cexecutor = getExecutorService();
+        ExecutorService executor = getExecutorService();
         try {
-            cexecutor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
+            executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
         } catch (Throwable t) {
             //TODO A temporary solution to the problem that the exception information can not be sent to the opposite end after the thread pool is full. Need a refactoring
             //fix The thread pool is full, refuses to call, does not return, and causes the consumer to wait for time out
@@ -81,9 +81,9 @@ public class AllChannelHandler extends WrappedChannelHandler {
 
     @Override
     public void caught(Channel channel, Throwable exception) throws RemotingException {
-        ExecutorService cexecutor = getExecutorService();
+        ExecutorService executor = getExecutorService();
         try {
-            cexecutor.execute(new ChannelEventRunnable(channel, handler, ChannelState.CAUGHT, exception));
+            executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.CAUGHT, exception));
         } catch (Throwable t) {
             throw new ExecutionException("caught event", channel, getClass() + " error when process caught event .", t);
         }

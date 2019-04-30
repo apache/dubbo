@@ -18,7 +18,7 @@ package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ClassHelper;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.io.IOException;
@@ -240,7 +240,7 @@ public final class Version {
      * search resources in caller's classloader
      */
     private static Set<String> getResources(String path) throws IOException {
-        Enumeration<URL> urls = ClassHelper.getCallerClassLoader(Version.class).getResources(path);
+        Enumeration<URL> urls = ClassUtils.getCallerClassLoader(Version.class).getResources(path);
         Set<String> files = new HashSet<String>();
         while (urls.hasMoreElements()) {
             URL url = urls.nextElement();
