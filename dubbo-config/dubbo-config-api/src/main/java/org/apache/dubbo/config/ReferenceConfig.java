@@ -21,7 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.bytecode.Wrapper;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.utils.ClassHelper;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
 
 /**
  * ReferenceConfig
@@ -303,6 +304,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         String hostToRegistry = ConfigUtils.getSystemProperty(Constants.DUBBO_IP_TO_REGISTRY);
         if (StringUtils.isEmpty(hostToRegistry)) {
             hostToRegistry = NetUtils.getLocalHost();
+        } else if (isInvalidLocalHost(hostToRegistry)) {
+            throw new IllegalArgumentException("Specified invalid registry ip from property:" + Constants.DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
         }
         map.put(Constants.REGISTER_IP_KEY, hostToRegistry);
 
@@ -325,6 +328,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
         return new ConsumerModel(serviceKey, serviceInterface, ref, methods, attributes);
     }
+
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
     private T createProxy(Map<String, String> map) {
         if (shouldJvmRefer(map)) {
@@ -436,7 +440,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     protected boolean shouldCheck() {
         Boolean shouldCheck = isCheck();
-        if (shouldCheck == null && getConsumer()!= null) {
+        if (shouldCheck == null && getConsumer() != null) {
             shouldCheck = getConsumer().isCheck();
         }
         if (shouldCheck == null) {
@@ -512,7 +516,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
         try {
             if (interfaceName != null && interfaceName.length() > 0) {
-                this.interfaceClass = Class.forName(interfaceName, true, ClassHelper.getClassLoader());
+                this.interfaceClass = Class.forName(interfaceName, true, ClassUtils.getClassLoader());
             }
         } catch (ClassNotFoundException t) {
             throw new IllegalStateException(t.getMessage(), t);

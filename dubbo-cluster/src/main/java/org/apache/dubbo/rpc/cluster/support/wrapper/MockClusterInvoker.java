@@ -88,7 +88,7 @@ public class MockClusterInvoker<T> implements Invoker<T> {
                 if (e.isBiz()) {
                     throw e;
                 }
-                
+
                 if (logger.isWarnEnabled()) {
                     logger.warn("fail-mock: " + invocation.getMethodName() + " fail-mock enabled , url : " + directory.getUrl(), e);
                 }
@@ -105,7 +105,7 @@ public class MockClusterInvoker<T> implements Invoker<T> {
 
         List<Invoker<T>> mockInvokers = selectMockInvoker(invocation);
         if (CollectionUtils.isEmpty(mockInvokers)) {
-            minvoker = (Invoker<T>) new MockInvoker(directory.getUrl());
+            minvoker = (Invoker<T>) new MockInvoker(directory.getUrl(), directory.getInterface());
         } else {
             minvoker = mockInvokers.get(0);
         }
