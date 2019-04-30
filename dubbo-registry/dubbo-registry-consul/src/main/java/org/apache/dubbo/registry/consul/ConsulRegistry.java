@@ -40,9 +40,12 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
 import static java.util.concurrent.Executors.newCachedThreadPool;
@@ -73,7 +76,7 @@ public class ConsulRegistry extends FailbackRegistry {
     private ExecutorService notifierExecutor = newCachedThreadPool(
             new NamedThreadFactory("dubbo-consul-notifier", true));
     private ConcurrentMap<URL, ConsulNotifier> notifiers = new ConcurrentHashMap<>();
-    private ScheduledExecutorService heartbeatExecutor;
+    private ScheduledExecutorService ttlConsulCheckExecutor;
 
 
     public ConsulRegistry(URL url) {
@@ -82,8 +85,8 @@ public class ConsulRegistry extends FailbackRegistry {
         int port = url.getPort() != 0 ? url.getPort() : DEFAULT_PORT;
         client = new ConsulClient(host, port);
         checkPassInterval = url.getParameter(CHECK_PASS_INTERVAL, DEFAULT_CHECK_PASS_INTERVAL);
-        heartbeatExecutor = Executors.newSingleThreadScheduledExecutor();
-        heartbeatExecutor.scheduleAtFixedRate(this::checkPass, checkPassInterval / 8,
+        ttlConsulCheckExecutor = Executors.newSingleThreadScheduledExecutor();
+        ttlConsulCheckExecutor.scheduleAtFixedRate(this::checkPass, checkPassInterval / 8,
                 checkPassInterval / 8, TimeUnit.MILLISECONDS);
     }
 
@@ -187,7 +190,7 @@ public class ConsulRegistry extends FailbackRegistry {
     public void destroy() {
         super.destroy();
         notifierExecutor.shutdown();
-        heartbeatExecutor.shutdown();
+        ttlConsulCheckExecutor.shutdown();
     }
 
     private void checkPass() {
