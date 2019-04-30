@@ -132,31 +132,18 @@ public class NetUtils {
                 && IP_PATTERN.matcher(name).matches()
                 && !Constants.ANYHOST_VALUE.equals(name)
                 && !Constants.LOCALHOST_VALUE.equals(name));
-        if (result) {
-            try {
-                return address.isReachable(100);
-            } catch (IOException e) {
-                // ignore
-            }
-        }
         return result;
     }
 
     /**
-     * Check if an ipv6 address is reachable.
+     * Check if an ipv6 address
      *
-     * @param address the given address
      * @return true if it is reachable
      */
-    static boolean isValidV6Address(Inet6Address address) {
+    static boolean isValidV6Address() {
         boolean preferIpv6 = Boolean.getBoolean("java.net.preferIPv6Addresses");
         if (!preferIpv6) {
             return false;
-        }
-        try {
-            return address.isReachable(100);
-        } catch (IOException e) {
-            // ignore
         }
         return false;
     }
@@ -242,7 +229,7 @@ public class NetUtils {
     private static Optional<InetAddress> toValidAddress(InetAddress address) {
         if (address instanceof Inet6Address) {
             Inet6Address v6Address = (Inet6Address) address;
-            if (isValidV6Address(v6Address)) {
+            if (isValidV6Address()) {
                 return Optional.ofNullable(normalizeV6Address(v6Address));
             }
         }
@@ -280,7 +267,13 @@ public class NetUtils {
                         try {
                             Optional<InetAddress> addressOp = toValidAddress(addresses.nextElement());
                             if (addressOp.isPresent()) {
-                                return addressOp.get();
+                                try {
+                                    if(addressOp.get().isReachable(100)){
+                                        return addressOp.get();
+                                    }
+                                } catch (IOException e) {
+                                    // ignore
+                                }
                             }
                         } catch (Throwable e) {
                             logger.warn(e);
