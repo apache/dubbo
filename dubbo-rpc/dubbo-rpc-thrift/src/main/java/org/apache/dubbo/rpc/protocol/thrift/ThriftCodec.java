@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc.protocol.thrift;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.utils.ClassHelper;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Codec2;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
@@ -199,7 +199,7 @@ public class ThriftCodec implements Codec2 {
             if (clazz == null) {
                 try {
 
-                    clazz = ClassHelper.forNameWithThreadContextClassLoader(argsClassName);
+                    clazz = ClassUtils.forNameWithThreadContextClassLoader(argsClassName);
 
                     cachedClass.putIfAbsent(argsClassName, clazz);
 
@@ -313,7 +313,7 @@ public class ThriftCodec implements Codec2 {
 
                 try {
 
-                    clazz = ClassHelper.forNameWithThreadContextClassLoader(resultClassName);
+                    clazz = ClassUtils.forNameWithThreadContextClassLoader(resultClassName);
 
                     cachedClass.putIfAbsent(resultClassName, clazz);
 
@@ -429,7 +429,7 @@ public class ThriftCodec implements Codec2 {
 
             try {
 
-                clazz = ClassHelper.forNameWithThreadContextClassLoader(methodArgs);
+                clazz = ClassUtils.forNameWithThreadContextClassLoader(methodArgs);
 
                 cachedClass.putIfAbsent(methodArgs, clazz);
 
@@ -555,7 +555,7 @@ public class ThriftCodec implements Codec2 {
         if (clazz == null) {
 
             try {
-                clazz = ClassHelper.forNameWithThreadContextClassLoader(resultClassName);
+                clazz = ClassUtils.forNameWithThreadContextClassLoader(resultClassName);
                 cachedClass.putIfAbsent(resultClassName, clazz);
             } catch (ClassNotFoundException e) {
                 throw new RpcException(RpcException.SERIALIZATION_EXCEPTION, e.getMessage(), e);
