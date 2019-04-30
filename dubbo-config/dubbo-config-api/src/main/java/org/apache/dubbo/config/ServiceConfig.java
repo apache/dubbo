@@ -335,10 +335,22 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
 
         if (shouldDelay()) {
-            delayExportExecutor.schedule(this::doExport, delay, TimeUnit.MILLISECONDS);
+            delayExportExecutor.schedule(this::doExport, getActualDelay(), TimeUnit.MILLISECONDS);
         } else {
             doExport();
         }
+    }
+
+    /**
+     * Get the actual value for delay
+     * @return
+     */
+    private long getActualDelay() {
+        Integer delay = getDelay();
+        if (delay == null && provider != null) {
+            delay = provider.getDelay();
+        }
+        return delay;
     }
 
     private boolean shouldExport() {
@@ -360,7 +372,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (delay == null && provider != null) {
             delay = provider.getDelay();
         }
-        this.delay = delay;
         return delay != null && delay > 0;
     }
 
@@ -805,7 +816,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (provider != null) {
             return;
         }
-        setProvider (
+        setProvider(
                 ConfigManager.getInstance()
                         .getDefaultProvider()
                         .orElseGet(() -> {
@@ -836,15 +847,15 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
         if (StringUtils.isEmpty(protocolIds)) {
             if (CollectionUtils.isEmpty(protocols)) {
-               setProtocols(
-                       ConfigManager.getInstance().getDefaultProtocols()
-                        .filter(CollectionUtils::isNotEmpty)
-                        .orElseGet(() -> {
-                            ProtocolConfig protocolConfig = new ProtocolConfig();
-                            protocolConfig.refresh();
-                            return new ArrayList<>(Arrays.asList(protocolConfig));
-                        })
-               );
+                setProtocols(
+                        ConfigManager.getInstance().getDefaultProtocols()
+                                .filter(CollectionUtils::isNotEmpty)
+                                .orElseGet(() -> {
+                                    ProtocolConfig protocolConfig = new ProtocolConfig();
+                                    protocolConfig.refresh();
+                                    return new ArrayList<>(Arrays.asList(protocolConfig));
+                                })
+                );
             }
         } else {
             String[] arr = Constants.COMMA_SPLIT_PATTERN.split(protocolIds);
