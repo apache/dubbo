@@ -335,33 +335,31 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
 
         if (shouldDelay()) {
-            delayExportExecutor.schedule(this::doExport, delay, TimeUnit.MILLISECONDS);
+            delayExportExecutor.schedule(this::doExport, getDelay(), TimeUnit.MILLISECONDS);
         } else {
             doExport();
         }
     }
 
     private boolean shouldExport() {
-        Boolean shouldExport = getExport();
-        if (shouldExport == null && provider != null) {
-            shouldExport = provider.getExport();
-        }
-
+        Boolean export = getExport();
         // default value is true
-        if (shouldExport == null) {
-            return true;
-        }
+        return export == null ? true : export;
+    }
 
-        return shouldExport;
+    @Override
+    public Boolean getExport() {
+        return (export == null && provider != null) ? provider.getExport() : export;
     }
 
     private boolean shouldDelay() {
         Integer delay = getDelay();
-        if (delay == null && provider != null) {
-            delay = provider.getDelay();
-        }
-        this.delay = delay;
         return delay != null && delay > 0;
+    }
+
+    @Override
+    public Integer getDelay() {
+        return (delay == null && provider != null) ? provider.getDelay() : delay;
     }
 
     protected synchronized void doExport() {
