@@ -360,6 +360,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (delay == null && provider != null) {
             delay = provider.getDelay();
         }
+        this.delay = delay;
         return delay != null && delay > 0;
     }
 
