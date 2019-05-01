@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.serialize.kryo;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
@@ -36,7 +37,7 @@ public class KryoSerialization implements Serialization {
 
     @Override
     public byte getContentTypeId() {
-        return 8;
+        return Constants.KRYO_SERIALIZATION_ID;
     }
 
     @Override
