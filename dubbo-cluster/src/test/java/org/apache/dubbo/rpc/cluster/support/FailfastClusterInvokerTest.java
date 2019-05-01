@@ -80,7 +80,7 @@ public class FailfastClusterInvokerTest {
     }
 
     @Test
-    public void testInvokeExceptoin() {
+    public void testInvokeException() {
         Assertions.assertThrows(RpcException.class, () -> {
             resetInvoker1ToException();
             FailfastClusterInvoker<FailfastClusterInvokerTest> invoker = new FailfastClusterInvoker<FailfastClusterInvokerTest>(dic);
@@ -90,7 +90,7 @@ public class FailfastClusterInvokerTest {
     }
 
     @Test()
-    public void testInvokeNoExceptoin() {
+    public void testInvokeNoException() {
 
         resetInvoker1ToNoException();
 
