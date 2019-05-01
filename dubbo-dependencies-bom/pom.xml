@@ -146,10 +146,14 @@
 
         <metrics_version>2.0.1</metrics_version>
         <gson_version>2.8.5</gson_version>
+
         <jsonrpc_version>1.2.0</jsonrpc_version>
         <portlet_version>2.0</portlet_version>
         <maven_flatten_version>1.1.0</maven_flatten_version>
         <revision>2.7.2-SNAPSHOT</revision>
+        <libthrift_version>0.11.0</libthrift_version>
+        <javax_annotation_api_version>1.3.2</javax_annotation_api_version>
+        <junit_version>4.12</junit_version>
     </properties>
 
     <dependencyManagement>
@@ -570,6 +574,25 @@
                 <groupId>org.testcontainers</groupId>
                 <artifactId>testcontainers</artifactId>
                 <version>${test_container_version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.thrift</groupId>
+                <artifactId>libthrift</artifactId>
+                <version>${libthrift_version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.annotation</groupId>
+                <artifactId>javax.annotation-api</artifactId>
+                <version>${javax_annotation_api_version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${junit_version}</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
