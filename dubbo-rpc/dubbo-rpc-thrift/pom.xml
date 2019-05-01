@@ -52,6 +52,7 @@
         <dependency>
             <groupId>org.apache.thrift</groupId>
             <artifactId>libthrift</artifactId>
+            <version>0.8.0</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
