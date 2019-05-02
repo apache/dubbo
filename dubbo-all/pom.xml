@@ -256,6 +256,13 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-registry-sofa</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-monitor-api</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
@@ -530,6 +537,7 @@
                                     <include>org.apache.dubbo:dubbo-registry-redis</include>
                                     <include>org.apache.dubbo:dubbo-registry-consul</include>
                                     <include>org.apache.dubbo:dubbo-registry-etcd3</include>
+                                    <include>org.apache.dubbo:dubbo-registry-sofa</include>
                                     <include>org.apache.dubbo:dubbo-monitor-api</include>
                                     <include>org.apache.dubbo:dubbo-monitor-default</include>
                                     <include>org.apache.dubbo:dubbo-config-api</include>
