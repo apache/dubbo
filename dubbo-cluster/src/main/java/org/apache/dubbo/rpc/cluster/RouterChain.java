@@ -79,7 +79,7 @@ public class RouterChain<T> {
         List<Router> newRouters = new CopyOnWriteArrayList<>();
         newRouters.addAll(builtinRouters);
         newRouters.addAll(routers);
-        CollectionUtils.sort(routers);
+        CollectionUtils.sort(newRouters);
         this.routers = newRouters;
     }
 
