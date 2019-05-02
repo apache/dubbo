@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.thrift;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Codec2;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
@@ -29,8 +30,6 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.protocol.thrift.io.RandomAccessByteArrayOutputStream;
-
-import org.apache.commons.lang.StringUtils;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TException;
