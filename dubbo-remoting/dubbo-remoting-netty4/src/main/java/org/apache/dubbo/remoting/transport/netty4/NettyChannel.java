@@ -39,7 +39,7 @@ final class NettyChannel extends AbstractChannel {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyChannel.class);
 
-    private static final ConcurrentMap<Channel, NettyChannel> channelMap = new ConcurrentHashMap<Channel, NettyChannel>();
+    private static final ConcurrentMap<Channel, NettyChannel> CHANNEL_MAP = new ConcurrentHashMap<Channel, NettyChannel>();
 
     private final Channel channel;
 
@@ -57,11 +57,11 @@ final class NettyChannel extends AbstractChannel {
         if (ch == null) {
             return null;
         }
-        NettyChannel ret = channelMap.get(ch);
+        NettyChannel ret = CHANNEL_MAP.get(ch);
         if (ret == null) {
             NettyChannel nettyChannel = new NettyChannel(ch, url, handler);
             if (ch.isActive()) {
-                ret = channelMap.putIfAbsent(ch, nettyChannel);
+                ret = CHANNEL_MAP.putIfAbsent(ch, nettyChannel);
             }
             if (ret == null) {
                 ret = nettyChannel;
@@ -72,7 +72,7 @@ final class NettyChannel extends AbstractChannel {
 
     static void removeChannelIfDisconnected(Channel ch) {
         if (ch != null && !ch.isActive()) {
-            channelMap.remove(ch);
+            CHANNEL_MAP.remove(ch);
         }
     }
 
