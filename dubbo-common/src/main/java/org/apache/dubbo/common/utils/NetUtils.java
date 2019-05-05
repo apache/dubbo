@@ -140,7 +140,7 @@ public class NetUtils {
      *
      * @return true if it is reachable
      */
-    static boolean isValidV6Address() {
+    static boolean isPreferIPV6Address() {
         boolean preferIpv6 = Boolean.getBoolean("java.net.preferIPv6Addresses");
         if (!preferIpv6) {
             return false;
@@ -229,7 +229,7 @@ public class NetUtils {
     private static Optional<InetAddress> toValidAddress(InetAddress address) {
         if (address instanceof Inet6Address) {
             Inet6Address v6Address = (Inet6Address) address;
-            if (isValidV6Address()) {
+            if (isPreferIPV6Address()) {
                 return Optional.ofNullable(normalizeV6Address(v6Address));
             }
         }
