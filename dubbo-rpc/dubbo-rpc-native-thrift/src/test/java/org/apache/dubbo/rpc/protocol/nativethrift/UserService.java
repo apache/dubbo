@@ -6,8 +6,6 @@
  */
 package org.apache.dubbo.rpc.protocol.nativethrift;
 
-import javax.annotation.Generated;
-
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
 public class UserService {
 
