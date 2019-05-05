@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.serialize.fastjson;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
@@ -36,7 +37,7 @@ public class FastJsonSerialization implements Serialization {
 
     @Override
     public byte getContentTypeId() {
-        return 6;
+        return Constants.FASTJSON_SERIALIZATION_ID;
     }
 
     @Override
