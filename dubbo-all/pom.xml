@@ -582,6 +582,7 @@
                                     <include>org.apache.dubbo:dubbo-metadata-report-redis</include>
                                     <include>org.apache.dubbo:dubbo-metadata-report-zookeeper</include>
                                     <include>org.apache.dubbo:dubbo-metadata-report-consul</include>
+                                    <include>org.apache.dubbo:dubbo-metadata-report-etcd</include>
                                 </includes>
                             </artifactSet>
                             <transformers>
