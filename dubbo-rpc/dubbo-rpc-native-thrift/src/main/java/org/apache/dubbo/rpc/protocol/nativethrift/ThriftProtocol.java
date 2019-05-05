@@ -130,14 +130,10 @@ public class ThriftProtocol extends AbstractProxyProtocol {
         final TServer thriftServer =  new TThreadedSelectorServer(tArgs);
         serverMap.put(url.getAddress(),thriftServer);
 
-        new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                logger.info("Start Thrift ThreadedSelectorServer");
-                thriftServer.serve();
-                logger.info("Thrift ThreadedSelectorServer started.");
-            }
+        new Thread(() -> {
+            logger.info("Start Thrift ThreadedSelectorServer");
+            thriftServer.serve();
+            logger.info("Thrift ThreadedSelectorServer started.");
         }).start();
 
         return new Runnable() {

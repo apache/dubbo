@@ -1044,7 +1044,7 @@ public class DemoService {
     static {
       java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.REQUIRED,
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(sayHello_args.class, metaDataMap);
     }
@@ -1053,7 +1053,7 @@ public class DemoService {
     }
 
     public sayHello_args(
-      String name)
+            String name)
     {
       this();
       this.name = name;
@@ -1103,21 +1103,21 @@ public class DemoService {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case NAME:
-        if (value == null) {
-          unsetName();
-        } else {
-          setName((String)value);
-        }
-        break;
+        case NAME:
+          if (value == null) {
+            unsetName();
+          } else {
+            setName((String)value);
+          }
+          break;
 
       }
     }
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case NAME:
-        return getName();
+        case NAME:
+          return getName();
 
       }
       throw new IllegalStateException();
@@ -1130,8 +1130,8 @@ public class DemoService {
       }
 
       switch (field) {
-      case NAME:
-        return isSetName();
+        case NAME:
+          return isSetName();
       }
       throw new IllegalStateException();
     }
@@ -1399,7 +1399,7 @@ public class DemoService {
     static {
       java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(sayHello_result.class, metaDataMap);
     }
@@ -1408,7 +1408,7 @@ public class DemoService {
     }
 
     public sayHello_result(
-      String success)
+            String success)
     {
       this();
       this.success = success;
@@ -1458,21 +1458,21 @@ public class DemoService {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case SUCCESS:
-        if (value == null) {
-          unsetSuccess();
-        } else {
-          setSuccess((String)value);
-        }
-        break;
+        case SUCCESS:
+          if (value == null) {
+            unsetSuccess();
+          } else {
+            setSuccess((String)value);
+          }
+          break;
 
       }
     }
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case SUCCESS:
-        return getSuccess();
+        case SUCCESS:
+          return getSuccess();
 
       }
       throw new IllegalStateException();
@@ -1485,8 +1485,8 @@ public class DemoService {
       }
 
       switch (field) {
-      case SUCCESS:
-        return isSetSuccess();
+        case SUCCESS:
+          return isSetSuccess();
       }
       throw new IllegalStateException();
     }
@@ -1560,7 +1560,7 @@ public class DemoService {
 
     public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
       scheme(oprot).write(oprot, this);
-      }
+    }
 
     @Override
     public String toString() {
@@ -1763,7 +1763,7 @@ public class DemoService {
     static {
       java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.HAS_NAME, new org.apache.thrift.meta_data.FieldMetaData("hasName", org.apache.thrift.TFieldRequirementType.REQUIRED,
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
       metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(hasName_args.class, metaDataMap);
     }
@@ -1772,7 +1772,7 @@ public class DemoService {
     }
 
     public hasName_args(
-      boolean hasName)
+            boolean hasName)
     {
       this();
       this.hasName = hasName;
@@ -1822,21 +1822,21 @@ public class DemoService {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case HAS_NAME:
-        if (value == null) {
-          unsetHasName();
-        } else {
-          setHasName((Boolean)value);
-        }
-        break;
+        case HAS_NAME:
+          if (value == null) {
+            unsetHasName();
+          } else {
+            setHasName((Boolean)value);
+          }
+          break;
 
       }
     }
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case HAS_NAME:
-        return isHasName();
+        case HAS_NAME:
+          return isHasName();
 
       }
       throw new IllegalStateException();
@@ -1849,8 +1849,8 @@ public class DemoService {
       }
 
       switch (field) {
-      case HAS_NAME:
-        return isSetHasName();
+        case HAS_NAME:
+          return isSetHasName();
       }
       throw new IllegalStateException();
     }
@@ -2115,7 +2115,7 @@ public class DemoService {
     static {
       java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
       metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(hasName_result.class, metaDataMap);
     }
@@ -2124,7 +2124,7 @@ public class DemoService {
     }
 
     public hasName_result(
-      boolean success)
+            boolean success)
     {
       this();
       this.success = success;
@@ -2174,21 +2174,21 @@ public class DemoService {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case SUCCESS:
-        if (value == null) {
-          unsetSuccess();
-        } else {
-          setSuccess((Boolean)value);
-        }
-        break;
+        case SUCCESS:
+          if (value == null) {
+            unsetSuccess();
+          } else {
+            setSuccess((Boolean)value);
+          }
+          break;
 
       }
     }
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case SUCCESS:
-        return isSuccess();
+        case SUCCESS:
+          return isSuccess();
 
       }
       throw new IllegalStateException();
@@ -2201,8 +2201,8 @@ public class DemoService {
       }
 
       switch (field) {
-      case SUCCESS:
-        return isSetSuccess();
+        case SUCCESS:
+          return isSetSuccess();
       }
       throw new IllegalStateException();
     }
@@ -2274,7 +2274,7 @@ public class DemoService {
 
     public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
       scheme(oprot).write(oprot, this);
-      }
+    }
 
     @Override
     public String toString() {
@@ -2480,9 +2480,9 @@ public class DemoService {
     static {
       java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.REQUIRED,
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.TIMES, new org.apache.thrift.meta_data.FieldMetaData("times", org.apache.thrift.TFieldRequirementType.REQUIRED,
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
       metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(sayHelloTimes_args.class, metaDataMap);
     }
@@ -2491,8 +2491,8 @@ public class DemoService {
     }
 
     public sayHelloTimes_args(
-      String name,
-      int times)
+            String name,
+            int times)
     {
       this();
       this.name = name;
@@ -2571,32 +2571,32 @@ public class DemoService {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case NAME:
-        if (value == null) {
-          unsetName();
-        } else {
-          setName((String)value);
-        }
-        break;
+        case NAME:
+          if (value == null) {
+            unsetName();
+          } else {
+            setName((String)value);
+          }
+          break;
 
-      case TIMES:
-        if (value == null) {
-          unsetTimes();
-        } else {
-          setTimes((Integer)value);
-        }
-        break;
+        case TIMES:
+          if (value == null) {
+            unsetTimes();
+          } else {
+            setTimes((Integer)value);
+          }
+          break;
 
       }
     }
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case NAME:
-        return getName();
+        case NAME:
+          return getName();
 
-      case TIMES:
-        return getTimes();
+        case TIMES:
+          return getTimes();
 
       }
       throw new IllegalStateException();
@@ -2609,10 +2609,10 @@ public class DemoService {
       }
 
       switch (field) {
-      case NAME:
-        return isSetName();
-      case TIMES:
-        return isSetTimes();
+        case NAME:
+          return isSetName();
+        case TIMES:
+          return isSetTimes();
       }
       throw new IllegalStateException();
     }
@@ -2925,7 +2925,7 @@ public class DemoService {
     static {
       java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(sayHelloTimes_result.class, metaDataMap);
     }
@@ -2934,7 +2934,7 @@ public class DemoService {
     }
 
     public sayHelloTimes_result(
-      String success)
+            String success)
     {
       this();
       this.success = success;
@@ -2984,21 +2984,21 @@ public class DemoService {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case SUCCESS:
-        if (value == null) {
-          unsetSuccess();
-        } else {
-          setSuccess((String)value);
-        }
-        break;
+        case SUCCESS:
+          if (value == null) {
+            unsetSuccess();
+          } else {
+            setSuccess((String)value);
+          }
+          break;
 
       }
     }
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case SUCCESS:
-        return getSuccess();
+        case SUCCESS:
+          return getSuccess();
 
       }
       throw new IllegalStateException();
@@ -3011,8 +3011,8 @@ public class DemoService {
       }
 
       switch (field) {
-      case SUCCESS:
-        return isSetSuccess();
+        case SUCCESS:
+          return isSetSuccess();
       }
       throw new IllegalStateException();
     }
@@ -3086,7 +3086,7 @@ public class DemoService {
 
     public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
       scheme(oprot).write(oprot, this);
-      }
+    }
 
     @Override
     public String toString() {
@@ -3289,7 +3289,7 @@ public class DemoService {
     static {
       java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.MILLIS, new org.apache.thrift.meta_data.FieldMetaData("millis", org.apache.thrift.TFieldRequirementType.REQUIRED,
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
       metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(timeOut_args.class, metaDataMap);
     }
@@ -3298,7 +3298,7 @@ public class DemoService {
     }
 
     public timeOut_args(
-      int millis)
+            int millis)
     {
       this();
       this.millis = millis;
@@ -3348,21 +3348,21 @@ public class DemoService {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case MILLIS:
-        if (value == null) {
-          unsetMillis();
-        } else {
-          setMillis((Integer)value);
-        }
-        break;
+        case MILLIS:
+          if (value == null) {
+            unsetMillis();
+          } else {
+            setMillis((Integer)value);
+          }
+          break;
 
       }
     }
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case MILLIS:
-        return getMillis();
+        case MILLIS:
+          return getMillis();
 
       }
       throw new IllegalStateException();
@@ -3375,8 +3375,8 @@ public class DemoService {
       }
 
       switch (field) {
-      case MILLIS:
-        return isSetMillis();
+        case MILLIS:
+          return isSetMillis();
       }
       throw new IllegalStateException();
     }
@@ -3576,7 +3576,7 @@ public class DemoService {
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-;
+      ;
 
       private static final java.util.Map<String, _Fields> byName = new java.util.HashMap<String, _Fields>();
 
@@ -3721,7 +3721,7 @@ public class DemoService {
 
     public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
       scheme(oprot).write(oprot, this);
-      }
+    }
 
     @Override
     public String toString() {
@@ -3826,7 +3826,7 @@ public class DemoService {
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-;
+      ;
 
       private static final java.util.Map<String, _Fields> byName = new java.util.HashMap<String, _Fields>();
 
@@ -4139,7 +4139,7 @@ public class DemoService {
     static {
       java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(customException_result.class, metaDataMap);
     }
@@ -4148,7 +4148,7 @@ public class DemoService {
     }
 
     public customException_result(
-      String success)
+            String success)
     {
       this();
       this.success = success;
@@ -4198,21 +4198,21 @@ public class DemoService {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case SUCCESS:
-        if (value == null) {
-          unsetSuccess();
-        } else {
-          setSuccess((String)value);
-        }
-        break;
+        case SUCCESS:
+          if (value == null) {
+            unsetSuccess();
+          } else {
+            setSuccess((String)value);
+          }
+          break;
 
       }
     }
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case SUCCESS:
-        return getSuccess();
+        case SUCCESS:
+          return getSuccess();
 
       }
       throw new IllegalStateException();
@@ -4225,8 +4225,8 @@ public class DemoService {
       }
 
       switch (field) {
-      case SUCCESS:
-        return isSetSuccess();
+        case SUCCESS:
+          return isSetSuccess();
       }
       throw new IllegalStateException();
     }
@@ -4300,7 +4300,7 @@ public class DemoService {
 
     public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
       scheme(oprot).write(oprot, this);
-      }
+    }
 
     @Override
     public String toString() {
@@ -4501,7 +4501,7 @@ public class DemoService {
     static {
       java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.REQUIRED,
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(context_args.class, metaDataMap);
     }
@@ -4510,7 +4510,7 @@ public class DemoService {
     }
 
     public context_args(
-      String name)
+            String name)
     {
       this();
       this.name = name;
@@ -4560,21 +4560,21 @@ public class DemoService {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case NAME:
-        if (value == null) {
-          unsetName();
-        } else {
-          setName((String)value);
-        }
-        break;
+        case NAME:
+          if (value == null) {
+            unsetName();
+          } else {
+            setName((String)value);
+          }
+          break;
 
       }
     }
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case NAME:
-        return getName();
+        case NAME:
+          return getName();
 
       }
       throw new IllegalStateException();
@@ -4587,8 +4587,8 @@ public class DemoService {
       }
 
       switch (field) {
-      case NAME:
-        return isSetName();
+        case NAME:
+          return isSetName();
       }
       throw new IllegalStateException();
     }
@@ -4856,7 +4856,7 @@ public class DemoService {
     static {
       java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(context_result.class, metaDataMap);
     }
@@ -4865,7 +4865,7 @@ public class DemoService {
     }
 
     public context_result(
-      String success)
+            String success)
     {
       this();
       this.success = success;
@@ -4915,21 +4915,21 @@ public class DemoService {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case SUCCESS:
-        if (value == null) {
-          unsetSuccess();
-        } else {
-          setSuccess((String)value);
-        }
-        break;
+        case SUCCESS:
+          if (value == null) {
+            unsetSuccess();
+          } else {
+            setSuccess((String)value);
+          }
+          break;
 
       }
     }
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case SUCCESS:
-        return getSuccess();
+        case SUCCESS:
+          return getSuccess();
 
       }
       throw new IllegalStateException();
@@ -4942,8 +4942,8 @@ public class DemoService {
       }
 
       switch (field) {
-      case SUCCESS:
-        return isSetSuccess();
+        case SUCCESS:
+          return isSetSuccess();
       }
       throw new IllegalStateException();
     }
@@ -5017,7 +5017,7 @@ public class DemoService {
 
     public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
       scheme(oprot).write(oprot, this);
-      }
+    }
 
     @Override
     public String toString() {
@@ -5070,7 +5070,7 @@ public class DemoService {
         while (true)
         {
           schemeField = iprot.readFieldBegin();
-          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) {
             break;
           }
           switch (schemeField.id) {
@@ -5078,7 +5078,7 @@ public class DemoService {
               if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
                 struct.success = iprot.readString();
                 struct.setSuccessIsSet(true);
-              } else { 
+              } else {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
