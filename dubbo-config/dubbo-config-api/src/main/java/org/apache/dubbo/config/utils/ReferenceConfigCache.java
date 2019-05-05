@@ -59,7 +59,7 @@ public class ReferenceConfigCache {
         }
         return ret.toString();
     };
-    static final ConcurrentMap<String, ReferenceConfigCache> cacheHolder = new ConcurrentHashMap<String, ReferenceConfigCache>();
+    static final ConcurrentMap<String, ReferenceConfigCache> CACHE_HOLDER = new ConcurrentHashMap<String, ReferenceConfigCache>();
     private final String name;
     private final KeyGenerator generator;
     ConcurrentMap<String, ReferenceConfig<?>> cache = new ConcurrentHashMap<String, ReferenceConfig<?>>();
@@ -90,12 +90,12 @@ public class ReferenceConfigCache {
      * Create cache if not existed yet.
      */
     public static ReferenceConfigCache getCache(String name, KeyGenerator keyGenerator) {
-        ReferenceConfigCache cache = cacheHolder.get(name);
+        ReferenceConfigCache cache = CACHE_HOLDER.get(name);
         if (cache != null) {
             return cache;
         }
-        cacheHolder.putIfAbsent(name, new ReferenceConfigCache(name, keyGenerator));
-        return cacheHolder.get(name);
+        CACHE_HOLDER.putIfAbsent(name, new ReferenceConfigCache(name, keyGenerator));
+        return CACHE_HOLDER.get(name);
     }
 
     @SuppressWarnings("unchecked")

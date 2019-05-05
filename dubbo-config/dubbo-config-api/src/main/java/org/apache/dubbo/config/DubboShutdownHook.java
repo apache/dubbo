@@ -34,7 +34,7 @@ public class DubboShutdownHook extends Thread {
 
     private static final Logger logger = LoggerFactory.getLogger(DubboShutdownHook.class);
 
-    private static final DubboShutdownHook dubboShutdownHook = new DubboShutdownHook("DubboShutdownHook");
+    private static final DubboShutdownHook DUBBO_SHUTDOWN_HOOK = new DubboShutdownHook("DubboShutdownHook");
     /**
      * Has it already been registered or not?
      */
@@ -49,7 +49,7 @@ public class DubboShutdownHook extends Thread {
     }
 
     public static DubboShutdownHook getDubboShutdownHook() {
-        return dubboShutdownHook;
+        return DUBBO_SHUTDOWN_HOOK;
     }
 
     @Override

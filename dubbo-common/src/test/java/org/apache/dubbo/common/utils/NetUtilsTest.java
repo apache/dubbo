@@ -191,7 +191,7 @@ public class NetUtilsTest {
         System.setProperty("java.net.preferIPv6Addresses", "true");
         InetAddress address = NetUtils.getLocalAddress();
         if (address instanceof Inet6Address) {
-            assertThat(NetUtils.isValidV6Address((Inet6Address) address), equalTo(true));
+            assertThat(NetUtils.isPreferIPV6Address(), equalTo(true));
         }
         System.setProperty("java.net.preferIPv6Addresses", saved);
     }
