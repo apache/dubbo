@@ -48,7 +48,7 @@ public class NettyClient extends AbstractClient {
 
     // ChannelFactory's closure has a DirectMemory leak, using static to avoid
     // https://issues.jboss.org/browse/NETTY-424
-    private static final ChannelFactory channelFactory = new NioClientSocketChannelFactory(Executors.newCachedThreadPool(new NamedThreadFactory("NettyClientBoss", true)),
+    private static final ChannelFactory CHANNEL_FACTORY = new NioClientSocketChannelFactory(Executors.newCachedThreadPool(new NamedThreadFactory("NettyClientBoss", true)),
             Executors.newCachedThreadPool(new NamedThreadFactory("NettyClientWorker", true)),
             Constants.DEFAULT_IO_THREADS);
     private ClientBootstrap bootstrap;
@@ -62,7 +62,7 @@ public class NettyClient extends AbstractClient {
     @Override
     protected void doOpen() throws Throwable {
         NettyHelper.setNettyLoggerFactory();
-        bootstrap = new ClientBootstrap(channelFactory);
+        bootstrap = new ClientBootstrap(CHANNEL_FACTORY);
         // config
         // @see org.jboss.netty.channel.socket.SocketChannelConfig
         bootstrap.setOption("keepAlive", true);

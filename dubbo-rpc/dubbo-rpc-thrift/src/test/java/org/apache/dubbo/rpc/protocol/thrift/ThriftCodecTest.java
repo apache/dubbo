@@ -286,7 +286,7 @@ public class ThriftCodecTest {
 
         ThriftCodec.RequestData rd = ThriftCodec.RequestData.create(
                 ThriftCodec.getSeqId(), Demo.Iface.class.getName(), "echoString");
-        ThriftCodec.cachedRequest.putIfAbsent(request.getId(), rd);
+        ThriftCodec.CACHED_REQUEST.putIfAbsent(request.getId(), rd);
         codec.encode(channel, bos, response);
 
         byte[] buf = new byte[bos.writerIndex() - 4];
@@ -345,7 +345,7 @@ public class ThriftCodecTest {
 
         ThriftCodec.RequestData rd = ThriftCodec.RequestData.create(
                 ThriftCodec.getSeqId(), Demo.Iface.class.getName(), "echoString");
-        ThriftCodec.cachedRequest.put(request.getId(), rd);
+        ThriftCodec.CACHED_REQUEST.put(request.getId(), rd);
         codec.encode(channel, bos, response);
 
         byte[] buf = new byte[bos.writerIndex() - 4];

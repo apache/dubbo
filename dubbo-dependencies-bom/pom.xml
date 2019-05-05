@@ -145,6 +145,7 @@
         <spring_test_version>4.3.16.RELEASE</spring_test_version>
 
         <metrics_version>2.0.1</metrics_version>
+        <sofa_registry_version>5.2.0</sofa_registry_version>
         <gson_version>2.8.5</gson_version>
         <jsonrpc_version>1.2.0</jsonrpc_version>
         <portlet_version>2.0</portlet_version>
@@ -458,7 +459,6 @@
                 <version>${commons_lang3_version}</version>
             </dependency>
 
-
             <!-- for dubbo-rpc-webservice -->
             <dependency>
                 <groupId>javax.xml.bind</groupId>
@@ -518,6 +518,19 @@
                 <groupId>com.alibaba.middleware</groupId>
                 <artifactId>metrics-rest</artifactId>
                 <version>${metrics_version}</version>
+            </dependency>
+            
+            <!-- for dubbo-registry-sofa -->
+            <dependency>
+                <groupId>com.alipay.sofa</groupId>
+                <artifactId>registry-client-all</artifactId>
+                <version>${sofa_registry_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alipay.sofa</groupId>
+                <artifactId>registry-test</artifactId>
+                <version>${sofa_registry_version}</version>
+                <scope>test</scope>
             </dependency>
 
             <!-- Test lib -->
