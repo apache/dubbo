@@ -107,6 +107,8 @@
         <cxf_version>3.1.15</cxf_version>
         <thrift_version>0.8.0</thrift_version>
         <hessian_version>4.0.38</hessian_version>
+        <protobuf-java>3.6.0</protobuf-java>
+        <protobuf.java.util>3.6.0</protobuf.java.util>
         <servlet_version>3.1.0</servlet_version>
         <jetty_version>9.4.11.v20180605</jetty_version>
         <validation_version>1.1.0.Final</validation_version>
@@ -262,6 +264,16 @@
                 <groupId>com.alibaba</groupId>
                 <artifactId>hessian-lite</artifactId>
                 <version>${hessian_lite_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>${protobuf-java}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java-util</artifactId>
+                <version>${protobuf.java.util}</version>
             </dependency>
             <dependency>
                 <groupId>javax.servlet</groupId>
