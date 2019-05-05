@@ -16,209 +16,167 @@
  */
 package org.apache.dubbo.rpc.protocol.thrift;
 
-import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.remoting.Channel;
-import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.Transporter;
-import org.apache.dubbo.remoting.exchange.ExchangeChannel;
-import org.apache.dubbo.remoting.exchange.ExchangeClient;
-import org.apache.dubbo.remoting.exchange.ExchangeHandler;
-import org.apache.dubbo.remoting.exchange.ExchangeServer;
-import org.apache.dubbo.remoting.exchange.Exchangers;
-import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
-import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.protocol.AbstractProtocol;
-import org.apache.dubbo.rpc.protocol.dubbo.DubboExporter;
 
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
+import org.apache.thrift.TException;
+import org.apache.thrift.TMultiplexedProcessor;
+import org.apache.thrift.TProcessor;
+import org.apache.thrift.protocol.TCompactProtocol;
+import org.apache.thrift.protocol.TMultiplexedProtocol;
+import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.server.TServer;
+import org.apache.thrift.server.TThreadedSelectorServer;
+import org.apache.thrift.transport.TFramedTransport;
+import org.apache.thrift.transport.TNonblockingServerSocket;
+import org.apache.thrift.transport.TSocket;
+import org.apache.thrift.transport.TTransport;
+
+import java.lang.reflect.Constructor;
+import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
- * @since 2.7.0, use https://github.com/dubbo/dubbo-rpc-native-thrift instead
+ * native thrift protocol
  */
-@Deprecated
-public class ThriftProtocol extends AbstractProtocol {
+public class ThriftProtocol extends AbstractProxyProtocol {
 
     public static final int DEFAULT_PORT = 40880;
 
     public static final String NAME = "thrift";
+    public static final String THRIFT_IFACE = "$Iface";
+    public static final String THRIFT_PROCESSOR = "$Processor";
+    public static final String THRIFT_CLIENT = "$Client";
 
-    // ip:port -> ExchangeServer
-    private final ConcurrentMap<String, ExchangeServer> serverMap =
-            new ConcurrentHashMap<String, ExchangeServer>();
-
-    private ExchangeHandler handler = new ExchangeHandlerAdapter() {
-
-        @Override
-        public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) throws RemotingException {
-
-            if (msg instanceof Invocation) {
-                Invocation inv = (Invocation) msg;
-                String path = inv.getAttachments().get(Constants.PATH_KEY);
-                String serviceKey = serviceKey(channel.getLocalAddress().getPort(),
-                        path, null, null);
-                DubboExporter<?> exporter = (DubboExporter<?>) exporterMap.get(serviceKey);
-                if (exporter == null) {
-                    throw new RemotingException(channel,
-                            "Not found exported service: "
-                                    + serviceKey
-                                    + " in "
-                                    + exporterMap.keySet()
-                                    + ", may be version or group mismatch "
-                                    + ", channel: consumer: "
-                                    + channel.getRemoteAddress()
-                                    + " --> provider: "
-                                    + channel.getLocalAddress()
-                                    + ", message:" + msg);
-                }
-
-                RpcContext.getContext().setRemoteAddress(channel.getRemoteAddress());
-
-                return CompletableFuture.completedFuture(exporter.getInvoker().invoke(inv));
-
-            }
-
-            throw new RemotingException(channel,
-                    "Unsupported request: "
-                            + (msg.getClass().getName() + ": " + msg)
-                            + ", channel: consumer: "
-                            + channel.getRemoteAddress()
-                            + " --> provider: "
-                            + channel.getLocalAddress());
-        }
-
-        @Override
-        public void received(Channel channel, Object message) throws RemotingException {
-            if (message instanceof Invocation) {
-                reply((ExchangeChannel) channel, message);
-            } else {
-                super.received(channel, message);
-            }
-        }
-
-    };
+    private static final Map<String, TServer> serverMap = new HashMap<>();
+    private TMultiplexedProcessor processor = new TMultiplexedProcessor();
 
     @Override
     public int getDefaultPort() {
         return DEFAULT_PORT;
     }
 
-    @Override
-    public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-
-        // can use thrift codec only
-        URL url = invoker.getUrl().addParameter(Constants.CODEC_KEY, ThriftCodec.NAME);
-        // find server.
-        String key = url.getAddress();
-        // client can expose a service for server to invoke only.
-        boolean isServer = url.getParameter(Constants.IS_SERVER_KEY, true);
-        if (isServer && !serverMap.containsKey(key)) {
-            serverMap.put(key, getServer(url));
-        }
-        // export service.
-        key = serviceKey(url);
-        DubboExporter<T> exporter = new DubboExporter<T>(invoker, key, exporterMap);
-        exporterMap.put(key, exporter);
-
-        return exporter;
+    public ThriftProtocol() {
+        super(TException.class, RpcException.class);
     }
 
     @Override
-    public void destroy() {
+    protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
+        return exportThreadedSelectorServer(impl, type, url);
+    }
 
-        super.destroy();
+    @Override
+    protected <T> T doRefer(Class<T> type, URL url) throws RpcException {
+        return doReferFrameAndCompact(type, url);
+    }
 
-        for (String key : new ArrayList<String>(serverMap.keySet())) {
+    public ThriftProtocol(Class<?>... exceptions) {
+        super(exceptions);
+    }
 
-            ExchangeServer server = serverMap.remove(key);
+    private <T> Runnable exportThreadedSelectorServer(T impl, Class<T> type, URL url) throws RpcException {
 
-            if (server != null) {
+        TThreadedSelectorServer.Args tArgs = null;
+        String typeName = type.getName();
+
+        TServer tserver = null;
+        if (typeName.endsWith(THRIFT_IFACE)) {
+            String processorClsName = typeName.substring(0, typeName.indexOf(THRIFT_IFACE)) + THRIFT_PROCESSOR;
+            try {
+                Class<?> clazz = Class.forName(processorClsName);
+                Constructor constructor = clazz.getConstructor(type);
                 try {
-                    if (logger.isInfoEnabled()) {
-                        logger.info("Close dubbo server: " + server.getLocalAddress());
+                    TProcessor tprocessor = (TProcessor) constructor.newInstance(impl);
+                    processor.registerProcessor(typeName,tprocessor);
+
+                    tserver = serverMap.get(url.getAddress());
+                    if(tserver == null) {
+
+                        /**Solve the problem of only 50 of the default number of concurrent connections*/
+                        TNonblockingServerSocket.NonblockingAbstractServerSocketArgs args = new TNonblockingServerSocket.NonblockingAbstractServerSocketArgs();
+                        /**1000 connections*/
+                        args.backlog(1000);
+                        args.bindAddr(new InetSocketAddress(url.getHost(), url.getPort()));
+                        /**timeout: 10s */
+                        args.clientTimeout(10000);
+
+                        TNonblockingServerSocket transport = new TNonblockingServerSocket(args);
+
+                        tArgs = new TThreadedSelectorServer.Args(transport);
+                        tArgs.workerThreads(200);
+                        tArgs.selectorThreads(4);
+                        tArgs.acceptQueueSizePerThread(256);
+                        tArgs.processor(processor);
+                        tArgs.transportFactory(new TFramedTransport.Factory());
+                        tArgs.protocolFactory(new TCompactProtocol.Factory());
+                    }else{
+                        return null; // if server is starting, return and do nothing here
                     }
-                    server.close(ConfigurationUtils.getServerShutdownTimeout());
-                } catch (Throwable t) {
-                    logger.warn(t.getMessage(), t);
+                } catch (Exception e) {
+                    logger.error(e.getMessage(), e);
+                    throw new RpcException("Fail to create thrift server(" + url + ") : " + e.getMessage(), e);
                 }
-            } // ~ end of if ( server != null )
-
-        } // ~ end of loop serverMap
-
-    } // ~ end of method destroy
-
-    @Override
-    public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
-
-        ThriftInvoker<T> invoker = new ThriftInvoker<T>(type, url, getClients(url), invokers);
-
-        invokers.add(invoker);
-
-        return invoker;
-
-    }
-
-    private ExchangeClient[] getClients(URL url) {
-
-        int connections = url.getParameter(Constants.CONNECTIONS_KEY, 1);
-
-        ExchangeClient[] clients = new ExchangeClient[connections];
-
-        for (int i = 0; i < clients.length; i++) {
-            clients[i] = initClient(url);
-        }
-        return clients;
-    }
-
-    private ExchangeClient initClient(URL url) {
-
-        ExchangeClient client;
-
-        url = url.addParameter(Constants.CODEC_KEY, ThriftCodec.NAME);
-
-        try {
-            client = Exchangers.connect(url);
-        } catch (RemotingException e) {
-            throw new RpcException("Fail to create remoting client for service(" + url
-                    + "): " + e.getMessage(), e);
-        }
-
-        return client;
-
-    }
-
-    private ExchangeServer getServer(URL url) {
-        // enable sending readonly event when server closes by default
-        url = url.addParameterIfAbsent(Constants.CHANNEL_READONLYEVENT_SENT_KEY, Boolean.TRUE.toString());
-        String str = url.getParameter(Constants.SERVER_KEY, Constants.DEFAULT_REMOTING_SERVER);
-
-        if (str != null && str.length() > 0 && !ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(str)) {
-            throw new RpcException("Unsupported server type: " + str + ", url: " + url);
-        }
-
-        ExchangeServer server;
-        try {
-            server = Exchangers.bind(url, handler);
-        } catch (RemotingException e) {
-            throw new RpcException("Fail to start server(url: " + url + ") " + e.getMessage(), e);
-        }
-        str = url.getParameter(Constants.CLIENT_KEY);
-        if (str != null && str.length() > 0) {
-            Set<String> supportedTypes = ExtensionLoader.getExtensionLoader(Transporter.class).getSupportedExtensions();
-            if (!supportedTypes.contains(str)) {
-                throw new RpcException("Unsupported client type: " + str);
+            } catch (Exception e) {
+                logger.error(e.getMessage(), e);
+                throw new RpcException("Fail to create thrift server(" + url + ") : " + e.getMessage(), e);
             }
         }
-        return server;
+
+        if (tserver == null && tArgs == null) {
+            logger.error("Fail to create thrift server(" + url + ") due to null args");
+            throw new RpcException("Fail to create thrift server(" + url + ") due to null args");
+        }
+        final TServer thriftServer =  new TThreadedSelectorServer(tArgs);
+        serverMap.put(url.getAddress(),thriftServer);
+
+        new Thread(() -> {
+            logger.info("Start Thrift ThreadedSelectorServer");
+            thriftServer.serve();
+            logger.info("Thrift ThreadedSelectorServer started.");
+        }).start();
+
+        return new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    logger.info("Close Thrift NonblockingServer");
+                    thriftServer.stop();
+                } catch (Throwable e) {
+                    logger.warn(e.getMessage(), e);
+                }
+            }
+        };
+    }
+
+    private <T> T doReferFrameAndCompact(Class<T> type, URL url) throws RpcException {
+
+        try {
+            T thriftClient = null;
+            String typeName = type.getName();
+            if (typeName.endsWith(THRIFT_IFACE)) {
+                String clientClsName = typeName.substring(0, typeName.indexOf(THRIFT_IFACE)) + THRIFT_CLIENT;
+                Class<?> clazz = Class.forName(clientClsName);
+                Constructor constructor = clazz.getConstructor(TProtocol.class);
+                try {
+                    TSocket tSocket = new TSocket(url.getHost(), url.getPort());
+                    TTransport transport = new TFramedTransport(tSocket);
+                    TProtocol tprotocol = new TCompactProtocol(transport);
+                    TMultiplexedProtocol protocol = new TMultiplexedProtocol(tprotocol,typeName);
+                    thriftClient = (T) constructor.newInstance(protocol);
+                    transport.open();
+                    logger.info("thrift client opened for service(" + url + ")");
+                } catch (Exception e) {
+                    logger.error(e.getMessage(), e);
+                    throw new RpcException("Fail to create remote client:" + e.getMessage(), e);
+                }
+            }
+            return thriftClient;
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            throw new RpcException("Fail to create remote client for service(" + url + "): " + e.getMessage(), e);
+        }
     }
 
 }
