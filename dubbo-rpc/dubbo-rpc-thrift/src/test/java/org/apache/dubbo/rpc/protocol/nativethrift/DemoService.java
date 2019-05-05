@@ -442,7 +442,6 @@ public class DemoService {
         return false;
       }
 
-      @Override
       protected boolean handleRuntimeExceptions() {
         return false;
       }
@@ -467,7 +466,6 @@ public class DemoService {
         return false;
       }
 
-      @Override
       protected boolean handleRuntimeExceptions() {
         return false;
       }

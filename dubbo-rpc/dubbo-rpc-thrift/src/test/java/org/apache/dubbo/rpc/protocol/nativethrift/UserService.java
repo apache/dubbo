@@ -144,7 +144,6 @@ public class UserService {
         return false;
       }
 
-      @Override
       protected boolean handleRuntimeExceptions() {
         return false;
       }
