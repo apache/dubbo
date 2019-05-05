@@ -38,7 +38,6 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.service.GenericException;
 import org.apache.dubbo.rpc.service.GenericService;
-import org.apache.dubbo.rpc.support.ProtobufUtils;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.io.IOException;
@@ -111,10 +110,16 @@ public class GenericFilter implements Filter {
                 } else if (ProtocolUtils.isProtobufGenericSerialization(generic)) {
                     //as proto3 only accept one parameter
                     if (args.length == 1 && args[0] instanceof String) {
-                        args[0] = ProtobufUtils.deserialize((String) args[0], method.getParameterTypes()[0]);
+                        try (UnsafeByteArrayInputStream is = new UnsafeByteArrayInputStream( ((String)args[0]).getBytes())) {
+                            args[0] = ExtensionLoader.getExtensionLoader(Serialization.class)
+                                    .getExtension(Constants.GENERIC_SERIALIZATION_PROTOBUF)
+                                    .deserialize(null, is).readObject(method.getParameterTypes()[0]);
+                        } catch (Exception e) {
+                            throw new RpcException("Deserialize argument failed.", e);
+                        }
                     } else {
                         throw new RpcException(
-                                new StringBuilder("Generic serialization [").append(Constants.GENERIC_SERIALIZATION_PROTO)
+                                new StringBuilder("Generic serialization [").append(Constants.GENERIC_SERIALIZATION_PROTOBUF)
                                         .append("] only support one").append(String.class.getName()).append(" argument ")
                                         .append(" and your message size is ").append(args.length).append(" and type is").append(args[0].getClass().getName()).toString());
                     }
@@ -137,7 +142,15 @@ public class GenericFilter implements Filter {
                 } else if (ProtocolUtils.isBeanGenericSerialization(generic)) {
                     return new RpcResult(JavaBeanSerializeUtil.serialize(result.getValue(), JavaBeanAccessor.METHOD));
                 } else if (ProtocolUtils.isProtobufGenericSerialization(generic)) {
-                    return new RpcResult(ProtobufUtils.serialize(result.getValue()));
+                    try{
+                        UnsafeByteArrayOutputStream os = new UnsafeByteArrayOutputStream(512);
+                        ExtensionLoader.getExtensionLoader(Serialization.class)
+                                .getExtension(Constants.GENERIC_SERIALIZATION_PROTOBUF)
+                                .serialize(null, os).writeObject(result.getValue());
+                        return new RpcResult(os.toByteArray());
+                    }catch (IOException e){
+                        throw new RpcException("Serialize result failed.", e);
+                    }
                 } else {
                     return new RpcResult(PojoUtils.generalize(result.getValue()));
                 }

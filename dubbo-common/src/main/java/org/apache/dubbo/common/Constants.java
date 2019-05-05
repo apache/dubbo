@@ -727,7 +727,7 @@ public class Constants {
 
     public static final String GENERIC_SERIALIZATION_BEAN = "bean";
 
-    public static final String GENERIC_SERIALIZATION_PROTO = "proto";
+    public static final String GENERIC_SERIALIZATION_PROTOBUF = "genericProtobuf";
 
     public static final String DUBBO_IP_TO_REGISTRY = "DUBBO_IP_TO_REGISTRY";
 
