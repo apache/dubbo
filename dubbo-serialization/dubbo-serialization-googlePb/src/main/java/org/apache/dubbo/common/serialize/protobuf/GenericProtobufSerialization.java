@@ -33,7 +33,7 @@ public class GenericProtobufSerialization implements Serialization {
 
     @Override
     public byte getContentTypeId() {
-        return 6;
+        return 11;
     }
 
     @Override

@@ -147,7 +147,7 @@ public class GenericFilter implements Filter {
                         ExtensionLoader.getExtensionLoader(Serialization.class)
                                 .getExtension(Constants.GENERIC_SERIALIZATION_PROTOBUF)
                                 .serialize(null, os).writeObject(result.getValue());
-                        return new RpcResult(os.toByteArray());
+                        return new RpcResult(os.toString());
                     }catch (IOException e){
                         throw new RpcException("Serialize result failed.", e);
                     }
