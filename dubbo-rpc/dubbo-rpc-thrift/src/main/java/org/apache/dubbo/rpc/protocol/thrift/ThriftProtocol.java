@@ -137,15 +137,12 @@ public class ThriftProtocol extends AbstractProxyProtocol {
             logger.info("Thrift ThreadedSelectorServer started.");
         }).start();
 
-        return new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    logger.info("Close Thrift NonblockingServer");
-                    thriftServer.stop();
-                } catch (Throwable e) {
-                    logger.warn(e.getMessage(), e);
-                }
+        return () -> {
+            try {
+                logger.info("Close Thrift NonblockingServer");
+                thriftServer.stop();
+            } catch (Throwable e) {
+                logger.warn(e.getMessage(), e);
             }
         };
     }

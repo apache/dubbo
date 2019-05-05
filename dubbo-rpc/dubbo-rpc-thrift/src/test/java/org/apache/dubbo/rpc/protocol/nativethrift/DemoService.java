@@ -491,7 +491,6 @@ public class DemoService {
         return false;
       }
 
-      @Override
       protected boolean handleRuntimeExceptions() {
         return false;
       }
@@ -516,7 +515,6 @@ public class DemoService {
         return false;
       }
 
-      @Override
       protected boolean handleRuntimeExceptions() {
         return false;
       }
@@ -541,7 +539,6 @@ public class DemoService {
         return false;
       }
 
-      @Override
       protected boolean handleRuntimeExceptions() {
         return false;
       }
@@ -566,7 +563,6 @@ public class DemoService {
         return false;
       }
 
-      @Override
       protected boolean handleRuntimeExceptions() {
         return false;
       }
@@ -583,7 +579,7 @@ public class DemoService {
   public static class AsyncProcessor<I extends AsyncIface> extends org.apache.thrift.TBaseAsyncProcessor<I> {
     private static final org.slf4j.Logger _LOGGER = org.slf4j.LoggerFactory.getLogger(AsyncProcessor.class.getName());
     public AsyncProcessor(I iface) {
-      super(iface, getProcessMap(new java.util.HashMap<String, org.apache.thrift.AsyncProcessFunction<I, ? extends org.apache.thrift.TBase, ?>>()));
+      super(iface, getProcessMap(new java.util.HashMap<>()));
     }
 
     protected AsyncProcessor(I iface, java.util.Map<String,  org.apache.thrift.AsyncProcessFunction<I, ? extends  org.apache.thrift.TBase, ?>> processMap) {
