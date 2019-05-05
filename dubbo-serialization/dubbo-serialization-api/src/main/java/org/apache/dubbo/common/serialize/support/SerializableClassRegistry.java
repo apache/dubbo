@@ -28,7 +28,7 @@ import java.util.Map;
 public abstract class SerializableClassRegistry {
 
 
-    private static final Map<Class, Object> registrations = new LinkedHashMap<>();
+    private static final Map<Class, Object> REGISTRATIONS = new LinkedHashMap<>();
 
     /**
      * only supposed to be called at startup time
@@ -49,7 +49,7 @@ public abstract class SerializableClassRegistry {
         if (clazz == null) {
             throw new IllegalArgumentException("Class registered to kryo cannot be null!");
         }
-        registrations.put(clazz, serializer);
+        REGISTRATIONS.put(clazz, serializer);
     }
 
     /**
@@ -58,6 +58,6 @@ public abstract class SerializableClassRegistry {
      * @return class serializer
      * */
     public static Map<Class, Object> getRegisteredClasses() {
-        return registrations;
+        return REGISTRATIONS;
     }
 }
