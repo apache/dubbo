@@ -80,19 +80,19 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
      * Actually，when the {@link ExtensionLoader} init the {@link Protocol} instants,it will automatically wraps two
      * layers, and eventually will get a <b>ProtocolFilterWrapper</b> or <b>ProtocolListenerWrapper</b>
      */
-    private static final Protocol refprotocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+    private static final Protocol REF_PROTOCOL = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
     /**
      * The {@link Cluster}'s implementation with adaptive functionality, and actually it will get a {@link Cluster}'s
      * specific implementation who is wrapped with <b>MockClusterInvoker</b>
      */
-    private static final Cluster cluster = ExtensionLoader.getExtensionLoader(Cluster.class).getAdaptiveExtension();
+    private static final Cluster CLUSTER = ExtensionLoader.getExtensionLoader(Cluster.class).getAdaptiveExtension();
 
     /**
      * A {@link ProxyFactory} implementation that will generate a reference service's proxy,the JavassistProxyFactory is
      * its default implementation
      */
-    private static final ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+    private static final ProxyFactory PROXY_FACTORY = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
     /**
      * The url of the reference service
@@ -333,7 +333,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     private T createProxy(Map<String, String> map) {
         if (shouldJvmRefer(map)) {
             URL url = new URL(Constants.LOCAL_PROTOCOL, Constants.LOCALHOST_VALUE, 0, interfaceClass.getName()).addParameters(map);
-            invoker = refprotocol.refer(interfaceClass, url);
+            invoker = REF_PROTOCOL.refer(interfaceClass, url);
             if (logger.isInfoEnabled()) {
                 logger.info("Using injvm service " + interfaceClass.getName());
             }
@@ -371,23 +371,23 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
 
             if (urls.size() == 1) {
-                invoker = refprotocol.refer(interfaceClass, urls.get(0));
+                invoker = REF_PROTOCOL.refer(interfaceClass, urls.get(0));
             } else {
                 List<Invoker<?>> invokers = new ArrayList<Invoker<?>>();
                 URL registryURL = null;
                 for (URL url : urls) {
-                    invokers.add(refprotocol.refer(interfaceClass, url));
+                    invokers.add(REF_PROTOCOL.refer(interfaceClass, url));
                     if (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) {
                         registryURL = url; // use last registry url
                     }
                 }
                 if (registryURL != null) { // registry url is available
-                    // use RegistryAwareCluster only when register's cluster is available
+                    // use RegistryAwareCluster only when register's CLUSTER is available
                     URL u = registryURL.addParameter(Constants.CLUSTER_KEY, RegistryAwareCluster.NAME);
                     // The invoker wrap relation would be: RegistryAwareClusterInvoker(StaticDirectory) -> FailoverClusterInvoker(RegistryDirectory, will execute route) -> Invoker
-                    invoker = cluster.join(new StaticDirectory(u, invokers));
+                    invoker = CLUSTER.join(new StaticDirectory(u, invokers));
                 } else { // not a registry url, must be direct invoke.
-                    invoker = cluster.join(new StaticDirectory(invokers));
+                    invoker = CLUSTER.join(new StaticDirectory(invokers));
                 }
             }
         }
@@ -410,7 +410,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             metadataReportService.publishConsumer(consumerURL);
         }
         // create service proxy
-        return (T) proxyFactory.getProxy(invoker);
+        return (T) PROXY_FACTORY.getProxy(invoker);
     }
 
     /**
