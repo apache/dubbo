@@ -14,20 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.store;
 
-
-import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
-import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
-
-import java.util.Map;
+package org.apache.dubbo.metadata.store.etcd;
 
 /**
+ * Test interface for Etcd metadata report
  */
-public interface MetadataReport {
+public interface EtcdMetadata4TstService {
 
-    void storeProviderMetadata(MetadataIdentifier providerMetadataIdentifier, FullServiceDefinition serviceDefinition);
+    int getCounter();
 
-    void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap);
-
+    void printResult(String var);
 }
