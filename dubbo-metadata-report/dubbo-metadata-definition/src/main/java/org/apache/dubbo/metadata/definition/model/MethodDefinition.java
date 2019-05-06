@@ -37,7 +37,7 @@ public class MethodDefinition {
 
     public List<TypeDefinition> getParameters() {
         if (parameters == null) {
-            parameters = new ArrayList<TypeDefinition>();
+            parameters = new ArrayList<>();
         }
         return parameters;
     }
@@ -74,8 +74,12 @@ public class MethodDefinition {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof MethodDefinition)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof MethodDefinition)) {
+            return false;
+        }
         MethodDefinition that = (MethodDefinition) o;
         return Objects.equals(getName(), that.getName()) &&
                 Arrays.equals(getParameterTypes(), that.getParameterTypes()) &&

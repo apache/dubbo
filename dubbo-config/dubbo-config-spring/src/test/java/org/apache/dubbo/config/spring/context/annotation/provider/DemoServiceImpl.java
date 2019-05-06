@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.context.annotation.provider;
 
 import org.apache.dubbo.config.spring.api.Box;
 import org.apache.dubbo.config.spring.api.DemoService;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,11 +45,6 @@ public class DemoServiceImpl implements DemoService {
 
     @Override
     public Box getBox() {
-        return new Box() {
-            @Override
-            public String getName() {
-                return "MyBox";
-            }
-        };
+        throw new UnsupportedOperationException("For Purposes!");
     }
 }

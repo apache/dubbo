@@ -59,14 +59,14 @@ public class TypeDefinition {
 
     public List<TypeDefinition> getItems() {
         if (items == null) {
-            items = new ArrayList<TypeDefinition>();
+            items = new ArrayList<>();
         }
         return items;
     }
 
     public Map<String, TypeDefinition> getProperties() {
         if (properties == null) {
-            properties = new HashMap<String, TypeDefinition>();
+            properties = new HashMap<>();
         }
         return properties;
     }
@@ -106,8 +106,12 @@ public class TypeDefinition {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof TypeDefinition)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof TypeDefinition)) {
+            return false;
+        }
         TypeDefinition that = (TypeDefinition) o;
         return Objects.equals(getId(), that.getId()) &&
                 Objects.equals(getType(), that.getType()) &&

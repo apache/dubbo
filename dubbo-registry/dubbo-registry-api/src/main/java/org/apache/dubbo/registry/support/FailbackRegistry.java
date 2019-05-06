@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.support;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.retry.FailedNotifiedTask;
@@ -291,7 +292,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             Throwable t = e;
 
             List<URL> urls = getCacheUrls(url);
-            if (urls != null && !urls.isEmpty()) {
+            if (CollectionUtils.isNotEmpty(urls)) {
                 notify(url, listener, urls);
                 logger.error("Failed to subscribe " + url + ", Using cached list: " + urls + " from cache file: " + getUrl().getParameter(Constants.FILE_KEY, System.getProperty("user.home") + "/dubbo-registry-" + url.getHost() + ".cache") + ", cause: " + t.getMessage(), t);
             } else {

@@ -17,9 +17,9 @@
 package org.apache.dubbo.rpc.proxy;
 
 import org.apache.dubbo.rpc.Invoker;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -35,7 +35,7 @@ public class InvokerInvocationHandlerTest {
     @InjectMocks
     private InvokerInvocationHandler invokerInvocationHandler;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
     }
@@ -48,7 +48,7 @@ public class InvokerInvocationHandlerTest {
         Method method = invoker.getClass().getMethod(methodName);
 
         Object result = invokerInvocationHandler.invoke(null, method, new Object[]{});
-        Assert.assertEquals(methodName, result);
+        Assertions.assertEquals(methodName, result);
     }
 
 }

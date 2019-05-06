@@ -16,12 +16,11 @@
  */
 package org.apache.dubbo.config.spring;
 
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
-import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
-import org.apache.dubbo.config.support.Parameter;
 
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.DisposableBean;
@@ -33,9 +32,7 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.PropertySource;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -48,7 +45,8 @@ public class ConfigCenterBean extends ConfigCenterConfig implements Initializing
 
     private transient ApplicationContext applicationContext;
 
-    private Boolean fromSpring = false;
+    private Boolean includeSpringEnv = false;
+    private ApplicationConfig application;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
@@ -75,28 +73,6 @@ public class ConfigCenterBean extends ConfigCenterConfig implements Initializing
                 }
             }
         }
-
-        if ((getRegistry() == null)) {
-            List<RegistryConfig> registryConfigs = new ArrayList<>();
-            if (getApplication() != null && getApplication().getRegistries() != null && !getApplication().getRegistries().isEmpty()) {
-                registryConfigs = getApplication().getRegistries();
-            } else {
-                Map<String, RegistryConfig> registryConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, RegistryConfig.class, false, false);
-                if (registryConfigMap != null && registryConfigMap.size() > 0) {
-                    registryConfigs.addAll(registryConfigMap.values());
-                }
-            }
-            for (RegistryConfig config : registryConfigs) {
-                if (config.isDefault() == null || config.isDefault() && config.isZookeeperProtocol()) {
-                    setRegistry(config);
-                    break;
-                }
-            }
-        }
-
-        if (!fromSpring) {
-            this.init();
-        }
     }
 
     @Override
@@ -106,12 +82,11 @@ public class ConfigCenterBean extends ConfigCenterConfig implements Initializing
 
     @Override
     public void setEnvironment(Environment environment) {
-        if (fromSpring) {
+        if (includeSpringEnv) {
             Map<String, String> externalProperties = getConfigurations(getConfigFile(), environment);
             Map<String, String> appExternalProperties = getConfigurations(StringUtils.isNotEmpty(getAppConfigFile()) ? getAppConfigFile() : (StringUtils.isEmpty(getAppName()) ? ("application." + getConfigFile()) : (getAppName() + "." + getConfigFile())), environment);
             org.apache.dubbo.common.config.Environment.getInstance().setExternalConfigMap(externalProperties);
             org.apache.dubbo.common.config.Environment.getInstance().setAppExternalConfigMap(appExternalProperties);
-            this.init();
         }
     }
 
@@ -122,7 +97,7 @@ public class ConfigCenterBean extends ConfigCenterConfig implements Initializing
             if (rawProperties instanceof Map) {
                 externalProperties.putAll((Map<String, String>) rawProperties);
             } else if (rawProperties instanceof String) {
-                externalProperties.putAll(parseProperties((String) rawProperties));
+                externalProperties.putAll(ConfigurationUtils.parseProperties((String) rawProperties));
             }
 
             if (environment instanceof ConfigurableEnvironment && externalProperties.isEmpty()) {
@@ -143,12 +118,23 @@ public class ConfigCenterBean extends ConfigCenterConfig implements Initializing
         return externalProperties;
     }
 
-    @Parameter(excluded = true)
-    public Boolean getFromSpring() {
-        return fromSpring;
+    public ApplicationContext getApplicationContext() {
+        return applicationContext;
     }
 
-    public void setFromSpring(Boolean fromSpring) {
-        this.fromSpring = fromSpring;
+    public Boolean getIncludeSpringEnv() {
+        return includeSpringEnv;
+    }
+
+    public void setIncludeSpringEnv(Boolean includeSpringEnv) {
+        this.includeSpringEnv = includeSpringEnv;
+    }
+
+    public ApplicationConfig getApplication() {
+        return application;
+    }
+
+    public void setApplication(ApplicationConfig application) {
+        this.application = application;
     }
 }

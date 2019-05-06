@@ -19,16 +19,15 @@ package org.apache.dubbo.rpc.cluster.router;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-/**
- * FIXME This is not a formal UT
- */
+@Disabled("FIXME This is not a formal UT")
 public class ConfigConditionRouterTest {
     private static CuratorFramework client;
 
-    @Before
+    @BeforeEach
     public void init() {
         client = CuratorFrameworkFactory.newClient("127.0.0.1:2181", 60 * 1000, 60 * 1000,
                 new ExponentialBackoffRetry(1000, 3));
@@ -48,7 +47,7 @@ public class ConfigConditionRouterTest {
                 "  - method=notExitMethod => \n" +
                 "...";
         try {
-            String servicePath = "/dubbo/config/demo-consumer/routers";
+            String servicePath = "/dubbo/config/demo-consumer/condition-router";
             if (client.checkExists().forPath(servicePath) == null) {
                 client.create().creatingParentsIfNeeded().forPath(servicePath);
             }
@@ -72,7 +71,7 @@ public class ConfigConditionRouterTest {
                 "  - method=routeMethod1 => host=30.5.120.37\n" +
                 "...";
         try {
-            String servicePath = "/dubbo/config/demo-consumer/routers";
+            String servicePath = "/dubbo/config/demo-consumer/condition-router";
             if (client.checkExists().forPath(servicePath) == null) {
                 client.create().creatingParentsIfNeeded().forPath(servicePath);
             }
@@ -97,7 +96,7 @@ public class ConfigConditionRouterTest {
                 "...";
 //        String serviceStr = "";
         try {
-            String servicePath = "/dubbo/config/org.apache.dubbo.demo.DemoService/routers";
+            String servicePath = "/dubbo/config/org.apache.dubbo.demo.DemoService/condition-router";
             if (client.checkExists().forPath(servicePath) == null) {
                 client.create().creatingParentsIfNeeded().forPath(servicePath);
             }
@@ -118,7 +117,7 @@ public class ConfigConditionRouterTest {
                 "key: org.apache.dubbo.demo.DemoService\n" +
                 "...";
         try {
-            String servicePath = "/dubbo/config/org.apache.dubbo.demo.DemoService/routers";
+            String servicePath = "/dubbo/config/org.apache.dubbo.demo.DemoService/condition-router";
             if (client.checkExists().forPath(servicePath) == null) {
                 client.create().creatingParentsIfNeeded().forPath(servicePath);
             }

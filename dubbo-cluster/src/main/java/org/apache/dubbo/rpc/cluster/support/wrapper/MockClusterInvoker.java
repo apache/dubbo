@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -87,7 +88,7 @@ public class MockClusterInvoker<T> implements Invoker<T> {
                 if (e.isBiz()) {
                     throw e;
                 }
-                
+
                 if (logger.isWarnEnabled()) {
                     logger.warn("fail-mock: " + invocation.getMethodName() + " fail-mock enabled , url : " + directory.getUrl(), e);
                 }
@@ -103,8 +104,8 @@ public class MockClusterInvoker<T> implements Invoker<T> {
         Invoker<T> minvoker;
 
         List<Invoker<T>> mockInvokers = selectMockInvoker(invocation);
-        if (mockInvokers == null || mockInvokers.isEmpty()) {
-            minvoker = (Invoker<T>) new MockInvoker(directory.getUrl());
+        if (CollectionUtils.isEmpty(mockInvokers)) {
+            minvoker = (Invoker<T>) new MockInvoker(directory.getUrl(), directory.getInterface());
         } else {
             minvoker = mockInvokers.get(0);
         }

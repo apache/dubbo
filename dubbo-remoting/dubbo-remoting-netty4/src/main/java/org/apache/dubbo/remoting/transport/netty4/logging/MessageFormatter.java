@@ -16,6 +16,10 @@
  */
 package org.apache.dubbo.remoting.transport.netty4.logging;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ArrayUtils;
+
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -86,6 +90,7 @@ import java.util.Map;
  * {@link #arrayFormat(String, Object[])} methods for more details.
  */
 final class MessageFormatter {
+    private static final Logger logger = LoggerFactory.getLogger(MessageFormatter.class);
     static final char DELIM_START = '{';
     static final char DELIM_STOP = '}';
     static final String DELIM_STR = "{}";
@@ -137,7 +142,7 @@ final class MessageFormatter {
     }
 
     static Throwable getThrowableCandidate(Object[] argArray) {
-        if (argArray == null || argArray.length == 0) {
+        if (ArrayUtils.isEmpty(argArray)) {
             return null;
         }
 
@@ -279,7 +284,7 @@ final class MessageFormatter {
             System.err
                     .println("SLF4J: Failed toString() invocation on an object of type ["
                             + o.getClass().getName() + ']');
-            t.printStackTrace();
+            logger.error(t.getMessage(), t);
             sbuf.append("[FAILED toString()]");
         }
     }

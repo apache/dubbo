@@ -16,18 +16,18 @@
  */
 package org.apache.dubbo.config.utils;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ReferenceConfigCacheTest {
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         MockReferenceConfig.setCounter(0);
-        ReferenceConfigCache.cacheHolder.clear();
+        ReferenceConfigCache.CACHE_HOLDER.clear();
     }
 
     @Test
@@ -56,6 +56,14 @@ public class ReferenceConfigCacheTest {
         value = cache.get(configCopy);
         assertTrue(configCopy.isGetMethodRun());
         assertEquals("1", value);
+    }
+
+    @Test
+    public void testGetCacheWithKey() throws Exception {
+        ReferenceConfigCache cache = ReferenceConfigCache.getCache();
+        MockReferenceConfig config = buildMockReferenceConfig("FooService", "group1", "1.0.0");
+        String value = cache.get(config);
+        assertEquals(value, cache.get("group1/FooService:1.0.0", String.class));
     }
 
     @Test

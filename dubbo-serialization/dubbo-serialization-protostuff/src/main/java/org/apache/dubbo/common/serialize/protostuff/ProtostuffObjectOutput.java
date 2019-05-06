@@ -17,18 +17,19 @@
 
 package org.apache.dubbo.common.serialize.protostuff;
 
-import org.apache.dubbo.common.serialize.ObjectOutput;
-import org.apache.dubbo.common.serialize.protostuff.utils.WrapperUtils;
-
+import io.protostuff.GraphIOUtil;
 import io.protostuff.LinkedBuffer;
-import io.protostuff.ProtobufIOUtil;
 import io.protostuff.Schema;
 import io.protostuff.runtime.RuntimeSchema;
-
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import org.apache.dubbo.common.serialize.ObjectOutput;
+import org.apache.dubbo.common.serialize.protostuff.utils.WrapperUtils;
 
+/**
+ * Protostuff object output implementation
+ */
 public class ProtostuffObjectOutput implements ObjectOutput {
 
     private LinkedBuffer buffer = LinkedBuffer.allocate();
@@ -46,14 +47,14 @@ public class ProtostuffObjectOutput implements ObjectOutput {
         byte[] classNameBytes;
 
         try {
-            if (WrapperUtils.needWrapper(obj)) {
+            if (obj == null || WrapperUtils.needWrapper(obj)) {
                 Schema<Wrapper> schema = RuntimeSchema.getSchema(Wrapper.class);
                 Wrapper wrapper = new Wrapper(obj);
-                bytes = ProtobufIOUtil.toByteArray(wrapper, schema, buffer);
+                bytes = GraphIOUtil.toByteArray(wrapper, schema, buffer);
                 classNameBytes = Wrapper.class.getName().getBytes();
             } else {
                 Schema schema = RuntimeSchema.getSchema(obj.getClass());
-                bytes = ProtobufIOUtil.toByteArray(obj, schema, buffer);
+                bytes = GraphIOUtil.toByteArray(obj, schema, buffer);
                 classNameBytes = obj.getClass().getName().getBytes();
             }
         } finally {

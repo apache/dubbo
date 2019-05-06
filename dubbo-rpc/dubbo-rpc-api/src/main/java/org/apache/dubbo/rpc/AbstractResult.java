@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc;
 
+import org.apache.dubbo.common.utils.StringUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -58,7 +60,7 @@ public abstract class AbstractResult implements Result {
     @Override
     public String getAttachment(String key, String defaultValue) {
         String result = attachments.get(key);
-        if (result == null || result.length() == 0) {
+        if (StringUtils.isEmpty(result)) {
             result = defaultValue;
         }
         return result;

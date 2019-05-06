@@ -43,7 +43,7 @@ public @interface Reference {
 
     boolean generic() default false;
 
-    boolean injvm() default false;
+    boolean injvm() default true;
 
     boolean check() default true;
 

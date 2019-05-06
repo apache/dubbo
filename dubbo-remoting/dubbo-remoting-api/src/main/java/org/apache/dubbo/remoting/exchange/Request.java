@@ -95,8 +95,12 @@ public class Request {
     }
 
     public void setEvent(String event) {
-        mEvent = true;
-        mData = event;
+        this.mEvent = true;
+        this.mData = event;
+    }
+
+    public void setEvent(boolean mEvent) {
+        this.mEvent = mEvent;
     }
 
     public boolean isBroken() {

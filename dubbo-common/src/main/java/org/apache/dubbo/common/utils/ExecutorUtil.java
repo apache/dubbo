@@ -26,10 +26,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ScheduledFuture;
 
 public class ExecutorUtil {
     private static final Logger logger = LoggerFactory.getLogger(ExecutorUtil.class);
-    private static final ThreadPoolExecutor shutdownExecutor = new ThreadPoolExecutor(0, 1,
+    private static final ThreadPoolExecutor SHUTDOWN_EXECUTOR = new ThreadPoolExecutor(0, 1,
             0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<Runnable>(100),
             new NamedThreadFactory("Close-ExecutorService-Timer", true));
@@ -45,9 +46,10 @@ public class ExecutorUtil {
 
     /**
      * Use the shutdown pattern from:
-     *  https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html
+     * https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html
+     *
      * @param executor the Executor to shutdown
-     * @param timeout the timeout in milliseconds before termination
+     * @param timeout  the timeout in milliseconds before termination
      */
     public static void gracefulShutdown(Executor executor, int timeout) {
         if (!(executor instanceof ExecutorService) || isTerminated(executor)) {
@@ -100,7 +102,7 @@ public class ExecutorUtil {
 
     private static void newThreadToCloseExecutor(final ExecutorService es) {
         if (!isTerminated(es)) {
-            shutdownExecutor.execute(new Runnable() {
+            SHUTDOWN_EXECUTOR.execute(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -130,5 +132,12 @@ public class ExecutorUtil {
         name = name + "-" + url.getAddress();
         url = url.addParameter(Constants.THREAD_NAME_KEY, name);
         return url;
+    }
+
+    public static void cancelScheduledFuture(ScheduledFuture<?> scheduledFuture) {
+        ScheduledFuture<?> future = scheduledFuture;
+        if (future != null && !future.isCancelled()) {
+            future.cancel(true);
+        }
     }
 }

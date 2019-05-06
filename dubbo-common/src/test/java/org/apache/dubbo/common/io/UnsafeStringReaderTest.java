@@ -16,12 +16,13 @@
  */
 package org.apache.dubbo.common.io;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class UnsafeStringReaderTest {
     @Test
@@ -63,10 +64,12 @@ public class UnsafeStringReaderTest {
         assertThat(skip, is(0L));
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
+    @Test
     public void testWrongLength() throws IOException {
-        UnsafeStringReader reader = new UnsafeStringReader("abc");
-        char[] chars = new char[1];
-        reader.read(chars, 0, 2);
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
+            UnsafeStringReader reader = new UnsafeStringReader("abc");
+            char[] chars = new char[1];
+            reader.read(chars, 0, 2);
+        });
     }
 }

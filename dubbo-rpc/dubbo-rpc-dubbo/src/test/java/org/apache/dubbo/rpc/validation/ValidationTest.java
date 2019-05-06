@@ -23,12 +23,15 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.service.GenericException;
 import org.apache.dubbo.rpc.service.GenericService;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
@@ -41,20 +44,33 @@ import java.util.Set;
  * GenericServiceTest
  */
 public class ValidationTest {
+    private ApplicationConfig application = new ApplicationConfig("validation-test");
+    private RegistryConfig registryNA = new RegistryConfig("N/A");
+    private ProtocolConfig protocolDubo29582 = new ProtocolConfig("dubbo", 29582);
+
+    @BeforeEach
+    public void setUp() {
+        ConfigManager.getInstance().clear();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        ConfigManager.getInstance().clear();
+    }
 
     @Test
     public void testValidation() {
         ServiceConfig<ValidationService> service = new ServiceConfig<ValidationService>();
-        service.setApplication(new ApplicationConfig("validation-provider"));
-        service.setRegistry(new RegistryConfig("N/A"));
-        service.setProtocol(new ProtocolConfig("dubbo", 29582));
+        service.setApplication(application);
+        service.setRegistry(registryNA);
+        service.setProtocol(protocolDubo29582);
         service.setInterface(ValidationService.class.getName());
         service.setRef(new ValidationServiceImpl());
         service.setValidation(String.valueOf(true));
         service.export();
         try {
             ReferenceConfig<ValidationService> reference = new ReferenceConfig<ValidationService>();
-            reference.setApplication(new ApplicationConfig("validation-consumer"));
+            reference.setApplication(application);
             reference.setInterface(ValidationService.class);
             reference.setUrl("dubbo://127.0.0.1:29582?scope=remote&validation=true");
             ValidationService validationService = reference.get();
@@ -76,10 +92,10 @@ public class ValidationTest {
                     parameter.setLoginDate(new Date(System.currentTimeMillis() - 1000000));
                     parameter.setExpiryDate(new Date(System.currentTimeMillis() + 1000000));
                     validationService.save(parameter);
-                    Assert.fail();
+                    Assertions.fail();
                 } catch (ConstraintViolationException ve) {
                     Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
-                    Assert.assertNotNull(violations);
+                    Assertions.assertNotNull(violations);
                 }
 
                 // verify save group, save error
@@ -90,10 +106,10 @@ public class ValidationTest {
                     parameter.setLoginDate(new Date(System.currentTimeMillis() - 1000000));
                     parameter.setExpiryDate(new Date(System.currentTimeMillis() + 1000000));
                     validationService.save(parameter);
-                    Assert.fail();
+                    Assertions.fail();
                 } catch (ConstraintViolationException ve) {
                     Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
-                    Assert.assertNotNull(violations);
+                    Assertions.assertNotNull(violations);
                 }
 
                 // relatedQuery error, no id and email is passed, will trigger validation exception for both Save
@@ -105,21 +121,21 @@ public class ValidationTest {
                     parameter.setLoginDate(new Date(System.currentTimeMillis() - 1000000));
                     parameter.setExpiryDate(new Date(System.currentTimeMillis() + 1000000));
                     validationService.relatedQuery(parameter);
-                    Assert.fail();
+                    Assertions.fail();
                 } catch (ConstraintViolationException ve) {
                     Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
-                    Assert.assertEquals(violations.size(),2);
+                    Assertions.assertEquals(violations.size(),2);
                 }
 
                 // Save Error
                 try {
                     parameter = new ValidationParameter();
                     validationService.save(parameter);
-                    Assert.fail();
+                    Assertions.fail();
                 } catch (ConstraintViolationException ve) {
                     Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
-                    Assert.assertTrue(violations.size() == 3);
-                    Assert.assertNotNull(violations);
+                    Assertions.assertTrue(violations.size() == 3);
+                    Assertions.assertNotNull(violations);
                 }
 
                 // Delete OK
@@ -128,37 +144,37 @@ public class ValidationTest {
                 // Delete Error
                 try {
                     validationService.delete(2, "a");
-                    Assert.fail();
+                    Assertions.fail();
                 } catch (ConstraintViolationException ve) {
                     Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
-                    Assert.assertNotNull(violations);
-                    Assert.assertEquals(1, violations.size());
+                    Assertions.assertNotNull(violations);
+                    Assertions.assertEquals(1, violations.size());
                 }
 
                 // Delete Error
                 try {
                     validationService.delete(0, "abc");
-                    Assert.fail();
+                    Assertions.fail();
                 } catch (ConstraintViolationException ve) {
                     Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
-                    Assert.assertNotNull(violations);
-                    Assert.assertEquals(1, violations.size());
+                    Assertions.assertNotNull(violations);
+                    Assertions.assertEquals(1, violations.size());
                 }
                 try {
                     validationService.delete(2, null);
-                    Assert.fail();
+                    Assertions.fail();
                 } catch (ConstraintViolationException ve) {
                     Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
-                    Assert.assertNotNull(violations);
-                    Assert.assertEquals(1, violations.size());
+                    Assertions.assertNotNull(violations);
+                    Assertions.assertEquals(1, violations.size());
                 }
                 try {
                     validationService.delete(0, null);
-                    Assert.fail();
+                    Assertions.fail();
                 } catch (ConstraintViolationException ve) {
                     Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
-                    Assert.assertNotNull(violations);
-                    Assert.assertEquals(2, violations.size());
+                    Assertions.assertNotNull(violations);
+                    Assertions.assertEquals(2, violations.size());
                 }
             } finally {
                 reference.destroy();
@@ -171,16 +187,16 @@ public class ValidationTest {
     @Test
     public void testProviderValidation() {
         ServiceConfig<ValidationService> service = new ServiceConfig<ValidationService>();
-        service.setApplication(new ApplicationConfig("validation-provider"));
-        service.setRegistry(new RegistryConfig("N/A"));
-        service.setProtocol(new ProtocolConfig("dubbo", 29582));
+        service.setApplication(application);
+        service.setRegistry(registryNA);
+        service.setProtocol(protocolDubo29582);
         service.setInterface(ValidationService.class.getName());
         service.setRef(new ValidationServiceImpl());
         service.setValidation(String.valueOf(true));
         service.export();
         try {
             ReferenceConfig<ValidationService> reference = new ReferenceConfig<ValidationService>();
-            reference.setApplication(new ApplicationConfig("validation-consumer"));
+            reference.setApplication(application);
             reference.setInterface(ValidationService.class);
             reference.setUrl("dubbo://127.0.0.1:29582");
             ValidationService validationService = reference.get();
@@ -198,9 +214,9 @@ public class ValidationTest {
                 try {
                     parameter = new ValidationParameter();
                     validationService.save(parameter);
-                    Assert.fail();
+                    Assertions.fail();
                 } catch (RpcException e) {
-                    Assert.assertTrue(e.getMessage().contains("ConstraintViolation"));
+                    Assertions.assertTrue(e.getMessage().contains("ConstraintViolation"));
                 }
 
                 // Delete OK
@@ -209,21 +225,21 @@ public class ValidationTest {
                 // Delete Error
                 try {
                     validationService.delete(0, "abc");
-                    Assert.fail();
+                    Assertions.fail();
                 } catch (RpcException e) {
-                    Assert.assertTrue(e.getMessage().contains("ConstraintViolation"));
+                    Assertions.assertTrue(e.getMessage().contains("ConstraintViolation"));
                 }
                 try {
                     validationService.delete(2, null);
-                    Assert.fail();
+                    Assertions.fail();
                 } catch (RpcException e) {
-                    Assert.assertTrue(e.getMessage().contains("ConstraintViolation"));
+                    Assertions.assertTrue(e.getMessage().contains("ConstraintViolation"));
                 }
                 try {
                     validationService.delete(0, null);
-                    Assert.fail();
+                    Assertions.fail();
                 } catch (RpcException e) {
-                    Assert.assertTrue(e.getMessage().contains("ConstraintViolation"));
+                    Assertions.assertTrue(e.getMessage().contains("ConstraintViolation"));
                 }
             } finally {
                 reference.destroy();
@@ -236,16 +252,16 @@ public class ValidationTest {
     @Test
     public void testGenericValidation() {
         ServiceConfig<ValidationService> service = new ServiceConfig<ValidationService>();
-        service.setApplication(new ApplicationConfig("validation-provider"));
-        service.setRegistry(new RegistryConfig("N/A"));
-        service.setProtocol(new ProtocolConfig("dubbo", 29582));
+        service.setApplication(application);
+        service.setRegistry(registryNA);
+        service.setProtocol(protocolDubo29582);
         service.setInterface(ValidationService.class.getName());
         service.setRef(new ValidationServiceImpl());
         service.setValidation(String.valueOf(true));
         service.export();
         try {
             ReferenceConfig<GenericService> reference = new ReferenceConfig<GenericService>();
-            reference.setApplication(new ApplicationConfig("validation-consumer"));
+            reference.setApplication(application);
             reference.setInterface(ValidationService.class.getName());
             reference.setUrl("dubbo://127.0.0.1:29582?scope=remote&validation=true&timeout=9000000");
             reference.setGeneric(true);
@@ -264,9 +280,9 @@ public class ValidationTest {
                 try {
                     parameter = new HashMap<String, Object>();
                     validationService.$invoke("save", new String[]{ValidationParameter.class.getName()}, new Object[]{parameter});
-                    Assert.fail();
+                    Assertions.fail();
                 } catch (GenericException e) {
-                    Assert.assertTrue(e.getMessage().contains("Failed to validate service"));
+                    Assertions.assertTrue(e.getMessage().contains("Failed to validate service"));
                 }
 
                 // Delete OK
@@ -275,24 +291,24 @@ public class ValidationTest {
                 // Delete Error
                 try {
                     validationService.$invoke("delete", new String[]{long.class.getName(), String.class.getName()}, new Object[]{0, "abc"});
-                    Assert.fail();
+                    Assertions.fail();
                 } catch (GenericException e) {
-                    Assert.assertTrue(e.getMessage().contains("Failed to validate service"));
+                    Assertions.assertTrue(e.getMessage().contains("Failed to validate service"));
                 }
                 try {
                     validationService.$invoke("delete", new String[]{long.class.getName(), String.class.getName()}, new Object[]{2, null});
-                    Assert.fail();
+                    Assertions.fail();
                 } catch (GenericException e) {
-                    Assert.assertTrue(e.getMessage().contains("Failed to validate service"));
+                    Assertions.assertTrue(e.getMessage().contains("Failed to validate service"));
                 }
                 try {
                     validationService.$invoke("delete", new String[]{long.class.getName(), String.class.getName()}, new Object[]{0, null});
-                    Assert.fail();
+                    Assertions.fail();
                 } catch (GenericException e) {
-                    Assert.assertTrue(e.getMessage().contains("Failed to validate service"));
+                    Assertions.assertTrue(e.getMessage().contains("Failed to validate service"));
                 }
             } catch (GenericException e) {
-                Assert.assertTrue(e.getMessage().contains("Failed to validate service"));
+                Assertions.assertTrue(e.getMessage().contains("Failed to validate service"));
             } finally {
                 reference.destroy();
             }

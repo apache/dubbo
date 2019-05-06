@@ -119,7 +119,7 @@ public class NettyBackedChannelBuffer implements ChannelBuffer {
         // careful
         byte[] data = new byte[length];
         buffer.getBytes(srcIndex, data, 0, length);
-        setBytes(0, data, index, length);
+        setBytes(index, data, 0, length);
     }
 
 

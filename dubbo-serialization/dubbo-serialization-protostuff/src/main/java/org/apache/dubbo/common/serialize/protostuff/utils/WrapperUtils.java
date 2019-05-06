@@ -22,9 +22,11 @@ import org.apache.dubbo.common.serialize.protostuff.delegate.TimeDelegate;
 
 import io.protostuff.runtime.DefaultIdStrategy;
 import io.protostuff.runtime.RuntimeEnv;
+import org.apache.dubbo.common.serialize.protostuff.delegate.TimestampDelegate;
 
 import java.math.BigDecimal;
 import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Calendar;
@@ -43,12 +45,16 @@ import java.util.TreeSet;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Use WrapperUtils to wrap object to {@link Wrapper}
+ */
 public class WrapperUtils {
     private static final Set<Class<?>> WRAPPER_SET = new HashSet<>();
 
     static {
         if (RuntimeEnv.ID_STRATEGY instanceof DefaultIdStrategy) {
             ((DefaultIdStrategy) RuntimeEnv.ID_STRATEGY).registerDelegate(new TimeDelegate());
+            ((DefaultIdStrategy) RuntimeEnv.ID_STRATEGY).registerDelegate(new TimestampDelegate());
         }
 
         WRAPPER_SET.add(Map.class);
@@ -77,15 +83,28 @@ public class WrapperUtils {
         WRAPPER_SET.add(Date.class);
         WRAPPER_SET.add(Calendar.class);
         WRAPPER_SET.add(Time.class);
+        WRAPPER_SET.add(Timestamp.class);
 
         WRAPPER_SET.add(Wrapper.class);
 
     }
 
+    /**
+     * Determine if the object needs wrap
+     *
+     * @param clazz object type
+     * @return need wrap
+     */
     public static boolean needWrapper(Class<?> clazz) {
         return WrapperUtils.WRAPPER_SET.contains(clazz) || clazz.isArray() || clazz.isEnum();
     }
 
+    /**
+     * Determine if the object needs wrap
+     *
+     * @param obj object
+     * @return need wrap
+     */
     public static boolean needWrapper(Object obj) {
         return needWrapper(obj.getClass());
     }

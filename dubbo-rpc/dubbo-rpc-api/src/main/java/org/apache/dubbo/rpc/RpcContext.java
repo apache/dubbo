@@ -19,7 +19,9 @@ package org.apache.dubbo.rpc;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -83,6 +85,9 @@ public class RpcContext {
     private InetSocketAddress localAddress;
 
     private InetSocketAddress remoteAddress;
+
+    private String remoteApplicationName;
+
     @Deprecated
     private List<Invoker<?>> invokers;
     @Deprecated
@@ -147,6 +152,7 @@ public class RpcContext {
         copy.arguments = this.arguments;
         copy.localAddress = this.localAddress;
         copy.remoteAddress = this.remoteAddress;
+        copy.remoteApplicationName = this.remoteApplicationName;
         copy.invokers = this.invokers;
         copy.invoker = this.invoker;
         copy.invocation = this.invocation;
@@ -364,7 +370,7 @@ public class RpcContext {
      */
     public String getLocalHostName() {
         String host = localAddress == null ? null : localAddress.getHostName();
-        if (host == null || host.length() == 0) {
+        if (StringUtils.isEmpty(host)) {
             return getLocalHost();
         }
         return host;
@@ -402,6 +408,15 @@ public class RpcContext {
      */
     public RpcContext setRemoteAddress(InetSocketAddress address) {
         this.remoteAddress = address;
+        return this;
+    }
+
+    public String getRemoteApplicationName() {
+        return remoteApplicationName;
+    }
+
+    public RpcContext setRemoteApplicationName(String remoteApplicationName) {
+        this.remoteApplicationName = remoteApplicationName;
         return this;
     }
 
@@ -604,7 +619,7 @@ public class RpcContext {
 
     public RpcContext setInvokers(List<Invoker<?>> invokers) {
         this.invokers = invokers;
-        if (invokers != null && !invokers.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(invokers)) {
             List<URL> urls = new ArrayList<URL>(invokers.size());
             for (Invoker<?> invoker : invokers) {
                 urls.add(invoker.getUrl());
@@ -731,12 +746,11 @@ public class RpcContext {
     @SuppressWarnings("unchecked")
     public static AsyncContext startAsync() throws IllegalStateException {
         RpcContext currentContext = getContext();
-        if (currentContext.asyncContext != null) {
-            currentContext.asyncContext.start();
-            return currentContext.asyncContext;
-        } else {
-            throw new IllegalStateException("This service does not support asynchronous operations, you should open async explicitly before use.");
+        if (currentContext.asyncContext == null) {
+            currentContext.asyncContext = new AsyncContextImpl();
         }
+        currentContext.asyncContext.start();
+        return currentContext.asyncContext;
     }
 
     public boolean isAsyncStarted() {
@@ -748,10 +762,6 @@ public class RpcContext {
 
     public boolean stopAsync() {
         return asyncContext.stop();
-    }
-
-    public void setAsyncContext(AsyncContext asyncContext) {
-        this.asyncContext = asyncContext;
     }
 
     public AsyncContext getAsyncContext() {

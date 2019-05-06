@@ -31,9 +31,9 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
 
     private static final Logger logger = LoggerFactory.getLogger(HeartbeatHandler.class);
 
-    public static String KEY_READ_TIMESTAMP = "READ_TIMESTAMP";
+    public static final String KEY_READ_TIMESTAMP = "READ_TIMESTAMP";
 
-    public static String KEY_WRITE_TIMESTAMP = "WRITE_TIMESTAMP";
+    public static final String KEY_WRITE_TIMESTAMP = "WRITE_TIMESTAMP";
 
     public HeartbeatHandler(ChannelHandler handler) {
         super(handler);

@@ -22,8 +22,8 @@ import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 import org.apache.dubbo.metadata.definition.service.ComplexObject;
 import org.apache.dubbo.metadata.definition.service.DemoService;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
@@ -51,12 +51,12 @@ public class ServiceDefinitionBuildderTest {
                 findComplexObject = methodDefinition;
             }
         }
-        Assert.assertTrue(Arrays.equals(complexCompute.getParameterTypes(), new String[]{String.class.getName(), ComplexObject.class.getName()}));
-        Assert.assertEquals(complexCompute.getReturnType(), String.class.getName());
+        Assertions.assertTrue(Arrays.equals(complexCompute.getParameterTypes(), new String[]{String.class.getName(), ComplexObject.class.getName()}));
+        Assertions.assertEquals(complexCompute.getReturnType(), String.class.getName());
 
-        Assert.assertTrue(Arrays.equals(findComplexObject.getParameterTypes(), new String[]{String.class.getName(), "int", "long",
+        Assertions.assertTrue(Arrays.equals(findComplexObject.getParameterTypes(), new String[]{String.class.getName(), "int", "long",
                 String[].class.getCanonicalName(), "java.util.List<java.lang.Integer>", ComplexObject.TestEnum.class.getCanonicalName()}));
-        Assert.assertEquals(findComplexObject.getReturnType(), ComplexObject.class.getCanonicalName());
+        Assertions.assertEquals(findComplexObject.getReturnType(), ComplexObject.class.getCanonicalName());
 
 
         List<TypeDefinition> typeDefinitions = fullServiceDefinition.getTypes();
@@ -76,22 +76,22 @@ public class ServiceDefinitionBuildderTest {
                 inner3TypeDefinition = typeDefinition;
             }
         }
-        Assert.assertEquals(topTypeDefinition.getProperties().get("v").getType(), "long");
-        Assert.assertEquals(topTypeDefinition.getProperties().get("maps").getType(), "java.util.Map<java.lang.String, java.lang.String>");
-        Assert.assertEquals(topTypeDefinition.getProperties().get("innerObject").getType(), ComplexObject.InnerObject.class.getName());
-        Assert.assertEquals(topTypeDefinition.getProperties().get("intList").getType(), "java.util.List<java.lang.Integer>");
-        Assert.assertEquals(topTypeDefinition.getProperties().get("strArrays").getType(), "java.lang.String[]");
-        Assert.assertEquals(topTypeDefinition.getProperties().get("innerObject3").getType(), "org.apache.dubbo.metadata.definition.service.ComplexObject.InnerObject3[]");
-        Assert.assertEquals(topTypeDefinition.getProperties().get("testEnum").getType(), "org.apache.dubbo.metadata.definition.service.ComplexObject.TestEnum");
-        Assert.assertEquals(topTypeDefinition.getProperties().get("innerObject2").getType(), "java.util.Set<org.apache.dubbo.metadata.definition.service.ComplexObject$InnerObject2>");
+        Assertions.assertEquals(topTypeDefinition.getProperties().get("v").getType(), "long");
+        Assertions.assertEquals(topTypeDefinition.getProperties().get("maps").getType(), "java.util.Map<java.lang.String, java.lang.String>");
+        Assertions.assertEquals(topTypeDefinition.getProperties().get("innerObject").getType(), ComplexObject.InnerObject.class.getName());
+        Assertions.assertEquals(topTypeDefinition.getProperties().get("intList").getType(), "java.util.List<java.lang.Integer>");
+        Assertions.assertEquals(topTypeDefinition.getProperties().get("strArrays").getType(), "java.lang.String[]");
+        Assertions.assertEquals(topTypeDefinition.getProperties().get("innerObject3").getType(), "org.apache.dubbo.metadata.definition.service.ComplexObject.InnerObject3[]");
+        Assertions.assertEquals(topTypeDefinition.getProperties().get("testEnum").getType(), "org.apache.dubbo.metadata.definition.service.ComplexObject.TestEnum");
+        Assertions.assertEquals(topTypeDefinition.getProperties().get("innerObject2").getType(), "java.util.Set<org.apache.dubbo.metadata.definition.service.ComplexObject$InnerObject2>");
 
-        Assert.assertSame(innerTypeDefinition.getProperties().get("innerA").getType(), "java.lang.String");
-        Assert.assertSame(innerTypeDefinition.getProperties().get("innerB").getType(), "int");
+        Assertions.assertSame(innerTypeDefinition.getProperties().get("innerA").getType(), "java.lang.String");
+        Assertions.assertSame(innerTypeDefinition.getProperties().get("innerB").getType(), "int");
 
-        Assert.assertSame(inner2TypeDefinition.getProperties().get("innerA2").getType(), "java.lang.String");
-        Assert.assertSame(inner2TypeDefinition.getProperties().get("innerB2").getType(), "int");
+        Assertions.assertSame(inner2TypeDefinition.getProperties().get("innerA2").getType(), "java.lang.String");
+        Assertions.assertSame(inner2TypeDefinition.getProperties().get("innerB2").getType(), "int");
 
-        Assert.assertSame(inner3TypeDefinition.getProperties().get("innerA3").getType(), "java.lang.String");
+        Assertions.assertSame(inner3TypeDefinition.getProperties().get("innerA3").getType(), "java.lang.String");
 
     }
 

@@ -24,8 +24,9 @@ import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ClassHelper;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
@@ -94,7 +95,7 @@ public abstract class AbstractConfig implements Serializable {
     /**
      * The legacy properties container
      */
-    private static final Map<String, String> legacyProperties = new HashMap<String, String>();
+    private static final Map<String, String> LEGACY_PROPERTIES = new HashMap<String, String>();
 
     /**
      * The suffix container
@@ -102,14 +103,14 @@ public abstract class AbstractConfig implements Serializable {
     private static final String[] SUFFIXES = new String[]{"Config", "Bean"};
 
     static {
-        legacyProperties.put("dubbo.protocol.name", "dubbo.service.protocol");
-        legacyProperties.put("dubbo.protocol.host", "dubbo.service.server.host");
-        legacyProperties.put("dubbo.protocol.port", "dubbo.service.server.port");
-        legacyProperties.put("dubbo.protocol.threads", "dubbo.service.max.thread.pool.size");
-        legacyProperties.put("dubbo.consumer.timeout", "dubbo.service.invoke.timeout");
-        legacyProperties.put("dubbo.consumer.retries", "dubbo.service.max.retry.providers");
-        legacyProperties.put("dubbo.consumer.check", "dubbo.service.allow.no.provider");
-        legacyProperties.put("dubbo.service.url", "dubbo.service.address");
+        LEGACY_PROPERTIES.put("dubbo.protocol.name", "dubbo.service.protocol");
+        LEGACY_PROPERTIES.put("dubbo.protocol.host", "dubbo.service.server.host");
+        LEGACY_PROPERTIES.put("dubbo.protocol.port", "dubbo.service.server.port");
+        LEGACY_PROPERTIES.put("dubbo.protocol.threads", "dubbo.service.max.thread.pool.size");
+        LEGACY_PROPERTIES.put("dubbo.consumer.timeout", "dubbo.service.invoke.timeout");
+        LEGACY_PROPERTIES.put("dubbo.consumer.retries", "dubbo.service.max.retry.providers");
+        LEGACY_PROPERTIES.put("dubbo.consumer.check", "dubbo.service.allow.no.provider");
+        LEGACY_PROPERTIES.put("dubbo.service.url", "dubbo.service.address");
 
         // this is only for compatibility
         DubboShutdownHook.getDubboShutdownHook().register();
@@ -140,7 +141,7 @@ public abstract class AbstractConfig implements Serializable {
                 break;
             }
         }
-        return tag.substring(0, 1).toLowerCase() + tag.substring(1);
+        return StringUtils.camelToSplitName(tag, "-");
     }
 
     protected static void appendParameters(Map<String, String> parameters, Object config) {
@@ -156,7 +157,7 @@ public abstract class AbstractConfig implements Serializable {
         for (Method method : methods) {
             try {
                 String name = method.getName();
-                if (ClassHelper.isGetter(method)) {
+                if (MethodUtils.isGetter(method)) {
                     Parameter parameter = method.getAnnotation(Parameter.class);
                     if (method.getReturnType() == Object.class || parameter != null && parameter.excluded()) {
                         continue;
@@ -224,7 +225,7 @@ public abstract class AbstractConfig implements Serializable {
                     continue;
                 }
                 String name = method.getName();
-                if (ClassHelper.isGetter(method)) {
+                if (MethodUtils.isGetter(method)) {
                     String key;
                     if (parameter.key().length() > 0) {
                         key = parameter.key();
@@ -304,9 +305,9 @@ public abstract class AbstractConfig implements Serializable {
      * Check whether there is a <code>Extension</code> who's name (property) is <code>value</code> (special treatment is
      * required)
      *
-     * @param type The Extension type
+     * @param type     The Extension type
      * @param property The extension key
-     * @param value The Extension name
+     * @param value    The Extension name
      */
     protected static void checkMultiExtension(Class<?> type, String property, String value) {
         checkMultiName(property, value);
@@ -359,7 +360,7 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     protected static void checkParameterName(Map<String, String> parameters) {
-        if (parameters == null || parameters.size() == 0) {
+        if (CollectionUtils.isEmptyMap(parameters)) {
             return;
         }
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
@@ -485,12 +486,7 @@ public abstract class AbstractConfig implements Serializable {
         for (Method method : methods) {
             try {
                 String name = method.getName();
-                if ((name.startsWith("get") || name.startsWith("is"))
-                        && !name.equals("get")
-                        && !"getClass".equals(name)
-                        && Modifier.isPublic(method.getModifiers())
-                        && method.getParameterTypes().length == 0
-                        && ClassHelper.isPrimitive(method.getReturnType())) {
+                if (isMetaMethod(method)) {
                     String prop = calculateAttributeFromGetter(name);
                     String key;
                     Parameter parameter = method.getAnnotation(Parameter.class);
@@ -550,22 +546,22 @@ public abstract class AbstractConfig implements Serializable {
             InmemoryConfiguration config = new InmemoryConfiguration(getPrefix(), getId());
             config.addProperties(getMetaData());
             if (Environment.getInstance().isConfigCenterFirst()) {
-                // The sequence would be: SystemConfiguration -> ExternalConfiguration -> AppExternalConfiguration -> AbstractConfig -> PropertiesConfiguration
+                // The sequence would be: SystemConfiguration -> AppExternalConfiguration -> ExternalConfiguration -> AbstractConfig -> PropertiesConfiguration
                 compositeConfiguration.addConfiguration(3, config);
             } else {
-                // The sequence would be: SystemConfiguration -> AbstractConfig -> ExternalConfiguration -> AppExternalConfiguration -> PropertiesConfiguration
+                // The sequence would be: SystemConfiguration -> AbstractConfig -> AppExternalConfiguration -> ExternalConfiguration -> PropertiesConfiguration
                 compositeConfiguration.addConfiguration(1, config);
             }
 
             // loop methods, get override value and set the new value back to method
             Method[] methods = getClass().getMethods();
             for (Method method : methods) {
-                if (ClassHelper.isSetter(method)) {
+                if (MethodUtils.isSetter(method)) {
                     try {
-                        String value = compositeConfiguration.getString(extractPropertyName(getClass(), method));
+                        String value = StringUtils.trim(compositeConfiguration.getString(extractPropertyName(getClass(), method)));
                         // isTypeMatch() is called to avoid duplicate and incorrect update, for example, we have two 'setGeneric' methods in ReferenceConfig.
-                        if (StringUtils.isNotEmpty(value) && ClassHelper.isTypeMatch(method.getParameterTypes()[0], value)) {
-                            method.invoke(this, ClassHelper.convertPrimitive(method.getParameterTypes()[0], value));
+                        if (StringUtils.isNotEmpty(value) && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value)) {
+                            method.invoke(this, ClassUtils.convertPrimitive(method.getParameterTypes()[0], value));
                         }
                     } catch (NoSuchMethodException e) {
                         logger.info("Failed to override the property " + method.getName() + " in " +
@@ -588,7 +584,7 @@ public abstract class AbstractConfig implements Serializable {
             Method[] methods = getClass().getMethods();
             for (Method method : methods) {
                 try {
-                    if (ClassHelper.isGetter(method)) {
+                    if (MethodUtils.isGetter(method)) {
                         String name = method.getName();
                         String key = calculateAttributeFromGetter(name);
                         Object value = method.invoke(this);
@@ -620,4 +616,54 @@ public abstract class AbstractConfig implements Serializable {
         return true;
     }
 
+    private boolean isMetaMethod(Method method) {
+        String name = method.getName();
+        if (!(name.startsWith("get") || name.startsWith("is"))) {
+            return false;
+        }
+        if ("get".equals(name)) {
+            return false;
+        }
+        if ("getClass".equals(name)) {
+            return false;
+        }
+        if (!Modifier.isPublic(method.getModifiers())) {
+            return false;
+        }
+        if (method.getParameterTypes().length != 0) {
+            return false;
+        }
+        if (!ClassUtils.isPrimitive(method.getReturnType())) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj.getClass().getName().equals(this.getClass().getName()))) {
+            return false;
+        }
+
+        Method[] methods = this.getClass().getMethods();
+        for (Method method1 : methods) {
+            if (MethodUtils.isGetter(method1) && ClassUtils.isPrimitive(method1.getReturnType())) {
+                Parameter parameter = method1.getAnnotation(Parameter.class);
+                if (parameter != null && parameter.excluded()) {
+                    continue;
+                }
+                try {
+                    Method method2 = obj.getClass().getMethod(method1.getName(), method1.getParameterTypes());
+                    Object value1 = method1.invoke(this, new Object[]{});
+                    Object value2 = method2.invoke(obj, new Object[]{});
+                    if ((value1 != null && value2 != null) && !value1.equals(value2)) {
+                        return false;
+                    }
+                } catch (Exception e) {
+                    return true;
+                }
+            }
+        }
+        return true;
+    }
 }

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.serialize.fst;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
@@ -25,11 +26,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * Fst serialization implementation
+ *
+ * <pre>
+ *     e.g. &lt;dubbo:protocol serialization="fst" /&gt;
+ * </pre>
+ */
 public class FstSerialization implements Serialization {
 
     @Override
     public byte getContentTypeId() {
-        return 9;
+        return Constants.FST_SERIALIZATION_ID;
     }
 
     @Override

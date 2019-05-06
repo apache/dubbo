@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.serialize.kryo;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
@@ -28,12 +29,15 @@ import java.io.OutputStream;
 /**
  * TODO for now kryo serialization doesn't deny classes that don't implement the serializable interface
  *
+ * <pre>
+ *     e.g. &lt;dubbo:protocol serialization="kryo" /&gt;
+ * </pre>
  */
 public class KryoSerialization implements Serialization {
 
     @Override
     public byte getContentTypeId() {
-        return 8;
+        return Constants.KRYO_SERIALIZATION_ID;
     }
 
     @Override

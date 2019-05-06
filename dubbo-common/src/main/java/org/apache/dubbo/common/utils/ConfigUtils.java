@@ -50,7 +50,7 @@ public class ConfigUtils {
     }
 
     public static boolean isEmpty(String value) {
-        return value == null || value.length() == 0
+        return StringUtils.isEmpty(value)
                 || "false".equalsIgnoreCase(value)
                 || "0".equalsIgnoreCase(value)
                 || "null".equalsIgnoreCase(value)
@@ -190,7 +190,7 @@ public class ConfigUtils {
      */
     public static String getSystemProperty(String key) {
         String value = System.getenv(key);
-        if (value == null || value.length() == 0) {
+        if (StringUtils.isEmpty(value)) {
             value = System.getProperty(key);
         }
         return value;
@@ -235,7 +235,7 @@ public class ConfigUtils {
 
         List<java.net.URL> list = new ArrayList<java.net.URL>();
         try {
-            Enumeration<java.net.URL> urls = ClassHelper.getClassLoader().getResources(fileName);
+            Enumeration<java.net.URL> urls = ClassUtils.getClassLoader().getResources(fileName);
             list = new ArrayList<java.net.URL>();
             while (urls.hasMoreElements()) {
                 list.add(urls.nextElement());
@@ -261,7 +261,7 @@ public class ConfigUtils {
 
             // fall back to use method getResourceAsStream
             try {
-                properties.load(ClassHelper.getClassLoader().getResourceAsStream(fileName));
+                properties.load(ClassUtils.getClassLoader().getResourceAsStream(fileName));
             } catch (Throwable e) {
                 logger.warn("Failed to load " + fileName + " file from " + fileName + "(ignore this file): " + e.getMessage(), e);
             }

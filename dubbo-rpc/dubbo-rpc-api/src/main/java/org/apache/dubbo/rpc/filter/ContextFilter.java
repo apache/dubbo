@@ -29,6 +29,8 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.Constants.REMOTE_APPLICATION_KEY;
+
 /**
  * ContextFilter set the provider RpcContext with invoker, invocation, local port it is using and host for
  * current execution thread.
@@ -42,21 +44,25 @@ public class ContextFilter implements Filter {
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         Map<String, String> attachments = invocation.getAttachments();
         if (attachments != null) {
-            attachments = new HashMap<String, String>(attachments);
+            attachments = new HashMap<>(attachments);
             attachments.remove(Constants.PATH_KEY);
+            attachments.remove(Constants.INTERFACE_KEY);
             attachments.remove(Constants.GROUP_KEY);
             attachments.remove(Constants.VERSION_KEY);
             attachments.remove(Constants.DUBBO_VERSION_KEY);
             attachments.remove(Constants.TOKEN_KEY);
             attachments.remove(Constants.TIMEOUT_KEY);
-            attachments.remove(Constants.ASYNC_KEY);// Remove async property to avoid being passed to the following invoke chain.
+            // Remove async property to avoid being passed to the following invoke chain.
+            attachments.remove(Constants.ASYNC_KEY);
+            attachments.remove(Constants.TAG_KEY);
+            attachments.remove(Constants.FORCE_USE_TAG);
         }
         RpcContext.getContext()
                 .setInvoker(invoker)
                 .setInvocation(invocation)
 //                .setAttachments(attachments)  // merged from dubbox
-                .setLocalAddress(invoker.getUrl().getHost(),
-                        invoker.getUrl().getPort());
+                .setLocalAddress(invoker.getUrl().getHost(), invoker.getUrl().getPort())
+                .setRemoteApplicationName(invoker.getUrl().getParameter(REMOTE_APPLICATION_KEY));
 
         // merged from dubbox
         // we may already added some attachments into RpcContext before this filter (e.g. in rest protocol)
