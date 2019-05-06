@@ -45,7 +45,7 @@ public class ThriftProtocol extends AbstractProxyProtocol {
 
     public static final int DEFAULT_PORT = 40880;
 
-    public static final String NAME = "nthrift";
+    public static final String NAME = "native-thrift";
     public static final String THRIFT_IFACE = "$Iface";
     public static final String THRIFT_PROCESSOR = "$Processor";
     public static final String THRIFT_CLIENT = "$Client";

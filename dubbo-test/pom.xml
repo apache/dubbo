@@ -128,10 +128,6 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-rpc-native-thrift</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-rpc-memcached</artifactId>
         </dependency>
         <dependency>
