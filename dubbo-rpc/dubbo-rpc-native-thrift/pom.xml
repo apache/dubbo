@@ -21,13 +21,14 @@
         <artifactId>dubbo-rpc</artifactId>
         <version>${revision}</version>
     </parent>
-    <artifactId>dubbo-rpc-thrift</artifactId>
+    <artifactId>dubbo-rpc-native-thrift</artifactId>
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
     <description>The thrift rpc module of dubbo project</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
+    
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
@@ -35,38 +36,13 @@
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-rpc-dubbo</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-remoting-api</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-remoting-netty4</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.thrift</groupId>
             <artifactId>libthrift</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-config-spring</artifactId>
-            <version>${project.parent.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-registry-multicast</artifactId>
-            <version>${project.parent.version}</version>
+            <artifactId>dubbo-serialization-jdk</artifactId>
+            <version>${revision}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

@@ -186,6 +186,13 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-rpc-native-thrift</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-rpc-memcached</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
@@ -591,6 +598,7 @@
                                     <include>org.apache.dubbo:dubbo-metadata-report-consul</include>
                                     <include>org.apache.dubbo:dubbo-metadata-report-etcd</include>
                                     <include>org.apache.dubbo:dubbo-serialization-native-hession</include>
+                                    <include>org.apache.dubbo:dubbo-rpc-native-thrift</include>
                                 </includes>
                             </artifactSet>
                             <transformers>
