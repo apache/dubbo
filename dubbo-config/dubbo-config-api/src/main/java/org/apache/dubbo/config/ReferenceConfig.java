@@ -354,19 +354,22 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                     }
                 }
             } else { // assemble URL from register center's configuration
-                checkRegistry();
-                List<URL> us = loadRegistries(false);
-                if (CollectionUtils.isNotEmpty(us)) {
-                    for (URL u : us) {
-                        URL monitorUrl = loadMonitor(u);
-                        if (monitorUrl != null) {
-                            map.put(Constants.MONITOR_KEY, URL.encode(monitorUrl.toFullString()));
+                // if protocols not injvm checkRegistry
+                if (!Constants.LOCAL_PROTOCOL.equalsIgnoreCase(getProtocol())){
+                    checkRegistry();
+                    List<URL> us = loadRegistries(false);
+                    if (CollectionUtils.isNotEmpty(us)) {
+                        for (URL u : us) {
+                            URL monitorUrl = loadMonitor(u);
+                            if (monitorUrl != null) {
+                                map.put(Constants.MONITOR_KEY, URL.encode(monitorUrl.toFullString()));
+                            }
+                            urls.add(u.addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map)));
                         }
-                        urls.add(u.addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map)));
                     }
-                }
-                if (urls.isEmpty()) {
-                    throw new IllegalStateException("No such any registry to reference " + interfaceName + " on the consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ", please config <dubbo:registry address=\"...\" /> to your spring config.");
+                    if (urls.isEmpty()) {
+                        throw new IllegalStateException("No such any registry to reference " + interfaceName + " on the consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ", please config <dubbo:registry address=\"...\" /> to your spring config.");
+                    }
                 }
             }
 
