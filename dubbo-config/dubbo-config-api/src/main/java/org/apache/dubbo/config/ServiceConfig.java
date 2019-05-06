@@ -269,7 +269,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         checkProtocol();
         checkApplication();
         // if protocol is not injvm checkRegistry
-        if (!isJvm()) {
+        if (!isOnlyInJvm()) {
             checkRegistry();
         }
         this.refresh();
@@ -332,7 +332,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
      *
      * @return
      */
-    private boolean isJvm() {
+    private boolean isOnlyInJvm() {
         return getProtocols().size() == 1 && Constants.LOCAL_PROTOCOL.equalsIgnoreCase(getProtocols().get(0).getName());
     }
 
@@ -547,7 +547,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             }
             // export to remote if the config is not local (export to local only when config is local)
             if (!Constants.SCOPE_LOCAL.equalsIgnoreCase(scope)) {
-                if (!isJvm() && logger.isInfoEnabled()) {
+                if (!isOnlyInJvm() && logger.isInfoEnabled()) {
                     logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
                 }
                 if (CollectionUtils.isNotEmpty(registryURLs)) {
