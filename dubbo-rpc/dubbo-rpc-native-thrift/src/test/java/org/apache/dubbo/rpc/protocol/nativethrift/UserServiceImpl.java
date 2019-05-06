@@ -14,23 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.thrift.examples;
+package org.apache.dubbo.rpc.protocol.nativethrift;
 
-import org.apache.dubbo.rpc.gen.thrift.Demo;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+public class UserServiceImpl implements UserService.Iface {
 
-public class DubboDemoConsumer {
-
-    public static void main(String[] args) throws Exception {
-        ClassPathXmlApplicationContext context =
-                new ClassPathXmlApplicationContext("dubbo-demo-consumer.xml");
-        context.start();
-        Demo.Iface demo = (Demo.Iface) context.getBean("demoService");
-        System.out.println(demo.echoI32(32));
-        for (int i = 0; i < 10; i++) {
-            System.out.println(demo.echoI32(i + 1));
-        }
-        context.close();
+    public String find(int id) throws org.apache.thrift.TException{
+        return "KK"+id;
     }
-
 }
