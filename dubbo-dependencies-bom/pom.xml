@@ -127,6 +127,7 @@
         <resteasy_version>3.0.19.Final</resteasy_version>
         <tomcat_embed_version>8.5.31</tomcat_embed_version>
         <jetcd_version>0.3.0</jetcd_version>
+        <nacos_version>1.0.0</nacos_version>
         <!-- Log libs -->
         <slf4j_version>1.7.25</slf4j_version>
         <jcl_version>1.2</jcl_version>
@@ -519,7 +520,7 @@
                 <artifactId>metrics-rest</artifactId>
                 <version>${metrics_version}</version>
             </dependency>
-            
+
             <!-- for dubbo-registry-sofa -->
             <dependency>
                 <groupId>com.alipay.sofa</groupId>
@@ -583,6 +584,11 @@
                 <groupId>org.testcontainers</groupId>
                 <artifactId>testcontainers</artifactId>
                 <version>${test_container_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.nacos</groupId>
+                <artifactId>nacos-client</artifactId>
+                <version>${nacos_version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
