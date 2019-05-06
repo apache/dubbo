@@ -40,29 +40,29 @@ import java.util.Set;
 public class SpringExtensionFactory implements ExtensionFactory {
     private static final Logger logger = LoggerFactory.getLogger(SpringExtensionFactory.class);
 
-    private static final Set<ApplicationContext> contexts = new ConcurrentHashSet<ApplicationContext>();
-    private static final ApplicationListener shutdownHookListener = new ShutdownHookListener();
+    private static final Set<ApplicationContext> CONTEXTS = new ConcurrentHashSet<ApplicationContext>();
+    private static final ApplicationListener SHUTDOWN_HOOK_LISTENER = new ShutdownHookListener();
 
     public static void addApplicationContext(ApplicationContext context) {
-        contexts.add(context);
+        CONTEXTS.add(context);
         if (context instanceof ConfigurableApplicationContext) {
             ((ConfigurableApplicationContext) context).registerShutdownHook();
             DubboShutdownHook.getDubboShutdownHook().unregister();
         }
-        BeanFactoryUtils.addApplicationListener(context, shutdownHookListener);
+        BeanFactoryUtils.addApplicationListener(context, SHUTDOWN_HOOK_LISTENER);
     }
 
     public static void removeApplicationContext(ApplicationContext context) {
-        contexts.remove(context);
+        CONTEXTS.remove(context);
     }
 
     public static Set<ApplicationContext> getContexts() {
-        return contexts;
+        return CONTEXTS;
     }
 
     // currently for test purpose
     public static void clearContexts() {
-        contexts.clear();
+        CONTEXTS.clear();
     }
 
     @Override
@@ -74,7 +74,7 @@ public class SpringExtensionFactory implements ExtensionFactory {
             return null;
         }
 
-        for (ApplicationContext context : contexts) {
+        for (ApplicationContext context : CONTEXTS) {
             if (context.containsBean(name)) {
                 Object bean = context.getBean(name);
                 if (type.isInstance(bean)) {
@@ -89,7 +89,7 @@ public class SpringExtensionFactory implements ExtensionFactory {
             return null;
         }
 
-        for (ApplicationContext context : contexts) {
+        for (ApplicationContext context : CONTEXTS) {
             try {
                 return context.getBean(type);
             } catch (NoUniqueBeanDefinitionException multiBeanExe) {

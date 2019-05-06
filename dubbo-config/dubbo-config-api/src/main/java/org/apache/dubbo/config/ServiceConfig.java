@@ -23,7 +23,7 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.bytecode.Wrapper;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.utils.ClassHelper;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
@@ -301,7 +301,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             }
             Class<?> localClass;
             try {
-                localClass = ClassHelper.forNameWithThreadContextClassLoader(local);
+                localClass = ClassUtils.forNameWithThreadContextClassLoader(local);
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
@@ -315,7 +315,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             }
             Class<?> stubClass;
             try {
-                stubClass = ClassHelper.forNameWithThreadContextClassLoader(stub);
+                stubClass = ClassUtils.forNameWithThreadContextClassLoader(stub);
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
@@ -335,32 +335,31 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
 
         if (shouldDelay()) {
-            delayExportExecutor.schedule(this::doExport, delay, TimeUnit.MILLISECONDS);
+            delayExportExecutor.schedule(this::doExport, getDelay(), TimeUnit.MILLISECONDS);
         } else {
             doExport();
         }
     }
 
     private boolean shouldExport() {
-        Boolean shouldExport = getExport();
-        if (shouldExport == null && provider != null) {
-            shouldExport = provider.getExport();
-        }
-
+        Boolean export = getExport();
         // default value is true
-        if (shouldExport == null) {
-            return true;
-        }
+        return export == null ? true : export;
+    }
 
-        return shouldExport;
+    @Override
+    public Boolean getExport() {
+        return (export == null && provider != null) ? provider.getExport() : export;
     }
 
     private boolean shouldDelay() {
         Integer delay = getDelay();
-        if (delay == null && provider != null) {
-            delay = provider.getDelay();
-        }
         return delay != null && delay > 0;
+    }
+
+    @Override
+    public Integer getDelay() {
+        return (delay == null && provider != null) ? provider.getDelay() : delay;
     }
 
     protected synchronized void doExport() {
