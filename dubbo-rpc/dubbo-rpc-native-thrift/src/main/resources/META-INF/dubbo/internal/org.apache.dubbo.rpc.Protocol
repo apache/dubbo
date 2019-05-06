@@ -1,0 +1,1 @@
+native-thrift=org.apache.dubbo.rpc.protocol.nativethrift.ThriftProtocol
