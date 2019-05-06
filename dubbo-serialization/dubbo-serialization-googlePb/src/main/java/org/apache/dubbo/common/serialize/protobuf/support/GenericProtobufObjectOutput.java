@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.serialize.protobuf;
+package org.apache.dubbo.common.serialize.protobuf.support;
 
 import org.apache.dubbo.common.serialize.ObjectOutput;
 
@@ -22,21 +22,16 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.Writer;
 
 /**
- * GenericGooglePb object output implementation
+ * GenericGoogleProtobuf object output implementation
  */
 public class GenericProtobufObjectOutput implements ObjectOutput {
 
     private final PrintWriter writer;
 
     public GenericProtobufObjectOutput(OutputStream out) {
-        this(new OutputStreamWriter(out));
-    }
-
-    public GenericProtobufObjectOutput(Writer writer) {
-        this.writer = new PrintWriter(writer);
+        this.writer = new PrintWriter(new OutputStreamWriter(out));
     }
 
     @Override
@@ -80,24 +75,32 @@ public class GenericProtobufObjectOutput implements ObjectOutput {
     }
 
     @Override
-    public void writeBytes(byte[] b) throws IOException {
+    public void writeBytes(byte[] b) {
         writer.println(new String(b));
     }
 
     @Override
-    public void writeBytes(byte[] b, int off, int len) throws IOException {
+    public void writeBytes(byte[] b, int off, int len) {
         writer.println(new String(b, off, len));
     }
 
     @Override
     public void writeObject(Object obj) throws IOException {
+        if (obj == null) {
+            throw new IllegalArgumentException("This serialization only support google protobuf object, the object is : null");
+        }
+
+        if (!ProtobufUtils.isSupported(obj.getClass())) {
+            throw new IllegalArgumentException("This serialization only support google protobuf object, the object class is: " + obj.getClass().getName());
+        }
+
         writer.write(ProtobufUtils.serialize(obj));
         writer.println();
         writer.flush();
     }
 
     @Override
-    public void flushBuffer() throws IOException {
+    public void flushBuffer() {
         writer.flush();
     }
 

@@ -1,0 +1,35 @@
+syntax = "proto2";
+
+package org.apache.dubbo.common.serialize.protobuf.model;
+
+message PBRequestType {
+    optional double money = 1;
+    optional float cash = 2;
+    optional int32 age = 3;
+    optional int64 num = 4;
+    optional bool sex = 5;
+    optional string name = 6;
+    optional bytes msg = 7;
+    repeated org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber phone = 8;
+    map<string, PhoneNumber> doubleMap = 9;
+}
+
+message PBResponseType {
+    optional string msg = 1;
+    optional org.apache.dubbo.common.serialize.protobuf.model.PBRequestType CDubboPBRequestType = 3;
+}
+
+message PhoneNumber {
+    required string number = 1;
+    optional org.apache.dubbo.common.serialize.protobuf.model.PhoneType type = 2 [default = HOME];
+}
+
+enum PhoneType {
+    MOBILE = 0;
+    HOME = 1;
+    WORK = 2;
+}
+
+service CDubboPBService {
+    rpc sayHello (org.apache.dubbo.common.serialize.protobuf.model.PBRequestType) returns (org.apache.dubbo.common.serialize.protobuf.model.PBResponseType);
+}

@@ -14,40 +14,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.serialize.protobuf;
+package org.apache.dubbo.common.serialize.protobuf.support;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
- * GooglePb serialization implementation
+ * This serizalization is use for google protobuf generic reference.
+ * The entity be transported between client and server by json string.
  *
  */
 public class GenericProtobufSerialization implements Serialization {
 
     @Override
     public byte getContentTypeId() {
-        return 11;
+        return 21;
     }
 
     @Override
     public String getContentType() {
-        return "text/proto-json";
+        return "text/json";
     }
 
     @Override
-    public ObjectOutput serialize(URL url, OutputStream output) throws IOException {
+    public ObjectOutput serialize(URL url, OutputStream output) {
         return new GenericProtobufObjectOutput(output);
     }
 
     @Override
-    public ObjectInput deserialize(URL url, InputStream input) throws IOException {
+    public ObjectInput deserialize(URL url, InputStream input) {
         return new GenericProtobufObjectInput(input);
     }
 }

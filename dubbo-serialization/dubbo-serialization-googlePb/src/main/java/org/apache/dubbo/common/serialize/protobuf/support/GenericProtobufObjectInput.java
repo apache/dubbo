@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.serialize.protobuf;
+package org.apache.dubbo.common.serialize.protobuf.support;
 
 import org.apache.dubbo.common.serialize.ObjectInput;
 
@@ -23,22 +23,16 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.lang.reflect.Type;
 
 /**
- * GenericGooglePb object input implementation
+ * GenericGoogleProtobuf object input implementation
  */
 public class GenericProtobufObjectInput implements ObjectInput {
-
     private final BufferedReader reader;
 
     public GenericProtobufObjectInput(InputStream in) {
-        this(new InputStreamReader(in));
-    }
-
-    public GenericProtobufObjectInput(Reader reader) {
-        this.reader = new BufferedReader(reader);
+        this.reader = new BufferedReader(new InputStreamReader(in));
     }
 
     @Override
@@ -87,23 +81,22 @@ public class GenericProtobufObjectInput implements ObjectInput {
     }
 
     @Override
-    public Object readObject() {
-        throw new UnsupportedOperationException("this method require class type");
+    public Object readObject() throws IOException {
+        return read(String.class);
     }
 
     @Override
-    public <T> T readObject(Class<T> cls) throws IOException, ClassNotFoundException {
+    public <T> T readObject(Class<T> cls) throws IOException {
         return read(cls);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T readObject(Class<T> cls, Type type) throws IOException, ClassNotFoundException {
-        String json = readLine();
-        return ProtobufUtils.deserialize(json,cls);
+    public <T> T readObject(Class<T> cls, Type type) throws IOException {
+        return readObject(cls);
     }
 
-    private String readLine() throws IOException, EOFException {
+    private String readLine() throws IOException {
         String line = reader.readLine();
         if (line == null || line.trim().length() == 0) {
             throw new EOFException();
@@ -112,7 +105,11 @@ public class GenericProtobufObjectInput implements ObjectInput {
     }
 
     private <T> T read(Class<T> cls) throws IOException {
+        if (!ProtobufUtils.isSupported(cls)) {
+            throw new IllegalArgumentException("This serialization only support google protobuf entity, the class is :" + cls.getName());
+        }
+
         String json = readLine();
-        return ProtobufUtils.deserialize(json,cls);
+        return ProtobufUtils.deserialize(json, cls);
     }
 }

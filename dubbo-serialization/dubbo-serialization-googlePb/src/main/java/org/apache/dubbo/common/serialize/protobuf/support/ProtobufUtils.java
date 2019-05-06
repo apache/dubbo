@@ -14,20 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.serialize.protobuf;
-
-import java.lang.reflect.Method;
+package org.apache.dubbo.common.serialize.protobuf.support;
 
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.GeneratedMessageV3.Builder;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.util.JsonFormat;
-import com.google.protobuf.util.JsonFormat.Parser;
 import com.google.protobuf.util.JsonFormat.Printer;
+
+import java.lang.reflect.Method;
 
 public class ProtobufUtils {
 
-    public static boolean isSupported(Class<?> clazz) {
+    static boolean isSupported(Class<?> clazz) {
         if (clazz == null) {
             return false;
         }
@@ -38,36 +38,24 @@ public class ProtobufUtils {
         return false;
     }
 
-    public static <T> T deserialize(String json, Class<T> requestClass) {
-        if (!isSupported(requestClass)) {
-            throw new UnsupportedOperationException(requestClass.getName() + "can not be deserialize");
-        }
+    static <T> T deserialize(String json, Class<T> requestClass) throws InvalidProtocolBufferException {
         Builder builder;
-        try{
+        try {
             builder = getMessageBuilder(requestClass);
-            Parser parser = JsonFormat.parser();
-            parser.merge(json, builder);
-        }catch (Exception e){
-            throw new RuntimeException("Failed to deserialize "+requestClass,e );
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Get google protobuf message builder from " + requestClass.getName() + "failed", e);
         }
-
+        JsonFormat.parser().merge(json, builder);
         return (T) builder.build();
     }
 
-    public static String serialize(Object value) {
-        String result;
-        try {
-            Printer printer = JsonFormat.printer();
-            result = printer.print((MessageOrBuilder) value);
-        } catch (Exception e) {
-            result = e.getMessage();
-        }
-        return result;
+    static String serialize(Object value) throws InvalidProtocolBufferException {
+        Printer printer = JsonFormat.printer().omittingInsignificantWhitespace();
+        return printer.print((MessageOrBuilder) value);
     }
 
     private static Builder getMessageBuilder(Class<?> requestType) throws Exception {
         Method method = requestType.getMethod("newBuilder");
-
         return (Builder) method.invoke(null, null);
     }
 }
