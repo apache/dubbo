@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.cluster.router.file;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.utils.IOUtils;

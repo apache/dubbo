@@ -24,7 +24,7 @@ import com.alibaba.metrics.MetricName;
 import com.alibaba.metrics.common.MetricObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.monitor.MetricsService;

@@ -17,12 +17,11 @@
 
 package org.apache.dubbo.common.threadpool.support.fixed;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadlocal.InternalThread;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
-import org.apache.dubbo.common.threadpool.support.limited.LimitedThreadPool;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 

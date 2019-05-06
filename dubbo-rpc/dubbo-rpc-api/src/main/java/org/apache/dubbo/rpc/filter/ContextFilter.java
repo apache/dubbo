@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.filter;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.Constants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
@@ -29,7 +29,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.common.Constants.REMOTE_APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.Constants.REMOTE_APPLICATION_KEY;
 
 /**
  * ContextFilter set the provider RpcContext with invoker, invocation, local port it is using and host for

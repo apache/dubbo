@@ -17,8 +17,8 @@
 
 package org.apache.dubbo.common.serialize.gson;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.SerizlizationConstants;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
@@ -32,7 +32,7 @@ public class GsonSerialization implements Serialization {
 
     @Override
     public byte getContentTypeId() {
-        return Constants.GSON_SERIALIZATION_ID;
+        return SerizlizationConstants.GSON_SERIALIZATION_ID;
     }
 
     @Override

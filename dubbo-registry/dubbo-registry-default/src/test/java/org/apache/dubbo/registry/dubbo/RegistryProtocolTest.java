@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.registry.dubbo;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -42,7 +42,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.dubbo.common.Constants.DEFAULT_REGISTER_PROVIDER_KEYS;
+import static org.apache.dubbo.common.constants.Constants.DEFAULT_REGISTER_PROVIDER_KEYS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**

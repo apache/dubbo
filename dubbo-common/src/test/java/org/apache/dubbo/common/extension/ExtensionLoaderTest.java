@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.common.extension;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.activate.ActivateExt1;
 import org.apache.dubbo.common.extension.activate.impl.ActivateExt1Impl1;

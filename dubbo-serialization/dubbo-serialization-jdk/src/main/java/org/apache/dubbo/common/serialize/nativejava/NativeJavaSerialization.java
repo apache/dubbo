@@ -17,8 +17,8 @@
 
 package org.apache.dubbo.common.serialize.nativejava;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.SerizlizationConstants;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
@@ -39,7 +39,7 @@ public class NativeJavaSerialization implements Serialization {
 
     @Override
     public byte getContentTypeId() {
-        return Constants.NATIVE_JAVA_SERIALIZATION_ID;
+        return SerizlizationConstants.NATIVE_JAVA_SERIALIZATION_ID;
     }
 
     @Override

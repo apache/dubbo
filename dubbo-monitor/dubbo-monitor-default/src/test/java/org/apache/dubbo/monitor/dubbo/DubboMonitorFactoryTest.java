@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.monitor.dubbo;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.monitor.Monitor;
 import org.apache.dubbo.rpc.Invoker;

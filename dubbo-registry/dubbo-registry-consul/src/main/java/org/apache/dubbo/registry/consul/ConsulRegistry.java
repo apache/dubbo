@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.registry.consul;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -49,7 +49,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
 import static java.util.concurrent.Executors.newCachedThreadPool;
-import static org.apache.dubbo.common.Constants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.Constants.ANY_VALUE;
 
 /**
  * registry center implementation for consul

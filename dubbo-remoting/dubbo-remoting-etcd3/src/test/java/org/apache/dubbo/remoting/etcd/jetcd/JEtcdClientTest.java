@@ -48,7 +48,7 @@ import io.etcd.jetcd.watch.WatchEvent;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.etcd.ChildListener;
 import org.junit.jupiter.api.AfterEach;

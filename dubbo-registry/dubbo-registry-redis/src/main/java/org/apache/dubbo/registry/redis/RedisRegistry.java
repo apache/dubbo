@@ -17,7 +17,7 @@
 package org.apache.dubbo.registry.redis;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.logger.Logger;

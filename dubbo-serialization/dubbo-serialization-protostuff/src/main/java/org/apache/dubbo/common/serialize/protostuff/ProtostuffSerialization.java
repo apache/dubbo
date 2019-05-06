@@ -17,8 +17,8 @@
 
 package org.apache.dubbo.common.serialize.protostuff;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.SerizlizationConstants;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
@@ -37,7 +37,7 @@ import java.io.OutputStream;
 public class ProtostuffSerialization implements Serialization {
     @Override
     public byte getContentTypeId() {
-        return Constants.PROTOSTUFF_SERIALIZATION_ID;
+        return SerizlizationConstants.PROTOSTUFF_SERIALIZATION_ID;
     }
 
     @Override

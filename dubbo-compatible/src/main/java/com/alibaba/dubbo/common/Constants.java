@@ -18,5 +18,5 @@
 package com.alibaba.dubbo.common;
 
 @Deprecated
-public class Constants extends org.apache.dubbo.common.Constants {
+public class Constants extends org.apache.dubbo.common.constants.Constants {
 }

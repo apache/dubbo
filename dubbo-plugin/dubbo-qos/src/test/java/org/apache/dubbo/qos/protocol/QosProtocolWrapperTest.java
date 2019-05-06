@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.qos.protocol;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.server.Server;

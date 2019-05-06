@@ -16,13 +16,13 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.Constants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 
 import java.util.Map;
 
-import static org.apache.dubbo.common.Constants.PROPERTIES_CHAR_SEPERATOR;
+import static org.apache.dubbo.common.constants.Constants.PROPERTIES_CHAR_SEPERATOR;
 
 /**
  * MetadataReportConfig

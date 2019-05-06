@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.hessian;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.Constants;
 import org.apache.dubbo.rpc.RpcContext;
 
 import com.caucho.hessian.client.HessianConnection;

@@ -17,7 +17,7 @@
 package org.apache.dubbo.metadata.store.redis;
 
 import com.google.gson.Gson;
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
@@ -38,7 +38,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.common.Constants.SYNC_REPORT_KEY;
+import static org.apache.dubbo.common.constants.Constants.SYNC_REPORT_KEY;
 
 /**
  * 2018/10/9

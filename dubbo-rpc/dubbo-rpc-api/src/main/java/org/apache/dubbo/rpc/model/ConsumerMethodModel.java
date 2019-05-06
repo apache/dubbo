@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.model;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.Constants;
 
 import java.lang.reflect.Method;
 import java.util.Map;

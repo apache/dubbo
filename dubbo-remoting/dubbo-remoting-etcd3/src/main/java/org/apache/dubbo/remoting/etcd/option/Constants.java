@@ -19,7 +19,7 @@ package org.apache.dubbo.remoting.etcd.option;
 /**
  * Etcd registry constants.
  */
-public class Constants extends org.apache.dubbo.common.Constants {
+public class Constants extends org.apache.dubbo.common.constants.Constants {
 
     public static final String HTTP_SUBFIX_KEY = "://";
 

@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.cluster.loadbalance;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -31,8 +31,8 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static org.apache.dubbo.common.Constants.HASH_ARGUMENTS;
-import static org.apache.dubbo.common.Constants.HASH_NODES;
+import static org.apache.dubbo.common.constants.Constants.HASH_ARGUMENTS;
+import static org.apache.dubbo.common.constants.Constants.HASH_NODES;
 
 /**
  * ConsistentHashLoadBalance

@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.qos.protocol;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -29,9 +29,9 @@ import org.apache.dubbo.rpc.RpcException;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.dubbo.common.Constants.ACCEPT_FOREIGN_IP;
-import static org.apache.dubbo.common.Constants.QOS_ENABLE;
-import static org.apache.dubbo.common.Constants.QOS_PORT;
+import static org.apache.dubbo.common.constants.Constants.ACCEPT_FOREIGN_IP;
+import static org.apache.dubbo.common.constants.Constants.QOS_ENABLE;
+import static org.apache.dubbo.common.constants.Constants.QOS_PORT;
 
 
 public class QosProtocolWrapper implements Protocol {

@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.rpc;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.Constants;
 
 /**
  * RpcConstants
  *
- * @deprecated Replace to org.apache.dubbo.common.Constants
+ * @deprecated Replace to org.apache.dubbo.common.constant.Constants
  */
 @Deprecated
 public final class RpcConstants extends Constants {

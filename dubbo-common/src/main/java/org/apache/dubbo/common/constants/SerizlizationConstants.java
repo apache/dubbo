@@ -15,27 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.hessian;
+package org.apache.dubbo.common.constants;
 
-import org.apache.dubbo.common.constants.Constants;
-import org.apache.dubbo.rpc.RpcContext;
-
-import com.caucho.hessian.client.HessianConnection;
-import com.caucho.hessian.client.HessianURLConnectionFactory;
-
-import java.io.IOException;
-import java.net.URL;
-
-public class DubboHessianURLConnectionFactory extends HessianURLConnectionFactory {
-
-    @Override
-    public HessianConnection open(URL url) throws IOException {
-        HessianConnection connection = super.open(url);
-        RpcContext context = RpcContext.getContext();
-        for (String key : context.getAttachments().keySet()) {
-            connection.addHeader(Constants.DEFAULT_EXCHANGER + key, context.getAttachment(key));
-        }
-
-        return connection;
-    }
+/**
+ * SerizlizationConstants
+ */
+public class SerizlizationConstants {
+    /**
+     * Serizlization ContentTypeId
+     */
+    public static final byte HESSIAN2_SERIALIZATION_ID = 2;
+    public static final byte JAVA_SERIALIZATION_ID = 3;
+    public static final byte COMPACTED_JAVA_SERIALIZATION_ID = 4;
+    public static final byte FASTJSON_SERIALIZATION_ID = 6;
+    public static final byte NATIVE_JAVA_SERIALIZATION_ID = 7;
+    public static final byte KRYO_SERIALIZATION_ID = 8;
+    public static final byte FST_SERIALIZATION_ID = 9;
+    public static final byte PROTOSTUFF_SERIALIZATION_ID = 10;
+    public static final byte AVRO_SERIALIZATION_ID = 11;
+    public static final byte GSON_SERIALIZATION_ID = 16;
 }

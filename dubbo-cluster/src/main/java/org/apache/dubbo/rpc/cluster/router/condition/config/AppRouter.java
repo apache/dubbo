@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.cluster.router.condition.config;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 

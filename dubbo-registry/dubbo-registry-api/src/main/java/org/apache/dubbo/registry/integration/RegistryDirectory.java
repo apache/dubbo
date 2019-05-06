@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.registry.integration;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
@@ -58,14 +58,14 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.common.Constants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
-import static org.apache.dubbo.common.Constants.CATEGORY_KEY;
-import static org.apache.dubbo.common.Constants.CONFIGURATORS_CATEGORY;
-import static org.apache.dubbo.common.Constants.DEFAULT_CATEGORY;
-import static org.apache.dubbo.common.Constants.DYNAMIC_CONFIGURATORS_CATEGORY;
-import static org.apache.dubbo.common.Constants.PROVIDERS_CATEGORY;
-import static org.apache.dubbo.common.Constants.ROUTERS_CATEGORY;
-import static org.apache.dubbo.common.Constants.ROUTE_PROTOCOL;
+import static org.apache.dubbo.common.constants.Constants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.constants.Constants.CATEGORY_KEY;
+import static org.apache.dubbo.common.constants.Constants.CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.constants.Constants.DEFAULT_CATEGORY;
+import static org.apache.dubbo.common.constants.Constants.DYNAMIC_CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.constants.Constants.PROVIDERS_CATEGORY;
+import static org.apache.dubbo.common.constants.Constants.ROUTERS_CATEGORY;
+import static org.apache.dubbo.common.constants.Constants.ROUTE_PROTOCOL;
 
 
 /**

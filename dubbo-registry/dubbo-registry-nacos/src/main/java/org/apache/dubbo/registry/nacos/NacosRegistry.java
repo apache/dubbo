@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.registry.nacos;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -47,16 +47,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.common.Constants.ADMIN_PROTOCOL;
-import static org.apache.dubbo.common.Constants.CATEGORY_KEY;
-import static org.apache.dubbo.common.Constants.CONFIGURATORS_CATEGORY;
-import static org.apache.dubbo.common.Constants.CONSUMERS_CATEGORY;
-import static org.apache.dubbo.common.Constants.DEFAULT_CATEGORY;
-import static org.apache.dubbo.common.Constants.GROUP_KEY;
-import static org.apache.dubbo.common.Constants.INTERFACE_KEY;
-import static org.apache.dubbo.common.Constants.PROVIDERS_CATEGORY;
-import static org.apache.dubbo.common.Constants.ROUTERS_CATEGORY;
-import static org.apache.dubbo.common.Constants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.Constants.ADMIN_PROTOCOL;
+import static org.apache.dubbo.common.constants.Constants.CATEGORY_KEY;
+import static org.apache.dubbo.common.constants.Constants.CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.constants.Constants.CONSUMERS_CATEGORY;
+import static org.apache.dubbo.common.constants.Constants.DEFAULT_CATEGORY;
+import static org.apache.dubbo.common.constants.Constants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.Constants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.Constants.PROVIDERS_CATEGORY;
+import static org.apache.dubbo.common.constants.Constants.ROUTERS_CATEGORY;
+import static org.apache.dubbo.common.constants.Constants.VERSION_KEY;
 
 /**
  * Nacos {@link Registry}

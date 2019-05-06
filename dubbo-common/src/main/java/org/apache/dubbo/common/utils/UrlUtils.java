@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.Constants;
 import org.apache.dubbo.common.URL;
 
 import java.util.ArrayList;
@@ -27,13 +27,13 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.common.Constants.CATEGORY_KEY;
-import static org.apache.dubbo.common.Constants.CONFIGURATORS_CATEGORY;
-import static org.apache.dubbo.common.Constants.DEFAULT_CATEGORY;
-import static org.apache.dubbo.common.Constants.OVERRIDE_PROTOCOL;
-import static org.apache.dubbo.common.Constants.PROVIDERS_CATEGORY;
-import static org.apache.dubbo.common.Constants.ROUTERS_CATEGORY;
-import static org.apache.dubbo.common.Constants.ROUTE_PROTOCOL;
+import static org.apache.dubbo.common.constants.Constants.CATEGORY_KEY;
+import static org.apache.dubbo.common.constants.Constants.CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.constants.Constants.DEFAULT_CATEGORY;
+import static org.apache.dubbo.common.constants.Constants.OVERRIDE_PROTOCOL;
+import static org.apache.dubbo.common.constants.Constants.PROVIDERS_CATEGORY;
+import static org.apache.dubbo.common.constants.Constants.ROUTERS_CATEGORY;
+import static org.apache.dubbo.common.constants.Constants.ROUTE_PROTOCOL;
 
 public class UrlUtils {
 
