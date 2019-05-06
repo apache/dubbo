@@ -28,15 +28,15 @@ import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.serialize.nativejava.NativeJavaSerialization;
 import org.apache.dubbo.rpc.*;
 import org.apache.thrift.TException;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * ThriftProtocolTest
@@ -53,8 +53,8 @@ public class ThriftProtocolTest {
         Invoker<DemoService.Iface> invoker = protocol.refer(DemoService.Iface.class, url);
         DemoService.Iface client = proxyFactory.getProxy(invoker);
         String result = client.sayHello("haha");
-        Assert.assertTrue(server.isCalled());
-        Assert.assertEquals("Hello, haha", result);
+        Assertions.assertTrue(server.isCalled());
+        Assertions.assertEquals("Hello, haha", result);
         invoker.destroy();
         exporter.unexport();
     }
@@ -71,8 +71,8 @@ public class ThriftProtocolTest {
         Invoker<DemoService.Iface> invoker1 = protocol.refer(DemoService.Iface.class, url1);
         DemoService.Iface client1 = proxyFactory.getProxy(invoker1);
         String result1 = client1.sayHello("haha");
-        Assert.assertTrue(server1.isCalled());
-        Assert.assertEquals("Hello, haha", result1);
+        Assertions.assertTrue(server1.isCalled());
+        Assertions.assertEquals("Hello, haha", result1);
 
         UserServiceImpl server2 = new UserServiceImpl();
         URL url2 = URL.valueOf(ThriftProtocol.NAME + "://127.0.0.1:5342/" + UserService.Iface.class.getName() + "?version=1.0.0&nthrift.overload.method=true");
@@ -80,7 +80,7 @@ public class ThriftProtocolTest {
         Invoker<UserService.Iface> invoker2 = protocol.refer(UserService.Iface.class, url2);
         UserService.Iface client2 = proxyFactory.getProxy(invoker2);
         String result2 = client2.find(2);
-        Assert.assertEquals("KK2", result2);
+        Assertions.assertEquals("KK2", result2);
 
         invoker1.destroy();
         exporter1.unexport();
@@ -88,11 +88,11 @@ public class ThriftProtocolTest {
         exporter2.unexport();
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testGenericInvoke() throws TException{
         DemoServiceImpl server = new DemoServiceImpl();
-        Assert.assertFalse(server.isCalled());
+        Assertions.assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         URL url = URL.valueOf(ThriftProtocol.NAME + "://127.0.0.1:5342/" + DemoService.Iface.class.getName() + "?version=1.0.0");
@@ -100,17 +100,17 @@ public class ThriftProtocolTest {
         Invoker<GenericService> invoker = protocol.refer(GenericService.class, url);
         GenericService client = proxyFactory.getProxy(invoker);
         String result = (String) client.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{"haha"});
-        Assert.assertTrue(server.isCalled());
-        Assert.assertEquals("Hello, haha", result);
+        Assertions.assertTrue(server.isCalled());
+        Assertions.assertEquals("Hello, haha", result);
         invoker.destroy();
         exporter.unexport();
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testGenericInvokeWithNativeJava() throws IOException, ClassNotFoundException {
         DemoServiceImpl server = new DemoServiceImpl();
-        Assert.assertFalse(server.isCalled());
+        Assertions.assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         URL url = URL.valueOf(ThriftProtocol.NAME + "://127.0.0.1:5342/" + DemoService.Iface.class.getName() + "?version=1.0.0&generic=nativejava");
@@ -128,13 +128,13 @@ public class ThriftProtocolTest {
         Object result = client.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{byteArrayOutputStream.toByteArray()});
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream((byte[]) result);
         ObjectInput objectInput = serialization.deserialize(url, byteArrayInputStream);
-        Assert.assertTrue(server.isCalled());
-        Assert.assertEquals("Hello, haha", objectInput.readObject());
+        Assertions.assertTrue(server.isCalled());
+        Assertions.assertEquals("Hello, haha", objectInput.readObject());
         invoker.destroy();
         exporter.unexport();
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testGenericInvokeWithRpcContext() throws TException{
         RpcContext.getContext().setAttachment("myContext", "123");
@@ -147,16 +147,16 @@ public class ThriftProtocolTest {
         Invoker<GenericService> invoker = protocol.refer(GenericService.class, url);
         GenericService client = proxyFactory.getProxy(invoker);
         String result = (String) client.$invoke("context", new String[]{"java.lang.String"}, new Object[]{"haha"});
-        Assert.assertEquals("Hello, haha context, 123", result);
+        Assertions.assertEquals("Hello, haha context, 123", result);
         invoker.destroy();
         exporter.unexport();
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testGenericInvokeWithBean() {
         DemoServiceImpl server = new DemoServiceImpl();
-        Assert.assertFalse(server.isCalled());
+        Assertions.assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         URL url = URL.valueOf(ThriftProtocol.NAME + "://127.0.0.1:5342/" + DemoService.Iface.class.getName() + "?version=1.0.0&generic=bean");
@@ -167,17 +167,17 @@ public class ThriftProtocolTest {
         JavaBeanDescriptor javaBeanDescriptor = JavaBeanSerializeUtil.serialize("haha");
 
         Object result = client.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{javaBeanDescriptor});
-        Assert.assertTrue(server.isCalled());
-        Assert.assertEquals("Hello, haha", JavaBeanSerializeUtil.deserialize((JavaBeanDescriptor) result));
+        Assertions.assertTrue(server.isCalled());
+        Assertions.assertEquals("Hello, haha", JavaBeanSerializeUtil.deserialize((JavaBeanDescriptor) result));
         invoker.destroy();
         exporter.unexport();
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testOverload() throws TException{
         DemoServiceImpl server = new DemoServiceImpl();
-        Assert.assertFalse(server.isCalled());
+        Assertions.assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         URL url = URL.valueOf(ThriftProtocol.NAME + "://127.0.0.1:5342/" + DemoService.Iface.class.getName() + "?version=1.0.0&nthrift.overload.method=true&nthrift2.request=false");
@@ -185,14 +185,14 @@ public class ThriftProtocolTest {
         Invoker<DemoService.Iface> invoker = protocol.refer(DemoService.Iface.class, url);
         DemoService.Iface client = proxyFactory.getProxy(invoker);
         String result = client.sayHello("haha");
-        Assert.assertEquals("Hello, haha", result);
+        Assertions.assertEquals("Hello, haha", result);
         result = client.sayHelloTimes("haha", 1);
-        Assert.assertEquals("Hello, haha. ", result);
+        Assertions.assertEquals("Hello, haha. ", result);
         invoker.destroy();
         exporter.unexport();
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testTimeOut() throws TException{
         DemoServiceImpl server = new DemoServiceImpl();
@@ -206,7 +206,7 @@ public class ThriftProtocolTest {
             client.timeOut(6000);
             fail();
         } catch (RpcException expected) {
-            Assert.assertTrue(expected.isTimeout());
+            Assertions.assertTrue(expected.isTimeout());
         } finally {
             invoker.destroy();
             exporter.unexport();
@@ -214,7 +214,7 @@ public class ThriftProtocolTest {
 
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testCustomException() throws TException{
         DemoServiceImpl server = new DemoServiceImpl();
