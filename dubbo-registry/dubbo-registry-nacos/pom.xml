@@ -27,10 +27,6 @@
     <name>${project.artifactId}</name>
     <description>The Nacos registry module of Dubbo project</description>
 
-    <properties>
-        <nacos.version>1.0.0-RC3</nacos.version>
-    </properties>
-
     <dependencies>
 
         <dependency>
@@ -50,7 +46,6 @@
         <dependency>
             <groupId>com.alibaba.nacos</groupId>
             <artifactId>nacos-client</artifactId>
-            <version>${nacos.version}</version>
             <optional>true</optional>
         </dependency>
 

@@ -48,7 +48,7 @@ import java.util.concurrent.Executor;
 
 public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZookeeperClient.CuratorWatcherImpl, CuratorZookeeperClient.CuratorWatcherImpl> {
 
-    static final Charset charset = Charset.forName("UTF-8");
+    static final Charset CHARSET = Charset.forName("UTF-8");
     private final CuratorFramework client;
     private Map<String, TreeCache> treeCacheMap = new ConcurrentHashMap<>();
 
@@ -106,7 +106,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
 
     @Override
     protected void createPersistent(String path, String data) {
-        byte[] dataBytes = data.getBytes(charset);
+        byte[] dataBytes = data.getBytes(CHARSET);
         try {
             client.create().forPath(path, dataBytes);
         } catch (NodeExistsException e) {
@@ -122,7 +122,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
 
     @Override
     protected void createEphemeral(String path, String data) {
-        byte[] dataBytes = data.getBytes(charset);
+        byte[] dataBytes = data.getBytes(CHARSET);
         try {
             client.create().withMode(CreateMode.EPHEMERAL).forPath(path, dataBytes);
         } catch (NodeExistsException e) {
@@ -177,7 +177,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
     public String doGetContent(String path) {
         try {
             byte[] dataBytes = client.getData().forPath(path);
-            return (dataBytes == null || dataBytes.length == 0) ? null : new String(dataBytes, charset);
+            return (dataBytes == null || dataBytes.length == 0) ? null : new String(dataBytes, CHARSET);
         } catch (NoNodeException e) {
             // ignore NoNode Exception.
         } catch (Exception e) {
@@ -295,12 +295,12 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
                     case NODE_ADDED:
                         eventType = EventType.NodeCreated;
                         path = event.getData().getPath();
-                        content = new String(event.getData().getData(), charset);
+                        content = new String(event.getData().getData(), CHARSET);
                         break;
                     case NODE_UPDATED:
                         eventType = EventType.NodeDataChanged;
                         path = event.getData().getPath();
-                        content = new String(event.getData().getData(), charset);
+                        content = new String(event.getData().getData(), CHARSET);
                         break;
                     case NODE_REMOVED:
                         path = event.getData().getPath();

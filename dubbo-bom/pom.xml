@@ -204,6 +204,11 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-rpc-native-thrift</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-rpc-memcached</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -250,6 +255,11 @@
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-registry-consul</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-registry-sofa</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -304,6 +314,11 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-serialization-native-hession</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-serialization-jdk</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -350,6 +365,11 @@
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-metadata-report-consul</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-metadata-report-etcd</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
