@@ -68,7 +68,7 @@ public class GenericProtobufObjectOutputTest {
             phoneNumberMap.put("phoneNumber" + i, GooglePB.PhoneNumber.newBuilder().setNumber(random.nextInt(bound) + "").setType(GooglePB.PhoneType.forNumber(random.nextInt(GooglePB.PhoneType.values().length - 1))).build());
         }
         GooglePB.PBRequestType request = GooglePB.PBRequestType.newBuilder()
-                .setAge(15).setCash(10).setMoney(15.0).setNum(100L)
+                .setAge(15).setCash(10).setMoney(16.0).setNum(100L)
                 .addAllPhone(phoneNumberList).putAllDoubleMap(phoneNumberMap).build();
 
         this.genericProtobufObjectOutput.writeObject(request);
