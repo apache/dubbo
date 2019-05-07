@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.serialize.avro;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.hamcrest.Matchers;
@@ -46,7 +47,7 @@ public class AvroSerializationTest {
 
     @Test
     public void testContentTypeId() {
-        assertThat(avroSerialization.getContentTypeId(), is((byte) 10));
+        assertThat(avroSerialization.getContentTypeId(), is(Constants.AVRO_SERIALIZATION_ID));
     }
 
     @Test

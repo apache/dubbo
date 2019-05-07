@@ -23,8 +23,10 @@ import org.apache.dubbo.common.URL;
  * 2018/10/25
  */
 public class MetadataIdentifier {
+
     public static final String SEPARATOR = ":";
     final static String DEFAULT_PATH_TAG = "metadata";
+    final static String META_DATA_STORE_TAG = ".metaData";
 
     private String serviceInterface;
     private String version;
@@ -53,9 +55,9 @@ public class MetadataIdentifier {
 
     public String getUniqueKey(KeyTypeEnum keyType) {
         if (keyType == KeyTypeEnum.PATH) {
-            return getFilePathKey();
+            return getFilePathKey() + Constants.PATH_SEPARATOR + DEFAULT_PATH_TAG;
         }
-        return getIdentifierKey();
+        return getIdentifierKey() + META_DATA_STORE_TAG;
     }
 
     public String getIdentifierKey() {

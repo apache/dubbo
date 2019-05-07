@@ -30,7 +30,7 @@ import java.util.concurrent.ScheduledFuture;
 
 public class ExecutorUtil {
     private static final Logger logger = LoggerFactory.getLogger(ExecutorUtil.class);
-    private static final ThreadPoolExecutor shutdownExecutor = new ThreadPoolExecutor(0, 1,
+    private static final ThreadPoolExecutor SHUTDOWN_EXECUTOR = new ThreadPoolExecutor(0, 1,
             0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<Runnable>(100),
             new NamedThreadFactory("Close-ExecutorService-Timer", true));
@@ -102,7 +102,7 @@ public class ExecutorUtil {
 
     private static void newThreadToCloseExecutor(final ExecutorService es) {
         if (!isTerminated(es)) {
-            shutdownExecutor.execute(new Runnable() {
+            SHUTDOWN_EXECUTOR.execute(new Runnable() {
                 @Override
                 public void run() {
                     try {
