@@ -29,7 +29,6 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.gen.thrift.Demo;
 import org.apache.dubbo.rpc.protocol.thrift.io.RandomAccessByteArrayOutputStream;
-
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TMessage;
@@ -376,7 +375,7 @@ public class ThriftCodecTest {
         Assertions.assertEquals("echoString", message.name);
         Assertions.assertEquals(TMessageType.EXCEPTION, message.type);
         Assertions.assertEquals(ThriftCodec.getSeqId(), message.seqid);
-        TApplicationException exception = TApplicationException.read(protocol);
+        TApplicationException exception = TApplicationException.readFrom(protocol);
         protocol.readMessageEnd();
 
         Assertions.assertEquals(exceptionMessage, exception.getMessage());

@@ -40,5 +40,6 @@
         <module>dubbo-serialization-test</module>
         <module>dubbo-serialization-gson</module>
         <module>dubbo-serialization-googlePb</module>
+        <module>dubbo-serialization-native-hession</module>
     </modules>
 </project>
