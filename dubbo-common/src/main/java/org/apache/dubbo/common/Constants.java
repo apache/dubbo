@@ -200,6 +200,8 @@ public class Constants {
 
     public static final String PROPERTIES_CHAR_SEPERATOR = "-";
 
+    public static final String GROUP_CHAR_SEPERATOR = ":";
+
     public static final String HIDE_KEY_PREFIX = ".";
 
     public static final String DEFAULT_KEY_PREFIX = "default.";
