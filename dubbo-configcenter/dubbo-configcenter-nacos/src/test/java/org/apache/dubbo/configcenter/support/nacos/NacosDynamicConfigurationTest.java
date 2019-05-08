@@ -21,11 +21,10 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.ConfigurationListener;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,18 +33,20 @@ import java.util.concurrent.CountDownLatch;
 /**
  * Unit test for nacos config center support
  */
-@Disabled
+//@Disabled
 public class NacosDynamicConfigurationTest {
 
     private static NacosDynamicConfiguration config;
 
     @Test
-    public void testGetConfig() {
+    public void testGetConfig() throws Exception {
 
         put("dubbo-config-org.apache.dubbo.nacos.testService.configurators", "hello");
+        Thread.sleep(200);
         put("dubbo-config-dubbo.properties:test", "aaa=bbb");
-        Assert.assertEquals("hello", config.getConfig("org.apache.dubbo.nacos.testService.configurators"));
-        Assert.assertEquals("aaa=bbb", config.getConfig("dubbo.properties", "test"));
+        Thread.sleep(200);
+        Assertions.assertEquals("hello", config.getConfig("org.apache.dubbo.nacos.testService.configurators"));
+        Assertions.assertEquals("aaa=bbb", config.getConfig("dubbo.properties", "test"));
     }
 
     @Test
@@ -71,29 +72,28 @@ public class NacosDynamicConfigurationTest {
 
         latch.await();
 
-        Assert.assertEquals(1, listener1.getCount("dubbo-config-AService.configurators"));
-        Assert.assertEquals(1, listener2.getCount("dubbo-config-AService.configurators"));
-        Assert.assertEquals(1, listener3.getCount("dubbo-config-testapp.tagrouters"));
-        Assert.assertEquals(1, listener4.getCount("dubbo-config-testapp.tagrouters"));
+        Assertions.assertEquals(1, listener1.getCount("dubbo-config-AService.configurators"));
+        Assertions.assertEquals(1, listener2.getCount("dubbo-config-AService.configurators"));
+        Assertions.assertEquals(1, listener3.getCount("dubbo-config-testapp.tagrouters"));
+        Assertions.assertEquals(1, listener4.getCount("dubbo-config-testapp.tagrouters"));
 
-        Assert.assertEquals("new value1", listener1.getValue());
-        Assert.assertEquals("new value1", listener2.getValue());
-        Assert.assertEquals("new value2", listener3.getValue());
-        Assert.assertEquals("new value2", listener4.getValue());
+        Assertions.assertEquals("new value1", listener1.getValue());
+        Assertions.assertEquals("new value1", listener2.getValue());
+        Assertions.assertEquals("new value2", listener3.getValue());
+        Assertions.assertEquals("new value2", listener4.getValue());
 
     }
 
     private void put(String key, String value) {
         try {
             config.publishNacosConfig(key, value);
-
         } catch (Exception e) {
             System.out.println("Error put value to nacos.");
         }
     }
 
-    @Before
-    public void setUp() {
+    @BeforeAll
+    public static void setUp() {
         String urlForDubbo = "nacos://" + "127.0.0.1:8848" + "/org.apache.dubbo.nacos.testService";
         // timeout in 15 seconds.
         URL url = URL.valueOf(urlForDubbo)
@@ -101,8 +101,8 @@ public class NacosDynamicConfigurationTest {
         config = new NacosDynamicConfiguration(url);
     }
 
-    @After
-    public void tearDown() {
+    @AfterAll
+    public static void tearDown() {
     }
 
     private class TestListener implements ConfigurationListener {

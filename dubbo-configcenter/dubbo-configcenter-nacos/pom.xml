@@ -31,10 +31,6 @@
     <name>${project.artifactId}</name>
     <description>The nacos implementation of the config-center api</description>
 
-    <properties>
-        <nacos.version>1.0.0-RC3</nacos.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
@@ -44,18 +40,6 @@
         <dependency>
             <groupId>com.alibaba.nacos</groupId>
             <artifactId>nacos-client</artifactId>
-            <version>${nacos.version}</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>testcontainers</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-remoting-etcd3</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
     </dependencies>
 </project>

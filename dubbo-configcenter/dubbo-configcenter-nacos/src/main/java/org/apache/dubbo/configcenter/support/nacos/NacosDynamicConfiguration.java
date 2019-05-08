@@ -155,7 +155,9 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
      * @return
      */
     private NacosConfigListener createTargetListener(String key, String group) {
-        return new NacosConfigListener();
+        NacosConfigListener configListener = new NacosConfigListener();
+        configListener.fillContext(key, group);
+        return configListener;
     }
 
     @Override
