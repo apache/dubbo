@@ -176,8 +176,8 @@ public class GenericFilter extends ListenableFilter {
                         UnsafeByteArrayOutputStream os = new UnsafeByteArrayOutputStream(512);
                         ExtensionLoader.getExtensionLoader(Serialization.class)
                                 .getExtension(Constants.GENERIC_SERIALIZATION_PROTOBUF)
-                                .serialize(null, os).writeObject(result.getValue());
-                        return new RpcResult(os.toString());
+                                .serialize(null, os).writeObject(appResponse.getValue());
+                        appResponse.setValue(os.toString());
                     } catch (IOException e) {
                         throw new RpcException("Generic serialization [" +
                                 Constants.GENERIC_SERIALIZATION_PROTOBUF +
