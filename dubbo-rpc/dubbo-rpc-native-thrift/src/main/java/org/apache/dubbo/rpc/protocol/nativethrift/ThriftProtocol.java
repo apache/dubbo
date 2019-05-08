@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.protocol.nativethrift;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
+
 import org.apache.thrift.TException;
 import org.apache.thrift.TMultiplexedProcessor;
 import org.apache.thrift.TProcessor;
@@ -68,7 +69,7 @@ public class ThriftProtocol extends AbstractProxyProtocol {
     }
 
     @Override
-    protected <T> T doRefer(Class<T> type, URL url) throws RpcException {
+    protected <T> T getFrameworkProxy(Class<T> type, URL url) throws RpcException {
         return doReferFrameAndCompact(type, url);
     }
 

@@ -16,6 +16,24 @@
  */
 package org.apache.dubbo.monitor.dubbo;
 
+import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.store.DataStore;
+import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.monitor.MetricsService;
+import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.Filter;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.support.RpcUtils;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.metrics.FastCompass;
 import com.alibaba.metrics.MetricLevel;
@@ -26,29 +44,13 @@ import com.alibaba.metrics.common.CollectLevel;
 import com.alibaba.metrics.common.MetricObject;
 import com.alibaba.metrics.common.MetricsCollector;
 import com.alibaba.metrics.common.MetricsCollectorFactory;
-import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.store.DataStore;
-import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.monitor.MetricsService;
-import org.apache.dubbo.rpc.Filter;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Protocol;
-import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcResult;
-import org.apache.dubbo.rpc.support.RpcUtils;
-import java.util.Collections;
-import java.util.SortedMap;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -221,12 +223,12 @@ public class MetricsFilter implements Filter {
                     collector.collect(entry.getKey(), entry.getValue(), timestamp);
                 }
 
-                RpcResult result = new RpcResult();
+                AppResponse appResponse = new AppResponse();
 
                 List res = collector.build();
                 res.addAll(getThreadPoolMessage());
-                result.setValue(JSON.toJSONString(res));
-                return result;
+                appResponse.setValue(JSON.toJSONString(res));
+                return appResponse;
             }
 
             @Override

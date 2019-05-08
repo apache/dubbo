@@ -115,7 +115,7 @@ public class JsonRpcProtocol extends AbstractProxyProtocol {
 
     @SuppressWarnings("unchecked")
     @Override
-    protected <T> T doRefer(final Class<T> serviceType, URL url) throws RpcException {
+    protected <T> T getFrameworkProxy(final Class<T> serviceType, URL url) throws RpcException {
         JsonProxyFactoryBean jsonProxyFactoryBean = new JsonProxyFactoryBean();
         jsonProxyFactoryBean.setServiceUrl(url.setProtocol("http").toIdentityString());
         jsonProxyFactoryBean.setServiceInterface(serviceType);
