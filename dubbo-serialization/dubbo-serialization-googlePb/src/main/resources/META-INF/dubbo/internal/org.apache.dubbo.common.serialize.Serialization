@@ -1,1 +1,1 @@
-gernericprotobuf=org.apache.dubbo.common.serialize.protobuf.support.GenericProtobufSerialization
+protobuf-json=org.apache.dubbo.common.serialize.protobuf.support.GenericProtobufSerialization

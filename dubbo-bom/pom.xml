@@ -344,7 +344,7 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-serialization-googlePb</artifactId>
+                <artifactId>dubbo-serialization-protobuf-json</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
