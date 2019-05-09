@@ -162,11 +162,17 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
-        NacosConfigListener nacosConfigListener = watchListenerMap.computeIfAbsent(generateKey(key, group), k -> createTargetListener(key, group));
+        String[] keyAndGroup = getKeyAndGroup(key);
+        if (keyAndGroup[1] != null) {
+            group = keyAndGroup[1];
+        }
+        String finalGroup = group;
+        NacosConfigListener nacosConfigListener = watchListenerMap.computeIfAbsent(generateKey(key, group), k -> createTargetListener(key, finalGroup));
         String keyInNacos = rootPath + PROPERTIES_CHAR_SEPERATOR + key;
         nacosConfigListener.addListener(listener);
         try {
-            configService.addListener(keyInNacos, null, nacosConfigListener);
+            configService.addListener(keyInNacos, group, nacosConfigListener);
+            System.out.println("1");
         } catch (NacosException e) {
             logger.error(e.getMessage());
         }
@@ -228,7 +234,11 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         public void innerReceive(String dataId, String group, String configInfo) {
             String oldValue = cacheData.get(dataId);
             ConfigChangeEvent event = new ConfigChangeEvent(dataId, configInfo, getChangeType(configInfo, oldValue));
-            cacheData.put(dataId, configInfo);
+            if (configInfo == null) {
+                cacheData.remove(dataId);
+            } else {
+                cacheData.put(dataId, configInfo);
+            }
             listeners.forEach(listener -> listener.process(event));
         }
 
