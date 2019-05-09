@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.serialize.avro;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
@@ -29,7 +30,7 @@ public class AvroSerialization implements Serialization {
 
     @Override
     public byte getContentTypeId() {
-        return 10;
+        return Constants.AVRO_SERIALIZATION_ID;
     }
 
     @Override

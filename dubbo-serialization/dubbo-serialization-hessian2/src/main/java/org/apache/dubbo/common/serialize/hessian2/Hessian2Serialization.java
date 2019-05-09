@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.serialize.hessian2;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
@@ -34,11 +35,9 @@ import java.io.OutputStream;
  */
 public class Hessian2Serialization implements Serialization {
 
-    public static final byte ID = 2;
-
     @Override
     public byte getContentTypeId() {
-        return ID;
+        return Constants.HESSIAN2_SERIALIZATION_ID;
     }
 
     @Override

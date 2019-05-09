@@ -123,10 +123,6 @@ public class ApplicationConfig extends AbstractConfig {
      */
     private String shutwait;
 
-
-    private Boolean preferPublicIp;
-
-
     public ApplicationConfig() {
     }
 
@@ -331,11 +327,4 @@ public class ApplicationConfig extends AbstractConfig {
         return !StringUtils.isEmpty(name);
     }
 
-    public Boolean getPreferPublicIp() {
-        return preferPublicIp;
-    }
-
-    public void setPreferPublicIp(Boolean preferPublicIp) {
-        this.preferPublicIp = preferPublicIp;
-    }
 }

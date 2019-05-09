@@ -128,27 +128,22 @@ public class NetUtils {
             return false;
         }
         String name = address.getHostAddress();
-        return (name != null
+        boolean result = (name != null
                 && IP_PATTERN.matcher(name).matches()
                 && !Constants.ANYHOST_VALUE.equals(name)
                 && !Constants.LOCALHOST_VALUE.equals(name));
+        return result;
     }
 
     /**
-     * Check if an ipv6 address is reachable.
+     * Check if an ipv6 address
      *
-     * @param address the given address
      * @return true if it is reachable
      */
-    static boolean isValidV6Address(Inet6Address address) {
+    static boolean isPreferIPV6Address() {
         boolean preferIpv6 = Boolean.getBoolean("java.net.preferIPv6Addresses");
         if (!preferIpv6) {
             return false;
-        }
-        try {
-            return address.isReachable(100);
-        } catch (IOException e) {
-            // ignore
         }
         return false;
     }
@@ -234,7 +229,7 @@ public class NetUtils {
     private static Optional<InetAddress> toValidAddress(InetAddress address) {
         if (address instanceof Inet6Address) {
             Inet6Address v6Address = (Inet6Address) address;
-            if (isValidV6Address(v6Address)) {
+            if (isPreferIPV6Address()) {
                 return Optional.ofNullable(normalizeV6Address(v6Address));
             }
         }
@@ -264,12 +259,21 @@ public class NetUtils {
             while (interfaces.hasMoreElements()) {
                 try {
                     NetworkInterface network = interfaces.nextElement();
+                    if (network.isLoopback() || network.isVirtual() || !network.isUp()) {
+                        continue;
+                    }
                     Enumeration<InetAddress> addresses = network.getInetAddresses();
                     while (addresses.hasMoreElements()) {
                         try {
                             Optional<InetAddress> addressOp = toValidAddress(addresses.nextElement());
                             if (addressOp.isPresent()) {
-                                return addressOp.get();
+                                try {
+                                    if(addressOp.get().isReachable(100)){
+                                        return addressOp.get();
+                                    }
+                                } catch (IOException e) {
+                                    // ignore
+                                }
                             }
                         } catch (Throwable e) {
                             logger.warn(e);

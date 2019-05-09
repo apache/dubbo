@@ -51,7 +51,8 @@ public class ProtocolUtils {
                 && !"".equals(generic)
                 && (Constants.GENERIC_SERIALIZATION_DEFAULT.equalsIgnoreCase(generic)  /* Normal generalization cal */
                 || Constants.GENERIC_SERIALIZATION_NATIVE_JAVA.equalsIgnoreCase(generic) /* Streaming generalization call supporting jdk serialization */
-                || Constants.GENERIC_SERIALIZATION_BEAN.equalsIgnoreCase(generic));
+                || Constants.GENERIC_SERIALIZATION_BEAN.equalsIgnoreCase(generic)
+                || Constants.GENERIC_SERIALIZATION_PROTOBUF.equalsIgnoreCase(generic));
     }
 
     public static boolean isDefaultGenericSerialization(String generic) {
@@ -66,5 +67,9 @@ public class ProtocolUtils {
 
     public static boolean isBeanGenericSerialization(String generic) {
         return isGeneric(generic) && Constants.GENERIC_SERIALIZATION_BEAN.equals(generic);
+    }
+
+    public static boolean isProtobufGenericSerialization(String generic) {
+        return isGeneric(generic) && Constants.GENERIC_SERIALIZATION_PROTOBUF.equals(generic);
     }
 }
