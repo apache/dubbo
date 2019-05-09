@@ -18,13 +18,18 @@ package org.apache.dubbo.rpc.protocol;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
+import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.AsyncRpcResult;
+import org.apache.dubbo.rpc.FutureAdapter;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvokeMode;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
@@ -36,6 +41,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -151,26 +157,38 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         invocation.setInvokeMode(RpcUtils.getInvokeMode(url, invocation));
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
 
+        AsyncRpcResult asyncResult;
         try {
-            return doInvoke(invocation);
+            asyncResult = (AsyncRpcResult) doInvoke(invocation);
         } catch (InvocationTargetException e) { // biz exception
             Throwable te = e.getTargetException();
             if (te == null) {
-                return AsyncRpcResult.newDefaultAsyncResult(null, e, invocation);
+                asyncResult = AsyncRpcResult.newDefaultAsyncResult(null, e, invocation);
             } else {
                 if (te instanceof RpcException) {
                     ((RpcException) te).setCode(RpcException.BIZ_EXCEPTION);
                 }
-                return AsyncRpcResult.newDefaultAsyncResult(null, te, invocation);
+                asyncResult = AsyncRpcResult.newDefaultAsyncResult(null, te, invocation);
             }
         } catch (RpcException e) {
             if (e.isBiz()) {
-                return AsyncRpcResult.newDefaultAsyncResult(null, e, invocation);
+                asyncResult = AsyncRpcResult.newDefaultAsyncResult(null, e, invocation);
             } else {
                 throw e;
             }
         } catch (Throwable e) {
-            return AsyncRpcResult.newDefaultAsyncResult(null, e, invocation);
+            asyncResult = AsyncRpcResult.newDefaultAsyncResult(null, e, invocation);
+        }
+        RpcContext.getContext().setFuture(new FutureAdapter(asyncResult, inv));
+        return asyncResult;
+    }
+
+    protected ExecutorService getCallbackExecutor(URL url, Invocation inv) {
+        ExecutorService sharedExecutor = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension().createExecutorIfAbsent(url);
+        if (InvokeMode.SYNC == RpcUtils.getInvokeMode(getUrl(), inv)) {
+            return new ThreadlessExecutor();
+        } else {
+            return sharedExecutor;
         }
     }
 
