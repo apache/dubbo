@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.http.HttpBinder;
 import org.apache.dubbo.remoting.http.HttpHandler;
 import org.apache.dubbo.remoting.http.HttpServer;
+import org.apache.dubbo.remoting.http.jetty.JettyHttpServer;
 
 public class JettyHttpBinder implements HttpBinder {
 

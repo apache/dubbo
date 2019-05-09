@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-rpc</artifactId>
-        <version>2.7.2-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>dubbo-rpc-xml</artifactId>
@@ -65,6 +65,12 @@
             <groupId>org.apache.xmlrpc</groupId>
             <artifactId>xmlrpc-client</artifactId>
             <version>${xmlrpc_version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-remoting-http</artifactId>
+            <version>${project.parent.version}</version>
         </dependency>
 
         <dependency>
