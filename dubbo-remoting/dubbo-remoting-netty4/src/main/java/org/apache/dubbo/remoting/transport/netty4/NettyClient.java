@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
+import io.netty.channel.socket.nio.NioSocketChannel;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
@@ -40,8 +41,7 @@ import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollMode;
 import io.netty.channel.epoll.EpollChannelOption;
 import io.netty.channel.epoll.EpollEventLoopGroup;
-import io.netty.channel.epoll.EpollServerSocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.handler.proxy.Socks5ProxyHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultThreadFactory;
@@ -60,7 +60,7 @@ public class NettyClient extends AbstractClient {
     private static final EventLoopGroup eventLoopGroup = Epoll.isAvailable()?
             new EpollEventLoopGroup(Constants.DEFAULT_IO_THREADS, new DefaultThreadFactory("NettyClientWorker", true)):
             new NioEventLoopGroup(Constants.DEFAULT_IO_THREADS, new DefaultThreadFactory("NettyClientWorker", true));
-    
+
     private static final String SOCKS_PROXY_HOST = "socksProxyHost";
 
     private static final String SOCKS_PROXY_PORT = "socksProxyPort";
@@ -85,10 +85,10 @@ public class NettyClient extends AbstractClient {
                 //.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getTimeout())
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         if (Epoll.isAvailable()) {
-            bootstrap.channel(EpollServerSocketChannel.class)
+            bootstrap.channel(EpollSocketChannel.class)
                 .option(EpollChannelOption.EPOLL_MODE, EpollMode.EDGE_TRIGGERED);
         } else {
-            bootstrap.channel(NioServerSocketChannel.class);
+            bootstrap.channel(NioSocketChannel.class);
         }
 
         if (getConnectTimeout() < 3000) {
