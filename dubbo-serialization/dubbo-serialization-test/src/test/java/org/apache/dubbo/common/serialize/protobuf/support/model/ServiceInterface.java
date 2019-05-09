@@ -14,28 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.definition.builder;
+package org.apache.dubbo.common.serialize.protobuf.support.model;
 
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.metadata.definition.model.TypeDefinition;
-
-import java.lang.reflect.Type;
-import java.util.Map;
-
-/**
- * 2015/1/27.
- */
-@SPI
-public interface TypeBuilder {
-
-    /**
-     * Whether the build accept the type or class passed in.
-     */
-    boolean accept(Type type, Class<?> clazz);
-
-    /**
-     * Build type definition with the type or class.
-     */
-    TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache);
-
+public interface ServiceInterface {
+    GooglePB.PBResponseType sayHello(GooglePB.PBRequestType requestType);
 }
