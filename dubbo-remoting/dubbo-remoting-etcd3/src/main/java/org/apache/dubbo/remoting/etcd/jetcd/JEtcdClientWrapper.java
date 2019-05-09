@@ -186,7 +186,9 @@ public class JEtcdClientWrapper {
                                     int index = len, count = 0;
                                     if (key.length() > len) {
                                         for (; (index = key.indexOf(Constants.PATH_SEPARATOR, index)) != -1; ++index) {
-                                            if (count++ > 1) break;
+                                            if (count++ > 1) {
+                                                break;
+                                            }
                                         }
                                     }
                                     return count == 1;
