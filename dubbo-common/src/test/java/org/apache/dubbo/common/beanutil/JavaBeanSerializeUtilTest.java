@@ -441,20 +441,20 @@ public class JavaBeanSerializeUtilTest {
         assertEqualsPrimitive(person.getInfoProfile().isMale(), infoProfile.getProperty("male"));
     }
 
-    static void assertEqualsPhone(Phone excpected, Object obj) {
+    static void assertEqualsPhone(Phone expected, Object obj) {
         JavaBeanDescriptor descriptor = (JavaBeanDescriptor) obj;
         Assertions.assertTrue(descriptor.isBeanType());
-        if (excpected.getArea() != null) {
-            assertEqualsPrimitive(excpected.getArea(), descriptor.getProperty("area"));
+        if (expected.getArea() != null) {
+            assertEqualsPrimitive(expected.getArea(), descriptor.getProperty("area"));
         }
-        if (excpected.getCountry() != null) {
-            assertEqualsPrimitive(excpected.getCountry(), descriptor.getProperty("country"));
+        if (expected.getCountry() != null) {
+            assertEqualsPrimitive(expected.getCountry(), descriptor.getProperty("country"));
         }
-        if (excpected.getExtensionNumber() != null) {
-            assertEqualsPrimitive(excpected.getExtensionNumber(), descriptor.getProperty("extensionNumber"));
+        if (expected.getExtensionNumber() != null) {
+            assertEqualsPrimitive(expected.getExtensionNumber(), descriptor.getProperty("extensionNumber"));
         }
-        if (excpected.getNumber() != null) {
-            assertEqualsPrimitive(excpected.getNumber(), descriptor.getProperty("number"));
+        if (expected.getNumber() != null) {
+            assertEqualsPrimitive(expected.getNumber(), descriptor.getProperty("number"));
         }
     }
 

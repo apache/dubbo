@@ -200,6 +200,8 @@ public class Constants {
 
     public static final String PROPERTIES_CHAR_SEPERATOR = "-";
 
+    public static final String GROUP_CHAR_SEPERATOR = ":";
+
     public static final String HIDE_KEY_PREFIX = ".";
 
     public static final String DEFAULT_KEY_PREFIX = "default.";
@@ -727,6 +729,8 @@ public class Constants {
 
     public static final String GENERIC_SERIALIZATION_BEAN = "bean";
 
+    public static final String GENERIC_SERIALIZATION_PROTOBUF = "protobuf-json";
+
     public static final String DUBBO_IP_TO_REGISTRY = "DUBBO_IP_TO_REGISTRY";
 
     public static final String DUBBO_PORT_TO_REGISTRY = "DUBBO_PORT_TO_REGISTRY";
@@ -874,5 +878,19 @@ public class Constants {
     public static final String METRICS_PORT = "metrics.port";
     public static final String METRICS_PROTOCOL = "metrics.protocol";
 
+
+    /**
+     * Serizlization ContentTypeId
+     */
+    public static final byte HESSIAN2_SERIALIZATION_ID = 2;
+    public static final byte JAVA_SERIALIZATION_ID = 3;
+    public static final byte COMPACTED_JAVA_SERIALIZATION_ID = 4;
+    public static final byte FASTJSON_SERIALIZATION_ID = 6;
+    public static final byte NATIVE_JAVA_SERIALIZATION_ID = 7;
+    public static final byte KRYO_SERIALIZATION_ID = 8;
+    public static final byte FST_SERIALIZATION_ID = 9;
+    public static final byte PROTOSTUFF_SERIALIZATION_ID = 10;
+    public static final byte AVRO_SERIALIZATION_ID = 11;
+    public static final byte GSON_SERIALIZATION_ID = 16;
 
 }

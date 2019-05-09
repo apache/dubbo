@@ -21,6 +21,8 @@ import org.apache.dubbo.common.Constants;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static org.apache.dubbo.metadata.identifier.MetadataIdentifier.META_DATA_STORE_TAG;
+
 /**
  * 2019/1/7
  */
@@ -34,10 +36,16 @@ public class MetadataIdentifierTest {
         String application = "vic.zk.md";
         MetadataIdentifier providerMetadataIdentifier = new MetadataIdentifier(interfaceName, version, group, Constants.PROVIDER_SIDE, application);
         System.out.println(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.PATH));
-        Assertions.assertEquals(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.PATH), "metadata" + Constants.PATH_SEPARATOR + interfaceName + Constants.PATH_SEPARATOR + (version == null ? "" : (version + Constants.PATH_SEPARATOR))
-                + (group == null ? "" : (group + Constants.PATH_SEPARATOR)) + Constants.PROVIDER_SIDE + Constants.PATH_SEPARATOR + application);
+        Assertions.assertEquals(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.PATH),
+                "metadata" + Constants.PATH_SEPARATOR + interfaceName + Constants.PATH_SEPARATOR +
+                        (version == null ? "" : (version + Constants.PATH_SEPARATOR))
+                + (group == null ? "" : (group + Constants.PATH_SEPARATOR)) + Constants.PROVIDER_SIDE
+                        + Constants.PATH_SEPARATOR + application + Constants.PATH_SEPARATOR + "metadata");
         System.out.println(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY));
         Assertions.assertEquals(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY),
-                interfaceName + MetadataIdentifier.SEPARATOR + (version == null ? "" : version + MetadataIdentifier.SEPARATOR) + (group == null ? "" : group + MetadataIdentifier.SEPARATOR) + Constants.PROVIDER_SIDE + MetadataIdentifier.SEPARATOR + application);
+                interfaceName + MetadataIdentifier.SEPARATOR +
+                        (version == null ? "" : version + MetadataIdentifier.SEPARATOR)
+                        + (group == null ? "" : group + MetadataIdentifier.SEPARATOR)
+                        + Constants.PROVIDER_SIDE + MetadataIdentifier.SEPARATOR + application + META_DATA_STORE_TAG);
     }
 }

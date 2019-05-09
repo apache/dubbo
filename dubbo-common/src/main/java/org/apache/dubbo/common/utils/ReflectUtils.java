@@ -665,7 +665,7 @@ public final class ReflectUtils {
      * @return Class instance.
      */
     public static Class<?> name2class(String name) throws ClassNotFoundException {
-        return name2class(ClassHelper.getClassLoader(), name);
+        return name2class(ClassUtils.getClassLoader(), name);
     }
 
     /**
@@ -734,7 +734,7 @@ public final class ReflectUtils {
         }
 
         if (cl == null) {
-            cl = ClassHelper.getClassLoader();
+            cl = ClassUtils.getClassLoader();
         }
         Class<?> clazz = NAME_CLASS_CACHE.get(name);
         if (clazz == null) {
@@ -754,7 +754,7 @@ public final class ReflectUtils {
      * @throws ClassNotFoundException
      */
     public static Class<?> desc2class(String desc) throws ClassNotFoundException {
-        return desc2class(ClassHelper.getClassLoader(), desc);
+        return desc2class(ClassUtils.getClassLoader(), desc);
     }
 
     /**
@@ -798,7 +798,7 @@ public final class ReflectUtils {
         }
 
         if (cl == null) {
-            cl = ClassHelper.getClassLoader();
+            cl = ClassUtils.getClassLoader();
         }
         Class<?> clazz = DESC_CLASS_CACHE.get(desc);
         if (clazz == null) {
@@ -816,7 +816,7 @@ public final class ReflectUtils {
      * @throws ClassNotFoundException
      */
     public static Class<?>[] desc2classArray(String desc) throws ClassNotFoundException {
-        Class<?>[] ret = desc2classArray(ClassHelper.getClassLoader(), desc);
+        Class<?>[] ret = desc2classArray(ClassUtils.getClassLoader(), desc);
         return ret;
     }
 

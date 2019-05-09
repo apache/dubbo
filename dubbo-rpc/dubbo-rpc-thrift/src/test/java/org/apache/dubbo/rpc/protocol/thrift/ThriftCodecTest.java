@@ -29,7 +29,6 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.gen.thrift.Demo;
 import org.apache.dubbo.rpc.protocol.thrift.io.RandomAccessByteArrayOutputStream;
-
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TMessage;
@@ -286,7 +285,7 @@ public class ThriftCodecTest {
 
         ThriftCodec.RequestData rd = ThriftCodec.RequestData.create(
                 ThriftCodec.getSeqId(), Demo.Iface.class.getName(), "echoString");
-        ThriftCodec.cachedRequest.putIfAbsent(request.getId(), rd);
+        ThriftCodec.CACHED_REQUEST.putIfAbsent(request.getId(), rd);
         codec.encode(channel, bos, response);
 
         byte[] buf = new byte[bos.writerIndex() - 4];
@@ -345,7 +344,7 @@ public class ThriftCodecTest {
 
         ThriftCodec.RequestData rd = ThriftCodec.RequestData.create(
                 ThriftCodec.getSeqId(), Demo.Iface.class.getName(), "echoString");
-        ThriftCodec.cachedRequest.put(request.getId(), rd);
+        ThriftCodec.CACHED_REQUEST.put(request.getId(), rd);
         codec.encode(channel, bos, response);
 
         byte[] buf = new byte[bos.writerIndex() - 4];
@@ -376,7 +375,7 @@ public class ThriftCodecTest {
         Assertions.assertEquals("echoString", message.name);
         Assertions.assertEquals(TMessageType.EXCEPTION, message.type);
         Assertions.assertEquals(ThriftCodec.getSeqId(), message.seqid);
-        TApplicationException exception = TApplicationException.read(protocol);
+        TApplicationException exception = TApplicationException.readFrom(protocol);
         protocol.readMessageEnd();
 
         Assertions.assertEquals(exceptionMessage, exception.getMessage());

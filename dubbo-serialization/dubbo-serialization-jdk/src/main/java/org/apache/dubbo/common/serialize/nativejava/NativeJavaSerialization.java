@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.common.serialize.nativejava;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
@@ -35,11 +36,10 @@ import java.io.OutputStream;
  */
 public class NativeJavaSerialization implements Serialization {
 
-    public static final String NAME = "nativejava";
 
     @Override
     public byte getContentTypeId() {
-        return 7;
+        return Constants.NATIVE_JAVA_SERIALIZATION_ID;
     }
 
     @Override

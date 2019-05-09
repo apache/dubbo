@@ -36,6 +36,11 @@
             <groupId>com.ecwid.consul</groupId>
             <artifactId>consul-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.pszymczyk.consul</groupId>
+            <artifactId>embedded-consul</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>
