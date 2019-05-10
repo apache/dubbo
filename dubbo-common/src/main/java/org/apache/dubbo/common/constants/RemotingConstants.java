@@ -22,133 +22,133 @@ import java.util.concurrent.ExecutorService;
 /**
  * RemotingConstants
  */
-public class RemotingConstants {
+public interface RemotingConstants {
 
-    public static final String PAYLOAD_KEY = "payload";
+    String PAYLOAD_KEY = "payload";
     /**
      * 8M
      */
-    public static final int DEFAULT_PAYLOAD = 8 * 1024 * 1024;
+    int DEFAULT_PAYLOAD = 8 * 1024 * 1024;
 
-    public static final String BUFFER_KEY = "buffer";
+    String BUFFER_KEY = "buffer";
 
     /**
      * default buffer size is 8k.
      */
-    public static final int DEFAULT_BUFFER_SIZE = 8 * 1024;
+    int DEFAULT_BUFFER_SIZE = 8 * 1024;
 
-    public static final int MAX_BUFFER_SIZE = 16 * 1024;
+    int MAX_BUFFER_SIZE = 16 * 1024;
 
-    public static final int MIN_BUFFER_SIZE = 1 * 1024;
+    int MIN_BUFFER_SIZE = 1 * 1024;
 
-    public static final String CONNECT_TIMEOUT_KEY = "connect.timeout";
+    String CONNECT_TIMEOUT_KEY = "connect.timeout";
 
-    public static final int DEFAULT_CONNECT_TIMEOUT = 3000;
+    int DEFAULT_CONNECT_TIMEOUT = 3000;
 
-    public static final String HEARTBEAT_KEY = "heartbeat";
+    String HEARTBEAT_KEY = "heartbeat";
 
-    public static final int DEFAULT_HEARTBEAT = 60 * 1000;
+    int DEFAULT_HEARTBEAT = 60 * 1000;
 
-    public static final String IDLE_TIMEOUT_KEY = "idle.timeout";
+    String IDLE_TIMEOUT_KEY = "idle.timeout";
 
-    public static final int DEFAULT_IDLE_TIMEOUT = 600 * 1000;
+    int DEFAULT_IDLE_TIMEOUT = 600 * 1000;
 
-    public static final String ACCEPTS_KEY = "accepts";
+    String ACCEPTS_KEY = "accepts";
 
-    public static final int DEFAULT_ACCEPTS = 0;
+    int DEFAULT_ACCEPTS = 0;
 
-    public static final String SERIALIZATION_KEY = "serialization";
+    String SERIALIZATION_KEY = "serialization";
 
-    public static final String DEFAULT_REMOTING_SERIALIZATION = "hessian2";
+    String DEFAULT_REMOTING_SERIALIZATION = "hessian2";
 
-    public static final String CODEC_KEY = "codec";
+    String CODEC_KEY = "codec";
 
-    public static final String DEFAULT_REMOTING_CODEC = "dubbo";
+    String DEFAULT_REMOTING_CODEC = "dubbo";
 
-    public static final String SERVER_KEY = "server";
+    String SERVER_KEY = "server";
 
-    public static final String DEFAULT_REMOTING_SERVER = "netty";
+    String DEFAULT_REMOTING_SERVER = "netty";
 
-    public static final String CLIENT_KEY = "client";
+    String CLIENT_KEY = "client";
 
-    public static final String DEFAULT_REMOTING_CLIENT = "netty";
+    String DEFAULT_REMOTING_CLIENT = "netty";
 
-    public static final String TRANSPORTER_KEY = "transporter";
+    String TRANSPORTER_KEY = "transporter";
 
-    public static final String DEFAULT_TRANSPORTER = "netty";
+    String DEFAULT_TRANSPORTER = "netty";
 
-    public static final String EXCHANGER_KEY = "exchanger";
+    String EXCHANGER_KEY = "exchanger";
 
-    public static final String DEFAULT_EXCHANGER = "header";
+    String DEFAULT_EXCHANGER = "header";
 
-    public static final String DISPACTHER_KEY = "dispacther";
+    String DISPACTHER_KEY = "dispacther";
 
-    public static final int DEFAULT_IO_THREADS = Math.min(Runtime.getRuntime().availableProcessors() + 1, 32);
+    int DEFAULT_IO_THREADS = Math.min(Runtime.getRuntime().availableProcessors() + 1, 32);
 
-    public static final String BIND_IP_KEY = "bind.ip";
+    String BIND_IP_KEY = "bind.ip";
 
-    public static final String BIND_PORT_KEY = "bind.port";
+    String BIND_PORT_KEY = "bind.port";
 
-    public static final String SENT_KEY = "sent";
+    String SENT_KEY = "sent";
 
-    public static final boolean DEFAULT_SENT = false;
+    boolean DEFAULT_SENT = false;
 
-    public static final String DISPATCHER_KEY = "dispatcher";
+    String DISPATCHER_KEY = "dispatcher";
 
-    public static final String CHANNEL_HANDLER_KEY = "channel.handler";
+    String CHANNEL_HANDLER_KEY = "channel.handler";
 
-    public static final String DEFAULT_CHANNEL_HANDLER = "default";
+    String DEFAULT_CHANNEL_HANDLER = "default";
 
-    public static final String SERVICE_DESCIPTOR_KEY = "serviceDescriptor";
+    String SERVICE_DESCIPTOR_KEY = "serviceDescriptor";
 
-    public static final String CONNECT_QUEUE_CAPACITY = "connect.queue.capacity";
+    String CONNECT_QUEUE_CAPACITY = "connect.queue.capacity";
 
-    public static final String CONNECT_QUEUE_WARNING_SIZE = "connect.queue.warning.size";
+    String CONNECT_QUEUE_WARNING_SIZE = "connect.queue.warning.size";
 
-    public static final int DEFAULT_CONNECT_QUEUE_WARNING_SIZE = 1000;
+    int DEFAULT_CONNECT_QUEUE_WARNING_SIZE = 1000;
 
-    public static final String CHANNEL_ATTRIBUTE_READONLY_KEY = "channel.readonly";
+    String CHANNEL_ATTRIBUTE_READONLY_KEY = "channel.readonly";
 
-    public static final String CHANNEL_READONLYEVENT_SENT_KEY = "channel.readonly.sent";
+    String CHANNEL_READONLYEVENT_SENT_KEY = "channel.readonly.sent";
 
-    public static final String CHANNEL_SEND_READONLYEVENT_KEY = "channel.readonly.send";
+    String CHANNEL_SEND_READONLYEVENT_KEY = "channel.readonly.send";
 
-    public static final String EXECUTOR_SERVICE_COMPONENT_KEY = ExecutorService.class.getName();
+    String EXECUTOR_SERVICE_COMPONENT_KEY = ExecutorService.class.getName();
 
-    public static final String CHARSET_KEY = "charset";
+    String CHARSET_KEY = "charset";
 
-    public static final String DEFAULT_CHARSET = "UTF-8";
+    String DEFAULT_CHARSET = "UTF-8";
 
-    public static final String BACKUP_KEY = "backup";
+    String BACKUP_KEY = "backup";
 
     /**
      * Every heartbeat duration / HEATBEAT_CHECK_TICK, check if a heartbeat should be sent. Every heartbeat timeout
      * duration / HEATBEAT_CHECK_TICK, check if a connection should be closed on server side, and if reconnect on
      * client side
      */
-    public static final int HEARTBEAT_CHECK_TICK = 3;
+    int HEARTBEAT_CHECK_TICK = 3;
 
     /**
      * the least heartbeat during is 1000 ms.
      */
-    public static final long LEAST_HEARTBEAT_DURATION = 1000;
+    long LEAST_HEARTBEAT_DURATION = 1000;
 
     /**
      * ticks per wheel.
      */
-    public static final int TICKS_PER_WHEEL = 128;
+    int TICKS_PER_WHEEL = 128;
 
-    public static final String HEARTBEAT_TIMEOUT_KEY = "heartbeat.timeout";
+    String HEARTBEAT_TIMEOUT_KEY = "heartbeat.timeout";
 
-    public static final String RECONNECT_KEY = "reconnect";
+    String RECONNECT_KEY = "reconnect";
 
-    public static final int DEFAULT_RECONNECT_PERIOD = 2000;
+    int DEFAULT_RECONNECT_PERIOD = 2000;
 
-    public static final String SEND_RECONNECT_KEY = "send.reconnect";
+    String SEND_RECONNECT_KEY = "send.reconnect";
 
-    public static final String CHECK_KEY = "check";
+    String CHECK_KEY = "check";
 
-    public static final String PROMPT_KEY = "prompt";
+    String PROMPT_KEY = "prompt";
 
-    public static final String DEFAULT_PROMPT = "dubbo>";
+    String DEFAULT_PROMPT = "dubbo>";
 }

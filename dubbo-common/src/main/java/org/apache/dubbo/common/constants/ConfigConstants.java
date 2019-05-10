@@ -20,17 +20,17 @@ package org.apache.dubbo.common.constants;
 /**
  * ConfigConstants
  */
-public class ConfigConstants {
+public interface ConfigConstants {
     // BEGIN dubbo-config-api
-    public static final String CLUSTER_KEY = "cluster";
+    String CLUSTER_KEY = "cluster";
 
-    public static final String STATUS_KEY = "status";
+    String STATUS_KEY = "status";
 
-    public static final String CONTEXTPATH_KEY = "contextpath";
+    String CONTEXTPATH_KEY = "contextpath";
 
-    public static final String LISTENER_KEY = "listener";
+    String LISTENER_KEY = "listener";
 
-    public static final String LAYER_KEY = "layer";
+    String LAYER_KEY = "layer";
 
     /**
      * General
@@ -38,138 +38,138 @@ public class ConfigConstants {
     /**
      * Application name;
      */
-    public static final String NAME = "name";
+    String NAME = "name";
 
     /**
      * Application owner name;
      */
-    public static final String OWNER = "owner";
+    String OWNER = "owner";
 
     /**
      * Running application organization name.
      */
-    public static final String ORGANIZATION = "organization";
+    String ORGANIZATION = "organization";
 
     /**
      * Application architecture name.
      */
-    public static final String ARCHITECTURE = "architecture";
+    String ARCHITECTURE = "architecture";
 
     /**
      * Environment name
      */
-    public static final String ENVIRONMENT = "environment";
+    String ENVIRONMENT = "environment";
 
     /**
      * Test environment key.
      */
-    public static final String TEST_ENVIRONMENT = "test";
+    String TEST_ENVIRONMENT = "test";
 
     /**
      * Development environment key.
      */
-    public static final String DEVELOPMENT_ENVIRONMENT = "develop";
+    String DEVELOPMENT_ENVIRONMENT = "develop";
 
     /**
      * Production environment key.
      */
-    public static final String PRODUCTION_ENVIRONMENT = "product";
+    String PRODUCTION_ENVIRONMENT = "product";
 
-    public static final String CONFIG_CLUSTER_KEY = "config.cluster";
-    public static final String CONFIG_NAMESPACE_KEY = "config.namespace";
-    public static final String CONFIG_GROUP_KEY = "config.group";
-    public static final String CONFIG_CHECK_KEY = "config.check";
+    String CONFIG_CLUSTER_KEY = "config.cluster";
+    String CONFIG_NAMESPACE_KEY = "config.namespace";
+    String CONFIG_GROUP_KEY = "config.group";
+    String CONFIG_CHECK_KEY = "config.check";
 
-    public static final String CONFIG_CONFIGFILE_KEY = "config.config-file";
-    public static final String CONFIG_ENABLE_KEY = "config.highest-priority";
-    public static final String CONFIG_TIMEOUT_KEY = "config.timeout";
-    public static final String CONFIG_APPNAME_KEY = "config.app-name";
+    String CONFIG_CONFIGFILE_KEY = "config.config-file";
+    String CONFIG_ENABLE_KEY = "config.highest-priority";
+    String CONFIG_TIMEOUT_KEY = "config.timeout";
+    String CONFIG_APPNAME_KEY = "config.app-name";
 
-    public static final String USERNAME_KEY = "username";
+    String USERNAME_KEY = "username";
 
-    public static final String PASSWORD_KEY = "password";
+    String PASSWORD_KEY = "password";
 
-    public static final String HOST_KEY = "host";
+    String HOST_KEY = "host";
 
-    public static final String PORT_KEY = "port";
+    String PORT_KEY = "port";
 
-    public static final String MULTICAST = "multicast";
+    String MULTICAST = "multicast";
 
-    public static final String REGISTER_IP_KEY = "register.ip";
+    String REGISTER_IP_KEY = "register.ip";
 
-    public static final String DUBBO_IP_TO_REGISTRY = "DUBBO_IP_TO_REGISTRY";
+    String DUBBO_IP_TO_REGISTRY = "DUBBO_IP_TO_REGISTRY";
 
-    public static final String DUBBO_PORT_TO_REGISTRY = "DUBBO_PORT_TO_REGISTRY";
+    String DUBBO_PORT_TO_REGISTRY = "DUBBO_PORT_TO_REGISTRY";
 
-    public static final String DUBBO_IP_TO_BIND = "DUBBO_IP_TO_BIND";
+    String DUBBO_IP_TO_BIND = "DUBBO_IP_TO_BIND";
 
-    public static final String DUBBO_PORT_TO_BIND = "DUBBO_PORT_TO_BIND";
+    String DUBBO_PORT_TO_BIND = "DUBBO_PORT_TO_BIND";
 
-    public static final String SCOPE_KEY = "scope";
+    String SCOPE_KEY = "scope";
 
-    public static final String SCOPE_LOCAL = "local";
+    String SCOPE_LOCAL = "local";
 
-    public static final String SCOPE_REMOTE = "remote";
+    String SCOPE_REMOTE = "remote";
 
-    public static final String SCOPE_NONE = "none";
+    String SCOPE_NONE = "none";
 
-    public static final String ON_CONNECT_KEY = "onconnect";
+    String ON_CONNECT_KEY = "onconnect";
 
-    public static final String ON_DISCONNECT_KEY = "ondisconnect";
+    String ON_DISCONNECT_KEY = "ondisconnect";
 
-    public static final String ON_INVOKE_METHOD_KEY = "oninvoke.method";
+    String ON_INVOKE_METHOD_KEY = "oninvoke.method";
 
-    public static final String ON_RETURN_METHOD_KEY = "onreturn.method";
+    String ON_RETURN_METHOD_KEY = "onreturn.method";
 
-    public static final String ON_THROW_METHOD_KEY = "onthrow.method";
+    String ON_THROW_METHOD_KEY = "onthrow.method";
 
-    public static final String ON_INVOKE_INSTANCE_KEY = "oninvoke.instance";
+    String ON_INVOKE_INSTANCE_KEY = "oninvoke.instance";
 
-    public static final String ON_RETURN_INSTANCE_KEY = "onreturn.instance";
+    String ON_RETURN_INSTANCE_KEY = "onreturn.instance";
 
-    public static final String ON_THROW_INSTANCE_KEY = "onthrow.instance";
+    String ON_THROW_INSTANCE_KEY = "onthrow.instance";
 
     @Deprecated
-    public static final String SHUTDOWN_WAIT_SECONDS_KEY = "dubbo.service.shutdown.wait.seconds";
+    String SHUTDOWN_WAIT_SECONDS_KEY = "dubbo.service.shutdown.wait.seconds";
 
-    public static final String SHUTDOWN_WAIT_KEY = "dubbo.service.shutdown.wait";
+    String SHUTDOWN_WAIT_KEY = "dubbo.service.shutdown.wait";
 
     /**
      * The key name for export URL in register center
      */
-    public static final String EXPORT_KEY = "export";
+    String EXPORT_KEY = "export";
 
     /**
      * The key name for reference URL in register center
      */
-    public static final String REFER_KEY = "refer";
+    String REFER_KEY = "refer";
 
     /**
      * To decide whether to make connection when the client is created
      */
-    public static final String LAZY_CONNECT_KEY = "lazy";
+    String LAZY_CONNECT_KEY = "lazy";
 
-    public static final String DUBBO_PROTOCOL = "dubbo";
+    String DUBBO_PROTOCOL = "dubbo";
 
-    public static final String ZOOKEEPER_PROTOCOL = "zookeeper";
+    String ZOOKEEPER_PROTOCOL = "zookeeper";
 
     // FIXME: is this still useful?
-    public static final String SHUTDOWN_TIMEOUT_KEY = "shutdown.timeout";
+    String SHUTDOWN_TIMEOUT_KEY = "shutdown.timeout";
 
-    public static final int DEFAULT_SHUTDOWN_TIMEOUT = 1000 * 60 * 15;
+    int DEFAULT_SHUTDOWN_TIMEOUT = 1000 * 60 * 15;
 
-    public static final String PROTOCOLS_SUFFIX = "dubbo.protocols.";
+    String PROTOCOLS_SUFFIX = "dubbo.protocols.";
 
-    public static final String PROTOCOL_SUFFIX = "dubbo.protocol.";
+    String PROTOCOL_SUFFIX = "dubbo.protocol.";
 
-    public static final String REGISTRIES_SUFFIX = "dubbo.registries.";
+    String REGISTRIES_SUFFIX = "dubbo.registries.";
 
-    public static final String TELNET = "telnet";
+    String TELNET = "telnet";
 
-    public static final String QOS_ENABLE = "qos.enable";
+    String QOS_ENABLE = "qos.enable";
 
-    public static final String QOS_PORT = "qos.port";
+    String QOS_PORT = "qos.port";
 
-    public static final String ACCEPT_FOREIGN_IP = "qos.accept.foreign.ip";
+    String ACCEPT_FOREIGN_IP = "qos.accept.foreign.ip";
     // END dubbo-congfig-api
 }

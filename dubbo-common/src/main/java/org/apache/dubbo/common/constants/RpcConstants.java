@@ -20,176 +20,176 @@ package org.apache.dubbo.common.constants;
 /**
  * RpcConstants
  */
-public class RpcConstants {
+public interface RpcConstants {
     // BEGIN dubbo-rpc-hessian
-    public static final String HESSIAN2_REQUEST_KEY = "hessian2.request";
+    String HESSIAN2_REQUEST_KEY = "hessian2.request";
 
-    public static final boolean DEFAULT_HESSIAN2_REQUEST = false;
+    boolean DEFAULT_HESSIAN2_REQUEST = false;
 
-    public static final String HESSIAN_OVERLOAD_METHOD_KEY = "hessian.overload.method";
+    String HESSIAN_OVERLOAD_METHOD_KEY = "hessian.overload.method";
 
-    public static final boolean DEFAULT_HESSIAN_OVERLOAD_METHOD = false;
+    boolean DEFAULT_HESSIAN_OVERLOAD_METHOD = false;
 
-    public static final String DEFAULT_HTTP_CLIENT = "jdk";
+    String DEFAULT_HTTP_CLIENT = "jdk";
 
-    public static final String DEFAULT_HTTP_SERVER = "servlet";
+    String DEFAULT_HTTP_SERVER = "servlet";
 
-    public static final String DEFAULT_HTTP_SERIALIZATION = "json";
+    String DEFAULT_HTTP_SERIALIZATION = "json";
     // END dubbo-rpc-hessian
 
     // BEGIN dubbo-rpc-dubbo
-    public static final String SHARE_CONNECTIONS_KEY = "shareconnections";
+    String SHARE_CONNECTIONS_KEY = "shareconnections";
 
     /**
      * By default, a consumer JVM instance and a provider JVM instance share a long TCP connection (except when connections are set),
      * which can set the number of long TCP connections shared to avoid the bottleneck of sharing a single long TCP connection.
      */
-    public static final String DEFAULT_SHARE_CONNECTIONS = "1";
+    String DEFAULT_SHARE_CONNECTIONS = "1";
 
-    public static final String INPUT_KEY = "input";
+    String INPUT_KEY = "input";
 
-    public static final String OUTPUT_KEY = "output";
+    String OUTPUT_KEY = "output";
 
-    public static final String DECODE_IN_IO_THREAD_KEY = "decode.in.io";
+    String DECODE_IN_IO_THREAD_KEY = "decode.in.io";
 
-    public static final boolean DEFAULT_DECODE_IN_IO_THREAD = true;
+    boolean DEFAULT_DECODE_IN_IO_THREAD = true;
 
     /**
      * callback inst id
      */
-    public static final String CALLBACK_SERVICE_KEY = "callback.service.instid";
+    String CALLBACK_SERVICE_KEY = "callback.service.instid";
 
     /**
      * The limit of callback service instances for one interface on every client
      */
-    public static final String CALLBACK_INSTANCES_LIMIT_KEY = "callbacks";
+    String CALLBACK_INSTANCES_LIMIT_KEY = "callbacks";
 
     /**
      * The default limit number for callback service instances
      *
      * @see #CALLBACK_INSTANCES_LIMIT_KEY
      */
-    public static final int DEFAULT_CALLBACK_INSTANCES = 1;
+    int DEFAULT_CALLBACK_INSTANCES = 1;
 
-    public static final String CALLBACK_SERVICE_PROXY_KEY = "callback.service.proxy";
+    String CALLBACK_SERVICE_PROXY_KEY = "callback.service.proxy";
 
-    public static final String IS_CALLBACK_SERVICE = "is_callback_service";
+    String IS_CALLBACK_SERVICE = "is_callback_service";
 
     /**
      * Invokers in channel's callback
      */
-    public static final String CHANNEL_CALLBACK_KEY = "channel.callback.invokers.key";
+    String CHANNEL_CALLBACK_KEY = "channel.callback.invokers.key";
 
     /**
      * The initial state for lazy connection
      */
-    public static final String LAZY_CONNECT_INITIAL_STATE_KEY = "connect.lazy.initial.state";
+    String LAZY_CONNECT_INITIAL_STATE_KEY = "connect.lazy.initial.state";
 
     /**
      * The default value of lazy connection's initial state: true
      *
      * @see #LAZY_CONNECT_INITIAL_STATE_KEY
      */
-    public static final boolean DEFAULT_LAZY_CONNECT_INITIAL_STATE = true;
+    boolean DEFAULT_LAZY_CONNECT_INITIAL_STATE = true;
 
-    public static final String OPTIMIZER_KEY = "optimizer";
+    String OPTIMIZER_KEY = "optimizer";
     // END dubbo-rpc-dubbo
 
 
     // BEGIN dubbo-rpc-api
-    public static final String DUBBO_VERSION_KEY = "dubbo";
+    String DUBBO_VERSION_KEY = "dubbo";
 
-    public static final String LOCAL_KEY = "local";
+    String LOCAL_KEY = "local";
 
-    public static final String STUB_KEY = "stub";
+    String STUB_KEY = "stub";
 
-    public static final String MOCK_KEY = "mock";
+    String MOCK_KEY = "mock";
 
-    public static final String DEPRECATED_KEY = "deprecated";
+    String DEPRECATED_KEY = "deprecated";
 
-    public static final String $INVOKE = "$invoke";
+    String $INVOKE = "$invoke";
 
-    public static final String $ECHO = "$echo";
+    String $ECHO = "$echo";
 
-    public static final String RETURN_PREFIX = "return ";
+    String RETURN_PREFIX = "return ";
 
-    public static final String THROW_PREFIX = "throw";
+    String THROW_PREFIX = "throw";
 
-    public static final String FAIL_PREFIX = "fail:";
+    String FAIL_PREFIX = "fail:";
 
-    public static final String FORCE_PREFIX = "force:";
+    String FORCE_PREFIX = "force:";
 
-    public static final String MERGER_KEY = "merger";
+    String MERGER_KEY = "merger";
 
-    public static final String IS_SERVER_KEY = "isserver";
+    String IS_SERVER_KEY = "isserver";
 
-    public static final String FORCE_USE_TAG = "dubbo.force.tag";
+    String FORCE_USE_TAG = "dubbo.force.tag";
 
-    public static final String GENERIC_SERIALIZATION_NATIVE_JAVA = "nativejava";
+    String GENERIC_SERIALIZATION_NATIVE_JAVA = "nativejava";
 
-    public static final String GENERIC_SERIALIZATION_DEFAULT = "true";
+    String GENERIC_SERIALIZATION_DEFAULT = "true";
 
-    public static final String GENERIC_SERIALIZATION_BEAN = "bean";
+    String GENERIC_SERIALIZATION_BEAN = "bean";
 
-    public static final String GENERIC_SERIALIZATION_PROTOBUF = "protobuf-json";
+    String GENERIC_SERIALIZATION_PROTOBUF = "protobuf-json";
 
-    public static final String TPS_LIMIT_RATE_KEY = "tps";
+    String TPS_LIMIT_RATE_KEY = "tps";
 
-    public static final String TPS_LIMIT_INTERVAL_KEY = "tps.interval";
+    String TPS_LIMIT_INTERVAL_KEY = "tps.interval";
 
-    public static final long DEFAULT_TPS_LIMIT_INTERVAL = 60 * 1000;
+    long DEFAULT_TPS_LIMIT_INTERVAL = 60 * 1000;
 
-    public static final String AUTO_ATTACH_INVOCATIONID_KEY = "invocationid.autoattach";
+    String AUTO_ATTACH_INVOCATIONID_KEY = "invocationid.autoattach";
 
-    public static final String STUB_EVENT_KEY = "dubbo.stub.event";
+    String STUB_EVENT_KEY = "dubbo.stub.event";
 
-    public static final boolean DEFAULT_STUB_EVENT = false;
+    boolean DEFAULT_STUB_EVENT = false;
 
-    public static final String STUB_EVENT_METHODS_KEY = "dubbo.stub.event.methods";
+    String STUB_EVENT_METHODS_KEY = "dubbo.stub.event.methods";
 
-    public static final String PROXY_KEY = "proxy";
+    String PROXY_KEY = "proxy";
 
-    public static final String EXECUTES_KEY = "executes";
+    String EXECUTES_KEY = "executes";
 
-    public static final String REFERENCE_FILTER_KEY = "reference.filter";
+    String REFERENCE_FILTER_KEY = "reference.filter";
 
-    public static final String INVOKER_LISTENER_KEY = "invoker.listener";
+    String INVOKER_LISTENER_KEY = "invoker.listener";
 
-    public static final String SERVICE_FILTER_KEY = "service.filter";
+    String SERVICE_FILTER_KEY = "service.filter";
 
-    public static final String EXPORTER_LISTENER_KEY = "exporter.listener";
+    String EXPORTER_LISTENER_KEY = "exporter.listener";
 
-    public static final String ACCESS_LOG_KEY = "accesslog";
+    String ACCESS_LOG_KEY = "accesslog";
 
-    public static final String ACTIVES_KEY = "actives";
+    String ACTIVES_KEY = "actives";
 
-    public static final String CONNECTIONS_KEY = "connections";
+    String CONNECTIONS_KEY = "connections";
 
-    public static final String ID_KEY = "id";
+    String ID_KEY = "id";
 
-    public static final String ASYNC_KEY = "async";
+    String ASYNC_KEY = "async";
 
-    public static final String FUTURE_GENERATED_KEY = "future_generated";
+    String FUTURE_GENERATED_KEY = "future_generated";
 
-    public static final String FUTURE_RETURNTYPE_KEY = "future_returntype";
+    String FUTURE_RETURNTYPE_KEY = "future_returntype";
 
-    public static final String RETURN_KEY = "return";
+    String RETURN_KEY = "return";
 
-    public static final String TOKEN_KEY = "token";
+    String TOKEN_KEY = "token";
 
-    public static final String INTERFACES = "interfaces";
+    String INTERFACES = "interfaces";
 
-    public static final String GENERIC_KEY = "generic";
+    String GENERIC_KEY = "generic";
 
-    public static final String LOCAL_PROTOCOL = "injvm";
+    String LOCAL_PROTOCOL = "injvm";
     // END dubbo-rpc-api
 
 
     // BEGIN dubbo-rpc-rest
-    public static final String KEEP_ALIVE_KEY = "keepalive";
+    String KEEP_ALIVE_KEY = "keepalive";
 
-    public static final boolean DEFAULT_KEEP_ALIVE = true;
+    boolean DEFAULT_KEEP_ALIVE = true;
 
-    public static final String EXTENSION_KEY = "extension";
+    String EXTENSION_KEY = "extension";
     // END dubbo-rpc-rest
 }
