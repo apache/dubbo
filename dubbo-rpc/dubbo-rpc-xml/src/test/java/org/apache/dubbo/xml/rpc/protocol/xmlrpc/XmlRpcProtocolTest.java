@@ -22,9 +22,9 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 
 public class XmlRpcProtocolTest {
@@ -32,16 +32,16 @@ public class XmlRpcProtocolTest {
     @Test
     public void testXmlRpcProtocol() {
         XmlRpcServiceImpl server = new XmlRpcServiceImpl();
-        Assert.assertFalse(server.isCalled());
+        Assertions.assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        URL url = URL.valueOf("xml://127.0.0.1:5342/" + XmlRpcService.class.getName() + "?version=1.0.0");
+        URL url = URL.valueOf("xmlrpc://127.0.0.1:5342/" + XmlRpcService.class.getName() + "?version=1.0.0");
         Exporter<XmlRpcService> exporter = protocol.export(proxyFactory.getInvoker(server, XmlRpcService.class, url));
         Invoker<XmlRpcService> invoker = protocol.refer(XmlRpcService.class, url);
         XmlRpcService client = proxyFactory.getProxy(invoker);
         String result = client.sayHello("haha");
-        Assert.assertTrue(server.isCalled());
-        Assert.assertEquals("Hello, haha", result);
+        Assertions.assertTrue(server.isCalled());
+        Assertions.assertEquals("Hello, haha", result);
         invoker.destroy();
         exporter.unexport();
     }
@@ -49,34 +49,34 @@ public class XmlRpcProtocolTest {
     @Test
     public void testXmlRpcProtocolForServerJetty9() {
         XmlRpcServiceImpl server = new XmlRpcServiceImpl();
-        Assert.assertFalse(server.isCalled());
+        Assertions.assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        URL url = URL.valueOf("xml://127.0.0.1:5342/" + XmlRpcService.class.getName() + "?version=1.0.0&server=jetty9");
+        URL url = URL.valueOf("xmlrpc://127.0.0.1:5342/" + XmlRpcService.class.getName() + "?version=1.0.0&server=jetty9");
         Exporter<XmlRpcService> exporter = protocol.export(proxyFactory.getInvoker(server, XmlRpcService.class, url));
         Invoker<XmlRpcService> invoker = protocol.refer(XmlRpcService.class, url);
         XmlRpcService client = proxyFactory.getProxy(invoker);
         String result = client.sayHello("haha");
-        Assert.assertTrue(server.isCalled());
-        Assert.assertEquals("Hello, haha", result);
+        Assertions.assertTrue(server.isCalled());
+        Assertions.assertEquals("Hello, haha", result);
         invoker.destroy();
         exporter.unexport();
     }
 
     @Test
-    @Ignore
+    @Disabled
     public void testCustomException() {
         XmlRpcServiceImpl server = new XmlRpcServiceImpl();
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        URL url = URL.valueOf("xml://127.0.0.1:5342/" +
+        URL url = URL.valueOf("xmlrpc://127.0.0.1:5342/" +
                 XmlRpcService.class.getName() + "?version=1.0.0&server=jetty9");
         Exporter<XmlRpcService> exporter = protocol.export(proxyFactory.getInvoker(server, XmlRpcService.class, url));
         Invoker<XmlRpcService> invoker = protocol.refer(XmlRpcService.class, url);
         XmlRpcService client = proxyFactory.getProxy(invoker);
         try {
             client.customException();
-            Assert.fail();
+            Assertions.fail();
         } catch (XmlRpcServiceImpl.MyException expected) {
         }
         invoker.destroy();
