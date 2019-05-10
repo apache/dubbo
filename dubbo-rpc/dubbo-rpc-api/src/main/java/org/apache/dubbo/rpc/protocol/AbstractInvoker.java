@@ -186,7 +186,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
     protected ExecutorService getCallbackExecutor(URL url, Invocation inv) {
         ExecutorService sharedExecutor = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension().createExecutorIfAbsent(url);
         if (InvokeMode.SYNC == RpcUtils.getInvokeMode(getUrl(), inv)) {
-            return new ThreadlessExecutor();
+            return new ThreadlessExecutor(sharedExecutor);
         } else {
             return sharedExecutor;
         }

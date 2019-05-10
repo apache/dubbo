@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import java.util.List;
 import java.util.concurrent.AbstractExecutorService;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -34,7 +35,14 @@ public class ThreadlessExecutor extends AbstractExecutorService {
 
     private final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
 
-    public ThreadlessExecutor() {
+    private ExecutorService sharedExecutor;
+
+    private volatile boolean executed;
+
+    private final Object lock = new Object();
+
+    public ThreadlessExecutor(ExecutorService sharedExecutor) {
+        this.sharedExecutor = sharedExecutor;
     }
 
     /**
@@ -43,10 +51,25 @@ public class ThreadlessExecutor extends AbstractExecutorService {
     public void waitAndDrain() throws InterruptedException {
         Runnable runnable = queue.take();
         runnable.run();
+
+        synchronized (lock) {
+            executed = true;
+        }
+
+        runnable = queue.poll();
+        while (runnable != null) {
+            try {
+                runnable.run();
+            } catch (Throwable t) {
+                logger.info(t);
+
+            }
+            runnable = queue.poll();
+        }
     }
 
     public long waitAndDrain(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException {
-        long startInMs = System.currentTimeMillis();
+        /*long startInMs = System.currentTimeMillis();
         Runnable runnable = queue.poll(timeout, unit);
         if (runnable == null) {
             throw new TimeoutException();
@@ -57,12 +80,19 @@ public class ThreadlessExecutor extends AbstractExecutorService {
         if (timeLeft < 0) {
             throw new TimeoutException();
         }
-        return timeLeft;
+        return timeLeft;*/
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void execute(Runnable runnable) {
-        queue.add(runnable);
+        synchronized (lock) {
+            if (executed) {
+                sharedExecutor.execute(runnable);
+            } else {
+                queue.add(runnable);
+            }
+        }
     }
 
     @Override

@@ -42,8 +42,8 @@ public class ExecutionChannelHandler extends WrappedChannelHandler {
 
     @Override
     public void received(Channel channel, Object message) throws RemotingException {
-        ExecutorService executor = getExecutorService();
         if (message instanceof Request) {
+            ExecutorService executor = getPreferredExecutorService(message);
             try {
                 executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
             } catch (Throwable t) {
