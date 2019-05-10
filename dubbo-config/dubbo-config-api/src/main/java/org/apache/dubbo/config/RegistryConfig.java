@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 
@@ -269,7 +270,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setTransporter(String transporter) {
-        checkName(Constants.TRANSPORTER_KEY, transporter);
+        checkName(RemotingConstants.TRANSPORTER_KEY, transporter);
         /*if(transporter != null && transporter.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(transporter)){
             throw new IllegalStateException("No such transporter type : " + transporter);
         }*/
@@ -281,7 +282,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setServer(String server) {
-        checkName(Constants.SERVER_KEY, server);
+        checkName(RemotingConstants.SERVER_KEY, server);
         /*if(server != null && server.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(server)){
             throw new IllegalStateException("No such server type : " + server);
         }*/
@@ -293,7 +294,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setClient(String client) {
-        checkName(Constants.CLIENT_KEY, client);
+        checkName(RemotingConstants.CLIENT_KEY, client);
         /*if(client != null && client.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(client)){
             throw new IllegalStateException("No such client type : " + client);
         }*/

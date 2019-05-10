@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.transport.mina;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ExecutorUtil;
@@ -56,7 +57,7 @@ public class MinaServer extends AbstractServer {
     @Override
     protected void doOpen() throws Throwable {
         // set thread pool.
-        acceptor = new SocketAcceptor(getUrl().getPositiveParameter(Constants.IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS),
+        acceptor = new SocketAcceptor(getUrl().getPositiveParameter(Constants.IO_THREADS_KEY, RemotingConstants.DEFAULT_IO_THREADS),
                 Executors.newCachedThreadPool(new NamedThreadFactory("MinaServerWorker",
                         true)));
         // config

@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.dubbo;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.LogUtil;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -371,7 +372,7 @@ public class RegistryDirectoryTest {
 
             Invoker invoker = (Invoker) invokers.get(0);
             URL url = invoker.getUrl();
-            Assertions.assertEquals(false, url.getParameter(Constants.CHECK_KEY, false));
+            Assertions.assertEquals(false, url.getParameter(RemotingConstants.CHECK_KEY, false));
         }
         {
             serviceUrls.clear();

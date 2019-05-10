@@ -26,7 +26,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 
-import static org.apache.dubbo.common.Constants.CHECK_KEY;
+import static org.apache.dubbo.common.constants.RemotingConstants.CHECK_KEY;
 import static org.apache.dubbo.common.Constants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.Constants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.Constants.REFERENCE_FILTER_KEY;

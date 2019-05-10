@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
@@ -130,11 +131,11 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
     }
 
     protected String getAddr(URL url) {
-        String bindIp = url.getParameter(Constants.BIND_IP_KEY, url.getHost());
+        String bindIp = url.getParameter(RemotingConstants.BIND_IP_KEY, url.getHost());
         if (url.getParameter(Constants.ANYHOST_KEY, false)) {
             bindIp = Constants.ANYHOST_VALUE;
         }
-        return NetUtils.getIpByHost(bindIp) + ":" + url.getParameter(Constants.BIND_PORT_KEY, url.getPort());
+        return NetUtils.getIpByHost(bindIp) + ":" + url.getParameter(RemotingConstants.BIND_PORT_KEY, url.getPort());
     }
 
     protected int getErrorCode(Throwable e) {

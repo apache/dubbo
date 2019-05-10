@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.bytecode.Wrapper;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.Registry;
@@ -54,10 +55,10 @@ public class DubboRegistryFactory extends AbstractRegistryFactory {
                 .addParameter(Constants.INTERFACE_KEY, RegistryService.class.getName())
                 .addParameter(Constants.CLUSTER_STICKY_KEY, "true")
                 .addParameter(Constants.LAZY_CONNECT_KEY, "true")
-                .addParameter(Constants.RECONNECT_KEY, "false")
+                .addParameter(RemotingConstants.RECONNECT_KEY, "false")
                 .addParameterIfAbsent(Constants.TIMEOUT_KEY, "10000")
                 .addParameterIfAbsent(Constants.CALLBACK_INSTANCES_LIMIT_KEY, "10000")
-                .addParameterIfAbsent(Constants.CONNECT_TIMEOUT_KEY, "10000")
+                .addParameterIfAbsent(RemotingConstants.CONNECT_TIMEOUT_KEY, "10000")
                 .addParameter(Constants.METHODS_KEY, StringUtils.join(new HashSet<>(Arrays.asList(Wrapper.getWrapper(RegistryService.class).getDeclaredMethodNames())), ","))
                 //.addParameter(Constants.STUB_KEY, RegistryServiceStub.class.getName())
                 //.addParameter(Constants.STUB_EVENT_KEY, Boolean.TRUE.toString()) //for event dispatch
@@ -83,8 +84,8 @@ public class DubboRegistryFactory extends AbstractRegistryFactory {
     public Registry createRegistry(URL url) {
         url = getRegistryURL(url);
         List<URL> urls = new ArrayList<>();
-        urls.add(url.removeParameter(Constants.BACKUP_KEY));
-        String backup = url.getParameter(Constants.BACKUP_KEY);
+        urls.add(url.removeParameter(RemotingConstants.BACKUP_KEY));
+        String backup = url.getParameter(RemotingConstants.BACKUP_KEY);
         if (backup != null && backup.length() > 0) {
             String[] addresses = Constants.COMMA_SPLIT_PATTERN.split(backup);
             for (String address : addresses) {

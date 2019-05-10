@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.webservice;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.remoting.http.HttpBinder;
 import org.apache.dubbo.remoting.http.HttpHandler;
 import org.apache.dubbo.remoting.http.HttpServer;
@@ -116,7 +117,7 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
         Client proxy = ClientProxy.getClient(ref);
         HTTPConduit conduit = (HTTPConduit) proxy.getConduit();
         HTTPClientPolicy policy = new HTTPClientPolicy();
-        policy.setConnectionTimeout(url.getParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT));
+        policy.setConnectionTimeout(url.getParameter(RemotingConstants.CONNECT_TIMEOUT_KEY, RemotingConstants.DEFAULT_CONNECT_TIMEOUT));
         policy.setReceiveTimeout(url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
         conduit.setClient(policy);
         return ref;

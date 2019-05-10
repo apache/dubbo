@@ -28,6 +28,7 @@ import com.alibaba.metrics.common.MetricsCollector;
 import com.alibaba.metrics.common.MetricsCollectorFactory;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -165,7 +166,7 @@ public class MetricsFilter implements Filter {
 
     private List<MetricObject> getThreadPoolMessage() {
         DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
-        Map<String, Object> executors = dataStore.get(Constants.EXECUTOR_SERVICE_COMPONENT_KEY);
+        Map<String, Object> executors = dataStore.get(RemotingConstants.EXECUTOR_SERVICE_COMPONENT_KEY);
 
         List<MetricObject> threadPoolMtricList = new ArrayList<>();
         for (Map.Entry<String, Object> entry : executors.entrySet()) {
