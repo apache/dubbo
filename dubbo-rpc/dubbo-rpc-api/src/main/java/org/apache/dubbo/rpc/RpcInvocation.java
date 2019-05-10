@@ -91,9 +91,10 @@ public class RpcInvocation implements Invocation, Serializable {
         this(method.getName(), method.getParameterTypes(), arguments, null, null);
     }
 
-    public RpcInvocation(Method method, Object[] arguments, Map<String, String> attachment) {
+    public RpcInvocation(Method method, Object[] arguments, Map<String, String> attachment, Map<Object, Object> attributes) {
         this(method.getName(), method.getParameterTypes(), arguments, attachment, null);
         this.returnType = method.getReturnType();
+        this.attributes = attributes == null ? new HashMap<>() : attributes;
     }
 
     public RpcInvocation(String methodName, Class<?>[] parameterTypes, Object[] arguments) {

@@ -79,7 +79,7 @@ public class GenericFilter extends ListenableFilter {
                 } else if (ProtocolUtils.isJavaGenericSerialization(generic)) {
                     for (int i = 0; i < args.length; i++) {
                         if (byte[].class == args[i].getClass()) {
-                            try(UnsafeByteArrayInputStream is = new UnsafeByteArrayInputStream((byte[]) args[i])) {
+                            try (UnsafeByteArrayInputStream is = new UnsafeByteArrayInputStream((byte[]) args[i])) {
                                 args[i] = ExtensionLoader.getExtensionLoader(Serialization.class)
                                         .getExtension(Constants.GENERIC_SERIALIZATION_NATIVE_JAVA)
                                         .deserialize(null, is).readObject();
@@ -111,7 +111,8 @@ public class GenericFilter extends ListenableFilter {
                         }
                     }
                 }
-                return invoker.invoke(new RpcInvocation(method, args, inv.getAttachments()));
+
+                return invoker.invoke(new RpcInvocation(method, args, inv.getAttachments(), inv.getAttributes()));
             } catch (NoSuchMethodException e) {
                 throw new RpcException(e.getMessage(), e);
             } catch (ClassNotFoundException e) {
