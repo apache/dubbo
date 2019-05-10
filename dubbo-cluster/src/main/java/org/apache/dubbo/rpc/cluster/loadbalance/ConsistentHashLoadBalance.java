@@ -31,14 +31,21 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static org.apache.dubbo.common.Constants.HASH_ARGUMENTS;
-import static org.apache.dubbo.common.Constants.HASH_NODES;
-
 /**
  * ConsistentHashLoadBalance
  */
 public class ConsistentHashLoadBalance extends AbstractLoadBalance {
     public static final String NAME = "consistenthash";
+
+    /**
+     * Hash nodes name
+     */
+    public static final String HASH_NODES = "hash.nodes";
+
+    /**
+     * Hash arguments name
+     */
+    public static final String HASH_ARGUMENTS = "hash.arguments";
 
     private final ConcurrentMap<String, ConsistentHashSelector<?>> selectors = new ConcurrentHashMap<String, ConsistentHashSelector<?>>();
 
