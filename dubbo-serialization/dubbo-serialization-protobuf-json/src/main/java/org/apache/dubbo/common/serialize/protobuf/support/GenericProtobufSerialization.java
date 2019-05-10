@@ -24,6 +24,8 @@ import org.apache.dubbo.common.serialize.Serialization;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import static org.apache.dubbo.common.serialize.Constants.PROTOBUF_JSON_SERIALIZATION_ID;
+
 /**
  * This serizalization is use for google protobuf generic reference.
  * The entity be transported between client and server by json string.
@@ -33,7 +35,7 @@ public class GenericProtobufSerialization implements Serialization {
 
     @Override
     public byte getContentTypeId() {
-        return 21;
+        return PROTOBUF_JSON_SERIALIZATION_ID;
     }
 
     @Override

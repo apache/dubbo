@@ -1,0 +1,16 @@
+package org.apache.dubbo.common.serialize;
+
+public interface Constants {
+    byte HESSIAN2_SERIALIZATION_ID = 2;
+    byte JAVA_SERIALIZATION_ID = 3;
+    byte COMPACTED_JAVA_SERIALIZATION_ID = 4;
+    byte FASTJSON_SERIALIZATION_ID = 6;
+    byte NATIVE_JAVA_SERIALIZATION_ID = 7;
+    byte KRYO_SERIALIZATION_ID = 8;
+    byte FST_SERIALIZATION_ID = 9;
+    byte NATIVE_HESSIAN_SERIALIZATION_ID = 10;
+    byte PROTOSTUFF_SERIALIZATION_ID = 12;
+    byte AVRO_SERIALIZATION_ID = 11;
+    byte GSON_SERIALIZATION_ID = 16;
+    byte PROTOBUF_JSON_SERIALIZATION_ID = 21;
+}
