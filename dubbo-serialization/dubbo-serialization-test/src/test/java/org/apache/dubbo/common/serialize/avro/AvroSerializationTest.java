@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.serialize.avro;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.hamcrest.Matchers;
@@ -28,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import static org.apache.dubbo.common.serialize.Constants.AVRO_SERIALIZATION_ID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
@@ -47,7 +47,7 @@ public class AvroSerializationTest {
 
     @Test
     public void testContentTypeId() {
-        assertThat(avroSerialization.getContentTypeId(), is(Constants.AVRO_SERIALIZATION_ID));
+        assertThat(avroSerialization.getContentTypeId(), is(AVRO_SERIALIZATION_ID));
     }
 
     @Test
