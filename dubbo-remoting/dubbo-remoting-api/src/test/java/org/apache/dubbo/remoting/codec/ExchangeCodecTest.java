@@ -17,7 +17,6 @@
 package org.apache.dubbo.remoting.codec;
 
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;

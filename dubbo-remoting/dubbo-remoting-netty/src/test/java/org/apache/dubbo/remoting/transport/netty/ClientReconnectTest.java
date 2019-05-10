@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.transport.netty;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.DubboAppender;
 import org.apache.dubbo.common.utils.NetUtils;
