@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.serialize.java;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
@@ -25,6 +24,8 @@ import org.apache.dubbo.common.serialize.Serialization;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import static org.apache.dubbo.common.serialize.Constants.JAVA_SERIALIZATION_ID;
 
 /**
  * Java serialization implementation
@@ -37,7 +38,7 @@ public class JavaSerialization implements Serialization {
 
     @Override
     public byte getContentTypeId() {
-        return Constants.JAVA_SERIALIZATION_ID;
+        return JAVA_SERIALIZATION_ID;
     }
 
     @Override
