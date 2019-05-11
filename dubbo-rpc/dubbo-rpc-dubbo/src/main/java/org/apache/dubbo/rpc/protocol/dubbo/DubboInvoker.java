@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.AtomicPositiveInteger;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
@@ -85,7 +86,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
             boolean isOneway = RpcUtils.isOneway(getUrl(), invocation);
             int timeout = getUrl().getMethodParameter(methodName, Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
             if (isOneway) {
-                boolean isSent = getUrl().getMethodParameter(methodName, Constants.SENT_KEY, false);
+                boolean isSent = getUrl().getMethodParameter(methodName, RemotingConstants.SENT_KEY, false);
                 currentClient.send(inv, isSent);
                 RpcContext.getContext().setFuture(null);
                 return new RpcResult();
@@ -120,7 +121,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
             return false;
         }
         for (ExchangeClient client : clients) {
-            if (client.isConnected() && !client.hasAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY)) {
+            if (client.isConnected() && !client.hasAttribute(RemotingConstants.CHANNEL_ATTRIBUTE_READONLY_KEY)) {
                 //cannot write == not Available ?
                 return true;
             }

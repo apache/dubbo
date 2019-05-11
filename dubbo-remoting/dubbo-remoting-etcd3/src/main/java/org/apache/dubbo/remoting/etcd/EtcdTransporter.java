@@ -33,15 +33,15 @@
  */
 package org.apache.dubbo.remoting.etcd;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
 
 @SPI("jetcd")
 public interface EtcdTransporter {
 
-    @Adaptive({Constants.CLIENT_KEY, Constants.TRANSPORTER_KEY})
+    @Adaptive({RemotingConstants.CLIENT_KEY, RemotingConstants.TRANSPORTER_KEY})
     EtcdClient connect(URL url);
 
 }

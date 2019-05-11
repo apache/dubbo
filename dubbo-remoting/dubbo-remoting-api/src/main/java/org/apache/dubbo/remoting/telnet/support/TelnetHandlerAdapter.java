@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.telnet.support;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
@@ -31,7 +32,7 @@ public class TelnetHandlerAdapter extends ChannelHandlerAdapter implements Telne
 
     @Override
     public String telnet(Channel channel, String message) throws RemotingException {
-        String prompt = channel.getUrl().getParameterAndDecoded(Constants.PROMPT_KEY, Constants.DEFAULT_PROMPT);
+        String prompt = channel.getUrl().getParameterAndDecoded(RemotingConstants.PROMPT_KEY, RemotingConstants.DEFAULT_PROMPT);
         boolean noprompt = message.contains("--no-prompt");
         message = message.replace("--no-prompt", "");
         StringBuilder buf = new StringBuilder();

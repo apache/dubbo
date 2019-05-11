@@ -52,6 +52,7 @@ package org.apache.dubbo.registry.etcd;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
@@ -95,7 +96,7 @@ public class EtcdRegistryTest {
             + Constants.ROUTERS_CATEGORY + ","
             + Constants.CONFIGURATORS_CATEGORY,
             Constants.ENABLED_KEY, Constants.ANY_VALUE,
-            Constants.CHECK_KEY, String.valueOf(false));
+            RemotingConstants.CHECK_KEY, String.valueOf(false));
 
     @Test
     public void test_register() {

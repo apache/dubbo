@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.DubboAppender;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
@@ -72,7 +72,7 @@ public class ClientReconnectTest {
 
 
     public Client startClient(int port, int heartbeat) throws RemotingException {
-        final String url = "exchange://127.0.0.1:" + port + "/client.reconnect.test?client=netty4&check=false&" + Constants.HEARTBEAT_KEY + "=" + heartbeat;
+        final String url = "exchange://127.0.0.1:" + port + "/client.reconnect.test?client=netty4&check=false&" + RemotingConstants.HEARTBEAT_KEY + "=" + heartbeat;
         return Exchangers.connect(url);
     }
 

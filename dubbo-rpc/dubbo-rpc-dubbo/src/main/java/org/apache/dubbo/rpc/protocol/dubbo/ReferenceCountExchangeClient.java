@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.Parameters;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
@@ -168,8 +169,8 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
         // this is a defensive operation to avoid client is closed by accident, the initial state of the client is false
         URL lazyUrl = URLBuilder.from(url)
                 .addParameter(Constants.LAZY_CONNECT_INITIAL_STATE_KEY, Boolean.FALSE)
-                .addParameter(Constants.RECONNECT_KEY, Boolean.FALSE)
-                .addParameter(Constants.SEND_RECONNECT_KEY, Boolean.TRUE.toString())
+                .addParameter(RemotingConstants.RECONNECT_KEY, Boolean.FALSE)
+                .addParameter(RemotingConstants.SEND_RECONNECT_KEY, Boolean.TRUE.toString())
                 .addParameter("warning", Boolean.TRUE.toString())
                 .addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true)
                 .addParameter("_client_memo", "referencecounthandler.replacewithlazyclient")

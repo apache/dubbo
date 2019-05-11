@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.zookeeper;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -131,7 +132,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                             if (!anyServices.contains(child)) {
                                 anyServices.add(child);
                                 subscribe(url.setPath(child).addParameters(Constants.INTERFACE_KEY, child,
-                                        Constants.CHECK_KEY, String.valueOf(false)), listener);
+                                        RemotingConstants.CHECK_KEY, String.valueOf(false)), listener);
                             }
                         }
                     });
@@ -144,7 +145,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                         service = URL.decode(service);
                         anyServices.add(service);
                         subscribe(url.setPath(service).addParameters(Constants.INTERFACE_KEY, service,
-                                Constants.CHECK_KEY, String.valueOf(false)), listener);
+                                RemotingConstants.CHECK_KEY, String.valueOf(false)), listener);
                     }
                 }
             } else {
