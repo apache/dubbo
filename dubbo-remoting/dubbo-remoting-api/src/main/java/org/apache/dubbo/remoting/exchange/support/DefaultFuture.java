@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.exchange.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.timer.HashedWheelTimer;

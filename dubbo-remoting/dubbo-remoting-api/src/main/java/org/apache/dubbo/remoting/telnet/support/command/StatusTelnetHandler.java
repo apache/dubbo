@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.telnet.support.command;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.status.Status;

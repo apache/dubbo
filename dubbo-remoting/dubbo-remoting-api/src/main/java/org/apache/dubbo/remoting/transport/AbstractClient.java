@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.transport;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.constants.RemotingConstants;
