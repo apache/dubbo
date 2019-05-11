@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.context.ConfigManager;
@@ -132,8 +133,8 @@ public class ServiceConfigTest {
         assertThat(url.getPath(), equalTo(DemoService.class.getName()));
         assertThat(url.getParameters(), hasEntry(Constants.ANYHOST_KEY, "true"));
         assertThat(url.getParameters(), hasEntry(Constants.APPLICATION_KEY, "app"));
-        assertThat(url.getParameters(), hasKey(Constants.BIND_IP_KEY));
-        assertThat(url.getParameters(), hasKey(Constants.BIND_PORT_KEY));
+        assertThat(url.getParameters(), hasKey(RemotingConstants.BIND_IP_KEY));
+        assertThat(url.getParameters(), hasKey(RemotingConstants.BIND_PORT_KEY));
         assertThat(url.getParameters(), hasEntry(Constants.EXPORT_KEY, "true"));
         assertThat(url.getParameters(), hasEntry("echo.0.callback", "false"));
         assertThat(url.getParameters(), hasEntry(Constants.GENERIC_KEY, "false"));

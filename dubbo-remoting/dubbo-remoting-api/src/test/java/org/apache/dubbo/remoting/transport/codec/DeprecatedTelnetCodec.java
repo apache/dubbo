@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.transport.codec;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.ObjectOutput;
@@ -55,9 +56,9 @@ public class DeprecatedTelnetCodec implements Codec {
     private static final List<?> EXIT = Arrays.asList(new Object[]{new byte[]{3} /* Windows Ctrl+C */, new byte[]{-1, -12, -1, -3, 6} /* Linux Ctrl+C */, new byte[]{-1, -19, -1, -3, 6} /* Linux Pause */});
 
     static void checkPayload(Channel channel, long size) throws IOException {
-        int payload = Constants.DEFAULT_PAYLOAD;
+        int payload = RemotingConstants.DEFAULT_PAYLOAD;
         if (channel != null && channel.getUrl() != null) {
-            payload = channel.getUrl().getPositiveParameter(Constants.PAYLOAD_KEY, Constants.DEFAULT_PAYLOAD);
+            payload = channel.getUrl().getPositiveParameter(RemotingConstants.PAYLOAD_KEY, RemotingConstants.DEFAULT_PAYLOAD);
         }
         if (size > payload) {
             IOException e = new IOException("Data length too large: " + size + ", max payload: " + payload + ", channel: " + channel);
@@ -68,7 +69,7 @@ public class DeprecatedTelnetCodec implements Codec {
 
     private static Charset getCharset(Channel channel) {
         if (channel != null) {
-            Object attribute = channel.getAttribute(Constants.CHARSET_KEY);
+            Object attribute = channel.getAttribute(RemotingConstants.CHARSET_KEY);
             if (attribute instanceof String) {
                 try {
                     return Charset.forName((String) attribute);
@@ -80,7 +81,7 @@ public class DeprecatedTelnetCodec implements Codec {
             }
             URL url = channel.getUrl();
             if (url != null) {
-                String parameter = url.getParameter(Constants.CHARSET_KEY);
+                String parameter = url.getParameter(RemotingConstants.CHARSET_KEY);
                 if (StringUtils.isNotEmpty(parameter)) {
                     try {
                         return Charset.forName(parameter);

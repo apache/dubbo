@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.dubbo;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ExecutorUtil;
@@ -100,7 +101,7 @@ public class DubboRegistry extends FailbackRegistry {
                 clientLock.unlock();
             }
         } catch (Throwable t) { // Ignore all the exceptions and wait for the next retry
-            if (getUrl().getParameter(Constants.CHECK_KEY, true)) {
+            if (getUrl().getParameter(RemotingConstants.CHECK_KEY, true)) {
                 if (t instanceof RuntimeException) {
                     throw (RuntimeException) t;
                 }

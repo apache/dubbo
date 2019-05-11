@@ -17,6 +17,8 @@
 
 package org.apache.dubbo.common;
 
+import org.apache.dubbo.common.constants.RemotingConstants;
+
 import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
 
@@ -789,7 +791,7 @@ public class Constants {
 
     public static final String COMPATIBLE_CONFIG_KEY = "compatible_config";
 
-    public static final String[] DEFAULT_REGISTER_PROVIDER_KEYS = {APPLICATION_KEY, CODEC_KEY, EXCHANGER_KEY, SERIALIZATION_KEY, CLUSTER_KEY, CONNECTIONS_KEY, DEPRECATED_KEY,
+    public static final String[] DEFAULT_REGISTER_PROVIDER_KEYS = {APPLICATION_KEY, RemotingConstants.CODEC_KEY, RemotingConstants.EXCHANGER_KEY, RemotingConstants.SERIALIZATION_KEY, CLUSTER_KEY, CONNECTIONS_KEY, DEPRECATED_KEY,
             GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY, WEIGHT_KEY, TIMESTAMP_KEY, DUBBO_VERSION_KEY, RELEASE_KEY};
 
     public static final String[] DEFAULT_REGISTER_CONSUMER_KEYS = {APPLICATION_KEY, VERSION_KEY, GROUP_KEY, DUBBO_VERSION_KEY, RELEASE_KEY};

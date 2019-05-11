@@ -19,6 +19,7 @@ package org.apache.dubbo.metadata.integration;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -78,7 +79,7 @@ public class MetadataReportService {
     public void publishProvider(URL providerUrl) throws RpcException {
         //first add into the list
         // remove the individul param
-        providerUrl = providerUrl.removeParameters(Constants.PID_KEY, Constants.TIMESTAMP_KEY, Constants.BIND_IP_KEY, Constants.BIND_PORT_KEY, Constants.TIMESTAMP_KEY);
+        providerUrl = providerUrl.removeParameters(Constants.PID_KEY, Constants.TIMESTAMP_KEY, RemotingConstants.BIND_IP_KEY, RemotingConstants.BIND_PORT_KEY, Constants.TIMESTAMP_KEY);
 
         try {
             String interfaceName = providerUrl.getParameter(Constants.INTERFACE_KEY);
@@ -98,7 +99,7 @@ public class MetadataReportService {
     }
 
     public void publishConsumer(URL consumerURL) throws RpcException {
-        consumerURL = consumerURL.removeParameters(Constants.PID_KEY, Constants.TIMESTAMP_KEY, Constants.BIND_IP_KEY, Constants.BIND_PORT_KEY, Constants.TIMESTAMP_KEY);
+        consumerURL = consumerURL.removeParameters(Constants.PID_KEY, Constants.TIMESTAMP_KEY, RemotingConstants.BIND_IP_KEY, RemotingConstants.BIND_PORT_KEY, Constants.TIMESTAMP_KEY);
         metadataReport.storeConsumerMetadata(new MetadataIdentifier(consumerURL.getServiceInterface(),
                 consumerURL.getParameter(Constants.VERSION_KEY), consumerURL.getParameter(Constants.GROUP_KEY),Constants.CONSUMER_SIDE,
                 consumerURL.getParameter(Constants.APPLICATION_KEY)), consumerURL.getParameters());

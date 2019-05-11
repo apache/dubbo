@@ -18,6 +18,7 @@ package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -60,7 +61,7 @@ public class UrlUtils {
                     }
                     backup.append(addresses[i]);
                 }
-                url += URL_PARAM_STARTING_SYMBOL + Constants.BACKUP_KEY + "=" + backup.toString();
+                url += URL_PARAM_STARTING_SYMBOL + RemotingConstants.BACKUP_KEY + "=" + backup.toString();
             }
         }
         String defaultProtocol = defaults == null ? null : defaults.get(Constants.PROTOCOL_KEY);
@@ -468,12 +469,12 @@ public class UrlUtils {
     }
 
     public static int getHeartbeat(URL url) {
-        return url.getParameter(Constants.HEARTBEAT_KEY, Constants.DEFAULT_HEARTBEAT);
+        return url.getParameter(RemotingConstants.HEARTBEAT_KEY, RemotingConstants.DEFAULT_HEARTBEAT);
     }
 
     public static int getIdleTimeout(URL url) {
         int heartBeat = getHeartbeat(url);
-        int idleTimeout = url.getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartBeat * 3);
+        int idleTimeout = url.getParameter(RemotingConstants.HEARTBEAT_TIMEOUT_KEY, heartBeat * 3);
         if (idleTimeout < heartBeat * 2) {
             throw new IllegalStateException("idleTimeout < heartbeatInterval * 2");
         }

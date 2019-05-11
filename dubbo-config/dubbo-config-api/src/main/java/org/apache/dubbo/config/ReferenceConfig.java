@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.bytecode.Wrapper;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -561,7 +562,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     }
 
     public void setClient(String client) {
-        checkName(Constants.CLIENT_KEY, client);
+        checkName(RemotingConstants.CLIENT_KEY, client);
         this.client = client;
     }
 

@@ -18,6 +18,7 @@ package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.InmemoryConfiguration;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -414,7 +415,7 @@ class URL implements Serializable {
 
     public String getBackupAddress(int defaultPort) {
         StringBuilder address = new StringBuilder(appendDefaultPort(getAddress(), defaultPort));
-        String[] backups = getParameter(Constants.BACKUP_KEY, new String[0]);
+        String[] backups = getParameter(RemotingConstants.BACKUP_KEY, new String[0]);
         if (ArrayUtils.isNotEmpty(backups)) {
             for (String backup : backups) {
                 address.append(",");
@@ -427,7 +428,7 @@ class URL implements Serializable {
     public List<URL> getBackupUrls() {
         List<URL> urls = new ArrayList<>();
         urls.add(this);
-        String[] backups = getParameter(Constants.BACKUP_KEY, new String[0]);
+        String[] backups = getParameter(RemotingConstants.BACKUP_KEY, new String[0]);
         if (backups != null && backups.length > 0) {
             for (String backup : backups) {
                 urls.add(this.setAddress(backup));
