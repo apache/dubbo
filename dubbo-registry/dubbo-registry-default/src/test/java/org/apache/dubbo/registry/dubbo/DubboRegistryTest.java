@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.dubbo;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -55,10 +56,10 @@ public class DubboRegistryTest {
     @BeforeEach
     public void setUp() {
         registryURL = new URL(Constants.REGISTRY_PROTOCOL, NetUtils.getLocalHost(), NetUtils.getAvailablePort())
-                .addParameter(Constants.CHECK_KEY, false)
+                .addParameter(RemotingConstants.CHECK_KEY, false)
                 .setServiceInterface(RegistryService.class.getName());
         serviceURL = new URL(DubboProtocol.NAME, NetUtils.getLocalHost(), NetUtils.getAvailablePort())
-                .addParameter(Constants.CHECK_KEY, false)
+                .addParameter(RemotingConstants.CHECK_KEY, false)
                 .setServiceInterface(RegistryService.class.getName());
 
         registryService = new MockDubboRegistry(registryURL);

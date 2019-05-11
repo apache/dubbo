@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.remoting.exchange.support.header;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
@@ -53,7 +53,7 @@ public class HeaderExchangeServer implements ExchangeServer {
     private AtomicBoolean closed = new AtomicBoolean(false);
 
     private static final HashedWheelTimer IDLE_CHECK_TIMER = new HashedWheelTimer(new NamedThreadFactory("dubbo-server-idleCheck", true), 1,
-            TimeUnit.SECONDS, Constants.TICKS_PER_WHEEL);
+            TimeUnit.SECONDS, RemotingConstants.TICKS_PER_WHEEL);
 
     private CloseTimerTask closeTimerTask;
 
@@ -100,7 +100,7 @@ public class HeaderExchangeServer implements ExchangeServer {
         if (timeout > 0) {
             final long max = (long) timeout;
             final long start = System.currentTimeMillis();
-            if (getUrl().getParameter(Constants.CHANNEL_SEND_READONLYEVENT_KEY, true)) {
+            if (getUrl().getParameter(RemotingConstants.CHANNEL_SEND_READONLYEVENT_KEY, true)) {
                 sendChannelReadOnlyEvent();
             }
             while (HeaderExchangeServer.this.isRunning()
@@ -131,7 +131,7 @@ public class HeaderExchangeServer implements ExchangeServer {
         for (Channel channel : channels) {
             try {
                 if (channel.isConnected()) {
-                    channel.send(request, getUrl().getParameter(Constants.CHANNEL_READONLYEVENT_SENT_KEY, true));
+                    channel.send(request, getUrl().getParameter(RemotingConstants.CHANNEL_READONLYEVENT_SENT_KEY, true));
                 }
             } catch (RemotingException e) {
                 logger.warn("send cannot write message error.", e);
@@ -246,10 +246,10 @@ public class HeaderExchangeServer implements ExchangeServer {
      * Each interval cannot be less than 1000ms.
      */
     private long calculateLeastDuration(int time) {
-        if (time / Constants.HEARTBEAT_CHECK_TICK <= 0) {
-            return Constants.LEAST_HEARTBEAT_DURATION;
+        if (time / RemotingConstants.HEARTBEAT_CHECK_TICK <= 0) {
+            return RemotingConstants.LEAST_HEARTBEAT_DURATION;
         } else {
-            return time / Constants.HEARTBEAT_CHECK_TICK;
+            return time / RemotingConstants.HEARTBEAT_CHECK_TICK;
         }
     }
 

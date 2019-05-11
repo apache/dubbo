@@ -34,6 +34,7 @@
 package org.apache.dubbo.registry.etcd;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
@@ -179,7 +180,7 @@ public class EtcdRegistry extends FailbackRegistry {
                                                  *  eg: /dubbo/interface, /dubbo/interface and so on.
                                                  */
                                                 subscribe(url.setPath(child).addParameters(Constants.INTERFACE_KEY, child,
-                                                        Constants.CHECK_KEY, String.valueOf(false)), listener);
+                                                        RemotingConstants.CHECK_KEY, String.valueOf(false)), listener);
                                             }
                                         }
                                     });
@@ -196,7 +197,7 @@ public class EtcdRegistry extends FailbackRegistry {
                     service = URL.decode(service);
                     anyServices.add(service);
                     subscribe(url.setPath(service).addParameters(Constants.INTERFACE_KEY, service,
-                            Constants.CHECK_KEY, String.valueOf(false)), listener);
+                            RemotingConstants.CHECK_KEY, String.valueOf(false)), listener);
                 }
             } else {
                 List<URL> urls = new ArrayList<>();

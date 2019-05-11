@@ -22,6 +22,7 @@ import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.bytecode.Wrapper;
 import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -684,7 +685,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             }
         }
 
-        map.put(Constants.BIND_IP_KEY, hostToBind);
+        map.put(RemotingConstants.BIND_IP_KEY, hostToBind);
 
         // registry ip is not used for bind ip by default
         String hostToRegistry = getValueFromConfig(protocolConfig, Constants.DUBBO_IP_TO_REGISTRY);
@@ -736,7 +737,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
 
         // save bind port, used as url's key later
-        map.put(Constants.BIND_PORT_KEY, String.valueOf(portToBind));
+        map.put(RemotingConstants.BIND_PORT_KEY, String.valueOf(portToBind));
 
         // registry port, not used as bind port by default
         String portToRegistryStr = getValueFromConfig(protocolConfig, Constants.DUBBO_PORT_TO_REGISTRY);

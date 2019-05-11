@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.http;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.remoting.http.HttpBinder;
@@ -153,7 +154,7 @@ public class HttpProtocol extends AbstractProxyProtocol {
 
         httpProxyFactoryBean.setServiceUrl(key);
         httpProxyFactoryBean.setServiceInterface(serviceType);
-        String client = url.getParameter(Constants.CLIENT_KEY);
+        String client = url.getParameter(RemotingConstants.CLIENT_KEY);
         if (StringUtils.isEmpty(client) || "simple".equals(client)) {
             SimpleHttpInvokerRequestExecutor httpInvokerRequestExecutor = new SimpleHttpInvokerRequestExecutor() {
                 @Override
@@ -161,14 +162,14 @@ public class HttpProtocol extends AbstractProxyProtocol {
                                                  int contentLength) throws IOException {
                     super.prepareConnection(con, contentLength);
                     con.setReadTimeout(url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
-                    con.setConnectTimeout(url.getParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT));
+                    con.setConnectTimeout(url.getParameter(RemotingConstants.CONNECT_TIMEOUT_KEY, RemotingConstants.DEFAULT_CONNECT_TIMEOUT));
                 }
             };
             httpProxyFactoryBean.setHttpInvokerRequestExecutor(httpInvokerRequestExecutor);
         } else if ("commons".equals(client)) {
             HttpComponentsHttpInvokerRequestExecutor httpInvokerRequestExecutor = new HttpComponentsHttpInvokerRequestExecutor();
             httpInvokerRequestExecutor.setReadTimeout(url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
-            httpInvokerRequestExecutor.setConnectTimeout(url.getParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT));
+            httpInvokerRequestExecutor.setConnectTimeout(url.getParameter(RemotingConstants.CONNECT_TIMEOUT_KEY, RemotingConstants.DEFAULT_CONNECT_TIMEOUT));
             httpProxyFactoryBean.setHttpInvokerRequestExecutor(httpInvokerRequestExecutor);
         } else {
             throw new IllegalStateException("Unsupported http protocol client " + client + ", only supported: simple, commons");

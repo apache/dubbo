@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.remoting.transport.mina;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
@@ -71,7 +71,7 @@ public class MinaClient extends AbstractClient {
             connector = c;
         } else {
             // set thread pool.
-            connector = new SocketConnector(Constants.DEFAULT_IO_THREADS,
+            connector = new SocketConnector(RemotingConstants.DEFAULT_IO_THREADS,
                     Executors.newCachedThreadPool(new NamedThreadFactory("MinaClientWorker", true)));
             // config
             SocketConnectorConfig cfg = (SocketConnectorConfig) connector.getDefaultConfig();

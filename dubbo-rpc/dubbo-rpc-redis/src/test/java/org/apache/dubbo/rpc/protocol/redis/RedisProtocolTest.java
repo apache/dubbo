@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.redis;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.Serialization;
@@ -177,7 +177,7 @@ public class RedisProtocolTest {
         JedisPool pool = new JedisPool(new GenericObjectPoolConfig(), "localhost", registryUrl.getPort(), 2000, password, database, (String) null);
         try (Jedis jedis = pool.getResource()) {
             byte[] valueByte = jedis.get("key".getBytes());
-            Serialization serialization = ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(this.registryUrl.getParameter(Constants.SERIALIZATION_KEY, "java"));
+            Serialization serialization = ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(this.registryUrl.getParameter(RemotingConstants.SERIALIZATION_KEY, "java"));
             ObjectInput oin = serialization.deserialize(this.registryUrl, new ByteArrayInputStream(valueByte));
             String actual = (String) oin.readObject();
             assertThat(value, is(actual));

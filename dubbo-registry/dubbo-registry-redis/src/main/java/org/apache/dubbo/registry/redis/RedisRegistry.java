@@ -20,6 +20,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ArrayUtils;
@@ -125,7 +126,7 @@ public class RedisRegistry extends FailbackRegistry {
 
         List<String> addresses = new ArrayList<>();
         addresses.add(url.getAddress());
-        String[] backups = url.getParameter(Constants.BACKUP_KEY, new String[0]);
+        String[] backups = url.getParameter(RemotingConstants.BACKUP_KEY, new String[0]);
         if (ArrayUtils.isNotEmpty(backups)) {
             addresses.addAll(Arrays.asList(backups));
         }
