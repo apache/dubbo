@@ -32,6 +32,9 @@ import org.apache.catalina.startup.Tomcat;
 
 import java.io.File;
 
+import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREADS;
+
 public class TomcatHttpServer extends AbstractHttpServer {
 
     private static final Logger logger = LoggerFactory.getLogger(TomcatHttpServer.class);
@@ -50,7 +53,7 @@ public class TomcatHttpServer extends AbstractHttpServer {
         tomcat.setBaseDir(baseDir);
         tomcat.setPort(url.getPort());
         tomcat.getConnector().setProperty(
-                "maxThreads", String.valueOf(url.getParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS)));
+                "maxThreads", String.valueOf(url.getParameter(THREADS_KEY, DEFAULT_THREADS)));
 //        tomcat.getConnector().setProperty(
 //                "minSpareThreads", String.valueOf(url.getParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS)));
 

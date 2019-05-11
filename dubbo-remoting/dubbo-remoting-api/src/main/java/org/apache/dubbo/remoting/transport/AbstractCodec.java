@@ -29,6 +29,8 @@ import org.apache.dubbo.remoting.Codec2;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+
 /**
  * AbstractCodec
  */
@@ -53,7 +55,7 @@ public abstract class AbstractCodec implements Codec2 {
     }
 
     protected boolean isClientSide(Channel channel) {
-        String side = (String) channel.getAttribute(Constants.SIDE_KEY);
+        String side = (String) channel.getAttribute(SIDE_KEY);
         if ("client".equals(side)) {
             return true;
         } else if ("server".equals(side)) {
@@ -65,7 +67,7 @@ public abstract class AbstractCodec implements Codec2 {
                     && NetUtils.filterLocalHost(url.getIp()).equals(
                     NetUtils.filterLocalHost(address.getAddress()
                             .getHostAddress()));
-            channel.setAttribute(Constants.SIDE_KEY, client ? "client"
+            channel.setAttribute(SIDE_KEY, client ? "client"
                     : "server");
             return client;
         }

@@ -40,6 +40,17 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+
 /**
  * URL - Uniform Resource Locator (Immutable, ThreadSafe)
  * <p>
@@ -479,7 +490,7 @@ class URL implements Serializable {
     public String getParameter(String key) {
         String value = parameters.get(key);
         if (StringUtils.isEmpty(value)) {
-            value = parameters.get(Constants.DEFAULT_KEY_PREFIX + key);
+            value = parameters.get(DEFAULT_KEY_PREFIX + key);
         }
         return value;
     }
@@ -497,7 +508,7 @@ class URL implements Serializable {
         if (StringUtils.isEmpty(value)) {
             return defaultValue;
         }
-        return Constants.COMMA_SPLIT_PATTERN.split(value);
+        return COMMA_SPLIT_PATTERN.split(value);
     }
 
     public List<String> getParameter(String key, List<String> defaultValue) {
@@ -505,7 +516,7 @@ class URL implements Serializable {
         if (value == null || value.length() == 0) {
             return defaultValue;
         }
-        String[] strArray = Constants.COMMA_SPLIT_PATTERN.split(value);
+        String[] strArray = COMMA_SPLIT_PATTERN.split(value);
         return Arrays.asList(strArray);
     }
 
@@ -928,11 +939,11 @@ class URL implements Serializable {
     }
 
     public boolean isLocalHost() {
-        return NetUtils.isLocalHost(host) || getParameter(Constants.LOCALHOST_KEY, false);
+        return NetUtils.isLocalHost(host) || getParameter(LOCALHOST_KEY, false);
     }
 
     public boolean isAnyHost() {
-        return Constants.ANYHOST_VALUE.equals(host) || getParameter(Constants.ANYHOST_KEY, false);
+        return ANYHOST_VALUE.equals(host) || getParameter(ANYHOST_KEY, false);
     }
 
     public URL addParameterAndEncoded(String key, String value) {
@@ -1123,7 +1134,7 @@ class URL implements Serializable {
     }
 
     public String getRawParameter(String key) {
-        if (Constants.PROTOCOL_KEY.equals(key)) {
+        if (PROTOCOL_KEY.equals(key)) {
             return protocol;
         }
         if (Constants.USERNAME_KEY.equals(key)) {
@@ -1138,7 +1149,7 @@ class URL implements Serializable {
         if (Constants.PORT_KEY.equals(key)) {
             return String.valueOf(port);
         }
-        if (Constants.PATH_KEY.equals(key)) {
+        if (PATH_KEY.equals(key)) {
             return path;
         }
         return getParameter(key);
@@ -1147,7 +1158,7 @@ class URL implements Serializable {
     public Map<String, String> toMap() {
         Map<String, String> map = new HashMap<>(parameters);
         if (protocol != null) {
-            map.put(Constants.PROTOCOL_KEY, protocol);
+            map.put(PROTOCOL_KEY, protocol);
         }
         if (username != null) {
             map.put(Constants.USERNAME_KEY, username);
@@ -1162,7 +1173,7 @@ class URL implements Serializable {
             map.put(Constants.PORT_KEY, String.valueOf(port));
         }
         if (path != null) {
-            map.put(Constants.PATH_KEY, path);
+            map.put(PATH_KEY, path);
         }
         return map;
     }
@@ -1317,7 +1328,7 @@ class URL implements Serializable {
         if (inf == null) {
             return null;
         }
-        return buildKey(inf, getParameter(Constants.GROUP_KEY), getParameter(Constants.VERSION_KEY));
+        return buildKey(inf, getParameter(GROUP_KEY), getParameter(VERSION_KEY));
     }
 
     /**
@@ -1329,7 +1340,7 @@ class URL implements Serializable {
         if (inf == null) {
             return null;
         }
-        return buildKey(inf, getParameter(Constants.GROUP_KEY), getParameter(Constants.VERSION_KEY));
+        return buildKey(inf, getParameter(GROUP_KEY), getParameter(VERSION_KEY));
     }
 
     public static String buildKey(String path, String group, String version) {
@@ -1358,11 +1369,11 @@ class URL implements Serializable {
     }
 
     public String getServiceInterface() {
-        return getParameter(Constants.INTERFACE_KEY, path);
+        return getParameter(INTERFACE_KEY, path);
     }
 
     public URL setServiceInterface(String service) {
-        return addParameter(Constants.INTERFACE_KEY, service);
+        return addParameter(INTERFACE_KEY, service);
     }
 
     /**

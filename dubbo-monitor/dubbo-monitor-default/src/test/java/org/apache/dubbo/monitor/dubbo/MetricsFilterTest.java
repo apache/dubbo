@@ -16,14 +16,6 @@
  */
 package org.apache.dubbo.monitor.dubbo;
 
-import com.alibaba.metrics.FastCompass;
-import com.alibaba.metrics.IMetricManager;
-import com.alibaba.metrics.MetricLevel;
-import com.alibaba.metrics.MetricManager;
-import com.alibaba.metrics.MetricName;
-import com.alibaba.metrics.common.MetricObject;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -37,12 +29,27 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
+
+import com.alibaba.metrics.FastCompass;
+import com.alibaba.metrics.IMetricManager;
+import com.alibaba.metrics.MetricLevel;
+import com.alibaba.metrics.MetricManager;
+import com.alibaba.metrics.MetricName;
+import com.alibaba.metrics.common.MetricObject;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
 public class MetricsFilterTest {
 
@@ -99,9 +106,9 @@ public class MetricsFilterTest {
         IMetricManager metricManager = MetricManager.getIMetricManager();
         metricManager.clear();
         MetricsFilter metricsFilter = new MetricsFilter();
-        Invocation invocation = new RpcInvocation("sayName", new Class<?>[] {Integer.class}, new Object[0]);
+        Invocation invocation = new RpcInvocation("sayName", new Class<?>[]{Integer.class}, new Object[0]);
         RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
-        RpcContext.getContext().setUrl(serviceInvoker.getUrl().addParameter(Constants.SIDE_KEY, Constants.CONSUMER_SIDE));
+        RpcContext.getContext().setUrl(serviceInvoker.getUrl().addParameter(SIDE_KEY, CONSUMER_SIDE));
         for (int i = 0; i < 100; i++) {
             metricsFilter.invoke(serviceInvoker, invocation);
         }
@@ -126,8 +133,8 @@ public class MetricsFilterTest {
         MetricsFilter metricsFilter = new MetricsFilter();
         Invocation invocation = new RpcInvocation("timeoutException", null, null);
         RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
-        RpcContext.getContext().setUrl(timeoutInvoker.getUrl().addParameter(Constants.SIDE_KEY, Constants.CONSUMER_SIDE)
-                .addParameter(Constants.TIMEOUT_KEY, 300));
+        RpcContext.getContext().setUrl(timeoutInvoker.getUrl().addParameter(SIDE_KEY, CONSUMER_SIDE)
+                .addParameter(TIMEOUT_KEY, 300));
         for (int i = 0; i < 10; i++) {
             try {
                 metricsFilter.invoke(timeoutInvoker, invocation);
@@ -156,7 +163,7 @@ public class MetricsFilterTest {
         MetricsFilter metricsFilter = new MetricsFilter();
         Invocation invocation = new RpcInvocation("sayName", new Class<?>[0], new Object[0]);
         RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
-        RpcContext.getContext().setUrl(serviceInvoker.getUrl().addParameter(Constants.SIDE_KEY, Constants.PROVIDER));
+        RpcContext.getContext().setUrl(serviceInvoker.getUrl().addParameter(SIDE_KEY, PROVIDER));
         for (int i = 0; i < 100; i++) {
             metricsFilter.invoke(serviceInvoker, invocation);
         }
@@ -180,8 +187,8 @@ public class MetricsFilterTest {
         MetricsFilter metricsFilter = new MetricsFilter();
         Invocation invocation = new RpcInvocation("sayName", new Class<?>[0], new Object[0]);
         RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
-        RpcContext.getContext().setUrl(serviceInvoker.getUrl().addParameter(Constants.SIDE_KEY, Constants.PROVIDER_SIDE)
-                .addParameter(Constants.TIMEOUT_KEY, 300));
+        RpcContext.getContext().setUrl(serviceInvoker.getUrl().addParameter(SIDE_KEY, PROVIDER_SIDE)
+                .addParameter(TIMEOUT_KEY, 300));
         for (int i = 0; i < 50; i++) {
             try {
                 metricsFilter.invoke(serviceInvoker, invocation);
@@ -194,18 +201,19 @@ public class MetricsFilterTest {
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":20880/" + MetricsService.class.getName());
         Invoker<MetricsService> invoker = protocol.refer(MetricsService.class, url);
         invocation = new RpcInvocation("getMetricsByGroup", new Class<?>[]{String.class}, new Object[]{Constants.DUBBO_GROUP});
-        try{
+        try {
             Thread.sleep(5000);
         } catch (Exception e) {
             // ignore
         }
         String resStr = invoker.invoke(invocation).getValue().toString();
-        List<MetricObject> metricObjectList = new Gson().fromJson(resStr, new TypeToken<List<MetricObject>>(){}.getType());
+        List<MetricObject> metricObjectList = new Gson().fromJson(resStr, new TypeToken<List<MetricObject>>() {
+        }.getType());
         Map<String, Object> metricMap = new HashMap<>();
-        for(int i = 0; i < metricObjectList.size(); i++) {
+        for (int i = 0; i < metricObjectList.size(); i++) {
             MetricObject object = metricObjectList.get(i);
             String metric = object.getMetric().substring(object.getMetric().lastIndexOf(".") + 1);
-            if((double)object.getValue() > 0.0 && object.getMetricLevel().equals(MetricLevel.MAJOR))
+            if ((double) object.getValue() > 0.0 && object.getMetricLevel().equals(MetricLevel.MAJOR))
                 metricMap.put(metric, object.getValue());
         }
 
@@ -224,11 +232,11 @@ public class MetricsFilterTest {
         Invocation sayNameInvocation = new RpcInvocation("sayName", new Class<?>[0], new Object[0]);
         Invocation echoInvocation = new RpcInvocation("echo", new Class<?>[]{Integer.class}, new Integer[]{1});
         RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
-        RpcContext.getContext().setUrl(serviceInvoker.getUrl().addParameter(Constants.SIDE_KEY, Constants.PROVIDER_SIDE)
-                .addParameter(Constants.TIMEOUT_KEY, 300));
+        RpcContext.getContext().setUrl(serviceInvoker.getUrl().addParameter(SIDE_KEY, PROVIDER_SIDE)
+                .addParameter(TIMEOUT_KEY, 300));
         for (int i = 0; i < 50; i++) {
-                metricsFilter.invoke(serviceInvoker, sayNameInvocation);
-                metricsFilter.invoke(serviceInvoker, echoInvocation);
+            metricsFilter.invoke(serviceInvoker, sayNameInvocation);
+            metricsFilter.invoke(serviceInvoker, echoInvocation);
             try {
                 metricsFilter.invoke(timeoutInvoker, sayNameInvocation);
             } catch (RpcException e) {
@@ -245,21 +253,22 @@ public class MetricsFilterTest {
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":20880/" + MetricsService.class.getName());
         Invoker<MetricsService> invoker = protocol.refer(MetricsService.class, url);
         Invocation invocation = new RpcInvocation("getMetricsByGroup", new Class<?>[]{String.class}, new Object[]{Constants.DUBBO_GROUP});
-        try{
+        try {
             Thread.sleep(15000);
         } catch (Exception e) {
             // ignore
         }
         String resStr = invoker.invoke(invocation).getValue().toString();
-        List<MetricObject> metricObjectList = new Gson().fromJson(resStr, new TypeToken<List<MetricObject>>(){}.getType());
+        List<MetricObject> metricObjectList = new Gson().fromJson(resStr, new TypeToken<List<MetricObject>>() {
+        }.getType());
         Map<String, Map<String, Object>> methodMetricMap = new HashMap<>();
-        for(int i = 0; i < metricObjectList.size(); i++) {
+        for (int i = 0; i < metricObjectList.size(); i++) {
             MetricObject object = metricObjectList.get(i);
             String service = object.getTags().get("service");
             String method = service + "." + object.getTags().get("method");
             String metric = object.getMetric().substring(object.getMetric().lastIndexOf(".") + 1);
             Map map = methodMetricMap.get(method);
-            if(map == null) {
+            if (map == null) {
                 map = new HashMap();
                 methodMetricMap.put(method, map);
             }

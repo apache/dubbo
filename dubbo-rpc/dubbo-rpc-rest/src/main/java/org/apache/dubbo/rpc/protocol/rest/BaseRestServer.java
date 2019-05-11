@@ -22,6 +22,8 @@ import org.apache.dubbo.common.utils.StringUtils;
 
 import org.jboss.resteasy.spi.ResteasyDeployment;
 
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+
 public abstract class BaseRestServer implements RestServer {
 
     @Override
@@ -53,7 +55,7 @@ public abstract class BaseRestServer implements RestServer {
     }
 
     protected void loadProviders(String value) {
-        for (String clazz : Constants.COMMA_SPLIT_PATTERN.split(value)) {
+        for (String clazz : COMMA_SPLIT_PATTERN.split(value)) {
             if (!StringUtils.isEmpty(clazz)) {
                 getDeployment().getProviderClasses().add(clazz.trim());
             }

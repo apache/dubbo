@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.threadpool.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -26,11 +25,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.ExecutorService;
+
+import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
 
 /**
  * Abort Policy.
@@ -80,7 +81,7 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
 
         ExecutorService pool = Executors.newSingleThreadExecutor();
         pool.execute(() -> {
-            String dumpPath = url.getParameter(Constants.DUMP_DIRECTORY, System.getProperty("user.home"));
+            String dumpPath = url.getParameter(DUMP_DIRECTORY, System.getProperty("user.home"));
 
             SimpleDateFormat sdf;
 

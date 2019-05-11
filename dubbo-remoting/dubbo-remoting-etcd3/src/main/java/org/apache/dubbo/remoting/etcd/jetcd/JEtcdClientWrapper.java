@@ -17,8 +17,8 @@
 
 package org.apache.dubbo.remoting.etcd.jetcd;
 
-import io.etcd.jetcd.kv.PutResponse;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
@@ -37,6 +37,7 @@ import io.etcd.jetcd.Observers;
 import io.etcd.jetcd.common.exception.ErrorCode;
 import io.etcd.jetcd.common.exception.EtcdException;
 import io.etcd.jetcd.kv.GetResponse;
+import io.etcd.jetcd.kv.PutResponse;
 import io.etcd.jetcd.lease.LeaseKeepAliveResponse;
 import io.etcd.jetcd.options.GetOption;
 import io.etcd.jetcd.options.PutOption;
@@ -66,6 +67,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import static java.util.stream.Collectors.toList;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 
 public class JEtcdClientWrapper {
 
@@ -185,7 +187,7 @@ public class JEtcdClientWrapper {
                                     String key = pair.getKey().toString(UTF_8);
                                     int index = len, count = 0;
                                     if (key.length() > len) {
-                                        for (; (index = key.indexOf(Constants.PATH_SEPARATOR, index)) != -1; ++index) {
+                                        for (; (index = key.indexOf(PATH_SEPARATOR, index)) != -1; ++index) {
                                             if (count++ > 1) break;
                                         }
                                     }
@@ -477,7 +479,7 @@ public class JEtcdClientWrapper {
     }
 
     public String[] endPoints(String backupAddress) {
-        String[] endpoints = backupAddress.split(Constants.COMMA_SEPARATOR);
+        String[] endpoints = backupAddress.split(CommonConstants.COMMA_SEPARATOR);
         List<String> addresses = Arrays.stream(endpoints)
                 .map(address -> address.contains(Constants.HTTP_SUBFIX_KEY)
                         ? address

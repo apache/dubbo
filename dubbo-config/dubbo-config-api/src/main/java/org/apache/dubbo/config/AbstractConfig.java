@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.CompositeConfiguration;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.InmemoryConfiguration;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -41,6 +41,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PREFIX;
 
 /**
  * Utility methods and public methods for parsing configuration
@@ -175,7 +178,7 @@ public abstract class AbstractConfig implements Serializable {
                             str = URL.encode(str);
                         }
                         if (parameter != null && parameter.append()) {
-                            String pre = parameters.get(Constants.DEFAULT_KEY + "." + key);
+                            String pre = parameters.get(DEFAULT_KEY + "." + key);
                             if (pre != null && pre.length() > 0) {
                                 str = pre + "," + str;
                             }
@@ -314,10 +317,10 @@ public abstract class AbstractConfig implements Serializable {
         if (StringUtils.isNotEmpty(value)) {
             String[] values = value.split("\\s*[,]+\\s*");
             for (String v : values) {
-                if (v.startsWith(Constants.REMOVE_VALUE_PREFIX)) {
+                if (v.startsWith(REMOVE_VALUE_PREFIX)) {
                     v = v.substring(1);
                 }
-                if (Constants.DEFAULT_KEY.equals(v)) {
+                if (DEFAULT_KEY.equals(v)) {
                     continue;
                 }
                 if (!ExtensionLoader.getExtensionLoader(type).hasExtension(v)) {
@@ -529,7 +532,7 @@ public abstract class AbstractConfig implements Serializable {
 
     @Parameter(excluded = true)
     public String getPrefix() {
-        return StringUtils.isNotEmpty(prefix) ? prefix : (Constants.DUBBO + "." + getTagName(this.getClass()));
+        return StringUtils.isNotEmpty(prefix) ? prefix : (CommonConstants.DUBBO + "." + getTagName(this.getClass()));
     }
 
     public void setPrefix(String prefix) {

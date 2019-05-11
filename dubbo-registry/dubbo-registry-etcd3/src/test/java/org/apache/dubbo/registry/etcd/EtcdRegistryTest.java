@@ -58,6 +58,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -73,6 +74,13 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.CLASSIFIER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+
 @Disabled
 public class EtcdRegistryTest {
 
@@ -87,15 +95,15 @@ public class EtcdRegistryTest {
     EtcdRegistry registry;
     URL subscribe = new URL(
             Constants.ADMIN_PROTOCOL, NetUtils.getLocalHost(), 0, "",
-            Constants.INTERFACE_KEY, Constants.ANY_VALUE,
-            Constants.GROUP_KEY, Constants.ANY_VALUE,
-            Constants.VERSION_KEY, Constants.ANY_VALUE,
-            Constants.CLASSIFIER_KEY, Constants.ANY_VALUE,
+            INTERFACE_KEY, ANY_VALUE,
+            GROUP_KEY, ANY_VALUE,
+            VERSION_KEY, ANY_VALUE,
+            CLASSIFIER_KEY, ANY_VALUE,
             Constants.CATEGORY_KEY, Constants.PROVIDERS_CATEGORY + ","
             + Constants.CONSUMERS_CATEGORY + ","
             + Constants.ROUTERS_CATEGORY + ","
             + Constants.CONFIGURATORS_CATEGORY,
-            Constants.ENABLED_KEY, Constants.ANY_VALUE,
+            ENABLED_KEY, ANY_VALUE,
             RemotingConstants.CHECK_KEY, String.valueOf(false));
 
     @Test

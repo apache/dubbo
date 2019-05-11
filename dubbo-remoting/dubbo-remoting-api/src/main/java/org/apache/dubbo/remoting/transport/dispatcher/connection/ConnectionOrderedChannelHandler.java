@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.transport.dispatcher.connection;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
@@ -37,6 +36,9 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREAD_NAME;
+
 public class ConnectionOrderedChannelHandler extends WrappedChannelHandler {
 
     protected final ThreadPoolExecutor connectionExecutor;
@@ -44,7 +46,7 @@ public class ConnectionOrderedChannelHandler extends WrappedChannelHandler {
 
     public ConnectionOrderedChannelHandler(ChannelHandler handler, URL url) {
         super(handler, url);
-        String threadName = url.getParameter(Constants.THREAD_NAME_KEY, Constants.DEFAULT_THREAD_NAME);
+        String threadName = url.getParameter(THREAD_NAME_KEY, DEFAULT_THREAD_NAME);
         connectionExecutor = new ThreadPoolExecutor(1, 1,
                 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(url.getPositiveParameter(RemotingConstants.CONNECT_QUEUE_CAPACITY, Integer.MAX_VALUE)),

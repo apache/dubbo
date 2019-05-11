@@ -41,6 +41,9 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+
 /**
  * DefaultFuture.
  */
@@ -73,7 +76,7 @@ public class DefaultFuture implements ResponseFuture {
         this.channel = channel;
         this.request = request;
         this.id = request.getId();
-        this.timeout = timeout > 0 ? timeout : channel.getUrl().getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+        this.timeout = timeout > 0 ? timeout : channel.getUrl().getPositiveParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
         // put into waiting map.
         FUTURES.put(id, this);
         CHANNELS.put(id, channel);
@@ -167,7 +170,7 @@ public class DefaultFuture implements ResponseFuture {
     @Override
     public Object get(int timeout) throws RemotingException {
         if (timeout <= 0) {
-            timeout = Constants.DEFAULT_TIMEOUT;
+            timeout = DEFAULT_TIMEOUT;
         }
         if (!isDone()) {
             long start = System.currentTimeMillis();

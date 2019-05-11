@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.extension;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.activate.ActivateExt1;
 import org.apache.dubbo.common.extension.activate.impl.ActivateExt1Impl1;
@@ -57,6 +56,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -376,14 +376,14 @@ public class ExtensionLoaderTest {
         Assertions.assertTrue(list.get(0).getClass() == ActivateExt1Impl1.class);
 
         // test group
-        url = url.addParameter(Constants.GROUP_KEY, "group1");
+        url = url.addParameter(GROUP_KEY, "group1");
         list = ExtensionLoader.getExtensionLoader(ActivateExt1.class)
                 .getActivateExtension(url, new String[]{}, "group1");
         Assertions.assertEquals(1, list.size());
         Assertions.assertTrue(list.get(0).getClass() == GroupActivateExtImpl.class);
 
         // test old @Activate group
-        url = url.addParameter(Constants.GROUP_KEY, "old_group");
+        url = url.addParameter(GROUP_KEY, "old_group");
         list = ExtensionLoader.getExtensionLoader(ActivateExt1.class)
                 .getActivateExtension(url, new String[]{}, "old_group");
         Assertions.assertEquals(2, list.size());
@@ -391,8 +391,8 @@ public class ExtensionLoaderTest {
                 || list.get(0).getClass() == OldActivateExt1Impl3.class);
 
         // test value
-        url = url.removeParameter(Constants.GROUP_KEY);
-        url = url.addParameter(Constants.GROUP_KEY, "value");
+        url = url.removeParameter(GROUP_KEY);
+        url = url.addParameter(GROUP_KEY, "value");
         url = url.addParameter("value", "value");
         list = ExtensionLoader.getExtensionLoader(ActivateExt1.class)
                 .getActivateExtension(url, new String[]{}, "value");
@@ -401,7 +401,7 @@ public class ExtensionLoaderTest {
 
         // test order
         url = URL.valueOf("test://localhost/test");
-        url = url.addParameter(Constants.GROUP_KEY, "order");
+        url = url.addParameter(GROUP_KEY, "order");
         list = ExtensionLoader.getExtensionLoader(ActivateExt1.class)
                 .getActivateExtension(url, new String[]{}, "order");
         Assertions.assertEquals(2, list.size());

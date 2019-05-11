@@ -49,6 +49,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+
 public abstract class AbstractEtcdClient<WatcherListener> implements EtcdClient {
 
     protected static final Logger logger = LoggerFactory.getLogger(AbstractEtcdClient.class);
@@ -151,7 +153,7 @@ public abstract class AbstractEtcdClient<WatcherListener> implements EtcdClient 
         if (StringUtils.isEmpty(path)) {
             throw new IllegalArgumentException("path is required, actual null or ''");
         }
-        return (path.charAt(0) != '/') ? (Constants.PATH_SEPARATOR + path) : path;
+        return (path.charAt(0) != '/') ? (PATH_SEPARATOR + path) : path;
     }
 
     protected void createParentIfAbsent(String fixedPath) {

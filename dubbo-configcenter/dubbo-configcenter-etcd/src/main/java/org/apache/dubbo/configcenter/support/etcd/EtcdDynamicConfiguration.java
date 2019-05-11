@@ -40,7 +40,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.dubbo.common.Constants.CONFIG_NAMESPACE_KEY;
-import static org.apache.dubbo.common.Constants.PATH_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 
 /**
  * The etcd implementation of {@link DynamicConfiguration}
