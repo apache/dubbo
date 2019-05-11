@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.thrift;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
@@ -116,7 +117,7 @@ public class ThriftProtocol extends AbstractProtocol {
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
 
         // can use thrift codec only
-        URL url = invoker.getUrl().addParameter(Constants.CODEC_KEY, ThriftCodec.NAME);
+        URL url = invoker.getUrl().addParameter(RemotingConstants.CODEC_KEY, ThriftCodec.NAME);
         // find server.
         String key = url.getAddress();
         // client can expose a service for server to invoke only.
@@ -183,7 +184,7 @@ public class ThriftProtocol extends AbstractProtocol {
 
         ExchangeClient client;
 
-        url = url.addParameter(Constants.CODEC_KEY, ThriftCodec.NAME);
+        url = url.addParameter(RemotingConstants.CODEC_KEY, ThriftCodec.NAME);
 
         try {
             client = Exchangers.connect(url);
@@ -198,8 +199,8 @@ public class ThriftProtocol extends AbstractProtocol {
 
     private ExchangeServer getServer(URL url) {
         // enable sending readonly event when server closes by default
-        url = url.addParameterIfAbsent(Constants.CHANNEL_READONLYEVENT_SENT_KEY, Boolean.TRUE.toString());
-        String str = url.getParameter(Constants.SERVER_KEY, Constants.DEFAULT_REMOTING_SERVER);
+        url = url.addParameterIfAbsent(RemotingConstants.CHANNEL_READONLYEVENT_SENT_KEY, Boolean.TRUE.toString());
+        String str = url.getParameter(RemotingConstants.SERVER_KEY, RemotingConstants.DEFAULT_REMOTING_SERVER);
 
         if (str != null && str.length() > 0 && !ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(str)) {
             throw new RpcException("Unsupported server type: " + str + ", url: " + url);
@@ -211,7 +212,7 @@ public class ThriftProtocol extends AbstractProtocol {
         } catch (RemotingException e) {
             throw new RpcException("Fail to start server(url: " + url + ") " + e.getMessage(), e);
         }
-        str = url.getParameter(Constants.CLIENT_KEY);
+        str = url.getParameter(RemotingConstants.CLIENT_KEY);
         if (str != null && str.length() > 0) {
             Set<String> supportedTypes = ExtensionLoader.getExtensionLoader(Transporter.class).getSupportedExtensions();
             if (!supportedTypes.contains(str)) {

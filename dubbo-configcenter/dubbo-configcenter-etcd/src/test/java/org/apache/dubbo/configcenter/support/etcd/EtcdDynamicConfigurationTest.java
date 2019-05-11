@@ -120,7 +120,6 @@ public class EtcdDynamicConfigurationTest {
 
     private void put(String key, String value) {
         try {
-
             client.getKVClient().put(ByteSequence.from(key, UTF_8), ByteSequence.from(value, UTF_8)).get();
         } catch (Exception e) {
             System.out.println("Error put value to etcd.");

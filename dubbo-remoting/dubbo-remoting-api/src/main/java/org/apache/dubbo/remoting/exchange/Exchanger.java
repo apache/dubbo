@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.remoting.exchange;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.remoting.RemotingException;
@@ -39,7 +39,7 @@ public interface Exchanger {
      * @param handler
      * @return message server
      */
-    @Adaptive({Constants.EXCHANGER_KEY})
+    @Adaptive({RemotingConstants.EXCHANGER_KEY})
     ExchangeServer bind(URL url, ExchangeHandler handler) throws RemotingException;
 
     /**
@@ -49,7 +49,7 @@ public interface Exchanger {
      * @param handler
      * @return message channel
      */
-    @Adaptive({Constants.EXCHANGER_KEY})
+    @Adaptive({RemotingConstants.EXCHANGER_KEY})
     ExchangeClient connect(URL url, ExchangeHandler handler) throws RemotingException;
 
 }

@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.remoting.transport.netty;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.remoting.Codec2;
 import org.apache.dubbo.remoting.buffer.DynamicChannelBuffer;
 
@@ -56,8 +56,8 @@ final class NettyCodecAdapter {
         this.codec = codec;
         this.url = url;
         this.handler = handler;
-        int b = url.getPositiveParameter(Constants.BUFFER_KEY, Constants.DEFAULT_BUFFER_SIZE);
-        this.bufferSize = b >= Constants.MIN_BUFFER_SIZE && b <= Constants.MAX_BUFFER_SIZE ? b : Constants.DEFAULT_BUFFER_SIZE;
+        int b = url.getPositiveParameter(RemotingConstants.BUFFER_KEY, RemotingConstants.DEFAULT_BUFFER_SIZE);
+        this.bufferSize = b >= RemotingConstants.MIN_BUFFER_SIZE && b <= RemotingConstants.MAX_BUFFER_SIZE ? b : RemotingConstants.DEFAULT_BUFFER_SIZE;
     }
 
     public ChannelHandler getEncoder() {

@@ -17,8 +17,8 @@
 package org.apache.dubbo.remoting.codec;
 
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.io.Bytes;
 import org.apache.dubbo.common.io.UnsafeByteArrayOutputStream;
@@ -32,7 +32,6 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.codec.ExchangeCodec;
 import org.apache.dubbo.remoting.telnet.codec.TelnetCodec;
 
-import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,7 +64,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     private static final short MAGIC = (short) 0xdabb;
     private static final byte MAGIC_HIGH = (byte) Bytes.short2bytes(MAGIC)[0];
     private static final byte MAGIC_LOW = (byte) Bytes.short2bytes(MAGIC)[1];
-    Serialization serialization = getSerialization(Constants.DEFAULT_REMOTING_SERIALIZATION);
+    Serialization serialization = getSerialization(RemotingConstants.DEFAULT_REMOTING_SERIALIZATION);
 
     private static Serialization getSerialization(String name) {
         Serialization serialization = ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(name);
@@ -443,7 +442,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         Request request = new Request(1L);
         request.setData("hello");
         ChannelBuffer encodeBuffer = ChannelBuffers.dynamicBuffer(512);
-        AbstractMockChannel channel = getCliendSideChannel(url.addParameter(Constants.PAYLOAD_KEY, 4));
+        AbstractMockChannel channel = getCliendSideChannel(url.addParameter(RemotingConstants.PAYLOAD_KEY, 4));
         try {
             codec.encode(channel, encodeBuffer, request);
             Assertions.fail();
@@ -454,7 +453,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         Response response = new Response(1L);
         response.setResult("hello");
         encodeBuffer = ChannelBuffers.dynamicBuffer(512);
-        channel = getServerSideChannel(url.addParameter(Constants.PAYLOAD_KEY, 4));
+        channel = getServerSideChannel(url.addParameter(RemotingConstants.PAYLOAD_KEY, 4));
         codec.encode(channel, encodeBuffer, response);
         Assertions.assertTrue(channel.getReceivedMessage() instanceof Response);
         Response receiveMessage = (Response) channel.getReceivedMessage();

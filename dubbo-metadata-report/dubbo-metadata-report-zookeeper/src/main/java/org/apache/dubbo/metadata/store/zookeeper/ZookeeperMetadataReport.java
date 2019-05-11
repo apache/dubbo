@@ -20,13 +20,10 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.support.AbstractMetadataReport;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
-
-import java.util.List;
 
 /**
  * ZookeeperMetadataReport
@@ -34,9 +31,6 @@ import java.util.List;
 public class ZookeeperMetadataReport extends AbstractMetadataReport {
 
     private final static Logger logger = LoggerFactory.getLogger(ZookeeperMetadataReport.class);
-
-    private final static String DEFAULT_ROOT = "dubbo";
-    private final static String METADATA_NODE_NAME = "service.data";
 
     private final String root;
 
@@ -53,16 +47,6 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
         }
         this.root = group;
         zkClient = zookeeperTransporter.connect(url);
-    }
-
-    void deletePath(String category) {
-        List<String> urlStrs = zkClient.getChildren(category);
-        if (CollectionUtils.isEmpty(urlStrs)) {
-            return;
-        }
-        for (String urlStr : urlStrs) {
-            zkClient.delete(category + Constants.PATH_SEPARATOR + urlStr);
-        }
     }
 
     String toRootDir() {
@@ -87,7 +71,7 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
     }
 
     String getNodePath(MetadataIdentifier metadataIdentifier) {
-        return toRootDir() + metadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.PATH) + Constants.PATH_SEPARATOR + METADATA_NODE_NAME;
+        return toRootDir() + metadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.PATH);
     }
 
 
