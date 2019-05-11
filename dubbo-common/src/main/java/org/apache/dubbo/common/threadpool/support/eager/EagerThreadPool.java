@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.common.threadpool.support.eager;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import org.apache.dubbo.common.threadpool.ThreadPool;
@@ -29,12 +28,12 @@ import java.util.concurrent.TimeUnit;
 import static org.apache.dubbo.common.constants.CommonConstants.ALIVE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CORE_THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_ALIVE;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CORE_THREADS;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_QUEUES;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREAD_NAME;
 import static org.apache.dubbo.common.constants.CommonConstants.QUEUES_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CORE_THREADS;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREAD_NAME;
 
 /**
  * EagerThreadPool
