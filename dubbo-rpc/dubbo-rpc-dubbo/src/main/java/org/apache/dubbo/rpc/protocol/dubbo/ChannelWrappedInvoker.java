@@ -34,6 +34,11 @@ import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 
 import java.net.InetSocketAddress;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+
 /**
  * Wrap the existing invoker on the channel.
  */
@@ -44,7 +49,7 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
     private final ExchangeClient currentClient;
 
     ChannelWrappedInvoker(Class<T> serviceType, Channel channel, URL url, String serviceKey) {
-        super(serviceType, url, new String[]{Constants.GROUP_KEY, Constants.TOKEN_KEY, Constants.TIMEOUT_KEY});
+        super(serviceType, url, new String[]{GROUP_KEY, Constants.TOKEN_KEY, TIMEOUT_KEY});
         this.channel = channel;
         this.serviceKey = serviceKey;
         this.currentClient = new HeaderExchangeClient(new ChannelWrapper(this.channel), false);
@@ -54,7 +59,7 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
     protected Result doInvoke(Invocation invocation) throws Throwable {
         RpcInvocation inv = (RpcInvocation) invocation;
         // use interface's name as service path to export if it's not found on client side
-        inv.setAttachment(Constants.PATH_KEY, getInterface().getName());
+        inv.setAttachment(PATH_KEY, getInterface().getName());
         inv.setAttachment(Constants.CALLBACK_SERVICE_KEY, serviceKey);
 
         try {
@@ -62,7 +67,7 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
                 currentClient.send(inv, getUrl().getMethodParameter(invocation.getMethodName(), Constants.SENT_KEY, false));
                 return new RpcResult();
             }
-            int timeout = getUrl().getMethodParameter(invocation.getMethodName(), Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+            int timeout = getUrl().getMethodParameter(invocation.getMethodName(), TIMEOUT_KEY, DEFAULT_TIMEOUT);
             if (timeout > 0) {
                 return (Result) currentClient.request(inv, timeout).get();
             } else {

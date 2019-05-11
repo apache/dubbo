@@ -44,6 +44,9 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+
 /**
  * http rpc support.
  */
@@ -119,7 +122,7 @@ public class HessianProtocol extends AbstractProxyProtocol {
             factory.setHessianProxyFactory(hessianProxyFactory);
             hessianProxyFactory.setConnectionFactory(factory);
         }
-        int timeout = url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+        int timeout = url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
         hessianProxyFactory.setConnectTimeout(timeout);
         hessianProxyFactory.setReadTimeout(timeout);
         return (T) hessianProxyFactory.create(serviceType, url.setProtocol("http").toJavaURL(), Thread.currentThread().getContextClassLoader());

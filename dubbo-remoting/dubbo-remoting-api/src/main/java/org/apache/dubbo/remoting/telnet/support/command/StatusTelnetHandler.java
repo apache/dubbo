@@ -33,6 +33,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+
 /**
  * StatusTelnetHandler
  */
@@ -81,7 +83,7 @@ public class StatusTelnetHandler implements TelnetHandler {
         String status = channel.getUrl().getParameter("status");
         Map<String, Status> statuses = new HashMap<String, Status>();
         if (CollectionUtils.isNotEmptyMap(statuses)) {
-            String[] ss = Constants.COMMA_SPLIT_PATTERN.split(status);
+            String[] ss = COMMA_SPLIT_PATTERN.split(status);
             for (String s : ss) {
                 StatusChecker handler = extensionLoader.getExtension(s);
                 Status stat;

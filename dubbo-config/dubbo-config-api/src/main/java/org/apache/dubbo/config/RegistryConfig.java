@@ -22,6 +22,9 @@ import org.apache.dubbo.config.support.Parameter;
 
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+
 /**
  * RegistryConfig
  *
@@ -157,7 +160,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setProtocol(String protocol) {
-        checkName(Constants.PROTOCOL_KEY, protocol);
+        checkName(PROTOCOL_KEY, protocol);
         this.protocol = protocol;
         this.updateIdIfAbsent(protocol);
     }
@@ -239,7 +242,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setFile(String file) {
-        checkPathLength(Constants.FILE_KEY, file);
+        checkPathLength(FILE_KEY, file);
         this.file = file;
     }
 

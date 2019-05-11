@@ -48,6 +48,7 @@ import java.util.HashSet;
 import java.util.Map;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.apache.dubbo.common.constants.CommonConstants.IO_THREADS_KEY;
 
 /**
  * NettyServer
@@ -74,7 +75,7 @@ public class NettyServer extends AbstractServer implements Server {
         bootstrap = new ServerBootstrap();
 
         bossGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("NettyServerBoss", true));
-        workerGroup = new NioEventLoopGroup(getUrl().getPositiveParameter(Constants.IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS),
+        workerGroup = new NioEventLoopGroup(getUrl().getPositiveParameter(IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS),
                 new DefaultThreadFactory("NettyServerWorker", true));
 
         final NettyServerHandler nettyServerHandler = new NettyServerHandler(getUrl(), this);

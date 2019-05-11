@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
+
 /**
  * Utilities for manipulating configurations from different sources
  */
@@ -36,7 +38,7 @@ public class ConfigurationUtils {
     // FIXME
     @SuppressWarnings("deprecation")
     public static int getServerShutdownTimeout() {
-        int timeout = Constants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
+        int timeout = DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
         Configuration configuration = Environment.getInstance().getConfiguration();
         String value = StringUtils.trim(configuration.getString(Constants.SHUTDOWN_WAIT_KEY));
 

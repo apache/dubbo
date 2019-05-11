@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+
 /**
  * AbstractZookeeperTransporter is abstract implements of ZookeeperTransporter.
  * <p>
@@ -135,8 +137,8 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
     URL toClientURL(URL url) {
         Map<String, String> parameterMap = new HashMap<>();
         // for CuratorZookeeperClient
-        if (url.getParameter(Constants.TIMEOUT_KEY) != null) {
-            parameterMap.put(Constants.TIMEOUT_KEY, url.getParameter(Constants.TIMEOUT_KEY));
+        if (url.getParameter(TIMEOUT_KEY) != null) {
+            parameterMap.put(TIMEOUT_KEY, url.getParameter(TIMEOUT_KEY));
         }
         if (url.getParameter(Constants.BACKUP_KEY) != null) {
             parameterMap.put(Constants.BACKUP_KEY, url.getParameter(Constants.BACKUP_KEY));

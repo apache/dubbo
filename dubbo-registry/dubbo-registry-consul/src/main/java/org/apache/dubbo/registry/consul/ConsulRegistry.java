@@ -24,6 +24,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.support.FailbackRegistry;
+import org.apache.dubbo.rpc.RpcException;
 
 import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.QueryParams;
@@ -32,24 +33,23 @@ import com.ecwid.consul.v1.agent.model.NewService;
 import com.ecwid.consul.v1.catalog.CatalogServicesRequest;
 import com.ecwid.consul.v1.health.HealthServicesRequest;
 import com.ecwid.consul.v1.health.model.HealthService;
-import org.apache.dubbo.rpc.RpcException;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static java.util.concurrent.Executors.newCachedThreadPool;
-import static org.apache.dubbo.common.Constants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 
 /**
  * registry center implementation for consul

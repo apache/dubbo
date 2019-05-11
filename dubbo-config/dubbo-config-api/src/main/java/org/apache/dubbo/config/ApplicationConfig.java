@@ -27,6 +27,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
+
 
 /**
  * The application info
@@ -130,7 +133,7 @@ public class ApplicationConfig extends AbstractConfig {
         setName(name);
     }
 
-    @Parameter(key = Constants.APPLICATION_KEY, required = true, useKeyAsProperty = false)
+    @Parameter(key = APPLICATION_KEY, required = true, useKeyAsProperty = false)
     public String getName() {
         return name;
     }
@@ -267,7 +270,7 @@ public class ApplicationConfig extends AbstractConfig {
         this.isDefault = isDefault;
     }
 
-    @Parameter(key = Constants.DUMP_DIRECTORY)
+    @Parameter(key = DUMP_DIRECTORY)
     public String getDumpDirectory() {
         return dumpDirectory;
     }

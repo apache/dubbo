@@ -17,25 +17,12 @@
 
 package org.apache.dubbo.common.constants;
 
-import static org.apache.dubbo.common.Constants.APPLICATION_KEY;
-import static org.apache.dubbo.common.Constants.CLUSTER_KEY;
-import static org.apache.dubbo.common.Constants.CODEC_KEY;
-import static org.apache.dubbo.common.Constants.CONNECTIONS_KEY;
-import static org.apache.dubbo.common.Constants.DEPRECATED_KEY;
-import static org.apache.dubbo.common.Constants.DUBBO_VERSION_KEY;
-import static org.apache.dubbo.common.Constants.EXCHANGER_KEY;
-import static org.apache.dubbo.common.Constants.GROUP_KEY;
-import static org.apache.dubbo.common.Constants.LOADBALANCE_KEY;
-import static org.apache.dubbo.common.Constants.MOCK_KEY;
-import static org.apache.dubbo.common.Constants.PATH_KEY;
-import static org.apache.dubbo.common.Constants.RELEASE_KEY;
-import static org.apache.dubbo.common.Constants.SERIALIZATION_KEY;
-import static org.apache.dubbo.common.Constants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.Constants.TIMESTAMP_KEY;
-import static org.apache.dubbo.common.Constants.TOKEN_KEY;
-import static org.apache.dubbo.common.Constants.VERSION_KEY;
-import static org.apache.dubbo.common.Constants.WARMUP_KEY;
-import static org.apache.dubbo.common.Constants.WEIGHT_KEY;
+
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
 
 public interface RegistryConstants {
     String REGISTER_KEY = "register";
@@ -114,8 +101,7 @@ public interface RegistryConstants {
 
     String COMPATIBLE_CONFIG_KEY = "compatible_config";
 
-    String[] DEFAULT_REGISTER_PROVIDER_KEYS = {APPLICATION_KEY, CODEC_KEY, EXCHANGER_KEY, SERIALIZATION_KEY, CLUSTER_KEY, CONNECTIONS_KEY, DEPRECATED_KEY,
-            GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY, WEIGHT_KEY, TIMESTAMP_KEY, DUBBO_VERSION_KEY, RELEASE_KEY};
+
 
     String[] DEFAULT_REGISTER_CONSUMER_KEYS = {APPLICATION_KEY, VERSION_KEY, GROUP_KEY, DUBBO_VERSION_KEY, RELEASE_KEY};
 

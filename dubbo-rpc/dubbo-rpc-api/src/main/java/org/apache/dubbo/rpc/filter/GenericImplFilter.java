@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.beanutil.JavaBeanAccessor;
 import org.apache.dubbo.common.beanutil.JavaBeanDescriptor;
 import org.apache.dubbo.common.beanutil.JavaBeanSerializeUtil;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -42,7 +43,7 @@ import java.lang.reflect.Method;
 /**
  * GenericImplInvokerFilter
  */
-@Activate(group = Constants.CONSUMER, value = Constants.GENERIC_KEY, order = 20000)
+@Activate(group = CommonConstants.CONSUMER, value = Constants.GENERIC_KEY, order = 20000)
 public class GenericImplFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(GenericImplFilter.class);

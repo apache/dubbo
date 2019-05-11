@@ -31,6 +31,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+
 /**
  * AbstractProxyProtocol
  */
@@ -131,8 +134,8 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
 
     protected String getAddr(URL url) {
         String bindIp = url.getParameter(Constants.BIND_IP_KEY, url.getHost());
-        if (url.getParameter(Constants.ANYHOST_KEY, false)) {
-            bindIp = Constants.ANYHOST_VALUE;
+        if (url.getParameter(ANYHOST_KEY, false)) {
+            bindIp = ANYHOST_VALUE;
         }
         return NetUtils.getIpByHost(bindIp) + ":" + url.getParameter(Constants.BIND_PORT_KEY, url.getPort());
     }
