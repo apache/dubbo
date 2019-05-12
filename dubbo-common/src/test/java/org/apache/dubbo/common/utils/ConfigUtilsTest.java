@@ -16,8 +16,9 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.threadpool.ThreadPool;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,12 +30,12 @@ import java.util.List;
 import java.util.Properties;
 
 import static java.util.Arrays.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 public class ConfigUtilsTest {
     @BeforeEach
@@ -119,19 +120,19 @@ public class ConfigUtilsTest {
     @Test
     public void testGetProperties1() throws Exception {
         try {
-            System.setProperty(Constants.DUBBO_PROPERTIES_KEY, "properties.load");
+            System.setProperty(CommonConstants.DUBBO_PROPERTIES_KEY, "properties.load");
             Properties p = ConfigUtils.getProperties();
             assertThat((String) p.get("a"), equalTo("12"));
             assertThat((String) p.get("b"), equalTo("34"));
             assertThat((String) p.get("c"), equalTo("56"));
         } finally {
-            System.clearProperty(Constants.DUBBO_PROPERTIES_KEY);
+            System.clearProperty(CommonConstants.DUBBO_PROPERTIES_KEY);
         }
     }
 
     @Test
     public void testGetProperties2() throws Exception {
-        System.clearProperty(Constants.DUBBO_PROPERTIES_KEY);
+        System.clearProperty(CommonConstants.DUBBO_PROPERTIES_KEY);
         Properties p = ConfigUtils.getProperties();
         assertThat((String) p.get("dubbo"), equalTo("properties"));
     }

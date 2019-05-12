@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -33,6 +33,10 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PREFIX;
 
 public class ConfigUtils {
 
@@ -88,7 +92,7 @@ public class ConfigUtils {
         List<String> names = new ArrayList<String>();
 
         // add initial values
-        String[] configs = (cfg == null || cfg.trim().length() == 0) ? new String[0] : Constants.COMMA_SPLIT_PATTERN.split(cfg);
+        String[] configs = (cfg == null || cfg.trim().length() == 0) ? new String[0] : COMMA_SPLIT_PATTERN.split(cfg);
         for (String config : configs) {
             if (config != null && config.trim().length() > 0) {
                 names.add(config);
@@ -96,22 +100,22 @@ public class ConfigUtils {
         }
 
         // -default is not included
-        if (!names.contains(Constants.REMOVE_VALUE_PREFIX + Constants.DEFAULT_KEY)) {
+        if (!names.contains(REMOVE_VALUE_PREFIX + DEFAULT_KEY)) {
             // add default extension
-            int i = names.indexOf(Constants.DEFAULT_KEY);
+            int i = names.indexOf(DEFAULT_KEY);
             if (i > 0) {
                 names.addAll(i, defaults);
             } else {
                 names.addAll(0, defaults);
             }
-            names.remove(Constants.DEFAULT_KEY);
+            names.remove(DEFAULT_KEY);
         } else {
-            names.remove(Constants.DEFAULT_KEY);
+            names.remove(DEFAULT_KEY);
         }
 
         // merge - configuration
         for (String name : new ArrayList<String>(names)) {
-            if (name.startsWith(Constants.REMOVE_VALUE_PREFIX)) {
+            if (name.startsWith(REMOVE_VALUE_PREFIX)) {
                 names.remove(name);
                 names.remove(name.substring(1));
             }
@@ -144,11 +148,11 @@ public class ConfigUtils {
         if (PROPERTIES == null) {
             synchronized (ConfigUtils.class) {
                 if (PROPERTIES == null) {
-                    String path = System.getProperty(Constants.DUBBO_PROPERTIES_KEY);
+                    String path = System.getProperty(CommonConstants.DUBBO_PROPERTIES_KEY);
                     if (path == null || path.length() == 0) {
-                        path = System.getenv(Constants.DUBBO_PROPERTIES_KEY);
+                        path = System.getenv(CommonConstants.DUBBO_PROPERTIES_KEY);
                         if (path == null || path.length() == 0) {
-                            path = Constants.DEFAULT_DUBBO_PROPERTIES;
+                            path = CommonConstants.DEFAULT_DUBBO_PROPERTIES;
                         }
                     }
                     PROPERTIES = ConfigUtils.loadProperties(path, false, true);

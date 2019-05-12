@@ -33,6 +33,8 @@ import org.apache.dubbo.rpc.Protocol;
 
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
+
 /**
  * ProtocolConfig
  *
@@ -269,7 +271,7 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     public void setThreadpool(String threadpool) {
-        checkExtension(ThreadPool.class, Constants.THREADPOOL_KEY, threadpool);
+        checkExtension(ThreadPool.class, THREADPOOL_KEY, threadpool);
         this.threadpool = threadpool;
     }
 

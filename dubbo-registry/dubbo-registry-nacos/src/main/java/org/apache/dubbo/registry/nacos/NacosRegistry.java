@@ -52,11 +52,14 @@ import static org.apache.dubbo.common.Constants.CATEGORY_KEY;
 import static org.apache.dubbo.common.Constants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.Constants.CONSUMERS_CATEGORY;
 import static org.apache.dubbo.common.Constants.DEFAULT_CATEGORY;
-import static org.apache.dubbo.common.Constants.GROUP_KEY;
-import static org.apache.dubbo.common.Constants.INTERFACE_KEY;
 import static org.apache.dubbo.common.Constants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.Constants.ROUTERS_CATEGORY;
-import static org.apache.dubbo.common.Constants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
 /**
  * Nacos {@link Registry}
@@ -381,14 +384,14 @@ public class NacosRegistry extends FailbackRegistry {
      * @return non-null array
      */
     private String[] getCategories(URL url) {
-        return Constants.ANY_VALUE.equals(url.getServiceInterface()) ?
+        return ANY_VALUE.equals(url.getServiceInterface()) ?
                 ALL_SUPPORTED_CATEGORIES : of(Constants.DEFAULT_CATEGORY);
     }
 
     private URL buildURL(Instance instance) {
         Map<String, String> metadata = instance.getMetadata();
-        String protocol = metadata.get(Constants.PROTOCOL_KEY);
-        String path = metadata.get(Constants.PATH_KEY);
+        String protocol = metadata.get(PROTOCOL_KEY);
+        String path = metadata.get(PATH_KEY);
         return new URL(protocol,
                 instance.getIp(),
                 instance.getPort(),
@@ -400,8 +403,8 @@ public class NacosRegistry extends FailbackRegistry {
         // Append default category if absent
         String category = url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY);
         URL newURL = url.addParameter(Constants.CATEGORY_KEY, category);
-        newURL = newURL.addParameter(Constants.PROTOCOL_KEY, url.getProtocol());
-        newURL = newURL.addParameter(Constants.PATH_KEY, url.getPath());
+        newURL = newURL.addParameter(PROTOCOL_KEY, url.getProtocol());
+        newURL = newURL.addParameter(PATH_KEY, url.getPath());
         String ip = url.getHost();
         int port = url.getPort();
         Instance instance = new Instance();

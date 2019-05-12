@@ -20,14 +20,17 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+
 public class ProtocolUtils {
 
     private ProtocolUtils() {
     }
 
     public static String serviceKey(URL url) {
-        return serviceKey(url.getPort(), url.getPath(), url.getParameter(Constants.VERSION_KEY),
-                url.getParameter(Constants.GROUP_KEY));
+        return serviceKey(url.getPort(), url.getPath(), url.getParameter(VERSION_KEY),
+                url.getParameter(GROUP_KEY));
     }
 
     public static String serviceKey(int port, String serviceName, String serviceVersion, String serviceGroup) {

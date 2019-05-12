@@ -24,6 +24,8 @@ import org.apache.dubbo.registry.Registry;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
+
 /**
  * TODO Comment of MockRegistry
  */
@@ -84,7 +86,7 @@ public class MockRegistry implements Registry {
 
         urls.add(url.setProtocol("mockprotocol")
                 .removeParameter(Constants.CATEGORY_KEY)
-                .addParameter(Constants.METHODS_KEY, "sayHello"));
+                .addParameter(METHODS_KEY, "sayHello"));
 
         listener.notify(urls);
     }

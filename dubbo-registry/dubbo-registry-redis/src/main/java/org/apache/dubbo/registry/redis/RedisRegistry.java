@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.registry.redis;
 
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
@@ -32,6 +31,8 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.support.FailbackRegistry;
 import org.apache.dubbo.rpc.RpcException;
+
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPubSub;
@@ -54,6 +55,13 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
 /**
  * RedisRegistry
@@ -143,17 +151,17 @@ public class RedisRegistry extends FailbackRegistry {
                 port = DEFAULT_REDIS_PORT;
             }
             this.jedisPools.put(address, new JedisPool(config, host, port,
-                    url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT), StringUtils.isEmpty(url.getPassword()) ? null : url.getPassword(),
+                    url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT), StringUtils.isEmpty(url.getPassword()) ? null : url.getPassword(),
                     url.getParameter("db.index", 0)));
         }
 
         this.reconnectPeriod = url.getParameter(Constants.REGISTRY_RECONNECT_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RECONNECT_PERIOD);
-        String group = url.getParameter(Constants.GROUP_KEY, DEFAULT_ROOT);
-        if (!group.startsWith(Constants.PATH_SEPARATOR)) {
-            group = Constants.PATH_SEPARATOR + group;
+        String group = url.getParameter(GROUP_KEY, DEFAULT_ROOT);
+        if (!group.startsWith(PATH_SEPARATOR)) {
+            group = PATH_SEPARATOR + group;
         }
-        if (!group.endsWith(Constants.PATH_SEPARATOR)) {
-            group = group + Constants.PATH_SEPARATOR;
+        if (!group.endsWith(PATH_SEPARATOR)) {
+            group = group + PATH_SEPARATOR;
         }
         this.root = group;
 
@@ -195,7 +203,7 @@ public class RedisRegistry extends FailbackRegistry {
 
     // The monitoring center is responsible for deleting outdated dirty data
     private void clean(Jedis jedis) {
-        Set<String> keys = jedis.keys(root + Constants.ANY_VALUE);
+        Set<String> keys = jedis.keys(root + ANY_VALUE);
         if (CollectionUtils.isNotEmpty(keys)) {
             for (String key : keys) {
                 Map<String, String> values = jedis.hgetAll(key);
@@ -341,7 +349,7 @@ public class RedisRegistry extends FailbackRegistry {
             JedisPool jedisPool = entry.getValue();
             try {
                 try (Jedis jedis = jedisPool.getResource()) {
-                    if (service.endsWith(Constants.ANY_VALUE)) {
+                    if (service.endsWith(ANY_VALUE)) {
                         admin = true;
                         Set<String> keys = jedis.keys(service);
                         if (CollectionUtils.isNotEmpty(keys)) {
@@ -356,7 +364,7 @@ public class RedisRegistry extends FailbackRegistry {
                             }
                         }
                     } else {
-                        doNotify(jedis, jedis.keys(service + Constants.PATH_SEPARATOR + Constants.ANY_VALUE), url, Collections.singletonList(listener));
+                        doNotify(jedis, jedis.keys(service + PATH_SEPARATOR + ANY_VALUE), url, Collections.singletonList(listener));
                     }
                     success = true;
                     break; // Just read one server's data
@@ -394,14 +402,14 @@ public class RedisRegistry extends FailbackRegistry {
         List<String> categories = Arrays.asList(url.getParameter(Constants.CATEGORY_KEY, new String[0]));
         String consumerService = url.getServiceInterface();
         for (String key : keys) {
-            if (!Constants.ANY_VALUE.equals(consumerService)) {
+            if (!ANY_VALUE.equals(consumerService)) {
                 String providerService = toServiceName(key);
                 if (!providerService.equals(consumerService)) {
                     continue;
                 }
             }
             String category = toCategoryName(key);
-            if (!categories.contains(Constants.ANY_VALUE) && !categories.contains(category)) {
+            if (!categories.contains(ANY_VALUE) && !categories.contains(category)) {
                 continue;
             }
             List<URL> urls = new ArrayList<>();
@@ -420,7 +428,7 @@ public class RedisRegistry extends FailbackRegistry {
             if (urls.isEmpty()) {
                 urls.add(URLBuilder.from(url)
                         .setProtocol(Constants.EMPTY_PROTOCOL)
-                        .setAddress(Constants.ANYHOST_VALUE)
+                        .setAddress(ANYHOST_VALUE)
                         .setPath(toServiceName(key))
                         .addParameter(Constants.CATEGORY_KEY, category)
                         .build());
@@ -444,16 +452,16 @@ public class RedisRegistry extends FailbackRegistry {
     }
 
     private String toCategoryName(String categoryPath) {
-        int i = categoryPath.lastIndexOf(Constants.PATH_SEPARATOR);
+        int i = categoryPath.lastIndexOf(PATH_SEPARATOR);
         return i > 0 ? categoryPath.substring(i + 1) : categoryPath;
     }
 
     private String toServicePath(String categoryPath) {
         int i;
         if (categoryPath.startsWith(root)) {
-            i = categoryPath.indexOf(Constants.PATH_SEPARATOR, root.length());
+            i = categoryPath.indexOf(PATH_SEPARATOR, root.length());
         } else {
-            i = categoryPath.indexOf(Constants.PATH_SEPARATOR);
+            i = categoryPath.indexOf(PATH_SEPARATOR);
         }
         return i > 0 ? categoryPath.substring(0, i) : categoryPath;
     }
@@ -463,7 +471,7 @@ public class RedisRegistry extends FailbackRegistry {
     }
 
     private String toCategoryPath(URL url) {
-        return toServicePath(url) + Constants.PATH_SEPARATOR + url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY);
+        return toServicePath(url) + PATH_SEPARATOR + url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY);
     }
 
     private class NotifySub extends JedisPubSub {
@@ -567,7 +575,7 @@ public class RedisRegistry extends FailbackRegistry {
                                 try {
                                     jedis = jedisPool.getResource();
                                     try {
-                                        if (service.endsWith(Constants.ANY_VALUE)) {
+                                        if (service.endsWith(ANY_VALUE)) {
                                             if (first) {
                                                 first = false;
                                                 Set<String> keys = jedis.keys(service);
@@ -585,7 +593,7 @@ public class RedisRegistry extends FailbackRegistry {
                                                 doNotify(jedis, service);
                                                 resetSkip();
                                             }
-                                            jedis.psubscribe(new NotifySub(jedisPool), service + Constants.PATH_SEPARATOR + Constants.ANY_VALUE); // blocking
+                                            jedis.psubscribe(new NotifySub(jedisPool), service + PATH_SEPARATOR + ANY_VALUE); // blocking
                                         }
                                         break;
                                     } finally {

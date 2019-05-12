@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.cluster.router.tag;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -232,7 +233,7 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
 
         Invoker<T> invoker = invokers.get(0);
         URL url = invoker.getUrl();
-        String providerApplication = url.getParameter(Constants.REMOTE_APPLICATION_KEY);
+        String providerApplication = url.getParameter(CommonConstants.REMOTE_APPLICATION_KEY);
 
         if (StringUtils.isEmpty(providerApplication)) {
             logger.error("TagRouter must getConfig from or subscribe to a specific application, but the application " +

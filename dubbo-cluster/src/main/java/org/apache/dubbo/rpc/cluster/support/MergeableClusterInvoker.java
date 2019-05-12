@@ -47,6 +47,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+
 @SuppressWarnings("unchecked")
 public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
@@ -68,7 +72,7 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
                         return invoker.invoke(invocation);
                     } catch (RpcException e) {
                         if (e.isNoInvokerAvailableAfterFilter()) {
-                            log.debug("No available provider for service" + directory.getUrl().getServiceKey() + " on group " + invoker.getUrl().getParameter(Constants.GROUP_KEY) + ", will continue to try another group.");
+                            log.debug("No available provider for service" + directory.getUrl().getServiceKey() + " on group " + invoker.getUrl().getParameter(GROUP_KEY) + ", will continue to try another group.");
                         } else {
                             throw e;
                         }
@@ -101,7 +105,7 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
         List<Result> resultList = new ArrayList<Result>(results.size());
 
-        int timeout = getUrl().getMethodParameter(invocation.getMethodName(), Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+        int timeout = getUrl().getMethodParameter(invocation.getMethodName(), TIMEOUT_KEY, DEFAULT_TIMEOUT);
         for (Map.Entry<String, Future<Result>> entry : results.entrySet()) {
             Future<Result> future = entry.getValue();
             try {

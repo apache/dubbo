@@ -34,6 +34,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+
 /**
  * PerformanceClientTest
  * <p>
@@ -54,7 +57,7 @@ public class PerformanceClientTest  {
         final String server = System.getProperty("server", "127.0.0.1:9911");
         final String transporter = PerformanceUtils.getProperty(RemotingConstants.TRANSPORTER_KEY, RemotingConstants.DEFAULT_TRANSPORTER);
         final String serialization = PerformanceUtils.getProperty(RemotingConstants.SERIALIZATION_KEY, RemotingConstants.DEFAULT_REMOTING_SERIALIZATION);
-        final int timeout = PerformanceUtils.getIntProperty(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+        final int timeout = PerformanceUtils.getIntProperty(TIMEOUT_KEY, DEFAULT_TIMEOUT);
         final int length = PerformanceUtils.getIntProperty("length", 1024);
         final int connections = PerformanceUtils.getIntProperty(Constants.CONNECTIONS_KEY, 1);
         final int concurrent = PerformanceUtils.getIntProperty("concurrent", 100);

@@ -61,6 +61,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+
 /**
  * dubbo protocol support.
  */
@@ -177,10 +182,10 @@ public class DubboProtocol extends AbstractProtocol {
             }
 
             RpcInvocation invocation = new RpcInvocation(method, new Class<?>[0], new Object[0]);
-            invocation.setAttachment(Constants.PATH_KEY, url.getPath());
-            invocation.setAttachment(Constants.GROUP_KEY, url.getParameter(Constants.GROUP_KEY));
-            invocation.setAttachment(Constants.INTERFACE_KEY, url.getParameter(Constants.INTERFACE_KEY));
-            invocation.setAttachment(Constants.VERSION_KEY, url.getParameter(Constants.VERSION_KEY));
+            invocation.setAttachment(PATH_KEY, url.getPath());
+            invocation.setAttachment(GROUP_KEY, url.getParameter(GROUP_KEY));
+            invocation.setAttachment(INTERFACE_KEY, url.getParameter(INTERFACE_KEY));
+            invocation.setAttachment(VERSION_KEY, url.getParameter(VERSION_KEY));
             if (url.getParameter(Constants.STUB_EVENT_KEY, false)) {
                 invocation.setAttachment(Constants.STUB_EVENT_KEY, Boolean.TRUE.toString());
             }
@@ -226,7 +231,7 @@ public class DubboProtocol extends AbstractProtocol {
         boolean isCallBackServiceInvoke = false;
         boolean isStubServiceInvoke = false;
         int port = channel.getLocalAddress().getPort();
-        String path = inv.getAttachments().get(Constants.PATH_KEY);
+        String path = inv.getAttachments().get(PATH_KEY);
 
         // if it's callback service on client side
         isStubServiceInvoke = Boolean.TRUE.toString().equals(inv.getAttachments().get(Constants.STUB_EVENT_KEY));
@@ -241,7 +246,7 @@ public class DubboProtocol extends AbstractProtocol {
             inv.getAttachments().put(IS_CALLBACK_SERVICE_INVOKE, Boolean.TRUE.toString());
         }
 
-        String serviceKey = serviceKey(port, path, inv.getAttachments().get(Constants.VERSION_KEY), inv.getAttachments().get(Constants.GROUP_KEY));
+        String serviceKey = serviceKey(port, path, inv.getAttachments().get(VERSION_KEY), inv.getAttachments().get(GROUP_KEY));
         DubboExporter<?> exporter = (DubboExporter<?>) exporterMap.get(serviceKey);
 
         if (exporter == null) {
@@ -277,7 +282,7 @@ public class DubboProtocol extends AbstractProtocol {
             String stubServiceMethods = url.getParameter(Constants.STUB_EVENT_METHODS_KEY);
             if (stubServiceMethods == null || stubServiceMethods.length() == 0) {
                 if (logger.isWarnEnabled()) {
-                    logger.warn(new IllegalStateException("consumer [" + url.getParameter(Constants.INTERFACE_KEY) +
+                    logger.warn(new IllegalStateException("consumer [" + url.getParameter(INTERFACE_KEY) +
                             "], has set stubproxy support event ,but no stub methods founded."));
                 }
 

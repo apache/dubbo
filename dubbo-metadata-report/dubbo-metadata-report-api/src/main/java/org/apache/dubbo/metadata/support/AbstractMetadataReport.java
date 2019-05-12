@@ -51,6 +51,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+
 /**
  *
  */
@@ -80,7 +86,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     public AbstractMetadataReport(URL reportServerURL) {
         setUrl(reportServerURL);
         // Start file save timer
-        String filename = reportServerURL.getParameter(Constants.FILE_KEY, System.getProperty("user.home") + "/.dubbo/dubbo-metadata-" + reportServerURL.getParameter(Constants.APPLICATION_KEY) + "-" + reportServerURL.getAddress() + ".cache");
+        String filename = reportServerURL.getParameter(FILE_KEY, System.getProperty("user.home") + "/.dubbo/dubbo-metadata-" + reportServerURL.getParameter(APPLICATION_KEY) + "-" + reportServerURL.getAddress() + ".cache");
         File file = null;
         if (ConfigUtils.isNotEmpty(filename)) {
             file = new File(filename);
@@ -271,7 +277,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
 
     String getProtocol(URL url) {
-        String protocol = url.getParameter(Constants.SIDE_KEY);
+        String protocol = url.getParameter(SIDE_KEY);
         protocol = protocol == null ? url.getProtocol() : protocol;
         return protocol;
     }
@@ -290,9 +296,9 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         Iterator<Map.Entry<MetadataIdentifier, Object>> iterable = metadataMap.entrySet().iterator();
         while (iterable.hasNext()) {
             Map.Entry<MetadataIdentifier, Object> item = iterable.next();
-            if (Constants.PROVIDER_SIDE.equals(item.getKey().getSide())) {
+            if (PROVIDER_SIDE.equals(item.getKey().getSide())) {
                 this.storeProviderMetadata(item.getKey(), (FullServiceDefinition) item.getValue());
-            } else if (Constants.CONSUMER_SIDE.equals(item.getKey().getSide())) {
+            } else if (CONSUMER_SIDE.equals(item.getKey().getSide())) {
                 this.storeConsumerMetadata(item.getKey(), (Map) item.getValue());
             }
 

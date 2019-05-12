@@ -52,6 +52,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
+
 /**
  * AbstractRegistry. (SPI, Prototype, ThreadSafe)
  */
@@ -84,7 +88,7 @@ public abstract class AbstractRegistry implements Registry {
         setUrl(url);
         // Start file save timer
         syncSaveFile = url.getParameter(Constants.REGISTRY_FILESAVE_SYNC_KEY, false);
-        String filename = url.getParameter(Constants.FILE_KEY, System.getProperty("user.home") + "/.dubbo/dubbo-registry-" + url.getParameter(Constants.APPLICATION_KEY) + "-" + url.getAddress() + ".cache");
+        String filename = url.getParameter(FILE_KEY, System.getProperty("user.home") + "/.dubbo/dubbo-registry-" + url.getParameter(APPLICATION_KEY) + "-" + url.getAddress() + ".cache");
         File file = null;
         if (ConfigUtils.isNotEmpty(filename)) {
             file = new File(filename);
@@ -383,7 +387,7 @@ public abstract class AbstractRegistry implements Registry {
             throw new IllegalArgumentException("notify listener == null");
         }
         if ((CollectionUtils.isEmpty(urls))
-                && !Constants.ANY_VALUE.equals(url.getServiceInterface())) {
+                && !ANY_VALUE.equals(url.getServiceInterface())) {
             logger.warn("Ignore empty notify urls for subscribe url " + url);
             return;
         }

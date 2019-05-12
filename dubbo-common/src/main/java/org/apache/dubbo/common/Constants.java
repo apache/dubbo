@@ -17,157 +17,14 @@
 
 package org.apache.dubbo.common;
 
-import org.apache.dubbo.common.constants.RemotingConstants;
-
 import java.util.concurrent.ExecutorService;
-import java.util.regex.Pattern;
+
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 
 /**
  * Constants
  */
 public class Constants {
-
-    // BEGIN common
-    public static final String DUBBO = "dubbo";
-
-    public static final String PROVIDER = "provider";
-
-    public static final String CONSUMER = "consumer";
-
-    public static final String APPLICATION_KEY = "application";
-
-    public static final String REMOTE_APPLICATION_KEY = "remote.application";
-
-    public static final String ENABLED_KEY = "enabled";
-
-    public static final String DISABLED_KEY = "disabled";
-
-    public static final String DUBBO_PROPERTIES_KEY = "dubbo.properties.file";
-
-    public static final String DEFAULT_DUBBO_PROPERTIES = "dubbo.properties";
-
-    public static final String ANY_VALUE = "*";
-
-    public static final String COMMA_SEPARATOR = ",";
-
-    public static final Pattern COMMA_SPLIT_PATTERN = Pattern.compile("\\s*[,]+\\s*");
-
-    public final static String PATH_SEPARATOR = "/";
-
-    public final static String PROTOCOL_SEPARATOR = "://";
-
-    public static final String REGISTRY_SEPARATOR = "|";
-
-    public static final Pattern REGISTRY_SPLIT_PATTERN = Pattern.compile("\\s*[|;]+\\s*");
-
-    public static final String SEMICOLON_SEPARATOR = ";";
-
-    public static final Pattern SEMICOLON_SPLIT_PATTERN = Pattern.compile("\\s*[;]+\\s*");
-
-    public static final String DEFAULT_PROXY = "javassist";
-
-    public static final String DEFAULT_DIRECTORY = "dubbo";
-
-    public static final String PROTOCOL_KEY = "protocol";
-
-    public static final String DEFAULT_PROTOCOL = "dubbo";
-
-    public static final String DEFAULT_THREAD_NAME = "Dubbo";
-
-    public static final int DEFAULT_CORE_THREADS = 0;
-
-    public static final int DEFAULT_THREADS = 200;
-
-    public static final String THREADPOOL_KEY = "threadpool";
-
-    public static final String THREAD_NAME_KEY = "threadname";
-
-    public static final String CORE_THREADS_KEY = "corethreads";
-
-    public static final String THREADS_KEY = "threads";
-
-    public static final String QUEUES_KEY = "queues";
-
-    public static final String ALIVE_KEY = "alive";
-
-    public static final String DEFAULT_THREADPOOL = "limited";
-
-    public static final String DEFAULT_CLIENT_THREADPOOL = "cached";
-
-    public static final String IO_THREADS_KEY = "iothreads";
-
-    public static final int DEFAULT_QUEUES = 0;
-
-    public static final int DEFAULT_ALIVE = 60 * 1000;
-
-    public static final String TIMEOUT_KEY = "timeout";
-
-    public static final int DEFAULT_TIMEOUT = 1000;
-
-    public static final String REMOVE_VALUE_PREFIX = "-";
-
-    public static final String PROPERTIES_CHAR_SEPERATOR = "-";
-  
-    public static final String GROUP_CHAR_SEPERATOR = ":";
-
-    public static final String HIDE_KEY_PREFIX = ".";
-  
-    public static final String DEFAULT_KEY_PREFIX = "default.";
-
-    public static final String DEFAULT_KEY = "default";
-
-
-    /**
-     * Default timeout value in milliseconds for server shutdown
-     */
-    public static final int DEFAULT_SERVER_SHUTDOWN_TIMEOUT = 10000;
-
-    public static final String SIDE_KEY = "side";
-
-    public static final String PROVIDER_SIDE = "provider";
-
-    public static final String CONSUMER_SIDE = "consumer";
-
-    public static final String ANYHOST_KEY = "anyhost";
-
-    public static final String ANYHOST_VALUE = "0.0.0.0";
-
-    public static final String LOCALHOST_KEY = "localhost";
-
-    public static final String LOCALHOST_VALUE = "127.0.0.1";
-
-    public static final String METHODS_KEY = "methods";
-
-    public static final String METHOD_KEY = "method";
-
-    public static final String PID_KEY = "pid";
-
-    public static final String TIMESTAMP_KEY = "timestamp";
-
-    public static final String GROUP_KEY = "group";
-
-    public static final String PATH_KEY = "path";
-
-    public static final String INTERFACE_KEY = "interface";
-
-    public static final String FILE_KEY = "file";
-
-    public static final String DUMP_DIRECTORY = "dump.directory";
-
-    public static final String CLASSIFIER_KEY = "classifier";
-
-    public static final String VERSION_KEY = "version";
-
-    public static final String REVISION_KEY = "revision";
-
-    /**
-     * package version in the manifest
-     */
-    public static final String RELEASE_KEY = "release";
-
-    public static final int MAX_PROXY_COUNT = 65535;
-    // END common
-
     // BEGIN dubbo-remoting-api
     public static final String PAYLOAD_KEY = "payload";
     /**
@@ -791,10 +648,6 @@ public class Constants {
 
     public static final String COMPATIBLE_CONFIG_KEY = "compatible_config";
 
-    public static final String[] DEFAULT_REGISTER_PROVIDER_KEYS = {APPLICATION_KEY, RemotingConstants.CODEC_KEY, RemotingConstants.EXCHANGER_KEY, RemotingConstants.SERIALIZATION_KEY, CLUSTER_KEY, CONNECTIONS_KEY, DEPRECATED_KEY,
-            GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY, WEIGHT_KEY, TIMESTAMP_KEY, DUBBO_VERSION_KEY, RELEASE_KEY};
-
-    public static final String[] DEFAULT_REGISTER_CONSUMER_KEYS = {APPLICATION_KEY, VERSION_KEY, GROUP_KEY, DUBBO_VERSION_KEY, RELEASE_KEY};
 
     /**
      * To decide whether register center saves file synchronously, the default value is asynchronously

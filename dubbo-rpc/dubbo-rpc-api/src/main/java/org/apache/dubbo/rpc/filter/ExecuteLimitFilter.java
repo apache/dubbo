@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
@@ -32,7 +33,7 @@ import org.apache.dubbo.rpc.RpcStatus;
  * continue the same behaviour un till it is <10.
  *
  */
-@Activate(group = Constants.PROVIDER, value = Constants.EXECUTES_KEY)
+@Activate(group = CommonConstants.PROVIDER, value = Constants.EXECUTES_KEY)
 public class ExecuteLimitFilter implements Filter {
 
     @Override
