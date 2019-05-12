@@ -295,18 +295,18 @@ public class RegistryProtocol implements Protocol {
                     MONITOR_KEY, BIND_IP_KEY, BIND_PORT_KEY, QOS_ENABLE, QOS_PORT, ACCEPT_FOREIGN_IP, VALIDATION_KEY,
                     INTERFACES);
         } else {
-            String extra_keys = registryUrl.getParameter(EXTRA_KEYS_KEY, "");
+            String extraKeys = registryUrl.getParameter(EXTRA_KEYS_KEY, "");
             // if path is not the same as interface name then we should keep INTERFACE_KEY,
             // otherwise, the registry structure of zookeeper would be '/dubbo/path/providers',
             // but what we expect is '/dubbo/interface/providers'
             if (!providerUrl.getPath().equals(providerUrl.getParameter(Constants.INTERFACE_KEY))) {
-                if (StringUtils.isNotEmpty(extra_keys)) {
-                    extra_keys += ",";
+                if (StringUtils.isNotEmpty(extraKeys)) {
+                    extraKeys += ",";
                 }
-                extra_keys += Constants.INTERFACE_KEY;
+                extraKeys += Constants.INTERFACE_KEY;
             }
             String[] paramsToRegistry = getParamsToRegistry(DEFAULT_REGISTER_PROVIDER_KEYS
-                    , Constants.COMMA_SPLIT_PATTERN.split(extra_keys));
+                    , Constants.COMMA_SPLIT_PATTERN.split(extraKeys));
             return URL.valueOf(providerUrl, paramsToRegistry, providerUrl.getParameter(METHODS_KEY, (String[]) null));
         }
 
