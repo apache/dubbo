@@ -380,7 +380,7 @@ public class PojoUtils {
             Object className = ((Map<Object, Object>) pojo).get("class");
             if (className instanceof String) {
                 try {
-                    type = ClassHelper.forName((String) className);
+                    type = ClassUtils.forName((String) className);
                 } catch (ClassNotFoundException e) {
                     // ignore
                 }

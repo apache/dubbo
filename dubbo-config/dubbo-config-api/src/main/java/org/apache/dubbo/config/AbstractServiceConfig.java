@@ -17,11 +17,12 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.ExporterListener;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -70,11 +71,11 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     protected String document;
 
     /**
-     * Whether to register as a dynamic service or not on register center, it the value is false, the status will be disabled
-     * after the service registered,and it needs to be enabled manually; if you want to disable the service, you also need
+     * Whether to register as a dynamic service or not on register center, the value is true, the status will be enabled
+     * after the service registered,and it needs to be disabled manually; if you want to disable the service, you also need
      * manual processing
      */
-    protected Boolean dynamic = false;
+    protected Boolean dynamic = true;
 
     /**
      * Whether to use token
@@ -91,8 +92,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
      */
     protected List<ProtocolConfig> protocols;
     protected String protocolIds;
-    // provider tag
-    protected String tag;
+
     // max allowed execute times
     private Integer executes;
 
@@ -210,7 +210,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     }
 
     public void setProtocol(ProtocolConfig protocol) {
-        setProtocols(Arrays.asList(protocol));
+        setProtocols(new ArrayList<>(Arrays.asList(protocol)));
     }
 
     @Parameter(excluded = true)
@@ -286,14 +286,5 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
     public void setSerialization(String serialization) {
         this.serialization = serialization;
-    }
-
-    @Parameter(key = Constants.TAG_KEY, useKeyAsProperty = false)
-    public String getTag() {
-        return tag;
-    }
-
-    public void setTag(String tag) {
-        this.tag = tag;
     }
 }

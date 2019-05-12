@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.compiler.support;
 
-import org.apache.dubbo.common.utils.ClassHelper;
 
 import javassist.CtClass;
 
@@ -49,25 +48,25 @@ public class JavassistCompiler extends AbstractCompiler {
         while (matcher.find()) {
             builder.addImports(matcher.group(1).trim());
         }
-        
+
         // process extended super class
         matcher = EXTENDS_PATTERN.matcher(source);
         if (matcher.find()) {
             builder.setSuperClassName(matcher.group(1).trim());
         }
-        
+
         // process implemented interfaces
         matcher = IMPLEMENTS_PATTERN.matcher(source);
         if (matcher.find()) {
             String[] ifaces = matcher.group(1).trim().split("\\,");
             Arrays.stream(ifaces).forEach(i -> builder.addInterface(i.trim()));
         }
-        
+
         // process constructors, fields, methods
         String body = source.substring(source.indexOf('{') + 1, source.length() - 1);
         String[] methods = METHODS_PATTERN.split(body);
         String className = ClassUtils.getSimpleClassName(name);
-        Arrays.stream(methods).map(String::trim).filter(m -> !m.isEmpty()).forEach(method-> {
+        Arrays.stream(methods).map(String::trim).filter(m -> !m.isEmpty()).forEach(method -> {
             if (method.startsWith(className)) {
                 builder.addConstructor("public " + method);
             } else if (FIELD_PATTERN.matcher(method).matches()) {
@@ -76,9 +75,9 @@ public class JavassistCompiler extends AbstractCompiler {
                 builder.addMethod("public " + method);
             }
         });
-        
+
         // compile
-        ClassLoader classLoader = ClassHelper.getCallerClassLoader(getClass());
+        ClassLoader classLoader = org.apache.dubbo.common.utils.ClassUtils.getCallerClassLoader(getClass());
         CtClass cls = builder.build(classLoader);
         return cls.toClass(classLoader, JavassistCompiler.class.getProtectionDomain());
     }

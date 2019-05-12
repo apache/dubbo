@@ -17,7 +17,6 @@
 package org.apache.dubbo.common.serialize.fastjson;
 
 import org.apache.dubbo.common.serialize.ObjectInput;
-import org.apache.dubbo.common.utils.PojoUtils;
 
 import com.alibaba.fastjson.JSON;
 
@@ -103,8 +102,8 @@ public class FastJsonObjectInput implements ObjectInput {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T readObject(Class<T> cls, Type type) throws IOException, ClassNotFoundException {
-        Object value = readObject(cls);
-        return (T) PojoUtils.realize(value, cls, type);
+        String json = readLine();
+        return (T) JSON.parseObject(json, type);
     }
 
     private String readLine() throws IOException, EOFException {

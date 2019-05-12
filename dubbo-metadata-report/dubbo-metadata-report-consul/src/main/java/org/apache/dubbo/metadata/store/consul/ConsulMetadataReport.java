@@ -55,7 +55,7 @@ public class ConsulMetadataReport extends AbstractMetadataReport {
 
     private void storeMetadata(MetadataIdentifier identifier, String v) {
         try {
-            client.setKVValue(identifier.getIdentifierKey() + META_DATA_SOTRE_TAG, v);
+            client.setKVValue(identifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY), v);
         } catch (Throwable t) {
             logger.error("Failed to put " + identifier + " to consul " + v + ", cause: " + t.getMessage(), t);
             throw new RpcException("Failed to put " + identifier + " to consul " + v + ", cause: " + t.getMessage(), t);

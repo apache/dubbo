@@ -18,6 +18,7 @@ package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
@@ -54,7 +55,7 @@ public class NetUtils {
     private static final Pattern LOCAL_IP_PATTERN = Pattern.compile("127(\\.\\d{1,3}){3}$");
     private static final Pattern IP_PATTERN = Pattern.compile("\\d{1,3}(\\.\\d{1,3}){3,5}$");
 
-    private static final Map<String, String> hostNameCache = new LRUCache<>(1000);
+    private static final Map<String, String> HOST_NAME_CACHE = new LRUCache<>(1000);
     private static volatile InetAddress LOCAL_ADDRESS = null;
 
     private static final String SPLIT_IPV4_CHARECTER = "\\.";
@@ -105,7 +106,6 @@ public class NetUtils {
         return Constants.ANYHOST_VALUE.equals(host);
     }
 
-    // FIXME: should remove this method completely
     public static boolean isInvalidLocalHost(String host) {
         return host == null
                 || host.length() == 0
@@ -114,7 +114,6 @@ public class NetUtils {
                 || (LOCAL_IP_PATTERN.matcher(host).matches());
     }
 
-    // FIXME: should remove this method completely
     public static boolean isValidLocalHost(String host) {
         return !isInvalidLocalHost(host);
     }
@@ -125,34 +124,28 @@ public class NetUtils {
     }
 
     static boolean isValidV4Address(InetAddress address) {
+        if (address == null || address.isLoopbackAddress()) {
+            return false;
+        }
         String name = address.getHostAddress();
-        return (name != null
+        boolean result = (name != null
                 && IP_PATTERN.matcher(name).matches()
                 && !Constants.ANYHOST_VALUE.equals(name)
                 && !Constants.LOCALHOST_VALUE.equals(name));
+        return result;
     }
 
     /**
-     * Check if an ipv6 address is reachable.
+     * Check if an ipv6 address
      *
-     * @param address the given address
      * @return true if it is reachable
      */
-    static boolean isValidV6Address(Inet6Address address) {
+    static boolean isPreferIPV6Address() {
         boolean preferIpv6 = Boolean.getBoolean("java.net.preferIPv6Addresses");
         if (!preferIpv6) {
             return false;
         }
-        try {
-            return address.isReachable(100);
-        } catch (IOException e) {
-            // ignore
-        }
         return false;
-    }
-
-    static boolean isValidPublicAddress(InetAddress address) {
-        return !address.isSiteLocalAddress() && !address.isLoopbackAddress();
     }
 
     /**
@@ -210,6 +203,15 @@ public class NetUtils {
         return host;
     }
 
+    public static String getIpByConfig() {
+        String configIp = ConfigurationUtils.getProperty(Constants.DUBBO_IP_TO_BIND);
+        if (configIp != null) {
+            return configIp;
+        }
+
+        return getIpByHost(getLocalAddress().getHostName());
+    }
+
     /**
      * Find first valid IP from local network card
      *
@@ -225,16 +227,14 @@ public class NetUtils {
     }
 
     private static Optional<InetAddress> toValidAddress(InetAddress address) {
-        if (isValidPublicAddress(address)) {
-            if (address instanceof Inet6Address) {
-                Inet6Address v6Address = (Inet6Address) address;
-                if (isValidV6Address(v6Address)) {
-                    return Optional.ofNullable(normalizeV6Address(v6Address));
-                }
+        if (address instanceof Inet6Address) {
+            Inet6Address v6Address = (Inet6Address) address;
+            if (isPreferIPV6Address()) {
+                return Optional.ofNullable(normalizeV6Address(v6Address));
             }
-            if (isValidV4Address(address)) {
-                return Optional.of(address);
-            }
+        }
+        if (isValidV4Address(address)) {
+            return Optional.of(address);
         }
         return Optional.empty();
     }
@@ -259,12 +259,21 @@ public class NetUtils {
             while (interfaces.hasMoreElements()) {
                 try {
                     NetworkInterface network = interfaces.nextElement();
+                    if (network.isLoopback() || network.isVirtual() || !network.isUp()) {
+                        continue;
+                    }
                     Enumeration<InetAddress> addresses = network.getInetAddresses();
                     while (addresses.hasMoreElements()) {
                         try {
                             Optional<InetAddress> addressOp = toValidAddress(addresses.nextElement());
                             if (addressOp.isPresent()) {
-                                return addressOp.get();
+                                try {
+                                    if(addressOp.get().isReachable(100)){
+                                        return addressOp.get();
+                                    }
+                                } catch (IOException e) {
+                                    // ignore
+                                }
                             }
                         } catch (Throwable e) {
                             logger.warn(e);
@@ -286,14 +295,14 @@ public class NetUtils {
             if (i > -1) {
                 address = address.substring(0, i);
             }
-            String hostname = hostNameCache.get(address);
+            String hostname = HOST_NAME_CACHE.get(address);
             if (hostname != null && hostname.length() > 0) {
                 return hostname;
             }
             InetAddress inetAddress = InetAddress.getByName(address);
             if (inetAddress != null) {
                 hostname = inetAddress.getHostName();
-                hostNameCache.put(address, hostname);
+                HOST_NAME_CACHE.put(address, hostname);
                 return hostname;
             }
         } catch (Throwable e) {

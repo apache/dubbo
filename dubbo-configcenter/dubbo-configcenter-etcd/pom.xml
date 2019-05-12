@@ -22,7 +22,7 @@
     <parent>
         <artifactId>dubbo-configcenter</artifactId>
         <groupId>org.apache.dubbo</groupId>
-        <version>2.7.2-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -36,6 +36,16 @@
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-configcenter-api</artifactId>
             <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.etcd</groupId>
+            <artifactId>jetcd-launcher</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>

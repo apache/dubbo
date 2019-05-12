@@ -146,11 +146,16 @@ public class ClassNameTestThrift {
                 super("echo");
             }
 
-            protected echo_args getEmptyArgsInstance() {
+            public echo_args getEmptyArgsInstance() {
                 return new echo_args();
             }
 
-            protected echo_result getResult(I iface, echo_args args) throws org.apache.thrift.TException {
+            @Override
+            protected boolean isOneway() {
+                return false;
+            }
+
+            public echo_result getResult(I iface, echo_args args) throws org.apache.thrift.TException {
                 echo_result result = new echo_result();
                 result.success = iface.echo(args.arg);
                 return result;

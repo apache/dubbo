@@ -27,7 +27,7 @@ public class ReferenceConfigCacheTest {
     @BeforeEach
     public void setUp() throws Exception {
         MockReferenceConfig.setCounter(0);
-        ReferenceConfigCache.cacheHolder.clear();
+        ReferenceConfigCache.CACHE_HOLDER.clear();
     }
 
     @Test

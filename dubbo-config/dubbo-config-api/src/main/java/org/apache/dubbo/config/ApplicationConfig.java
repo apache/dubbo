@@ -123,7 +123,6 @@ public class ApplicationConfig extends AbstractConfig {
      */
     private String shutwait;
 
-
     public ApplicationConfig() {
     }
 

@@ -141,6 +141,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      * Disconnection events
      */
     protected String ondisconnect;
+
+    /**
+     * The metrics configuration
+     */
+    protected MetricsConfig metrics;
     protected MetadataReportConfig metadataReportConfig;
 
     protected ConfigCenterConfig configCenter;
@@ -149,6 +154,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     private Integer callbacks;
     // the scope for referring/exporting a service, if it's local, it means searching in current JVM only.
     private String scope;
+
+    protected String tag;
 
     /**
      * Check whether the registry config is exists, and then conversion it to {@link RegistryConfig}
@@ -336,6 +343,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         String hostToRegistry = ConfigUtils.getSystemProperty(Constants.DUBBO_IP_TO_REGISTRY);
         if (StringUtils.isEmpty(hostToRegistry)) {
             hostToRegistry = NetUtils.getLocalHost();
+        } else if (NetUtils.isInvalidLocalHost(hostToRegistry)) {
+            throw new IllegalArgumentException("Specified invalid registry ip from property:" +
+                    Constants.DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
         }
         map.put(Constants.REGISTER_IP_KEY, hostToRegistry);
         appendParameters(map, monitor);
@@ -347,8 +357,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
         if (ConfigUtils.isNotEmpty(address)) {
             if (!map.containsKey(Constants.PROTOCOL_KEY)) {
-                if (getExtensionLoader(MonitorFactory.class).hasExtension("logstat")) {
-                    map.put(Constants.PROTOCOL_KEY, "logstat");
+                if (getExtensionLoader(MonitorFactory.class).hasExtension(Constants.LOGSTAT_PROTOCOL)) {
+                    map.put(Constants.PROTOCOL_KEY, Constants.LOGSTAT_PROTOCOL);
                 } else {
                     map.put(Constants.PROTOCOL_KEY, Constants.DUBBO_PROTOCOL);
                 }
@@ -509,7 +519,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             configedRegistries.addAll(getSubProperties(Environment.getInstance().getAppExternalConfigurationMap(),
                     Constants.REGISTRIES_SUFFIX));
 
-            registryIds = String.join(",", configedRegistries);
+            registryIds = String.join(Constants.COMMA_SEPARATOR, configedRegistries);
         }
 
         if (StringUtils.isEmpty(registryIds)) {
@@ -615,7 +625,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      */
     @Deprecated
     public void setLocal(String local) {
-        checkName("local", local);
+        checkName(Constants.LOCAL_KEY, local);
         this.local = local;
     }
 
@@ -641,7 +651,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setCluster(String cluster) {
-        checkExtension(Cluster.class, "cluster", cluster);
+        checkExtension(Cluster.class, Constants.CLUSTER_KEY, cluster);
         this.cluster = cluster;
     }
 
@@ -650,7 +660,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setProxy(String proxy) {
-        checkExtension(ProxyFactory.class, "proxy", proxy);
+        checkExtension(ProxyFactory.class, Constants.PROXY_KEY, proxy);
         this.proxy = proxy;
     }
 
@@ -668,7 +678,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setFilter(String filter) {
-        checkMultiExtension(Filter.class, "filter", filter);
+        checkMultiExtension(Filter.class, Constants.FILE_KEY, filter);
         this.filter = filter;
     }
 
@@ -678,7 +688,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setListener(String listener) {
-        checkMultiExtension(InvokerListener.class, "listener", listener);
+        checkMultiExtension(InvokerListener.class, Constants.LISTENER_KEY, listener);
         this.listener = listener;
     }
 
@@ -687,7 +697,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setLayer(String layer) {
-        checkNameHasSymbol("layer", layer);
+        checkNameHasSymbol(Constants.LAYER_KEY, layer);
         this.layer = layer;
     }
 
@@ -825,4 +835,20 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         this.metadataReportConfig = metadataReportConfig;
     }
 
+    public MetricsConfig getMetrics() {
+        return metrics;
+    }
+
+    public void setMetrics(MetricsConfig metrics) {
+        this.metrics = metrics;
+    }
+
+    @Parameter(key = Constants.TAG_KEY, useKeyAsProperty = false)
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
 }
