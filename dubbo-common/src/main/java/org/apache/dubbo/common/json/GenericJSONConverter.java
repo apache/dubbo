@@ -474,7 +474,7 @@ public class GenericJSONConverter implements JSONConverter {
             jb.objectBegin();
 
             Wrapper w = Wrapper.getWrapper(c);
-            String pns[] = w.getPropertyNames();
+            String[] pns = w.getPropertyNames();
 
             for (String pn : pns) {
                 if ((obj instanceof Throwable) && (
