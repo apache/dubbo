@@ -272,7 +272,7 @@ public class NetUtils {
                             Optional<InetAddress> addressOp = toValidAddress(addresses.nextElement());
                             if (addressOp.isPresent()) {
                                 try {
-                                    if(addressOp.get().isReachable(100)){
+                                    if (addressOp.get().isReachable(100)) {
                                         return addressOp.get();
                                     }
                                 } catch (IOException e) {
@@ -410,7 +410,7 @@ public class NetUtils {
             throw new IllegalArgumentException("Illegal Argument pattern or hostName. Pattern:" + pattern + ", Host:" + host);
         }
         pattern = pattern.trim();
-        if (pattern.equals("*.*.*.*") || pattern.equals("*")) {
+        if ("*.*.*.*".equals(pattern) || "*".equals(pattern)) {
             return true;
         }
 
@@ -446,7 +446,7 @@ public class NetUtils {
             }
         }
         for (int i = 0; i < mask.length; i++) {
-            if (mask[i].equals("*") || mask[i].equals(ipAddress[i])) {
+            if ("*".equals(mask[i]) || mask[i].equals(ipAddress[i])) {
                 continue;
             } else if (mask[i].contains("-")) {
                 String[] rangeNumStrs = mask[i].split("-");
