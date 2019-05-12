@@ -42,5 +42,7 @@
         <module>dubbo-rpc-memcached</module>
         <module>dubbo-rpc-redis</module>
         <module>dubbo-rpc-rest</module>
+        <module>dubbo-rpc-jms</module>
+        <module>dubbo-rpc-jms-implementor-activemq</module>
     </modules>
 </project>
