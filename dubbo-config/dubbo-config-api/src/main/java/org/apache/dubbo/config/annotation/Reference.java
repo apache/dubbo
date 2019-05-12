@@ -258,6 +258,11 @@ public @interface Reference {
     String protocol() default "";
 
     /**
+     * Service tag name
+     */
+    String tag() default "";
+
+    /**
      * methods support
      * @return
      */

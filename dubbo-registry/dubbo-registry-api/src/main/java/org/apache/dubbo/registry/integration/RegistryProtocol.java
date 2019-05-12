@@ -64,7 +64,6 @@ import static org.apache.dubbo.common.Constants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.Constants.CONFIGURATORS_SUFFIX;
 import static org.apache.dubbo.common.Constants.CONSUMERS_CATEGORY;
 import static org.apache.dubbo.common.Constants.CONSUMER_PROTOCOL;
-import static org.apache.dubbo.common.Constants.DEFAULT_DIRECTORY;
 import static org.apache.dubbo.common.Constants.DEFAULT_REGISTER_CONSUMER_KEYS;
 import static org.apache.dubbo.common.Constants.DEFAULT_REGISTER_PROVIDER_KEYS;
 import static org.apache.dubbo.common.Constants.DEFAULT_REGISTRY;
@@ -276,7 +275,7 @@ public class RegistryProtocol implements Protocol {
     private URL getRegistryUrl(Invoker<?> originInvoker) {
         URL registryUrl = originInvoker.getUrl();
         if (REGISTRY_PROTOCOL.equals(registryUrl.getProtocol())) {
-            String protocol = registryUrl.getParameter(REGISTRY_KEY, DEFAULT_DIRECTORY);
+            String protocol = registryUrl.getParameter(REGISTRY_KEY, DEFAULT_REGISTRY);
             registryUrl = registryUrl.setProtocol(protocol).removeParameter(REGISTRY_KEY);
         }
         return registryUrl;

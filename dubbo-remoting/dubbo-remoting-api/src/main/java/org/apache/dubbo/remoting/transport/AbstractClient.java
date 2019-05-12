@@ -192,7 +192,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
             } else {
                 if (logger.isInfoEnabled()) {
-                    logger.info("Successed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
+                    logger.info("Succeed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
                             + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
                             + ", channel is " + this.getChannel());
                 }

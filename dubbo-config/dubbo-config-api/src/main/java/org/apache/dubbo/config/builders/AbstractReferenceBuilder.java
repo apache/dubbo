@@ -126,17 +126,36 @@ public abstract class AbstractReferenceBuilder<T extends AbstractReferenceConfig
         return getThis();
     }
 
+    @Override
     public void build(T instance) {
         super.build(instance);
 
-        if (check != null) instance.setCheck(check);
-        if (init != null) instance.setInit(init);
-        if (!StringUtils.isEmpty(generic)) instance.setGeneric(generic);
-        if (injvm != null) instance.setInjvm(injvm);
-        if (lazy != null) instance.setLazy(lazy);
-        if (!StringUtils.isEmpty(reconnect)) instance.setReconnect(reconnect);
-        if (sticky != null) instance.setSticky(sticky);
-        if (!StringUtils.isEmpty(version)) instance.setVersion(version);
-        if (!StringUtils.isEmpty(group)) instance.setGroup(group);
+        if (check != null) {
+            instance.setCheck(check);
+        }
+        if (init != null) {
+            instance.setInit(init);
+        }
+        if (!StringUtils.isEmpty(generic)) {
+            instance.setGeneric(generic);
+        }
+        if (injvm != null) {
+            instance.setInjvm(injvm);
+        }
+        if (lazy != null) {
+            instance.setLazy(lazy);
+        }
+        if (!StringUtils.isEmpty(reconnect)) {
+            instance.setReconnect(reconnect);
+        }
+        if (sticky != null) {
+            instance.setSticky(sticky);
+        }
+        if (!StringUtils.isEmpty(version)) {
+            instance.setVersion(version);
+        }
+        if (!StringUtils.isEmpty(group)) {
+            instance.setGroup(group);
+        }
     }
 }

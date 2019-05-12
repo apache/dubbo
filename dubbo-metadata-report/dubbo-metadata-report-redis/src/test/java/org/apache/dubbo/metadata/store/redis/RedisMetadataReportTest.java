@@ -28,7 +28,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.embedded.RedisServer;
 
 import java.io.IOException;
@@ -36,7 +39,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.Constants.SYNC_REPORT_KEY;
-import static org.apache.dubbo.metadata.store.MetadataReport.META_DATA_SOTRE_TAG;
 
 /**
  * 2018/10/9
@@ -45,13 +47,22 @@ public class RedisMetadataReportTest {
     RedisMetadataReport redisMetadataReport;
     RedisMetadataReport syncRedisMetadataReport;
     RedisServer redisServer;
+    URL registryUrl;
 
     @BeforeEach
-    public void constructor() throws IOException {
+    public void constructor(TestInfo testInfo) throws IOException {
         int redisPort = NetUtils.getAvailablePort();
-        this.redisServer = new RedisServer(redisPort);
+        String methodName = testInfo.getTestMethod().get().getName();
+        if ("testAuthRedisMetadata".equals(methodName) || ("testWrongAuthRedisMetadata".equals(methodName))) {
+            String password = "チェリー";
+            redisServer = RedisServer.builder().port(redisPort).setting("requirepass " + password).build();
+            registryUrl = URL.valueOf("redis://username:" + password + "@localhost:" + redisPort);
+        } else {
+            redisServer = RedisServer.builder().port(redisPort).build();
+            registryUrl = URL.valueOf("redis://localhost:" + redisPort);
+        }
+
         this.redisServer.start();
-        URL registryUrl = URL.valueOf("redis://localhost:" + redisPort);
         redisMetadataReport = (RedisMetadataReport) new RedisMetadataReportFactory().createMetadataReport(registryUrl);
         URL asyncRegistryUrl = URL.valueOf("redis://localhost:" + redisPort + "?" + SYNC_REPORT_KEY + "=true");
         syncRedisMetadataReport = (RedisMetadataReport) new RedisMetadataReportFactory().createMetadataReport(registryUrl);
@@ -81,7 +92,7 @@ public class RedisMetadataReportTest {
         Jedis jedis = null;
         try {
             jedis = redisMetadataReport.pool.getResource();
-            String keyTmp = providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY) + META_DATA_SOTRE_TAG;
+            String keyTmp = providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY);
             String value = jedis.get(keyTmp);
             if (value == null) {
                 Thread.sleep(moreTime);
@@ -97,7 +108,7 @@ public class RedisMetadataReportTest {
             throw new RpcException("Failed to put to redis . cause: " + e.getMessage(), e);
         } finally {
             if (jedis != null) {
-                jedis.del(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY) + META_DATA_SOTRE_TAG);
+                jedis.del(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY));
             }
             redisMetadataReport.pool.close();
         }
@@ -121,7 +132,7 @@ public class RedisMetadataReportTest {
         Jedis jedis = null;
         try {
             jedis = redisMetadataReport.pool.getResource();
-            String keyTmp = consumerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY) + META_DATA_SOTRE_TAG;
+            String keyTmp = consumerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY);
             String value = jedis.get(keyTmp);
             if (value == null) {
                 Thread.sleep(moreTime);
@@ -132,7 +143,7 @@ public class RedisMetadataReportTest {
             throw new RpcException("Failed to put to redis . cause: " + e.getMessage(), e);
         } finally {
             if (jedis != null) {
-                jedis.del(consumerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY) + META_DATA_SOTRE_TAG);
+                jedis.del(consumerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY));
             }
             redisMetadataReport.pool.close();
         }
@@ -173,4 +184,23 @@ public class RedisMetadataReportTest {
         return consumerMetadataIdentifier;
     }
 
+    @Test
+    public void testAuthRedisMetadata() throws ClassNotFoundException {
+        testStoreProvider(redisMetadataReport, "1.0.0.redis.md.p1", 3000);
+    }
+
+    @Test
+    public void testWrongAuthRedisMetadata() throws ClassNotFoundException {
+        registryUrl = registryUrl.setPassword("123456");
+        redisMetadataReport = (RedisMetadataReport) new RedisMetadataReportFactory().createMetadataReport(registryUrl);
+        try {
+            testStoreProvider(redisMetadataReport, "1.0.0.redis.md.p1", 3000);
+        } catch (RpcException e) {
+            if (e.getCause() instanceof JedisConnectionException && e.getCause().getCause() instanceof JedisDataException) {
+                Assertions.assertEquals("ERR invalid password", e.getCause().getCause().getMessage());
+            } else {
+                Assertions.fail("no invalid password exception!");
+            }
+        }
+    }
 }
