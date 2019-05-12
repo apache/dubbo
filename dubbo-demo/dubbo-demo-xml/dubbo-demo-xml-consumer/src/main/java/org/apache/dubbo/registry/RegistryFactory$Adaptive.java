@@ -1,22 +1,25 @@
 package org.apache.dubbo.registry;
 
 /**
- * created by fang on 2018/10/9/009 21:07
+ * @Author Feiyue
+ * @Description:
+ * @Date: Created in 2019/5/12 16:35
  */
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 
-public class RegistryFactory$Adaptive implements RegistryFactory {
-    @Override
-    public Registry getRegistry(URL arg0) {
-        if (arg0 == null) throw new IllegalArgumentException("url == null");
-        URL url = arg0;
+public class RegistryFactory$Adaptive implements org.apache.dubbo.registry.RegistryFactory {
+    public org.apache.dubbo.registry.Registry getRegistry(org.apache.dubbo.common.URL arg0) {
+        if (arg0 == null) { throw new IllegalArgumentException("url == null"); }
+        org.apache.dubbo.common.URL url = arg0;
         String extName = (url.getProtocol() == null ? "dubbo" : url.getProtocol());
-        if (extName == null)
-            throw new IllegalStateException("Fail to get extension(com.alibaba.dubbo.registry.RegistryFactory) name from url(" + url.toString() + ") use keys([protocol])");
-        RegistryFactory extension = (RegistryFactory) ExtensionLoader.getExtensionLoader(RegistryFactory.class).getExtension(extName);
+        if (extName == null) {
+            throw new IllegalStateException(
+                "Failed to get extension (org.apache.dubbo.registry.RegistryFactory) name from url (" + url.toString()
+                    + ") use keys([protocol])");
+        }
+        org.apache.dubbo.registry.RegistryFactory extension = (org.apache.dubbo.registry.RegistryFactory)ExtensionLoader
+            .getExtensionLoader(org.apache.dubbo.registry.RegistryFactory.class).getExtension(extName);
         return extension.getRegistry(arg0);
     }
 }
-
