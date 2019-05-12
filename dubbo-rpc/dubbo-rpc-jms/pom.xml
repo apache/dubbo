@@ -17,9 +17,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>com.alibaba</groupId>
+		<groupId>org.apache.dubbo</groupId>
 		<artifactId>dubbo-rpc</artifactId>
-		<version>2.6.1</version>
+		<version>${revision}</version>
 	</parent>
 	<artifactId>dubbo-rpc-jms</artifactId>
 	<packaging>jar</packaging>
@@ -30,7 +30,7 @@
 	</properties>
 	<dependencies>
 		<dependency>
-			<groupId>com.alibaba</groupId>
+			<groupId>org.apache.dubbo</groupId>
 			<artifactId>dubbo-rpc-api</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
