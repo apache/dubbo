@@ -1,1 +1,0 @@
-jms=com.alibaba.dubbo.rpc.protocol.jms.JmsProtocol
