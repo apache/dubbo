@@ -186,8 +186,9 @@ public class MetricsFilter implements Filter {
     }
 
     private MetricObject value2MetricObject(String metric, Integer value, MetricLevel level) {
-        if (metric == null || value == null || level == null)
+        if (metric == null || value == null || level == null) {
             return null;
+        }
 
         return new MetricObject
                 .Builder(metric)

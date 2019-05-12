@@ -74,7 +74,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     boolean syncReport;
     // Local disk cache file
     File file;
-    private AtomicBoolean INIT = new AtomicBoolean(false);
+    private AtomicBoolean initialized = new AtomicBoolean(false);
     public MetadataReportRetry metadataReportRetry;
 
     public AbstractMetadataReport(URL reportServerURL) {
@@ -90,7 +90,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
                 }
             }
             // if this file exist, firstly delete it.
-            if (!INIT.getAndSet(true) && file.exists()) {
+            if (!initialized.getAndSet(true) && file.exists()) {
                 file.delete();
             }
         }

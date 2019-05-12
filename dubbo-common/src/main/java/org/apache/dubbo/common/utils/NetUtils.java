@@ -428,7 +428,7 @@ public class NetUtils {
 
         host = inetAddress.getHostAddress();
 
-        String[] ip_address = host.split(splitCharacter);
+        String[] ipAddress = host.split(splitCharacter);
         if (pattern.equals(host)) {
             return true;
         }
@@ -442,7 +442,7 @@ public class NetUtils {
             }
         }
         for (int i = 0; i < mask.length; i++) {
-            if (mask[i].equals("*") || mask[i].equals(ip_address[i])) {
+            if (mask[i].equals("*") || mask[i].equals(ipAddress[i])) {
                 continue;
             } else if (mask[i].contains("-")) {
                 String[] rangeNumStrs = mask[i].split("-");
@@ -451,13 +451,13 @@ public class NetUtils {
                 }
                 Integer min = getNumOfIpSegment(rangeNumStrs[0], isIpv4);
                 Integer max = getNumOfIpSegment(rangeNumStrs[1], isIpv4);
-                Integer ip = getNumOfIpSegment(ip_address[i], isIpv4);
+                Integer ip = getNumOfIpSegment(ipAddress[i], isIpv4);
                 if (ip < min || ip > max) {
                     return false;
                 }
-            } else if ("0".equals(ip_address[i]) && ("0".equals(mask[i]) || "00".equals(mask[i]) || "000".equals(mask[i]) || "0000".equals(mask[i]))) {
+            } else if ("0".equals(ipAddress[i]) && ("0".equals(mask[i]) || "00".equals(mask[i]) || "000".equals(mask[i]) || "0000".equals(mask[i]))) {
                 continue;
-            } else if (!mask[i].equals(ip_address[i])) {
+            } else if (!mask[i].equals(ipAddress[i])) {
                 return false;
             }
         }
