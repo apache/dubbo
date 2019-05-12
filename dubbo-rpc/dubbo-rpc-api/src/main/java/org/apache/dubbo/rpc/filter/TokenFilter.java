@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.rpc.Filter;
@@ -34,7 +35,7 @@ import java.util.Map;
  *
  * @see Filter
  */
-@Activate(group = Constants.PROVIDER, value = Constants.TOKEN_KEY)
+@Activate(group = CommonConstants.PROVIDER, value = Constants.TOKEN_KEY)
 public class TokenFilter implements Filter {
 
     @Override

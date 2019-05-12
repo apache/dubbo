@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metadata.store.test;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -25,6 +24,8 @@ import org.apache.dubbo.metadata.support.AbstractMetadataReport;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 
 /**
  * ZookeeperRegistry
@@ -42,7 +43,7 @@ public class JTestMetadataReport4Test extends AbstractMetadataReport {
 
 
     private static String getProtocol(URL url) {
-        String protocol = url.getParameter(Constants.SIDE_KEY);
+        String protocol = url.getParameter(SIDE_KEY);
         protocol = protocol == null ? url.getProtocol() : protocol;
         return protocol;
     }

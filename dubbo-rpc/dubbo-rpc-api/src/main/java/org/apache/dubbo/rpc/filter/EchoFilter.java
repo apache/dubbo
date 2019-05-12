@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
@@ -28,7 +29,7 @@ import org.apache.dubbo.rpc.RpcResult;
 /**
  * Dubbo provided default Echo echo service, which is available for all dubbo provider service interface.
  */
-@Activate(group = Constants.PROVIDER, order = -110000)
+@Activate(group = CommonConstants.PROVIDER, order = -110000)
 public class EchoFilter implements Filter {
 
     @Override

@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -26,12 +25,17 @@ import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 import org.apache.dubbo.remoting.transport.dispatcher.execution.ExecutionDispatcher;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+
+import static org.apache.dubbo.common.constants.CommonConstants.IO_THREADS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREADPOOL;
+import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREADS;
 
 /**
  * PerformanceServer
@@ -64,9 +68,9 @@ public class PerformanceServerTest  {
         final int port = PerformanceUtils.getIntProperty("port", 9911);
         final String transporter = PerformanceUtils.getProperty(RemotingConstants.TRANSPORTER_KEY, RemotingConstants.DEFAULT_TRANSPORTER);
         final String serialization = PerformanceUtils.getProperty(RemotingConstants.SERIALIZATION_KEY, RemotingConstants.DEFAULT_REMOTING_SERIALIZATION);
-        final String threadpool = PerformanceUtils.getProperty(Constants.THREADPOOL_KEY, Constants.DEFAULT_THREADPOOL);
-        final int threads = PerformanceUtils.getIntProperty(Constants.THREADS_KEY, Constants.DEFAULT_THREADS);
-        final int iothreads = PerformanceUtils.getIntProperty(Constants.IO_THREADS_KEY, RemotingConstants.DEFAULT_IO_THREADS);
+        final String threadpool = PerformanceUtils.getProperty(THREADPOOL_KEY, DEFAULT_THREADPOOL);
+        final int threads = PerformanceUtils.getIntProperty(THREADS_KEY, DEFAULT_THREADS);
+        final int iothreads = PerformanceUtils.getIntProperty(IO_THREADS_KEY, RemotingConstants.DEFAULT_IO_THREADS);
         final int buffer = PerformanceUtils.getIntProperty(RemotingConstants.BUFFER_KEY, RemotingConstants.DEFAULT_BUFFER_SIZE);
         final String channelHandler = PerformanceUtils.getProperty(RemotingConstants.DISPATCHER_KEY, ExecutionDispatcher.NAME);
 

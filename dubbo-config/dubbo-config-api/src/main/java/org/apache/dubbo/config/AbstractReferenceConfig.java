@@ -22,6 +22,9 @@ import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.InvokerListener;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+
 /**
  * AbstractConsumerConfig
  *
@@ -203,7 +206,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     }
 
     public void setVersion(String version) {
-        checkKey(Constants.VERSION_KEY, version);
+        checkKey(VERSION_KEY, version);
         this.version = version;
     }
 
@@ -212,7 +215,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     }
 
     public void setGroup(String group) {
-        checkKey(Constants.GROUP_KEY, group);
+        checkKey(GROUP_KEY, group);
         this.group = group;
     }
 }

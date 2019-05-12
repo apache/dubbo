@@ -37,6 +37,10 @@ import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
 
+import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_KEY;
+
 /**
  * IP and Port Helper for RPC
  */
@@ -99,18 +103,18 @@ public class NetUtils {
     public static boolean isLocalHost(String host) {
         return host != null
                 && (LOCAL_IP_PATTERN.matcher(host).matches()
-                || host.equalsIgnoreCase(Constants.LOCALHOST_KEY));
+                || host.equalsIgnoreCase(LOCALHOST_KEY));
     }
 
     public static boolean isAnyHost(String host) {
-        return Constants.ANYHOST_VALUE.equals(host);
+        return ANYHOST_VALUE.equals(host);
     }
 
     public static boolean isInvalidLocalHost(String host) {
         return host == null
                 || host.length() == 0
-                || host.equalsIgnoreCase(Constants.LOCALHOST_KEY)
-                || host.equals(Constants.ANYHOST_VALUE)
+                || host.equalsIgnoreCase(LOCALHOST_KEY)
+                || host.equals(ANYHOST_VALUE)
                 || (LOCAL_IP_PATTERN.matcher(host).matches());
     }
 
@@ -130,8 +134,8 @@ public class NetUtils {
         String name = address.getHostAddress();
         boolean result = (name != null
                 && IP_PATTERN.matcher(name).matches()
-                && !Constants.ANYHOST_VALUE.equals(name)
-                && !Constants.LOCALHOST_VALUE.equals(name));
+                && !ANYHOST_VALUE.equals(name)
+                && !LOCALHOST_VALUE.equals(name));
         return result;
     }
 
@@ -178,7 +182,7 @@ public class NetUtils {
 
     public static String getLocalHost() {
         InetAddress address = getLocalAddress();
-        return address == null ? Constants.LOCALHOST_VALUE : address.getHostAddress();
+        return address == null ? LOCALHOST_VALUE : address.getHostAddress();
     }
 
     public static String filterLocalHost(String host) {

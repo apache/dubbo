@@ -57,6 +57,11 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+
 
 /**
  * Support for ectd3 registry.
@@ -81,9 +86,9 @@ public class EtcdRegistry extends FailbackRegistry {
         if (url.isAnyHost()) {
             throw new IllegalStateException("registry address is invalid, actual: '" + url.getHost() + "'");
         }
-        String group = url.getParameter(Constants.GROUP_KEY, DEFAULT_ROOT);
-        if (!group.startsWith(Constants.PATH_SEPARATOR)) {
-            group = Constants.PATH_SEPARATOR + group;
+        String group = url.getParameter(GROUP_KEY, DEFAULT_ROOT);
+        if (!group.startsWith(PATH_SEPARATOR)) {
+            group = PATH_SEPARATOR + group;
         }
         this.root = group;
         etcdClient = etcdTransporter.connect(url);
@@ -141,7 +146,7 @@ public class EtcdRegistry extends FailbackRegistry {
     @Override
     public void doSubscribe(URL url, NotifyListener listener) {
         try {
-            if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
+            if (ANY_VALUE.equals(url.getServiceInterface())) {
                 String root = toRootPath();
 
                 /*
@@ -179,7 +184,7 @@ public class EtcdRegistry extends FailbackRegistry {
                                                  *  if new interface event arrived, we watch their direct children,
                                                  *  eg: /dubbo/interface, /dubbo/interface and so on.
                                                  */
-                                                subscribe(url.setPath(child).addParameters(Constants.INTERFACE_KEY, child,
+                                                subscribe(url.setPath(child).addParameters(INTERFACE_KEY, child,
                                                         RemotingConstants.CHECK_KEY, String.valueOf(false)), listener);
                                             }
                                         }
@@ -196,7 +201,7 @@ public class EtcdRegistry extends FailbackRegistry {
                 for (String service : services) {
                     service = URL.decode(service);
                     anyServices.add(service);
-                    subscribe(url.setPath(service).addParameters(Constants.INTERFACE_KEY, service,
+                    subscribe(url.setPath(service).addParameters(INTERFACE_KEY, service,
                             RemotingConstants.CHECK_KEY, String.valueOf(false)), listener);
                 }
             } else {
@@ -279,10 +284,10 @@ public class EtcdRegistry extends FailbackRegistry {
     }
 
     protected String toRootDir() {
-        if (root.startsWith(Constants.PATH_SEPARATOR)) {
+        if (root.startsWith(PATH_SEPARATOR)) {
             return root;
         }
-        return Constants.PATH_SEPARATOR + root;
+        return PATH_SEPARATOR + root;
     }
 
     protected String toRootPath() {
@@ -291,15 +296,15 @@ public class EtcdRegistry extends FailbackRegistry {
 
     protected String toServicePath(URL url) {
         String name = url.getServiceInterface();
-        if (Constants.ANY_VALUE.equals(name)) {
+        if (ANY_VALUE.equals(name)) {
             return toRootPath();
         }
-        return toRootDir() + Constants.PATH_SEPARATOR + URL.encode(name);
+        return toRootDir() + PATH_SEPARATOR + URL.encode(name);
     }
 
     protected String[] toCategoriesPath(URL url) {
         String[] categories;
-        if (Constants.ANY_VALUE.equals(url.getParameter(Constants.CATEGORY_KEY))) {
+        if (ANY_VALUE.equals(url.getParameter(Constants.CATEGORY_KEY))) {
             categories = new String[]{Constants.PROVIDERS_CATEGORY, Constants.CONSUMERS_CATEGORY,
                     Constants.ROUTERS_CATEGORY, Constants.CONFIGURATORS_CATEGORY};
         } else {
@@ -307,25 +312,25 @@ public class EtcdRegistry extends FailbackRegistry {
         }
         String[] paths = new String[categories.length];
         for (int i = 0; i < categories.length; i++) {
-            paths[i] = toServicePath(url) + Constants.PATH_SEPARATOR + categories[i];
+            paths[i] = toServicePath(url) + PATH_SEPARATOR + categories[i];
         }
         return paths;
     }
 
     protected String toCategoryPath(URL url) {
-        return toServicePath(url) + Constants.PATH_SEPARATOR + url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY);
+        return toServicePath(url) + PATH_SEPARATOR + url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY);
     }
 
     protected String toUrlPath(URL url) {
-        return toCategoryPath(url) + Constants.PATH_SEPARATOR + URL.encode(url.toFullString());
+        return toCategoryPath(url) + PATH_SEPARATOR + URL.encode(url.toFullString());
     }
 
     protected List<String> toUnsubscribedPath(URL url) {
         List<String> categories = new ArrayList<>();
-        if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
-            String group = url.getParameter(Constants.GROUP_KEY, DEFAULT_ROOT);
-            if (!group.startsWith(Constants.PATH_SEPARATOR)) {
-                group = Constants.PATH_SEPARATOR + group;
+        if (ANY_VALUE.equals(url.getServiceInterface())) {
+            String group = url.getParameter(GROUP_KEY, DEFAULT_ROOT);
+            if (!group.startsWith(PATH_SEPARATOR)) {
+                group = PATH_SEPARATOR + group;
             }
             categories.add(group);
             return categories;

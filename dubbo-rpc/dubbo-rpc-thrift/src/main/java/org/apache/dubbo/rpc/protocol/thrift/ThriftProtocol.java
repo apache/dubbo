@@ -43,6 +43,9 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+
 /**
  * @since 2.7.0, use https://github.com/dubbo/dubbo-rpc-native-thrift instead
  */
@@ -64,7 +67,7 @@ public class ThriftProtocol extends AbstractProtocol {
 
             if (msg instanceof Invocation) {
                 Invocation inv = (Invocation) msg;
-                String path = inv.getAttachments().get(Constants.PATH_KEY);
+                String path = inv.getAttachments().get(PATH_KEY);
                 String serviceKey = serviceKey(channel.getLocalAddress().getPort(),
                         path, null, null);
                 DubboExporter<?> exporter = (DubboExporter<?>) exporterMap.get(serviceKey);

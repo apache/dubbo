@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.http.jetty;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
@@ -36,6 +35,9 @@ import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.log.StdErrLog;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
+import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREADS;
+
 public class JettyHttpServer extends AbstractHttpServer {
 
     private static final Logger logger = LoggerFactory.getLogger(JettyHttpServer.class);
@@ -54,7 +56,7 @@ public class JettyHttpServer extends AbstractHttpServer {
 
         DispatcherServlet.addHttpHandler(url.getParameter(RemotingConstants.BIND_PORT_KEY, url.getPort()), handler);
 
-        int threads = url.getParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS);
+        int threads = url.getParameter(THREADS_KEY, DEFAULT_THREADS);
         QueuedThreadPool threadPool = new QueuedThreadPool();
         threadPool.setDaemon(true);
         threadPool.setMaxThreads(threads);

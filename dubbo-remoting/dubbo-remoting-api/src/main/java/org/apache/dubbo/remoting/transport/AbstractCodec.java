@@ -19,7 +19,6 @@ package org.apache.dubbo.remoting.transport;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
@@ -28,6 +27,8 @@ import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Codec2;
+
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 
 /**
  * AbstractCodec
@@ -58,7 +59,7 @@ public abstract class AbstractCodec implements Codec2 {
     }
 
     protected boolean isClientSide(Channel channel) {
-        String side = (String)channel.getAttribute(Constants.SIDE_KEY);
+        String side = (String)channel.getAttribute(SIDE_KEY);
         if (CLIENT_SIDE.equals(side)) {
             return true;
         } else if (SERVER_SIDE.equals(side)) {
@@ -70,7 +71,7 @@ public abstract class AbstractCodec implements Codec2 {
                 && NetUtils.filterLocalHost(url.getIp()).equals(
                 NetUtils.filterLocalHost(address.getAddress()
                     .getHostAddress()));
-            channel.setAttribute(Constants.SIDE_KEY, isClient ? CLIENT_SIDE
+            channel.setAttribute(SIDE_KEY, isClient ? CLIENT_SIDE
                 : SERVER_SIDE);
             return isClient;
         }
