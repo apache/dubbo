@@ -59,6 +59,7 @@ public class ClusterUtilsTest {
                 .addParameter(DEFAULT_KEY_PREFIX + QUEUES_KEY, Integer.MAX_VALUE)
                 .addParameter(DEFAULT_KEY_PREFIX + ALIVE_KEY, Integer.MAX_VALUE)
                 .addParameter(DEFAULT_KEY_PREFIX + THREAD_NAME_KEY, "test")
+                .addParameter("." + Constants.ASYNC_KEY, "test")
                 .build();
 
         URL consumerURL = new URLBuilder(Constants.DUBBO_PROTOCOL, "localhost", 55555)
@@ -72,6 +73,7 @@ public class ClusterUtilsTest {
         Assertions.assertFalse(url.hasParameter(DEFAULT_KEY_PREFIX + THREADS_KEY));
 
         Assertions.assertFalse(url.hasParameter(DEFAULT_KEY_PREFIX + THREADPOOL_KEY));
+        Assertions.assertFalse(url.hasParameter("." + Constants.ASYNC_KEY));
 
         Assertions.assertFalse(url.hasParameter(CORE_THREADS_KEY));
         Assertions.assertFalse(url.hasParameter(DEFAULT_KEY_PREFIX + CORE_THREADS_KEY));
