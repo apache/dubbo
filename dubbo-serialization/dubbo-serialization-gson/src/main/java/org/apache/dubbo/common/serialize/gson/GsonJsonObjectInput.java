@@ -107,7 +107,9 @@ public class GsonJsonObjectInput implements ObjectInput {
 
     private String readLine() throws IOException {
         String line = reader.readLine();
-        if (line == null || line.trim().length() == 0) throw new EOFException();
+        if (line == null || line.trim().length() == 0) {
+            throw new EOFException();
+        }
         return line;
     }
 

@@ -18,7 +18,6 @@
 package org.apache.dubbo.remoting.etcd.jetcd;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
@@ -67,6 +66,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import static java.util.stream.Collectors.toList;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 
 public class JEtcdClientWrapper {
@@ -188,7 +188,9 @@ public class JEtcdClientWrapper {
                                     int index = len, count = 0;
                                     if (key.length() > len) {
                                         for (; (index = key.indexOf(PATH_SEPARATOR, index)) != -1; ++index) {
-                                            if (count++ > 1) break;
+                                            if (count++ > 1) {
+                                                break;
+                                            }
                                         }
                                     }
                                     return count == 1;
@@ -479,7 +481,7 @@ public class JEtcdClientWrapper {
     }
 
     public String[] endPoints(String backupAddress) {
-        String[] endpoints = backupAddress.split(CommonConstants.COMMA_SEPARATOR);
+        String[] endpoints = backupAddress.split(COMMA_SEPARATOR);
         List<String> addresses = Arrays.stream(endpoints)
                 .map(address -> address.contains(Constants.HTTP_SUBFIX_KEY)
                         ? address
