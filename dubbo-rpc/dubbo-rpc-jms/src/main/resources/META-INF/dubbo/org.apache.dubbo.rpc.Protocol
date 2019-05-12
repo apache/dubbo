@@ -1,0 +1,1 @@
+jms=org.apache.dubbo.rpc.protocol.jms.JmsProtocol
