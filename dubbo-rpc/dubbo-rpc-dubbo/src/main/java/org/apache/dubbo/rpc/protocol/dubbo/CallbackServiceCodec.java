@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.bytecode.Wrapper;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -41,6 +40,13 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.CALLBACK_SERVICE_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.CALLBACK_INSTANCES_LIMIT_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.DEFAULT_CALLBACK_INSTANCES;
+import static org.apache.dubbo.common.constants.RpcConstants.CALLBACK_SERVICE_PROXY_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.IS_CALLBACK_SERVICE;
+import static org.apache.dubbo.common.constants.RpcConstants.CHANNEL_CALLBACK_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.IS_SERVER_KEY;
 
 /**
  * callback service helper
@@ -87,9 +93,9 @@ class CallbackServiceCodec {
 
         Map<String, String> params = new HashMap<>(3);
         // no need to new client again
-        params.put(Constants.IS_SERVER_KEY, Boolean.FALSE.toString());
+        params.put(IS_SERVER_KEY, Boolean.FALSE.toString());
         // mark it's a callback, for troubleshooting
-        params.put(Constants.IS_CALLBACK_SERVICE, Boolean.TRUE.toString());
+        params.put(IS_CALLBACK_SERVICE, Boolean.TRUE.toString());
         String group = (url == null ? null : url.getParameter(GROUP_KEY));
         if (group != null && group.length() > 0) {
             params.put(GROUP_KEY, group);
@@ -156,11 +162,11 @@ class CallbackServiceCodec {
 
                     //convert error fail fast .
                     //ignore concurrent problem.
-                    Set<Invoker<?>> callbackInvokers = (Set<Invoker<?>>) channel.getAttribute(Constants.CHANNEL_CALLBACK_KEY);
+                    Set<Invoker<?>> callbackInvokers = (Set<Invoker<?>>) channel.getAttribute(CHANNEL_CALLBACK_KEY);
                     if (callbackInvokers == null) {
                         callbackInvokers = new ConcurrentHashSet<Invoker<?>>(1);
                         callbackInvokers.add(invoker);
-                        channel.setAttribute(Constants.CHANNEL_CALLBACK_KEY, callbackInvokers);
+                        channel.setAttribute(CHANNEL_CALLBACK_KEY, callbackInvokers);
                     }
                     logger.info("method " + inv.getMethodName() + " include a callback service :" + invoker.getUrl() + ", a proxy :" + invoker + " has been created.");
                 }
@@ -169,7 +175,7 @@ class CallbackServiceCodec {
             if (proxy != null) {
                 Invoker<?> invoker = (Invoker<?>) channel.getAttribute(invokerCacheKey);
                 try {
-                    Set<Invoker<?>> callbackInvokers = (Set<Invoker<?>>) channel.getAttribute(Constants.CHANNEL_CALLBACK_KEY);
+                    Set<Invoker<?>> callbackInvokers = (Set<Invoker<?>>) channel.getAttribute(CHANNEL_CALLBACK_KEY);
                     if (callbackInvokers != null) {
                         callbackInvokers.remove(invoker);
                     }
@@ -187,11 +193,11 @@ class CallbackServiceCodec {
     }
 
     private static String getClientSideCallbackServiceCacheKey(int instid) {
-        return Constants.CALLBACK_SERVICE_KEY + "." + instid;
+        return CALLBACK_SERVICE_KEY + "." + instid;
     }
 
     private static String getServerSideCallbackServiceCacheKey(Channel channel, String interfaceClass, int instid) {
-        return Constants.CALLBACK_SERVICE_PROXY_KEY + "." + System.identityHashCode(channel) + "." + interfaceClass + "." + instid;
+        return CALLBACK_SERVICE_PROXY_KEY + "." + System.identityHashCode(channel) + "." + interfaceClass + "." + instid;
     }
 
     private static String getServerSideCallbackInvokerCacheKey(Channel channel, String interfaceClass, int instid) {
@@ -199,16 +205,16 @@ class CallbackServiceCodec {
     }
 
     private static String getClientSideCountKey(String interfaceClass) {
-        return Constants.CALLBACK_SERVICE_KEY + "." + interfaceClass + ".COUNT";
+        return CALLBACK_SERVICE_KEY + "." + interfaceClass + ".COUNT";
     }
 
     private static String getServerSideCountKey(Channel channel, String interfaceClass) {
-        return Constants.CALLBACK_SERVICE_PROXY_KEY + "." + System.identityHashCode(channel) + "." + interfaceClass + ".COUNT";
+        return CALLBACK_SERVICE_PROXY_KEY + "." + System.identityHashCode(channel) + "." + interfaceClass + ".COUNT";
     }
 
     private static boolean isInstancesOverLimit(Channel channel, URL url, String interfaceClass, int instid, boolean isServer) {
         Integer count = (Integer) channel.getAttribute(isServer ? getServerSideCountKey(channel, interfaceClass) : getClientSideCountKey(interfaceClass));
-        int limit = url.getParameter(Constants.CALLBACK_INSTANCES_LIMIT_KEY, Constants.DEFAULT_CALLBACK_INSTANCES);
+        int limit = url.getParameter(CALLBACK_INSTANCES_LIMIT_KEY, DEFAULT_CALLBACK_INSTANCES);
         if (count != null && count >= limit) {
             //client side error
             throw new IllegalStateException("interface " + interfaceClass + " `s callback instances num exceed providers limit :" + limit

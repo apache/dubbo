@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -31,6 +30,8 @@ import java.util.Map;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREADS;
 import static org.apache.dubbo.common.constants.CommonConstants.IO_THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.KEEP_ALIVE_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.DEFAULT_KEEP_ALIVE;
 
 /**
  * Netty server can't support @Context injection of servlet objects since it's not a servlet container
@@ -48,7 +49,7 @@ public class NettyServer extends BaseRestServer {
         }
         server.setPort(url.getParameter(RemotingConstants.BIND_PORT_KEY, url.getPort()));
         Map<ChannelOption, Object> channelOption = new HashMap<ChannelOption, Object>();
-        channelOption.put(ChannelOption.SO_KEEPALIVE, url.getParameter(Constants.KEEP_ALIVE_KEY, Constants.DEFAULT_KEEP_ALIVE));
+        channelOption.put(ChannelOption.SO_KEEPALIVE, url.getParameter(KEEP_ALIVE_KEY, DEFAULT_KEEP_ALIVE));
         server.setChildChannelOptions(channelOption);
         server.setExecutorThreadCount(url.getParameter(THREADS_KEY, DEFAULT_THREADS));
         server.setIoWorkerCount(url.getParameter(IO_THREADS_KEY, RemotingConstants.DEFAULT_IO_THREADS));

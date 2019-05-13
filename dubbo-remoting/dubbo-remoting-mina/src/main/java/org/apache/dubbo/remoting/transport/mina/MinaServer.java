@@ -39,7 +39,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executors;
 
-import static org.apache.dubbo.common.Constants.DEFAULT_IO_THREADS;
+import static org.apache.dubbo.common.constants.RemotingConstants.DEFAULT_IO_THREADS;
 import static org.apache.dubbo.common.constants.CommonConstants.IO_THREADS_KEY;
 
 /**

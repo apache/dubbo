@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 
@@ -32,6 +31,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.TOKEN_KEY;
 
 /**
  * RPC Invocation.
@@ -74,8 +74,8 @@ public class RpcInvocation implements Invocation, Serializable {
             if (url.hasParameter(TIMEOUT_KEY)) {
                 setAttachment(TIMEOUT_KEY, url.getParameter(TIMEOUT_KEY));
             }
-            if (url.hasParameter(Constants.TOKEN_KEY)) {
-                setAttachment(Constants.TOKEN_KEY, url.getParameter(Constants.TOKEN_KEY));
+            if (url.hasParameter(TOKEN_KEY)) {
+                setAttachment(TOKEN_KEY, url.getParameter(TOKEN_KEY));
             }
             if (url.hasParameter(APPLICATION_KEY)) {
                 setAttachment(APPLICATION_KEY, url.getParameter(APPLICATION_KEY));
