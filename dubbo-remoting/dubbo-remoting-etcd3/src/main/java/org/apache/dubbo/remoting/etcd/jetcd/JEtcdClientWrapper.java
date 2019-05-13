@@ -68,6 +68,11 @@ import java.util.function.Consumer;
 import static java.util.stream.Collectors.toList;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTRY_RECONNECT_PERIOD;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTRY_RETRY_PERIOD;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_RETRY_PERIOD_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.SESSION_TIMEOUT_KEY;
+import static org.apache.dubbo.remoting.etcd.option.Constants.DEFAULT_KEEPALIVE_TIMEOUT;
 
 public class JEtcdClientWrapper {
 
@@ -111,9 +116,9 @@ public class JEtcdClientWrapper {
 
     public JEtcdClientWrapper(URL url) {
         this.url = url;
-        this.expirePeriod = url.getParameter(Constants.SESSION_TIMEOUT_KEY, Constants.DEFAULT_KEEPALIVE_TIMEOUT) / 1000;
+        this.expirePeriod = url.getParameter(SESSION_TIMEOUT_KEY, DEFAULT_KEEPALIVE_TIMEOUT) / 1000;
         if (expirePeriod <= 0) {
-            this.expirePeriod = Constants.DEFAULT_KEEPALIVE_TIMEOUT / 1000;
+            this.expirePeriod = DEFAULT_KEEPALIVE_TIMEOUT / 1000;
         }
         this.channel = new AtomicReference<>();
         this.completableFuture = CompletableFuture.supplyAsync(() -> prepareClient(url));
@@ -122,7 +127,7 @@ public class JEtcdClientWrapper {
         this.retryPolicy = new RetryNTimes(1, 1000, TimeUnit.MILLISECONDS);
 
         this.failed = new IllegalStateException("Etcd3 registry is not connected yet, url:" + url);
-        int retryPeriod = url.getParameter(Constants.REGISTRY_RETRY_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RETRY_PERIOD);
+        int retryPeriod = url.getParameter(REGISTRY_RETRY_PERIOD_KEY, DEFAULT_REGISTRY_RETRY_PERIOD);
 
         this.retryFuture = retryExecutor.scheduleWithFixedDelay(() -> {
             try {
@@ -531,7 +536,7 @@ public class JEtcdClientWrapper {
                         }
                         connectState = connected;
                     }
-                }, Constants.DEFAULT_REGISTRY_RECONNECT_PERIOD, Constants.DEFAULT_REGISTRY_RECONNECT_PERIOD, TimeUnit.MILLISECONDS);
+                }, DEFAULT_REGISTRY_RECONNECT_PERIOD, DEFAULT_REGISTRY_RECONNECT_PERIOD, TimeUnit.MILLISECONDS);
             } catch (Throwable t) {
                 logger.error("monitor reconnect status failed.", t);
             }

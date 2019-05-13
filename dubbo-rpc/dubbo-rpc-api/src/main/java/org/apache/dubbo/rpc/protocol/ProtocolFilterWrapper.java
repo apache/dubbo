@@ -31,6 +31,8 @@ import org.apache.dubbo.rpc.RpcException;
 
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
+
 /**
  * ListenerProtocol
  */
@@ -103,7 +105,7 @@ public class ProtocolFilterWrapper implements Protocol {
 
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        if (Constants.REGISTRY_PROTOCOL.equals(invoker.getUrl().getProtocol())) {
+        if (REGISTRY_PROTOCOL.equals(invoker.getUrl().getProtocol())) {
             return protocol.export(invoker);
         }
         return protocol.export(buildInvokerChain(invoker, Constants.SERVICE_FILTER_KEY, CommonConstants.PROVIDER));
@@ -111,7 +113,7 @@ public class ProtocolFilterWrapper implements Protocol {
 
     @Override
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
-        if (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) {
+        if (REGISTRY_PROTOCOL.equals(url.getProtocol())) {
             return protocol.refer(type, url);
         }
         return buildInvokerChain(protocol.refer(type, url), Constants.REFERENCE_FILTER_KEY, CommonConstants.CONSUMER);

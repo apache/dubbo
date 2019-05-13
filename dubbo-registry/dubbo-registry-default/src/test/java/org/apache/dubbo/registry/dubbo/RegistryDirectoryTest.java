@@ -56,6 +56,12 @@ import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
@@ -189,7 +195,7 @@ public class RegistryDirectoryTest {
     private void testforbid(RegistryDirectory registryDirectory) {
         invocation = new RpcInvocation();
         List<URL> serviceUrls = new ArrayList<URL>();
-        serviceUrls.add(new URL(Constants.EMPTY_PROTOCOL, ANYHOST_VALUE, 0, service, Constants.CATEGORY_KEY, Constants.PROVIDERS_CATEGORY));
+        serviceUrls.add(new URL(EMPTY_PROTOCOL, ANYHOST_VALUE, 0, service, CATEGORY_KEY, PROVIDERS_CATEGORY));
         registryDirectory.notify(serviceUrls);
         Assertions.assertEquals(false,
                 registryDirectory.isAvailable(), "invokers size=0 ,then the registry directory is not available");
@@ -548,15 +554,15 @@ public class RegistryDirectoryTest {
     public void testNotifyRouterUrls() {
         if (isScriptUnsupported) return;
         RegistryDirectory registryDirectory = getRegistryDirectory();
-        URL routerurl = URL.valueOf(Constants.ROUTE_PROTOCOL + "://127.0.0.1:9096/");
-        URL routerurl2 = URL.valueOf(Constants.ROUTE_PROTOCOL + "://127.0.0.1:9097/");
+        URL routerurl = URL.valueOf(ROUTE_PROTOCOL + "://127.0.0.1:9096/");
+        URL routerurl2 = URL.valueOf(ROUTE_PROTOCOL + "://127.0.0.1:9097/");
 
         List<URL> serviceUrls = new ArrayList<URL>();
         // without ROUTER_KEY, the first router should not be created.
-        serviceUrls.add(routerurl.addParameter(Constants.CATEGORY_KEY, Constants.ROUTERS_CATEGORY).addParameter(Constants.TYPE_KEY, "javascript").addParameter(Constants.ROUTER_KEY,
+        serviceUrls.add(routerurl.addParameter(CATEGORY_KEY, ROUTERS_CATEGORY).addParameter(Constants.TYPE_KEY, "javascript").addParameter(Constants.ROUTER_KEY,
                 "notsupported").addParameter(Constants.RULE_KEY,
                 "function test1(){}"));
-        serviceUrls.add(routerurl2.addParameter(Constants.CATEGORY_KEY, Constants.ROUTERS_CATEGORY).addParameter(Constants.TYPE_KEY, "javascript").addParameter(Constants.ROUTER_KEY,
+        serviceUrls.add(routerurl2.addParameter(CATEGORY_KEY, ROUTERS_CATEGORY).addParameter(Constants.TYPE_KEY, "javascript").addParameter(Constants.ROUTER_KEY,
                 ScriptRouterFactory.NAME).addParameter(Constants.RULE_KEY,
                 "function test1(){}"));
 
@@ -866,7 +872,7 @@ public class RegistryDirectoryTest {
         Assertions.assertEquals("10.20.30.141", invokers.get(0).getUrl().getHost());
 
         durls = new ArrayList<URL>();
-        durls.add(URL.valueOf("empty://0.0.0.0?" + DISABLED_KEY + "=true&" + Constants.CATEGORY_KEY + "=" + Constants.CONFIGURATORS_CATEGORY));
+        durls.add(URL.valueOf("empty://0.0.0.0?" + DISABLED_KEY + "=true&" + CATEGORY_KEY + "=" + CONFIGURATORS_CATEGORY));
         registryDirectory.notify(durls);
         List<Invoker<?>> invokers2 = registryDirectory.list(invocation);
         Assertions.assertEquals(2, invokers2.size());
@@ -897,7 +903,7 @@ public class RegistryDirectoryTest {
         Assertions.assertEquals("10.20.30.140", invokers2.get(0).getUrl().getHost());
 
         durls = new ArrayList<URL>();
-        durls.add(URL.valueOf("empty://0.0.0.0?" + DISABLED_KEY + "=true&" + Constants.CATEGORY_KEY + "=" + Constants.CONFIGURATORS_CATEGORY));
+        durls.add(URL.valueOf("empty://0.0.0.0?" + DISABLED_KEY + "=true&" + CATEGORY_KEY + "=" + CONFIGURATORS_CATEGORY));
         registryDirectory.notify(durls);
         List<Invoker<?>> invokers3 = registryDirectory.list(invocation);
         Assertions.assertEquals(1, invokers3.size());
@@ -934,7 +940,7 @@ public class RegistryDirectoryTest {
     public void testNotifyRouterUrls_Clean() {
         if (isScriptUnsupported) return;
         RegistryDirectory registryDirectory = getRegistryDirectory();
-        URL routerurl = URL.valueOf(Constants.ROUTE_PROTOCOL + "://127.0.0.1:9096/").addParameter(Constants.ROUTER_KEY,
+        URL routerurl = URL.valueOf(ROUTE_PROTOCOL + "://127.0.0.1:9096/").addParameter(Constants.ROUTER_KEY,
                 "javascript").addParameter(Constants.RULE_KEY,
                 "function test1(){}").addParameter(Constants.ROUTER_KEY,
                 "script"); // FIX
