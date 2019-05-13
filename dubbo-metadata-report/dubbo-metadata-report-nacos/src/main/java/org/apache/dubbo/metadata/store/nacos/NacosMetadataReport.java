@@ -37,7 +37,7 @@ import static com.alibaba.nacos.api.PropertyKeyConst.ENDPOINT;
 import static com.alibaba.nacos.api.PropertyKeyConst.NAMESPACE;
 import static com.alibaba.nacos.api.PropertyKeyConst.CLUSTER_NAME;
 import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG_NAME;
-import static org.apache.dubbo.common.Constants.BACKUP_KEY;
+import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 
 /**
  * metadata report impl for nacos
