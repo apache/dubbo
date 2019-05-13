@@ -24,7 +24,6 @@ import com.alibaba.nacos.api.exception.NacosException;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.NacosUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.ConfigChangeType;
@@ -38,6 +37,14 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
+import static com.alibaba.nacos.api.PropertyKeyConst.ACCESS_KEY;
+import static com.alibaba.nacos.api.PropertyKeyConst.CLUSTER_NAME;
+import static com.alibaba.nacos.api.PropertyKeyConst.ENDPOINT;
+import static com.alibaba.nacos.api.PropertyKeyConst.SECRET_KEY;
+import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
+import static com.alibaba.nacos.api.PropertyKeyConst.NAMESPACE;
+import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG_NAME;
+import static org.apache.dubbo.common.Constants.BACKUP_KEY;
 import static org.apache.dubbo.common.Constants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.Constants.GROUP_CHAR_SEPERATOR;
 import static org.apache.dubbo.common.Constants.PROPERTIES_CHAR_SEPERATOR;
@@ -72,7 +79,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     }
 
     private ConfigService buildConfigService(URL url) {
-        Properties nacosProperties = NacosUtils.buildNacosProperties(url);
+        Properties nacosProperties = buildNacosProperties(url);
         try {
             configService = NacosFactory.createConfigService(nacosProperties);
         } catch (NacosException e) {
@@ -99,6 +106,44 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
             return new String[]{key, null};
         } else {
             return new String[]{key.substring(0, i), key.substring(i+1)};
+        }
+    }
+
+    private Properties buildNacosProperties(URL url) {
+        Properties properties = new Properties();
+        setServerAddr(url, properties);
+        setProperties(url, properties);
+        return properties;
+    }
+
+    private void setServerAddr(URL url, Properties properties) {
+        StringBuilder serverAddrBuilder =
+                new StringBuilder(url.getHost()) // Host
+                        .append(":")
+                        .append(url.getPort()); // Port
+
+        // Append backup parameter as other servers
+        String backup = url.getParameter(BACKUP_KEY);
+        if (backup != null) {
+            serverAddrBuilder.append(",").append(backup);
+        }
+        String serverAddr = serverAddrBuilder.toString();
+        properties.put(SERVER_ADDR, serverAddr);
+    }
+
+    private void setProperties(URL url, Properties properties) {
+        putPropertyIfAbsent(url, properties, NAMESPACE);
+        putPropertyIfAbsent(url, properties, NACOS_NAMING_LOG_NAME);
+        putPropertyIfAbsent(url, properties, ENDPOINT);
+        putPropertyIfAbsent(url, properties, ACCESS_KEY);
+        putPropertyIfAbsent(url, properties, SECRET_KEY);
+        putPropertyIfAbsent(url, properties, CLUSTER_NAME);
+    }
+
+    private void putPropertyIfAbsent(URL url, Properties properties, String propertyName) {
+        String propertyValue = url.getParameter(propertyName);
+        if (StringUtils.isNotEmpty(propertyValue)) {
+            properties.setProperty(propertyName, propertyValue);
         }
     }
 
