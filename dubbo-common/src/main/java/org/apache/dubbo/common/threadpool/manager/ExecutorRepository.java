@@ -22,12 +22,15 @@ import org.apache.dubbo.common.extension.SPI;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
+/**
+ *
+ */
 @SPI("default")
 public interface ExecutorRepository {
 
     /**
-     * Called by both Client and Server.
-     * When Client or Server starts for the first time, generate a new threadpool according to the parameters in url.
+     * Called by both Client and Server. TODO, consider separate these two parts.
+     * When the Client or Server starts for the first time, generate a new threadpool according to the parameters passed in usr.
      *
      * @param url
      * @return
@@ -44,13 +47,14 @@ public interface ExecutorRepository {
 
     /**
      * Returns a scheduler from the scheduler list, call this method whenever you need a scheduler for a cron job.
+     * If your cron cannot burden the possible schedule delay caused by sharing the same scheduler, please consider define a dedicate one.
      *
      * @return
      */
     ScheduledExecutorService nextScheduledExecutor();
 
     /**
-     * The default shared threadpool.
+     * Get the default shared threadpool.
      *
      * @return
      */

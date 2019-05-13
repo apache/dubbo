@@ -28,7 +28,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
+ * The most important difference between this Executor and other normal Executor is that this one doesn't manage
+ * any thread.
  *
+ * Tasks submitted to this executor through {@link #execute(Runnable)} will not get scheduled to a specific thread, though normal executors always do the schedule.
+ * Those tasks are stored in a blocking queue and will only be executed when a thead calls {@link #waitAndDrain()}, the thead executing the task
+ * is exactly the same as the one calling waitAndDrain.
  */
 public class ThreadlessExecutor extends AbstractExecutorService {
     private static final Logger logger = LoggerFactory.getLogger(ThreadlessExecutor.class.getName());
@@ -37,7 +42,7 @@ public class ThreadlessExecutor extends AbstractExecutorService {
 
     private ExecutorService sharedExecutor;
 
-    private volatile boolean executed;
+    private volatile boolean waiting = true;
 
     private final Object lock = new Object();
 
@@ -45,15 +50,19 @@ public class ThreadlessExecutor extends AbstractExecutorService {
         this.sharedExecutor = sharedExecutor;
     }
 
+    public boolean isWaiting() {
+        return waiting;
+    }
+
     /**
      * Waits until there is a Runnable, then executes it and all queued Runnables after it.
      */
     public void waitAndDrain() throws InterruptedException {
         Runnable runnable = queue.take();
-        runnable.run();
 
         synchronized (lock) {
-            executed = true;
+            waiting = false;
+            runnable.run();
         }
 
         runnable = queue.poll();
@@ -84,16 +93,35 @@ public class ThreadlessExecutor extends AbstractExecutorService {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * If the calling thread is still waiting for a callback task, add the task into the blocking queue to wait for schedule.
+     * Otherwise, submit to shared callback executor directly.
+     *
+     * @param runnable
+     */
     @Override
     public void execute(Runnable runnable) {
         synchronized (lock) {
-            if (executed) {
+            if (!waiting) {
                 sharedExecutor.execute(runnable);
             } else {
                 queue.add(runnable);
             }
         }
     }
+
+    /**
+     * tells the thread blocking on {@link #waitAndDrain()} to return, despite of the current status, to avoid endless waiting.
+     */
+    public void notifyReturn() {
+        // an empty runnable task.
+        execute(() -> {
+        });
+    }
+
+    /**
+     * The following methods are still not supported
+     */
 
     @Override
     public void shutdown() {
