@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.remoting.exchange.support.header;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
@@ -30,6 +29,8 @@ import org.junit.jupiter.api.Test;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
 
 public class HeartBeatTaskTest {
 
@@ -61,7 +62,7 @@ public class HeartBeatTaskTest {
     public void testHeartBeat() throws Exception {
         long now = System.currentTimeMillis();
 
-        url = url.addParameter(Constants.DUBBO_VERSION_KEY, "2.1.1");
+        url = url.addParameter(DUBBO_VERSION_KEY, "2.1.1");
         channel.setAttribute(
                 HeaderExchangeHandler.KEY_READ_TIMESTAMP, now);
         channel.setAttribute(

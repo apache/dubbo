@@ -56,6 +56,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.MOCK_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
@@ -403,7 +405,7 @@ public class RegistryDirectoryTest {
         {
             Assertions.assertEquals(null, registryDirectory2.getUrl().getParameter("mock"));
             serviceUrls.clear();
-            serviceUrls.add(SERVICEURL.addParameter(Constants.MOCK_KEY, "true"));
+            serviceUrls.add(SERVICEURL.addParameter(MOCK_KEY, "true"));
             registryDirectory2.notify(serviceUrls);
 
             Assertions.assertEquals("true", registryDirectory2.getUrl().getParameter("mock"));
@@ -477,7 +479,7 @@ public class RegistryDirectoryTest {
         registryDirectory.notify(serviceUrls);
 
         // Object $invoke(String method, String[] parameterTypes, Object[] args) throws GenericException;
-        invocation = new RpcInvocation(Constants.$INVOKE, new Class[]{String.class, String[].class, Object[].class},
+        invocation = new RpcInvocation($INVOKE, new Class[]{String.class, String[].class, Object[].class},
                 new Object[]{"getXXX1", "", new Object[]{}});
 
         List<Invoker> invokers = registryDirectory.list(invocation);
@@ -506,8 +508,7 @@ public class RegistryDirectoryTest {
 
         registryDirectory.notify(serviceUrls);
 
-        invocation = new RpcInvocation(
-                Constants.$INVOKE,
+        invocation = new RpcInvocation($INVOKE,
                 new Class[]{String.class, String[].class, Object[].class},
                 new Object[]{"getXXX1", new String[]{"Enum"}, new Object[]{Param.MORGAN}});
 

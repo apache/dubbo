@@ -27,6 +27,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.apache.dubbo.common.constants.RpcConstants;
+
 /**
  * Service annotation
  *
@@ -142,9 +144,9 @@ public @interface Service {
     /**
      * The callback instance limit peer connection
      *
-     * @see Constants#DEFAULT_CALLBACK_INSTANCES
+     * @see RpcConstants#DEFAULT_CALLBACK_INSTANCES
      */
-    int callbacks() default Constants.DEFAULT_CALLBACK_INSTANCES;
+    int callbacks() default RpcConstants.DEFAULT_CALLBACK_INSTANCES;
 
     /**
      * Callback method name when connected, default value is empty string

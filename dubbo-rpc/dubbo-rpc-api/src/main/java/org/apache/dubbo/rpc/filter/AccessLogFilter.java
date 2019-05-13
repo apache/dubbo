@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.filter;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -48,6 +47,7 @@ import java.util.concurrent.TimeUnit;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.ACCESS_LOG_KEY;
 
 /**
  * Record access log for the service.
@@ -63,7 +63,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
  * &lt;/logger&gt;
  * </pre></code>
  */
-@Activate(group = PROVIDER, value = Constants.ACCESS_LOG_KEY)
+@Activate(group = PROVIDER, value = ACCESS_LOG_KEY)
 public class AccessLogFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(AccessLogFilter.class);
@@ -102,7 +102,7 @@ public class AccessLogFilter implements Filter {
     @Override
     public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
         try {
-            String accessLogKey = invoker.getUrl().getParameter(Constants.ACCESS_LOG_KEY);
+            String accessLogKey = invoker.getUrl().getParameter(ACCESS_LOG_KEY);
             if (ConfigUtils.isNotEmpty(accessLogKey)) {
                 AccessLogData logData = buildAccessLogData(invoker, inv);
                 log(accessLogKey, logData);

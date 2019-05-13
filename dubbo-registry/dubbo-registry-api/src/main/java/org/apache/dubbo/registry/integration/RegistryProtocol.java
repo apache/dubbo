@@ -54,7 +54,7 @@ import java.util.concurrent.ExecutorService;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.apache.dubbo.common.Constants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.Constants.EXPORT_KEY;
-import static org.apache.dubbo.common.Constants.INTERFACES;
+import static org.apache.dubbo.common.constants.RpcConstants.INTERFACES;
 import static org.apache.dubbo.common.Constants.MONITOR_KEY;
 import static org.apache.dubbo.common.Constants.QOS_ENABLE;
 import static org.apache.dubbo.common.Constants.QOS_PORT;

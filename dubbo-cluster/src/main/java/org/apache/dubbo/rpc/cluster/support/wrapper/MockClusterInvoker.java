@@ -31,6 +31,8 @@ import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.support.MockInvoker;
 
+import static org.apache.dubbo.common.constants.RpcConstants.MOCK_KEY;
+
 import java.util.List;
 
 public class MockClusterInvoker<T> implements Invoker<T> {
@@ -70,7 +72,7 @@ public class MockClusterInvoker<T> implements Invoker<T> {
     public Result invoke(Invocation invocation) throws RpcException {
         Result result = null;
 
-        String value = directory.getUrl().getMethodParameter(invocation.getMethodName(), Constants.MOCK_KEY, Boolean.FALSE.toString()).trim();
+        String value = directory.getUrl().getMethodParameter(invocation.getMethodName(), MOCK_KEY, Boolean.FALSE.toString()).trim();
         if (value.length() == 0 || value.equalsIgnoreCase("false")) {
             //no mock
             result = this.invoker.invoke(invocation);
