@@ -22,11 +22,12 @@ import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.InvokerListener;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
+import static org.apache.dubbo.common.constants.ClusterConstants.CLUSTER_STICKY_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.STUB_EVENT_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.REFERENCE_FILTER_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.INVOKER_LISTENER_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.REFERENCE_FILTER_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.STUB_EVENT_KEY;
 
 /**
  * AbstractConsumerConfig
@@ -195,7 +196,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         this.reconnect = reconnect;
     }
 
-    @Parameter(key = Constants.CLUSTER_STICKY_KEY)
+    @Parameter(key = CLUSTER_STICKY_KEY)
     public Boolean getSticky() {
         return sticky;
     }
