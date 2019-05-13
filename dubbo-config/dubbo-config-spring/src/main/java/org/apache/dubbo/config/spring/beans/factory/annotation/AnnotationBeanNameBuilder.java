@@ -16,16 +16,16 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.registry.Registry;
 
 import org.springframework.core.env.Environment;
 
-import static org.apache.dubbo.common.Constants.CONSUMERS_CATEGORY;
-import static org.apache.dubbo.common.Constants.DEFAULT_PROTOCOL;
-import static org.apache.dubbo.common.Constants.PROVIDERS_CATEGORY;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.config.spring.util.AnnotationUtils.resolveInterfaceName;
 import static org.springframework.util.StringUtils.arrayToCommaDelimitedString;
 import static org.springframework.util.StringUtils.hasText;
@@ -114,8 +114,8 @@ class AnnotationBeanNameBuilder {
      *
      * @param protocols one or more protocols
      * @return if <code>protocols</code> == <code>null</code>, it will return
-     * {@link Constants#DEFAULT_PROTOCOL "dubbo"} as the default protocol
-     * @see Constants#DEFAULT_PROTOCOL
+     * {@link CommonConstants#DEFAULT_PROTOCOL "dubbo"} as the default protocol
+     * @see CommonConstants#DEFAULT_PROTOCOL
      */
     private static String resolveProtocol(String... protocols) {
         String protocol = arrayToCommaDelimitedString(protocols);

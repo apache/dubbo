@@ -37,6 +37,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+
 /**
  * callback service helper
  */
@@ -85,17 +90,17 @@ class CallbackServiceCodec {
         params.put(Constants.IS_SERVER_KEY, Boolean.FALSE.toString());
         // mark it's a callback, for troubleshooting
         params.put(Constants.IS_CALLBACK_SERVICE, Boolean.TRUE.toString());
-        String group = (url == null ? null : url.getParameter(Constants.GROUP_KEY));
+        String group = (url == null ? null : url.getParameter(GROUP_KEY));
         if (group != null && group.length() > 0) {
-            params.put(Constants.GROUP_KEY, group);
+            params.put(GROUP_KEY, group);
         }
         // add method, for verifying against method, automatic fallback (see dubbo protocol)
-        params.put(Constants.METHODS_KEY, StringUtils.join(Wrapper.getWrapper(clazz).getDeclaredMethodNames(), ","));
+        params.put(METHODS_KEY, StringUtils.join(Wrapper.getWrapper(clazz).getDeclaredMethodNames(), ","));
 
         Map<String, String> tmpMap = new HashMap<>(url.getParameters());
         tmpMap.putAll(params);
-        tmpMap.remove(Constants.VERSION_KEY);// doesn't need to distinguish version for callback
-        tmpMap.put(Constants.INTERFACE_KEY, clazz.getName());
+        tmpMap.remove(VERSION_KEY);// doesn't need to distinguish version for callback
+        tmpMap.put(INTERFACE_KEY, clazz.getName());
         URL exportUrl = new URL(DubboProtocol.NAME, channel.getLocalAddress().getAddress().getHostAddress(), channel.getLocalAddress().getPort(), clazz.getName() + "." + instid, tmpMap);
 
         // no need to generate multiple exporters for different channel in the same JVM, cache key cannot collide.
@@ -139,8 +144,8 @@ class CallbackServiceCodec {
         String countkey = getServerSideCountKey(channel, clazz.getName());
         if (isRefer) {
             if (proxy == null) {
-                URL referurl = URL.valueOf("callback://" + url.getAddress() + "/" + clazz.getName() + "?" + Constants.INTERFACE_KEY + "=" + clazz.getName());
-                referurl = referurl.addParametersIfAbsent(url.getParameters()).removeParameter(Constants.METHODS_KEY);
+                URL referurl = URL.valueOf("callback://" + url.getAddress() + "/" + clazz.getName() + "?" + INTERFACE_KEY + "=" + clazz.getName());
+                referurl = referurl.addParametersIfAbsent(url.getParameters()).removeParameter(METHODS_KEY);
                 if (!isInstancesOverLimit(channel, referurl, clazz.getName(), instid, true)) {
                     @SuppressWarnings("rawtypes")
                     Invoker<?> invoker = new ChannelWrappedInvoker(clazz, channel, referurl, String.valueOf(instid));

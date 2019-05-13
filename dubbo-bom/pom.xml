@@ -259,6 +259,11 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-registry-nacos</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-registry-sofa</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -344,6 +349,11 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-serialization-protobuf-json</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-compatible</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -395,6 +405,11 @@
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-configcenter-etcd</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-configcenter-nacos</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

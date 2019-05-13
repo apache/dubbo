@@ -23,19 +23,19 @@ import java.io.InputStream;
  * UnsafeByteArrayInputStream.
  */
 public class UnsafeByteArrayInputStream extends InputStream {
-    protected byte mData[];
+    protected byte[] mData;
 
     protected int mPosition, mLimit, mMark = 0;
 
-    public UnsafeByteArrayInputStream(byte buf[]) {
+    public UnsafeByteArrayInputStream(byte[] buf) {
         this(buf, 0, buf.length);
     }
 
-    public UnsafeByteArrayInputStream(byte buf[], int offset) {
+    public UnsafeByteArrayInputStream(byte[] buf, int offset) {
         this(buf, offset, buf.length - offset);
     }
 
-    public UnsafeByteArrayInputStream(byte buf[], int offset, int length) {
+    public UnsafeByteArrayInputStream(byte[] buf, int offset, int length) {
         mData = buf;
         mPosition = mMark = offset;
         mLimit = Math.min(offset + length, buf.length);
@@ -47,7 +47,7 @@ public class UnsafeByteArrayInputStream extends InputStream {
     }
 
     @Override
-    public int read(byte b[], int off, int len) {
+    public int read(byte[] b, int off, int len) {
         if (b == null) {
             throw new NullPointerException();
         }

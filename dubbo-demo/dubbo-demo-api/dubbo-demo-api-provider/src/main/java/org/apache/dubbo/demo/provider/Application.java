@@ -29,10 +29,9 @@ public class Application {
      * launch the application
      */
     public static void main(String[] args) throws Exception {
-        System.setProperty("DUBBO_IP_TO_REGISTRY", "4.3.2.1");
         ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
         service.setApplication(new ApplicationConfig("dubbo-demo-api-provider"));
-        service.setRegistry(new RegistryConfig("zookeeper://127.0.0.1:2181"));
+        service.setRegistry(new RegistryConfig("multicast://224.5.6.7:1234"));
         service.setInterface(DemoService.class);
         service.setRef(new DemoServiceImpl());
         service.export();

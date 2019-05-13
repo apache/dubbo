@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.thrift;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -30,6 +29,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.protocol.thrift.io.RandomAccessByteArrayOutputStream;
+
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TException;
@@ -50,6 +50,9 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 
 /**
  * Thrift framed protocol codec.
@@ -181,8 +184,8 @@ public class ThriftCodec implements Codec2 {
         if (message.type == TMessageType.CALL) {
 
             RpcInvocation result = new RpcInvocation();
-            result.setAttachment(Constants.INTERFACE_KEY, serviceName);
-            result.setAttachment(Constants.PATH_KEY, path);
+            result.setAttachment(INTERFACE_KEY, serviceName);
+            result.setAttachment(PATH_KEY, path);
             result.setMethodName(message.name);
 
             String argsClassName = ExtensionLoader.getExtensionLoader(ClassNameGenerator.class)
@@ -401,11 +404,11 @@ public class ThriftCodec implements Codec2 {
 
         int seqId = nextSeqId();
 
-        String serviceName = inv.getAttachment(Constants.INTERFACE_KEY);
+        String serviceName = inv.getAttachment(INTERFACE_KEY);
 
         if (StringUtils.isEmpty(serviceName)) {
             throw new IllegalArgumentException("Could not find service name in attachment with key "
-                    + Constants.INTERFACE_KEY);
+                    + INTERFACE_KEY);
         }
 
         TMessage message = new TMessage(
@@ -499,7 +502,7 @@ public class ThriftCodec implements Codec2 {
             // service name
             protocol.writeString(serviceName);
             // path
-            protocol.writeString(inv.getAttachment(Constants.PATH_KEY));
+            protocol.writeString(inv.getAttachment(PATH_KEY));
             // dubbo request id
             protocol.writeI64(request.getId());
             protocol.getTransport().flush();

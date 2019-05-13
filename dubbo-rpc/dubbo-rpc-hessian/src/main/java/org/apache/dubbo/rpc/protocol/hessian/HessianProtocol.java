@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.hessian;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.remoting.http.HttpBinder;
 import org.apache.dubbo.remoting.http.HttpHandler;
 import org.apache.dubbo.remoting.http.HttpServer;
@@ -43,6 +44,9 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
 /**
  * http rpc support.
@@ -107,7 +111,7 @@ public class HessianProtocol extends AbstractProxyProtocol {
         hessianProxyFactory.setHessian2Request(isHessian2Request);
         boolean isOverloadEnabled = url.getParameter(Constants.HESSIAN_OVERLOAD_METHOD_KEY, Constants.DEFAULT_HESSIAN_OVERLOAD_METHOD);
         hessianProxyFactory.setOverloadEnabled(isOverloadEnabled);
-        String client = url.getParameter(Constants.CLIENT_KEY, Constants.DEFAULT_HTTP_CLIENT);
+        String client = url.getParameter(RemotingConstants.CLIENT_KEY, Constants.DEFAULT_HTTP_CLIENT);
         if ("httpclient".equals(client)) {
             HessianConnectionFactory factory = new HttpClientConnectionFactory();
             factory.setHessianProxyFactory(hessianProxyFactory);
@@ -119,7 +123,7 @@ public class HessianProtocol extends AbstractProxyProtocol {
             factory.setHessianProxyFactory(hessianProxyFactory);
             hessianProxyFactory.setConnectionFactory(factory);
         }
-        int timeout = url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+        int timeout = url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
         hessianProxyFactory.setConnectTimeout(timeout);
         hessianProxyFactory.setReadTimeout(timeout);
         return (T) hessianProxyFactory.create(serviceType, url.setProtocol("http").toJavaURL(), Thread.currentThread().getContextClassLoader());
@@ -174,8 +178,8 @@ public class HessianProtocol extends AbstractProxyProtocol {
                 Enumeration<String> enumeration = request.getHeaderNames();
                 while (enumeration.hasMoreElements()) {
                     String key = enumeration.nextElement();
-                    if (key.startsWith(Constants.DEFAULT_EXCHANGER)) {
-                        RpcContext.getContext().setAttachment(key.substring(Constants.DEFAULT_EXCHANGER.length()),
+                    if (key.startsWith(RemotingConstants.DEFAULT_EXCHANGER)) {
+                        RpcContext.getContext().setAttachment(key.substring(RemotingConstants.DEFAULT_EXCHANGER.length()),
                                 request.getHeader(key));
                     }
                 }

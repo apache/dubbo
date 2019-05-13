@@ -37,10 +37,19 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+
 /**
  * MonitorFilter. (SPI, Singleton, ThreadSafe)
  */
-@Activate(group = {Constants.PROVIDER, Constants.CONSUMER})
+@Activate(group = {PROVIDER, CONSUMER})
 public class MonitorFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(MonitorFilter.class);
@@ -128,15 +137,15 @@ public class MonitorFilter implements Filter {
         // ---- service statistics ----
         long elapsed = System.currentTimeMillis() - start; // invocation cost
         int concurrent = getConcurrent(invoker, invocation).get(); // current concurrent count
-        String application = invoker.getUrl().getParameter(Constants.APPLICATION_KEY);
+        String application = invoker.getUrl().getParameter(APPLICATION_KEY);
         String service = invoker.getInterface().getName(); // service name
         String method = RpcUtils.getMethodName(invocation); // method name
-        String group = invoker.getUrl().getParameter(Constants.GROUP_KEY);
-        String version = invoker.getUrl().getParameter(Constants.VERSION_KEY);
+        String group = invoker.getUrl().getParameter(GROUP_KEY);
+        String version = invoker.getUrl().getParameter(VERSION_KEY);
 
         int localPort;
         String remoteKey, remoteValue;
-        if (Constants.CONSUMER_SIDE.equals(invoker.getUrl().getParameter(Constants.SIDE_KEY))) {
+        if (CONSUMER_SIDE.equals(invoker.getUrl().getParameter(SIDE_KEY))) {
             // ---- for service consumer ----
             localPort = 0;
             remoteKey = MonitorService.PROVIDER;
@@ -157,7 +166,7 @@ public class MonitorFilter implements Filter {
 
         return new URL(Constants.COUNT_PROTOCOL,
                 NetUtils.getLocalHost(), localPort,
-                service + Constants.PATH_SEPARATOR + method,
+                service + PATH_SEPARATOR + method,
                 MonitorService.APPLICATION, application,
                 MonitorService.INTERFACE, service,
                 MonitorService.METHOD, method,
@@ -167,8 +176,8 @@ public class MonitorFilter implements Filter {
                 MonitorService.CONCURRENT, String.valueOf(concurrent),
                 Constants.INPUT_KEY, input,
                 Constants.OUTPUT_KEY, output,
-                Constants.GROUP_KEY, group,
-                Constants.VERSION_KEY, version);
+                GROUP_KEY, group,
+                VERSION_KEY, version);
     }
 
     // concurrent counter

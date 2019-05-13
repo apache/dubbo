@@ -37,6 +37,8 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.CallbackServiceCodec.decodeInvocationArgument;
 
 public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Decodeable {
@@ -94,8 +96,8 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         request.setVersion(dubboVersion);
         setAttachment(Constants.DUBBO_VERSION_KEY, dubboVersion);
 
-        setAttachment(Constants.PATH_KEY, in.readUTF());
-        setAttachment(Constants.VERSION_KEY, in.readUTF());
+        setAttachment(PATH_KEY, in.readUTF());
+        setAttachment(VERSION_KEY, in.readUTF());
 
         setMethodName(in.readUTF());
         try {

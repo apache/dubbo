@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http.HttpBinder;
 import org.apache.dubbo.remoting.http.servlet.BootstrapListener;
@@ -50,6 +51,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
 public class RestProtocol extends AbstractProxyProtocol {
 
@@ -89,13 +95,13 @@ public class RestProtocol extends AbstractProxyProtocol {
         String addr = getAddr(url);
         Class implClass = ApplicationModel.getProviderModel(url.getPathKey()).getServiceInstance().getClass();
         RestServer server = servers.computeIfAbsent(addr, restServer -> {
-            RestServer s = serverFactory.createServer(url.getParameter(Constants.SERVER_KEY, DEFAULT_SERVER));
+            RestServer s = serverFactory.createServer(url.getParameter(RemotingConstants.SERVER_KEY, DEFAULT_SERVER));
             s.start(url);
             return s;
         });
 
         String contextPath = getContextPath(url);
-        if ("servlet".equalsIgnoreCase(url.getParameter(Constants.SERVER_KEY, DEFAULT_SERVER))) {
+        if ("servlet".equalsIgnoreCase(url.getParameter(RemotingConstants.SERVER_KEY, DEFAULT_SERVER))) {
             ServletContext servletContext = ServletManager.getInstance().getServletContext(ServletManager.EXTERNAL_SERVER_PORT);
             if (servletContext == null) {
                 throw new RpcException("No servlet context found. Since you are using server='servlet', " +
@@ -142,8 +148,8 @@ public class RestProtocol extends AbstractProxyProtocol {
         }
         connectionMonitor.addConnectionManager(connectionManager);
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(url.getParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT))
-                .setSocketTimeout(url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT))
+                .setConnectTimeout(url.getParameter(RemotingConstants.CONNECT_TIMEOUT_KEY, RemotingConstants.DEFAULT_CONNECT_TIMEOUT))
+                .setSocketTimeout(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT))
                 .build();
 
         SocketConfig socketConfig = SocketConfig.custom()
@@ -158,7 +164,7 @@ public class RestProtocol extends AbstractProxyProtocol {
                         HeaderElement he = it.nextElement();
                         String param = he.getName();
                         String value = he.getValue();
-                        if (value != null && param.equalsIgnoreCase(Constants.TIMEOUT_KEY)) {
+                        if (value != null && param.equalsIgnoreCase(TIMEOUT_KEY)) {
                             return Long.parseLong(value) * 1000;
                         }
                     }
@@ -174,7 +180,7 @@ public class RestProtocol extends AbstractProxyProtocol {
         clients.add(client);
 
         client.register(RpcContextFilter.class);
-        for (String clazz : Constants.COMMA_SPLIT_PATTERN.split(url.getParameter(Constants.EXTENSION_KEY, ""))) {
+        for (String clazz : COMMA_SPLIT_PATTERN.split(url.getParameter(Constants.EXTENSION_KEY, ""))) {
             if (!StringUtils.isEmpty(clazz)) {
                 try {
                     client.register(Thread.currentThread().getContextClassLoader().loadClass(clazz.trim()));
@@ -238,11 +244,11 @@ public class RestProtocol extends AbstractProxyProtocol {
     protected String getContextPath(URL url) {
         String contextPath = url.getPath();
         if (contextPath != null) {
-            if (contextPath.equalsIgnoreCase(url.getParameter(Constants.INTERFACE_KEY))) {
+            if (contextPath.equalsIgnoreCase(url.getParameter(INTERFACE_KEY))) {
                 return "";
             }
-            if (contextPath.endsWith(url.getParameter(Constants.INTERFACE_KEY))) {
-                contextPath = contextPath.substring(0, contextPath.lastIndexOf(url.getParameter(Constants.INTERFACE_KEY)));
+            if (contextPath.endsWith(url.getParameter(INTERFACE_KEY))) {
+                contextPath = contextPath.substring(0, contextPath.lastIndexOf(url.getParameter(INTERFACE_KEY)));
             }
             return contextPath.endsWith("/") ? contextPath.substring(0, contextPath.length() - 1) : contextPath;
         } else {
