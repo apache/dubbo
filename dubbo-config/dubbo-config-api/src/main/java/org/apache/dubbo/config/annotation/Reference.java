@@ -27,6 +27,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.apache.dubbo.common.constants.RpcConstants;
+
 /**
  * Reference
  *
@@ -94,7 +96,7 @@ public @interface Reference {
     /**
      * Export an stub service for event dispatch, default value is false.
      *
-     * @see Constants#STUB_EVENT_METHODS_KEY
+     * @see RpcConstants#STUB_EVENT_METHODS_KEY
      */
     boolean stubevent() default false;
 
@@ -136,7 +138,7 @@ public @interface Reference {
     /**
      * The callback instance limit peer connection
      *
-     * @see Constants#DEFAULT_CALLBACK_INSTANCES
+     * @see RpcConstants#DEFAULT_CALLBACK_INSTANCES
      */
     int callbacks() default 0;
 

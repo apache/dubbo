@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.filter;
 
-import org.apache.dubbo.common.Constants;
 
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
@@ -24,11 +23,12 @@ import com.alibaba.dubbo.rpc.Invoker;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.common.Constants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.TOKEN_KEY;
 
 /**
  * MockInvocation.java
@@ -59,7 +59,7 @@ public class LegacyInvocation implements Invocation {
         attachments.put(GROUP_KEY, "dubbo");
         attachments.put(VERSION_KEY, "1.0.0");
         attachments.put(DUBBO_VERSION_KEY, "1.0.0");
-        attachments.put(Constants.TOKEN_KEY, "sfag");
+        attachments.put(TOKEN_KEY, "sfag");
         attachments.put(TIMEOUT_KEY, "1000");
         return attachments;
     }

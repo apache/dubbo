@@ -31,6 +31,10 @@ import static org.hamcrest.Matchers.hasValue;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import static org.apache.dubbo.common.constants.RpcConstants.STUB_EVENT_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.REFERENCE_FILTER_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.INVOKER_LISTENER_KEY;
+
 public class AbstractReferenceConfigTest {
 
     @Test
@@ -71,7 +75,7 @@ public class AbstractReferenceConfigTest {
         referenceConfig.setFilter("mockfilter");
         assertThat(referenceConfig.getFilter(), equalTo("mockfilter"));
         Map<String, String> parameters = new HashMap<String, String>();
-        parameters.put(Constants.REFERENCE_FILTER_KEY, "prefilter");
+        parameters.put(REFERENCE_FILTER_KEY, "prefilter");
         AbstractInterfaceConfig.appendParameters(parameters, referenceConfig);
         assertThat(parameters, hasValue("prefilter,mockfilter"));
     }
@@ -82,7 +86,7 @@ public class AbstractReferenceConfigTest {
         referenceConfig.setListener("mockinvokerlistener");
         assertThat(referenceConfig.getListener(), equalTo("mockinvokerlistener"));
         Map<String, String> parameters = new HashMap<String, String>();
-        parameters.put(Constants.INVOKER_LISTENER_KEY, "prelistener");
+        parameters.put(INVOKER_LISTENER_KEY, "prelistener");
         AbstractInterfaceConfig.appendParameters(parameters, referenceConfig);
         assertThat(parameters, hasValue("prelistener,mockinvokerlistener"));
     }
@@ -116,7 +120,7 @@ public class AbstractReferenceConfigTest {
         referenceConfig.setOnconnect("onConnect");
         Map<String, String> parameters = new HashMap<String, String>();
         AbstractInterfaceConfig.appendParameters(parameters, referenceConfig);
-        assertThat(parameters, hasKey(Constants.STUB_EVENT_KEY));
+        assertThat(parameters, hasKey(STUB_EVENT_KEY));
     }
 
     @Test

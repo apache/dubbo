@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.proxy;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
@@ -26,6 +25,7 @@ import org.apache.dubbo.rpc.service.GenericService;
 import com.alibaba.dubbo.rpc.service.EchoService;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.RpcConstants.INTERFACES;
 
 /**
  * AbstractProxyFactory
@@ -40,7 +40,7 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
     @Override
     public <T> T getProxy(Invoker<T> invoker, boolean generic) throws RpcException {
         Class<?>[] interfaces = null;
-        String config = invoker.getUrl().getParameter(Constants.INTERFACES);
+        String config = invoker.getUrl().getParameter(INTERFACES);
         if (config != null && config.length() > 0) {
             String[] types = COMMA_SPLIT_PATTERN.split(config);
             if (types != null && types.length > 0) {

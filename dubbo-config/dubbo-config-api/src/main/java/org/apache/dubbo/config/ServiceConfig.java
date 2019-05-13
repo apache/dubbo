@@ -72,6 +72,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.PROXY_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.TOKEN_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.getAvailablePort;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
@@ -347,7 +351,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
      * @return
      */
     private boolean isOnlyInJvm() {
-        return getProtocols().size() == 1 && Constants.LOCAL_PROTOCOL.equalsIgnoreCase(getProtocols().get(0).getName());
+        return getProtocols().size() == 1 && LOCAL_PROTOCOL.equalsIgnoreCase(getProtocols().get(0).getName());
     }
 
     public synchronized void export() {
@@ -518,7 +522,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
 
         if (ProtocolUtils.isGeneric(generic)) {
-            map.put(Constants.GENERIC_KEY, generic);
+            map.put(GENERIC_KEY, generic);
             map.put(METHODS_KEY, ANY_VALUE);
         } else {
             String revision = Version.getVersion(interfaceClass, version);
@@ -536,9 +540,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
         if (!ConfigUtils.isEmpty(token)) {
             if (ConfigUtils.isDefault(token)) {
-                map.put(Constants.TOKEN_KEY, UUID.randomUUID().toString());
+                map.put(TOKEN_KEY, UUID.randomUUID().toString());
             } else {
-                map.put(Constants.TOKEN_KEY, token);
+                map.put(TOKEN_KEY, token);
             }
         }
         // export service
@@ -568,7 +572,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 if (CollectionUtils.isNotEmpty(registryURLs)) {
                     for (URL registryURL : registryURLs) {
                         //if protocol is only injvm ,not register
-                        if (Constants.LOCAL_PROTOCOL.equalsIgnoreCase(url.getProtocol())) {
+                        if (LOCAL_PROTOCOL.equalsIgnoreCase(url.getProtocol())) {
                             continue;
                         }
                         url = url.addParameterIfAbsent(DYNAMIC_KEY, registryURL.getParameter(DYNAMIC_KEY));
@@ -581,9 +585,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         }
 
                         // For providers, this is used to enable custom proxy to generate invoker
-                        String proxy = url.getParameter(Constants.PROXY_KEY);
+                        String proxy = url.getParameter(PROXY_KEY);
                         if (StringUtils.isNotEmpty(proxy)) {
-                            registryURL = registryURL.addParameter(Constants.PROXY_KEY, proxy);
+                            registryURL = registryURL.addParameter(PROXY_KEY, proxy);
                         }
 
                         Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
@@ -618,7 +622,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
      */
     private void exportLocal(URL url) {
         URL local = URLBuilder.from(url)
-                .setProtocol(Constants.LOCAL_PROTOCOL)
+                .setProtocol(LOCAL_PROTOCOL)
                 .setHost(LOCALHOST_VALUE)
                 .setPort(0)
                 .build();

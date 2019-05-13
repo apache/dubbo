@@ -65,6 +65,16 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.SHARE_CONNECTIONS_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.DEFAULT_SHARE_CONNECTIONS;
+import static org.apache.dubbo.common.constants.RpcConstants.CALLBACK_SERVICE_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.IS_CALLBACK_SERVICE;
+import static org.apache.dubbo.common.constants.RpcConstants.OPTIMIZER_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.IS_SERVER_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.STUB_EVENT_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.DEFAULT_STUB_EVENT;
+import static org.apache.dubbo.common.constants.RpcConstants.STUB_EVENT_METHODS_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.CONNECTIONS_KEY;
 
 /**
  * dubbo protocol support.
@@ -186,8 +196,8 @@ public class DubboProtocol extends AbstractProtocol {
             invocation.setAttachment(GROUP_KEY, url.getParameter(GROUP_KEY));
             invocation.setAttachment(INTERFACE_KEY, url.getParameter(INTERFACE_KEY));
             invocation.setAttachment(VERSION_KEY, url.getParameter(VERSION_KEY));
-            if (url.getParameter(Constants.STUB_EVENT_KEY, false)) {
-                invocation.setAttachment(Constants.STUB_EVENT_KEY, Boolean.TRUE.toString());
+            if (url.getParameter(STUB_EVENT_KEY, false)) {
+                invocation.setAttachment(STUB_EVENT_KEY, Boolean.TRUE.toString());
             }
 
             return invocation;
@@ -234,7 +244,7 @@ public class DubboProtocol extends AbstractProtocol {
         String path = inv.getAttachments().get(PATH_KEY);
 
         // if it's callback service on client side
-        isStubServiceInvoke = Boolean.TRUE.toString().equals(inv.getAttachments().get(Constants.STUB_EVENT_KEY));
+        isStubServiceInvoke = Boolean.TRUE.toString().equals(inv.getAttachments().get(STUB_EVENT_KEY));
         if (isStubServiceInvoke) {
             port = channel.getRemoteAddress().getPort();
         }
@@ -242,7 +252,7 @@ public class DubboProtocol extends AbstractProtocol {
         //callback
         isCallBackServiceInvoke = isClientSide(channel) && !isStubServiceInvoke;
         if (isCallBackServiceInvoke) {
-            path += "." + inv.getAttachments().get(Constants.CALLBACK_SERVICE_KEY);
+            path += "." + inv.getAttachments().get(CALLBACK_SERVICE_KEY);
             inv.getAttachments().put(IS_CALLBACK_SERVICE_INVOKE, Boolean.TRUE.toString());
         }
 
@@ -276,10 +286,10 @@ public class DubboProtocol extends AbstractProtocol {
         exporterMap.put(key, exporter);
 
         //export an stub service for dispatching event
-        Boolean isStubSupportEvent = url.getParameter(Constants.STUB_EVENT_KEY, Constants.DEFAULT_STUB_EVENT);
-        Boolean isCallbackservice = url.getParameter(Constants.IS_CALLBACK_SERVICE, false);
+        Boolean isStubSupportEvent = url.getParameter(STUB_EVENT_KEY, DEFAULT_STUB_EVENT);
+        Boolean isCallbackservice = url.getParameter(IS_CALLBACK_SERVICE, false);
         if (isStubSupportEvent && !isCallbackservice) {
-            String stubServiceMethods = url.getParameter(Constants.STUB_EVENT_METHODS_KEY);
+            String stubServiceMethods = url.getParameter(STUB_EVENT_METHODS_KEY);
             if (stubServiceMethods == null || stubServiceMethods.length() == 0) {
                 if (logger.isWarnEnabled()) {
                     logger.warn(new IllegalStateException("consumer [" + url.getParameter(INTERFACE_KEY) +
@@ -301,7 +311,7 @@ public class DubboProtocol extends AbstractProtocol {
         // find server.
         String key = url.getAddress();
         //client can export a service which's only for server to invoke
-        boolean isServer = url.getParameter(Constants.IS_SERVER_KEY, true);
+        boolean isServer = url.getParameter(IS_SERVER_KEY, true);
         if (isServer) {
             ExchangeServer server = serverMap.get(key);
             if (server == null) {
@@ -351,7 +361,7 @@ public class DubboProtocol extends AbstractProtocol {
     }
 
     private void optimizeSerialization(URL url) throws RpcException {
-        String className = url.getParameter(Constants.OPTIMIZER_KEY, "");
+        String className = url.getParameter(OPTIMIZER_KEY, "");
         if (StringUtils.isEmpty(className) || optimizers.contains(className)) {
             return;
         }
@@ -403,7 +413,7 @@ public class DubboProtocol extends AbstractProtocol {
 
         boolean useShareConnect = false;
 
-        int connections = url.getParameter(Constants.CONNECTIONS_KEY, 0);
+        int connections = url.getParameter(CONNECTIONS_KEY, 0);
         List<ReferenceCountExchangeClient> shareClients = null;
         // if not configured, connection is shared, otherwise, one connection for one service
         if (connections == 0) {
@@ -412,9 +422,9 @@ public class DubboProtocol extends AbstractProtocol {
             /**
              * The xml configuration should have a higher priority than properties.
              */
-            String shareConnectionsStr = url.getParameter(Constants.SHARE_CONNECTIONS_KEY, (String) null);
-            connections = Integer.parseInt(StringUtils.isBlank(shareConnectionsStr) ? ConfigUtils.getProperty(Constants.SHARE_CONNECTIONS_KEY,
-                    Constants.DEFAULT_SHARE_CONNECTIONS) : shareConnectionsStr);
+            String shareConnectionsStr = url.getParameter(SHARE_CONNECTIONS_KEY, (String) null);
+            connections = Integer.parseInt(StringUtils.isBlank(shareConnectionsStr) ? ConfigUtils.getProperty(SHARE_CONNECTIONS_KEY,
+                    DEFAULT_SHARE_CONNECTIONS) : shareConnectionsStr);
             shareClients = getSharedClient(url, connections);
         }
 

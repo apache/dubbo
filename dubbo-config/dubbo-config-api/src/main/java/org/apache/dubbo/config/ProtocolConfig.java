@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.Protocol;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
 
 /**
  * ProtocolConfig
@@ -539,7 +540,7 @@ public class ProtocolConfig extends AbstractConfig {
     @Override
     public void refresh() {
         if (StringUtils.isEmpty(this.getName())) {
-            this.setName(Constants.DUBBO_VERSION_KEY);
+            this.setName(DUBBO_VERSION_KEY);
         }
         super.refresh();
         if (StringUtils.isNotEmpty(this.getId())) {
