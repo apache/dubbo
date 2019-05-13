@@ -19,6 +19,8 @@ package org.apache.dubbo.metadata.store.nacos;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.google.gson.Gson;
 import org.apache.dubbo.common.Constants;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
@@ -89,7 +91,7 @@ public class NacosMetadataReportTest {
                 + application + (group == null ? "" : "&group=" + group));
 
         MetadataIdentifier providerMetadataIdentifier =
-                new MetadataIdentifier(interfaceName, version, group, Constants.PROVIDER_SIDE, application);
+                new MetadataIdentifier(interfaceName, version, group, PROVIDER_SIDE, application);
         Class interfaceClass = Class.forName(interfaceName);
         FullServiceDefinition fullServiceDefinition =
                 ServiceDefinitionBuilder.buildFullDefinition(interfaceClass, url.getParameters());
@@ -101,7 +103,7 @@ public class NacosMetadataReportTest {
 
     private MetadataIdentifier storeConsumer(NacosMetadataReport nacosMetadataReport, String interfaceName,
                                              String version, String group, String application) throws InterruptedException {
-        MetadataIdentifier consumerIdentifier = new MetadataIdentifier(interfaceName, version, group, Constants.CONSUMER_SIDE, application);
+        MetadataIdentifier consumerIdentifier = new MetadataIdentifier(interfaceName, version, group, CONSUMER_SIDE, application);
         Map<String, String> tmp = new HashMap<>();
         tmp.put("paramConsumerTest", "nacosConsumer");
         nacosMetadataReport.storeConsumerMetadata(consumerIdentifier, tmp);
