@@ -72,6 +72,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.getAvailablePort;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
@@ -570,7 +571,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         if (Constants.LOCAL_PROTOCOL.equalsIgnoreCase(url.getProtocol())) {
                             continue;
                         }
-                        url = url.addParameterIfAbsent(Constants.DYNAMIC_KEY, registryURL.getParameter(Constants.DYNAMIC_KEY));
+                        url = url.addParameterIfAbsent(DYNAMIC_KEY, registryURL.getParameter(DYNAMIC_KEY));
                         URL monitorUrl = loadMonitor(registryURL);
                         if (monitorUrl != null) {
                             url = url.addParameterAndEncoded(Constants.MONITOR_KEY, monitorUrl.toFullString());

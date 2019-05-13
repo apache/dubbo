@@ -16,15 +16,17 @@
  */
 package org.apache.dubbo.remoting.etcd.option;
 
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_SESSION_TIMEOUT;
+
 /**
  * Etcd registry constants.
  */
-public class Constants extends org.apache.dubbo.common.Constants {
+public interface Constants {
 
-    public static final String HTTP_SUBFIX_KEY = "://";
+    String HTTP_SUBFIX_KEY = "://";
 
-    public static final String HTTP_KEY = "http://";
+    String HTTP_KEY = "http://";
 
-    public static final int DEFAULT_KEEPALIVE_TIMEOUT = DEFAULT_SESSION_TIMEOUT / 2;
+    int DEFAULT_KEEPALIVE_TIMEOUT = DEFAULT_SESSION_TIMEOUT / 2;
 
 }

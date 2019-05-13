@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.registry.consul;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -50,6 +49,8 @@ import java.util.stream.Collectors;
 
 import static java.util.concurrent.Executors.newCachedThreadPool;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMER_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDER_PROTOCOL;
 
 /**
  * registry center implementation for consul
@@ -233,11 +234,11 @@ public class ConsulRegistry extends FailbackRegistry {
 
 
     private boolean isConsumerSide(URL url) {
-        return url.getProtocol().equals(Constants.CONSUMER_PROTOCOL);
+        return url.getProtocol().equals(CONSUMER_PROTOCOL);
     }
 
     private boolean isProviderSide(URL url) {
-        return url.getProtocol().equals(Constants.PROVIDER_PROTOCOL);
+        return url.getProtocol().equals(PROVIDER_PROTOCOL);
     }
 
     private List<URL> convert(List<HealthService> services) {

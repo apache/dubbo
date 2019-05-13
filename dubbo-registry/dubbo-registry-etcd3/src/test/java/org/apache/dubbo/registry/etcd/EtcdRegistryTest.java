@@ -50,7 +50,6 @@
  */
 package org.apache.dubbo.registry.etcd;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -80,6 +79,12 @@ import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.ADMIN_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
 
 @Disabled
 public class EtcdRegistryTest {
@@ -94,15 +99,12 @@ public class EtcdRegistryTest {
     RegistryFactory registryFactory = ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
     EtcdRegistry registry;
     URL subscribe = new URL(
-            Constants.ADMIN_PROTOCOL, NetUtils.getLocalHost(), 0, "",
+            ADMIN_PROTOCOL, NetUtils.getLocalHost(), 0, "",
             INTERFACE_KEY, ANY_VALUE,
             GROUP_KEY, ANY_VALUE,
             VERSION_KEY, ANY_VALUE,
             CLASSIFIER_KEY, ANY_VALUE,
-            Constants.CATEGORY_KEY, Constants.PROVIDERS_CATEGORY + ","
-            + Constants.CONSUMERS_CATEGORY + ","
-            + Constants.ROUTERS_CATEGORY + ","
-            + Constants.CONFIGURATORS_CATEGORY,
+            CATEGORY_KEY, PROVIDERS_CATEGORY + "," + CONSUMERS_CATEGORY + "," + ROUTERS_CATEGORY + "," + CONFIGURATORS_CATEGORY,
             ENABLED_KEY, ANY_VALUE,
             RemotingConstants.CHECK_KEY, String.valueOf(false));
 
