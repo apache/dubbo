@@ -66,6 +66,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SEMICOLON_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMER_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RpcConstants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
 
@@ -358,7 +360,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                         if (StringUtils.isEmpty(url.getPath())) {
                             url = url.setPath(interfaceName);
                         }
-                        if (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) {
+                        if (REGISTRY_PROTOCOL.equals(url.getProtocol())) {
                             urls.add(url.addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map)));
                         } else {
                             urls.add(ClusterUtils.mergeUrl(url, map));
@@ -392,7 +394,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 URL registryURL = null;
                 for (URL url : urls) {
                     invokers.add(REF_PROTOCOL.refer(interfaceClass, url));
-                    if (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) {
+                    if (REGISTRY_PROTOCOL.equals(url.getProtocol())) {
                         registryURL = url; // use last registry url
                     }
                 }
@@ -421,7 +423,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
          */
         MetadataReportService metadataReportService = null;
         if ((metadataReportService = getMetadataReportService()) != null) {
-            URL consumerURL = new URL(Constants.CONSUMER_PROTOCOL, map.remove(Constants.REGISTER_IP_KEY), 0, map.get(INTERFACE_KEY), map);
+            URL consumerURL = new URL(CONSUMER_PROTOCOL, map.remove(Constants.REGISTER_IP_KEY), 0, map.get(INTERFACE_KEY), map);
             metadataReportService.publishConsumer(consumerURL);
         }
         // create service proxy

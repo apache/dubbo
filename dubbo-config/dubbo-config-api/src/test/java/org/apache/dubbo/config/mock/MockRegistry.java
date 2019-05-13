@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.mock;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
@@ -24,6 +23,7 @@ import org.apache.dubbo.registry.Registry;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 
 /**
@@ -85,7 +85,7 @@ public class MockRegistry implements Registry {
         List<URL> urls = new ArrayList<URL>();
 
         urls.add(url.setProtocol("mockprotocol")
-                .removeParameter(Constants.CATEGORY_KEY)
+                .removeParameter(CATEGORY_KEY)
                 .addParameter(METHODS_KEY, "sayHello"));
 
         listener.notify(urls);

@@ -25,6 +25,7 @@ import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.EXTRA_KEYS_KEY;
 
 /**
  * RegistryConfig
@@ -393,7 +394,7 @@ public class RegistryConfig extends AbstractConfig {
         this.simplified = simplified;
     }
 
-    @Parameter(key = Constants.EXTRA_KEYS_KEY)
+    @Parameter(key = EXTRA_KEYS_KEY)
     public String getExtraKeys() {
         return extraKeys;
     }
