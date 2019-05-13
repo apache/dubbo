@@ -16,17 +16,17 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.ClusterConstants.LOADBALANCE_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.FAIL_PREFIX;
+import static org.apache.dubbo.common.constants.RpcConstants.FORCE_PREFIX;
 import static org.apache.dubbo.common.constants.RpcConstants.MOCK_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.RETURN_PREFIX;
 import static org.apache.dubbo.common.constants.RpcConstants.THROW_PREFIX;
-import static org.apache.dubbo.common.constants.RpcConstants.FAIL_PREFIX;
-import static org.apache.dubbo.common.constants.RpcConstants.FORCE_PREFIX;
 
 /**
  * AbstractMethodConfig
@@ -132,7 +132,7 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
     }
 
     public void setLoadbalance(String loadbalance) {
-        checkExtension(LoadBalance.class, Constants.LOADBALANCE_KEY, loadbalance);
+        checkExtension(LoadBalance.class, LOADBALANCE_KEY, loadbalance);
         this.loadbalance = loadbalance;
     }
 

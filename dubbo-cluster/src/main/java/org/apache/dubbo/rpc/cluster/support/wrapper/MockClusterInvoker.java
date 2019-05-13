@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.support.wrapper;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -31,9 +30,10 @@ import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.support.MockInvoker;
 
-import static org.apache.dubbo.common.constants.RpcConstants.MOCK_KEY;
-
 import java.util.List;
+
+import static org.apache.dubbo.common.constants.ClusterConstants.INVOCATION_NEED_MOCK;
+import static org.apache.dubbo.common.constants.RpcConstants.MOCK_KEY;
 
 public class MockClusterInvoker<T> implements Invoker<T> {
 
@@ -147,7 +147,7 @@ public class MockClusterInvoker<T> implements Invoker<T> {
         //TODO generic invoker？
         if (invocation instanceof RpcInvocation) {
             //Note the implicit contract (although the description is added to the interface declaration, but extensibility is a problem. The practice placed in the attachment needs to be improved)
-            ((RpcInvocation) invocation).setAttachment(Constants.INVOCATION_NEED_MOCK, Boolean.TRUE.toString());
+            ((RpcInvocation) invocation).setAttachment(INVOCATION_NEED_MOCK, Boolean.TRUE.toString());
             //directory will return a list of normal invokers if Constants.INVOCATION_NEED_MOCK is present in invocation, otherwise, a list of mock invokers will return.
             try {
                 invokers = directory.list(invocation);

@@ -66,6 +66,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SEMICOLON_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.MonitorConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RpcConstants.LOCAL_PROTOCOL;
@@ -376,7 +377,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                         for (URL u : us) {
                             URL monitorUrl = loadMonitor(u);
                             if (monitorUrl != null) {
-                                map.put(Constants.MONITOR_KEY, URL.encode(monitorUrl.toFullString()));
+                                map.put(MONITOR_KEY, URL.encode(monitorUrl.toFullString()));
                             }
                             urls.add(u.addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map)));
                         }

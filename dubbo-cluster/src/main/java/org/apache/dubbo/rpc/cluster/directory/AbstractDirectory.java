@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.MonitorConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
 
 /**
@@ -66,7 +67,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
         if (url.getProtocol().equals(REGISTRY_PROTOCOL)) {
             Map<String, String> queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(Constants.REFER_KEY));
-            this.url = url.addParameters(queryMap).removeParameter(Constants.MONITOR_KEY);
+            this.url = url.addParameters(queryMap).removeParameter(MONITOR_KEY);
         } else {
             this.url = url;
         }
