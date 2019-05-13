@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.exchange.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
@@ -36,6 +35,9 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
 /**
  * DefaultFuture.
@@ -65,7 +67,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
         this.channel = channel;
         this.request = request;
         this.id = request.getId();
-        this.timeout = timeout > 0 ? timeout : channel.getUrl().getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+        this.timeout = timeout > 0 ? timeout : channel.getUrl().getPositiveParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
         // put into waiting map.
         FUTURES.put(id, this);
         CHANNELS.put(id, channel);

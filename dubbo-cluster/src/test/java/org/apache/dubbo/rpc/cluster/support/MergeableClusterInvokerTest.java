@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
@@ -39,6 +38,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.MERGER_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -101,7 +102,7 @@ public class MergeableClusterInvokerTest {
     public void testGetMenuSuccessfully() throws Exception {
 
         // setup
-        url = url.addParameter(Constants.MERGER_KEY, ".merge");
+        url = url.addParameter(MERGER_KEY, ".merge");
 
         given(invocation.getMethodName()).willReturn("getMenu");
         given(invocation.getParameterTypes()).willReturn(new Class<?>[]{});
@@ -114,7 +115,7 @@ public class MergeableClusterInvokerTest {
 
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 if ("getUrl".equals(method.getName())) {
-                    return url.addParameter(Constants.GROUP_KEY, "first");
+                    return url.addParameter(GROUP_KEY, "first");
                 }
                 if ("getInterface".equals(method.getName())) {
                     return MenuService.class;
@@ -130,7 +131,7 @@ public class MergeableClusterInvokerTest {
 
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 if ("getUrl".equals(method.getName())) {
-                    return url.addParameter(Constants.GROUP_KEY, "second");
+                    return url.addParameter(GROUP_KEY, "second");
                 }
                 if ("getInterface".equals(method.getName())) {
                     return MenuService.class;
@@ -194,14 +195,14 @@ public class MergeableClusterInvokerTest {
         given(invocation.getInvoker()).willReturn(firstInvoker);
 
         given(firstInvoker.getUrl()).willReturn(
-                url.addParameter(Constants.GROUP_KEY, "first"));
+                url.addParameter(GROUP_KEY, "first"));
         given(firstInvoker.getInterface()).willReturn(MenuService.class);
         given(firstInvoker.invoke(invocation)).willReturn(new AppResponse())
                 ;
         given(firstInvoker.isAvailable()).willReturn(true);
 
         given(secondInvoker.getUrl()).willReturn(
-                url.addParameter(Constants.GROUP_KEY, "second"));
+                url.addParameter(GROUP_KEY, "second"));
         given(secondInvoker.getInterface()).willReturn(MenuService.class);
         given(secondInvoker.invoke(invocation)).willReturn(new AppResponse())
                 ;

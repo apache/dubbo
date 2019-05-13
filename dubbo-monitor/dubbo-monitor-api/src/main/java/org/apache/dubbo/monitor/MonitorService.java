@@ -16,11 +16,13 @@
  */
 package org.apache.dubbo.monitor;
 
-import org.apache.dubbo.common.Constants;
+
 import org.apache.dubbo.common.URL;
 
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.RpcConstants.INPUT_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.OUTPUT_KEY;
 /**
  * MonitorService. (SPI, Prototype, ThreadSafe)
  */
@@ -46,9 +48,9 @@ public interface MonitorService {
 
     String FAILURE = "failure";
 
-    String INPUT = Constants.INPUT_KEY;
+    String INPUT = INPUT_KEY;
 
-    String OUTPUT = Constants.OUTPUT_KEY;
+    String OUTPUT = OUTPUT_KEY;
 
     String ELAPSED = "elapsed";
 

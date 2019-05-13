@@ -38,7 +38,6 @@ import static org.springframework.util.ReflectionUtils.findField;
 /**
  * {@link ReferenceBeanBuilder} Test
  *
- * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @see ReferenceBeanBuilder
  * @see Reference
  * @since 2.6.4

@@ -18,6 +18,7 @@ package org.apache.dubbo.monitor.dubbo;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -56,6 +57,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL;
+
 public class MetricsFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(MetricsFilter.class);
@@ -67,7 +70,7 @@ public class MetricsFilter implements Filter {
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         if (exported.compareAndSet(false, true)) {
             this.protocolName = invoker.getUrl().getParameter(Constants.METRICS_PROTOCOL) == null ?
-                    Constants.DEFAULT_PROTOCOL : invoker.getUrl().getParameter(Constants.METRICS_PROTOCOL);
+                    DEFAULT_PROTOCOL : invoker.getUrl().getParameter(Constants.METRICS_PROTOCOL);
 
             Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(protocolName);
 
@@ -167,7 +170,7 @@ public class MetricsFilter implements Filter {
 
     private List<MetricObject> getThreadPoolMessage() {
         DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
-        Map<String, Object> executors = dataStore.get(Constants.EXECUTOR_SERVICE_COMPONENT_KEY);
+        Map<String, Object> executors = dataStore.get(RemotingConstants.EXECUTOR_SERVICE_COMPONENT_KEY);
 
         List<MetricObject> threadPoolMtricList = new ArrayList<>();
         for (Map.Entry<String, Object> entry : executors.entrySet()) {
@@ -187,8 +190,9 @@ public class MetricsFilter implements Filter {
     }
 
     private MetricObject value2MetricObject(String metric, Integer value, MetricLevel level) {
-        if (metric == null || value == null || level == null)
+        if (metric == null || value == null || level == null) {
             return null;
+        }
 
         return new MetricObject
                 .Builder(metric)

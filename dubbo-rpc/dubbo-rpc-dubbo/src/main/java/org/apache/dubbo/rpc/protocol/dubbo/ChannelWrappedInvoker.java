@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
@@ -37,6 +37,14 @@ import org.apache.dubbo.rpc.support.RpcUtils;
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.CALLBACK_SERVICE_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.ASYNC_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.TOKEN_KEY;
+
 /**
  * Server push uses this Invoker to continuously push data to client.
  * Wrap the existing invoker on the channel.
@@ -48,7 +56,7 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
     private final ExchangeClient currentClient;
 
     ChannelWrappedInvoker(Class<T> serviceType, Channel channel, URL url, String serviceKey) {
-        super(serviceType, url, new String[]{Constants.GROUP_KEY, Constants.TOKEN_KEY, Constants.TIMEOUT_KEY});
+        super(serviceType, url, new String[]{GROUP_KEY, TOKEN_KEY, TIMEOUT_KEY});
         this.channel = channel;
         this.serviceKey = serviceKey;
         this.currentClient = new HeaderExchangeClient(new ChannelWrapper(this.channel), false);
@@ -58,12 +66,12 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
     protected Result doInvoke(Invocation invocation) throws Throwable {
         RpcInvocation inv = (RpcInvocation) invocation;
         // use interface's name as service path to export if it's not found on client side
-        inv.setAttachment(Constants.PATH_KEY, getInterface().getName());
-        inv.setAttachment(Constants.CALLBACK_SERVICE_KEY, serviceKey);
+        inv.setAttachment(PATH_KEY, getInterface().getName());
+        inv.setAttachment(CALLBACK_SERVICE_KEY, serviceKey);
 
         try {
             if (RpcUtils.isOneway(getUrl(), inv)) { // may have concurrency issue
-                currentClient.send(inv, getUrl().getMethodParameter(invocation.getMethodName(), Constants.SENT_KEY, false));
+                currentClient.send(inv, getUrl().getMethodParameter(invocation.getMethodName(), RemotingConstants.SENT_KEY, false));
                 return AsyncRpcResult.newDefaultAsyncResult(invocation);
             } else {
                 CompletableFuture<Object> responseFuture = currentClient.request(inv);

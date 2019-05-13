@@ -17,8 +17,8 @@
 
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -26,9 +26,10 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -76,8 +77,8 @@ public class ExecutorUtilTest {
 
     @Test
     public void testSetThreadName() throws Exception {
-        URL url = new URL("dubbo", "localhost", 1234).addParameter(Constants.THREAD_NAME_KEY, "custom-thread");
+        URL url = new URL("dubbo", "localhost", 1234).addParameter(THREAD_NAME_KEY, "custom-thread");
         url = ExecutorUtil.setThreadName(url, "default-name");
-        assertThat(url.getParameter(Constants.THREAD_NAME_KEY), equalTo("custom-thread-localhost:1234"));
+        assertThat(url.getParameter(THREAD_NAME_KEY), equalTo("custom-thread-localhost:1234"));
     }
 }

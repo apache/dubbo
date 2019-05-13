@@ -24,6 +24,9 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
+import static org.apache.dubbo.common.constants.RpcConstants.ASYNC_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.FUTURE_RETURNTYPE_KEY;
+
 /**
  * InvokerHandler
  */

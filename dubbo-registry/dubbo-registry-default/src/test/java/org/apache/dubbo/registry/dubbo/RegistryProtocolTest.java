@@ -42,7 +42,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.dubbo.common.Constants.DEFAULT_REGISTER_PROVIDER_KEYS;
+import static org.apache.dubbo.registry.integration.RegistryProtocol.DEFAULT_REGISTER_PROVIDER_KEYS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**

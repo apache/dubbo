@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metadata.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
@@ -33,6 +32,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 
 /**
  *
@@ -155,7 +157,7 @@ public class AbstractMetadataReportTest {
         URL url = URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":4444/" + interfaceName + "?version=" + version + "&application="
                 + application + (group == null ? "" : "&group=" + group) + "&testPKey=8989");
 
-        MetadataIdentifier providerMetadataIdentifier = new MetadataIdentifier(interfaceName, version, group, Constants.PROVIDER_SIDE,application);
+        MetadataIdentifier providerMetadataIdentifier = new MetadataIdentifier(interfaceName, version, group, PROVIDER_SIDE,application);
         Class interfaceClass = Class.forName(interfaceName);
         FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass, url.getParameters());
 
@@ -169,7 +171,7 @@ public class AbstractMetadataReportTest {
                 + application + (group == null ? "" : "&group=" + group) + "&testPKey=9090");
 
         tmp.putAll(url.getParameters());
-        MetadataIdentifier consumerMetadataIdentifier = new MetadataIdentifier(interfaceName, version, group, Constants.CONSUMER_SIDE, application);
+        MetadataIdentifier consumerMetadataIdentifier = new MetadataIdentifier(interfaceName, version, group, CONSUMER_SIDE, application);
 
         abstractMetadataReport.storeConsumerMetadata(consumerMetadataIdentifier, tmp);
 

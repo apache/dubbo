@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.registry.dubbo;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ExecutorUtil;
@@ -35,6 +35,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
+
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_RECONNECT_PERIOD_KEY;
 
 /**
  * DubboRegistry
@@ -69,7 +71,7 @@ public class DubboRegistry extends FailbackRegistry {
         this.registryInvoker = registryInvoker;
         this.registryService = registryService;
         // Start reconnection timer
-        this.reconnectPeriod = registryInvoker.getUrl().getParameter(Constants.REGISTRY_RECONNECT_PERIOD_KEY, RECONNECT_PERIOD_DEFAULT);
+        this.reconnectPeriod = registryInvoker.getUrl().getParameter(REGISTRY_RECONNECT_PERIOD_KEY, RECONNECT_PERIOD_DEFAULT);
         reconnectFuture = reconnectTimer.scheduleWithFixedDelay(() -> {
             // Check and connect to the registry
             try {
@@ -100,7 +102,7 @@ public class DubboRegistry extends FailbackRegistry {
                 clientLock.unlock();
             }
         } catch (Throwable t) { // Ignore all the exceptions and wait for the next retry
-            if (getUrl().getParameter(Constants.CHECK_KEY, true)) {
+            if (getUrl().getParameter(RemotingConstants.CHECK_KEY, true)) {
                 if (t instanceof RuntimeException) {
                     throw (RuntimeException) t;
                 }

@@ -41,6 +41,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+
 /**
  * Apollo implementation, https://github.com/ctripcorp/apollo
  */
@@ -64,7 +67,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
         if (configEnv != null) {
             System.setProperty(APOLLO_ENV_KEY, configEnv);
         }
-        if (StringUtils.isEmpty(System.getProperty(APOLLO_ENV_KEY)) && !Constants.ANYHOST_VALUE.equals(configAddr)) {
+        if (StringUtils.isEmpty(System.getProperty(APOLLO_ENV_KEY)) && !ANYHOST_VALUE.equals(configAddr)) {
             System.setProperty(APOLLO_ADDR_KEY, configAddr);
         }
         if (configCluster != null) {
@@ -89,7 +92,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
     private String getAddressWithProtocolPrefix (URL url) {
         String address = url.getBackupAddress();
         if (StringUtils.isNotEmpty(address)) {
-            address = Arrays.stream(Constants.COMMA_SPLIT_PATTERN.split(address))
+            address = Arrays.stream(COMMA_SPLIT_PATTERN.split(address))
                     .map(addr ->  {
                         if (addr.startsWith(APOLLO_PROTOCOL_PREFIX)) {
                             return addr;

@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.dubbo;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.LogUtil;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -49,6 +50,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.MOCK_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.$INVOKE;
+import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
@@ -182,7 +197,7 @@ public class RegistryDirectoryTest {
     private void testforbid(RegistryDirectory registryDirectory) {
         invocation = new RpcInvocation();
         List<URL> serviceUrls = new ArrayList<URL>();
-        serviceUrls.add(new URL(Constants.EMPTY_PROTOCOL, Constants.ANYHOST_VALUE, 0, service, Constants.CATEGORY_KEY, Constants.PROVIDERS_CATEGORY));
+        serviceUrls.add(new URL(EMPTY_PROTOCOL, ANYHOST_VALUE, 0, service, CATEGORY_KEY, PROVIDERS_CATEGORY));
         registryDirectory.notify(serviceUrls);
         Assertions.assertEquals(false,
                 registryDirectory.isAvailable(), "invokers size=0 ,then the registry directory is not available");
@@ -227,7 +242,7 @@ public class RegistryDirectoryTest {
     private void test_Notified1invokers(RegistryDirectory registryDirectory) {
 
         List<URL> serviceUrls = new ArrayList<URL>();
-        serviceUrls.add(SERVICEURL.addParameter("methods", "getXXX1").addParameter(Constants.APPLICATION_KEY, "mockApplicationName"));// .addParameter("refer.autodestroy", "true")
+        serviceUrls.add(SERVICEURL.addParameter("methods", "getXXX1").addParameter(APPLICATION_KEY, "mockApplicationName"));// .addParameter("refer.autodestroy", "true")
         registryDirectory.notify(serviceUrls);
         Assertions.assertEquals(true, registryDirectory.isAvailable());
 
@@ -371,7 +386,7 @@ public class RegistryDirectoryTest {
 
             Invoker invoker = (Invoker) invokers.get(0);
             URL url = invoker.getUrl();
-            Assertions.assertEquals(false, url.getParameter(Constants.CHECK_KEY, false));
+            Assertions.assertEquals(false, url.getParameter(RemotingConstants.CHECK_KEY, false));
         }
         {
             serviceUrls.clear();
@@ -390,7 +405,7 @@ public class RegistryDirectoryTest {
         {
             Assertions.assertEquals(null, registryDirectory2.getUrl().getParameter("mock"));
             serviceUrls.clear();
-            serviceUrls.add(SERVICEURL.addParameter(Constants.MOCK_KEY, "true"));
+            serviceUrls.add(SERVICEURL.addParameter(MOCK_KEY, "true"));
             registryDirectory2.notify(serviceUrls);
 
             Assertions.assertEquals("true", registryDirectory2.getUrl().getParameter("mock"));
@@ -464,7 +479,7 @@ public class RegistryDirectoryTest {
         registryDirectory.notify(serviceUrls);
 
         // Object $invoke(String method, String[] parameterTypes, Object[] args) throws GenericException;
-        invocation = new RpcInvocation(Constants.$INVOKE, new Class[]{String.class, String[].class, Object[].class},
+        invocation = new RpcInvocation($INVOKE, new Class[]{String.class, String[].class, Object[].class},
                 new Object[]{"getXXX1", "", new Object[]{}});
 
         List<Invoker> invokers = registryDirectory.list(invocation);
@@ -493,8 +508,7 @@ public class RegistryDirectoryTest {
 
         registryDirectory.notify(serviceUrls);
 
-        invocation = new RpcInvocation(
-                Constants.$INVOKE,
+        invocation = new RpcInvocation($INVOKE,
                 new Class[]{String.class, String[].class, Object[].class},
                 new Object[]{"getXXX1", new String[]{"Enum"}, new Object[]{Param.MORGAN}});
 
@@ -541,15 +555,15 @@ public class RegistryDirectoryTest {
     public void testNotifyRouterUrls() {
         if (isScriptUnsupported) return;
         RegistryDirectory registryDirectory = getRegistryDirectory();
-        URL routerurl = URL.valueOf(Constants.ROUTE_PROTOCOL + "://127.0.0.1:9096/");
-        URL routerurl2 = URL.valueOf(Constants.ROUTE_PROTOCOL + "://127.0.0.1:9097/");
+        URL routerurl = URL.valueOf(ROUTE_PROTOCOL + "://127.0.0.1:9096/");
+        URL routerurl2 = URL.valueOf(ROUTE_PROTOCOL + "://127.0.0.1:9097/");
 
         List<URL> serviceUrls = new ArrayList<URL>();
         // without ROUTER_KEY, the first router should not be created.
-        serviceUrls.add(routerurl.addParameter(Constants.CATEGORY_KEY, Constants.ROUTERS_CATEGORY).addParameter(Constants.TYPE_KEY, "javascript").addParameter(Constants.ROUTER_KEY,
+        serviceUrls.add(routerurl.addParameter(CATEGORY_KEY, ROUTERS_CATEGORY).addParameter(Constants.TYPE_KEY, "javascript").addParameter(Constants.ROUTER_KEY,
                 "notsupported").addParameter(Constants.RULE_KEY,
                 "function test1(){}"));
-        serviceUrls.add(routerurl2.addParameter(Constants.CATEGORY_KEY, Constants.ROUTERS_CATEGORY).addParameter(Constants.TYPE_KEY, "javascript").addParameter(Constants.ROUTER_KEY,
+        serviceUrls.add(routerurl2.addParameter(CATEGORY_KEY, ROUTERS_CATEGORY).addParameter(Constants.TYPE_KEY, "javascript").addParameter(Constants.ROUTER_KEY,
                 ScriptRouterFactory.NAME).addParameter(Constants.RULE_KEY,
                 "function test1(){}"));
 
@@ -710,8 +724,8 @@ public class RegistryDirectoryTest {
         invocation = new RpcInvocation();
 
         List<URL> durls = new ArrayList<URL>();
-        durls.add(SERVICEURL.setHost("10.20.30.140").addParameter("timeout", "1").addParameter(Constants.SIDE_KEY, Constants.CONSUMER_SIDE));//One is the same, one is different
-        durls.add(SERVICEURL2.setHost("10.20.30.141").addParameter("timeout", "2").addParameter(Constants.SIDE_KEY, Constants.CONSUMER_SIDE));
+        durls.add(SERVICEURL.setHost("10.20.30.140").addParameter("timeout", "1").addParameter(SIDE_KEY, CONSUMER_SIDE));//One is the same, one is different
+        durls.add(SERVICEURL2.setHost("10.20.30.141").addParameter("timeout", "2").addParameter(SIDE_KEY, CONSUMER_SIDE));
         registryDirectory.notify(durls);
 
         durls = new ArrayList<URL>();
@@ -828,7 +842,7 @@ public class RegistryDirectoryTest {
         registryDirectory.notify(durls);
 
         durls = new ArrayList<URL>();
-        durls.add(URL.valueOf("override://0.0.0.0?" + Constants.ENABLED_KEY + "=false"));
+        durls.add(URL.valueOf("override://0.0.0.0?" + ENABLED_KEY + "=false"));
         registryDirectory.notify(durls);
 
         List<Invoker<?>> invokers = registryDirectory.list(invocation);
@@ -851,7 +865,7 @@ public class RegistryDirectoryTest {
         registryDirectory.notify(durls);
 
         durls = new ArrayList<URL>();
-        durls.add(URL.valueOf("override://10.20.30.140:9091?" + Constants.DISABLED_KEY + "=true"));
+        durls.add(URL.valueOf("override://10.20.30.140:9091?" + DISABLED_KEY + "=true"));
         registryDirectory.notify(durls);
 
         List<Invoker<?>> invokers = registryDirectory.list(invocation);
@@ -859,7 +873,7 @@ public class RegistryDirectoryTest {
         Assertions.assertEquals("10.20.30.141", invokers.get(0).getUrl().getHost());
 
         durls = new ArrayList<URL>();
-        durls.add(URL.valueOf("empty://0.0.0.0?" + Constants.DISABLED_KEY + "=true&" + Constants.CATEGORY_KEY + "=" + Constants.CONFIGURATORS_CATEGORY));
+        durls.add(URL.valueOf("empty://0.0.0.0?" + DISABLED_KEY + "=true&" + CATEGORY_KEY + "=" + CONFIGURATORS_CATEGORY));
         registryDirectory.notify(durls);
         List<Invoker<?>> invokers2 = registryDirectory.list(invocation);
         Assertions.assertEquals(2, invokers2.size());
@@ -890,7 +904,7 @@ public class RegistryDirectoryTest {
         Assertions.assertEquals("10.20.30.140", invokers2.get(0).getUrl().getHost());
 
         durls = new ArrayList<URL>();
-        durls.add(URL.valueOf("empty://0.0.0.0?" + Constants.DISABLED_KEY + "=true&" + Constants.CATEGORY_KEY + "=" + Constants.CONFIGURATORS_CATEGORY));
+        durls.add(URL.valueOf("empty://0.0.0.0?" + DISABLED_KEY + "=true&" + CATEGORY_KEY + "=" + CONFIGURATORS_CATEGORY));
         registryDirectory.notify(durls);
         List<Invoker<?>> invokers3 = registryDirectory.list(invocation);
         Assertions.assertEquals(1, invokers3.size());
@@ -907,7 +921,7 @@ public class RegistryDirectoryTest {
 
         // Initially disable
         List<URL> durls = new ArrayList<URL>();
-        durls.add(SERVICEURL.setHost("10.20.30.140").addParameter(Constants.ENABLED_KEY, "false"));
+        durls.add(SERVICEURL.setHost("10.20.30.140").addParameter(ENABLED_KEY, "false"));
         durls.add(SERVICEURL.setHost("10.20.30.141"));
         registryDirectory.notify(durls);
 
@@ -917,7 +931,7 @@ public class RegistryDirectoryTest {
 
         //Enabled by override rule
         durls = new ArrayList<URL>();
-        durls.add(URL.valueOf("override://10.20.30.140:9091?" + Constants.DISABLED_KEY + "=false"));
+        durls.add(URL.valueOf("override://10.20.30.140:9091?" + DISABLED_KEY + "=false"));
         registryDirectory.notify(durls);
         List<Invoker<?>> invokers2 = registryDirectory.list(invocation);
         Assertions.assertEquals(2, invokers2.size());
@@ -927,7 +941,7 @@ public class RegistryDirectoryTest {
     public void testNotifyRouterUrls_Clean() {
         if (isScriptUnsupported) return;
         RegistryDirectory registryDirectory = getRegistryDirectory();
-        URL routerurl = URL.valueOf(Constants.ROUTE_PROTOCOL + "://127.0.0.1:9096/").addParameter(Constants.ROUTER_KEY,
+        URL routerurl = URL.valueOf(ROUTE_PROTOCOL + "://127.0.0.1:9096/").addParameter(Constants.ROUTER_KEY,
                 "javascript").addParameter(Constants.RULE_KEY,
                 "function test1(){}").addParameter(Constants.ROUTER_KEY,
                 "script"); // FIX

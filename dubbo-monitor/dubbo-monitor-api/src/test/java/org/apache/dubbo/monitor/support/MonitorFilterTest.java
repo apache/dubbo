@@ -39,6 +39,9 @@ import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -62,7 +65,7 @@ public class MonitorFilterTest {
 
         public URL getUrl() {
             try {
-                return URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880?" + Constants.APPLICATION_KEY + "=abc&" + Constants.SIDE_KEY + "=" + Constants.CONSUMER_SIDE + "&" + Constants.MONITOR_KEY + "=" + URLEncoder.encode("dubbo://" + NetUtils.getLocalHost() + ":7070", "UTF-8"));
+                return URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880?" + APPLICATION_KEY + "=abc&" + SIDE_KEY + "=" + CONSUMER_SIDE + "&" + Constants.MONITOR_KEY + "=" + URLEncoder.encode("dubbo://" + NetUtils.getLocalHost() + ":7070", "UTF-8"));
             } catch (UnsupportedEncodingException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
@@ -144,7 +147,7 @@ public class MonitorFilterTest {
         monitorFilter.setMonitorFactory(mockMonitorFactory);
         Invocation invocation = new RpcInvocation("aaa", new Class<?>[0], new Object[0]);
         Invoker invoker = mock(Invoker.class);
-        given(invoker.getUrl()).willReturn(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880?" + Constants.APPLICATION_KEY + "=abc&" + Constants.SIDE_KEY + "=" + Constants.CONSUMER_SIDE));
+        given(invoker.getUrl()).willReturn(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880?" + APPLICATION_KEY + "=abc&" + SIDE_KEY + "=" + CONSUMER_SIDE));
 
         monitorFilter.invoke(invoker, invocation);
 

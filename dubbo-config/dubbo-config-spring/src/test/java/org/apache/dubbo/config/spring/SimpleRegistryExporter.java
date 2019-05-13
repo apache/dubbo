@@ -17,7 +17,6 @@
 package org.apache.dubbo.config.spring;
 
 import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -28,6 +27,9 @@ import org.apache.dubbo.rpc.ProxyFactory;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.CALLBACK_INSTANCES_LIMIT_KEY;
 
 /**
  * SimpleRegistryExporter
@@ -55,9 +57,9 @@ public class SimpleRegistryExporter {
         return protocol.export(proxyFactory.getInvoker(registryService, RegistryService.class,
                 new URLBuilder(Constants.DUBBO_PROTOCOL, NetUtils.getLocalHost(), port, RegistryService.class.getName())
                         .setPath(RegistryService.class.getName())
-                        .addParameter(Constants.INTERFACE_KEY, RegistryService.class.getName())
+                        .addParameter(INTERFACE_KEY, RegistryService.class.getName())
                         .addParameter(Constants.CLUSTER_STICKY_KEY, "true")
-                        .addParameter(Constants.CALLBACK_INSTANCES_LIMIT_KEY, "1000")
+                        .addParameter(CALLBACK_INSTANCES_LIMIT_KEY, "1000")
                         .addParameter("ondisconnect", "disconnect")
                         .addParameter("subscribe.1.callback", "true")
                         .addParameter("unsubscribe.1.callback", "false")

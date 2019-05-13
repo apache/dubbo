@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metadata.store.zookeeper;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -24,6 +23,9 @@ import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.support.AbstractMetadataReport;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
+
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 
 /**
  * ZookeeperMetadataReport
@@ -41,19 +43,19 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
         if (url.isAnyHost()) {
             throw new IllegalStateException("registry address == null");
         }
-        String group = url.getParameter(Constants.GROUP_KEY, DEFAULT_ROOT);
-        if (!group.startsWith(Constants.PATH_SEPARATOR)) {
-            group = Constants.PATH_SEPARATOR + group;
+        String group = url.getParameter(GROUP_KEY, DEFAULT_ROOT);
+        if (!group.startsWith(PATH_SEPARATOR)) {
+            group = PATH_SEPARATOR + group;
         }
         this.root = group;
         zkClient = zookeeperTransporter.connect(url);
     }
 
     String toRootDir() {
-        if (root.equals(Constants.PATH_SEPARATOR)) {
+        if (root.equals(PATH_SEPARATOR)) {
             return root;
         }
-        return root + Constants.PATH_SEPARATOR;
+        return root + PATH_SEPARATOR;
     }
 
     @Override
