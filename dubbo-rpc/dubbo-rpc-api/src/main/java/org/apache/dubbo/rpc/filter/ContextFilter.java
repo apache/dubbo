@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.filter;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
@@ -29,6 +28,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.ClusterConstants.TAG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
@@ -36,9 +36,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.ASYNC_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.FORCE_USE_TAG;
-import static org.apache.dubbo.common.constants.RpcConstants.ASYNC_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.TOKEN_KEY;
 
 
@@ -65,7 +65,7 @@ public class ContextFilter implements Filter {
             attachments.remove(TIMEOUT_KEY);
             // Remove async property to avoid being passed to the following invoke chain.
             attachments.remove(ASYNC_KEY);
-            attachments.remove(Constants.TAG_KEY);
+            attachments.remove(TAG_KEY);
             attachments.remove(FORCE_USE_TAG);
         }
         RpcContext.getContext()
