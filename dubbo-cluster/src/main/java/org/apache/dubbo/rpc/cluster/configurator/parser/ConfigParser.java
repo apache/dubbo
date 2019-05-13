@@ -31,6 +31,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+
 /**
  * Config parser
  */
@@ -194,7 +196,7 @@ public class ConfigParser {
             addresses = new ArrayList<>();
         }
         if (addresses.size() == 0) {
-            addresses.add(Constants.ANYHOST_VALUE);
+            addresses.add(ANYHOST_VALUE);
         }
         return addresses;
     }

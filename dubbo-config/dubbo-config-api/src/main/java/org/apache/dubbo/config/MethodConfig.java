@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.support.Parameter;
@@ -318,7 +319,7 @@ public class MethodConfig extends AbstractMethodConfig {
     @Override
     @Parameter(excluded = true)
     public String getPrefix() {
-        return Constants.DUBBO + "." + service
+        return CommonConstants.DUBBO + "." + service
                 + (StringUtils.isEmpty(serviceId) ? "" : ("." + serviceId))
                 + "." + getName();
     }

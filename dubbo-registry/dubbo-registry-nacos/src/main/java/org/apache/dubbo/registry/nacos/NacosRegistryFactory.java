@@ -48,6 +48,7 @@ public class NacosRegistryFactory extends AbstractRegistryFactory {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+    @Override
     protected Registry createRegistry(URL url) {
         return new NacosRegistry(url, buildNamingService(url));
     }

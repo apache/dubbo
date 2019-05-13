@@ -26,6 +26,10 @@ import org.apache.dubbo.config.support.Parameter;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+
 /**
  * ConfigCenterConfig
  */
@@ -56,12 +60,12 @@ public class ConfigCenterConfig extends AbstractConfig {
     public URL toUrl() {
         Map<String, String> map = this.getMetaData();
         if (StringUtils.isEmpty(address)) {
-            address = Constants.ANYHOST_VALUE;
+            address = ANYHOST_VALUE;
         }
-        map.put(Constants.PATH_KEY, ConfigCenterConfig.class.getSimpleName());
+        map.put(PATH_KEY, ConfigCenterConfig.class.getSimpleName());
         // use 'zookeeper' as the default configcenter.
-        if (StringUtils.isEmpty(map.get(Constants.PROTOCOL_KEY))) {
-            map.put(Constants.PROTOCOL_KEY, Constants.ZOOKEEPER_PROTOCOL);
+        if (StringUtils.isEmpty(map.get(PROTOCOL_KEY))) {
+            map.put(PROTOCOL_KEY, Constants.ZOOKEEPER_PROTOCOL);
         }
         return UrlUtils.parseURL(address, map);
     }

@@ -39,6 +39,11 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
+import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
+
 /**
  * ConditionRouter
  *
@@ -63,7 +68,7 @@ public class ConditionRouter extends AbstractRouter {
         this.url = url;
         this.priority = url.getParameter(Constants.PRIORITY_KEY, 0);
         this.force = url.getParameter(Constants.FORCE_KEY, false);
-        this.enabled = url.getParameter(Constants.ENABLED_KEY, true);
+        this.enabled = url.getParameter(ENABLED_KEY, true);
         init(url.getParameterAndDecoded(Constants.RULE_KEY));
     }
 
@@ -219,7 +224,7 @@ public class ConditionRouter extends AbstractRouter {
             String key = matchPair.getKey();
             String sampleValue;
             //get real invoked method name from invocation
-            if (invocation != null && (Constants.METHOD_KEY.equals(key) || Constants.METHODS_KEY.equals(key))) {
+            if (invocation != null && (METHOD_KEY.equals(key) || METHODS_KEY.equals(key))) {
                 sampleValue = invocation.getMethodName();
             } else if (Constants.ADDRESS_KEY.equals(key)) {
                 sampleValue = url.getAddress();
@@ -228,7 +233,7 @@ public class ConditionRouter extends AbstractRouter {
             } else {
                 sampleValue = sample.get(key);
                 if (sampleValue == null) {
-                    sampleValue = sample.get(Constants.DEFAULT_KEY_PREFIX + key);
+                    sampleValue = sample.get(DEFAULT_KEY_PREFIX + key);
                 }
             }
             if (sampleValue != null) {

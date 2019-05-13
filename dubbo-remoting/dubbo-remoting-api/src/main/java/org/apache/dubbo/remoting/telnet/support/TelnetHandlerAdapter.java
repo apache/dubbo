@@ -26,6 +26,8 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.transport.ChannelHandlerAdapter;
 
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+
 public class TelnetHandlerAdapter extends ChannelHandlerAdapter implements TelnetHandler {
 
     private final ExtensionLoader<TelnetHandler> extensionLoader = ExtensionLoader.getExtensionLoader(TelnetHandler.class);
@@ -86,7 +88,7 @@ public class TelnetHandlerAdapter extends ChannelHandlerAdapter implements Telne
         if (StringUtils.isEmpty(supportCommands)) {
             return true;
         }
-        String[] commands = Constants.COMMA_SPLIT_PATTERN.split(supportCommands);
+        String[] commands = COMMA_SPLIT_PATTERN.split(supportCommands);
         for (String c : commands) {
             if (command.equals(c)) {
                 return true;

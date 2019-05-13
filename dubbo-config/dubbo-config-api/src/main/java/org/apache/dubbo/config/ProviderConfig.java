@@ -29,6 +29,8 @@ import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
+
 /**
  * The service provider default configuration
  *
@@ -217,7 +219,7 @@ public class ProviderConfig extends AbstractServiceConfig {
     }
 
     public void setThreadpool(String threadpool) {
-        checkExtension(ThreadPool.class, Constants.THREADPOOL_KEY, threadpool);
+        checkExtension(ThreadPool.class, THREADPOOL_KEY, threadpool);
         this.threadpool = threadpool;
     }
 

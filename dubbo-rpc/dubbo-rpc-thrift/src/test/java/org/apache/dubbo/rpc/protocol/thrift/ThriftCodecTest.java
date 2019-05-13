@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.thrift;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
@@ -29,6 +28,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.gen.thrift.Demo;
 import org.apache.dubbo.rpc.protocol.thrift.io.RandomAccessByteArrayOutputStream;
+
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TMessage;
@@ -40,6 +40,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
+
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 
 public class ThriftCodecTest {
 
@@ -400,10 +403,10 @@ public class ThriftCodecTest {
         protocol.writeByte(ThriftCodec.VERSION);
         protocol.writeString(
                 ((RpcInvocation) request.getData())
-                        .getAttachment(Constants.INTERFACE_KEY));
+                        .getAttachment(INTERFACE_KEY));
         protocol.writeString(
                 ((RpcInvocation) request.getData())
-                        .getAttachment(Constants.PATH_KEY));
+                        .getAttachment(PATH_KEY));
         protocol.writeI64(request.getId());
         protocol.getTransport().flush();
         headerLength = bos.size();
@@ -455,8 +458,8 @@ public class ThriftCodecTest {
 
         invocation.setParameterTypes(new Class<?>[]{String.class});
 
-        invocation.setAttachment(Constants.INTERFACE_KEY, Demo.Iface.class.getName());
-        invocation.setAttachment(Constants.PATH_KEY, Demo.Iface.class.getName());
+        invocation.setAttachment(INTERFACE_KEY, Demo.Iface.class.getName());
+        invocation.setAttachment(PATH_KEY, Demo.Iface.class.getName());
 
         Request request = new Request(1L);
 

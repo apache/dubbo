@@ -26,6 +26,9 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcStatus;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+
 /**
  * ActiveLimitFilter restrict the concurrent client invocation for a service or service's method from client side.
  * To use active limit filter, configured url with <b>actives</b> and provide valid >0 integer value.
@@ -38,7 +41,7 @@ import org.apache.dubbo.rpc.RpcStatus;
  *
  * @see Filter
  */
-@Activate(group = Constants.CONSUMER, value = Constants.ACTIVES_KEY)
+@Activate(group = CONSUMER, value = Constants.ACTIVES_KEY)
 public class ActiveLimitFilter implements Filter {
 
     @Override
@@ -47,12 +50,12 @@ public class ActiveLimitFilter implements Filter {
         String methodName = invocation.getMethodName();
         int max = invoker.getUrl().getMethodParameter(methodName, Constants.ACTIVES_KEY, 0);
         RpcStatus count = RpcStatus.getStatus(invoker.getUrl(), invocation.getMethodName());
-        if (!count.beginCount(url, methodName, max)) {
-            long timeout = invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.TIMEOUT_KEY, 0);
+        if (!RpcStatus.beginCount(url, methodName, max)) {
+            long timeout = invoker.getUrl().getMethodParameter(invocation.getMethodName(), TIMEOUT_KEY, 0);
             long start = System.currentTimeMillis();
             long remain = timeout;
             synchronized (count) {
-                while (!count.beginCount(url, methodName, max)) {
+                while (!RpcStatus.beginCount(url, methodName, max)) {
                     try {
                         count.wait(remain);
                     } catch (InterruptedException e) {
@@ -79,7 +82,7 @@ public class ActiveLimitFilter implements Filter {
             isSuccess = false;
             throw t;
         } finally {
-            count.endCount(url, methodName, System.currentTimeMillis() - begin, isSuccess);
+            RpcStatus.endCount(url, methodName, System.currentTimeMillis() - begin, isSuccess);
             if (max > 0) {
                 synchronized (count) {
                     count.notifyAll();
