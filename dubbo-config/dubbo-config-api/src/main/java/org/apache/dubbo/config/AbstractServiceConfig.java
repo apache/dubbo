@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
@@ -28,6 +27,9 @@ import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.SERVICE_FILTER_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.EXPORTER_LISTENER_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.TOKEN_KEY;
 
 /**
  * AbstractServiceConfig
@@ -178,7 +180,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     }
 
     public void setToken(String token) {
-        checkName(Constants.TOKEN_KEY, token);
+        checkName(TOKEN_KEY, token);
         this.token = token;
     }
 
@@ -250,13 +252,13 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     }
 
     @Override
-    @Parameter(key = Constants.SERVICE_FILTER_KEY, append = true)
+    @Parameter(key = SERVICE_FILTER_KEY, append = true)
     public String getFilter() {
         return super.getFilter();
     }
 
     @Override
-    @Parameter(key = Constants.EXPORTER_LISTENER_KEY, append = true)
+    @Parameter(key = EXPORTER_LISTENER_KEY, append = true)
     public String getListener() {
         return listener;
     }

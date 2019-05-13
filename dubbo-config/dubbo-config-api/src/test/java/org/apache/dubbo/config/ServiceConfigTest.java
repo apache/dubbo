@@ -43,15 +43,16 @@ import org.mockito.Mockito;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.common.Constants.GENERIC_SERIALIZATION_BEAN;
-import static org.apache.dubbo.common.Constants.GENERIC_SERIALIZATION_DEFAULT;
-import static org.apache.dubbo.common.Constants.GENERIC_SERIALIZATION_NATIVE_JAVA;
+import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_SERIALIZATION_BEAN;
+import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_SERIALIZATION_DEFAULT;
+import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_SERIALIZATION_NATIVE_JAVA;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_KEY;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -143,7 +144,7 @@ public class ServiceConfigTest {
         assertThat(url.getParameters(), hasKey(RemotingConstants.BIND_PORT_KEY));
         assertThat(url.getParameters(), hasEntry(Constants.EXPORT_KEY, "true"));
         assertThat(url.getParameters(), hasEntry("echo.0.callback", "false"));
-        assertThat(url.getParameters(), hasEntry(Constants.GENERIC_KEY, "false"));
+        assertThat(url.getParameters(), hasEntry(GENERIC_KEY, "false"));
         assertThat(url.getParameters(), hasEntry(INTERFACE_KEY, DemoService.class.getName()));
         assertThat(url.getParameters(), hasKey(METHODS_KEY));
         assertThat(url.getParameters().get(METHODS_KEY), containsString("echo"));

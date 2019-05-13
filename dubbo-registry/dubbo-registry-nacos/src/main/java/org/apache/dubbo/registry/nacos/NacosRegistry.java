@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.registry.nacos;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -47,19 +46,19 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.common.Constants.ADMIN_PROTOCOL;
-import static org.apache.dubbo.common.Constants.CATEGORY_KEY;
-import static org.apache.dubbo.common.Constants.CONFIGURATORS_CATEGORY;
-import static org.apache.dubbo.common.Constants.CONSUMERS_CATEGORY;
-import static org.apache.dubbo.common.Constants.DEFAULT_CATEGORY;
-import static org.apache.dubbo.common.Constants.PROVIDERS_CATEGORY;
-import static org.apache.dubbo.common.Constants.ROUTERS_CATEGORY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.ADMIN_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
 
 /**
  * Nacos {@link Registry}
@@ -385,7 +384,7 @@ public class NacosRegistry extends FailbackRegistry {
      */
     private String[] getCategories(URL url) {
         return ANY_VALUE.equals(url.getServiceInterface()) ?
-                ALL_SUPPORTED_CATEGORIES : of(Constants.DEFAULT_CATEGORY);
+                ALL_SUPPORTED_CATEGORIES : of(DEFAULT_CATEGORY);
     }
 
     private URL buildURL(Instance instance) {
@@ -401,8 +400,8 @@ public class NacosRegistry extends FailbackRegistry {
 
     private Instance createInstance(URL url) {
         // Append default category if absent
-        String category = url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY);
-        URL newURL = url.addParameter(Constants.CATEGORY_KEY, category);
+        String category = url.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY);
+        URL newURL = url.addParameter(CATEGORY_KEY, category);
         newURL = newURL.addParameter(PROTOCOL_KEY, url.getProtocol());
         newURL = newURL.addParameter(PATH_KEY, url.getPath());
         String ip = url.getHost();

@@ -24,6 +24,9 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.STUB_EVENT_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.REFERENCE_FILTER_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.INVOKER_LISTENER_KEY;
 
 /**
  * AbstractConsumerConfig
@@ -136,13 +139,13 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     }
 
     @Override
-    @Parameter(key = Constants.REFERENCE_FILTER_KEY, append = true)
+    @Parameter(key = REFERENCE_FILTER_KEY, append = true)
     public String getFilter() {
         return super.getFilter();
     }
 
     @Override
-    @Parameter(key = Constants.INVOKER_LISTENER_KEY, append = true)
+    @Parameter(key = INVOKER_LISTENER_KEY, append = true)
     public String getListener() {
         return super.getListener();
     }
@@ -178,7 +181,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         super.setOndisconnect(ondisconnect);
     }
 
-    @Parameter(key = Constants.STUB_EVENT_KEY)
+    @Parameter(key = STUB_EVENT_KEY)
     public Boolean getStubevent() {
         return stubevent;
     }

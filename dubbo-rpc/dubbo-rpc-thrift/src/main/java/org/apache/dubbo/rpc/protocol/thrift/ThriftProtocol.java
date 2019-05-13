@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.thrift;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.RemotingConstants;
@@ -45,6 +44,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.IS_SERVER_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.CONNECTIONS_KEY;
 
 /**
  * @since 2.7.0, use https://github.com/dubbo/dubbo-rpc-native-thrift instead
@@ -124,7 +125,7 @@ public class ThriftProtocol extends AbstractProtocol {
         // find server.
         String key = url.getAddress();
         // client can expose a service for server to invoke only.
-        boolean isServer = url.getParameter(Constants.IS_SERVER_KEY, true);
+        boolean isServer = url.getParameter(IS_SERVER_KEY, true);
         if (isServer && !serverMap.containsKey(key)) {
             serverMap.put(key, getServer(url));
         }
@@ -173,7 +174,7 @@ public class ThriftProtocol extends AbstractProtocol {
 
     private ExchangeClient[] getClients(URL url) {
 
-        int connections = url.getParameter(Constants.CONNECTIONS_KEY, 1);
+        int connections = url.getParameter(CONNECTIONS_KEY, 1);
 
         ExchangeClient[] clients = new ExchangeClient[connections];
 

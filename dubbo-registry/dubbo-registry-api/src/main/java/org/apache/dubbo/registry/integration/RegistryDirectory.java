@@ -59,14 +59,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.common.Constants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
-import static org.apache.dubbo.common.Constants.CATEGORY_KEY;
-import static org.apache.dubbo.common.Constants.CONFIGURATORS_CATEGORY;
-import static org.apache.dubbo.common.Constants.DEFAULT_CATEGORY;
-import static org.apache.dubbo.common.Constants.DYNAMIC_CONFIGURATORS_CATEGORY;
-import static org.apache.dubbo.common.Constants.PROVIDERS_CATEGORY;
-import static org.apache.dubbo.common.Constants.ROUTERS_CATEGORY;
-import static org.apache.dubbo.common.Constants.ROUTE_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
@@ -74,6 +66,18 @@ import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.COMPATIBLE_CONFIG_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_SUFFIX;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL;
 
 
 /**
@@ -140,7 +144,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         // save any parameter in registry that will be useful to the new url.
         String isDefault = url.getParameter(DEFAULT_KEY);
         if (StringUtils.isNotEmpty(isDefault)) {
-            queryMap.put(Constants.REGISTRY_KEY + "." + DEFAULT_KEY, isDefault);
+            queryMap.put(REGISTRY_KEY + "." + DEFAULT_KEY, isDefault);
         }
         return URLBuilder.from(url)
                 .setPath(url.getServiceInterface())
@@ -250,7 +254,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
         if (invokerUrls.size() == 1
                 && invokerUrls.get(0) != null
-                && Constants.EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
+                && EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
             this.forbidden = true; // Forbid to access
             this.invokers = Collections.emptyList();
             routerChain.setInvokers(this.invokers);
@@ -336,7 +340,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
         List<Router> routers = new ArrayList<>();
         for (URL url : urls) {
-            if (Constants.EMPTY_PROTOCOL.equals(url.getProtocol())) {
+            if (EMPTY_PROTOCOL.equals(url.getProtocol())) {
                 continue;
             }
             String routerType = url.getParameter(Constants.ROUTER_KEY);
@@ -384,7 +388,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                     continue;
                 }
             }
-            if (Constants.EMPTY_PROTOCOL.equals(providerUrl.getProtocol())) {
+            if (EMPTY_PROTOCOL.equals(providerUrl.getProtocol())) {
                 continue;
             }
             if (!ExtensionLoader.getExtensionLoader(Protocol.class).hasExtension(providerUrl.getProtocol())) {
@@ -655,7 +659,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
 
     private boolean isNotCompatibleFor26x(URL url) {
-        return StringUtils.isEmpty(url.getParameter(Constants.COMPATIBLE_CONFIG_KEY));
+        return StringUtils.isEmpty(url.getParameter(COMPATIBLE_CONFIG_KEY));
     }
 
     private void overrideDirectoryUrl() {
@@ -704,7 +708,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         ReferenceConfigurationListener(RegistryDirectory directory, URL url) {
             this.directory = directory;
             this.url = url;
-            this.initWith(url.getEncodedServiceKey() + Constants.CONFIGURATORS_SUFFIX);
+            this.initWith(url.getEncodedServiceKey() + CONFIGURATORS_SUFFIX);
         }
 
         @Override
@@ -718,7 +722,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         List<RegistryDirectory> listeners = new ArrayList<>();
 
         ConsumerConfigurationListener() {
-            this.initWith(ApplicationModel.getApplication() + Constants.CONFIGURATORS_SUFFIX);
+            this.initWith(ApplicationModel.getApplication() + CONFIGURATORS_SUFFIX);
         }
 
         void addNotifyListener(RegistryDirectory listener) {
