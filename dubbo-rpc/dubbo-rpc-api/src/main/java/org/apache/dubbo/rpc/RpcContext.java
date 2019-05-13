@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -35,6 +34,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.ASYNC_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.RETURN_KEY;
 
 
 /**
@@ -85,6 +90,9 @@ public class RpcContext {
     private InetSocketAddress localAddress;
 
     private InetSocketAddress remoteAddress;
+
+    private String remoteApplicationName;
+
     @Deprecated
     private List<Invoker<?>> invokers;
     @Deprecated
@@ -149,6 +157,7 @@ public class RpcContext {
         copy.arguments = this.arguments;
         copy.localAddress = this.localAddress;
         copy.remoteAddress = this.remoteAddress;
+        copy.remoteApplicationName = this.remoteApplicationName;
         copy.invokers = this.invokers;
         copy.invoker = this.invoker;
         copy.invocation = this.invocation;
@@ -231,7 +240,7 @@ public class RpcContext {
      * @return consumer side.
      */
     public boolean isConsumerSide() {
-        return getUrl().getParameter(Constants.SIDE_KEY, Constants.PROVIDER_SIDE).equals(Constants.CONSUMER_SIDE);
+        return getUrl().getParameter(SIDE_KEY, PROVIDER_SIDE).equals(CONSUMER_SIDE);
     }
 
     /**
@@ -404,6 +413,15 @@ public class RpcContext {
      */
     public RpcContext setRemoteAddress(InetSocketAddress address) {
         this.remoteAddress = address;
+        return this;
+    }
+
+    public String getRemoteApplicationName() {
+        return remoteApplicationName;
+    }
+
+    public RpcContext setRemoteApplicationName(String remoteApplicationName) {
+        this.remoteApplicationName = remoteApplicationName;
         return this;
     }
 
@@ -660,7 +678,7 @@ public class RpcContext {
     public <T> CompletableFuture<T> asyncCall(Callable<T> callable) {
         try {
             try {
-                setAttachment(Constants.ASYNC_KEY, Boolean.TRUE.toString());
+                setAttachment(ASYNC_KEY, Boolean.TRUE.toString());
                 final T o = callable.call();
                 //local invoke will return directly
                 if (o != null) {
@@ -674,7 +692,7 @@ public class RpcContext {
             } catch (Exception e) {
                 throw new RpcException(e);
             } finally {
-                removeAttachment(Constants.ASYNC_KEY);
+                removeAttachment(ASYNC_KEY);
             }
         } catch (final RpcException e) {
             return new CompletableFuture<T>() {
@@ -716,13 +734,13 @@ public class RpcContext {
      */
     public void asyncCall(Runnable runnable) {
         try {
-            setAttachment(Constants.RETURN_KEY, Boolean.FALSE.toString());
+            setAttachment(RETURN_KEY, Boolean.FALSE.toString());
             runnable.run();
         } catch (Throwable e) {
             // FIXME should put exception in future?
             throw new RpcException("oneway call error ." + e.getMessage(), e);
         } finally {
-            removeAttachment(Constants.RETURN_KEY);
+            removeAttachment(RETURN_KEY);
         }
     }
 

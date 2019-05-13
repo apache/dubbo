@@ -16,9 +16,8 @@
  */
 package org.apache.dubbo.remoting.transport.netty;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.DubboAppender;
-import org.apache.dubbo.common.utils.LogUtil;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Client;
@@ -27,7 +26,6 @@ import org.apache.dubbo.remoting.Server;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 
-import org.apache.log4j.Level;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,9 +34,6 @@ import org.junit.jupiter.api.Test;
  * Client reconnect test
  */
 public class ClientReconnectTest {
-    public static void main(String[] args) {
-        System.out.println(3 % 1);
-    }
 
     @BeforeEach
     public void clear() {
@@ -73,31 +68,9 @@ public class ClientReconnectTest {
         }
     }
 
-    /**
-     * Reconnect log check, when the time is not enough for shutdown time, there is no error log, but there must be a warn log
-     */
-    @Test
-    public void testReconnectWarnLog() throws RemotingException, InterruptedException {
-        int port = NetUtils.getAvailablePort();
-        DubboAppender.doStart();
-        String url = "exchange://127.0.0.1:" + port + "/client.reconnect.test?check=false&client=netty3&"
-                + Constants.RECONNECT_KEY + "=" + 1; //1ms reconnect, ensure that there is enough frequency to reconnect
-        try {
-            Exchangers.connect(url);
-        } catch (Exception e) {
 
-            //do nothing
-        }
-        Thread.sleep(1500);
-        //Time is not long enough to produce a error log
-        Assertions.assertEquals(0, LogUtil.findMessage(Level.ERROR, "client reconnect to "), "no error message ");
-        //The first reconnection failed to have a warn log
-        Assertions.assertEquals(1, LogUtil.findMessage(Level.WARN, "client reconnect to "), "must have one warn message ");
-        DubboAppender.doStop();
-    }
-
-    public Client startClient(int port, int reconnectPeriod) throws RemotingException {
-        final String url = "exchange://127.0.0.1:" + port + "/client.reconnect.test?check=false&client=netty3&" + Constants.RECONNECT_KEY + "=" + reconnectPeriod;
+    public Client startClient(int port, int heartbeat) throws RemotingException {
+        final String url = "exchange://127.0.0.1:" + port + "/client.reconnect.test?check=false&client=netty3&" + RemotingConstants.HEARTBEAT_KEY + "=" + heartbeat;
         return Exchangers.connect(url);
     }
 

@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
+
 /**
  * Utilities for manipulating configurations from different sources
  */
@@ -36,9 +38,9 @@ public class ConfigurationUtils {
     // FIXME
     @SuppressWarnings("deprecation")
     public static int getServerShutdownTimeout() {
-        int timeout = Constants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
+        int timeout = DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
         Configuration configuration = Environment.getInstance().getConfiguration();
-        String value = configuration.getString(Constants.SHUTDOWN_WAIT_KEY);
+        String value = StringUtils.trim(configuration.getString(Constants.SHUTDOWN_WAIT_KEY));
 
         if (value != null && value.length() > 0) {
             try {
@@ -47,7 +49,7 @@ public class ConfigurationUtils {
                 // ignore
             }
         } else {
-            value = configuration.getString(Constants.SHUTDOWN_WAIT_SECONDS_KEY);
+            value = StringUtils.trim(configuration.getString(Constants.SHUTDOWN_WAIT_SECONDS_KEY));
             if (value != null && value.length() > 0) {
                 try {
                     timeout = Integer.parseInt(value) * 1000;
@@ -64,7 +66,7 @@ public class ConfigurationUtils {
     }
 
     public static String getProperty(String property, String defaultValue) {
-        return Environment.getInstance().getConfiguration().getString(property, defaultValue);
+        return StringUtils.trim(Environment.getInstance().getConfiguration().getString(property, defaultValue));
     }
 
     public static Map<String, String> parseProperties(String content) throws IOException {

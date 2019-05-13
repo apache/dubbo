@@ -28,8 +28,8 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.mock.MockRegistry;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -112,18 +112,11 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
             //{"", "", "", "", "", "", "", "", "", ""}, 
     };
 
-    private Object consumerConfTable[][] = {
-            {"timeout", "default.timeout", "int", 5000, 8000, "", "", "", "", ""},
-            {"retries", "default.retries", "int", 2, 5, "", "", "", "", ""},
-            {"loadbalance", "default.loadbalance", "string", "random", "leastactive", "", "", "", "", ""},
-            {"async", "default.async", "boolean", false, true, "", "", "", "", ""},
-            {"connections", "default.connections", "int", 100, 5, "", "", "", "", ""},
+    private Object consumerConfTable[][] = {{"timeout", "timeout", "int", 5000, 8000, "", "", "", "", ""}, {"retries", "retries", "int", 2, 5, "", "", "", "", ""}, {"loadbalance", "loadbalance", "string", "random", "leastactive", "", "", "", "", ""}, {"async", "async", "boolean", false, true, "", "", "", "", ""}, {"connections", "connections", "int", 100, 5, "", "", "", "", ""},
 //            {"generic", "generic", "boolean", false, false, "", "", "", "", ""}, 
             {"check", "check", "boolean", true, false, "", "", "", "", ""},
             {"proxy", "proxy", "string", "javassist", "jdk", "javassist", "", "", "", ""},
-            {"owner", "owner", "string", "", "haomin", "", "", "", "", ""},
-            {"actives", "default.actives", "int", 0, 5, "", "", "", "", ""},
-            {"cluster", "default.cluster", "string", "failover", "forking", "", "", "", "", ""},
+            {"owner", "owner", "string", "", "haomin", "", "", "", "", ""}, {"actives", "actives", "int", 0, 5, "", "", "", "", ""}, {"cluster", "cluster", "string", "failover", "forking", "", "", "", "", ""},
             {"filter", "", "string", "", "", "", "", "", "", ""},
             {"listener", "", "string", "", "", "", "", "", "", ""},
 //            {"", "", "", "", "", "", "", "", "", ""}, 

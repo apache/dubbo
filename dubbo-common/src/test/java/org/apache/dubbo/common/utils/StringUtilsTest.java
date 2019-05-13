@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.Constants;
-
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -26,6 +24,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -193,9 +194,9 @@ public class StringUtilsTest {
     @Test
     public void testGetServiceKey() throws Exception {
         Map<String, String> map = new HashMap<String, String>();
-        map.put(Constants.GROUP_KEY, "dubbo");
-        map.put(Constants.INTERFACE_KEY, "a.b.c.Foo");
-        map.put(Constants.VERSION_KEY, "1.0.0");
+        map.put(GROUP_KEY, "dubbo");
+        map.put(INTERFACE_KEY, "a.b.c.Foo");
+        map.put(VERSION_KEY, "1.0.0");
         assertThat(StringUtils.getServiceKey(map), equalTo("dubbo/a.b.c.Foo:1.0.0"));
     }
 
@@ -240,9 +241,22 @@ public class StringUtilsTest {
 
     @Test
     public void testIsNumeric() throws Exception {
-        assertThat(StringUtils.isNumeric("123"), is(true));
-        assertThat(StringUtils.isNumeric("1a3"), is(false));
-        assertThat(StringUtils.isNumeric(null), is(false));
+        assertThat(StringUtils.isNumeric("123", false), is(true));
+        assertThat(StringUtils.isNumeric("1a3", false), is(false));
+        assertThat(StringUtils.isNumeric(null, false), is(false));
+
+        assertThat(StringUtils.isNumeric("0", true), is(true));
+        assertThat(StringUtils.isNumeric("0.1", true), is(true));
+        assertThat(StringUtils.isNumeric("DUBBO", true), is(false));
+        assertThat(StringUtils.isNumeric("", true), is(false));
+        assertThat(StringUtils.isNumeric(" ", true), is(false));
+        assertThat(StringUtils.isNumeric("   ", true), is(false));
+
+        assertThat(StringUtils.isNumeric("123.3.3", true), is(false));
+        assertThat(StringUtils.isNumeric("123.", true), is(true));
+        assertThat(StringUtils.isNumeric(".123", true), is(true));
+        assertThat(StringUtils.isNumeric("..123", true), is(false));
+
     }
 
     @Test
@@ -273,5 +287,13 @@ public class StringUtilsTest {
         assertThat(s, containsString("a,"));
         assertThat(s, containsString("0,"));
         assertThat(s, containsString("{\"enabled\":true}"));
+    }
+
+    @Test
+    public void testTrim() {
+        assertEquals("left blank", StringUtils.trim(" left blank"));
+        assertEquals("right blank", StringUtils.trim("right blank "));
+        assertEquals("bi-side blank", StringUtils.trim(" bi-side blank "));
+
     }
 }

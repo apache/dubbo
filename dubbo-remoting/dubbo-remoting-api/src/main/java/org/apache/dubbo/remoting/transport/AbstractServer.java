@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.remoting.transport;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -33,6 +33,10 @@ import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
+
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 
 /**
  * AbstractServer
@@ -51,14 +55,14 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
         super(url, handler);
         localAddress = getUrl().toInetSocketAddress();
 
-        String bindIp = getUrl().getParameter(Constants.BIND_IP_KEY, getUrl().getHost());
-        int bindPort = getUrl().getParameter(Constants.BIND_PORT_KEY, getUrl().getPort());
-        if (url.getParameter(Constants.ANYHOST_KEY, false) || NetUtils.isInvalidLocalHost(bindIp)) {
-            bindIp = Constants.ANYHOST_VALUE;
+        String bindIp = getUrl().getParameter(RemotingConstants.BIND_IP_KEY, getUrl().getHost());
+        int bindPort = getUrl().getParameter(RemotingConstants.BIND_PORT_KEY, getUrl().getPort());
+        if (url.getParameter(ANYHOST_KEY, false) || NetUtils.isInvalidLocalHost(bindIp)) {
+            bindIp = ANYHOST_VALUE;
         }
         bindAddress = new InetSocketAddress(bindIp, bindPort);
-        this.accepts = url.getParameter(Constants.ACCEPTS_KEY, Constants.DEFAULT_ACCEPTS);
-        this.idleTimeout = url.getParameter(Constants.IDLE_TIMEOUT_KEY, Constants.DEFAULT_IDLE_TIMEOUT);
+        this.accepts = url.getParameter(RemotingConstants.ACCEPTS_KEY, RemotingConstants.DEFAULT_ACCEPTS);
+        this.idleTimeout = url.getParameter(RemotingConstants.IDLE_TIMEOUT_KEY, RemotingConstants.DEFAULT_IDLE_TIMEOUT);
         try {
             doOpen();
             if (logger.isInfoEnabled()) {
@@ -70,7 +74,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
         }
         //fixme replace this with better method
         DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
-        executor = (ExecutorService) dataStore.get(Constants.EXECUTOR_SERVICE_COMPONENT_KEY, Integer.toString(url.getPort()));
+        executor = (ExecutorService) dataStore.get(RemotingConstants.EXECUTOR_SERVICE_COMPONENT_KEY, Integer.toString(url.getPort()));
     }
 
     protected abstract void doOpen() throws Throwable;
@@ -83,8 +87,8 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
             return;
         }
         try {
-            if (url.hasParameter(Constants.ACCEPTS_KEY)) {
-                int a = url.getParameter(Constants.ACCEPTS_KEY, 0);
+            if (url.hasParameter(RemotingConstants.ACCEPTS_KEY)) {
+                int a = url.getParameter(RemotingConstants.ACCEPTS_KEY, 0);
                 if (a > 0) {
                     this.accepts = a;
                 }
@@ -93,8 +97,8 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
             logger.error(t.getMessage(), t);
         }
         try {
-            if (url.hasParameter(Constants.IDLE_TIMEOUT_KEY)) {
-                int t = url.getParameter(Constants.IDLE_TIMEOUT_KEY, 0);
+            if (url.hasParameter(RemotingConstants.IDLE_TIMEOUT_KEY)) {
+                int t = url.getParameter(RemotingConstants.IDLE_TIMEOUT_KEY, 0);
                 if (t > 0) {
                     this.idleTimeout = t;
                 }
@@ -103,10 +107,10 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
             logger.error(t.getMessage(), t);
         }
         try {
-            if (url.hasParameter(Constants.THREADS_KEY)
+            if (url.hasParameter(THREADS_KEY)
                     && executor instanceof ThreadPoolExecutor && !executor.isShutdown()) {
                 ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) executor;
-                int threads = url.getParameter(Constants.THREADS_KEY, 0);
+                int threads = url.getParameter(THREADS_KEY, 0);
                 int max = threadPoolExecutor.getMaximumPoolSize();
                 int core = threadPoolExecutor.getCorePoolSize();
                 if (threads > 0 && (threads != max || threads != core)) {

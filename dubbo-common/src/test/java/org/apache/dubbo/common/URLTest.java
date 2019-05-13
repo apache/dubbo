@@ -18,6 +18,7 @@ package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -124,7 +125,7 @@ public class URLTest {
         assertEquals("home/user1/router.js", url.getPath());
         assertEquals(0, url.getParameters().size());
 
-        // Caution!! 
+        // Caution!!
         url = URL.valueOf("file://home/user1/router.js");
         //                      ^^ only tow slash!
         assertEquals("file", url.getProtocol());
@@ -679,5 +680,29 @@ public class URLTest {
         assertEquals(2, url.getParameters().size());
         assertEquals("1.0.0", url.getParameter("version"));
         assertEquals("morgan", url.getParameter("application"));
+    }
+
+    @Test
+    public void testDefaultPort() {
+        Assertions.assertEquals("10.20.153.10:2181", URL.appendDefaultPort("10.20.153.10:0", 2181));
+        Assertions.assertEquals("10.20.153.10:2181", URL.appendDefaultPort("10.20.153.10", 2181));
+    }
+
+    @Test
+    public void testGetServiceKey () {
+        URL url1 = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName");
+        Assertions.assertEquals("org.apache.dubbo.test.interfaceName", url1.getServiceKey());
+
+        URL url2 = URL.valueOf("10.20.130.230:20880/org.apache.dubbo.test.interfaceName?interface=org.apache.dubbo.test.interfaceName");
+        Assertions.assertEquals("org.apache.dubbo.test.interfaceName", url2.getServiceKey());
+
+        URL url3 = URL.valueOf("10.20.130.230:20880/org.apache.dubbo.test.interfaceName?interface=org.apache.dubbo.test.interfaceName&group=group1&version=1.0.0");
+        Assertions.assertEquals("group1/org.apache.dubbo.test.interfaceName:1.0.0", url3.getServiceKey());
+
+        URL url4 = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName");
+        Assertions.assertEquals("context/path", url4.getPathKey());
+
+        URL url5 = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName&group=group1&version=1.0.0");
+        Assertions.assertEquals("group1/context/path:1.0.0", url5.getPathKey());
     }
 }

@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.status.StatusChecker;
@@ -31,6 +32,9 @@ import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.rpc.Protocol;
 
 import java.util.Map;
+
+import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
 
 /**
  * ProtocolConfig
@@ -268,7 +272,7 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     public void setThreadpool(String threadpool) {
-        checkExtension(ThreadPool.class, Constants.THREADPOOL_KEY, threadpool);
+        checkExtension(ThreadPool.class, THREADPOOL_KEY, threadpool);
         this.threadpool = threadpool;
     }
 
@@ -317,8 +321,8 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     public void setCodec(String codec) {
-        if (Constants.DOBBO_PROTOCOL.equals(name)) {
-            checkMultiExtension(Codec.class, Constants.CODEC_KEY, codec);
+        if (Constants.DUBBO_PROTOCOL.equals(name)) {
+            checkMultiExtension(Codec.class, RemotingConstants.CODEC_KEY, codec);
         }
         this.codec = codec;
     }
@@ -328,8 +332,8 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     public void setSerialization(String serialization) {
-        if (Constants.DOBBO_PROTOCOL.equals(name)) {
-            checkMultiExtension(Serialization.class, Constants.SERIALIZATION_KEY, serialization);
+        if (Constants.DUBBO_PROTOCOL.equals(name)) {
+            checkMultiExtension(Serialization.class, RemotingConstants.SERIALIZATION_KEY, serialization);
         }
         this.serialization = serialization;
     }
@@ -371,8 +375,8 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     public void setServer(String server) {
-        if (Constants.DOBBO_PROTOCOL.equals(name)) {
-            checkMultiExtension(Transporter.class, Constants.SERVER_KEY, server);
+        if (Constants.DUBBO_PROTOCOL.equals(name)) {
+            checkMultiExtension(Transporter.class, RemotingConstants.SERVER_KEY, server);
         }
         this.server = server;
     }
@@ -382,8 +386,8 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     public void setClient(String client) {
-        if (Constants.DOBBO_PROTOCOL.equals(name)) {
-            checkMultiExtension(Transporter.class, Constants.CLIENT_KEY, client);
+        if (Constants.DUBBO_PROTOCOL.equals(name)) {
+            checkMultiExtension(Transporter.class, RemotingConstants.CLIENT_KEY, client);
         }
         this.client = client;
     }
@@ -436,7 +440,7 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     public void setTransporter(String transporter) {
-        checkExtension(Transporter.class, Constants.TRANSPORTER_KEY, transporter);
+        checkExtension(Transporter.class, RemotingConstants.TRANSPORTER_KEY, transporter);
         this.transporter = transporter;
     }
 
@@ -445,7 +449,7 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     public void setExchanger(String exchanger) {
-        checkExtension(Exchanger.class, Constants.EXCHANGER_KEY, exchanger);
+        checkExtension(Exchanger.class, RemotingConstants.EXCHANGER_KEY, exchanger);
         this.exchanger = exchanger;
     }
 
@@ -475,7 +479,7 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     public void setDispatcher(String dispatcher) {
-        checkExtension(Dispatcher.class, Constants.DISPACTHER_KEY, dispatcher);
+        checkExtension(Dispatcher.class, RemotingConstants.DISPACTHER_KEY, dispatcher);
         this.dispatcher = dispatcher;
     }
 
@@ -536,7 +540,7 @@ public class ProtocolConfig extends AbstractConfig {
     @Override
     public void refresh() {
         if (StringUtils.isEmpty(this.getName())) {
-            this.setName(Constants.DUBBO_VERSION_KEY);
+            this.setName(DUBBO_VERSION_KEY);
         }
         super.refresh();
         if (StringUtils.isNotEmpty(this.getId())) {

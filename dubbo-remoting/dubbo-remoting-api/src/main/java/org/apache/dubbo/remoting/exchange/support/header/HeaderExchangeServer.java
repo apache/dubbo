@@ -16,15 +16,16 @@
  */
 package org.apache.dubbo.remoting.exchange.support.header;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
@@ -49,25 +50,17 @@ public class HeaderExchangeServer implements ExchangeServer {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final Server server;
-    private int heartbeat;
-    private int idleTimeout;
     private AtomicBoolean closed = new AtomicBoolean(false);
 
     private static final HashedWheelTimer IDLE_CHECK_TIMER = new HashedWheelTimer(new NamedThreadFactory("dubbo-server-idleCheck", true), 1,
-            TimeUnit.SECONDS, Constants.TICKS_PER_WHEEL);
+            TimeUnit.SECONDS, RemotingConstants.TICKS_PER_WHEEL);
 
     private CloseTimerTask closeTimerTask;
 
     public HeaderExchangeServer(Server server) {
         Assert.notNull(server, "server == null");
         this.server = server;
-        this.heartbeat = server.getUrl().getParameter(Constants.HEARTBEAT_KEY, 0);
-        this.idleTimeout = server.getUrl().getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartbeat * 3);
-        if (idleTimeout < heartbeat * 2) {
-            throw new IllegalStateException("idleTimeout < heartbeatInterval * 2");
-        }
-
-        startIdleCheckTask();
+        startIdleCheckTask(getUrl());
     }
 
     public Server getServer() {
@@ -107,7 +100,7 @@ public class HeaderExchangeServer implements ExchangeServer {
         if (timeout > 0) {
             final long max = (long) timeout;
             final long start = System.currentTimeMillis();
-            if (getUrl().getParameter(Constants.CHANNEL_SEND_READONLYEVENT_KEY, true)) {
+            if (getUrl().getParameter(RemotingConstants.CHANNEL_SEND_READONLYEVENT_KEY, true)) {
                 sendChannelReadOnlyEvent();
             }
             while (HeaderExchangeServer.this.isRunning()
@@ -138,7 +131,7 @@ public class HeaderExchangeServer implements ExchangeServer {
         for (Channel channel : channels) {
             try {
                 if (channel.isConnected()) {
-                    channel.send(request, getUrl().getParameter(Constants.CHANNEL_READONLYEVENT_SENT_KEY, true));
+                    channel.send(request, getUrl().getParameter(RemotingConstants.CHANNEL_READONLYEVENT_SENT_KEY, true));
                 }
             } catch (RemotingException e) {
                 logger.warn("send cannot write message error.", e);
@@ -154,7 +147,9 @@ public class HeaderExchangeServer implements ExchangeServer {
     }
 
     private void cancelCloseTask() {
-        closeTimerTask.cancel();
+        if (closeTimerTask != null) {
+            closeTimerTask.cancel();
+        }
     }
 
     @Override
@@ -210,21 +205,13 @@ public class HeaderExchangeServer implements ExchangeServer {
     public void reset(URL url) {
         server.reset(url);
         try {
-            if (url.hasParameter(Constants.HEARTBEAT_KEY)
-                    || url.hasParameter(Constants.HEARTBEAT_TIMEOUT_KEY)) {
-                int h = url.getParameter(Constants.HEARTBEAT_KEY, heartbeat);
-                int t = url.getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, h * 3);
-                if (t < h * 2) {
-                    throw new IllegalStateException("idleTimeout < heartbeatInterval * 2");
-                }
-                if (h != heartbeat || t != idleTimeout) {
-                    heartbeat = h;
-                    idleTimeout = t;
-
-                    // we need cancel the exist closeTimeout first.
-                    cancelCloseTask();
-                    startIdleCheckTask();
-                }
+            int currHeartbeat = UrlUtils.getHeartbeat(getUrl());
+            int currIdleTimeout = UrlUtils.getIdleTimeout(getUrl());
+            int heartbeat = UrlUtils.getHeartbeat(url);
+            int idleTimeout = UrlUtils.getIdleTimeout(url);
+            if (currHeartbeat != heartbeat || currIdleTimeout != idleTimeout) {
+                cancelCloseTask();
+                startIdleCheckTask(url);
             }
         } catch (Throwable t) {
             logger.error(t.getMessage(), t);
@@ -259,22 +246,23 @@ public class HeaderExchangeServer implements ExchangeServer {
      * Each interval cannot be less than 1000ms.
      */
     private long calculateLeastDuration(int time) {
-        if (time / Constants.HEARTBEAT_CHECK_TICK <= 0) {
-            return Constants.LEAST_HEARTBEAT_DURATION;
+        if (time / RemotingConstants.HEARTBEAT_CHECK_TICK <= 0) {
+            return RemotingConstants.LEAST_HEARTBEAT_DURATION;
         } else {
-            return time / Constants.HEARTBEAT_CHECK_TICK;
+            return time / RemotingConstants.HEARTBEAT_CHECK_TICK;
         }
     }
 
-    private void startIdleCheckTask() {
-        AbstractTimerTask.ChannelProvider cp = () -> unmodifiableCollection(HeaderExchangeServer.this.getChannels());
+    private void startIdleCheckTask(URL url) {
+        if (!server.canHandleIdle()) {
+            AbstractTimerTask.ChannelProvider cp = () -> unmodifiableCollection(HeaderExchangeServer.this.getChannels());
+            int idleTimeout = UrlUtils.getIdleTimeout(url);
+            long idleTimeoutTick = calculateLeastDuration(idleTimeout);
+            CloseTimerTask closeTimerTask = new CloseTimerTask(cp, idleTimeoutTick, idleTimeout);
+            this.closeTimerTask = closeTimerTask;
 
-        long idleTimeoutTick = calculateLeastDuration(idleTimeout);
-        CloseTimerTask closeTimerTask = new CloseTimerTask(cp, idleTimeoutTick, idleTimeout);
-        this.closeTimerTask = closeTimerTask;
-
-        // init task and start timer.
-        IDLE_CHECK_TIMER.newTimeout(closeTimerTask, idleTimeoutTick, TimeUnit.MILLISECONDS);
+            // init task and start timer.
+            IDLE_CHECK_TIMER.newTimeout(closeTimerTask, idleTimeoutTick, TimeUnit.MILLISECONDS);
+        }
     }
-
 }

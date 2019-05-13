@@ -38,7 +38,6 @@ import static org.springframework.util.ReflectionUtils.findField;
 /**
  * {@link ReferenceBeanBuilder} Test
  *
- * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @see ReferenceBeanBuilder
  * @see Reference
  * @since 2.6.4
@@ -81,7 +80,7 @@ public class ReferenceBeanBuilderTest {
         Assert.assertEquals("dubbo://localhost:12345", referenceBean.getUrl());
         Assert.assertEquals("client", referenceBean.getClient());
         Assert.assertEquals(true, referenceBean.isGeneric());
-        Assert.assertEquals(true, referenceBean.isInjvm());
+        Assert.assertNull(referenceBean.isInjvm());
         Assert.assertEquals(false, referenceBean.isCheck());
         Assert.assertEquals(null, referenceBean.isInit());
         Assert.assertEquals(true, referenceBean.getLazy());

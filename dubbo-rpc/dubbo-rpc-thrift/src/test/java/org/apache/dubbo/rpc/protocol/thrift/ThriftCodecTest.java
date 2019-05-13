@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.thrift;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
@@ -41,6 +40,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
+
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 
 public class ThriftCodecTest {
 
@@ -92,6 +94,8 @@ public class ThriftCodecTest {
         // version
         Assertions.assertEquals(ThriftCodec.VERSION, protocol.readByte());
         // service name
+        Assertions.assertEquals(Demo.Iface.class.getName(), protocol.readString());
+        // path
         Assertions.assertEquals(Demo.Iface.class.getName(), protocol.readString());
         // dubbo request id
         Assertions.assertEquals(request.getId(), protocol.readI64());
@@ -147,6 +151,8 @@ public class ThriftCodecTest {
         protocol.writeI32(Integer.MAX_VALUE);
         protocol.writeI16(Short.MAX_VALUE);
         protocol.writeByte(ThriftCodec.VERSION);
+        protocol.writeString(Demo.Iface.class.getName());
+        // path
         protocol.writeString(Demo.Iface.class.getName());
         protocol.writeI64(request.getId());
         protocol.getTransport().flush();
@@ -221,6 +227,8 @@ public class ThriftCodecTest {
         protocol.writeI16(Short.MAX_VALUE);
         protocol.writeByte(ThriftCodec.VERSION);
         protocol.writeString(Demo.class.getName());
+        // path
+        protocol.writeString(Demo.class.getName());
         protocol.writeI64(request.getId());
         protocol.getTransport().flush();
         headerLength = bos.size();
@@ -280,7 +288,7 @@ public class ThriftCodecTest {
 
         ThriftCodec.RequestData rd = ThriftCodec.RequestData.create(
                 ThriftCodec.getSeqId(), Demo.Iface.class.getName(), "echoString");
-        ThriftCodec.cachedRequest.putIfAbsent(request.getId(), rd);
+        ThriftCodec.CACHED_REQUEST.putIfAbsent(request.getId(), rd);
         codec.encode(channel, bos, response);
 
         byte[] buf = new byte[bos.writerIndex() - 4];
@@ -339,7 +347,7 @@ public class ThriftCodecTest {
 
         ThriftCodec.RequestData rd = ThriftCodec.RequestData.create(
                 ThriftCodec.getSeqId(), Demo.Iface.class.getName(), "echoString");
-        ThriftCodec.cachedRequest.put(request.getId(), rd);
+        ThriftCodec.CACHED_REQUEST.put(request.getId(), rd);
         codec.encode(channel, bos, response);
 
         byte[] buf = new byte[bos.writerIndex() - 4];
@@ -370,7 +378,7 @@ public class ThriftCodecTest {
         Assertions.assertEquals("echoString", message.name);
         Assertions.assertEquals(TMessageType.EXCEPTION, message.type);
         Assertions.assertEquals(ThriftCodec.getSeqId(), message.seqid);
-        TApplicationException exception = TApplicationException.read(protocol);
+        TApplicationException exception = TApplicationException.readFrom(protocol);
         protocol.readMessageEnd();
 
         Assertions.assertEquals(exceptionMessage, exception.getMessage());
@@ -395,7 +403,10 @@ public class ThriftCodecTest {
         protocol.writeByte(ThriftCodec.VERSION);
         protocol.writeString(
                 ((RpcInvocation) request.getData())
-                        .getAttachment(Constants.INTERFACE_KEY));
+                        .getAttachment(INTERFACE_KEY));
+        protocol.writeString(
+                ((RpcInvocation) request.getData())
+                        .getAttachment(PATH_KEY));
         protocol.writeI64(request.getId());
         protocol.getTransport().flush();
         headerLength = bos.size();
@@ -447,7 +458,8 @@ public class ThriftCodecTest {
 
         invocation.setParameterTypes(new Class<?>[]{String.class});
 
-        invocation.setAttachment(Constants.INTERFACE_KEY, Demo.Iface.class.getName());
+        invocation.setAttachment(INTERFACE_KEY, Demo.Iface.class.getName());
+        invocation.setAttachment(PATH_KEY, Demo.Iface.class.getName());
 
         Request request = new Request(1L);
 

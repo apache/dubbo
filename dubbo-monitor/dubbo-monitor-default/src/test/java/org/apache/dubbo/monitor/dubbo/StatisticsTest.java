@@ -16,7 +16,9 @@
  */
 package org.apache.dubbo.monitor.dubbo;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.monitor.MonitorService;
 
 import org.hamcrest.MatcherAssert;
@@ -30,7 +32,7 @@ import static org.hamcrest.Matchers.not;
 public class StatisticsTest {
     @Test
     public void testEquals() {
-        URL statistics = new URL("dubbo", "10.20.153.10", 0)
+        URL statistics = new URLBuilder(Constants.DUBBO_PROTOCOL, "10.20.153.10", 0)
                 .addParameter(MonitorService.APPLICATION, "morgan")
                 .addParameter(MonitorService.INTERFACE, "MemberService")
                 .addParameter(MonitorService.METHOD, "findPerson")
@@ -40,7 +42,8 @@ public class StatisticsTest {
                 .addParameter(MonitorService.ELAPSED, 3)
                 .addParameter(MonitorService.MAX_ELAPSED, 3)
                 .addParameter(MonitorService.CONCURRENT, 1)
-                .addParameter(MonitorService.MAX_CONCURRENT, 1);
+                .addParameter(MonitorService.MAX_CONCURRENT, 1)
+                .build();
 
         Statistics statistics1 = new Statistics(statistics);
         Statistics statistics2 = new Statistics(statistics);
@@ -71,7 +74,7 @@ public class StatisticsTest {
         statistics.setService("MemberService");
         assertThat(statistics.toString(), is("dubbo://10.20.153.10"));
 
-        Statistics statisticsWithDetailInfo = new Statistics(new URL("dubbo", "10.20.153.10", 0)
+        Statistics statisticsWithDetailInfo = new Statistics(new URLBuilder(Constants.DUBBO_PROTOCOL, "10.20.153.10", 0)
                 .addParameter(MonitorService.APPLICATION, "morgan")
                 .addParameter(MonitorService.INTERFACE, "MemberService")
                 .addParameter(MonitorService.METHOD, "findPerson")
@@ -82,7 +85,8 @@ public class StatisticsTest {
                 .addParameter(MonitorService.ELAPSED, 3)
                 .addParameter(MonitorService.MAX_ELAPSED, 3)
                 .addParameter(MonitorService.CONCURRENT, 1)
-                .addParameter(MonitorService.MAX_CONCURRENT, 1));
+                .addParameter(MonitorService.MAX_CONCURRENT, 1)
+                .build());
 
         MatcherAssert.assertThat(statisticsWithDetailInfo.getServer(), equalTo(statistics.getServer()));
         MatcherAssert.assertThat(statisticsWithDetailInfo.getService(), equalTo(statistics.getService()));

@@ -71,7 +71,7 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
                 leastActive = active;
                 // Reset the number of least active invokers
                 leastCount = 1;
-                // Put the first least active invoker first in leastIndexs
+                // Put the first least active invoker first in leastIndexes
                 leastIndexes[0] = i;
                 // Reset totalWeight
                 totalWeight = afterWarmup;
@@ -81,7 +81,7 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
                 sameWeight = true;
                 // If current invoker's active value equals with leaseActive, then accumulating.
             } else if (active == leastActive) {
-                // Record the index of the least active invoker in leastIndexs order
+                // Record the index of the least active invoker in leastIndexes order
                 leastIndexes[leastCount++] = i;
                 // Accumulate the total weight of the least active invoker
                 totalWeight += afterWarmup;

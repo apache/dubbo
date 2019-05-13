@@ -27,6 +27,10 @@ import java.util.Map;
 @Deprecated
 public class URL extends org.apache.dubbo.common.URL {
 
+    protected URL() {
+        super();
+    }
+
     public URL(org.apache.dubbo.common.URL url) {
         super(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(), url.getParameters());
     }

@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.annotation;
 
 import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Filter;
 
@@ -25,6 +26,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import org.apache.dubbo.common.constants.RpcConstants;
 
 /**
  * Reference
@@ -71,9 +74,9 @@ public @interface Reference {
     boolean generic() default false;
 
     /**
-     * When enable, prefer to call local service in the same JVM if it's present, default value is false
+     * When enable, prefer to call local service in the same JVM if it's present, default value is true
      */
-    boolean injvm() default false;
+    boolean injvm() default true;
 
     /**
      * Check if service provider is available during boot up, default value is true
@@ -93,7 +96,7 @@ public @interface Reference {
     /**
      * Export an stub service for event dispatch, default value is false.
      *
-     * @see Constants#STUB_EVENT_METHODS_KEY
+     * @see RpcConstants#STUB_EVENT_METHODS_KEY
      */
     boolean stubevent() default false;
 
@@ -101,7 +104,7 @@ public @interface Reference {
      * Whether to reconnect if connection is lost, if not specify, reconnect is enabled by default, and the interval
      * for retry connecting is 2000 ms
      *
-     * @see Constants#DEFAULT_RECONNECT_PERIOD
+     * @see RemotingConstants#DEFAULT_RECONNECT_PERIOD
      */
     String reconnect() default "";
 
@@ -135,7 +138,7 @@ public @interface Reference {
     /**
      * The callback instance limit peer connection
      *
-     * @see Constants#DEFAULT_CALLBACK_INSTANCES
+     * @see RpcConstants#DEFAULT_CALLBACK_INSTANCES
      */
     int callbacks() default 0;
 
@@ -256,4 +259,15 @@ public @interface Reference {
      * Protocol spring bean names
      */
     String protocol() default "";
+
+    /**
+     * Service tag name
+     */
+    String tag() default "";
+
+    /**
+     * methods support
+     * @return
+     */
+    Method[] methods() default {};
 }

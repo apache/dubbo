@@ -35,9 +35,9 @@ public class TKvTest {
         });
 
         String kv = tKv.rendering();
-        assertThat(kv, containsString("ABCDEFGHIJ\n"));
-        assertThat(kv, containsString("KLMNOPQRST\n"));
-        assertThat(kv, containsString("UVWXYZ\n"));
+        assertThat(kv, containsString("ABCDEFGHIJ" + System.lineSeparator()));
+        assertThat(kv, containsString("KLMNOPQRST" + System.lineSeparator()));
+        assertThat(kv, containsString("UVWXYZ" + System.lineSeparator()));
 
         tTable.addRow("OPTIONS", kv);
         String table = tTable.rendering();

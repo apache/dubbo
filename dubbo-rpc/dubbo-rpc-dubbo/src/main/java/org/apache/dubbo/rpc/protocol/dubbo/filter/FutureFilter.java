@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo.filter;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -33,10 +33,12 @@ import org.apache.dubbo.rpc.model.ConsumerModel;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import static org.apache.dubbo.common.constants.RpcConstants.$INVOKE;
+
 /**
  * EventFilter
  */
-@Activate(group = Constants.CONSUMER)
+@Activate(group = CommonConstants.CONSUMER)
 public class FutureFilter implements Filter {
 
     protected static final Logger logger = LoggerFactory.getLogger(FutureFilter.class);
@@ -206,14 +208,22 @@ public class FutureFilter implements Filter {
         if (consumerModel == null) {
             return null;
         }
-        ConsumerMethodModel methodModel = consumerModel.getMethodModel(invocation.getMethodName());
+
+        String methodName = invocation.getMethodName();
+        if (methodName.equals($INVOKE)) {
+            methodName = (String) invocation.getArguments()[0];
+        }
+
+        ConsumerMethodModel methodModel = consumerModel.getMethodModel(methodName);
         if (methodModel == null) {
             return null;
         }
+
         final ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = methodModel.getAsyncInfo();
         if (asyncMethodInfo == null) {
             return null;
         }
+
         return asyncMethodInfo;
     }
 }

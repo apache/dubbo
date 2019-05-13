@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.remoting.exchange.support.header;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.Channel;
@@ -31,9 +31,9 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
 
     private static final Logger logger = LoggerFactory.getLogger(HeartbeatHandler.class);
 
-    public static String KEY_READ_TIMESTAMP = "READ_TIMESTAMP";
+    public static final String KEY_READ_TIMESTAMP = "READ_TIMESTAMP";
 
-    public static String KEY_WRITE_TIMESTAMP = "WRITE_TIMESTAMP";
+    public static final String KEY_WRITE_TIMESTAMP = "WRITE_TIMESTAMP";
 
     public HeartbeatHandler(ChannelHandler handler) {
         super(handler);
@@ -69,7 +69,7 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
                 res.setEvent(Response.HEARTBEAT_EVENT);
                 channel.send(res);
                 if (logger.isInfoEnabled()) {
-                    int heartbeat = channel.getUrl().getParameter(Constants.HEARTBEAT_KEY, 0);
+                    int heartbeat = channel.getUrl().getParameter(RemotingConstants.HEARTBEAT_KEY, 0);
                     if (logger.isDebugEnabled()) {
                         logger.debug("Received heartbeat from remote channel " + channel.getRemoteAddress()
                                 + ", cause: The channel has no data-transmission exceeds a heartbeat period"

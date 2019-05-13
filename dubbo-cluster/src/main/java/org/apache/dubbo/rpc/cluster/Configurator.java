@@ -28,6 +28,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
+
 /**
  * Configurator. (SPI, Prototype, ThreadSafe)
  *
@@ -76,13 +79,13 @@ public interface Configurator extends Comparable<Configurator> {
 
         List<Configurator> configurators = new ArrayList<>(urls.size());
         for (URL url : urls) {
-            if (Constants.EMPTY_PROTOCOL.equals(url.getProtocol())) {
+            if (EMPTY_PROTOCOL.equals(url.getProtocol())) {
                 configurators.clear();
                 break;
             }
             Map<String, String> override = new HashMap<>(url.getParameters());
             //The anyhost parameter of override may be added automatically, it can't change the judgement of changing url
-            override.remove(Constants.ANYHOST_KEY);
+            override.remove(ANYHOST_KEY);
             if (override.size() == 0) {
                 configurators.clear();
                 continue;
@@ -98,6 +101,7 @@ public interface Configurator extends Comparable<Configurator> {
      * 1. the url with a specific host ip should have higher priority than 0.0.0.0
      * 2. if two url has the same host, compare by priority value；
      */
+    @Override
     default int compareTo(Configurator o) {
         if (o == null) {
             return -1;

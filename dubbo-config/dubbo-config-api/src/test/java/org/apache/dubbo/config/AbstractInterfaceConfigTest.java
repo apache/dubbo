@@ -18,6 +18,7 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.context.ConfigManager;
@@ -34,9 +35,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.support.io.TempDirectory;
-import org.junit.jupiter.api.support.io.TempDirectory.TempDir;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -48,19 +47,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-@ExtendWith(TempDirectory.class)
 public class AbstractInterfaceConfigTest {
     private static File dubboProperties;
 
     @BeforeAll
     public static void setUp(@TempDir Path folder) {
-        dubboProperties = folder.resolve(Constants.DUBBO_PROPERTIES_KEY).toFile();
-        System.setProperty(Constants.DUBBO_PROPERTIES_KEY, dubboProperties.getAbsolutePath());
+        dubboProperties = folder.resolve(CommonConstants.DUBBO_PROPERTIES_KEY).toFile();
+        System.setProperty(CommonConstants.DUBBO_PROPERTIES_KEY, dubboProperties.getAbsolutePath());
     }
 
     @AfterAll
     public static void tearDown() {
-        System.clearProperty(Constants.DUBBO_PROPERTIES_KEY);
+        System.clearProperty(CommonConstants.DUBBO_PROPERTIES_KEY);
     }
 
     @AfterEach

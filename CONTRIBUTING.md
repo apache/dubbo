@@ -13,7 +13,7 @@ The mailing list is the recommended way for discussing almost anything that rela
 
 - [dev@dubbo.incubator.apache.org](mailto:dev-subscribe@dubbo.incubator.apache.org): the develop mailing list, you can ask question here if you have encountered any problem when using or developing Dubbo.
 - [commits@dubbo.incubator.apache.org](mailto:commits-subscribe@dubbo.incubator.apache.org): all the commits will be sent to this mailing list. You can subscribe to it if you are interested in Dubbo's development.
-- [notification@dubbo.incubator.apache.org](mailto:notification-subscribe@dubbo.incubator.apache.org): all the Github [issue](https://github.com/apache/incubator-dubbo/issues) updates and [pull request](https://github.com/apache/incubator-dubbo/pulls) updates will be sent to this mailing list.
+- [notifications@dubbo.incubator.apache.org](mailto:notifications-subscribe@dubbo.incubator.apache.org): all the Github [issue](https://github.com/apache/incubator-dubbo/issues) updates and [pull request](https://github.com/apache/incubator-dubbo/pulls) updates will be sent to this mailing list.
 
 ### Reporting issue
 

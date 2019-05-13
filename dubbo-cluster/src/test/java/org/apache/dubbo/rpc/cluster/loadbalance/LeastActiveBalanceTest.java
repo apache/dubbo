@@ -35,7 +35,7 @@ public class LeastActiveBalanceTest extends LoadBalanceBaseTest {
             Long count = entry.getValue().get();
             //            System.out.println(count);
             Assertions.assertTrue(
-                    Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()), "abs diff shoud < avg");
+                    Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()), "abs diff should < avg");
         }
     }
 

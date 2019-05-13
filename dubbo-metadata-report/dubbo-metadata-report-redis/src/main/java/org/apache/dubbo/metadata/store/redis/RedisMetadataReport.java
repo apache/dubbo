@@ -26,6 +26,9 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+
 /**
  * RedisMetadataReport
  */
@@ -37,7 +40,8 @@ public class RedisMetadataReport extends AbstractMetadataReport {
 
     public RedisMetadataReport(URL url) {
         super(url);
-        pool = new JedisPool(new JedisPoolConfig(), url.getHost(), url.getPort());
+        int timeout = url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
+        pool = new JedisPool(new JedisPoolConfig(), url.getHost(), url.getPort(), timeout, url.getPassword());
     }
 
     @Override
@@ -52,7 +56,7 @@ public class RedisMetadataReport extends AbstractMetadataReport {
 
     private void storeMetadata(MetadataIdentifier metadataIdentifier, String v) {
         try (Jedis jedis = pool.getResource()) {
-            jedis.set(metadataIdentifier.getIdentifierKey() + META_DATA_SOTRE_TAG, v);
+            jedis.set(metadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY), v);
         } catch (Throwable e) {
             logger.error("Failed to put " + metadataIdentifier + " to redis " + v + ", cause: " + e.getMessage(), e);
             throw new RpcException("Failed to put " + metadataIdentifier + " to redis " + v + ", cause: " + e.getMessage(), e);

@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-config</artifactId>
-        <version>2.7.1-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
     <artifactId>dubbo-config-spring</artifactId>
     <packaging>jar</packaging>
@@ -129,32 +129,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    <build>
-        <plugins>
-            <!-- upload xsd file command line
-            mvn org.codehaus.mojo:wagon-maven-plugin:1.0-beta-3:upload-single -Dwagon.fromFile=src/main/resources/META-INF/dubbo.xsd -Dwagon.url=dav:http://code.alibabatech.com/schema/dubbo/ -Dwagon.serverId=opensesame.releases.account
-            -->
-            <!--
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>wagon-maven-plugin</artifactId>
-                <version>1.0-beta-3</version>
-                <executions>
-                    <execution>
-                        <id>upload-schema</id>
-                        <phase>deploy</phase>
-                        <goals>
-                            <goal>upload-single</goal>
-                        </goals>
-                        <configuration>
-                            <fromFile>${basedir}/src/main/resources/META-INF/dubbo.xsd</fromFile>
-                            <url>dav:http://code.alibabatech.com/schema/dubbo/</url>
-                            <serverId>opensesame.releases.account</serverId>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            -->
-        </plugins>
-    </build>
 </project>

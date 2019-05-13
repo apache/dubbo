@@ -27,7 +27,6 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
 
 import java.text.ParseException;
@@ -40,15 +39,20 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
+import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
+
 /**
  * ConditionRouter
  *
  */
-public class ConditionRouter extends AbstractRouter implements Comparable<Router> {
+public class ConditionRouter extends AbstractRouter {
     public static final String NAME = "condition";
 
     private static final Logger logger = LoggerFactory.getLogger(ConditionRouter.class);
-    protected static Pattern ROUTE_PATTERN = Pattern.compile("([&!=,]*)\\s*([^&!=,\\s]+)");
+    protected static final Pattern ROUTE_PATTERN = Pattern.compile("([&!=,]*)\\s*([^&!=,\\s]+)");
     protected Map<String, MatchPair> whenCondition;
     protected Map<String, MatchPair> thenCondition;
 
@@ -64,7 +68,7 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
         this.url = url;
         this.priority = url.getParameter(Constants.PRIORITY_KEY, 0);
         this.force = url.getParameter(Constants.FORCE_KEY, false);
-        this.enabled = url.getParameter(Constants.ENABLED_KEY, true);
+        this.enabled = url.getParameter(ENABLED_KEY, true);
         init(url.getParameterAndDecoded(Constants.RULE_KEY));
     }
 
@@ -220,7 +224,7 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
             String key = matchPair.getKey();
             String sampleValue;
             //get real invoked method name from invocation
-            if (invocation != null && (Constants.METHOD_KEY.equals(key) || Constants.METHODS_KEY.equals(key))) {
+            if (invocation != null && (METHOD_KEY.equals(key) || METHODS_KEY.equals(key))) {
                 sampleValue = invocation.getMethodName();
             } else if (Constants.ADDRESS_KEY.equals(key)) {
                 sampleValue = url.getAddress();
@@ -229,7 +233,7 @@ public class ConditionRouter extends AbstractRouter implements Comparable<Router
             } else {
                 sampleValue = sample.get(key);
                 if (sampleValue == null) {
-                    sampleValue = sample.get(Constants.DEFAULT_KEY_PREFIX + key);
+                    sampleValue = sample.get(DEFAULT_KEY_PREFIX + key);
                 }
             }
             if (sampleValue != null) {
