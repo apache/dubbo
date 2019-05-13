@@ -98,21 +98,46 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
         return url;
     }
 
+    /**
+     * Currently, this method is mainly customized to facilitate the thread model on consumer side.
+     * 1. Use ThreadlessExecutor, aka., delegate callback directly to the thread initiating the call.
+     * 2. Use shared executor to execute the callback.
+     *
+     * @param msg
+     * @return
+     */
     public ExecutorService getPreferredExecutorService(Object msg) {
         if (msg instanceof Response) {
             Response response = (Response) msg;
-            ExecutorService executor = DefaultFuture.getFuture(response.getId()).getExecutor();
-            if (executor == null || executor.isShutdown()) {
-                executor = getExecutorService();
+            DefaultFuture responseFuture = DefaultFuture.getFuture(response.getId());
+            // a typical scenario is the response returned after timeout, the timeout response may has completed the future
+            if (responseFuture == null) {
+                return getSharedExecutorService();
+            } else {
+                ExecutorService executor = responseFuture.getExecutor();
+                if (executor == null || executor.isShutdown()) {
+                    executor = getSharedExecutorService();
+                }
+                return executor;
             }
-            return executor;
         } else {
-            return getExecutorService();
+            return getSharedExecutorService();
         }
     }
 
-    public ExecutorService getExecutorService() {
+    /**
+     * get the shared executor for current Server or Client
+     *
+     * @return
+     */
+    public ExecutorService getSharedExecutorService() {
         return ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension().createExecutorIfAbsent(url);
     }
+
+    @Deprecated
+    public ExecutorService getExecutorService() {
+        return getSharedExecutorService();
+    }
+
 
 }

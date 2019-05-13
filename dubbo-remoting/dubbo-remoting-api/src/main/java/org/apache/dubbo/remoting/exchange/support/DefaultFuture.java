@@ -19,6 +19,7 @@ package org.apache.dubbo.remoting.exchange.support;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.timer.Timeout;
 import org.apache.dubbo.common.timer.Timer;
@@ -177,7 +178,6 @@ public class DefaultFuture extends CompletableFuture<Object> {
         this.cancel(true);
     }
 
-
     private void doReceived(Response res) {
         if (res == null) {
             throw new IllegalStateException("response cannot be null");
@@ -188,6 +188,15 @@ public class DefaultFuture extends CompletableFuture<Object> {
             this.completeExceptionally(new TimeoutException(res.getStatus() == Response.SERVER_TIMEOUT, channel, res.getErrorMessage()));
         } else {
             this.completeExceptionally(new RemotingException(channel, res.getErrorMessage()));
+        }
+
+        // the result is returning, but the caller thread may still waiting
+        // to avoid endless waiting for whatever reason, notify caller thread to return.
+        if (executor != null && executor instanceof ThreadlessExecutor) {
+            ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
+            if (threadlessExecutor.isWaiting()) {
+                threadlessExecutor.notifyReturn();
+            }
         }
     }
 
