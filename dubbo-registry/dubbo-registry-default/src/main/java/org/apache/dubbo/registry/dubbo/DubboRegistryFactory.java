@@ -42,6 +42,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATT
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.CALLBACK_INSTANCES_LIMIT_KEY;
 
 /**
  * DubboRegistryFactory
@@ -62,7 +63,7 @@ public class DubboRegistryFactory extends AbstractRegistryFactory {
                 .addParameter(Constants.LAZY_CONNECT_KEY, "true")
                 .addParameter(RemotingConstants.RECONNECT_KEY, "false")
                 .addParameterIfAbsent(TIMEOUT_KEY, "10000")
-                .addParameterIfAbsent(Constants.CALLBACK_INSTANCES_LIMIT_KEY, "10000")
+                .addParameterIfAbsent(CALLBACK_INSTANCES_LIMIT_KEY, "10000")
                 .addParameterIfAbsent(RemotingConstants.CONNECT_TIMEOUT_KEY, "10000")
                 .addParameter(METHODS_KEY, StringUtils.join(new HashSet<>(Arrays.asList(Wrapper.getWrapper(RegistryService.class).getDeclaredMethodNames())), ","))
                 //.addParameter(Constants.STUB_KEY, RegistryServiceStub.class.getName())

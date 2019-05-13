@@ -39,6 +39,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.LOCAL_PROTOCOL;
+
 /**
  * <code>ProxiesTest</code>
  */
@@ -95,13 +98,13 @@ public class InjvmProtocolTest {
         url = URL.valueOf("fake://127.0.0.1/TestService").addParameter(Constants.SCOPE_KEY, Constants.SCOPE_LOCAL);
         assertTrue(InjvmProtocol.getInjvmProtocol().isInjvmRefer(url));
 
-        url = URL.valueOf("fake://127.0.0.1/TestService").addParameter(Constants.LOCAL_PROTOCOL,true);
+        url = URL.valueOf("fake://127.0.0.1/TestService").addParameter(LOCAL_PROTOCOL,true);
         assertTrue(InjvmProtocol.getInjvmProtocol().isInjvmRefer(url));
 
         url = URL.valueOf("fake://127.0.0.1/TestService").addParameter(Constants.SCOPE_KEY, Constants.SCOPE_REMOTE);
         assertFalse(InjvmProtocol.getInjvmProtocol().isInjvmRefer(url));
 
-        url = URL.valueOf("fake://127.0.0.1/TestService").addParameter(Constants.GENERIC_KEY, true);
+        url = URL.valueOf("fake://127.0.0.1/TestService").addParameter(GENERIC_KEY, true);
         assertFalse(InjvmProtocol.getInjvmProtocol().isInjvmRefer(url));
 
     }

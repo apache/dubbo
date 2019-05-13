@@ -45,7 +45,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-
+import static org.apache.dubbo.common.constants.RpcConstants.INPUT_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.OUTPUT_KEY;
 /**
  * MonitorFilter. (SPI, Singleton, ThreadSafe)
  */
@@ -157,11 +158,11 @@ public class MonitorFilter implements Filter {
             remoteValue = remoteHost;
         }
         String input = "", output = "";
-        if (invocation.getAttachment(Constants.INPUT_KEY) != null) {
-            input = invocation.getAttachment(Constants.INPUT_KEY);
+        if (invocation.getAttachment(INPUT_KEY) != null) {
+            input = invocation.getAttachment(INPUT_KEY);
         }
-        if (result != null && result.getAttachment(Constants.OUTPUT_KEY) != null) {
-            output = result.getAttachment(Constants.OUTPUT_KEY);
+        if (result != null && result.getAttachment(OUTPUT_KEY) != null) {
+            output = result.getAttachment(OUTPUT_KEY);
         }
 
         return new URL(Constants.COUNT_PROTOCOL,
@@ -174,8 +175,8 @@ public class MonitorFilter implements Filter {
                 error ? MonitorService.FAILURE : MonitorService.SUCCESS, "1",
                 MonitorService.ELAPSED, String.valueOf(elapsed),
                 MonitorService.CONCURRENT, String.valueOf(concurrent),
-                Constants.INPUT_KEY, input,
-                Constants.OUTPUT_KEY, output,
+                INPUT_KEY, input,
+                OUTPUT_KEY, output,
                 GROUP_KEY, group,
                 VERSION_KEY, version);
     }

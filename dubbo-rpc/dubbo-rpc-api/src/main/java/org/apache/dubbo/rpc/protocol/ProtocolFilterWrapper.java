@@ -31,6 +31,9 @@ import org.apache.dubbo.rpc.RpcException;
 
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.RpcConstants.REFERENCE_FILTER_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.SERVICE_FILTER_KEY;
+
 /**
  * ListenerProtocol
  */
@@ -106,7 +109,7 @@ public class ProtocolFilterWrapper implements Protocol {
         if (Constants.REGISTRY_PROTOCOL.equals(invoker.getUrl().getProtocol())) {
             return protocol.export(invoker);
         }
-        return protocol.export(buildInvokerChain(invoker, Constants.SERVICE_FILTER_KEY, CommonConstants.PROVIDER));
+        return protocol.export(buildInvokerChain(invoker, SERVICE_FILTER_KEY, CommonConstants.PROVIDER));
     }
 
     @Override
@@ -114,7 +117,7 @@ public class ProtocolFilterWrapper implements Protocol {
         if (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) {
             return protocol.refer(type, url);
         }
-        return buildInvokerChain(protocol.refer(type, url), Constants.REFERENCE_FILTER_KEY, CommonConstants.CONSUMER);
+        return buildInvokerChain(protocol.refer(type, url), REFERENCE_FILTER_KEY, CommonConstants.CONSUMER);
     }
 
     @Override

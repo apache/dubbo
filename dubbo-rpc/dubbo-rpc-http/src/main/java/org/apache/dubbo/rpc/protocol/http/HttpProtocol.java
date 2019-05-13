@@ -51,6 +51,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_KEY;
 
 /**
  * HttpProtocol
@@ -89,7 +91,7 @@ public class HttpProtocol extends AbstractProxyProtocol {
         final String path = url.getAbsolutePath();
         skeletonMap.put(path, createExporter(impl, type));
 
-        final String genericPath = path + "/" + Constants.GENERIC_KEY;
+        final String genericPath = path + "/" + GENERIC_KEY;
 
         skeletonMap.put(genericPath, createExporter(impl, GenericService.class));
         return new Runnable() {
@@ -116,7 +118,7 @@ public class HttpProtocol extends AbstractProxyProtocol {
     @Override
     @SuppressWarnings("unchecked")
     protected <T> T doRefer(final Class<T> serviceType, final URL url) throws RpcException {
-        final String generic = url.getParameter(Constants.GENERIC_KEY);
+        final String generic = url.getParameter(GENERIC_KEY);
         final boolean isGeneric = ProtocolUtils.isGeneric(generic) || serviceType.equals(GenericService.class);
 
         final HttpInvokerProxyFactoryBean httpProxyFactoryBean = new HttpInvokerProxyFactoryBean();
@@ -138,14 +140,14 @@ public class HttpProtocol extends AbstractProxyProtocol {
                       versions, we need to check if the provider is v2.6.3 or higher before sending customized
                       HttpRemoteInvocation.
                      */
-                    if (Version.isRelease263OrHigher(url.getParameter(Constants.DUBBO_VERSION_KEY))) {
+                    if (Version.isRelease263OrHigher(url.getParameter(DUBBO_VERSION_KEY))) {
                         invocation = new com.alibaba.dubbo.rpc.protocol.http.HttpRemoteInvocation(methodInvocation);
                     } else {
                         invocation = new RemoteInvocation(methodInvocation);
                     }
                 }
                 if (isGeneric) {
-                    invocation.addAttribute(Constants.GENERIC_KEY, generic);
+                    invocation.addAttribute(GENERIC_KEY, generic);
                 }
                 return invocation;
             }
@@ -153,7 +155,7 @@ public class HttpProtocol extends AbstractProxyProtocol {
 
         String key = url.toIdentityString();
         if (isGeneric) {
-            key = key + "/" + Constants.GENERIC_KEY;
+            key = key + "/" + GENERIC_KEY;
         }
 
         httpProxyFactoryBean.setServiceUrl(key);

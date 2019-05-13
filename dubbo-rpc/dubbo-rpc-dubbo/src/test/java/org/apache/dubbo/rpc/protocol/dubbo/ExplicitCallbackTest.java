@@ -36,6 +36,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static org.apache.dubbo.common.constants.RpcConstants.CALLBACK_INSTANCES_LIMIT_KEY;
+
 public class ExplicitCallbackTest {
 
     protected Exporter<IDemoService> exporter = null;
@@ -76,7 +78,7 @@ public class ExplicitCallbackTest {
                 + "&unxxx2.0.callback=false"
                 + "&timeout=" + timeout
                 + "&retries=0"
-                + "&" + Constants.CALLBACK_INSTANCES_LIMIT_KEY + "=" + callbacks
+                + "&" + CALLBACK_INSTANCES_LIMIT_KEY + "=" + callbacks
         );
         //      uncomment is unblock invoking
 //        serviceURL = serviceURL.addParameter("yyy."+Constants.ASYNC_KEY,String.valueOf(true));
@@ -203,7 +205,7 @@ public class ExplicitCallbackTest {
             initOrResetUrl(1, 1000);
             // URL cannot be transferred automatically from the server side to the client side by using API, instead,
             // it needs manually specified.
-            serviceURL = serviceURL.addParameter(Constants.CALLBACK_INSTANCES_LIMIT_KEY, 1 + "");
+            serviceURL = serviceURL.addParameter(CALLBACK_INSTANCES_LIMIT_KEY, 1 + "");
             initOrResetService();
             final AtomicInteger count = new AtomicInteger(0);
             demoProxy.xxx(new IDemoCallback() {

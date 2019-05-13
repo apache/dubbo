@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -36,6 +35,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.CONNECTIONS_KEY;
 
 /**
  * PerformanceClientTest
@@ -59,7 +59,7 @@ public class PerformanceClientTest  {
         final String serialization = PerformanceUtils.getProperty(RemotingConstants.SERIALIZATION_KEY, RemotingConstants.DEFAULT_REMOTING_SERIALIZATION);
         final int timeout = PerformanceUtils.getIntProperty(TIMEOUT_KEY, DEFAULT_TIMEOUT);
         final int length = PerformanceUtils.getIntProperty("length", 1024);
-        final int connections = PerformanceUtils.getIntProperty(Constants.CONNECTIONS_KEY, 1);
+        final int connections = PerformanceUtils.getIntProperty(CONNECTIONS_KEY, 1);
         final int concurrent = PerformanceUtils.getIntProperty("concurrent", 100);
         int r = PerformanceUtils.getIntProperty("runs", 10000);
         final int runs = r > 0 ? r : Integer.MAX_VALUE;

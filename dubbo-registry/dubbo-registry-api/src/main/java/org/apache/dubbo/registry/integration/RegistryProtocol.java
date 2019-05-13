@@ -64,7 +64,7 @@ import static org.apache.dubbo.common.Constants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.common.Constants.DEFAULT_REGISTRY;
 import static org.apache.dubbo.common.Constants.EXPORT_KEY;
 import static org.apache.dubbo.common.Constants.EXTRA_KEYS_KEY;
-import static org.apache.dubbo.common.Constants.INTERFACES;
+import static org.apache.dubbo.common.constants.RpcConstants.INTERFACES;
 import static org.apache.dubbo.common.Constants.MONITOR_KEY;
 import static org.apache.dubbo.common.Constants.OVERRIDE_PROTOCOL;
 import static org.apache.dubbo.common.Constants.PROVIDERS_CATEGORY;

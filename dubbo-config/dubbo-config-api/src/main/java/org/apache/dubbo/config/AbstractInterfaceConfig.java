@@ -64,6 +64,13 @@ import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.LOCAL_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.RETURN_PREFIX;
+import static org.apache.dubbo.common.constants.RpcConstants.THROW_PREFIX;
+import static org.apache.dubbo.common.constants.RpcConstants.PROXY_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.REFERENCE_FILTER_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.INVOKER_LISTENER_KEY;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
 /**
@@ -385,7 +392,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     static void appendRuntimeParameters(Map<String, String> map) {
-        map.put(Constants.DUBBO_VERSION_KEY, Version.getProtocolVersion());
+        map.put(DUBBO_VERSION_KEY, Version.getProtocolVersion());
         map.put(RELEASE_KEY, Version.getVersion());
         map.put(TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
         if (ConfigUtils.getPid() > 0) {
@@ -461,8 +468,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
 
         String normalizedMock = MockInvoker.normalizeMock(mock);
-        if (normalizedMock.startsWith(Constants.RETURN_PREFIX)) {
-            normalizedMock = normalizedMock.substring(Constants.RETURN_PREFIX.length()).trim();
+        if (normalizedMock.startsWith(RETURN_PREFIX)) {
+            normalizedMock = normalizedMock.substring(RETURN_PREFIX.length()).trim();
             try {
                 //Check whether the mock value is legal, if it is illegal, throw exception
                 MockInvoker.parseMockValue(normalizedMock);
@@ -470,8 +477,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 throw new IllegalStateException("Illegal mock return in <dubbo:service/reference ... " +
                         "mock=\"" + mock + "\" />");
             }
-        } else if (normalizedMock.startsWith(Constants.THROW_PREFIX)) {
-            normalizedMock = normalizedMock.substring(Constants.THROW_PREFIX.length()).trim();
+        } else if (normalizedMock.startsWith(THROW_PREFIX)) {
+            normalizedMock = normalizedMock.substring(THROW_PREFIX.length()).trim();
             if (ConfigUtils.isNotEmpty(normalizedMock)) {
                 try {
                     //Check whether the mock value is legal
@@ -635,7 +642,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      */
     @Deprecated
     public void setLocal(String local) {
-        checkName(Constants.LOCAL_KEY, local);
+        checkName(LOCAL_KEY, local);
         this.local = local;
     }
 
@@ -670,7 +677,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setProxy(String proxy) {
-        checkExtension(ProxyFactory.class, Constants.PROXY_KEY, proxy);
+        checkExtension(ProxyFactory.class, PROXY_KEY, proxy);
         this.proxy = proxy;
     }
 
@@ -682,7 +689,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         this.connections = connections;
     }
 
-    @Parameter(key = Constants.REFERENCE_FILTER_KEY, append = true)
+    @Parameter(key = REFERENCE_FILTER_KEY, append = true)
     public String getFilter() {
         return filter;
     }
@@ -692,7 +699,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         this.filter = filter;
     }
 
-    @Parameter(key = Constants.INVOKER_LISTENER_KEY, append = true)
+    @Parameter(key = INVOKER_LISTENER_KEY, append = true)
     public String getListener() {
         return listener;
     }

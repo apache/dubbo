@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.common.Constants.FORCE_USE_TAG;
+import static org.apache.dubbo.common.constants.RpcConstants.FORCE_USE_TAG;
 import static org.apache.dubbo.common.Constants.TAG_KEY;
 
 /**

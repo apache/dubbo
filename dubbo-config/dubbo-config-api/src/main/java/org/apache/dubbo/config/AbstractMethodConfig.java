@@ -22,6 +22,12 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.RpcConstants.MOCK_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.RETURN_PREFIX;
+import static org.apache.dubbo.common.constants.RpcConstants.THROW_PREFIX;
+import static org.apache.dubbo.common.constants.RpcConstants.FAIL_PREFIX;
+import static org.apache.dubbo.common.constants.RpcConstants.FORCE_PREFIX;
+
 /**
  * AbstractMethodConfig
  *
@@ -164,12 +170,12 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
             return;
         }
 
-        if (mock.startsWith(Constants.RETURN_PREFIX) || mock.startsWith(Constants.THROW_PREFIX + " ")) {
-            checkLength(Constants.MOCK_KEY, mock);
-        } else if (mock.startsWith(Constants.FAIL_PREFIX) || mock.startsWith(Constants.FORCE_PREFIX)) {
-            checkNameHasSymbol(Constants.MOCK_KEY, mock);
+        if (mock.startsWith(RETURN_PREFIX) || mock.startsWith(THROW_PREFIX + " ")) {
+            checkLength(MOCK_KEY, mock);
+        } else if (mock.startsWith(FAIL_PREFIX) || mock.startsWith(FORCE_PREFIX)) {
+            checkNameHasSymbol(MOCK_KEY, mock);
         } else {
-            checkName(Constants.MOCK_KEY, mock);
+            checkName(MOCK_KEY, mock);
         }
         this.mock = mock;
     }
