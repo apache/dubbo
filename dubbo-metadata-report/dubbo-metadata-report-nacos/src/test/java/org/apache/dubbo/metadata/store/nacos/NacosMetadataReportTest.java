@@ -19,8 +19,6 @@ package org.apache.dubbo.metadata.store.nacos;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.google.gson.Gson;
 import org.apache.dubbo.common.Constants;
-import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
@@ -35,6 +33,10 @@ import org.junit.jupiter.api.Disabled;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.RegistryConstants.SESSION_TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+
 @Disabled
 public class NacosMetadataReportTest {
     private static final String TEST_SERVICE = "org.apache.dubbo.metadata.store.nacos.NacosMetadata4TstService";
@@ -46,7 +48,7 @@ public class NacosMetadataReportTest {
     public void setUp() {
         // timeout in 15 seconds.
         URL url = URL.valueOf("nacos://127.0.0.1:8848")
-                .addParameter(Constants.SESSION_TIMEOUT_KEY, 15000);
+                .addParameter(SESSION_TIMEOUT_KEY, 15000);
         nacosMetadataReportFactory = new NacosMetadataReportFactory();
         this.nacosMetadataReport = (NacosMetadataReport) nacosMetadataReportFactory.createMetadataReport(url);
         this.configService = nacosMetadataReport.buildConfigService(url);
