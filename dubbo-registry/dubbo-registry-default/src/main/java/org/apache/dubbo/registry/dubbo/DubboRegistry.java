@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.registry.dubbo;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.constants.RemotingConstants;
@@ -36,6 +35,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
+
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_RECONNECT_PERIOD_KEY;
 
 /**
  * DubboRegistry
@@ -70,7 +71,7 @@ public class DubboRegistry extends FailbackRegistry {
         this.registryInvoker = registryInvoker;
         this.registryService = registryService;
         // Start reconnection timer
-        this.reconnectPeriod = registryInvoker.getUrl().getParameter(Constants.REGISTRY_RECONNECT_PERIOD_KEY, RECONNECT_PERIOD_DEFAULT);
+        this.reconnectPeriod = registryInvoker.getUrl().getParameter(REGISTRY_RECONNECT_PERIOD_KEY, RECONNECT_PERIOD_DEFAULT);
         reconnectFuture = reconnectTimer.scheduleWithFixedDelay(() -> {
             // Check and connect to the registry
             try {

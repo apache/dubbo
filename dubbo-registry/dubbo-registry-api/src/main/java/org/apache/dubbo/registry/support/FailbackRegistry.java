@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.registry.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
@@ -39,6 +38,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMER_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTRY_RETRY_PERIOD;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_RETRY_PERIOD_KEY;
 
 /**
  * FailbackRegistry. (SPI, Prototype, ThreadSafe)
@@ -67,7 +69,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
     public FailbackRegistry(URL url) {
         super(url);
-        this.retryPeriod = url.getParameter(Constants.REGISTRY_RETRY_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RETRY_PERIOD);
+        this.retryPeriod = url.getParameter(REGISTRY_RETRY_PERIOD_KEY, DEFAULT_REGISTRY_RETRY_PERIOD);
 
         // since the retry task will not be very much. 128 ticks is enough.
         retryTimer = new HashedWheelTimer(new NamedThreadFactory("DubboRegistryRetryTimer", true), retryPeriod, TimeUnit.MILLISECONDS, 128);
@@ -238,7 +240,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             // If the startup detection is opened, the Exception is thrown directly.
             boolean check = getUrl().getParameter(RemotingConstants.CHECK_KEY, true)
                     && url.getParameter(RemotingConstants.CHECK_KEY, true)
-                    && !Constants.CONSUMER_PROTOCOL.equals(url.getProtocol());
+                    && !CONSUMER_PROTOCOL.equals(url.getProtocol());
             boolean skipFailback = t instanceof SkipFailbackWrapperException;
             if (check || skipFailback) {
                 if (skipFailback) {
@@ -268,7 +270,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             // If the startup detection is opened, the Exception is thrown directly.
             boolean check = getUrl().getParameter(RemotingConstants.CHECK_KEY, true)
                     && url.getParameter(RemotingConstants.CHECK_KEY, true)
-                    && !Constants.CONSUMER_PROTOCOL.equals(url.getProtocol());
+                    && !CONSUMER_PROTOCOL.equals(url.getProtocol());
             boolean skipFailback = t instanceof SkipFailbackWrapperException;
             if (check || skipFailback) {
                 if (skipFailback) {

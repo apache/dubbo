@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.registry.zookeeper;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.constants.RemotingConstants;
@@ -44,6 +43,14 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_SEPARATOR;
+import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
 
 /**
  * ZookeeperRegistry
@@ -105,7 +112,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     @Override
     public void doRegister(URL url) {
         try {
-            zkClient.create(toUrlPath(url), url.getParameter(Constants.DYNAMIC_KEY, true));
+            zkClient.create(toUrlPath(url), url.getParameter(DYNAMIC_KEY, true));
         } catch (Throwable e) {
             throw new RpcException("Failed to register " + url + " to zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
         }
@@ -238,11 +245,10 @@ public class ZookeeperRegistry extends FailbackRegistry {
 
     private String[] toCategoriesPath(URL url) {
         String[] categories;
-        if (ANY_VALUE.equals(url.getParameter(Constants.CATEGORY_KEY))) {
-            categories = new String[]{Constants.PROVIDERS_CATEGORY, Constants.CONSUMERS_CATEGORY,
-                    Constants.ROUTERS_CATEGORY, Constants.CONFIGURATORS_CATEGORY};
+        if (ANY_VALUE.equals(url.getParameter(CATEGORY_KEY))) {
+            categories = new String[]{PROVIDERS_CATEGORY, CONSUMERS_CATEGORY, ROUTERS_CATEGORY, CONFIGURATORS_CATEGORY};
         } else {
-            categories = url.getParameter(Constants.CATEGORY_KEY, new String[]{Constants.DEFAULT_CATEGORY});
+            categories = url.getParameter(CATEGORY_KEY, new String[]{DEFAULT_CATEGORY});
         }
         String[] paths = new String[categories.length];
         for (int i = 0; i < categories.length; i++) {
@@ -252,7 +258,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     }
 
     private String toCategoryPath(URL url) {
-        return toServicePath(url) + PATH_SEPARATOR + url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY);
+        return toServicePath(url) + PATH_SEPARATOR + url.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY);
     }
 
     private String toUrlPath(URL url) {
@@ -281,8 +287,8 @@ public class ZookeeperRegistry extends FailbackRegistry {
             int i = path.lastIndexOf(PATH_SEPARATOR);
             String category = i < 0 ? path : path.substring(i + 1);
             URL empty = URLBuilder.from(consumer)
-                    .setProtocol(Constants.EMPTY_PROTOCOL)
-                    .addParameter(Constants.CATEGORY_KEY, category)
+                    .setProtocol(EMPTY_PROTOCOL)
+                    .addParameter(CATEGORY_KEY, category)
                     .build();
             urls.add(empty);
         }

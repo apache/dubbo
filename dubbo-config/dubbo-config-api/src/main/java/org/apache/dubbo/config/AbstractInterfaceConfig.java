@@ -64,6 +64,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBE_KEY;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
 /**
@@ -323,11 +327,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
                     for (URL url : urls) {
                         url = URLBuilder.from(url)
-                                .addParameter(Constants.REGISTRY_KEY, url.getProtocol())
-                                .setProtocol(Constants.REGISTRY_PROTOCOL)
+                                .addParameter(REGISTRY_KEY, url.getProtocol())
+                                .setProtocol(REGISTRY_PROTOCOL)
                                 .build();
-                        if ((provider && url.getParameter(Constants.REGISTER_KEY, true))
-                                || (!provider && url.getParameter(Constants.SUBSCRIBE_KEY, true))) {
+                        if ((provider && url.getParameter(REGISTER_KEY, true))
+                                || (!provider && url.getParameter(SUBSCRIBE_KEY, true))) {
                             registryList.add(url);
                         }
                     }
@@ -374,10 +378,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 }
             }
             return UrlUtils.parseURL(address, map);
-        } else if (Constants.REGISTRY_PROTOCOL.equals(monitor.getProtocol()) && registryURL != null) {
+        } else if (REGISTRY_PROTOCOL.equals(monitor.getProtocol()) && registryURL != null) {
             return URLBuilder.from(registryURL)
                     .setProtocol(Constants.DUBBO_PROTOCOL)
-                    .addParameter(PROTOCOL_KEY, Constants.REGISTRY_PROTOCOL)
+                    .addParameter(PROTOCOL_KEY, REGISTRY_PROTOCOL)
                     .addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map))
                     .build();
         }

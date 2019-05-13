@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.registry.sofa;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -47,6 +46,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMER_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDER_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBE_KEY;
 import static org.apache.dubbo.registry.sofa.SofaRegistryConstants.ADDRESS_WAIT_TIME_KEY;
 import static org.apache.dubbo.registry.sofa.SofaRegistryConstants.DEFAULT_GROUP;
 import static org.apache.dubbo.registry.sofa.SofaRegistryConstants.LOCAL_DATA_CENTER;
@@ -114,8 +117,8 @@ public class SofaRegistry extends FailbackRegistry {
 
     @Override
     public void doRegister(URL url) {
-        if (!url.getParameter(Constants.REGISTER_KEY, true)
-                || Constants.CONSUMER_PROTOCOL.equals(url.getProtocol())) {
+        if (!url.getParameter(REGISTER_KEY, true)
+                || CONSUMER_PROTOCOL.equals(url.getProtocol())) {
             return;
         }
 
@@ -139,8 +142,8 @@ public class SofaRegistry extends FailbackRegistry {
 
     @Override
     public void doUnregister(URL url) {
-        if (!url.getParameter(Constants.REGISTER_KEY, true)
-                || Constants.CONSUMER_PROTOCOL.equals(url.getProtocol())) {
+        if (!url.getParameter(REGISTER_KEY, true)
+                || CONSUMER_PROTOCOL.equals(url.getProtocol())) {
             return;
         }
         String serviceName = buildServiceName(url);
@@ -149,8 +152,8 @@ public class SofaRegistry extends FailbackRegistry {
 
     @Override
     public void doSubscribe(URL url, final NotifyListener listener) {
-        if (!url.getParameter(Constants.SUBSCRIBE_KEY, true)
-                || Constants.PROVIDER_PROTOCOL.equals(url.getProtocol())) {
+        if (!url.getParameter(SUBSCRIBE_KEY, true)
+                || PROVIDER_PROTOCOL.equals(url.getProtocol())) {
             return;
         }
 
@@ -195,8 +198,8 @@ public class SofaRegistry extends FailbackRegistry {
 
     @Override
     public void doUnsubscribe(URL url, NotifyListener listener) {
-        if (!url.getParameter(Constants.SUBSCRIBE_KEY, true)
-                || Constants.PROVIDER_PROTOCOL.equals(url.getProtocol())) {
+        if (!url.getParameter(SUBSCRIBE_KEY, true)
+                || PROVIDER_PROTOCOL.equals(url.getProtocol())) {
             return;
         }
         String serviceName = buildServiceName(url);
