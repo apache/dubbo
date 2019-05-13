@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.support.Parameter;
@@ -46,11 +47,11 @@ public class ConfigCenterConfig extends AbstractConfig {
     but it's real meaning depends on the actual Config Center you use.
     */
 
-    private String namespace = Constants.DUBBO;
+    private String namespace = CommonConstants.DUBBO;
     /* The group of the config center, generally it's used to identify an isolated space for a batch of config items,
     but it's real meaning depends on the actual Config Center you use.
     */
-    private String group = Constants.DUBBO;
+    private String group = CommonConstants.DUBBO;
     private String username;
     private String password;
     private Long timeout = 3000L;
@@ -64,7 +65,7 @@ public class ConfigCenterConfig extends AbstractConfig {
     /* Used to specify the key that your properties file mapping to, most of the time you do not need to change this parameter.
     Notice that for Apollo, this parameter is meaningless, set the 'namespace' is enough.
     */
-    private String configFile = Constants.DEFAULT_DUBBO_PROPERTIES;
+    private String configFile = CommonConstants.DEFAULT_DUBBO_PROPERTIES;
 
     /* the .properties file under 'configFile' is global shared while .properties under this one is limited only to this application
     */
