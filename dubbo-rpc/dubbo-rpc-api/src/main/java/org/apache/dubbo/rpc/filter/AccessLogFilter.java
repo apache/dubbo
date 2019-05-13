@@ -45,6 +45,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+
 /**
  * Record access log for the service.
  * <p>
@@ -59,7 +63,7 @@ import java.util.concurrent.TimeUnit;
  * &lt;/logger&gt;
  * </pre></code>
  */
-@Activate(group = Constants.PROVIDER, value = Constants.ACCESS_LOG_KEY)
+@Activate(group = PROVIDER, value = Constants.ACCESS_LOG_KEY)
 public class AccessLogFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(AccessLogFilter.class);
@@ -162,8 +166,8 @@ public class AccessLogFilter implements Filter {
         AccessLogData logData = AccessLogData.newLogData();
         logData.setServiceName(invoker.getInterface().getName());
         logData.setMethodName(inv.getMethodName());
-        logData.setVersion(invoker.getUrl().getParameter(Constants.VERSION_KEY));
-        logData.setGroup(invoker.getUrl().getParameter(Constants.GROUP_KEY));
+        logData.setVersion(invoker.getUrl().getParameter(VERSION_KEY));
+        logData.setGroup(invoker.getUrl().getParameter(GROUP_KEY));
         logData.setInvocationTime(new Date());
         logData.setTypes(inv.getParameterTypes());
         logData.setArguments(inv.getArguments());

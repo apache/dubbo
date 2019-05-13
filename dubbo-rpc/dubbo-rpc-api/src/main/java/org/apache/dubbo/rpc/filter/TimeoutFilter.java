@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.filter;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -32,7 +32,7 @@ import java.util.Arrays;
 /**
  * Log any invocation timeout, but don't stop server from running
  */
-@Activate(group = Constants.PROVIDER)
+@Activate(group = CommonConstants.PROVIDER)
 public class TimeoutFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(TimeoutFilter.class);

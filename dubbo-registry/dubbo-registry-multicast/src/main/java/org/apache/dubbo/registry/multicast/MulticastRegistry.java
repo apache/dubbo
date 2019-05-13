@@ -49,6 +49,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+
 /**
  * MulticastRegistry
  */
@@ -249,13 +253,13 @@ public class MulticastRegistry extends FailbackRegistry {
 
     @Override
     public void doSubscribe(URL url, NotifyListener listener) {
-        if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
+        if (ANY_VALUE.equals(url.getServiceInterface())) {
             admin = true;
         }
         multicast(Constants.SUBSCRIBE + " " + url.toFullString());
         synchronized (listener) {
             try {
-                listener.wait(url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
+                listener.wait(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT));
             } catch (InterruptedException e) {
             }
         }
@@ -263,7 +267,7 @@ public class MulticastRegistry extends FailbackRegistry {
 
     @Override
     public void doUnsubscribe(URL url, NotifyListener listener) {
-        if (!Constants.ANY_VALUE.equals(url.getServiceInterface()) && url.getParameter(Constants.REGISTER_KEY, true)) {
+        if (!ANY_VALUE.equals(url.getServiceInterface()) && url.getParameter(Constants.REGISTER_KEY, true)) {
             unregister(url);
         }
         multicast(Constants.UNSUBSCRIBE + " " + url.toFullString());
@@ -403,7 +407,7 @@ public class MulticastRegistry extends FailbackRegistry {
                 }
             }
         }
-        if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
+        if (ANY_VALUE.equals(url.getServiceInterface())) {
             for (URL u : getSubscribed().keySet()) {
                 if (UrlUtils.isMatch(url, u)) {
                     urls.add(u);

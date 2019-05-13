@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
+
 /**
  * Configurator. (SPI, Prototype, ThreadSafe)
  *
@@ -82,7 +84,7 @@ public interface Configurator extends Comparable<Configurator> {
             }
             Map<String, String> override = new HashMap<>(url.getParameters());
             //The anyhost parameter of override may be added automatically, it can't change the judgement of changing url
-            override.remove(Constants.ANYHOST_KEY);
+            override.remove(ANYHOST_KEY);
             if (override.size() == 0) {
                 configurators.clear();
                 continue;

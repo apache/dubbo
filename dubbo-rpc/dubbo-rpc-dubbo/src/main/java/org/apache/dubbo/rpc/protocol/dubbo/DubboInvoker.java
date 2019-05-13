@@ -40,6 +40,13 @@ import org.apache.dubbo.rpc.support.RpcUtils;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+
 /**
  * DubboInvoker
  */
@@ -60,10 +67,10 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
     }
 
     public DubboInvoker(Class<T> serviceType, URL url, ExchangeClient[] clients, Set<Invoker<?>> invokers) {
-        super(serviceType, url, new String[]{Constants.INTERFACE_KEY, Constants.GROUP_KEY, Constants.TOKEN_KEY, Constants.TIMEOUT_KEY});
+        super(serviceType, url, new String[]{INTERFACE_KEY, GROUP_KEY, Constants.TOKEN_KEY, TIMEOUT_KEY});
         this.clients = clients;
         // get version.
-        this.version = url.getParameter(Constants.VERSION_KEY, "0.0.0");
+        this.version = url.getParameter(VERSION_KEY, "0.0.0");
         this.invokers = invokers;
     }
 
@@ -71,8 +78,8 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
     protected Result doInvoke(final Invocation invocation) throws Throwable {
         RpcInvocation inv = (RpcInvocation) invocation;
         final String methodName = RpcUtils.getMethodName(invocation);
-        inv.setAttachment(Constants.PATH_KEY, getUrl().getPath());
-        inv.setAttachment(Constants.VERSION_KEY, version);
+        inv.setAttachment(PATH_KEY, getUrl().getPath());
+        inv.setAttachment(VERSION_KEY, version);
 
         ExchangeClient currentClient;
         if (clients.length == 1) {
@@ -84,7 +91,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
             boolean isAsync = RpcUtils.isAsync(getUrl(), invocation);
             boolean isAsyncFuture = RpcUtils.isReturnTypeFuture(inv);
             boolean isOneway = RpcUtils.isOneway(getUrl(), invocation);
-            int timeout = getUrl().getMethodParameter(methodName, Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+            int timeout = getUrl().getMethodParameter(methodName, TIMEOUT_KEY, DEFAULT_TIMEOUT);
             if (isOneway) {
                 boolean isSent = getUrl().getMethodParameter(methodName, RemotingConstants.SENT_KEY, false);
                 currentClient.send(inv, isSent);

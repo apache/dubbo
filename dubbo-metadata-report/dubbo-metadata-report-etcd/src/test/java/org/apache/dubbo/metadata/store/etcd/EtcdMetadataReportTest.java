@@ -17,18 +17,18 @@
 
 package org.apache.dubbo.metadata.store.etcd;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
+import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
+import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
+
 import com.google.gson.Gson;
 import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.Client;
 import io.etcd.jetcd.kv.GetResponse;
 import io.etcd.jetcd.launcher.EtcdCluster;
 import io.etcd.jetcd.launcher.EtcdClusterFactory;
-import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
-import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
-import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,6 +40,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 
 /**
  * Unit test for etcd metadata report
@@ -109,7 +112,7 @@ public class EtcdMetadataReportTest {
                 + application + (group == null ? "" : "&group=" + group));
 
         MetadataIdentifier providerMetadataIdentifier =
-                new MetadataIdentifier(interfaceName, version, group, Constants.PROVIDER_SIDE, application);
+                new MetadataIdentifier(interfaceName, version, group, PROVIDER_SIDE, application);
         Class interfaceClass = Class.forName(interfaceName);
         FullServiceDefinition fullServiceDefinition =
                 ServiceDefinitionBuilder.buildFullDefinition(interfaceClass, url.getParameters());
@@ -122,7 +125,7 @@ public class EtcdMetadataReportTest {
     private MetadataIdentifier storeConsumer(EtcdMetadataReport etcdMetadataReport, String interfaceName,
                                              String version, String group, String application) throws InterruptedException {
 
-        MetadataIdentifier consumerIdentifier = new MetadataIdentifier(interfaceName, version, group, Constants.CONSUMER_SIDE, application);
+        MetadataIdentifier consumerIdentifier = new MetadataIdentifier(interfaceName, version, group, CONSUMER_SIDE, application);
         Map<String, String> tmp = new HashMap<>();
         tmp.put("paramConsumerTest", "etcdConsumer");
         etcdMetadataReport.storeConsumerMetadata(consumerIdentifier, tmp);

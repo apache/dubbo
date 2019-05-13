@@ -39,6 +39,8 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+
 public class DeprecatedTelnetCodec implements Codec {
 
     private static final Logger logger = LoggerFactory.getLogger(DeprecatedTelnetCodec.class);
@@ -152,7 +154,7 @@ public class DeprecatedTelnetCodec implements Codec {
     }
 
     protected boolean isClientSide(Channel channel) {
-        String side = (String) channel.getAttribute(Constants.SIDE_KEY);
+        String side = (String) channel.getAttribute(SIDE_KEY);
         if ("client".equals(side)) {
             return true;
         } else if ("server".equals(side)) {
@@ -164,7 +166,7 @@ public class DeprecatedTelnetCodec implements Codec {
                     && NetUtils.filterLocalHost(url.getIp()).equals(
                     NetUtils.filterLocalHost(address.getAddress()
                             .getHostAddress()));
-            channel.setAttribute(Constants.SIDE_KEY, client ? "client"
+            channel.setAttribute(SIDE_KEY, client ? "client"
                     : "server");
             return client;
         }

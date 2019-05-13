@@ -50,6 +50,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
@@ -183,7 +189,7 @@ public class RegistryDirectoryTest {
     private void testforbid(RegistryDirectory registryDirectory) {
         invocation = new RpcInvocation();
         List<URL> serviceUrls = new ArrayList<URL>();
-        serviceUrls.add(new URL(Constants.EMPTY_PROTOCOL, Constants.ANYHOST_VALUE, 0, service, Constants.CATEGORY_KEY, Constants.PROVIDERS_CATEGORY));
+        serviceUrls.add(new URL(Constants.EMPTY_PROTOCOL, ANYHOST_VALUE, 0, service, Constants.CATEGORY_KEY, Constants.PROVIDERS_CATEGORY));
         registryDirectory.notify(serviceUrls);
         Assertions.assertEquals(false,
                 registryDirectory.isAvailable(), "invokers size=0 ,then the registry directory is not available");
@@ -228,7 +234,7 @@ public class RegistryDirectoryTest {
     private void test_Notified1invokers(RegistryDirectory registryDirectory) {
 
         List<URL> serviceUrls = new ArrayList<URL>();
-        serviceUrls.add(SERVICEURL.addParameter("methods", "getXXX1").addParameter(Constants.APPLICATION_KEY, "mockApplicationName"));// .addParameter("refer.autodestroy", "true")
+        serviceUrls.add(SERVICEURL.addParameter("methods", "getXXX1").addParameter(APPLICATION_KEY, "mockApplicationName"));// .addParameter("refer.autodestroy", "true")
         registryDirectory.notify(serviceUrls);
         Assertions.assertEquals(true, registryDirectory.isAvailable());
 
@@ -711,8 +717,8 @@ public class RegistryDirectoryTest {
         invocation = new RpcInvocation();
 
         List<URL> durls = new ArrayList<URL>();
-        durls.add(SERVICEURL.setHost("10.20.30.140").addParameter("timeout", "1").addParameter(Constants.SIDE_KEY, Constants.CONSUMER_SIDE));//One is the same, one is different
-        durls.add(SERVICEURL2.setHost("10.20.30.141").addParameter("timeout", "2").addParameter(Constants.SIDE_KEY, Constants.CONSUMER_SIDE));
+        durls.add(SERVICEURL.setHost("10.20.30.140").addParameter("timeout", "1").addParameter(SIDE_KEY, CONSUMER_SIDE));//One is the same, one is different
+        durls.add(SERVICEURL2.setHost("10.20.30.141").addParameter("timeout", "2").addParameter(SIDE_KEY, CONSUMER_SIDE));
         registryDirectory.notify(durls);
 
         durls = new ArrayList<URL>();
@@ -829,7 +835,7 @@ public class RegistryDirectoryTest {
         registryDirectory.notify(durls);
 
         durls = new ArrayList<URL>();
-        durls.add(URL.valueOf("override://0.0.0.0?" + Constants.ENABLED_KEY + "=false"));
+        durls.add(URL.valueOf("override://0.0.0.0?" + ENABLED_KEY + "=false"));
         registryDirectory.notify(durls);
 
         List<Invoker<?>> invokers = registryDirectory.list(invocation);
@@ -852,7 +858,7 @@ public class RegistryDirectoryTest {
         registryDirectory.notify(durls);
 
         durls = new ArrayList<URL>();
-        durls.add(URL.valueOf("override://10.20.30.140:9091?" + Constants.DISABLED_KEY + "=true"));
+        durls.add(URL.valueOf("override://10.20.30.140:9091?" + DISABLED_KEY + "=true"));
         registryDirectory.notify(durls);
 
         List<Invoker<?>> invokers = registryDirectory.list(invocation);
@@ -860,7 +866,7 @@ public class RegistryDirectoryTest {
         Assertions.assertEquals("10.20.30.141", invokers.get(0).getUrl().getHost());
 
         durls = new ArrayList<URL>();
-        durls.add(URL.valueOf("empty://0.0.0.0?" + Constants.DISABLED_KEY + "=true&" + Constants.CATEGORY_KEY + "=" + Constants.CONFIGURATORS_CATEGORY));
+        durls.add(URL.valueOf("empty://0.0.0.0?" + DISABLED_KEY + "=true&" + Constants.CATEGORY_KEY + "=" + Constants.CONFIGURATORS_CATEGORY));
         registryDirectory.notify(durls);
         List<Invoker<?>> invokers2 = registryDirectory.list(invocation);
         Assertions.assertEquals(2, invokers2.size());
@@ -891,7 +897,7 @@ public class RegistryDirectoryTest {
         Assertions.assertEquals("10.20.30.140", invokers2.get(0).getUrl().getHost());
 
         durls = new ArrayList<URL>();
-        durls.add(URL.valueOf("empty://0.0.0.0?" + Constants.DISABLED_KEY + "=true&" + Constants.CATEGORY_KEY + "=" + Constants.CONFIGURATORS_CATEGORY));
+        durls.add(URL.valueOf("empty://0.0.0.0?" + DISABLED_KEY + "=true&" + Constants.CATEGORY_KEY + "=" + Constants.CONFIGURATORS_CATEGORY));
         registryDirectory.notify(durls);
         List<Invoker<?>> invokers3 = registryDirectory.list(invocation);
         Assertions.assertEquals(1, invokers3.size());
@@ -908,7 +914,7 @@ public class RegistryDirectoryTest {
 
         // Initially disable
         List<URL> durls = new ArrayList<URL>();
-        durls.add(SERVICEURL.setHost("10.20.30.140").addParameter(Constants.ENABLED_KEY, "false"));
+        durls.add(SERVICEURL.setHost("10.20.30.140").addParameter(ENABLED_KEY, "false"));
         durls.add(SERVICEURL.setHost("10.20.30.141"));
         registryDirectory.notify(durls);
 
@@ -918,7 +924,7 @@ public class RegistryDirectoryTest {
 
         //Enabled by override rule
         durls = new ArrayList<URL>();
-        durls.add(URL.valueOf("override://10.20.30.140:9091?" + Constants.DISABLED_KEY + "=false"));
+        durls.add(URL.valueOf("override://10.20.30.140:9091?" + DISABLED_KEY + "=false"));
         registryDirectory.notify(durls);
         List<Invoker<?>> invokers2 = registryDirectory.list(invocation);
         Assertions.assertEquals(2, invokers2.size());
