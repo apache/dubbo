@@ -21,7 +21,6 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.config.ApplicationConfig;
 import com.alibaba.dubbo.config.MonitorConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -29,13 +28,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 public class ApplicationConfigTest {
     @Test
@@ -47,7 +48,7 @@ public class ApplicationConfigTest {
         assertThat(application.getName(), equalTo("app2"));
         Map<String, String> parameters = new HashMap<String, String>();
         ApplicationConfig.appendParameters(parameters, application);
-        assertThat(parameters, hasEntry(Constants.APPLICATION_KEY, "app2"));
+        assertThat(parameters, hasEntry(APPLICATION_KEY, "app2"));
     }
 
     @Test
@@ -141,7 +142,7 @@ public class ApplicationConfigTest {
         assertThat(application.getDumpDirectory(), equalTo("/dump"));
         Map<String, String> parameters = new HashMap<String, String>();
         ApplicationConfig.appendParameters(parameters, application);
-        assertThat(parameters, hasEntry(Constants.DUMP_DIRECTORY, "/dump"));
+        assertThat(parameters, hasEntry(DUMP_DIRECTORY, "/dump"));
     }
 
     @Test

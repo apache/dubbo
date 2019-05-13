@@ -20,6 +20,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
@@ -58,8 +59,8 @@ public class NettyClient extends AbstractClient {
     private static final Logger logger = LoggerFactory.getLogger(NettyClient.class);
 
     private static final EventLoopGroup eventLoopGroup = Epoll.isAvailable()?
-            new EpollEventLoopGroup(Constants.DEFAULT_IO_THREADS, new DefaultThreadFactory("NettyClientWorker", true)):
-            new NioEventLoopGroup(Constants.DEFAULT_IO_THREADS, new DefaultThreadFactory("NettyClientWorker", true));
+            new EpollEventLoopGroup(RemotingConstants.DEFAULT_IO_THREADS, new DefaultThreadFactory("NettyClientWorker", true)):
+            new NioEventLoopGroup(RemotingConstants.DEFAULT_IO_THREADS, new DefaultThreadFactory("NettyClientWorker", true));
 
     private static final String SOCKS_PROXY_HOST = "socksProxyHost";
 

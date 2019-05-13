@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
@@ -30,6 +30,9 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
 /**
  * abstract ProtocolSupport.
@@ -44,9 +47,8 @@ public abstract class AbstractProtocol implements Protocol {
     protected final Set<Invoker<?>> invokers = new ConcurrentHashSet<Invoker<?>>();
 
     protected static String serviceKey(URL url) {
-        int port = url.getParameter(Constants.BIND_PORT_KEY, url.getPort());
-        return serviceKey(port, url.getPath(), url.getParameter(Constants.VERSION_KEY),
-                url.getParameter(Constants.GROUP_KEY));
+        int port = url.getParameter(RemotingConstants.BIND_PORT_KEY, url.getPort());
+        return serviceKey(port, url.getPath(), url.getParameter(VERSION_KEY), url.getParameter(GROUP_KEY));
     }
 
     protected static String serviceKey(int port, String serviceName, String serviceVersion, String serviceGroup) {

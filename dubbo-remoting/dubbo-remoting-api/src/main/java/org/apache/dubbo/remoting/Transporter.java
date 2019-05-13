@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.remoting;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
 
@@ -41,7 +41,7 @@ public interface Transporter {
      * @throws RemotingException
      * @see org.apache.dubbo.remoting.Transporters#bind(URL, ChannelHandler...)
      */
-    @Adaptive({Constants.SERVER_KEY, Constants.TRANSPORTER_KEY})
+    @Adaptive({RemotingConstants.SERVER_KEY, RemotingConstants.TRANSPORTER_KEY})
     Server bind(URL url, ChannelHandler handler) throws RemotingException;
 
     /**
@@ -53,7 +53,7 @@ public interface Transporter {
      * @throws RemotingException
      * @see org.apache.dubbo.remoting.Transporters#connect(URL, ChannelHandler...)
      */
-    @Adaptive({Constants.CLIENT_KEY, Constants.TRANSPORTER_KEY})
+    @Adaptive({RemotingConstants.CLIENT_KEY, RemotingConstants.TRANSPORTER_KEY})
     Client connect(URL url, ChannelHandler handler) throws RemotingException;
 
 }

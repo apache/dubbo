@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -66,6 +67,13 @@ import static org.apache.dubbo.common.Constants.DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.Constants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.Constants.ROUTERS_CATEGORY;
 import static org.apache.dubbo.common.Constants.ROUTE_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 
 
 /**
@@ -124,15 +132,15 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         this.serviceKey = url.getServiceKey();
         this.queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(Constants.REFER_KEY));
         this.overrideDirectoryUrl = this.directoryUrl = turnRegistryUrlToConsumerUrl(url);
-        String group = directoryUrl.getParameter(Constants.GROUP_KEY, "");
-        this.multiGroup = group != null && (Constants.ANY_VALUE.equals(group) || group.contains(","));
+        String group = directoryUrl.getParameter(GROUP_KEY, "");
+        this.multiGroup = group != null && (ANY_VALUE.equals(group) || group.contains(","));
     }
 
     private URL turnRegistryUrlToConsumerUrl(URL url) {
         // save any parameter in registry that will be useful to the new url.
-        String isDefault = url.getParameter(Constants.DEFAULT_KEY);
+        String isDefault = url.getParameter(DEFAULT_KEY);
         if (StringUtils.isNotEmpty(isDefault)) {
-            queryMap.put(Constants.REGISTRY_KEY + "." + Constants.DEFAULT_KEY, isDefault);
+            queryMap.put(Constants.REGISTRY_KEY + "." + DEFAULT_KEY, isDefault);
         }
         return URLBuilder.from(url)
                 .setPath(url.getServiceInterface())
@@ -297,7 +305,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         List<Invoker<T>> mergedInvokers = new ArrayList<>();
         Map<String, List<Invoker<T>>> groupMap = new HashMap<>();
         for (Invoker<T> invoker : invokers) {
-            String group = invoker.getUrl().getParameter(Constants.GROUP_KEY, "");
+            String group = invoker.getUrl().getParameter(GROUP_KEY, "");
             groupMap.computeIfAbsent(group, k -> new ArrayList<>());
             groupMap.get(group).add(invoker);
         }
@@ -360,7 +368,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             return newUrlInvokerMap;
         }
         Set<String> keys = new HashSet<>();
-        String queryProtocols = this.queryMap.get(Constants.PROTOCOL_KEY);
+        String queryProtocols = this.queryMap.get(PROTOCOL_KEY);
         for (URL providerUrl : urls) {
             // If protocol is configured at the reference side, only the matching protocol is selected
             if (queryProtocols != null && queryProtocols.length() > 0) {
@@ -399,10 +407,10 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             if (invoker == null) { // Not in the cache, refer again
                 try {
                     boolean enabled = true;
-                    if (url.hasParameter(Constants.DISABLED_KEY)) {
-                        enabled = !url.getParameter(Constants.DISABLED_KEY, false);
+                    if (url.hasParameter(DISABLED_KEY)) {
+                        enabled = !url.getParameter(DISABLED_KEY, false);
                     } else {
-                        enabled = url.getParameter(Constants.ENABLED_KEY, true);
+                        enabled = url.getParameter(ENABLED_KEY, true);
                     }
                     if (enabled) {
                         invoker = new InvokerDelegate<>(protocol.refer(serviceType, url), url, providerUrl);
@@ -432,7 +440,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
         providerUrl = overrideWithConfigurator(providerUrl);
 
-        providerUrl = providerUrl.addParameter(Constants.CHECK_KEY, String.valueOf(false)); // Do not check whether the connection is successful or not, always create Invoker!
+        providerUrl = providerUrl.addParameter(RemotingConstants.CHECK_KEY, String.valueOf(false)); // Do not check whether the connection is successful or not, always create Invoker!
 
         // The combination of directoryUrl and override is at the end of notify, which can't be handled here
         this.overrideDirectoryUrl = this.overrideDirectoryUrl.addParametersIfAbsent(providerUrl.getParameters()); // Merge the provider side parameters
@@ -440,7 +448,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         if ((providerUrl.getPath() == null || providerUrl.getPath()
                 .length() == 0) && Constants.DUBBO_PROTOCOL.equals(providerUrl.getProtocol())) { // Compatible version 1.0
             //fix by tony.chenl DUBBO-44
-            String path = directoryUrl.getParameter(Constants.INTERFACE_KEY);
+            String path = directoryUrl.getParameter(INTERFACE_KEY);
             if (path != null) {
                 int i = path.indexOf('/');
                 if (i >= 0) {

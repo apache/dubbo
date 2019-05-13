@@ -16,18 +16,9 @@
  */
 package org.apache.dubbo.monitor.dubbo;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.metrics.FastCompass;
-import com.alibaba.metrics.MetricLevel;
-import com.alibaba.metrics.MetricManager;
-import com.alibaba.metrics.MetricName;
-import com.alibaba.metrics.MetricRegistry;
-import com.alibaba.metrics.common.CollectLevel;
-import com.alibaba.metrics.common.MetricObject;
-import com.alibaba.metrics.common.MetricsCollector;
-import com.alibaba.metrics.common.MetricsCollectorFactory;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -43,16 +34,30 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.support.RpcUtils;
-import java.util.Collections;
-import java.util.SortedMap;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.metrics.FastCompass;
+import com.alibaba.metrics.MetricLevel;
+import com.alibaba.metrics.MetricManager;
+import com.alibaba.metrics.MetricName;
+import com.alibaba.metrics.MetricRegistry;
+import com.alibaba.metrics.common.CollectLevel;
+import com.alibaba.metrics.common.MetricObject;
+import com.alibaba.metrics.common.MetricsCollector;
+import com.alibaba.metrics.common.MetricsCollectorFactory;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL;
 
 public class MetricsFilter implements Filter {
 
@@ -65,7 +70,7 @@ public class MetricsFilter implements Filter {
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         if (exported.compareAndSet(false, true)) {
             this.protocolName = invoker.getUrl().getParameter(Constants.METRICS_PROTOCOL) == null ?
-                    Constants.DEFAULT_PROTOCOL : invoker.getUrl().getParameter(Constants.METRICS_PROTOCOL);
+                    DEFAULT_PROTOCOL : invoker.getUrl().getParameter(Constants.METRICS_PROTOCOL);
 
             Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(protocolName);
 
@@ -165,7 +170,7 @@ public class MetricsFilter implements Filter {
 
     private List<MetricObject> getThreadPoolMessage() {
         DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
-        Map<String, Object> executors = dataStore.get(Constants.EXECUTOR_SERVICE_COMPONENT_KEY);
+        Map<String, Object> executors = dataStore.get(RemotingConstants.EXECUTOR_SERVICE_COMPONENT_KEY);
 
         List<MetricObject> threadPoolMtricList = new ArrayList<>();
         for (Map.Entry<String, Object> entry : executors.entrySet()) {
@@ -185,8 +190,9 @@ public class MetricsFilter implements Filter {
     }
 
     private MetricObject value2MetricObject(String metric, Integer value, MetricLevel level) {
-        if (metric == null || value == null || level == null)
+        if (metric == null || value == null || level == null) {
             return null;
+        }
 
         return new MetricObject
                 .Builder(metric)

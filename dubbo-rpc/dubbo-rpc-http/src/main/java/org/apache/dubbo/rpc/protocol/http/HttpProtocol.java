@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.http;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.remoting.http.HttpBinder;
@@ -46,6 +47,10 @@ import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
 /**
  * HttpProtocol
@@ -123,7 +128,7 @@ public class HttpProtocol extends AbstractProxyProtocol {
                   package was renamed to 'org.apache.dubbo' in v2.7.0, so only provider versions after v2.7.0 can
                   recognize org.apache.xxx.HttpRemoteInvocation'.
                  */
-                if (Version.isRelease270OrHigher(url.getParameter(Constants.RELEASE_KEY))) {
+                if (Version.isRelease270OrHigher(url.getParameter(RELEASE_KEY))) {
                     invocation = new HttpRemoteInvocation(methodInvocation);
                 } else {
                     /*
@@ -153,22 +158,22 @@ public class HttpProtocol extends AbstractProxyProtocol {
 
         httpProxyFactoryBean.setServiceUrl(key);
         httpProxyFactoryBean.setServiceInterface(serviceType);
-        String client = url.getParameter(Constants.CLIENT_KEY);
+        String client = url.getParameter(RemotingConstants.CLIENT_KEY);
         if (StringUtils.isEmpty(client) || "simple".equals(client)) {
             SimpleHttpInvokerRequestExecutor httpInvokerRequestExecutor = new SimpleHttpInvokerRequestExecutor() {
                 @Override
                 protected void prepareConnection(HttpURLConnection con,
                                                  int contentLength) throws IOException {
                     super.prepareConnection(con, contentLength);
-                    con.setReadTimeout(url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
-                    con.setConnectTimeout(url.getParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT));
+                    con.setReadTimeout(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT));
+                    con.setConnectTimeout(url.getParameter(RemotingConstants.CONNECT_TIMEOUT_KEY, RemotingConstants.DEFAULT_CONNECT_TIMEOUT));
                 }
             };
             httpProxyFactoryBean.setHttpInvokerRequestExecutor(httpInvokerRequestExecutor);
         } else if ("commons".equals(client)) {
             HttpComponentsHttpInvokerRequestExecutor httpInvokerRequestExecutor = new HttpComponentsHttpInvokerRequestExecutor();
-            httpInvokerRequestExecutor.setReadTimeout(url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
-            httpInvokerRequestExecutor.setConnectTimeout(url.getParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT));
+            httpInvokerRequestExecutor.setReadTimeout(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT));
+            httpInvokerRequestExecutor.setConnectTimeout(url.getParameter(RemotingConstants.CONNECT_TIMEOUT_KEY, RemotingConstants.DEFAULT_CONNECT_TIMEOUT));
             httpProxyFactoryBean.setHttpInvokerRequestExecutor(httpInvokerRequestExecutor);
         } else {
             throw new IllegalStateException("Unsupported http protocol client " + client + ", only supported: simple, commons");

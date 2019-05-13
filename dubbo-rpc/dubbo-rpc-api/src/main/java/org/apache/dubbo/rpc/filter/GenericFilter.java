@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.beanutil.JavaBeanAccessor;
 import org.apache.dubbo.common.beanutil.JavaBeanDescriptor;
 import org.apache.dubbo.common.beanutil.JavaBeanSerializeUtil;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.io.UnsafeByteArrayInputStream;
@@ -46,7 +47,7 @@ import java.lang.reflect.Method;
 /**
  * GenericInvokerFilter.
  */
-@Activate(group = Constants.PROVIDER, order = -20000)
+@Activate(group = CommonConstants.PROVIDER, order = -20000)
 public class GenericFilter implements Filter {
 
     @Override

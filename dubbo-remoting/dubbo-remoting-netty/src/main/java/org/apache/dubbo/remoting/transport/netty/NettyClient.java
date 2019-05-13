@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.remoting.transport.netty;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
@@ -50,7 +50,7 @@ public class NettyClient extends AbstractClient {
     // https://issues.jboss.org/browse/NETTY-424
     private static final ChannelFactory CHANNEL_FACTORY = new NioClientSocketChannelFactory(Executors.newCachedThreadPool(new NamedThreadFactory("NettyClientBoss", true)),
             Executors.newCachedThreadPool(new NamedThreadFactory("NettyClientWorker", true)),
-            Constants.DEFAULT_IO_THREADS);
+            RemotingConstants.DEFAULT_IO_THREADS);
     private ClientBootstrap bootstrap;
 
     private volatile Channel channel; // volatile, please copy reference to use

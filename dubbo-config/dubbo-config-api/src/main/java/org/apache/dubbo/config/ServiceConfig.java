@@ -22,6 +22,7 @@ import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.bytecode.Wrapper;
 import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -61,7 +62,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.common.Constants.LOCALHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.getAvailablePort;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
@@ -435,11 +445,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
         String name = protocolConfig.getName();
         if (StringUtils.isEmpty(name)) {
-            name = Constants.DUBBO;
+            name = DUBBO;
         }
 
         Map<String, String> map = new HashMap<String, String>();
-        map.put(Constants.SIDE_KEY, Constants.PROVIDER_SIDE);
+        map.put(SIDE_KEY, PROVIDER_SIDE);
 
         appendRuntimeParameters(map);
         appendParameters(map, metrics);
@@ -508,19 +518,19 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
         if (ProtocolUtils.isGeneric(generic)) {
             map.put(Constants.GENERIC_KEY, generic);
-            map.put(Constants.METHODS_KEY, Constants.ANY_VALUE);
+            map.put(METHODS_KEY, ANY_VALUE);
         } else {
             String revision = Version.getVersion(interfaceClass, version);
             if (revision != null && revision.length() > 0) {
-                map.put(Constants.REVISION_KEY, revision);
+                map.put(REVISION_KEY, revision);
             }
 
             String[] methods = Wrapper.getWrapper(interfaceClass).getMethodNames();
             if (methods.length == 0) {
                 logger.warn("No method found in service interface " + interfaceClass.getName());
-                map.put(Constants.METHODS_KEY, Constants.ANY_VALUE);
+                map.put(METHODS_KEY, ANY_VALUE);
             } else {
-                map.put(Constants.METHODS_KEY, StringUtils.join(new HashSet<String>(Arrays.asList(methods)), ","));
+                map.put(METHODS_KEY, StringUtils.join(new HashSet<String>(Arrays.asList(methods)), ","));
             }
         }
         if (!ConfigUtils.isEmpty(token)) {
@@ -684,7 +694,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             }
         }
 
-        map.put(Constants.BIND_IP_KEY, hostToBind);
+        map.put(RemotingConstants.BIND_IP_KEY, hostToBind);
 
         // registry ip is not used for bind ip by default
         String hostToRegistry = getValueFromConfig(protocolConfig, Constants.DUBBO_IP_TO_REGISTRY);
@@ -695,7 +705,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             hostToRegistry = hostToBind;
         }
 
-        map.put(Constants.ANYHOST_KEY, String.valueOf(anyhost));
+        map.put(ANYHOST_KEY, String.valueOf(anyhost));
 
         return hostToRegistry;
     }
@@ -736,7 +746,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
 
         // save bind port, used as url's key later
-        map.put(Constants.BIND_PORT_KEY, String.valueOf(portToBind));
+        map.put(RemotingConstants.BIND_PORT_KEY, String.valueOf(portToBind));
 
         // registry port, not used as bind port by default
         String portToRegistryStr = getValueFromConfig(protocolConfig, Constants.DUBBO_PORT_TO_REGISTRY);
@@ -862,7 +872,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 );
             }
         } else {
-            String[] arr = Constants.COMMA_SPLIT_PATTERN.split(protocolIds);
+            String[] arr = COMMA_SPLIT_PATTERN.split(protocolIds);
             List<ProtocolConfig> tmpProtocols = CollectionUtils.isNotEmpty(protocols) ? protocols : new ArrayList<>();
             Arrays.stream(arr).forEach(id -> {
                 if (tmpProtocols.stream().noneMatch(prot -> prot.getId().equals(id))) {
@@ -942,7 +952,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     public void setPath(String path) {
-        checkPathName(Constants.PATH_KEY, path);
+        checkPathName(PATH_KEY, path);
         this.path = path;
     }
 
@@ -1023,6 +1033,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     @Override
     @Parameter(excluded = true)
     public String getPrefix() {
-        return Constants.DUBBO + ".service." + interfaceName;
+        return DUBBO + ".service." + interfaceName;
     }
 }

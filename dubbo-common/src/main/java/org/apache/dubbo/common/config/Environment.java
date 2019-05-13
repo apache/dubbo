@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.common.config;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.HashMap;
@@ -141,7 +141,7 @@ public class Environment {
         if (sb.length() > 0) {
             return sb.toString();
         }
-        return Constants.DUBBO;
+        return CommonConstants.DUBBO;
     }
 
     public boolean isConfigCenterFirst() {

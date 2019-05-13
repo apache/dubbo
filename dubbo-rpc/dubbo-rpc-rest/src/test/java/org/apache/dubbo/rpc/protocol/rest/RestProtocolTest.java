@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Exporter;
@@ -112,7 +113,7 @@ public class RestProtocolTest {
         ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(), server, DemoService.class);
         ApplicationModel.initProviderModel(exportUrl.getServiceKey(), providerModel);
 
-        URL nettyUrl = exportUrl.addParameter(Constants.SERVER_KEY, "netty");
+        URL nettyUrl = exportUrl.addParameter(RemotingConstants.SERVER_KEY, "netty");
         Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(new DemoServiceImpl(), DemoService.class, nettyUrl));
 
         DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
@@ -130,7 +131,7 @@ public class RestProtocolTest {
             ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(), server, DemoService.class);
             ApplicationModel.initProviderModel(exportUrl.getPathKey(), providerModel);
 
-            URL servletUrl = exportUrl.addParameter(Constants.SERVER_KEY, "servlet");
+            URL servletUrl = exportUrl.addParameter(RemotingConstants.SERVER_KEY, "servlet");
 
             protocol.export(proxy.getInvoker(server, DemoService.class, servletUrl));
         });
@@ -143,7 +144,7 @@ public class RestProtocolTest {
             ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(), server, DemoService.class);
             ApplicationModel.initProviderModel(exportUrl.getServiceKey(), providerModel);
 
-            URL nettyUrl = exportUrl.addParameter(Constants.SERVER_KEY, "netty");
+            URL nettyUrl = exportUrl.addParameter(RemotingConstants.SERVER_KEY, "netty");
             Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
 
             DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
@@ -173,7 +174,7 @@ public class RestProtocolTest {
         ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(), server, DemoService.class);
         ApplicationModel.initProviderModel(exportUrl.getServiceKey(), providerModel);
 
-        URL nettyUrl = exportUrl.addParameter(Constants.SERVER_KEY, "netty")
+        URL nettyUrl = exportUrl.addParameter(RemotingConstants.SERVER_KEY, "netty")
                 .addParameter(Constants.EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.support.LoggingFilter");
         Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
 
@@ -193,7 +194,7 @@ public class RestProtocolTest {
         ApplicationModel.initProviderModel(exportUrl.getServiceKey(), providerModel);
 
         // use RpcContextFilter
-        URL nettyUrl = exportUrl.addParameter(Constants.SERVER_KEY, "netty")
+        URL nettyUrl = exportUrl.addParameter(RemotingConstants.SERVER_KEY, "netty")
                 .addParameter(Constants.EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.RpcContextFilter");
         Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
 

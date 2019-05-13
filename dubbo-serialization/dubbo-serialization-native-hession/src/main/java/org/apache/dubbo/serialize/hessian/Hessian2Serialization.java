@@ -26,11 +26,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import static org.apache.dubbo.common.serialize.Constants.NATIVE_HESSIAN_SERIALIZATION_ID;
+
 public class Hessian2Serialization implements Serialization {
 
     @Override
     public byte getContentTypeId() {
-        return 10;
+        return NATIVE_HESSIAN_SERIALIZATION_ID;
     }
 
     @Override

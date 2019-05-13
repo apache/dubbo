@@ -26,6 +26,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+
 /**
  * AbstractServiceConfig
  *
@@ -116,7 +119,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     }
 
     public void setVersion(String version) {
-        checkKey(Constants.VERSION_KEY, version);
+        checkKey(VERSION_KEY, version);
         this.version = version;
     }
 
@@ -125,7 +128,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     }
 
     public void setGroup(String group) {
-        checkKey(Constants.GROUP_KEY, group);
+        checkKey(GROUP_KEY, group);
         this.group = group;
     }
 

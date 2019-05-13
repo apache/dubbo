@@ -17,6 +17,7 @@
 package org.apache.dubbo.validation.filter;
 
 import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.rpc.Filter;
@@ -55,7 +56,7 @@ import org.apache.dubbo.validation.Validator;
  * @see Filter
  * @see org.apache.dubbo.validation.support.AbstractValidation
  */
-@Activate(group = {Constants.CONSUMER, Constants.PROVIDER}, value = Constants.VALIDATION_KEY, order = 10000)
+@Activate(group = {CommonConstants.CONSUMER, CommonConstants.PROVIDER}, value = Constants.VALIDATION_KEY, order = 10000)
 public class ValidationFilter implements Filter {
 
     private Validation validation;

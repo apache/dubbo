@@ -39,6 +39,8 @@ import org.apache.dubbo.rpc.support.RpcUtils;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.CallbackServiceCodec.encodeInvocationArgument;
 
 /**
@@ -73,12 +75,13 @@ public class DubboCodec extends ExchangeCodec {
             byte status = header[3];
             res.setStatus(status);
             try {
-                ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
                 if (status == Response.OK) {
                     Object data;
                     if (res.isHeartbeat()) {
+                        ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
                         data = decodeHeartbeatData(channel, in);
                     } else if (res.isEvent()) {
+                        ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
                         data = decodeEventData(channel, in);
                     } else {
                         DecodeableRpcResult result;
@@ -97,6 +100,7 @@ public class DubboCodec extends ExchangeCodec {
                     }
                     res.setResult(data);
                 } else {
+                    ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
                     res.setErrorMessage(in.readUTF());
                 }
             } catch (Throwable t) {
@@ -173,8 +177,8 @@ public class DubboCodec extends ExchangeCodec {
         RpcInvocation inv = (RpcInvocation) data;
 
         out.writeUTF(version);
-        out.writeUTF(inv.getAttachment(Constants.PATH_KEY));
-        out.writeUTF(inv.getAttachment(Constants.VERSION_KEY));
+        out.writeUTF(inv.getAttachment(PATH_KEY));
+        out.writeUTF(inv.getAttachment(VERSION_KEY));
 
         out.writeUTF(inv.getMethodName());
         out.writeUTF(ReflectUtils.getDesc(inv.getParameterTypes()));

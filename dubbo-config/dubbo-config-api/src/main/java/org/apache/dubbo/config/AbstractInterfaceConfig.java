@@ -54,6 +54,16 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
 /**
@@ -298,16 +308,16 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             for (RegistryConfig config : registries) {
                 String address = config.getAddress();
                 if (StringUtils.isEmpty(address)) {
-                    address = Constants.ANYHOST_VALUE;
+                    address = ANYHOST_VALUE;
                 }
                 if (!RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
                     Map<String, String> map = new HashMap<String, String>();
                     appendParameters(map, application);
                     appendParameters(map, config);
-                    map.put(Constants.PATH_KEY, RegistryService.class.getName());
+                    map.put(PATH_KEY, RegistryService.class.getName());
                     appendRuntimeParameters(map);
-                    if (!map.containsKey(Constants.PROTOCOL_KEY)) {
-                        map.put(Constants.PROTOCOL_KEY, Constants.DUBBO_PROTOCOL);
+                    if (!map.containsKey(PROTOCOL_KEY)) {
+                        map.put(PROTOCOL_KEY, Constants.DUBBO_PROTOCOL);
                     }
                     List<URL> urls = UrlUtils.parseURLs(address, map);
 
@@ -337,7 +347,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected URL loadMonitor(URL registryURL) {
         checkMonitor();
         Map<String, String> map = new HashMap<String, String>();
-        map.put(Constants.INTERFACE_KEY, MonitorService.class.getName());
+        map.put(INTERFACE_KEY, MonitorService.class.getName());
         appendRuntimeParameters(map);
         //set ip
         String hostToRegistry = ConfigUtils.getSystemProperty(Constants.DUBBO_IP_TO_REGISTRY);
@@ -356,18 +366,18 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             address = sysaddress;
         }
         if (ConfigUtils.isNotEmpty(address)) {
-            if (!map.containsKey(Constants.PROTOCOL_KEY)) {
+            if (!map.containsKey(PROTOCOL_KEY)) {
                 if (getExtensionLoader(MonitorFactory.class).hasExtension(Constants.LOGSTAT_PROTOCOL)) {
-                    map.put(Constants.PROTOCOL_KEY, Constants.LOGSTAT_PROTOCOL);
+                    map.put(PROTOCOL_KEY, Constants.LOGSTAT_PROTOCOL);
                 } else {
-                    map.put(Constants.PROTOCOL_KEY, Constants.DUBBO_PROTOCOL);
+                    map.put(PROTOCOL_KEY, Constants.DUBBO_PROTOCOL);
                 }
             }
             return UrlUtils.parseURL(address, map);
         } else if (Constants.REGISTRY_PROTOCOL.equals(monitor.getProtocol()) && registryURL != null) {
             return URLBuilder.from(registryURL)
                     .setProtocol(Constants.DUBBO_PROTOCOL)
-                    .addParameter(Constants.PROTOCOL_KEY, Constants.REGISTRY_PROTOCOL)
+                    .addParameter(PROTOCOL_KEY, Constants.REGISTRY_PROTOCOL)
                     .addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map))
                     .build();
         }
@@ -376,10 +386,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     static void appendRuntimeParameters(Map<String, String> map) {
         map.put(Constants.DUBBO_VERSION_KEY, Version.getProtocolVersion());
-        map.put(Constants.RELEASE_KEY, Version.getVersion());
-        map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
+        map.put(RELEASE_KEY, Version.getVersion());
+        map.put(TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
         if (ConfigUtils.getPid() > 0) {
-            map.put(Constants.PID_KEY, String.valueOf(ConfigUtils.getPid()));
+            map.put(PID_KEY, String.valueOf(ConfigUtils.getPid()));
         }
     }
 
@@ -519,7 +529,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             configedRegistries.addAll(getSubProperties(Environment.getInstance().getAppExternalConfigurationMap(),
                     Constants.REGISTRIES_SUFFIX));
 
-            registryIds = String.join(Constants.COMMA_SEPARATOR, configedRegistries);
+            registryIds = String.join(COMMA_SEPARATOR, configedRegistries);
         }
 
         if (StringUtils.isEmpty(registryIds)) {
@@ -535,7 +545,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 );
             }
         } else {
-            String[] ids = Constants.COMMA_SPLIT_PATTERN.split(registryIds);
+            String[] ids = COMMA_SPLIT_PATTERN.split(registryIds);
             List<RegistryConfig> tmpRegistries = CollectionUtils.isNotEmpty(registries) ? registries : new ArrayList<>();
             Arrays.stream(ids).forEach(id -> {
                 if (tmpRegistries.stream().noneMatch(reg -> reg.getId().equals(id))) {
@@ -678,7 +688,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setFilter(String filter) {
-        checkMultiExtension(Filter.class, Constants.FILE_KEY, filter);
+        checkMultiExtension(Filter.class, FILE_KEY, filter);
         this.filter = filter;
     }
 
