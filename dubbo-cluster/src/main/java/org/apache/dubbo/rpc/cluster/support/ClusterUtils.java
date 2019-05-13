@@ -22,9 +22,8 @@ import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ALIVE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -86,15 +85,9 @@ public class ClusterUtils {
             map.remove(DEFAULT_KEY_PREFIX + ASYNC_KEY);
 
             // remove method async entry.
-            Set<String> methodAsyncKey = new HashSet<>();
-            for (String key : map.keySet()) {
-                if (key != null && key.endsWith("." + ASYNC_KEY)) {
-                    methodAsyncKey.add(key);
-                }
-            }
-            for (String needRemove : methodAsyncKey) {
-                map.remove(needRemove);
-            }
+            map = map.entrySet().stream().filter(
+                    entry -> entry.getKey() == null || !entry.getKey().endsWith("." + ASYNC_KEY))
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry:: getValue));
         }
 
         if (localMap != null && localMap.size() > 0) {
