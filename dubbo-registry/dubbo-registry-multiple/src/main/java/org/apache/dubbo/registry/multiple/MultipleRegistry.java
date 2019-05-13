@@ -22,6 +22,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
@@ -45,8 +46,8 @@ import java.util.function.Supplier;
 public class MultipleRegistry implements Registry {
 
     private static final Logger logger = LoggerFactory.getLogger(MultipleRegistry.class);
-    private static final String REGISTRY_FOR_SERVICE = "for-service";
-    private static final String REGISTRY_FOR_REFERENCE = "for-reference";
+    private static final String REGISTRY_FOR_SERVICE = "service-registry";
+    private static final String REGISTRY_FOR_REFERENCE = "reference-registry";
 
     private RegistryFactory registryFactory = ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
     private Map<String, Registry> serviceRegistries = new HashMap<String, Registry>(4);
@@ -62,6 +63,7 @@ public class MultipleRegistry implements Registry {
     public MultipleRegistry(URL url) {
         this.registryUrl = url;
         this.applicationName = url.getParameter(Constants.APPLICATION_KEY);
+        init();
         checkApplicationName(this.applicationName);
         // This urls contain parameter and it donot inherit from the parameter of url in MultipleRegistry
         origServiceRegistryURLs = url.getParameter(REGISTRY_FOR_SERVICE, new ArrayList<String>());
@@ -160,11 +162,14 @@ public class MultipleRegistry implements Registry {
         List<URL> urls = new ArrayList<URL>();
         for (Registry registry : referenceRegistries.values()) {
             List<URL> tmpUrls = registry.lookup(url);
-            if (tmpUrls != null && !tmpUrls.isEmpty()) {
+            if (!CollectionUtils.isEmpty(tmpUrls)) {
                 urls.addAll(tmpUrls);
             }
         }
         return urls;
+    }
+
+    protected void init(){
     }
 
     protected List<String> filterServiceRegistry(List<String> serviceRegistryURLs) {
@@ -176,6 +181,7 @@ public class MultipleRegistry implements Registry {
     }
 
     protected synchronized void refreshServiceRegistry(List<String> serviceRegistryURLs) {
+        this.effectServiceRegistryURLs = serviceRegistryURLs;
         doRefreshRegistry(serviceRegistryURLs, serviceRegistries, () -> this.getRegisteredURLs(),
                 (registry, registeredURLs) -> {
                     for (URL url : (Set<URL>) registeredURLs) {
@@ -193,6 +199,7 @@ public class MultipleRegistry implements Registry {
     }
 
     protected synchronized void refreshReferenceRegistry(List<String> referenceRegistryURLs) {
+        this.effectReferenceRegistryURLs = referenceRegistryURLs;
         doRefreshRegistry(referenceRegistryURLs, referenceRegistries, () -> this.getSubscribedURLMap(),
                 (registry, registeredURLs) -> {
                     for (Map.Entry<URL, Set<NotifyListener>> urlNotifyListenerMap : ((Map<URL, Set<NotifyListener>>) registeredURLs).entrySet()) {
@@ -257,7 +264,7 @@ public class MultipleRegistry implements Registry {
                 removedRegistries.add(origRegistryEntry.getValue());
             }
         }
-        // unregister by remove registry
+        // unregister/unsubscribe by remove registry
         for (Registry removedRegistry : removedRegistries) {
             leftConsumer.accept(removedRegistry, registeredURLs);
         }
@@ -271,7 +278,9 @@ public class MultipleRegistry implements Registry {
             Registry tmpRegistry = iterator.next();
             if (tmpRegistry instanceof AbstractRegistry) {
                 AbstractRegistry tmpAbstractRegistry = (AbstractRegistry) tmpRegistry;
-                return tmpAbstractRegistry.getRegistered();
+                if (!CollectionUtils.isEmpty(tmpAbstractRegistry.getRegistered())) {
+                    return tmpAbstractRegistry.getRegistered();
+                }
             }
         }
         return Collections.emptySet();
@@ -284,10 +293,12 @@ public class MultipleRegistry implements Registry {
             Registry tmpRegistry = iterator.next();
             if (tmpRegistry instanceof AbstractRegistry) {
                 AbstractRegistry tmpAbstractRegistry = (AbstractRegistry) tmpRegistry;
-                return tmpAbstractRegistry.getSubscribed();
+                if (CollectionUtils.isEmptyMap(tmpAbstractRegistry.getSubscribed())) {
+                    return tmpAbstractRegistry.getSubscribed();
+                }
             }
         }
-        return Collections.EMPTY_MAP;
+        return null;
     }
 
     protected void checkApplicationName(String applicationName) {
@@ -311,5 +322,13 @@ public class MultipleRegistry implements Registry {
 
     public List<String> getOrigReferenceRegistryURLs() {
         return origReferenceRegistryURLs;
+    }
+
+    public List<String> getEffectServiceRegistryURLs() {
+        return effectServiceRegistryURLs;
+    }
+
+    public List<String> getEffectReferenceRegistryURLs() {
+        return effectReferenceRegistryURLs;
     }
 }
