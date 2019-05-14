@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metadata.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -56,6 +55,13 @@ import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.metadata.support.Constants.CYCLE_REPORT_KEY;
+import static org.apache.dubbo.metadata.support.Constants.DEFAULT_METADATA_REPORT_CYCLE_REPORT;
+import static org.apache.dubbo.metadata.support.Constants.DEFAULT_METADATA_REPORT_RETRY_PERIOD;
+import static org.apache.dubbo.metadata.support.Constants.DEFAULT_METADATA_REPORT_RETRY_TIMES;
+import static org.apache.dubbo.metadata.support.Constants.RETRY_PERIOD_KEY;
+import static org.apache.dubbo.metadata.support.Constants.RETRY_TIMES_KEY;
+import static org.apache.dubbo.metadata.support.Constants.SYNC_REPORT_KEY;
 
 /**
  *
@@ -102,11 +108,11 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
         this.file = file;
         loadProperties();
-        syncReport = reportServerURL.getParameter(Constants.SYNC_REPORT_KEY, false);
-        metadataReportRetry = new MetadataReportRetry(reportServerURL.getParameter(Constants.RETRY_TIMES_KEY, Constants.DEFAULT_METADATA_REPORT_RETRY_TIMES),
-                reportServerURL.getParameter(Constants.RETRY_PERIOD_KEY, Constants.DEFAULT_METADATA_REPORT_RETRY_PERIOD));
+        syncReport = reportServerURL.getParameter(SYNC_REPORT_KEY, false);
+        metadataReportRetry = new MetadataReportRetry(reportServerURL.getParameter(RETRY_TIMES_KEY, DEFAULT_METADATA_REPORT_RETRY_TIMES),
+                reportServerURL.getParameter(RETRY_PERIOD_KEY, DEFAULT_METADATA_REPORT_RETRY_PERIOD));
         // cycle report the data switch
-        if (reportServerURL.getParameter(Constants.CYCLE_REPORT_KEY, Constants.DEFAULT_METADATA_REPORT_CYCLE_REPORT)) {
+        if (reportServerURL.getParameter(CYCLE_REPORT_KEY, DEFAULT_METADATA_REPORT_CYCLE_REPORT)) {
             ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboMetadataReportTimer", true));
             scheduler.scheduleAtFixedRate(this::publishAll, calculateStartTime(), ONE_DAY_IN_MIll, TimeUnit.MILLISECONDS);
         }
