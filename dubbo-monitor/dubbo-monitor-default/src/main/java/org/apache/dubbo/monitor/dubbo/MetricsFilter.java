@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.monitor.dubbo;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -58,6 +57,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL;
+import static org.apache.dubbo.common.constants.MonitorConstants.DUBBO_CONSUMER;
+import static org.apache.dubbo.common.constants.MonitorConstants.DUBBO_CONSUMER_METHOD;
+import static org.apache.dubbo.common.constants.MonitorConstants.DUBBO_GROUP;
+import static org.apache.dubbo.common.constants.MonitorConstants.DUBBO_PROVIDER;
+import static org.apache.dubbo.common.constants.MonitorConstants.DUBBO_PROVIDER_METHOD;
+import static org.apache.dubbo.common.constants.MonitorConstants.METHOD;
+import static org.apache.dubbo.common.constants.MonitorConstants.METRICS_PORT;
+import static org.apache.dubbo.common.constants.MonitorConstants.METRICS_PROTOCOL;
+import static org.apache.dubbo.common.constants.MonitorConstants.SERVICE;
 
 public class MetricsFilter implements Filter {
 
@@ -69,13 +77,13 @@ public class MetricsFilter implements Filter {
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         if (exported.compareAndSet(false, true)) {
-            this.protocolName = invoker.getUrl().getParameter(Constants.METRICS_PROTOCOL) == null ?
-                    DEFAULT_PROTOCOL : invoker.getUrl().getParameter(Constants.METRICS_PROTOCOL);
+            this.protocolName = invoker.getUrl().getParameter(METRICS_PROTOCOL) == null ?
+                    DEFAULT_PROTOCOL : invoker.getUrl().getParameter(METRICS_PROTOCOL);
 
             Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(protocolName);
 
-            this.port = invoker.getUrl().getParameter(Constants.METRICS_PORT) == null ?
-                    protocol.getDefaultPort() : Integer.valueOf(invoker.getUrl().getParameter(Constants.METRICS_PORT));
+            this.port = invoker.getUrl().getParameter(METRICS_PORT) == null ?
+                    protocol.getDefaultPort() : Integer.valueOf(invoker.getUrl().getParameter(METRICS_PORT));
 
             Invoker<MetricsService> metricsInvoker = initMetricsInvoker();
 
@@ -142,23 +150,23 @@ public class MetricsFilter implements Filter {
         MetricName global;
         MetricName method;
         if (isProvider) {
-            global = new MetricName(Constants.DUBBO_PROVIDER, MetricLevel.MAJOR);
-            method = new MetricName(Constants.DUBBO_PROVIDER_METHOD, new HashMap<String, String>(4) {
+            global = new MetricName(DUBBO_PROVIDER, MetricLevel.MAJOR);
+            method = new MetricName(DUBBO_PROVIDER_METHOD, new HashMap<String, String>(4) {
                 {
-                    put(Constants.SERVICE, serviceName);
-                    put(Constants.METHOD, methodName);
+                    put(SERVICE, serviceName);
+                    put(METHOD, methodName);
                 }
             }, MetricLevel.NORMAL);
         } else {
-            global = new MetricName(Constants.DUBBO_CONSUMER, MetricLevel.MAJOR);
-            method = new MetricName(Constants.DUBBO_CONSUMER_METHOD, new HashMap<String, String>(4) {
+            global = new MetricName(DUBBO_CONSUMER, MetricLevel.MAJOR);
+            method = new MetricName(DUBBO_CONSUMER_METHOD, new HashMap<String, String>(4) {
                 {
-                    put(Constants.SERVICE, serviceName);
-                    put(Constants.METHOD, methodName);
+                    put(SERVICE, serviceName);
+                    put(METHOD, methodName);
                 }
             }, MetricLevel.NORMAL);
         }
-        setCompassQuantity(Constants.DUBBO_GROUP, result, duration, global, method);
+        setCompassQuantity(DUBBO_GROUP, result, duration, global, method);
     }
 
     private void setCompassQuantity(String groupName, String result, long duration, MetricName... metricNames) {

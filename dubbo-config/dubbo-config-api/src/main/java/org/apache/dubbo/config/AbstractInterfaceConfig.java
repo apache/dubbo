@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
+import static org.apache.dubbo.common.constants.ClusterConstants.TAG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
@@ -64,17 +65,18 @@ import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
+import static org.apache.dubbo.common.constants.MonitorConstants.LOGSTAT_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBE_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.INVOKER_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.LOCAL_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.RETURN_PREFIX;
-import static org.apache.dubbo.common.constants.RpcConstants.THROW_PREFIX;
 import static org.apache.dubbo.common.constants.RpcConstants.PROXY_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.REFERENCE_FILTER_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.INVOKER_LISTENER_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.RETURN_PREFIX;
+import static org.apache.dubbo.common.constants.RpcConstants.THROW_PREFIX;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
 /**
@@ -378,8 +380,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
         if (ConfigUtils.isNotEmpty(address)) {
             if (!map.containsKey(PROTOCOL_KEY)) {
-                if (getExtensionLoader(MonitorFactory.class).hasExtension(Constants.LOGSTAT_PROTOCOL)) {
-                    map.put(PROTOCOL_KEY, Constants.LOGSTAT_PROTOCOL);
+                if (getExtensionLoader(MonitorFactory.class).hasExtension(LOGSTAT_PROTOCOL)) {
+                    map.put(PROTOCOL_KEY, LOGSTAT_PROTOCOL);
                 } else {
                     map.put(PROTOCOL_KEY, Constants.DUBBO_PROTOCOL);
                 }
@@ -864,7 +866,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         this.metrics = metrics;
     }
 
-    @Parameter(key = Constants.TAG_KEY, useKeyAsProperty = false)
+    @Parameter(key = TAG_KEY, useKeyAsProperty = false)
     public String getTag() {
         return tag;
     }

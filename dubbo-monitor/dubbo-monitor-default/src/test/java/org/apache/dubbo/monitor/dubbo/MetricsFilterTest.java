@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.monitor.dubbo;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.monitor.MetricsService;
@@ -50,6 +49,13 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.MonitorConstants.DUBBO_CONSUMER;
+import static org.apache.dubbo.common.constants.MonitorConstants.DUBBO_CONSUMER_METHOD;
+import static org.apache.dubbo.common.constants.MonitorConstants.DUBBO_GROUP;
+import static org.apache.dubbo.common.constants.MonitorConstants.DUBBO_PROVIDER;
+import static org.apache.dubbo.common.constants.MonitorConstants.DUBBO_PROVIDER_METHOD;
+import static org.apache.dubbo.common.constants.MonitorConstants.METHOD;
+import static org.apache.dubbo.common.constants.MonitorConstants.SERVICE;
 
 public class MetricsFilterTest {
 
@@ -112,11 +118,11 @@ public class MetricsFilterTest {
         for (int i = 0; i < 100; i++) {
             metricsFilter.invoke(serviceInvoker, invocation);
         }
-        FastCompass dubboClient = metricManager.getFastCompass(Constants.DUBBO_GROUP, new MetricName(Constants.DUBBO_CONSUMER, MetricLevel.MAJOR));
-        FastCompass dubboMethod = metricManager.getFastCompass(Constants.DUBBO_GROUP, new MetricName(Constants.DUBBO_CONSUMER_METHOD, new HashMap<String, String>(4) {
+        FastCompass dubboClient = metricManager.getFastCompass(DUBBO_GROUP, new MetricName(DUBBO_CONSUMER, MetricLevel.MAJOR));
+        FastCompass dubboMethod = metricManager.getFastCompass(DUBBO_GROUP, new MetricName(DUBBO_CONSUMER_METHOD, new HashMap<String, String>(4) {
             {
-                put(Constants.SERVICE, "org.apache.dubbo.monitor.dubbo.service.DemoService");
-                put(Constants.METHOD, "void sayName(Integer)");
+                put(SERVICE, "org.apache.dubbo.monitor.dubbo.service.DemoService");
+                put(METHOD, "void sayName(Integer)");
             }
         }, MetricLevel.NORMAL));
         long timestamp = System.currentTimeMillis() / 5000 * 5000;
@@ -142,11 +148,11 @@ public class MetricsFilterTest {
                 //ignore
             }
         }
-        FastCompass dubboClient = metricManager.getFastCompass(Constants.DUBBO_GROUP, new MetricName(Constants.DUBBO_CONSUMER, MetricLevel.MAJOR));
-        FastCompass dubboMethod = metricManager.getFastCompass(Constants.DUBBO_GROUP, new MetricName(Constants.DUBBO_CONSUMER_METHOD, new HashMap<String, String>(4) {
+        FastCompass dubboClient = metricManager.getFastCompass(DUBBO_GROUP, new MetricName(DUBBO_CONSUMER, MetricLevel.MAJOR));
+        FastCompass dubboMethod = metricManager.getFastCompass(DUBBO_GROUP, new MetricName(DUBBO_CONSUMER_METHOD, new HashMap<String, String>(4) {
             {
-                put(Constants.SERVICE, "org.apache.dubbo.monitor.dubbo.service.DemoService");
-                put(Constants.METHOD, "void timeoutException()");
+                put(SERVICE, "org.apache.dubbo.monitor.dubbo.service.DemoService");
+                put(METHOD, "void timeoutException()");
             }
         }, MetricLevel.NORMAL));
         long timestamp = System.currentTimeMillis() / 5000 * 5000;
@@ -167,11 +173,11 @@ public class MetricsFilterTest {
         for (int i = 0; i < 100; i++) {
             metricsFilter.invoke(serviceInvoker, invocation);
         }
-        FastCompass dubboClient = metricManager.getFastCompass(Constants.DUBBO_GROUP, new MetricName(Constants.DUBBO_PROVIDER, MetricLevel.MAJOR));
-        FastCompass dubboMethod = metricManager.getFastCompass(Constants.DUBBO_GROUP, new MetricName(Constants.DUBBO_PROVIDER_METHOD, new HashMap<String, String>(4) {
+        FastCompass dubboClient = metricManager.getFastCompass(DUBBO_GROUP, new MetricName(DUBBO_PROVIDER, MetricLevel.MAJOR));
+        FastCompass dubboMethod = metricManager.getFastCompass(DUBBO_GROUP, new MetricName(DUBBO_PROVIDER_METHOD, new HashMap<String, String>(4) {
             {
-                put(Constants.SERVICE, "org.apache.dubbo.monitor.dubbo.service.DemoService");
-                put(Constants.METHOD, "void sayName()");
+                put(SERVICE, "org.apache.dubbo.monitor.dubbo.service.DemoService");
+                put(METHOD, "void sayName()");
             }
         }, MetricLevel.NORMAL));
         long timestamp = System.currentTimeMillis() / 5000 * 5000;
@@ -200,7 +206,7 @@ public class MetricsFilterTest {
         Protocol protocol = new DubboProtocol();
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":20880/" + MetricsService.class.getName());
         Invoker<MetricsService> invoker = protocol.refer(MetricsService.class, url);
-        invocation = new RpcInvocation("getMetricsByGroup", new Class<?>[]{String.class}, new Object[]{Constants.DUBBO_GROUP});
+        invocation = new RpcInvocation("getMetricsByGroup", new Class<?>[]{String.class}, new Object[]{DUBBO_GROUP});
         try {
             Thread.sleep(5000);
         } catch (Exception e) {
@@ -252,7 +258,7 @@ public class MetricsFilterTest {
         Protocol protocol = new DubboProtocol();
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":20880/" + MetricsService.class.getName());
         Invoker<MetricsService> invoker = protocol.refer(MetricsService.class, url);
-        Invocation invocation = new RpcInvocation("getMetricsByGroup", new Class<?>[]{String.class}, new Object[]{Constants.DUBBO_GROUP});
+        Invocation invocation = new RpcInvocation("getMetricsByGroup", new Class<?>[]{String.class}, new Object[]{DUBBO_GROUP});
         try {
             Thread.sleep(15000);
         } catch (Exception e) {

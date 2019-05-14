@@ -39,10 +39,15 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.ADDRESS_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.FORCE_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.PRIORITY_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.RULE_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.RUNTIME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
 
 /**
  * ConditionRouter
@@ -66,10 +71,10 @@ public class ConditionRouter extends AbstractRouter {
 
     public ConditionRouter(URL url) {
         this.url = url;
-        this.priority = url.getParameter(Constants.PRIORITY_KEY, 0);
-        this.force = url.getParameter(Constants.FORCE_KEY, false);
+        this.priority = url.getParameter(PRIORITY_KEY, 0);
+        this.force = url.getParameter(FORCE_KEY, false);
         this.enabled = url.getParameter(ENABLED_KEY, true);
-        init(url.getParameterAndDecoded(Constants.RULE_KEY));
+        init(url.getParameterAndDecoded(RULE_KEY));
     }
 
     public void init(String rule) {
@@ -188,7 +193,7 @@ public class ConditionRouter extends AbstractRouter {
             if (!result.isEmpty()) {
                 return result;
             } else if (force) {
-                logger.warn("The route result is empty and force execute. consumer: " + NetUtils.getLocalHost() + ", service: " + url.getServiceKey() + ", router: " + url.getParameterAndDecoded(Constants.RULE_KEY));
+                logger.warn("The route result is empty and force execute. consumer: " + NetUtils.getLocalHost() + ", service: " + url.getServiceKey() + ", router: " + url.getParameterAndDecoded(RULE_KEY));
                 return result;
             }
         } catch (Throwable t) {
@@ -201,7 +206,7 @@ public class ConditionRouter extends AbstractRouter {
     public boolean isRuntime() {
         // We always return true for previously defined Router, that is, old Router doesn't support cache anymore.
 //        return true;
-        return this.url.getParameter(Constants.RUNTIME_KEY, false);
+        return this.url.getParameter(RUNTIME_KEY, false);
     }
 
     @Override
@@ -226,7 +231,7 @@ public class ConditionRouter extends AbstractRouter {
             //get real invoked method name from invocation
             if (invocation != null && (METHOD_KEY.equals(key) || METHODS_KEY.equals(key))) {
                 sampleValue = invocation.getMethodName();
-            } else if (Constants.ADDRESS_KEY.equals(key)) {
+            } else if (ADDRESS_KEY.equals(key)) {
                 sampleValue = url.getAddress();
             } else if (Constants.HOST_KEY.equals(key)) {
                 sampleValue = url.getHost();
