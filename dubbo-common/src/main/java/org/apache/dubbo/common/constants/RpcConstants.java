@@ -129,6 +129,8 @@ public interface RpcConstants {
 
     String GENERIC_SERIALIZATION_DEFAULT = "true";
 
+    String GENERIC_RAW_RETURN = "raw.return";
+
     String GENERIC_SERIALIZATION_BEAN = "bean";
 
     String GENERIC_SERIALIZATION_PROTOBUF = "protobuf-json";
