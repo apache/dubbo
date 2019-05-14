@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.ClusterConstants.CLUSTER_STICKY_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
@@ -63,7 +64,7 @@ public class DubboRegistryFactory extends AbstractRegistryFactory {
                 .setPath(RegistryService.class.getName())
                 .removeParameter(EXPORT_KEY).removeParameter(REFER_KEY)
                 .addParameter(INTERFACE_KEY, RegistryService.class.getName())
-                .addParameter(Constants.CLUSTER_STICKY_KEY, "true")
+                .addParameter(CLUSTER_STICKY_KEY, "true")
                 .addParameter(LAZY_CONNECT_KEY, "true")
                 .addParameter(RemotingConstants.RECONNECT_KEY, "false")
                 .addParameterIfAbsent(TIMEOUT_KEY, "10000")

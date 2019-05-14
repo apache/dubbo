@@ -16,7 +16,8 @@
  */
 package org.apache.dubbo.config.annotation;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.ClusterConstants;
+import org.apache.dubbo.common.constants.RpcConstants;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Filter;
 
@@ -27,7 +28,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.apache.dubbo.common.constants.RpcConstants;
+import static org.apache.dubbo.common.constants.ClusterConstants.DEFAULT_LOADBALANCE;
+import static org.apache.dubbo.common.constants.ClusterConstants.DEFAULT_RETRIES;
 
 /**
  * Service annotation
@@ -171,16 +173,16 @@ public @interface Service {
     /**
      * Service invocation retry times
      *
-     * @see Constants#DEFAULT_RETRIES
+     * @see ClusterConstants#DEFAULT_RETRIES
      */
-    int retries() default Constants.DEFAULT_RETRIES;
+    int retries() default DEFAULT_RETRIES;
 
     /**
      * Load balance strategy, legal values include: random, roundrobin, leastactive
      *
-     * @see Constants#DEFAULT_LOADBALANCE
+     * @see ClusterConstants#DEFAULT_LOADBALANCE
      */
-    String loadbalance() default Constants.DEFAULT_LOADBALANCE;
+    String loadbalance() default DEFAULT_LOADBALANCE;
 
     /**
      * Whether to enable async invocation, default value is false

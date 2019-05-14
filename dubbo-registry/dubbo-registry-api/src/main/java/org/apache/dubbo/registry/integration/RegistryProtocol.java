@@ -52,6 +52,12 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
+import static org.apache.dubbo.common.Constants.ACCEPT_FOREIGN_IP;
+import static org.apache.dubbo.common.Constants.EXPORT_KEY;
+import static org.apache.dubbo.common.Constants.QOS_ENABLE;
+import static org.apache.dubbo.common.Constants.QOS_PORT;
+import static org.apache.dubbo.common.Constants.REFER_KEY;
+import static org.apache.dubbo.common.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.common.constants.ConfigConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.ConfigConstants.EXPORT_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.INTERFACES;
@@ -77,6 +83,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.ConfigConstants.CLUSTER_KEY;
+import static org.apache.dubbo.common.constants.MonitorConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_SUFFIX;
@@ -101,6 +108,7 @@ import static org.apache.dubbo.common.constants.RemotingConstants.SERIALIZATION_
 import static org.apache.dubbo.common.constants.RpcConstants.CONNECTIONS_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.DEPRECATED_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.INTERFACES;
 import static org.apache.dubbo.common.constants.RpcConstants.MOCK_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.TOKEN_KEY;
 import static org.apache.dubbo.common.utils.UrlUtils.classifyUrls;

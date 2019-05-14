@@ -14,23 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.xml.rpc.protocol.xmlrpc;
 
-package org.apache.dubbo.common.constants;
+public class XmlRpcServiceImpl implements XmlRpcService {
+    private boolean called;
 
-public interface MetadataReportConstants {
-    String METADATA_REPORT_KEY = "metadata";
+    public String sayHello(String name) {
+        called = true;
+        return "Hello, " + name;
+    }
 
-    String RETRY_TIMES_KEY = "retry.times";
+    public boolean isCalled() {
+        return called;
+    }
 
-    Integer DEFAULT_METADATA_REPORT_RETRY_TIMES = 100;
+    public void timeOut(int millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 
-    String RETRY_PERIOD_KEY = "retry.period";
+    public String customException() {
+        throw new MyException("custom exception");
+    }
 
-    Integer DEFAULT_METADATA_REPORT_RETRY_PERIOD = 3000;
+    static class MyException extends RuntimeException{
 
-    String SYNC_REPORT_KEY = "sync.report";
+        private static final long serialVersionUID = -3051041116483629056L;
 
-    String CYCLE_REPORT_KEY = "cycle.report";
-
-    Boolean DEFAULT_METADATA_REPORT_CYCLE_REPORT = true;
+        public MyException(String message) {
+            super(message);
+        }
+    }
 }

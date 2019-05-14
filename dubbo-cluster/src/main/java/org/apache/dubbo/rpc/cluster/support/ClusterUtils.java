@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -26,6 +25,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static org.apache.dubbo.common.constants.ClusterConstants.TAG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ALIVE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CORE_THREADS_KEY;
@@ -40,10 +40,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.REFERENCE_FILTER_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.INVOKER_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.ASYNC_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.INVOKER_LISTENER_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.REFERENCE_FILTER_KEY;
 
 /**
  * ClusterUtils
@@ -119,7 +119,7 @@ public class ClusterUtils {
             reserveRemoteValue(VERSION_KEY, map, remoteMap);
             reserveRemoteValue(METHODS_KEY, map, remoteMap);
             reserveRemoteValue(TIMESTAMP_KEY, map, remoteMap);
-            reserveRemoteValue(Constants.TAG_KEY, map, remoteMap);
+            reserveRemoteValue(TAG_KEY, map, remoteMap);
             // TODO, for compatibility consideration, we cannot simply change the value behind APPLICATION_KEY from Consumer to Provider. So just add an extra key here.
             // Reserve application name from provider.
             map.put(REMOTE_APPLICATION_KEY, remoteMap.get(APPLICATION_KEY));
