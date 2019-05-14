@@ -104,6 +104,11 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
+    public String getConfigs(String key, String group, long timeout) throws IllegalStateException {
+        return getConfig(key, group, timeout);
+    }
+
+    @Override
     public Object getInternalProperty(String key) {
         logger.info("get config from: " + key);
         Response<GetValue> response = getValue(key);
