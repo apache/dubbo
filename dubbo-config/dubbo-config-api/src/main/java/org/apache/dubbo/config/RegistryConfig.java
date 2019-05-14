@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
@@ -25,6 +24,11 @@ import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.PASSWORD_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.REGISTRIES_SUFFIX;
+import static org.apache.dubbo.common.constants.ConfigConstants.SHUTDOWN_WAIT_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.USERNAME_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.ZOOKEEPER_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.EXTRA_KEYS_KEY;
 
 /**
@@ -195,7 +199,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setUsername(String username) {
-        checkName(Constants.USERNAME_KEY, username);
+        checkName(USERNAME_KEY, username);
         this.username = username;
     }
 
@@ -204,7 +208,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setPassword(String password) {
-        checkLength(Constants.PASSWORD_KEY, password);
+        checkLength(PASSWORD_KEY, password);
         this.password = password;
     }
 
@@ -227,7 +231,7 @@ public class RegistryConfig extends AbstractConfig {
     public void setWait(Integer wait) {
         this.wait = wait;
         if (wait != null && wait > 0) {
-            System.setProperty(Constants.SHUTDOWN_WAIT_KEY, String.valueOf(wait));
+            System.setProperty(SHUTDOWN_WAIT_KEY, String.valueOf(wait));
         }
     }
 
@@ -408,15 +412,15 @@ public class RegistryConfig extends AbstractConfig {
         if (!isValid()) {
             return false;
         }
-        return Constants.ZOOKEEPER_PROTOCOL.equals(getProtocol())
-                || getAddress().startsWith(Constants.ZOOKEEPER_PROTOCOL);
+        return ZOOKEEPER_PROTOCOL.equals(getProtocol())
+                || getAddress().startsWith(ZOOKEEPER_PROTOCOL);
     }
 
     @Override
     public void refresh() {
         super.refresh();
         if (StringUtils.isNotEmpty(this.getId())) {
-            this.setPrefix(Constants.REGISTRIES_SUFFIX);
+            this.setPrefix(REGISTRIES_SUFFIX);
             super.refresh();
         }
     }

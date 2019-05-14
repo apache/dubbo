@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -50,6 +49,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.common.constants.ClusterConstants.CLUSTER_AVAILABLE_CHECK_KEY;
 import static org.apache.dubbo.common.constants.ClusterConstants.INVOCATION_NEED_MOCK;
+import static org.apache.dubbo.common.constants.ConfigConstants.REFER_KEY;
 import static org.apache.dubbo.common.constants.MonitorConstants.MONITOR_KEY;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -225,7 +225,7 @@ public class AbstractClusterInvokerTest {
     @Test
     public void testCloseAvailablecheck() {
         LoadBalance lb = mock(LoadBalance.class);
-        Map<String, String> queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(Constants.REFER_KEY));
+        Map<String, String> queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY));
         URL tmpUrl = url.addParameters(queryMap).removeParameter(MONITOR_KEY);
         given(lb.select(invokers, tmpUrl, invocation)).willReturn(invoker1);
         initlistsize5();

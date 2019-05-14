@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.config.ConfigurationUtils;
@@ -65,16 +64,19 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.SHARE_CONNECTIONS_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.DEFAULT_SHARE_CONNECTIONS;
+import static org.apache.dubbo.common.constants.ConfigConstants.LAZY_CONNECT_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.ON_CONNECT_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.ON_DISCONNECT_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.CALLBACK_SERVICE_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.IS_CALLBACK_SERVICE;
-import static org.apache.dubbo.common.constants.RpcConstants.OPTIMIZER_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.IS_SERVER_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.STUB_EVENT_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.DEFAULT_STUB_EVENT;
-import static org.apache.dubbo.common.constants.RpcConstants.STUB_EVENT_METHODS_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.CONNECTIONS_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.DEFAULT_SHARE_CONNECTIONS;
+import static org.apache.dubbo.common.constants.RpcConstants.DEFAULT_STUB_EVENT;
+import static org.apache.dubbo.common.constants.RpcConstants.IS_CALLBACK_SERVICE;
+import static org.apache.dubbo.common.constants.RpcConstants.IS_SERVER_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.OPTIMIZER_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.SHARE_CONNECTIONS_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.STUB_EVENT_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.STUB_EVENT_METHODS_KEY;
 
 /**
  * dubbo protocol support.
@@ -163,7 +165,7 @@ public class DubboProtocol extends AbstractProtocol {
 
         @Override
         public void connected(Channel channel) throws RemotingException {
-            invoke(channel, Constants.ON_CONNECT_KEY);
+            invoke(channel, ON_CONNECT_KEY);
         }
 
         @Override
@@ -171,7 +173,7 @@ public class DubboProtocol extends AbstractProtocol {
             if (logger.isDebugEnabled()) {
                 logger.debug("disconnected from " + channel.getRemoteAddress() + ",url:" + channel.getUrl());
             }
-            invoke(channel, Constants.ON_DISCONNECT_KEY);
+            invoke(channel, ON_DISCONNECT_KEY);
         }
 
         private void invoke(Channel channel, String methodKey) {
@@ -586,7 +588,7 @@ public class DubboProtocol extends AbstractProtocol {
         ExchangeClient client;
         try {
             // connection should be lazy
-            if (url.getParameter(Constants.LAZY_CONNECT_KEY, false)) {
+            if (url.getParameter(LAZY_CONNECT_KEY, false)) {
                 client = new LazyConnectExchangeClient(url, requestHandler);
 
             } else {

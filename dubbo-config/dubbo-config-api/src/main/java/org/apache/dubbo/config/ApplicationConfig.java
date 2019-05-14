@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.compiler.support.AdaptiveCompiler;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -29,6 +28,18 @@ import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
+import static org.apache.dubbo.common.constants.ConfigConstants.ACCEPT_FOREIGN_IP;
+import static org.apache.dubbo.common.constants.ConfigConstants.ARCHITECTURE;
+import static org.apache.dubbo.common.constants.ConfigConstants.DEVELOPMENT_ENVIRONMENT;
+import static org.apache.dubbo.common.constants.ConfigConstants.ENVIRONMENT;
+import static org.apache.dubbo.common.constants.ConfigConstants.NAME;
+import static org.apache.dubbo.common.constants.ConfigConstants.ORGANIZATION;
+import static org.apache.dubbo.common.constants.ConfigConstants.OWNER;
+import static org.apache.dubbo.common.constants.ConfigConstants.PRODUCTION_ENVIRONMENT;
+import static org.apache.dubbo.common.constants.ConfigConstants.QOS_ENABLE;
+import static org.apache.dubbo.common.constants.ConfigConstants.QOS_PORT;
+import static org.apache.dubbo.common.constants.ConfigConstants.SHUTDOWN_WAIT_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.TEST_ENVIRONMENT;
 
 
 /**
@@ -139,7 +150,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setName(String name) {
-        checkName(Constants.NAME, name);
+        checkName(NAME, name);
         this.name = name;
         if (StringUtils.isEmpty(id)) {
             id = name;
@@ -160,7 +171,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setOwner(String owner) {
-        checkMultiName(Constants.OWNER, owner);
+        checkMultiName(OWNER, owner);
         this.owner = owner;
     }
 
@@ -169,7 +180,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setOrganization(String organization) {
-        checkName(Constants.ORGANIZATION, organization);
+        checkName(ORGANIZATION, organization);
         this.organization = organization;
     }
 
@@ -178,7 +189,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setArchitecture(String architecture) {
-        checkName(Constants.ARCHITECTURE, architecture);
+        checkName(ARCHITECTURE, architecture);
         this.architecture = architecture;
     }
 
@@ -187,18 +198,18 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setEnvironment(String environment) {
-        checkName(Constants.ENVIRONMENT, environment);
+        checkName(ENVIRONMENT, environment);
         if (environment != null) {
-            if (!(Constants.DEVELOPMENT_ENVIRONMENT.equals(environment)
-                    || Constants.TEST_ENVIRONMENT.equals(environment)
-                    || Constants.PRODUCTION_ENVIRONMENT.equals(environment))) {
+            if (!(DEVELOPMENT_ENVIRONMENT.equals(environment)
+                    || TEST_ENVIRONMENT.equals(environment)
+                    || PRODUCTION_ENVIRONMENT.equals(environment))) {
 
                 throw new IllegalStateException(String.format("Unsupported environment: %s, only support %s/%s/%s, default is %s.",
                         environment,
-                        Constants.DEVELOPMENT_ENVIRONMENT,
-                        Constants.TEST_ENVIRONMENT,
-                        Constants.PRODUCTION_ENVIRONMENT,
-                        Constants.PRODUCTION_ENVIRONMENT));
+                        DEVELOPMENT_ENVIRONMENT,
+                        TEST_ENVIRONMENT,
+                        PRODUCTION_ENVIRONMENT,
+                        PRODUCTION_ENVIRONMENT));
             }
         }
         this.environment = environment;
@@ -279,7 +290,7 @@ public class ApplicationConfig extends AbstractConfig {
         this.dumpDirectory = dumpDirectory;
     }
 
-    @Parameter(key = Constants.QOS_ENABLE)
+    @Parameter(key = QOS_ENABLE)
     public Boolean getQosEnable() {
         return qosEnable;
     }
@@ -288,7 +299,7 @@ public class ApplicationConfig extends AbstractConfig {
         this.qosEnable = qosEnable;
     }
 
-    @Parameter(key = Constants.QOS_PORT)
+    @Parameter(key = QOS_PORT)
     public Integer getQosPort() {
         return qosPort;
     }
@@ -297,7 +308,7 @@ public class ApplicationConfig extends AbstractConfig {
         this.qosPort = qosPort;
     }
 
-    @Parameter(key = Constants.ACCEPT_FOREIGN_IP)
+    @Parameter(key = ACCEPT_FOREIGN_IP)
     public Boolean getQosAcceptForeignIp() {
         return qosAcceptForeignIp;
     }
@@ -320,7 +331,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setShutwait(String shutwait) {
-        System.setProperty(Constants.SHUTDOWN_WAIT_KEY, shutwait);
+        System.setProperty(SHUTDOWN_WAIT_KEY, shutwait);
         this.shutwait = shutwait;
     }
 

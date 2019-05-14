@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
@@ -72,6 +71,17 @@ import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_IP_TO_BIND;
+import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_IP_TO_REGISTRY;
+import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_PORT_TO_BIND;
+import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_PORT_TO_REGISTRY;
+import static org.apache.dubbo.common.constants.ConfigConstants.EXPORT_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.MULTICAST;
+import static org.apache.dubbo.common.constants.ConfigConstants.PROTOCOLS_SUFFIX;
+import static org.apache.dubbo.common.constants.ConfigConstants.SCOPE_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.SCOPE_LOCAL;
+import static org.apache.dubbo.common.constants.ConfigConstants.SCOPE_NONE;
+import static org.apache.dubbo.common.constants.ConfigConstants.SCOPE_REMOTE;
 import static org.apache.dubbo.common.constants.MonitorConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_KEY;
@@ -557,16 +567,16 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     .getExtension(url.getProtocol()).getConfigurator(url).configure(url);
         }
 
-        String scope = url.getParameter(Constants.SCOPE_KEY);
+        String scope = url.getParameter(SCOPE_KEY);
         // don't export when none is configured
-        if (!Constants.SCOPE_NONE.equalsIgnoreCase(scope)) {
+        if (!SCOPE_NONE.equalsIgnoreCase(scope)) {
 
             // export to local if the config is not remote (export to remote only when config is remote)
-            if (!Constants.SCOPE_REMOTE.equalsIgnoreCase(scope)) {
+            if (!SCOPE_REMOTE.equalsIgnoreCase(scope)) {
                 exportLocal(url);
             }
             // export to remote if the config is not local (export to local only when config is local)
-            if (!Constants.SCOPE_LOCAL.equalsIgnoreCase(scope)) {
+            if (!SCOPE_LOCAL.equalsIgnoreCase(scope)) {
                 if (!isOnlyInJvm() && logger.isInfoEnabled()) {
                     logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
                 }
@@ -591,7 +601,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                             registryURL = registryURL.addParameter(PROXY_KEY, proxy);
                         }
 
-                        Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
+                        Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(EXPORT_KEY, url.toFullString()));
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
 
                         Exporter<?> exporter = protocol.export(wrapperInvoker);
@@ -658,9 +668,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private String findConfigedHosts(ProtocolConfig protocolConfig, List<URL> registryURLs, Map<String, String> map) {
         boolean anyhost = false;
 
-        String hostToBind = getValueFromConfig(protocolConfig, Constants.DUBBO_IP_TO_BIND);
+        String hostToBind = getValueFromConfig(protocolConfig, DUBBO_IP_TO_BIND);
         if (hostToBind != null && hostToBind.length() > 0 && isInvalidLocalHost(hostToBind)) {
-            throw new IllegalArgumentException("Specified invalid bind ip from property:" + Constants.DUBBO_IP_TO_BIND + ", value:" + hostToBind);
+            throw new IllegalArgumentException("Specified invalid bind ip from property:" + DUBBO_IP_TO_BIND + ", value:" + hostToBind);
         }
 
         // if bind ip is not found in environment, keep looking up
@@ -679,7 +689,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 if (isInvalidLocalHost(hostToBind)) {
                     if (CollectionUtils.isNotEmpty(registryURLs)) {
                         for (URL registryURL : registryURLs) {
-                            if (Constants.MULTICAST.equalsIgnoreCase(registryURL.getParameter("registry"))) {
+                            if (MULTICAST.equalsIgnoreCase(registryURL.getParameter("registry"))) {
                                 // skip multicast registry since we cannot connect to it via Socket
                                 continue;
                             }
@@ -703,9 +713,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         map.put(RemotingConstants.BIND_IP_KEY, hostToBind);
 
         // registry ip is not used for bind ip by default
-        String hostToRegistry = getValueFromConfig(protocolConfig, Constants.DUBBO_IP_TO_REGISTRY);
+        String hostToRegistry = getValueFromConfig(protocolConfig, DUBBO_IP_TO_REGISTRY);
         if (hostToRegistry != null && hostToRegistry.length() > 0 && isInvalidLocalHost(hostToRegistry)) {
-            throw new IllegalArgumentException("Specified invalid registry ip from property:" + Constants.DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
+            throw new IllegalArgumentException("Specified invalid registry ip from property:" + DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
         } else if (StringUtils.isEmpty(hostToRegistry)) {
             // bind ip is used as registry ip by default
             hostToRegistry = hostToBind;
@@ -729,7 +739,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         Integer portToBind = null;
 
         // parse bind port from environment
-        String port = getValueFromConfig(protocolConfig, Constants.DUBBO_PORT_TO_BIND);
+        String port = getValueFromConfig(protocolConfig, DUBBO_PORT_TO_BIND);
         portToBind = parsePort(port);
 
         // if there's no bind port found from environment, keep looking up.
@@ -755,7 +765,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         map.put(RemotingConstants.BIND_PORT_KEY, String.valueOf(portToBind));
 
         // registry port, not used as bind port by default
-        String portToRegistryStr = getValueFromConfig(protocolConfig, Constants.DUBBO_PORT_TO_REGISTRY);
+        String portToRegistryStr = getValueFromConfig(protocolConfig, DUBBO_PORT_TO_REGISTRY);
         Integer portToRegistry = parsePort(portToRegistryStr);
         if (portToRegistry == null) {
             portToRegistry = portToBind;
@@ -858,9 +868,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (StringUtils.isEmpty(protocolIds) && CollectionUtils.isEmpty(protocols)) {
             List<String> configedProtocols = new ArrayList<>();
             configedProtocols.addAll(getSubProperties(Environment.getInstance()
-                    .getExternalConfigurationMap(), Constants.PROTOCOLS_SUFFIX));
+                    .getExternalConfigurationMap(), PROTOCOLS_SUFFIX));
             configedProtocols.addAll(getSubProperties(Environment.getInstance()
-                    .getAppExternalConfigurationMap(), Constants.PROTOCOLS_SUFFIX));
+                    .getAppExternalConfigurationMap(), PROTOCOLS_SUFFIX));
 
             protocolIds = String.join(",", configedProtocols);
         }
