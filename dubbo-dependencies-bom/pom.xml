@@ -150,6 +150,7 @@
         <sofa_registry_version>5.2.0</sofa_registry_version>
         <gson_version>2.8.5</gson_version>
         <jsonrpc_version>1.2.0</jsonrpc_version>
+        <mortbay_jetty_version>6.1.26</mortbay_jetty_version>
         <portlet_version>2.0</portlet_version>
         <maven_flatten_version>1.1.0</maven_flatten_version>
         <revision>2.7.2-SNAPSHOT</revision>
@@ -296,6 +297,12 @@
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-servlet</artifactId>
                 <version>${jetty_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mortbay.jetty</groupId>
+                <artifactId>jetty</artifactId>
+                <version>${mortbay_jetty_version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>javax.validation</groupId>
