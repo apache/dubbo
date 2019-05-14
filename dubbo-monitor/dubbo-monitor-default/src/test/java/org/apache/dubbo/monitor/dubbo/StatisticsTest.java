@@ -29,10 +29,12 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
+import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_PROTOCOL;
+
 public class StatisticsTest {
     @Test
     public void testEquals() {
-        URL statistics = new URLBuilder(Constants.DUBBO_PROTOCOL, "10.20.153.10", 0)
+        URL statistics = new URLBuilder(DUBBO_PROTOCOL, "10.20.153.10", 0)
                 .addParameter(MonitorService.APPLICATION, "morgan")
                 .addParameter(MonitorService.INTERFACE, "MemberService")
                 .addParameter(MonitorService.METHOD, "findPerson")
@@ -74,7 +76,7 @@ public class StatisticsTest {
         statistics.setService("MemberService");
         assertThat(statistics.toString(), is("dubbo://10.20.153.10"));
 
-        Statistics statisticsWithDetailInfo = new Statistics(new URLBuilder(Constants.DUBBO_PROTOCOL, "10.20.153.10", 0)
+        Statistics statisticsWithDetailInfo = new Statistics(new URLBuilder(DUBBO_PROTOCOL, "10.20.153.10", 0)
                 .addParameter(MonitorService.APPLICATION, "morgan")
                 .addParameter(MonitorService.INTERFACE, "MemberService")
                 .addParameter(MonitorService.METHOD, "findPerson")

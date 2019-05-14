@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
+import static org.apache.dubbo.common.constants.ConfigConstants.REFER_KEY;
 
 /**
  * Abstract implementation of Directory: Invoker list returned from this Directory's list method have been filtered by Routers
@@ -65,7 +66,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         }
 
         if (url.getProtocol().equals(REGISTRY_PROTOCOL)) {
-            Map<String, String> queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(Constants.REFER_KEY));
+            Map<String, String> queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY));
             this.url = url.addParameters(queryMap).removeParameter(Constants.MONITOR_KEY);
         } else {
             this.url = url;

@@ -27,6 +27,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.STUB_EVENT_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.REFERENCE_FILTER_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.INVOKER_LISTENER_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.LAZY_CONNECT_KEY;
 
 /**
  * AbstractConsumerConfig
@@ -156,7 +157,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         super.setListener(listener);
     }
 
-    @Parameter(key = Constants.LAZY_CONNECT_KEY)
+    @Parameter(key = LAZY_CONNECT_KEY)
     public Boolean getLazy() {
         return lazy;
     }

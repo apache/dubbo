@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.qos.protocol;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.server.Server;
@@ -29,6 +28,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
+import static org.apache.dubbo.common.constants.ConfigConstants.QOS_ENABLE;
+import static org.apache.dubbo.common.constants.ConfigConstants.QOS_PORT;
+import static org.apache.dubbo.common.constants.ConfigConstants.ACCEPT_FOREIGN_IP;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
@@ -44,9 +46,9 @@ public class QosProtocolWrapperTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        when(url.getParameter(Constants.QOS_ENABLE, true)).thenReturn(true);
-        when(url.getParameter(Constants.QOS_PORT, 22222)).thenReturn(12345);
-        when(url.getParameter(Constants.ACCEPT_FOREIGN_IP, true)).thenReturn(false);
+        when(url.getParameter(QOS_ENABLE, true)).thenReturn(true);
+        when(url.getParameter(QOS_PORT, 22222)).thenReturn(12345);
+        when(url.getParameter(ACCEPT_FOREIGN_IP, true)).thenReturn(false);
         when(invoker.getUrl()).thenReturn(url);
         when(url.getProtocol()).thenReturn(REGISTRY_PROTOCOL);
     }

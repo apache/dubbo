@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -37,6 +36,7 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.Field;
 
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.apache.dubbo.common.constants.ConfigConstants.SHUTDOWN_WAIT_KEY;
 
 /**
  * Check available status for dubboInvoker
@@ -97,10 +97,10 @@ public class DubboInvokerAvilableTest {
         long start = System.currentTimeMillis();
 
         try{
-            System.setProperty(Constants.SHUTDOWN_WAIT_KEY, "2000");
+            System.setProperty(SHUTDOWN_WAIT_KEY, "2000");
             protocol.destroy();
         }finally {
-            System.getProperties().remove(Constants.SHUTDOWN_WAIT_KEY);
+            System.getProperties().remove(SHUTDOWN_WAIT_KEY);
         }
 
         long waitTime = System.currentTimeMillis() - start;

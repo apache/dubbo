@@ -43,6 +43,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.HOST_KEY;
 
 /**
  * ConditionRouter
@@ -228,7 +229,7 @@ public class ConditionRouter extends AbstractRouter {
                 sampleValue = invocation.getMethodName();
             } else if (Constants.ADDRESS_KEY.equals(key)) {
                 sampleValue = url.getAddress();
-            } else if (Constants.HOST_KEY.equals(key)) {
+            } else if (HOST_KEY.equals(key)) {
                 sampleValue = url.getHost();
             } else {
                 sampleValue = sample.get(key);

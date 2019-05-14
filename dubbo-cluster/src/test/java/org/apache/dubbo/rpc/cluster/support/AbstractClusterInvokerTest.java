@@ -51,6 +51,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
+import static org.apache.dubbo.common.constants.ConfigConstants.REFER_KEY;
+
 /**
  * AbstractClusterInvokerTest
  */
@@ -222,7 +224,7 @@ public class AbstractClusterInvokerTest {
     @Test
     public void testCloseAvailablecheck() {
         LoadBalance lb = mock(LoadBalance.class);
-        Map<String, String> queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(Constants.REFER_KEY));
+        Map<String, String> queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY));
         URL tmpUrl = url.addParameters(queryMap).removeParameter(Constants.MONITOR_KEY);
         given(lb.select(invokers, tmpUrl, invocation)).willReturn(invoker1);
         initlistsize5();

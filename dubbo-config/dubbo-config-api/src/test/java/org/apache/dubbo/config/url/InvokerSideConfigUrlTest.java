@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.url;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.ConsumerConfig;
@@ -35,6 +34,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
+import static org.apache.dubbo.common.constants.ConfigConstants.SCOPE_REMOTE;
 
 public class InvokerSideConfigUrlTest extends UrlTestBase {
     private static final Logger log = LoggerFactory.getLogger(InvokerSideConfigUrlTest.class);
@@ -188,7 +188,7 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
 
         refConf.setMethods(Arrays.asList(new MethodConfig[]{methodConfForReference}));
 
-        refConf.setScope(Constants.SCOPE_REMOTE);
+        refConf.setScope(SCOPE_REMOTE);
     }
 
     private <T> void verifyInvokerUrlGeneration(T config, Object[][] dataTable) {

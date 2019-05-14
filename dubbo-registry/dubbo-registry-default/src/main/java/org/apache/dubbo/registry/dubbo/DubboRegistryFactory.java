@@ -44,6 +44,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.common.constants.RpcConstants.CALLBACK_INSTANCES_LIMIT_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.EXPORT_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.REFER_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.LAZY_CONNECT_KEY;
 
 /**
  * DubboRegistryFactory
@@ -58,10 +61,10 @@ public class DubboRegistryFactory extends AbstractRegistryFactory {
     private static URL getRegistryURL(URL url) {
         return URLBuilder.from(url)
                 .setPath(RegistryService.class.getName())
-                .removeParameter(Constants.EXPORT_KEY).removeParameter(Constants.REFER_KEY)
+                .removeParameter(EXPORT_KEY).removeParameter(REFER_KEY)
                 .addParameter(INTERFACE_KEY, RegistryService.class.getName())
                 .addParameter(Constants.CLUSTER_STICKY_KEY, "true")
-                .addParameter(Constants.LAZY_CONNECT_KEY, "true")
+                .addParameter(LAZY_CONNECT_KEY, "true")
                 .addParameter(RemotingConstants.RECONNECT_KEY, "false")
                 .addParameterIfAbsent(TIMEOUT_KEY, "10000")
                 .addParameterIfAbsent(CALLBACK_INSTANCES_LIMIT_KEY, "10000")
@@ -99,7 +102,8 @@ public class DubboRegistryFactory extends AbstractRegistryFactory {
                 urls.add(url.setAddress(address));
             }
         }
-        RegistryDirectory<RegistryService> directory = new RegistryDirectory<>(RegistryService.class, url.addParameter(INTERFACE_KEY, RegistryService.class.getName()).addParameterAndEncoded(Constants.REFER_KEY, url.toParameterString()));
+        RegistryDirectory<RegistryService> directory = new RegistryDirectory<>(RegistryService.class,
+                url.addParameter(INTERFACE_KEY, RegistryService.class.getName()).addParameterAndEncoded(REFER_KEY, url.toParameterString()));
         Invoker<RegistryService> registryInvoker = cluster.join(directory);
         RegistryService registryService = proxyFactory.getProxy(registryInvoker);
         DubboRegistry registry = new DubboRegistry(registryInvoker, registryService);

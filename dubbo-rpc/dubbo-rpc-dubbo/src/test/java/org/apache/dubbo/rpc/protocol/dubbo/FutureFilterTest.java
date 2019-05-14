@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invoker;
@@ -34,6 +33,8 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+
+import static org.apache.dubbo.common.constants.ConfigConstants.ON_THROW_METHOD_KEY;
 
 /**
  * EventFilterTest.java
@@ -77,7 +78,7 @@ public class FutureFilterTest {
             RpcResult result = new RpcResult();
             result.setException(new RuntimeException());
             given(invoker.invoke(invocation)).willReturn(result);
-            URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1&" + Constants.ON_THROW_METHOD_KEY + "=echo");
+            URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1&" + ON_THROW_METHOD_KEY + "=echo");
             given(invoker.getUrl()).willReturn(url);
 
             eventFilter.invoke(invoker, invocation).recreate();

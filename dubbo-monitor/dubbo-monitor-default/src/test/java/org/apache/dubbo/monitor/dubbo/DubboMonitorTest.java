@@ -49,6 +49,8 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_PROTOCOL;
+
 /**
  * DubboMonitorTest
  */
@@ -93,7 +95,7 @@ public class DubboMonitorTest {
     @Test
     public void testCount() throws Exception {
         DubboMonitor monitor = new DubboMonitor(monitorInvoker, monitorService);
-        URL statistics = new URLBuilder(Constants.DUBBO_PROTOCOL, "10.20.153.10", 0)
+        URL statistics = new URLBuilder(DUBBO_PROTOCOL, "10.20.153.10", 0)
                 .addParameter(MonitorService.APPLICATION, "morgan")
                 .addParameter(MonitorService.INTERFACE, "MemberService")
                 .addParameter(MonitorService.METHOD, "findPerson")
@@ -129,7 +131,7 @@ public class DubboMonitorTest {
     @Test
     public void testMonitorFactory() throws Exception {
         MockMonitorService monitorService = new MockMonitorService();
-        URL statistics = new URLBuilder(Constants.DUBBO_PROTOCOL, "10.20.153.10", 0)
+        URL statistics = new URLBuilder(DUBBO_PROTOCOL, "10.20.153.10", 0)
                 .addParameter(MonitorService.APPLICATION, "morgan")
                 .addParameter(MonitorService.INTERFACE, "MemberService")
                 .addParameter(MonitorService.METHOD, "findPerson")
@@ -191,7 +193,7 @@ public class DubboMonitorTest {
 
     @Test
     public void testSum() {
-        URL statistics = new URLBuilder(Constants.DUBBO_PROTOCOL, "10.20.153.11", 0)
+        URL statistics = new URLBuilder(DUBBO_PROTOCOL, "10.20.153.11", 0)
                 .addParameter(MonitorService.APPLICATION, "morgan")
                 .addParameter(MonitorService.INTERFACE, "MemberService")
                 .addParameter(MonitorService.METHOD, "findPerson")

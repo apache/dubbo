@@ -28,6 +28,8 @@ import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
+import static org.apache.dubbo.common.constants.ConfigConstants.QOS_ENABLE;
+import static org.apache.dubbo.common.constants.ConfigConstants.ACCEPT_FOREIGN_IP;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
@@ -150,7 +152,7 @@ public class ApplicationConfigTest {
         assertThat(application.getQosEnable(), is(true));
         Map<String, String> parameters = new HashMap<String, String>();
         ApplicationConfig.appendParameters(parameters, application);
-        assertThat(parameters, hasEntry(Constants.QOS_ENABLE, "true"));
+        assertThat(parameters, hasEntry(QOS_ENABLE, "true"));
     }
 
     @Test
@@ -167,7 +169,7 @@ public class ApplicationConfigTest {
         assertThat(application.getQosAcceptForeignIp(), is(true));
         Map<String, String> parameters = new HashMap<String, String>();
         ApplicationConfig.appendParameters(parameters, application);
-        assertThat(parameters, hasEntry(Constants.ACCEPT_FOREIGN_IP, "true"));
+        assertThat(parameters, hasEntry(ACCEPT_FOREIGN_IP, "true"));
     }
 
     @Test
@@ -178,6 +180,6 @@ public class ApplicationConfigTest {
         parameters.put("k1", "v1");
         ApplicationConfig.appendParameters(parameters, application);
         assertThat(parameters, hasEntry("k1", "v1"));
-        assertThat(parameters, hasEntry(Constants.ACCEPT_FOREIGN_IP, "true"));
+        assertThat(parameters, hasEntry(ACCEPT_FOREIGN_IP, "true"));
     }
 }
