@@ -180,24 +180,6 @@ public class Constants {
     public static final String ACCEPT_FOREIGN_IP = "qos.accept.foreign.ip";
     // END dubbo-congfig-api
 
-    // BEGIN dubbo-metadata-report-api
-    public static final String METADATA_REPORT_KEY = "metadata";
-
-    public static final String RETRY_TIMES_KEY = "retry.times";
-
-    public static final Integer DEFAULT_METADATA_REPORT_RETRY_TIMES = 100;
-
-    public static final String RETRY_PERIOD_KEY = "retry.period";
-
-    public static final Integer DEFAULT_METADATA_REPORT_RETRY_PERIOD = 3000;
-
-    public static final String SYNC_REPORT_KEY = "sync.report";
-
-    public static final String CYCLE_REPORT_KEY = "cycle.report";
-
-    public static final Boolean DEFAULT_METADATA_REPORT_CYCLE_REPORT = true;
-    // END dubbo-metadata-report-api
-
     // BEGIN dubbo-filter-cache
     public static final String CACHE_KEY = "cache";
     // END dubbo-filter-cache

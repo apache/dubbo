@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metadata.integration;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.constants.RemotingConstants;
@@ -42,6 +41,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.metadata.support.Constants.METADATA_REPORT_KEY;
 
 /**
  * @since 2.7.0
@@ -58,11 +58,11 @@ public class MetadataReportService {
     URL metadataReportUrl;
 
     MetadataReportService(URL metadataReportURL) {
-        if (Constants.METADATA_REPORT_KEY.equals(metadataReportURL.getProtocol())) {
-            String protocol = metadataReportURL.getParameter(Constants.METADATA_REPORT_KEY, DEFAULT_DIRECTORY);
+        if (METADATA_REPORT_KEY.equals(metadataReportURL.getProtocol())) {
+            String protocol = metadataReportURL.getParameter(METADATA_REPORT_KEY, DEFAULT_DIRECTORY);
             metadataReportURL = URLBuilder.from(metadataReportURL)
                     .setProtocol(protocol)
-                    .removeParameter(Constants.METADATA_REPORT_KEY)
+                    .removeParameter(METADATA_REPORT_KEY)
                     .build();
         }
         this.metadataReportUrl = metadataReportURL;

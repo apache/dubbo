@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.constants;
+package org.apache.dubbo.metadata.support;
 
-public interface MetadataReportConstants {
+public interface Constants {
     String METADATA_REPORT_KEY = "metadata";
 
     String RETRY_TIMES_KEY = "retry.times";
