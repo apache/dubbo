@@ -485,6 +485,13 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metadata-report-nacos</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
 
         <!-- Transitive dependencies -->
         <dependency>
@@ -613,6 +620,7 @@
                                     <include>org.apache.dubbo:dubbo-metadata-report-zookeeper</include>
                                     <include>org.apache.dubbo:dubbo-metadata-report-consul</include>
                                     <include>org.apache.dubbo:dubbo-metadata-report-etcd</include>
+                                    <include>org.apache.dubbo:dubbo-metadata-report-nacos</include>
                                     <include>org.apache.dubbo:dubbo-serialization-native-hession</include>
                                     <include>org.apache.dubbo:dubbo-rpc-native-thrift</include>
                                 </includes>
