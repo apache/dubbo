@@ -44,6 +44,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 
 /**
@@ -139,7 +140,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
     @Override
     public String getConfig(String key, String group, long timeout) throws IllegalStateException {
         if (StringUtils.isNotEmpty(group)) {
-            if (group.equals(url.getParameter(Constants.APPLICATION_KEY))) {
+            if (group.equals(url.getParameter(APPLICATION_KEY))) {
                 return ConfigService.getAppConfig().getProperty(key, null);
             } else {
                 return ConfigService.getConfig(group).getProperty(key, null);
@@ -153,7 +154,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
         if(StringUtils.isEmpty(group)) {
             return dubboConfigFile.getContent();
         }
-        if (group.equals(url.getParameter(Constants.APPLICATION_KEY))) {
+        if (group.equals(url.getParameter(APPLICATION_KEY))) {
             return ConfigService.getConfigFile(APOLLO_APPLICATION_KEY, ConfigFileFormat.Properties).getContent();
         }
 
