@@ -107,7 +107,7 @@ public class MonitorFilter extends ListenableFilter {
 
         @Override
         public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-            if (invoker.getUrl().hasParameter(Constants.MONITOR_KEY)) {
+            if (invoker.getUrl().hasParameter(MONITOR_KEY)) {
                 collect(invoker, invocation, result, RpcContext.getContext().getRemoteHost(), Long.valueOf(invocation.getAttachment(MONITOR_FILTER_START_TIME)), false);
                 getConcurrent(invoker, invocation).decrementAndGet(); // count down
             }
@@ -115,7 +115,7 @@ public class MonitorFilter extends ListenableFilter {
 
         @Override
         public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-            if (invoker.getUrl().hasParameter(Constants.MONITOR_KEY)) {
+            if (invoker.getUrl().hasParameter(MONITOR_KEY)) {
                 collect(invoker, invocation, null, RpcContext.getContext().getRemoteHost(), Long.valueOf(invocation.getAttachment(MONITOR_FILTER_START_TIME)), true);
                 getConcurrent(invoker, invocation).decrementAndGet(); // count down
             }
