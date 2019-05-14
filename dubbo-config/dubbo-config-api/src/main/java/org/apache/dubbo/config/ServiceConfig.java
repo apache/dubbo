@@ -77,7 +77,6 @@ import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.common.constants.RpcConstants.PROXY_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.TOKEN_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.common.constants.ConfigConstants.MULTICAST;
 import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_PORT_TO_REGISTRY;
