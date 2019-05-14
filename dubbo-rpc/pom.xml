@@ -42,5 +42,6 @@
         <module>dubbo-rpc-memcached</module>
         <module>dubbo-rpc-redis</module>
         <module>dubbo-rpc-rest</module>
+        <module>dubbo-rpc-xml</module>
     </modules>
 </project>
