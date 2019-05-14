@@ -33,11 +33,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.common.constants.RpcConstants.$INVOKE;
-import static org.apache.dubbo.common.constants.RpcConstants.AUTO_ATTACH_INVOCATIONID_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.ID_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.$INVOKE_ASYNC;
 import static org.apache.dubbo.common.constants.RpcConstants.ASYNC_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.AUTO_ATTACH_INVOCATIONID_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.FUTURE_GENERATED_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.FUTURE_RETURNTYPE_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.ID_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.RETURN_KEY;
 /**
  * RpcUtils
@@ -186,7 +186,7 @@ public class RpcUtils {
     }
 
     public static boolean isGenericAsync(Invocation inv) {
-        return Constants.$INVOKE_ASYNC.equals(inv.getMethodName());
+        return $INVOKE_ASYNC.equals(inv.getMethodName());
     }
 
     public static boolean isOneway(URL url, Invocation inv) {

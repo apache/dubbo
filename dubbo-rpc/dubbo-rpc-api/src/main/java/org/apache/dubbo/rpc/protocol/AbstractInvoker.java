@@ -38,8 +38,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.dubbo.common.constants.RpcConstants.ASYNC_KEY;
-
 /**
  * AbstractInvoker.
  */

@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.filter;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Invocation;
@@ -27,6 +26,8 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
+
 /**
  * ConsumerContextFilter set current RpcContext with invoker,invocation, local host, remote host and port
  * for consumer invoker.It does it to make the requires info available to execution thread's RpcContext.
@@ -34,7 +35,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
  * @see org.apache.dubbo.rpc.Filter
  * @see RpcContext
  */
-@Activate(group = Constants.CONSUMER, order = -10000)
+@Activate(group = CONSUMER, order = -10000)
 public class ConsumerContextFilter extends ListenableFilter {
 
     public ConsumerContextFilter() {

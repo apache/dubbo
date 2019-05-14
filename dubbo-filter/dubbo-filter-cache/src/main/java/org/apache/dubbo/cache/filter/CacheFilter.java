@@ -19,6 +19,7 @@ package org.apache.dubbo.cache.filter;
 import org.apache.dubbo.cache.Cache;
 import org.apache.dubbo.cache.CacheFactory;
 import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -61,7 +62,7 @@ import java.io.Serializable;
  * @see org.apache.dubbo.cache.support.expiring.ExpiringCache
  *
  */
-@Activate(group = {Constants.CONSUMER, Constants.PROVIDER}, value = Constants.CACHE_KEY)
+@Activate(group = {CommonConstants.CONSUMER, CommonConstants.PROVIDER}, value = Constants.CACHE_KEY)
 public class CacheFilter implements Filter {
 
     private CacheFactory cacheFactory;

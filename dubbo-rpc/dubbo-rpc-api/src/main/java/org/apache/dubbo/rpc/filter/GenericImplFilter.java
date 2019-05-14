@@ -16,10 +16,10 @@
  */
 package org.apache.dubbo.rpc.filter;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.beanutil.JavaBeanAccessor;
 import org.apache.dubbo.common.beanutil.JavaBeanDescriptor;
 import org.apache.dubbo.common.beanutil.JavaBeanSerializeUtil;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -40,10 +40,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
+import static org.apache.dubbo.common.constants.RpcConstants.$INVOKE;
+import static org.apache.dubbo.common.constants.RpcConstants.$INVOKE_ASYNC;
+import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_KEY;
+
 /**
  * GenericImplInvokerFilter
  */
-@Activate(group = Constants.CONSUMER, value = Constants.GENERIC_KEY, order = 20000)
+@Activate(group = CommonConstants.CONSUMER, value = GENERIC_KEY, order = 20000)
 public class GenericImplFilter extends ListenableFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(GenericImplFilter.class);
@@ -56,9 +60,9 @@ public class GenericImplFilter extends ListenableFilter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        String generic = invoker.getUrl().getParameter(Constants.GENERIC_KEY);
+        String generic = invoker.getUrl().getParameter(GENERIC_KEY);
         if (ProtocolUtils.isGeneric(generic)
-                && (!Constants.$INVOKE.equals(invocation.getMethodName()) && !Constants.$INVOKE_ASYNC.equals(invocation.getMethodName()))
+                && (!$INVOKE.equals(invocation.getMethodName()) && !$INVOKE_ASYNC.equals(invocation.getMethodName()))
                 && invocation instanceof RpcInvocation) {
             RpcInvocation invocation2 = new RpcInvocation(invocation);
             String methodName = invocation2.getMethodName();
@@ -81,14 +85,14 @@ public class GenericImplFilter extends ListenableFilter {
             }
 
             if (RpcUtils.isReturnTypeFuture(invocation)) {
-                invocation2.setMethodName(Constants.$INVOKE_ASYNC);
+                invocation2.setMethodName($INVOKE_ASYNC);
             } else {
-                invocation2.setMethodName(Constants.$INVOKE);
+                invocation2.setMethodName($INVOKE);
             }
             invocation2.setParameterTypes(GENERIC_PARAMETER_TYPES);
             invocation2.setArguments(new Object[]{methodName, types, args});
             return invoker.invoke(invocation2);
-        } else if ((invocation.getMethodName().equals(Constants.$INVOKE) || invocation.getMethodName().equals(Constants.$INVOKE_ASYNC))
+        } else if ((invocation.getMethodName().equals($INVOKE) || invocation.getMethodName().equals($INVOKE_ASYNC))
                 && invocation.getArguments() != null
                 && invocation.getArguments().length == 3
                 && ProtocolUtils.isGeneric(generic)) {
@@ -110,7 +114,7 @@ public class GenericImplFilter extends ListenableFilter {
             }
 
             invocation.setAttachment(
-                    Constants.GENERIC_KEY, invoker.getUrl().getParameter(Constants.GENERIC_KEY));
+                    GENERIC_KEY, invoker.getUrl().getParameter(GENERIC_KEY));
         }
         return invoker.invoke(invocation);
     }
@@ -122,11 +126,11 @@ public class GenericImplFilter extends ListenableFilter {
     static class GenericImplListener implements Listener {
         @Override
         public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
-            String generic = invoker.getUrl().getParameter(Constants.GENERIC_KEY);
+            String generic = invoker.getUrl().getParameter(GENERIC_KEY);
             String methodName = invocation.getMethodName();
             Class<?>[] parameterTypes = invocation.getParameterTypes();
             if (ProtocolUtils.isGeneric(generic)
-                    && (!Constants.$INVOKE.equals(invocation.getMethodName()) && !Constants.$INVOKE_ASYNC.equals(invocation.getMethodName()))
+                    && (!$INVOKE.equals(invocation.getMethodName()) && !$INVOKE_ASYNC.equals(invocation.getMethodName()))
                     && invocation instanceof RpcInvocation) {
                 if (!appResponse.hasException()) {
                     Object value = appResponse.getValue();

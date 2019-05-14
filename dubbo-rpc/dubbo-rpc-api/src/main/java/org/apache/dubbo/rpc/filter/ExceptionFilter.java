@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.filter;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -43,7 +43,7 @@ import java.lang.reflect.Method;
  * <li>Wrap the exception not introduced in API package into RuntimeException. Framework will serialize the outer exception but stringnize its cause in order to avoid of possible serialization problem on client side</li>
  * </ol>
  */
-@Activate(group = Constants.PROVIDER)
+@Activate(group = CommonConstants.PROVIDER)
 public class ExceptionFilter extends ListenableFilter {
 
     public ExceptionFilter() {

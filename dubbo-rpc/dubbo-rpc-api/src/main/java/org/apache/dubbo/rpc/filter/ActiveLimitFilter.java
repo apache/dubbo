@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.filter;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -28,8 +27,11 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcStatus;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.ACTIVES_KEY;
+
 /**
- *
  * ActiveLimitFilter restrict the concurrent client invocation for a service or service's method from client side.
  * To use active limit filter, configured url with <b>actives</b> and provide valid >0 integer value.
  * <pre>
@@ -41,7 +43,7 @@ import org.apache.dubbo.rpc.RpcStatus;
  *
  * @see Filter
  */
-@Activate(group = Constants.CONSUMER, value = Constants.ACTIVES_KEY)
+@Activate(group = CONSUMER, value = ACTIVES_KEY)
 public class ActiveLimitFilter extends ListenableFilter {
 
     private static final String ACTIVELIMIT_FILTER_START_TIME = "activelimit_filter_start_time";
@@ -54,10 +56,10 @@ public class ActiveLimitFilter extends ListenableFilter {
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         URL url = invoker.getUrl();
         String methodName = invocation.getMethodName();
-        int max = invoker.getUrl().getMethodParameter(methodName, Constants.ACTIVES_KEY, 0);
+        int max = invoker.getUrl().getMethodParameter(methodName, ACTIVES_KEY, 0);
         RpcStatus rpcStatus = RpcStatus.getStatus(invoker.getUrl(), invocation.getMethodName());
         if (!RpcStatus.beginCount(url, methodName, max)) {
-            long timeout = invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.TIMEOUT_KEY, 0);
+            long timeout = invoker.getUrl().getMethodParameter(invocation.getMethodName(), TIMEOUT_KEY, 0);
             long start = System.currentTimeMillis();
             long remain = timeout;
             synchronized (rpcStatus) {
@@ -86,7 +88,7 @@ public class ActiveLimitFilter extends ListenableFilter {
         public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
             String methodName = invocation.getMethodName();
             URL url = invoker.getUrl();
-            int max = invoker.getUrl().getMethodParameter(methodName, Constants.ACTIVES_KEY, 0);
+            int max = invoker.getUrl().getMethodParameter(methodName, ACTIVES_KEY, 0);
 
             RpcStatus.endCount(url, methodName, getElapsed(invocation), true);
             notifyFinish(RpcStatus.getStatus(url, methodName), max);
@@ -96,7 +98,7 @@ public class ActiveLimitFilter extends ListenableFilter {
         public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
             String methodName = invocation.getMethodName();
             URL url = invoker.getUrl();
-            int max = invoker.getUrl().getMethodParameter(methodName, Constants.ACTIVES_KEY, 0);
+            int max = invoker.getUrl().getMethodParameter(methodName, ACTIVES_KEY, 0);
 
             RpcStatus.endCount(url, methodName, getElapsed(invocation), false);
             notifyFinish(RpcStatus.getStatus(url, methodName), max);

@@ -32,7 +32,7 @@
         <javax.ws.rs.version>2.1</javax.ws.rs.version>
         <argline>-Dnetwork_interface_denylist=docker0</argline>
     </properties>
-    
+
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>

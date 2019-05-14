@@ -109,6 +109,8 @@ public interface RpcConstants {
 
     String $INVOKE = "$invoke";
 
+    String $INVOKE_ASYNC = "$invokeAsync";
+
     String $ECHO = "$echo";
 
     String RETURN_PREFIX = "return ";
