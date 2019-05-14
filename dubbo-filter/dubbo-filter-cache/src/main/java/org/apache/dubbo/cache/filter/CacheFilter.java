@@ -18,8 +18,6 @@ package org.apache.dubbo.cache.filter;
 
 import org.apache.dubbo.cache.Cache;
 import org.apache.dubbo.cache.CacheFactory;
-import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -31,6 +29,10 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcResult;
 
 import java.io.Serializable;
+
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
+import static org.apache.dubbo.common.constants.FilterConstants.CACHE_KEY;
 
 /**
  * CacheFilter is a core component of dubbo.Enabling <b>cache</b> key of service,method,consumer or provider dubbo will cache method return value.
@@ -61,7 +63,7 @@ import java.io.Serializable;
  * @see org.apache.dubbo.cache.support.expiring.ExpiringCacheFactory
  * @see org.apache.dubbo.cache.support.expiring.ExpiringCache
  */
-@Activate(group = {CommonConstants.CONSUMER, CommonConstants.PROVIDER}, value = Constants.CACHE_KEY)
+@Activate(group = {CONSUMER, PROVIDER}, value = CACHE_KEY)
 public class CacheFilter implements Filter {
 
     private CacheFactory cacheFactory;
@@ -89,7 +91,7 @@ public class CacheFilter implements Filter {
      */
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        if (cacheFactory != null && ConfigUtils.isNotEmpty(invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.CACHE_KEY))) {
+        if (cacheFactory != null && ConfigUtils.isNotEmpty(invoker.getUrl().getMethodParameter(invocation.getMethodName(), CACHE_KEY))) {
             Cache cache = cacheFactory.getCache(invoker.getUrl(), invocation);
             if (cache != null) {
                 String key = StringUtils.toArgumentString(invocation.getArguments());

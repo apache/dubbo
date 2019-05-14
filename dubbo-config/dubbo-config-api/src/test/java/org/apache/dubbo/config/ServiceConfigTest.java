@@ -17,9 +17,7 @@
 
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.context.ConfigManager;
@@ -43,16 +41,21 @@ import org.mockito.Mockito;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_SERIALIZATION_BEAN;
-import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_SERIALIZATION_DEFAULT;
-import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_SERIALIZATION_NATIVE_JAVA;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.EXPORT_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.SHUTDOWN_TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.SHUTDOWN_WAIT_KEY;
+import static org.apache.dubbo.common.constants.RemotingConstants.BIND_IP_KEY;
+import static org.apache.dubbo.common.constants.RemotingConstants.BIND_PORT_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_SERIALIZATION_BEAN;
+import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_SERIALIZATION_DEFAULT;
+import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_SERIALIZATION_NATIVE_JAVA;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -140,9 +143,9 @@ public class ServiceConfigTest {
         assertThat(url.getPath(), equalTo(DemoService.class.getName()));
         assertThat(url.getParameters(), hasEntry(ANYHOST_KEY, "true"));
         assertThat(url.getParameters(), hasEntry(APPLICATION_KEY, "app"));
-        assertThat(url.getParameters(), hasKey(RemotingConstants.BIND_IP_KEY));
-        assertThat(url.getParameters(), hasKey(RemotingConstants.BIND_PORT_KEY));
-        assertThat(url.getParameters(), hasEntry(Constants.EXPORT_KEY, "true"));
+        assertThat(url.getParameters(), hasKey(BIND_IP_KEY));
+        assertThat(url.getParameters(), hasKey(BIND_PORT_KEY));
+        assertThat(url.getParameters(), hasEntry(EXPORT_KEY, "true"));
         assertThat(url.getParameters(), hasEntry("echo.0.callback", "false"));
         assertThat(url.getParameters(), hasEntry(GENERIC_KEY, "false"));
         assertThat(url.getParameters(), hasEntry(INTERFACE_KEY, DemoService.class.getName()));
@@ -173,14 +176,14 @@ public class ServiceConfigTest {
     @Test
     @Disabled("cannot pass in travis")
     public void testUnexport() throws Exception {
-        System.setProperty(Constants.SHUTDOWN_WAIT_KEY, "0");
+        System.setProperty(SHUTDOWN_WAIT_KEY, "0");
         try {
             service.export();
             service.unexport();
             Thread.sleep(1000);
             Mockito.verify(exporter, Mockito.atLeastOnce()).unexport();
         } finally {
-            System.clearProperty(Constants.SHUTDOWN_TIMEOUT_KEY);
+            System.clearProperty(SHUTDOWN_TIMEOUT_KEY);
         }
     }
 

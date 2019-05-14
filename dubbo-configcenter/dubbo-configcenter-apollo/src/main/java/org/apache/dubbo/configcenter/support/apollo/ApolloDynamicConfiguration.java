@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.configcenter.support.apollo;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -43,6 +42,10 @@ import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.ConfigConstants.CONFIG_CHECK_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.CONFIG_CLUSTER_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.CONFIG_GROUP_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.CONFIG_NAMESPACE_KEY;
 
 /**
  * Apollo implementation, https://github.com/ctripcorp/apollo
@@ -63,7 +66,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
         // Instead of using Dubbo's configuration, I would suggest use the original configuration method Apollo provides.
         String configEnv = url.getParameter(APOLLO_ENV_KEY);
         String configAddr = getAddressWithProtocolPrefix(url);
-        String configCluster = url.getParameter(Constants.CONFIG_CLUSTER_KEY);
+        String configCluster = url.getParameter(CONFIG_CLUSTER_KEY);
         if (configEnv != null) {
             System.setProperty(APOLLO_ENV_KEY, configEnv);
         }
@@ -74,9 +77,9 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
             System.setProperty(APOLLO_CLUSTER_KEY, configCluster);
         }
 
-        dubboConfig = ConfigService.getConfig(url.getParameter(Constants.CONFIG_NAMESPACE_KEY, DEFAULT_GROUP));
+        dubboConfig = ConfigService.getConfig(url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP));
         // Decide to fail or to continue when failed to connect to remote server.
-        boolean check = url.getParameter(Constants.CONFIG_CHECK_KEY, true);
+        boolean check = url.getParameter(CONFIG_CHECK_KEY, true);
         if (dubboConfig.getSourceType() != ConfigSourceType.REMOTE) {
             if (check) {
                 throw new IllegalStateException("Failed to connect to config center, the config center is Apollo, " +
@@ -133,7 +136,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
      */
     @Override
     public String getConfig(String key, String group, long timeout) throws IllegalStateException {
-        if (StringUtils.isNotEmpty(group) && !url.getParameter(Constants.CONFIG_GROUP_KEY, DEFAULT_GROUP).equals(group)) {
+        if (StringUtils.isNotEmpty(group) && !url.getParameter(CONFIG_GROUP_KEY, DEFAULT_GROUP).equals(group)) {
             Config config = ConfigService.getAppConfig();
             return config.getProperty(key, null);
         }

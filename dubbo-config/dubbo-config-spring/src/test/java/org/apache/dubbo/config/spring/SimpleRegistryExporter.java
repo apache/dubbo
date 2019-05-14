@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.spring;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -30,6 +29,7 @@ import java.net.ServerSocket;
 
 import static org.apache.dubbo.common.constants.ClusterConstants.CLUSTER_STICKY_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.RpcConstants.CALLBACK_INSTANCES_LIMIT_KEY;
 
 /**
@@ -56,7 +56,7 @@ public class SimpleRegistryExporter {
 
     public static Exporter<RegistryService> export(int port, RegistryService registryService) {
         return protocol.export(proxyFactory.getInvoker(registryService, RegistryService.class,
-                new URLBuilder(Constants.DUBBO_PROTOCOL, NetUtils.getLocalHost(), port, RegistryService.class.getName())
+                new URLBuilder(DUBBO_PROTOCOL, NetUtils.getLocalHost(), port, RegistryService.class.getName())
                         .setPath(RegistryService.class.getName())
                         .addParameter(INTERFACE_KEY, RegistryService.class.getName())
                         .addParameter(CLUSTER_STICKY_KEY, "true")
