@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
@@ -75,7 +74,6 @@ import static org.apache.dubbo.common.constants.RpcConstants.INVOKER_LISTENER_KE
 import static org.apache.dubbo.common.constants.RpcConstants.LOCAL_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.PROXY_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.REFERENCE_FILTER_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.INVOKER_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.RETURN_PREFIX;
 import static org.apache.dubbo.common.constants.RpcConstants.THROW_PREFIX;
 import static org.apache.dubbo.common.constants.ConfigConstants.CLUSTER_KEY;
