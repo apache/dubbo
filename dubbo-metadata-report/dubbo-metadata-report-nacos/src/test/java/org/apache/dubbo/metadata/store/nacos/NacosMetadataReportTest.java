@@ -18,7 +18,6 @@ package org.apache.dubbo.metadata.store.nacos;
 
 import com.alibaba.nacos.api.config.ConfigService;
 import com.google.gson.Gson;
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;

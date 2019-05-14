@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.InvokerListener;
