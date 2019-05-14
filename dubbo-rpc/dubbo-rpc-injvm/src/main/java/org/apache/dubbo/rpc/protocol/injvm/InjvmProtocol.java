@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.injvm;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -30,6 +29,9 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.ConfigConstants.SCOPE_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.SCOPE_LOCAL;
+import static org.apache.dubbo.common.constants.ConfigConstants.SCOPE_REMOTE;
 import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.LOCAL_PROTOCOL;
 
@@ -96,13 +98,13 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
     }
 
     public boolean isInjvmRefer(URL url) {
-        String scope = url.getParameter(Constants.SCOPE_KEY);
+        String scope = url.getParameter(SCOPE_KEY);
         // Since injvm protocol is configured explicitly, we don't need to set any extra flag, use normal refer process.
-        if (Constants.SCOPE_LOCAL.equals(scope) || (url.getParameter(LOCAL_PROTOCOL, false))) {
+        if (SCOPE_LOCAL.equals(scope) || (url.getParameter(LOCAL_PROTOCOL, false))) {
             // if it's declared as local reference
             // 'scope=local' is equivalent to 'injvm=true', injvm will be deprecated in the future release
             return true;
-        } else if (Constants.SCOPE_REMOTE.equals(scope)) {
+        } else if (SCOPE_REMOTE.equals(scope)) {
             // it's declared as remote reference
             return false;
         } else if (url.getParameter(GENERIC_KEY, false)) {

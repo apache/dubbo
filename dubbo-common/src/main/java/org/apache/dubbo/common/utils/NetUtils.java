@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
@@ -37,9 +36,10 @@ import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
 
-import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
+import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_IP_TO_BIND;
 
 /**
  * IP and Port Helper for RPC
@@ -208,7 +208,7 @@ public class NetUtils {
     }
 
     public static String getIpByConfig() {
-        String configIp = ConfigurationUtils.getProperty(Constants.DUBBO_IP_TO_BIND);
+        String configIp = ConfigurationUtils.getProperty(DUBBO_IP_TO_BIND);
         if (configIp != null) {
             return configIp;
         }

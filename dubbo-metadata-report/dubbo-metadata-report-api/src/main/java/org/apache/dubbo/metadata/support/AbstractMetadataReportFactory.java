@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metadata.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.store.MetadataReport;
 import org.apache.dubbo.metadata.store.MetadataReportFactory;
@@ -24,6 +23,9 @@ import org.apache.dubbo.metadata.store.MetadataReportFactory;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
+
+import static org.apache.dubbo.common.constants.ConfigConstants.EXPORT_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.REFER_KEY;
 
 /**
  */
@@ -38,7 +40,7 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
     @Override
     public MetadataReport getMetadataReport(URL url) {
         url = url.setPath(MetadataReport.class.getName())
-                .removeParameters(Constants.EXPORT_KEY, Constants.REFER_KEY);
+                .removeParameters(EXPORT_KEY, REFER_KEY);
         String key = url.toServiceString();
         // Lock the registry access process to ensure a single instance of the registry
         LOCK.lock();
