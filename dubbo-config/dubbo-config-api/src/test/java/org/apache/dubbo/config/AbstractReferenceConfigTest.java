@@ -17,23 +17,22 @@
 
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
-
 import org.apache.dubbo.common.constants.RemotingConstants;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.ClusterConstants.CLUSTER_STICKY_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.INVOKER_LISTENER_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.REFERENCE_FILTER_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.STUB_EVENT_KEY;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasValue;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-
-import static org.apache.dubbo.common.constants.RpcConstants.STUB_EVENT_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.REFERENCE_FILTER_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.INVOKER_LISTENER_KEY;
 
 public class AbstractReferenceConfigTest {
 
@@ -140,7 +139,7 @@ public class AbstractReferenceConfigTest {
         Map<String, String> parameters = new HashMap<String, String>();
         AbstractInterfaceConfig.appendParameters(parameters, referenceConfig);
         assertThat(referenceConfig.getSticky(), is(true));
-        assertThat(parameters, hasKey(Constants.CLUSTER_STICKY_KEY));
+        assertThat(parameters, hasKey(CLUSTER_STICKY_KEY));
     }
 
     @Test
