@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.monitor.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
@@ -45,7 +44,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-
+import static org.apache.dubbo.common.constants.MonitorConstants.COUNT_PROTOCOL;
+import static org.apache.dubbo.common.constants.MonitorConstants.MONITOR_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.INPUT_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.OUTPUT_KEY;
 /**
  * MonitorFilter. (SPI, Singleton, ThreadSafe)
  */
@@ -78,7 +80,7 @@ public class MonitorFilter implements Filter {
      */
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        if (invoker.getUrl().hasParameter(Constants.MONITOR_KEY)) {
+        if (invoker.getUrl().hasParameter(MONITOR_KEY)) {
             RpcContext context = RpcContext.getContext(); // provider must fetch context before invoke() gets called
             String remoteHost = context.getRemoteHost();
             long start = System.currentTimeMillis(); // record start timestamp
@@ -110,7 +112,7 @@ public class MonitorFilter implements Filter {
      */
     private void collect(Invoker<?> invoker, Invocation invocation, Result result, String remoteHost, long start, boolean error) {
         try {
-            URL monitorUrl = invoker.getUrl().getUrlParameter(Constants.MONITOR_KEY);
+            URL monitorUrl = invoker.getUrl().getUrlParameter(MONITOR_KEY);
             Monitor monitor = monitorFactory.getMonitor(monitorUrl);
             if (monitor == null) {
                 return;
@@ -157,14 +159,14 @@ public class MonitorFilter implements Filter {
             remoteValue = remoteHost;
         }
         String input = "", output = "";
-        if (invocation.getAttachment(Constants.INPUT_KEY) != null) {
-            input = invocation.getAttachment(Constants.INPUT_KEY);
+        if (invocation.getAttachment(INPUT_KEY) != null) {
+            input = invocation.getAttachment(INPUT_KEY);
         }
-        if (result != null && result.getAttachment(Constants.OUTPUT_KEY) != null) {
-            output = result.getAttachment(Constants.OUTPUT_KEY);
+        if (result != null && result.getAttachment(OUTPUT_KEY) != null) {
+            output = result.getAttachment(OUTPUT_KEY);
         }
 
-        return new URL(Constants.COUNT_PROTOCOL,
+        return new URL(COUNT_PROTOCOL,
                 NetUtils.getLocalHost(), localPort,
                 service + PATH_SEPARATOR + method,
                 MonitorService.APPLICATION, application,
@@ -174,8 +176,8 @@ public class MonitorFilter implements Filter {
                 error ? MonitorService.FAILURE : MonitorService.SUCCESS, "1",
                 MonitorService.ELAPSED, String.valueOf(elapsed),
                 MonitorService.CONCURRENT, String.valueOf(concurrent),
-                Constants.INPUT_KEY, input,
-                Constants.OUTPUT_KEY, output,
+                INPUT_KEY, input,
+                OUTPUT_KEY, output,
                 GROUP_KEY, group,
                 VERSION_KEY, version);
     }

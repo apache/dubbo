@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.directory;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 
@@ -27,6 +26,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.TOKEN_KEY;
 
 /**
  * MockInvocation.java
@@ -50,8 +51,8 @@ public class MockDirInvocation implements Invocation {
         attachments.put(PATH_KEY, "dubbo");
         attachments.put(GROUP_KEY, "dubbo");
         attachments.put(VERSION_KEY, "1.0.0");
-        attachments.put(Constants.DUBBO_VERSION_KEY, "1.0.0");
-        attachments.put(Constants.TOKEN_KEY, "sfag");
+        attachments.put(DUBBO_VERSION_KEY, "1.0.0");
+        attachments.put(TOKEN_KEY, "sfag");
         attachments.put(TIMEOUT_KEY, "1000");
         return attachments;
     }

@@ -21,7 +21,6 @@ package org.apache.dubbo.common.constants;
  * ConfigConstants
  */
 public interface ConfigConstants {
-    // BEGIN dubbo-config-api
     String CLUSTER_KEY = "cluster";
 
     String STATUS_KEY = "status";
@@ -171,5 +170,4 @@ public interface ConfigConstants {
     String QOS_PORT = "qos.port";
 
     String ACCEPT_FOREIGN_IP = "qos.accept.foreign.ip";
-    // END dubbo-congfig-api
 }

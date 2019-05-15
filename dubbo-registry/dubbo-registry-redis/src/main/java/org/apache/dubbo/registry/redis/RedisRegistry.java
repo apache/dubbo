@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.registry.redis;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.constants.RemotingConstants;
@@ -62,6 +61,16 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTRY_RECONNECT_PERIOD;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_SESSION_TIMEOUT;
+import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_RECONNECT_PERIOD_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.SESSION_TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.UNREGISTER;
 
 /**
  * RedisRegistry
@@ -155,7 +164,7 @@ public class RedisRegistry extends FailbackRegistry {
                     url.getParameter("db.index", 0)));
         }
 
-        this.reconnectPeriod = url.getParameter(Constants.REGISTRY_RECONNECT_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RECONNECT_PERIOD);
+        this.reconnectPeriod = url.getParameter(REGISTRY_RECONNECT_PERIOD_KEY, DEFAULT_REGISTRY_RECONNECT_PERIOD);
         String group = url.getParameter(GROUP_KEY, DEFAULT_ROOT);
         if (!group.startsWith(PATH_SEPARATOR)) {
             group = PATH_SEPARATOR + group;
@@ -165,7 +174,7 @@ public class RedisRegistry extends FailbackRegistry {
         }
         this.root = group;
 
-        this.expirePeriod = url.getParameter(Constants.SESSION_TIMEOUT_KEY, Constants.DEFAULT_SESSION_TIMEOUT);
+        this.expirePeriod = url.getParameter(SESSION_TIMEOUT_KEY, DEFAULT_SESSION_TIMEOUT);
         this.expireFuture = expireExecutor.scheduleWithFixedDelay(() -> {
             try {
                 deferExpired(); // Extend the expiration time
@@ -181,10 +190,10 @@ public class RedisRegistry extends FailbackRegistry {
             try {
                 try (Jedis jedis = jedisPool.getResource()) {
                     for (URL url : new HashSet<>(getRegistered())) {
-                        if (url.getParameter(Constants.DYNAMIC_KEY, true)) {
+                        if (url.getParameter(DYNAMIC_KEY, true)) {
                             String key = toCategoryPath(url);
                             if (jedis.hset(key, url.toFullString(), String.valueOf(System.currentTimeMillis() + expirePeriod)) == 1) {
-                                jedis.publish(key, Constants.REGISTER);
+                                jedis.publish(key, REGISTER);
                             }
                         }
                     }
@@ -212,7 +221,7 @@ public class RedisRegistry extends FailbackRegistry {
                     long now = System.currentTimeMillis();
                     for (Map.Entry<String, String> entry : values.entrySet()) {
                         URL url = URL.valueOf(entry.getKey());
-                        if (url.getParameter(Constants.DYNAMIC_KEY, true)) {
+                        if (url.getParameter(DYNAMIC_KEY, true)) {
                             long expire = Long.parseLong(entry.getValue());
                             if (expire < now) {
                                 jedis.hdel(key, entry.getKey());
@@ -224,7 +233,7 @@ public class RedisRegistry extends FailbackRegistry {
                         }
                     }
                     if (delete) {
-                        jedis.publish(key, Constants.UNREGISTER);
+                        jedis.publish(key, UNREGISTER);
                     }
                 }
             }
@@ -282,7 +291,7 @@ public class RedisRegistry extends FailbackRegistry {
             try {
                 try (Jedis jedis = jedisPool.getResource()) {
                     jedis.hset(key, value, expire);
-                    jedis.publish(key, Constants.REGISTER);
+                    jedis.publish(key, REGISTER);
                     success = true;
                     if (!replicate) {
                         break; //  If the server side has synchronized data, just write a single machine
@@ -312,7 +321,7 @@ public class RedisRegistry extends FailbackRegistry {
             try {
                 try (Jedis jedis = jedisPool.getResource()) {
                     jedis.hdel(key, value);
-                    jedis.publish(key, Constants.UNREGISTER);
+                    jedis.publish(key, UNREGISTER);
                     success = true;
                     if (!replicate) {
                         break; //  If the server side has synchronized data, just write a single machine
@@ -399,7 +408,7 @@ public class RedisRegistry extends FailbackRegistry {
         }
         long now = System.currentTimeMillis();
         List<URL> result = new ArrayList<>();
-        List<String> categories = Arrays.asList(url.getParameter(Constants.CATEGORY_KEY, new String[0]));
+        List<String> categories = Arrays.asList(url.getParameter(CATEGORY_KEY, new String[0]));
         String consumerService = url.getServiceInterface();
         for (String key : keys) {
             if (!ANY_VALUE.equals(consumerService)) {
@@ -417,7 +426,7 @@ public class RedisRegistry extends FailbackRegistry {
             if (CollectionUtils.isNotEmptyMap(values)) {
                 for (Map.Entry<String, String> entry : values.entrySet()) {
                     URL u = URL.valueOf(entry.getKey());
-                    if (!u.getParameter(Constants.DYNAMIC_KEY, true)
+                    if (!u.getParameter(DYNAMIC_KEY, true)
                             || Long.parseLong(entry.getValue()) >= now) {
                         if (UrlUtils.isMatch(url, u)) {
                             urls.add(u);
@@ -427,10 +436,10 @@ public class RedisRegistry extends FailbackRegistry {
             }
             if (urls.isEmpty()) {
                 urls.add(URLBuilder.from(url)
-                        .setProtocol(Constants.EMPTY_PROTOCOL)
+                        .setProtocol(EMPTY_PROTOCOL)
                         .setAddress(ANYHOST_VALUE)
                         .setPath(toServiceName(key))
-                        .addParameter(Constants.CATEGORY_KEY, category)
+                        .addParameter(CATEGORY_KEY, category)
                         .build());
             }
             result.addAll(urls);
@@ -471,7 +480,7 @@ public class RedisRegistry extends FailbackRegistry {
     }
 
     private String toCategoryPath(URL url) {
-        return toServicePath(url) + PATH_SEPARATOR + url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY);
+        return toServicePath(url) + PATH_SEPARATOR + url.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY);
     }
 
     private class NotifySub extends JedisPubSub {
@@ -487,8 +496,8 @@ public class RedisRegistry extends FailbackRegistry {
             if (logger.isInfoEnabled()) {
                 logger.info("redis event: " + key + " = " + msg);
             }
-            if (msg.equals(Constants.REGISTER)
-                    || msg.equals(Constants.UNREGISTER)) {
+            if (msg.equals(REGISTER)
+                    || msg.equals(UNREGISTER)) {
                 try {
                     Jedis jedis = jedisPool.getResource();
                     try {

@@ -40,6 +40,8 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.dubbo.common.constants.ConfigConstants.HOST_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
@@ -50,6 +52,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.PASSWORD_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.USERNAME_KEY;
 
 /**
  * URL - Uniform Resource Locator (Immutable, ThreadSafe)
@@ -1137,16 +1141,16 @@ class URL implements Serializable {
         if (PROTOCOL_KEY.equals(key)) {
             return protocol;
         }
-        if (Constants.USERNAME_KEY.equals(key)) {
+        if (USERNAME_KEY.equals(key)) {
             return username;
         }
-        if (Constants.PASSWORD_KEY.equals(key)) {
+        if (PASSWORD_KEY.equals(key)) {
             return password;
         }
-        if (Constants.HOST_KEY.equals(key)) {
+        if (HOST_KEY.equals(key)) {
             return host;
         }
-        if (Constants.PORT_KEY.equals(key)) {
+        if (PORT_KEY.equals(key)) {
             return String.valueOf(port);
         }
         if (PATH_KEY.equals(key)) {
@@ -1161,16 +1165,16 @@ class URL implements Serializable {
             map.put(PROTOCOL_KEY, protocol);
         }
         if (username != null) {
-            map.put(Constants.USERNAME_KEY, username);
+            map.put(USERNAME_KEY, username);
         }
         if (password != null) {
-            map.put(Constants.USERNAME_KEY, password);
+            map.put(USERNAME_KEY, password);
         }
         if (host != null) {
-            map.put(Constants.HOST_KEY, host);
+            map.put(HOST_KEY, host);
         }
         if (port > 0) {
-            map.put(Constants.PORT_KEY, String.valueOf(port));
+            map.put(PORT_KEY, String.valueOf(port));
         }
         if (path != null) {
             map.put(PATH_KEY, path);

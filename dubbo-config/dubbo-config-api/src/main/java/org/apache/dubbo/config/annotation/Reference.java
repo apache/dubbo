@@ -16,8 +16,9 @@
  */
 package org.apache.dubbo.config.annotation;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.ClusterConstants;
 import org.apache.dubbo.common.constants.RemotingConstants;
+import org.apache.dubbo.common.constants.RpcConstants;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Filter;
 
@@ -94,7 +95,7 @@ public @interface Reference {
     /**
      * Export an stub service for event dispatch, default value is false.
      *
-     * @see Constants#STUB_EVENT_METHODS_KEY
+     * @see RpcConstants#STUB_EVENT_METHODS_KEY
      */
     boolean stubevent() default false;
 
@@ -109,7 +110,7 @@ public @interface Reference {
     /**
      * Whether to stick to the same node in the cluster, the default value is false
      *
-     * @see Constants#DEFAULT_CLUSTER_STICKY
+     * @see ClusterConstants#DEFAULT_CLUSTER_STICKY
      */
     boolean sticky() default false;
 
@@ -136,7 +137,7 @@ public @interface Reference {
     /**
      * The callback instance limit peer connection
      *
-     * @see Constants#DEFAULT_CALLBACK_INSTANCES
+     * @see RpcConstants#DEFAULT_CALLBACK_INSTANCES
      */
     int callbacks() default 0;
 
@@ -163,14 +164,14 @@ public @interface Reference {
     /**
      * Service invocation retry times
      *
-     * @see Constants#DEFAULT_RETRIES
+     * @see ClusterConstants#DEFAULT_RETRIES
      */
     int retries() default 2;
 
     /**
      * Load balance strategy, legal values include: random, roundrobin, leastactive
      *
-     * @see Constants#DEFAULT_LOADBALANCE
+     * @see ClusterConstants#DEFAULT_LOADBALANCE
      */
     String loadbalance() default "";
 

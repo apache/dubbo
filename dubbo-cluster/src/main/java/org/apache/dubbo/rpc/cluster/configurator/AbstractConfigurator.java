@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.configurator;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -27,6 +26,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static org.apache.dubbo.common.constants.ClusterConstants.CONFIG_VERSION_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.OVERRIDE_PROVIDERS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -36,6 +37,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 
 /**
  * AbstractOverrideConfigurator
@@ -65,7 +68,7 @@ public abstract class AbstractConfigurator implements Configurator {
         /**
          * This if branch is created since 2.7.0.
          */
-        String apiVersion = configuratorUrl.getParameter(Constants.CONFIG_VERSION_KEY);
+        String apiVersion = configuratorUrl.getParameter(CONFIG_VERSION_KEY);
         if (StringUtils.isNotEmpty(apiVersion)) {
             String currentSide = url.getParameter(SIDE_KEY);
             String configuratorSide = configuratorUrl.getParameter(SIDE_KEY);
@@ -106,7 +109,7 @@ public abstract class AbstractConfigurator implements Configurator {
     private URL configureIfMatch(String host, URL url) {
         if (ANYHOST_VALUE.equals(configuratorUrl.getHost()) || host.equals(configuratorUrl.getHost())) {
             // TODO, to support wildcards
-            String providers = configuratorUrl.getParameter(Constants.OVERRIDE_PROVIDERS_KEY);
+            String providers = configuratorUrl.getParameter(OVERRIDE_PROVIDERS_KEY);
             if (StringUtils.isEmpty(providers) || providers.contains(url.getAddress()) || providers.contains(ANYHOST_VALUE)) {
                 String configApplication = configuratorUrl.getParameter(APPLICATION_KEY,
                         configuratorUrl.getUsername());
@@ -114,15 +117,15 @@ public abstract class AbstractConfigurator implements Configurator {
                 if (configApplication == null || ANY_VALUE.equals(configApplication)
                         || configApplication.equals(currentApplication)) {
                     Set<String> conditionKeys = new HashSet<String>();
-                    conditionKeys.add(Constants.CATEGORY_KEY);
+                    conditionKeys.add(CATEGORY_KEY);
                     conditionKeys.add(RemotingConstants.CHECK_KEY);
-                    conditionKeys.add(Constants.DYNAMIC_KEY);
+                    conditionKeys.add(DYNAMIC_KEY);
                     conditionKeys.add(ENABLED_KEY);
                     conditionKeys.add(GROUP_KEY);
                     conditionKeys.add(VERSION_KEY);
                     conditionKeys.add(APPLICATION_KEY);
                     conditionKeys.add(SIDE_KEY);
-                    conditionKeys.add(Constants.CONFIG_VERSION_KEY);
+                    conditionKeys.add(CONFIG_VERSION_KEY);
                     for (Map.Entry<String, String> entry : configuratorUrl.getParameters().entrySet()) {
                         String key = entry.getKey();
                         String value = entry.getValue();

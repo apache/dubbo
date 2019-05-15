@@ -18,6 +18,7 @@ package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.common.model.Person;
 import org.apache.dubbo.common.model.SerializablePerson;
+import org.apache.dubbo.common.model.User;
 import org.apache.dubbo.common.model.person.BigPerson;
 import org.apache.dubbo.common.model.person.FullAddress;
 import org.apache.dubbo.common.model.person.PersonInfo;
@@ -130,6 +131,11 @@ public class PojoUtilsTest {
     public void test_pojo() throws Exception {
         assertObject(new Person());
         assertObject(new SerializablePerson());
+    }
+
+    @Test
+    public void test_has_no_nullary_constructor_pojo() {
+        assertObject(new User(1,"fibbery"));
     }
 
     @Test

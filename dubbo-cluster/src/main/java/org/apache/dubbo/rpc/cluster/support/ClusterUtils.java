@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -26,6 +25,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static org.apache.dubbo.common.constants.ClusterConstants.TAG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ALIVE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CORE_THREADS_KEY;
@@ -40,6 +40,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.ASYNC_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.INVOKER_LISTENER_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.REFERENCE_FILTER_KEY;
 
 /**
  * ClusterUtils
@@ -78,13 +82,13 @@ public class ClusterUtils {
             map.remove(RemotingConstants.TRANSPORTER_KEY);
             map.remove(DEFAULT_KEY_PREFIX + RemotingConstants.TRANSPORTER_KEY);
 
-            map.remove(Constants.ASYNC_KEY);
-            map.remove(DEFAULT_KEY_PREFIX + Constants.ASYNC_KEY);
+            map.remove(ASYNC_KEY);
+            map.remove(DEFAULT_KEY_PREFIX + ASYNC_KEY);
 
             // remove method async entry.
             Set<String> methodAsyncKey = new HashSet<>();
             for (String key : map.keySet()) {
-                if (key != null && key.endsWith("." + Constants.ASYNC_KEY)) {
+                if (key != null && key.endsWith("." + ASYNC_KEY)) {
                     methodAsyncKey.add(key);
                 }
             }
@@ -111,27 +115,27 @@ public class ClusterUtils {
         }
         if (remoteMap != null && remoteMap.size() > 0) {
             // Use version passed from provider side
-            reserveRemoteValue(Constants.DUBBO_VERSION_KEY, map, remoteMap);
+            reserveRemoteValue(DUBBO_VERSION_KEY, map, remoteMap);
             reserveRemoteValue(VERSION_KEY, map, remoteMap);
             reserveRemoteValue(METHODS_KEY, map, remoteMap);
             reserveRemoteValue(TIMESTAMP_KEY, map, remoteMap);
-            reserveRemoteValue(Constants.TAG_KEY, map, remoteMap);
+            reserveRemoteValue(TAG_KEY, map, remoteMap);
             // TODO, for compatibility consideration, we cannot simply change the value behind APPLICATION_KEY from Consumer to Provider. So just add an extra key here.
             // Reserve application name from provider.
             map.put(REMOTE_APPLICATION_KEY, remoteMap.get(APPLICATION_KEY));
 
             // Combine filters and listeners on Provider and Consumer
-            String remoteFilter = remoteMap.get(Constants.REFERENCE_FILTER_KEY);
-            String localFilter = localMap.get(Constants.REFERENCE_FILTER_KEY);
+            String remoteFilter = remoteMap.get(REFERENCE_FILTER_KEY);
+            String localFilter = localMap.get(REFERENCE_FILTER_KEY);
             if (remoteFilter != null && remoteFilter.length() > 0
                     && localFilter != null && localFilter.length() > 0) {
-                localMap.put(Constants.REFERENCE_FILTER_KEY, remoteFilter + "," + localFilter);
+                localMap.put(REFERENCE_FILTER_KEY, remoteFilter + "," + localFilter);
             }
-            String remoteListener = remoteMap.get(Constants.INVOKER_LISTENER_KEY);
-            String localListener = localMap.get(Constants.INVOKER_LISTENER_KEY);
+            String remoteListener = remoteMap.get(INVOKER_LISTENER_KEY);
+            String localListener = localMap.get(INVOKER_LISTENER_KEY);
             if (remoteListener != null && remoteListener.length() > 0
                     && localListener != null && localListener.length() > 0) {
-                localMap.put(Constants.INVOKER_LISTENER_KEY, remoteListener + "," + localListener);
+                localMap.put(INVOKER_LISTENER_KEY, remoteListener + "," + localListener);
             }
         }
 

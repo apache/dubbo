@@ -38,9 +38,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.common.Constants.SYNC_REPORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
+import static org.apache.dubbo.metadata.support.Constants.SYNC_REPORT_KEY;
 
 /**
  * 2018/10/9
