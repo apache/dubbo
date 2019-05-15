@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.config.spring;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
+import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
@@ -49,6 +49,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.config.spring.util.BeanFactoryUtils.addApplicationListener;
 
 /**
@@ -199,7 +200,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             if (CollectionUtils.isNotEmptyMap(registryConfigMap)) {
                 List<RegistryConfig> registryConfigs = new ArrayList<>();
                 if (StringUtils.isNotEmpty(registryIds)) {
-                    Arrays.stream(Constants.COMMA_SPLIT_PATTERN.split(registryIds)).forEach(id -> {
+                    Arrays.stream(COMMA_SPLIT_PATTERN.split(registryIds)).forEach(id -> {
                         if (registryConfigMap.containsKey(id)) {
                             registryConfigs.add(registryConfigMap.get(id));
                         }
@@ -256,6 +257,22 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             }
         }
 
+        if (getMetrics() == null) {
+            Map<String, MetricsConfig> metricsConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, MetricsConfig.class, false, false);
+            if (metricsConfigMap != null && metricsConfigMap.size() > 0) {
+                MetricsConfig metricsConfig = null;
+                for (MetricsConfig config : metricsConfigMap.values()) {
+                    if (metricsConfig != null) {
+                        throw new IllegalStateException("Duplicate metrics configs: " + metricsConfig + " and " + config);
+                    }
+                    metricsConfig = config;
+                }
+                if (metricsConfig != null) {
+                    setMetrics(metricsConfig);
+                }
+            }
+        }
+
         if (StringUtils.isEmpty(getProtocolIds())) {
             if (getProvider() != null && StringUtils.isNotEmpty(getProvider().getProtocolIds())) {
                 setProtocolIds(getProvider().getProtocolIds());
@@ -268,7 +285,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             if (protocolConfigMap != null && protocolConfigMap.size() > 0) {
                 List<ProtocolConfig> protocolConfigs = new ArrayList<ProtocolConfig>();
                 if (StringUtils.isNotEmpty(getProtocolIds())) {
-                    Arrays.stream(Constants.COMMA_SPLIT_PATTERN.split(getProtocolIds()))
+                    Arrays.stream(COMMA_SPLIT_PATTERN.split(getProtocolIds()))
                             .forEach(id -> {
                                 if (protocolConfigMap.containsKey(id)) {
                                     protocolConfigs.add(protocolConfigMap.get(id));

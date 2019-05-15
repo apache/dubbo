@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.registry.dubbo;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -28,11 +28,11 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.mock;
 
@@ -54,11 +54,11 @@ public class DubboRegistryTest {
 
     @BeforeEach
     public void setUp() {
-        registryURL = new URL(Constants.REGISTRY_PROTOCOL, NetUtils.getLocalHost(), NetUtils.getAvailablePort())
-                .addParameter(Constants.CHECK_KEY, false)
+        registryURL = new URL(REGISTRY_PROTOCOL, NetUtils.getLocalHost(), NetUtils.getAvailablePort())
+                .addParameter(RemotingConstants.CHECK_KEY, false)
                 .setServiceInterface(RegistryService.class.getName());
         serviceURL = new URL(DubboProtocol.NAME, NetUtils.getLocalHost(), NetUtils.getAvailablePort())
-                .addParameter(Constants.CHECK_KEY, false)
+                .addParameter(RemotingConstants.CHECK_KEY, false)
                 .setServiceInterface(RegistryService.class.getName());
 
         registryService = new MockDubboRegistry(registryURL);

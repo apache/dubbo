@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.remoting.transport.mina;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
@@ -51,7 +51,7 @@ public class MinaClient extends AbstractClient {
 
     private static final Logger logger = LoggerFactory.getLogger(MinaClient.class);
 
-    private static final Map<String, SocketConnector> connectors = new ConcurrentHashMap<String, SocketConnector>();
+    private static final Map<String, SocketConnector> CONNECTORS = new ConcurrentHashMap<String, SocketConnector>();
 
     private String connectorKey;
 
@@ -66,12 +66,12 @@ public class MinaClient extends AbstractClient {
     @Override
     protected void doOpen() throws Throwable {
         connectorKey = getUrl().toFullString();
-        SocketConnector c = connectors.get(connectorKey);
+        SocketConnector c = CONNECTORS.get(connectorKey);
         if (c != null) {
             connector = c;
         } else {
             // set thread pool.
-            connector = new SocketConnector(Constants.DEFAULT_IO_THREADS,
+            connector = new SocketConnector(RemotingConstants.DEFAULT_IO_THREADS,
                     Executors.newCachedThreadPool(new NamedThreadFactory("MinaClientWorker", true)));
             // config
             SocketConnectorConfig cfg = (SocketConnectorConfig) connector.getDefaultConfig();
@@ -82,7 +82,7 @@ public class MinaClient extends AbstractClient {
             cfg.setConnectTimeout(timeout < 1000 ? 1 : timeout / 1000);
             // set codec.
             connector.getFilterChain().addLast("codec", new ProtocolCodecFilter(new MinaCodecAdapter(getCodec(), getUrl(), this)));
-            connectors.put(connectorKey, connector);
+            CONNECTORS.put(connectorKey, connector);
         }
     }
 

@@ -25,11 +25,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import static org.apache.dubbo.common.serialize.Constants.AVRO_SERIALIZATION_ID;
+
 public class AvroSerialization implements Serialization {
 
     @Override
     public byte getContentTypeId() {
-        return 10;
+        return AVRO_SERIALIZATION_ID;
     }
 
     @Override

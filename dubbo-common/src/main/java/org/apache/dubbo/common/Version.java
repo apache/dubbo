@@ -18,7 +18,7 @@ package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ClassHelper;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.io.IOException;
@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
  */
 public final class Version {
     private static final Logger logger = LoggerFactory.getLogger(Version.class);
-    
+
     private static final Pattern PREFIX_DIGITS_PATTERN = Pattern.compile("^([0-9]*).*");
 
     // Dubbo RPC protocol version, for compatibility, it must not be between 2.0.10 ~ 2.6.2
@@ -104,6 +104,11 @@ public final class Version {
             return false;
         }
 
+        // 2.8.x is reserved for dubbox
+        if (iVersion >= 2080000 && iVersion < 2090000) {
+            return false;
+        }
+
         return iVersion >= LOWEST_VERSION_FOR_RESPONSE_ATTACHMENT;
     }
 
@@ -157,19 +162,19 @@ public final class Version {
                     return version;
                 }
             }
-            
+
             // guess version fro jar file name if nothing's found from MANIFEST.MF
             CodeSource codeSource = cls.getProtectionDomain().getCodeSource();
             if (codeSource == null) {
                 logger.info("No codeSource for class " + cls.getName() + " when getVersion, use default version " + defaultVersion);
                 return defaultVersion;
-            } 
-            
+            }
+
             String file = codeSource.getLocation().getFile();
             if (!StringUtils.isEmpty(file) && file.endsWith(".jar")) {
                 version = getFromFile(file);
             }
-            
+
             // return default version if no version info is found
             return StringUtils.isEmpty(version) ? defaultVersion : version;
         } catch (Throwable e) {
@@ -185,19 +190,19 @@ public final class Version {
     private static String getFromFile(String file) {
         // remove suffix ".jar": "path/to/group-module-x.y.z"
         file = file.substring(0, file.length() - 4);
-        
+
         // remove path: "group-module-x.y.z"
         int i = file.lastIndexOf('/');
         if (i >= 0) {
             file = file.substring(i + 1);
         }
-        
+
         // remove group: "module-x.y.z"
         i = file.indexOf("-");
         if (i >= 0) {
             file = file.substring(i + 1);
         }
-        
+
         // remove module: "x.y.z"
         while (file.length() > 0 && !Character.isDigit(file.charAt(0))) {
             i = file.indexOf("-");
@@ -240,7 +245,7 @@ public final class Version {
      * search resources in caller's classloader
      */
     private static Set<String> getResources(String path) throws IOException {
-        Enumeration<URL> urls = ClassHelper.getCallerClassLoader(Version.class).getResources(path);
+        Enumeration<URL> urls = ClassUtils.getCallerClassLoader(Version.class).getResources(path);
         Set<String> files = new HashSet<String>();
         while (urls.hasMoreElements()) {
             URL url = urls.nextElement();
