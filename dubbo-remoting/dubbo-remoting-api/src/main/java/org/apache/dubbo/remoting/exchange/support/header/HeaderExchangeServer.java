@@ -42,6 +42,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.unmodifiableCollection;
 
+import static org.apache.dubbo.remoting.Constants.HEARTBEAT_CHECK_TICK;
+import static org.apache.dubbo.remoting.Constants.LEAST_HEARTBEAT_DURATION;
+import static org.apache.dubbo.remoting.Constants.TICKS_PER_WHEEL;
+
 /**
  * ExchangeServerImpl
  */
@@ -53,7 +57,7 @@ public class HeaderExchangeServer implements ExchangeServer {
     private AtomicBoolean closed = new AtomicBoolean(false);
 
     private static final HashedWheelTimer IDLE_CHECK_TIMER = new HashedWheelTimer(new NamedThreadFactory("dubbo-server-idleCheck", true), 1,
-            TimeUnit.SECONDS, RemotingConstants.TICKS_PER_WHEEL);
+            TimeUnit.SECONDS, TICKS_PER_WHEEL);
 
     private CloseTimerTask closeTimerTask;
 
@@ -246,10 +250,10 @@ public class HeaderExchangeServer implements ExchangeServer {
      * Each interval cannot be less than 1000ms.
      */
     private long calculateLeastDuration(int time) {
-        if (time / RemotingConstants.HEARTBEAT_CHECK_TICK <= 0) {
-            return RemotingConstants.LEAST_HEARTBEAT_DURATION;
+        if (time / HEARTBEAT_CHECK_TICK <= 0) {
+            return LEAST_HEARTBEAT_DURATION;
         } else {
-            return time / RemotingConstants.HEARTBEAT_CHECK_TICK;
+            return time / HEARTBEAT_CHECK_TICK;
         }
     }
 
