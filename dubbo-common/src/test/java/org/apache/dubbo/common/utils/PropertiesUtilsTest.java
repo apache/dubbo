@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 
@@ -179,7 +180,7 @@ public class PropertiesUtilsTest {
     public void testGetSystemProperty() throws Exception {
         try {
             System.setProperty("dubbo", "system-only");
-            assertThat(PropertiesUtils.getSystemProperty("dubbo"), equalTo("system-only"));
+            assertThat(ConfigurationUtils.getSystemProperty("dubbo"), equalTo("system-only"));
         } finally {
             System.clearProperty("dubbo");
         }

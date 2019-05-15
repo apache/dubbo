@@ -17,13 +17,13 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.status.StatusChecker;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.PropertiesUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.remoting.Codec;
@@ -239,15 +239,16 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     /**
-     * Register & bind IP address for service provider, can be configured separately.
-     * Configuration priority: environment variables -> java system properties -> host property in config file ->
-     * /etc/hosts -> default network address -> first available network address
+     * Try to decide the provider ip for registry and binding, registry ip and binding ip can be different.
+     * priority (from high to low): environment variables -> java system properties -> {@link #host} ->
+     * /etc/hosts -> default network address -> first available network interface
      *
+     * @param provider
      * @param registryURLs
      * @param map
      * @return
      */
-    public String findConfigedHosts(List<URL> registryURLs, Map<String, String> map) {
+    public String calRegistryAndBindingHost(ProviderConfig provider, List<URL> registryURLs, Map<String, String> map) {
         boolean anyhost = false;
 
         String hostToBind = getValueFromConfig(DUBBO_IP_TO_BIND);
@@ -255,7 +256,7 @@ public class ProtocolConfig extends AbstractConfig {
             throw new IllegalArgumentException("Specified invalid bind ip from property:" + DUBBO_IP_TO_BIND + ", value:" + hostToBind);
         }
 
-        // if bind ip is not found in environment, keep looking up
+        // if binding ip is not found in environment, keep looking up
         if (StringUtils.isEmpty(hostToBind)) {
             hostToBind = this.getHost();
             if (provider != null && StringUtils.isEmpty(hostToBind)) {
@@ -263,6 +264,7 @@ public class ProtocolConfig extends AbstractConfig {
             }
             if (isInvalidLocalHost(hostToBind)) {
                 anyhost = true;
+                map.put(ANYHOST_KEY, String.valueOf(anyhost));
                 try {
                     hostToBind = InetAddress.getLocalHost().getHostAddress();
                 } catch (UnknownHostException e) {
@@ -292,62 +294,53 @@ public class ProtocolConfig extends AbstractConfig {
             }
         }
 
+        // save binding ip, this key will appear in url.
         map.put(RemotingConstants.BIND_IP_KEY, hostToBind);
 
-        // registry ip is not used for bind ip by default
-        String hostToRegistry = getValueFromConfig(protocolConfig, DUBBO_IP_TO_REGISTRY);
+        // registry ip is not used for binding by default
+        String hostToRegistry = getValueFromConfig(DUBBO_IP_TO_REGISTRY);
         if (hostToRegistry != null && hostToRegistry.length() > 0 && isInvalidLocalHost(hostToRegistry)) {
             throw new IllegalArgumentException("Specified invalid registry ip from property:" + DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
         } else if (StringUtils.isEmpty(hostToRegistry)) {
-            // bind ip is used as registry ip by default
+            // binding ip is used as registry ip by default
             hostToRegistry = hostToBind;
         }
-
-        map.put(ANYHOST_KEY, String.valueOf(anyhost));
 
         return hostToRegistry;
     }
 
     /**
-     * Register port and bind port for the provider, can be configured separately
-     * Configuration priority: environment variable -> java system properties -> port property in protocol config file
-     * -> protocol default port
+     * Try to decide the provider port for registry and binding, registry port and binding port can be different.
+     * priority (from high to low): environment variable -> java system properties -> {@link #port} -> protocol default port
      *
-     * @param protocolConfig
+     * @param provider
      * @param name
      * @return
      */
-    private Integer findConfigedPorts(ProtocolConfig protocolConfig, String name, Map<String, String> map) {
+    public Integer calRegistryAndBindingPort(ProviderConfig provider, Map<String, String> map) {
         Integer portToBind = null;
 
         // parse bind port from environment
-        String port = getValueFromConfig(protocolConfig, DUBBO_PORT_TO_BIND);
+        String port = getValueFromConfig(DUBBO_PORT_TO_BIND);
         portToBind = parsePort(port);
 
-        // if there's no bind port found from environment, keep looking up.
+        // if no binding port found from environment, keep looking up.
         if (portToBind == null) {
-            portToBind = protocolConfig.getPort();
+            portToBind = this.getPort();
             if (provider != null && (portToBind == null || portToBind == 0)) {
                 portToBind = provider.getPort();
             }
-            final int defaultPort = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(name).getDefaultPort();
             if (portToBind == null || portToBind == 0) {
-                portToBind = defaultPort;
-            }
-            if (portToBind == null || portToBind <= 0) {
-                portToBind = getRandomPort(name);
-                if (portToBind == null || portToBind < 0) {
-                    portToBind = getAvailablePort(defaultPort);
-                    putRandomPort(name, portToBind);
-                }
+                portToBind = getAvailablePort(ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(name).getDefaultPort());
             }
         }
 
-        // save bind port, used as url's key later
+        // save binding port, this key will also appear in url.
         map.put(RemotingConstants.BIND_PORT_KEY, String.valueOf(portToBind));
 
-        // registry port, not used as bind port by default
-        String portToRegistryStr = getValueFromConfig(protocolConfig, DUBBO_PORT_TO_REGISTRY);
+        // registry port, use binding port if not specified.
+        // but registry port will not being used as the default binding port.
+        String portToRegistryStr = getValueFromConfig(DUBBO_PORT_TO_REGISTRY);
         Integer portToRegistry = parsePort(portToRegistryStr);
         if (portToRegistry == null) {
             portToRegistry = portToBind;
@@ -373,10 +366,14 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     private String getValueFromConfig(String key) {
-        String protocolPrefix = getName().toUpperCase() + "_";
-        String port = PropertiesUtils.getSystemProperty(protocolPrefix + key);
+        String protocolPrefix = name;
+        if (StringUtils.isEmpty(getName())) {
+            protocolPrefix = DUBBO_PROTOCOL;
+        }
+
+        String port = ConfigurationUtils.getSystemProperty(protocolPrefix.toUpperCase() + "_" + key);
         if (StringUtils.isEmpty(port)) {
-            port = PropertiesUtils.getSystemProperty(key);
+            port = ConfigurationUtils.getSystemProperty(key);
         }
         return port;
     }

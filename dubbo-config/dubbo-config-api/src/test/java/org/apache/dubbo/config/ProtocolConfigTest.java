@@ -20,6 +20,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.config.mock.MockProtocol2;
 import org.apache.dubbo.rpc.Protocol;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -27,10 +28,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_IP_TO_BIND;
+import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_IP_TO_REGISTRY;
+import static org.apache.dubbo.common.constants.RemotingConstants.BIND_IP_KEY;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 public class ProtocolConfigTest {
 
@@ -215,4 +219,66 @@ public class ProtocolConfigTest {
         protocol.setExtension("extension");
         assertThat(protocol.getExtension(), equalTo("extension"));
     }
+
+    @Test
+    public void testCalRegistryAndBindingHost() {
+        // test ip from system or env
+        ProtocolConfig protocol = new ProtocolConfig();
+        protocol.setHost("protocol_ip");
+        System.setProperty(DUBBO_IP_TO_BIND, "system_ip_bind");
+        System.setProperty(DUBBO_IP_TO_REGISTRY, "system_ip_registry");
+        Map<String, String> map = new HashMap<>();
+        Assertions.assertEquals("system_ip_registry", protocol.calRegistryAndBindingHost(null, Collections.emptyList(), map));
+        Assertions.assertEquals("system_ip_bind", map.get(BIND_IP_KEY));
+        System.clearProperty(DUBBO_IP_TO_BIND);
+        System.clearProperty(DUBBO_IP_TO_REGISTRY);
+
+        // test binding ip used as default registry ip
+        System.setProperty(DUBBO_IP_TO_BIND, "system_ip_bind");
+        map = new HashMap<>();
+        Assertions.assertEquals("system_ip_bind", protocol.calRegistryAndBindingHost(null, Collections.emptyList(), map));
+        Assertions.assertEquals("system_ip_bind", map.get(BIND_IP_KEY));
+        System.clearProperty(DUBBO_IP_TO_BIND);
+
+        // test protocol ip
+        map = new HashMap<>();
+        Assertions.assertEquals("protocol_ip", protocol.calRegistryAndBindingHost(null, Collections.emptyList(), map));
+        Assertions.assertEquals("protocol_ip", map.get(BIND_IP_KEY));
+        System.clearProperty(DUBBO_IP_TO_BIND);
+    }
+
+    // FIXME, solve module dependency problem first.
+   /* @Test
+    public void testCalRegistryAndBindingPort () {
+        // test port from system or env
+        ProtocolConfig protocol = new ProtocolConfig();
+        protocol.setPort(11111);
+        System.setProperty(DUBBO_PORT_TO_BIND, "22222");
+        System.setProperty(DUBBO_PORT_TO_REGISTRY, "33333");
+        Map<String, String> map = new HashMap<>();
+        Assertions.assertEquals(33333, protocol.calRegistryAndBindingPort(null, map));
+        Assertions.assertEquals("22222", map.get(BIND_PORT_KEY));
+        System.clearProperty(DUBBO_PORT_TO_BIND);
+        System.clearProperty(DUBBO_PORT_TO_REGISTRY);
+
+        // test binding port used as default registry port
+        System.setProperty(DUBBO_PORT_TO_BIND, "22222");
+        map = new HashMap<>();
+        Assertions.assertEquals(22222, protocol.calRegistryAndBindingPort(null, map));
+        Assertions.assertEquals("22222", map.get(BIND_PORT_KEY));
+        System.clearProperty(DUBBO_PORT_TO_BIND);
+
+        // test protocol port
+        map = new HashMap<>();
+        Assertions.assertEquals(11111, protocol.calRegistryAndBindingPort(null, map));
+        Assertions.assertEquals("11111", map.get(BIND_PORT_KEY));
+        System.clearProperty(DUBBO_PORT_TO_BIND);
+
+        // test random port
+        protocol = new ProtocolConfig();
+        protocol.setName("dubbo");
+        map = new HashMap<>();
+        Assertions.assertTrue(String.valueOf(protocol.calRegistryAndBindingPort(null, map)).startsWith("2088"));
+        Assertions.assertTrue(String.valueOf(protocol.calRegistryAndBindingPort(null, map)).startsWith("2088"));
+    }*/
 }

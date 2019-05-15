@@ -109,11 +109,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private static final ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
     /**
-     * A random port cache, the different protocols who has no port specified have different random port
-     */
-    private static final Map<String, Integer> RANDOM_PORT_MAP = new HashMap<String, Integer>();
-
-    /**
      * A delayed exposure service timer
      */
     private static final ScheduledExecutorService delayExportExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboServiceDelayExporter", true));
@@ -240,19 +235,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         provider.setThreads(protocol.getThreads());
         provider.setParameters(protocol.getParameters());
         return provider;
-    }
-
-    private static Integer getRandomPort(String protocol) {
-        protocol = protocol.toLowerCase();
-        return RANDOM_PORT_MAP.getOrDefault(protocol, Integer.MIN_VALUE);
-    }
-
-    private static void putRandomPort(String protocol, Integer port) {
-        protocol = protocol.toLowerCase();
-        if (!RANDOM_PORT_MAP.containsKey(protocol)) {
-            RANDOM_PORT_MAP.put(protocol, port);
-            logger.warn("Use random available port(" + port + ") for protocol " + protocol);
-        }
     }
 
     public URL toUrl() {
@@ -541,8 +523,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             }
         }
         // export service
-        String host = this.findConfigedHosts(protocolConfig, registryURLs, map);
-        Integer port = this.findConfigedPorts(protocolConfig, name, map);
+        String host = protocolConfig.calRegistryAndBindingHost(provider, registryURLs, map);
+        Integer port = protocolConfig.calRegistryAndBindingPort(provider, map);
         URL url = new URL(name, host, port, getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), map);
 
         if (ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)

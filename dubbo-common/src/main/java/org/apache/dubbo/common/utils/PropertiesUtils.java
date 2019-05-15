@@ -192,20 +192,6 @@ public class PropertiesUtils {
         return replaceProperty(properties.getProperty(key, defaultValue), (Map) properties);
     }
 
-    /**
-     * System environment -> System properties
-     *
-     * @param key key
-     * @return value
-     */
-    public static String getSystemProperty(String key) {
-        String value = System.getenv(key);
-        if (StringUtils.isEmpty(value)) {
-            value = System.getProperty(key);
-        }
-        return value;
-    }
-
     public static Properties loadProperties(String fileName) {
         return loadProperties(fileName, false, false);
     }

@@ -49,11 +49,12 @@ public class Environment {
 
     // ApplicationConfig
     private InmemoryConfiguration applicationConfig;
+
     /**
-     * The final configuration exposed to framework, try to fetch config values from this instance,
+     * The final configuration exposed to framework, whenever you want to get a config value, always try to use this instance,
      * it hides the complexity of checking each configuration source and the precedence of one source over another.
      */
-    private CompositeConfiguration globalConfiguration = new CompositeConfiguration();
+    private CompositeConfiguration globalConfiguration;
 
     private boolean configCenterFirst = true;
 
@@ -110,11 +111,11 @@ public class Environment {
         return appExternalConfigurationMap;
     }
 
-    public void updateExternalConfigurationMap(Map<String, String> externalMap) {
+    public synchronized void updateExternalConfigurationMap(Map<String, String> externalMap) {
         this.externalConfigurationMap.putAll(externalMap);
     }
 
-    public void updateAppExternalConfigurationMap(Map<String, String> externalMap) {
+    public synchronized void updateAppExternalConfigurationMap(Map<String, String> externalMap) {
         this.appExternalConfigurationMap.putAll(externalMap);
     }
 
@@ -145,6 +146,13 @@ public class Environment {
         return compositeConfiguration;
     }
 
+    /**
+     * see {@link #globalConfiguration}
+     * <p>
+     * Do not need to be thread safe.
+     *
+     * @return
+     */
     public CompositeConfiguration getConfiguration() {
         if (globalConfiguration == null) {
             globalConfiguration = new CompositeConfiguration();

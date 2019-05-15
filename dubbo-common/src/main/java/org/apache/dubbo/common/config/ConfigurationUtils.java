@@ -34,9 +34,11 @@ import static org.apache.dubbo.common.constants.ConfigConstants.SHUTDOWN_WAIT_SE
  * Utilities for manipulating configurations from different sources
  */
 public class ConfigurationUtils {
+
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationUtils.class);
 
     /**
+     * {@link #getProperty(String, String)}
      * @param property
      * @return
      */
@@ -45,8 +47,8 @@ public class ConfigurationUtils {
     }
 
     /**
-     * get
-     *
+     * Get the valid value for the specified property, it checks all the configuration sources with a specific priority:
+     * Environment -> -D -> ApplicationConfig -> ExternalConfiguration (from configuration) -> .properties file
      * @param property
      * @param defaultValue
      * @return
@@ -55,12 +57,31 @@ public class ConfigurationUtils {
         return StringUtils.trim(Environment.getInstance().getConfiguration().getString(property, defaultValue));
     }
 
+    /**
+     * Except for checking the configuration sources listed in {@link #getProperty(String)}, this method also checks
+     * remote Config Center every time. Value from Config Center has the highest priority.
+     *
+     * @param property
+     * @return
+     */
     public static String getDynamicProperty(String property) {
         CompositeConfiguration configuration = Environment.getInstance().getConfiguration();
         Environment.getInstance().getDynamicConfiguration().ifPresent(configuration::addConfigurationFirst);
         return configuration.getString(property);
     }
 
+    /**
+     * FIXME ConfigurationListener is not available in common module now, need to move from configcenter-api to common.
+     * https://github.com/apache/incubator-dubbo/issues/4054
+     */
+//    public static String getDynamicProperty(String property, ConfigurationListener listener) {
+//        CompositeConfiguration configuration = Environment.getInstance().getConfiguration();
+//        Environment.getInstance().getDynamicConfiguration().ifPresent(c -> {
+//            c.addListener(listener);
+//            configuration.addConfigurationFirst(c);
+//        });
+//        return configuration.getString(property);
+//    }
     public static Map<String, String> parseProperties(String content) throws IOException {
         Map<String, String> map = new HashMap<>();
         if (StringUtils.isEmpty(content)) {
@@ -73,6 +94,20 @@ public class ConfigurationUtils {
             );
         }
         return map;
+    }
+
+    /**
+     * System environment -> System properties
+     *
+     * @param key key
+     * @return value
+     */
+    public static String getSystemProperty(String key) {
+        String value = System.getenv(key);
+        if (StringUtils.isEmpty(value)) {
+            value = System.getProperty(key);
+        }
+        return value;
     }
 
     // FIXME legacy method inherited from ConfigUtils
