@@ -39,6 +39,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.remoting.Constants.CHARSET_KEY;
 
 public class DeprecatedTelnetCodec implements Codec {
 
@@ -70,7 +71,7 @@ public class DeprecatedTelnetCodec implements Codec {
 
     private static Charset getCharset(Channel channel) {
         if (channel != null) {
-            Object attribute = channel.getAttribute(RemotingConstants.CHARSET_KEY);
+            Object attribute = channel.getAttribute(CHARSET_KEY);
             if (attribute instanceof String) {
                 try {
                     return Charset.forName((String) attribute);
@@ -82,7 +83,7 @@ public class DeprecatedTelnetCodec implements Codec {
             }
             URL url = channel.getUrl();
             if (url != null) {
-                String parameter = url.getParameter(RemotingConstants.CHARSET_KEY);
+                String parameter = url.getParameter(CHARSET_KEY);
                 if (StringUtils.isNotEmpty(parameter)) {
                     try {
                         return Charset.forName(parameter);

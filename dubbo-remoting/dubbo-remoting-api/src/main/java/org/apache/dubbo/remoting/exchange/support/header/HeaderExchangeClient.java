@@ -35,6 +35,9 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.utils.UrlUtils.getHeartbeat;
 import static org.apache.dubbo.common.utils.UrlUtils.getIdleTimeout;
+import static org.apache.dubbo.remoting.Constants.HEARTBEAT_CHECK_TICK;
+import static org.apache.dubbo.remoting.Constants.LEAST_HEARTBEAT_DURATION;
+import static org.apache.dubbo.remoting.Constants.TICKS_PER_WHEEL;
 
 /**
  * DefaultMessageClient
@@ -45,7 +48,7 @@ public class HeaderExchangeClient implements ExchangeClient {
     private final ExchangeChannel channel;
 
     private static final HashedWheelTimer IDLE_CHECK_TIMER = new HashedWheelTimer(
-            new NamedThreadFactory("dubbo-client-idleCheck", true), 1, TimeUnit.SECONDS, RemotingConstants.TICKS_PER_WHEEL);
+            new NamedThreadFactory("dubbo-client-idleCheck", true), 1, TimeUnit.SECONDS, TICKS_PER_WHEEL);
     private HeartbeatTimerTask heartBeatTimerTask;
     private ReconnectTimerTask reconnectTimerTask;
 
@@ -206,10 +209,10 @@ public class HeaderExchangeClient implements ExchangeClient {
      * Each interval cannot be less than 1000ms.
      */
     private long calculateLeastDuration(int time) {
-        if (time / RemotingConstants.HEARTBEAT_CHECK_TICK <= 0) {
-            return RemotingConstants.LEAST_HEARTBEAT_DURATION;
+        if (time / HEARTBEAT_CHECK_TICK <= 0) {
+            return LEAST_HEARTBEAT_DURATION;
         } else {
-            return time / RemotingConstants.HEARTBEAT_CHECK_TICK;
+            return time / HEARTBEAT_CHECK_TICK;
         }
     }
 
