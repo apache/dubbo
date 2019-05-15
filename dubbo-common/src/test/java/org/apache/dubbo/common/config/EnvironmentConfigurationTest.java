@@ -35,13 +35,10 @@ public class EnvironmentConfigurationTest {
         map.put("A_KEY_NEVER_BEING_REUSED", "VALUE");
         try {
             setEnv(map);
-//            updateEnv("A_KEY_NEVER_BEING_REUSED", "VALUE");
             EnvironmentConfiguration configuration = new EnvironmentConfiguration();
-            // this UT only works on particular platform, assert only when value is not null.
-            if (configuration.getInternalProperty("A_KEY_NEVER_BEING_REUSED") != null) {
-                Assertions.assertEquals("VALUE", configuration.getInternalProperty("A_KEY_NEVER_BEING_REUSED"));
-                Assertions.assertEquals("VALUE", configuration.getInternalProperty("a.KEY_NEVER_BEING.REUSED"));
-            }
+            // this UT maybe only works on particular platform, assert only when value is not null.
+            Assertions.assertEquals("VALUE", configuration.getInternalProperty("A_KEY_NEVER_BEING_REUSED"));
+            Assertions.assertEquals("VALUE", configuration.getInternalProperty("a.KEY_NEVER_BEING.REUSED"));
         } catch (Exception e) {
             // skip test.
             e.printStackTrace();
