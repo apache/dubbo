@@ -53,7 +53,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
-import static org.apache.dubbo.common.constants.ClusterConstants.TAG_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.TAG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;

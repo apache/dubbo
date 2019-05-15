@@ -21,7 +21,7 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.ClusterConstants.LOADBALANCE_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.LOADBALANCE_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.FAIL_PREFIX;
 import static org.apache.dubbo.common.constants.RpcConstants.FORCE_PREFIX;
 import static org.apache.dubbo.common.constants.RpcConstants.MOCK_KEY;

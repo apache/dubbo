@@ -17,7 +17,6 @@
 
 package com.alibaba.dubbo.common;
 
-import org.apache.dubbo.common.constants.ClusterConstants;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.constants.ConfigConstants;
 import org.apache.dubbo.common.constants.FilterConstants;
@@ -27,6 +26,6 @@ import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.constants.RpcConstants;
 
 @Deprecated
-public class Constants implements ClusterConstants, CommonConstants, ConfigConstants, FilterConstants,
-        MonitorConstants, RegistryConstants, RemotingConstants, RpcConstants {
+public class Constants implements CommonConstants, ConfigConstants, FilterConstants,
+        MonitorConstants, RegistryConstants, RemotingConstants, RpcConstants, org.apache.dubbo.rpc.cluster.Constants {
 }

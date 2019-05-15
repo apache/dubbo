@@ -35,10 +35,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.common.constants.ClusterConstants.DEFAULT_FAILBACK_TIMES;
-import static org.apache.dubbo.common.constants.ClusterConstants.RETRIES_KEY;
-import static org.apache.dubbo.common.constants.ClusterConstants.DEFAULT_FAILBACK_TASKS;
-import static org.apache.dubbo.common.constants.ClusterConstants.FAIL_BACK_TASKS_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_FAILBACK_TIMES;
+import static org.apache.dubbo.rpc.cluster.Constants.RETRIES_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_FAILBACK_TASKS;
+import static org.apache.dubbo.rpc.cluster.Constants.FAIL_BACK_TASKS_KEY;
 
 /**
  * When fails, record failure requests and schedule for retry on a regular interval.

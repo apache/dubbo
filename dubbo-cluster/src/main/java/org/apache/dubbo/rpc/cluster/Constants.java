@@ -14,15 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.cluster;
 
-package org.apache.dubbo.common.constants;
-
-public interface ClusterConstants {
-    /**
-     * key for router type, for e.g., "script"/"file",  corresponding to ScriptRouterFactory.NAME, FileRouterFactory.NAME
-     */
-    String ROUTER_KEY = "router";
-
+public interface Constants {
     String LOADBALANCE_KEY = "loadbalance";
 
     String DEFAULT_LOADBALANCE = "random";
@@ -95,8 +89,6 @@ public interface ClusterConstants {
 
     String RUNTIME_KEY = "runtime";
 
-    String TAG_KEY = "dubbo.tag";
-
     String REMOTE_TIMESTAMP_KEY = "remote.timestamp";
 
     String WARMUP_KEY = "warmup";
@@ -106,4 +98,6 @@ public interface ClusterConstants {
     String CONFIG_VERSION_KEY = "configVersion";
 
     String OVERRIDE_PROVIDERS_KEY = "providerAddresses";
+
+    String TAG_KEY = "dubbo.tag";
 }
