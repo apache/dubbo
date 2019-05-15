@@ -36,7 +36,46 @@ import static org.apache.dubbo.common.constants.ConfigConstants.SHUTDOWN_WAIT_SE
 public class ConfigurationUtils {
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationUtils.class);
 
-    // FIXME
+    /**
+     * @param property
+     * @return
+     */
+    public static String getProperty(String property) {
+        return getProperty(property, null);
+    }
+
+    /**
+     * get
+     *
+     * @param property
+     * @param defaultValue
+     * @return
+     */
+    public static String getProperty(String property, String defaultValue) {
+        return StringUtils.trim(Environment.getInstance().getConfiguration().getString(property, defaultValue));
+    }
+
+    public static String getDynamicProperty(String property) {
+        CompositeConfiguration configuration = Environment.getInstance().getConfiguration();
+        Environment.getInstance().getDynamicConfiguration().ifPresent(configuration::addConfigurationFirst);
+        return configuration.getString(property);
+    }
+
+    public static Map<String, String> parseProperties(String content) throws IOException {
+        Map<String, String> map = new HashMap<>();
+        if (StringUtils.isEmpty(content)) {
+            logger.warn("You specified the config centre, but there's not even one single config item in it.");
+        } else {
+            Properties properties = new Properties();
+            properties.load(new StringReader(content));
+            properties.stringPropertyNames().forEach(
+                    k -> map.put(k, properties.getProperty(k))
+            );
+        }
+        return map;
+    }
+
+    // FIXME legacy method inherited from ConfigUtils
     @SuppressWarnings("deprecation")
     public static int getServerShutdownTimeout() {
         int timeout = DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
@@ -60,28 +99,6 @@ public class ConfigurationUtils {
             }
         }
         return timeout;
-    }
-
-    public static String getProperty(String property) {
-        return getProperty(property, null);
-    }
-
-    public static String getProperty(String property, String defaultValue) {
-        return StringUtils.trim(Environment.getInstance().getConfiguration().getString(property, defaultValue));
-    }
-
-    public static Map<String, String> parseProperties(String content) throws IOException {
-        Map<String, String> map = new HashMap<>();
-        if (StringUtils.isEmpty(content)) {
-            logger.warn("You specified the config centre, but there's not even one single config item in it.");
-        } else {
-            Properties properties = new Properties();
-            properties.load(new StringReader(content));
-            properties.stringPropertyNames().forEach(
-                    k -> map.put(k, properties.getProperty(k))
-            );
-        }
-        return map;
     }
 
 }

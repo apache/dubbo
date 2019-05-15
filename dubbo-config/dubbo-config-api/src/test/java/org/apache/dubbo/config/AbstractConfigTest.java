@@ -17,7 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.config.Environment;
-import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.PropertiesUtils;
 import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.support.Parameter;
 
@@ -365,7 +365,7 @@ public class AbstractConfigTest {
 
             Properties properties = new Properties();
             properties.load(this.getClass().getResourceAsStream("/dubbo.properties"));
-            ConfigUtils.setProperties(properties);
+            PropertiesUtils.setProperties(properties);
 
             overrideConfig.refresh();
 
@@ -375,7 +375,7 @@ public class AbstractConfigTest {
             //Assertions.assertEquals("properties", overrideConfig.getUseKeyAsProperty());
         } finally {
             Environment.getInstance().clearExternalConfigs();
-            ConfigUtils.setProperties(null);
+            PropertiesUtils.setProperties(null);
         }
     }
 

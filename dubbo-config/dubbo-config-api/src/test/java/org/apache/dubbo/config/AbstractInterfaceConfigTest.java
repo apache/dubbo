@@ -18,7 +18,7 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.PropertiesUtils;
 import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.mock.GreetingLocal1;
@@ -91,7 +91,7 @@ public class AbstractInterfaceConfigTest {
     @Test
     public void checkApplication1() {
         try {
-            ConfigUtils.setProperties(null);
+            PropertiesUtils.setProperties(null);
             System.clearProperty(SHUTDOWN_WAIT_KEY);
             System.clearProperty(SHUTDOWN_WAIT_SECONDS_KEY);
 
@@ -104,14 +104,14 @@ public class AbstractInterfaceConfigTest {
             Assertions.assertEquals("100", System.getProperty(SHUTDOWN_WAIT_KEY));
 
             System.clearProperty(SHUTDOWN_WAIT_KEY);
-            ConfigUtils.setProperties(null);
+            PropertiesUtils.setProperties(null);
             writeDubboProperties(SHUTDOWN_WAIT_SECONDS_KEY, "1000");
             System.setProperty("dubbo.application.name", "demo");
             interfaceConfig = new InterfaceConfig();
             interfaceConfig.checkApplication();
             Assertions.assertEquals("1000", System.getProperty(SHUTDOWN_WAIT_SECONDS_KEY));
         } finally {
-            ConfigUtils.setProperties(null);
+            PropertiesUtils.setProperties(null);
             System.clearProperty("dubbo.application.name");
             System.clearProperty(SHUTDOWN_WAIT_KEY);
             System.clearProperty(SHUTDOWN_WAIT_SECONDS_KEY);

@@ -18,7 +18,7 @@ package org.apache.dubbo.common.config;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.PropertiesUtils;
 
 /**
  * Configuration from system properties and dubbo.properties
@@ -36,6 +36,6 @@ public class PropertiesConfiguration extends AbstractPrefixConfiguration {
 
     @Override
     public Object getInternalProperty(String key) {
-        return ConfigUtils.getProperty(key);
+        return PropertiesUtils.getProperty(key);
     }
 }

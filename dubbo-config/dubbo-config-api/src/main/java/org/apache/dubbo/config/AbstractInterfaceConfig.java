@@ -23,8 +23,8 @@ import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.PropertiesUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
@@ -220,11 +220,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         ApplicationModel.setApplication(application.getName());
 
         // backward compatibility
-        String wait = ConfigUtils.getProperty(SHUTDOWN_WAIT_KEY);
+        String wait = PropertiesUtils.getProperty(SHUTDOWN_WAIT_KEY);
         if (wait != null && wait.trim().length() > 0) {
             System.setProperty(SHUTDOWN_WAIT_KEY, wait.trim());
         } else {
-            wait = ConfigUtils.getProperty(SHUTDOWN_WAIT_SECONDS_KEY);
+            wait = PropertiesUtils.getProperty(SHUTDOWN_WAIT_SECONDS_KEY);
             if (wait != null && wait.trim().length() > 0) {
                 System.setProperty(SHUTDOWN_WAIT_SECONDS_KEY, wait.trim());
             }
@@ -372,7 +372,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         map.put(INTERFACE_KEY, MonitorService.class.getName());
         appendRuntimeParameters(map);
         //set ip
-        String hostToRegistry = ConfigUtils.getSystemProperty(DUBBO_IP_TO_REGISTRY);
+        String hostToRegistry = PropertiesUtils.getSystemProperty(DUBBO_IP_TO_REGISTRY);
         if (StringUtils.isEmpty(hostToRegistry)) {
             hostToRegistry = NetUtils.getLocalHost();
         } else if (NetUtils.isInvalidLocalHost(hostToRegistry)) {
@@ -387,7 +387,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (sysaddress != null && sysaddress.length() > 0) {
             address = sysaddress;
         }
-        if (ConfigUtils.isNotEmpty(address)) {
+        if (PropertiesUtils.isNotEmpty(address)) {
             if (!map.containsKey(PROTOCOL_KEY)) {
                 if (getExtensionLoader(MonitorFactory.class).hasExtension(LOGSTAT_PROTOCOL)) {
                     map.put(PROTOCOL_KEY, LOGSTAT_PROTOCOL);
@@ -410,8 +410,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         map.put(DUBBO_VERSION_KEY, Version.getProtocolVersion());
         map.put(RELEASE_KEY, Version.getVersion());
         map.put(TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
-        if (ConfigUtils.getPid() > 0) {
-            map.put(PID_KEY, String.valueOf(ConfigUtils.getPid()));
+        if (PropertiesUtils.getPid() > 0) {
+            map.put(PID_KEY, String.valueOf(PropertiesUtils.getPid()));
         }
     }
 
@@ -478,7 +478,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      *                       side, it is the {@link Class} of the remote service interface that will be referenced
      */
     void checkMock(Class<?> interfaceClass) {
-        if (ConfigUtils.isEmpty(mock)) {
+        if (PropertiesUtils.isEmpty(mock)) {
             return;
         }
 
@@ -494,7 +494,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             }
         } else if (normalizedMock.startsWith(THROW_PREFIX)) {
             normalizedMock = normalizedMock.substring(THROW_PREFIX.length()).trim();
-            if (ConfigUtils.isNotEmpty(normalizedMock)) {
+            if (PropertiesUtils.isNotEmpty(normalizedMock)) {
                 try {
                     //Check whether the mock value is legal
                     MockInvoker.getThrowable(normalizedMock);
@@ -516,13 +516,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      *                       side, it is the {@link Class} of the remote service interface
      */
     void checkStubAndLocal(Class<?> interfaceClass) {
-        if (ConfigUtils.isNotEmpty(local)) {
-            Class<?> localClass = ConfigUtils.isDefault(local) ?
+        if (PropertiesUtils.isNotEmpty(local)) {
+            Class<?> localClass = PropertiesUtils.isDefault(local) ?
                     ReflectUtils.forName(interfaceClass.getName() + "Local") : ReflectUtils.forName(local);
             verify(interfaceClass, localClass);
         }
-        if (ConfigUtils.isNotEmpty(stub)) {
-            Class<?> localClass = ConfigUtils.isDefault(stub) ?
+        if (PropertiesUtils.isNotEmpty(stub)) {
+            Class<?> localClass = PropertiesUtils.isDefault(stub) ?
                     ReflectUtils.forName(interfaceClass.getName() + "Stub") : ReflectUtils.forName(stub);
             verify(interfaceClass, localClass);
         }
@@ -594,7 +594,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         // for backward compatibility
         // -Ddubbo.registry.address is now deprecated.
         if (registries == null || registries.isEmpty()) {
-            String address = ConfigUtils.getProperty("dubbo.registry.address");
+            String address = PropertiesUtils.getProperty("dubbo.registry.address");
             if (address != null && address.length() > 0) {
                 List<RegistryConfig> tmpRegistries = new ArrayList<RegistryConfig>();
                 String[] as = address.split("\\s*[|]+\\s*");

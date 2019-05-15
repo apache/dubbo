@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.container.logback;
 
-import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.container.Container;
 
@@ -46,14 +46,14 @@ public class LogbackContainer implements Container {
 
     @Override
     public void start() {
-        String file = ConfigUtils.getProperty(LOGBACK_FILE);
+        String file = ConfigurationUtils.getProperty(LOGBACK_FILE);
         if (file != null && file.length() > 0) {
-            String level = ConfigUtils.getProperty(LOGBACK_LEVEL);
+            String level = ConfigurationUtils.getProperty(LOGBACK_LEVEL);
             if (StringUtils.isEmpty(level)) {
                 level = DEFAULT_LOGBACK_LEVEL;
             }
             // maxHistory=0 Infinite history
-            int maxHistory = StringUtils.parseInteger(ConfigUtils.getProperty(LOGBACK_MAX_HISTORY));
+            int maxHistory = StringUtils.parseInteger(ConfigurationUtils.getProperty(LOGBACK_MAX_HISTORY));
 
             doInitializer(file, level, maxHistory);
         }

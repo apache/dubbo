@@ -22,8 +22,8 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.bytecode.Wrapper;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.PropertiesUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Exporter;
@@ -35,12 +35,12 @@ import org.apache.dubbo.rpc.service.GenericService;
 
 import java.lang.reflect.Constructor;
 
-import static org.apache.dubbo.common.constants.RpcConstants.LOCAL_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.STUB_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.IS_SERVER_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.STUB_EVENT_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.DEFAULT_STUB_EVENT;
+import static org.apache.dubbo.common.constants.RpcConstants.IS_SERVER_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.LOCAL_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.STUB_EVENT_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.STUB_EVENT_METHODS_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.STUB_KEY;
 
 /**
  * StubProxyFactoryWrapper
@@ -73,9 +73,9 @@ public class StubProxyFactoryWrapper implements ProxyFactory {
         if (GenericService.class != invoker.getInterface()) {
             URL url = invoker.getUrl();
             String stub = url.getParameter(STUB_KEY, url.getParameter(LOCAL_KEY));
-            if (ConfigUtils.isNotEmpty(stub)) {
+            if (PropertiesUtils.isNotEmpty(stub)) {
                 Class<?> serviceType = invoker.getInterface();
-                if (ConfigUtils.isDefault(stub)) {
+                if (PropertiesUtils.isDefault(stub)) {
                     if (url.hasParameter(STUB_KEY)) {
                         stub = serviceType.getName() + "Stub";
                     } else {

@@ -20,8 +20,8 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
-import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.common.utils.PropertiesUtils;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -103,7 +103,7 @@ public class AccessLogFilter implements Filter {
     public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
         try {
             String accessLogKey = invoker.getUrl().getParameter(ACCESS_LOG_KEY);
-            if (ConfigUtils.isNotEmpty(accessLogKey)) {
+            if (PropertiesUtils.isNotEmpty(accessLogKey)) {
                 AccessLogData logData = buildAccessLogData(invoker, inv);
                 log(accessLogKey, logData);
             }
@@ -130,7 +130,7 @@ public class AccessLogFilter implements Filter {
                 try {
                     String accessLog = entry.getKey();
                     Set<AccessLogData> logSet = entry.getValue();
-                    if (ConfigUtils.isDefault(accessLog)) {
+                    if (PropertiesUtils.isDefault(accessLog)) {
                         processWithServiceLogger(logSet);
                     } else {
                         File file = new File(accessLog);

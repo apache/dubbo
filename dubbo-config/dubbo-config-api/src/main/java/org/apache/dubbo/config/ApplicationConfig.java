@@ -17,6 +17,8 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.compiler.support.AdaptiveCompiler;
+import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -333,6 +335,15 @@ public class ApplicationConfig extends AbstractConfig {
     public void setShutwait(String shutwait) {
         System.setProperty(SHUTDOWN_WAIT_KEY, shutwait);
         this.shutwait = shutwait;
+    }
+
+    @Override
+    public void refresh() {
+        super.refresh();
+
+        InmemoryConfiguration config = new InmemoryConfiguration(getPrefix(), getId());
+        config.addProperties(getMetaData());
+        Environment.getInstance().setApplicationConfig(config);
     }
 
     @Override

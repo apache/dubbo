@@ -37,66 +37,66 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ConfigUtilsTest {
+public class PropertiesUtilsTest {
     @BeforeEach
     public void setUp() throws Exception {
-        ConfigUtils.setProperties(null);
+        PropertiesUtils.setProperties(null);
     }
 
     @AfterEach
     public void tearDown() throws Exception {
-        ConfigUtils.setProperties(null);
+        PropertiesUtils.setProperties(null);
     }
 
     @Test
     public void testIsNotEmpty() throws Exception {
-        assertThat(ConfigUtils.isNotEmpty("abc"), is(true));
+        assertThat(PropertiesUtils.isNotEmpty("abc"), is(true));
     }
 
     @Test
     public void testIsEmpty() throws Exception {
-        assertThat(ConfigUtils.isEmpty(null), is(true));
-        assertThat(ConfigUtils.isEmpty(""), is(true));
-        assertThat(ConfigUtils.isEmpty("false"), is(true));
-        assertThat(ConfigUtils.isEmpty("FALSE"), is(true));
-        assertThat(ConfigUtils.isEmpty("0"), is(true));
-        assertThat(ConfigUtils.isEmpty("null"), is(true));
-        assertThat(ConfigUtils.isEmpty("NULL"), is(true));
-        assertThat(ConfigUtils.isEmpty("n/a"), is(true));
-        assertThat(ConfigUtils.isEmpty("N/A"), is(true));
+        assertThat(PropertiesUtils.isEmpty(null), is(true));
+        assertThat(PropertiesUtils.isEmpty(""), is(true));
+        assertThat(PropertiesUtils.isEmpty("false"), is(true));
+        assertThat(PropertiesUtils.isEmpty("FALSE"), is(true));
+        assertThat(PropertiesUtils.isEmpty("0"), is(true));
+        assertThat(PropertiesUtils.isEmpty("null"), is(true));
+        assertThat(PropertiesUtils.isEmpty("NULL"), is(true));
+        assertThat(PropertiesUtils.isEmpty("n/a"), is(true));
+        assertThat(PropertiesUtils.isEmpty("N/A"), is(true));
     }
 
     @Test
     public void testIsDefault() throws Exception {
-        assertThat(ConfigUtils.isDefault("true"), is(true));
-        assertThat(ConfigUtils.isDefault("TRUE"), is(true));
-        assertThat(ConfigUtils.isDefault("default"), is(true));
-        assertThat(ConfigUtils.isDefault("DEFAULT"), is(true));
+        assertThat(PropertiesUtils.isDefault("true"), is(true));
+        assertThat(PropertiesUtils.isDefault("TRUE"), is(true));
+        assertThat(PropertiesUtils.isDefault("default"), is(true));
+        assertThat(PropertiesUtils.isDefault("DEFAULT"), is(true));
     }
 
     @Test
     public void testMergeValues() {
-        List<String> merged = ConfigUtils.mergeValues(ThreadPool.class, "aaa,bbb,default.custom",
+        List<String> merged = PropertiesUtils.mergeValues(ThreadPool.class, "aaa,bbb,default.custom",
                 asList("fixed", "default.limited", "cached"));
         assertEquals(asList("fixed", "cached", "aaa", "bbb", "default.custom"), merged);
     }
 
     @Test
     public void testMergeValuesAddDefault() {
-        List<String> merged = ConfigUtils.mergeValues(ThreadPool.class, "aaa,bbb,default,zzz",
+        List<String> merged = PropertiesUtils.mergeValues(ThreadPool.class, "aaa,bbb,default,zzz",
                 asList("fixed", "default.limited", "cached"));
         assertEquals(asList("aaa", "bbb", "fixed", "cached", "zzz"), merged);
     }
 
     @Test
     public void testMergeValuesDeleteDefault() {
-        List<String> merged = ConfigUtils.mergeValues(ThreadPool.class, "-default", asList("fixed", "default.limited", "cached"));
+        List<String> merged = PropertiesUtils.mergeValues(ThreadPool.class, "-default", asList("fixed", "default.limited", "cached"));
         assertEquals(asList(), merged);
     }
 
     @Test
     public void testMergeValuesDeleteDefault_2() {
-        List<String> merged = ConfigUtils.mergeValues(ThreadPool.class, "-default,aaa", asList("fixed", "default.limited", "cached"));
+        List<String> merged = PropertiesUtils.mergeValues(ThreadPool.class, "-default,aaa", asList("fixed", "default.limited", "cached"));
         assertEquals(asList("aaa"), merged);
     }
 
@@ -105,15 +105,15 @@ public class ConfigUtilsTest {
      */
     @Test
     public void testMergeValuesDelete() {
-        List<String> merged = ConfigUtils.mergeValues(ThreadPool.class, "-fixed,aaa", asList("fixed", "default.limited", "cached"));
+        List<String> merged = PropertiesUtils.mergeValues(ThreadPool.class, "-fixed,aaa", asList("fixed", "default.limited", "cached"));
         assertEquals(asList("cached", "aaa"), merged);
     }
 
     @Test
     public void testReplaceProperty() throws Exception {
-        String s = ConfigUtils.replaceProperty("1${a.b.c}2${a.b.c}3", Collections.singletonMap("a.b.c", "ABC"));
+        String s = PropertiesUtils.replaceProperty("1${a.b.c}2${a.b.c}3", Collections.singletonMap("a.b.c", "ABC"));
         assertEquals(s, "1ABC2ABC3");
-        s = ConfigUtils.replaceProperty("1${a.b.c}2${a.b.c}3", Collections.<String, String>emptyMap());
+        s = PropertiesUtils.replaceProperty("1${a.b.c}2${a.b.c}3", Collections.<String, String>emptyMap());
         assertEquals(s, "123");
     }
 
@@ -121,7 +121,7 @@ public class ConfigUtilsTest {
     public void testGetProperties1() throws Exception {
         try {
             System.setProperty(CommonConstants.DUBBO_PROPERTIES_KEY, "properties.load");
-            Properties p = ConfigUtils.getProperties();
+            Properties p = PropertiesUtils.getProperties();
             assertThat((String) p.get("a"), equalTo("12"));
             assertThat((String) p.get("b"), equalTo("34"));
             assertThat((String) p.get("c"), equalTo("56"));
@@ -133,7 +133,7 @@ public class ConfigUtilsTest {
     @Test
     public void testGetProperties2() throws Exception {
         System.clearProperty(CommonConstants.DUBBO_PROPERTIES_KEY);
-        Properties p = ConfigUtils.getProperties();
+        Properties p = PropertiesUtils.getProperties();
         assertThat((String) p.get("dubbo"), equalTo("properties"));
     }
 
@@ -141,35 +141,35 @@ public class ConfigUtilsTest {
     public void testAddProperties() throws Exception {
         Properties p = new Properties();
         p.put("key1", "value1");
-        ConfigUtils.addProperties(p);
-        assertThat((String) ConfigUtils.getProperties().get("key1"), equalTo("value1"));
+        PropertiesUtils.addProperties(p);
+        assertThat((String) PropertiesUtils.getProperties().get("key1"), equalTo("value1"));
     }
 
     @Test
     public void testLoadPropertiesNoFile() throws Exception {
-        Properties p = ConfigUtils.loadProperties("notExisted", true);
+        Properties p = PropertiesUtils.loadProperties("notExisted", true);
         Properties expected = new Properties();
         assertEquals(expected, p);
 
-        p = ConfigUtils.loadProperties("notExisted", false);
+        p = PropertiesUtils.loadProperties("notExisted", false);
         assertEquals(expected, p);
     }
 
     @Test
     public void testGetProperty() throws Exception {
-        assertThat(ConfigUtils.getProperty("dubbo"), equalTo("properties"));
+        assertThat(PropertiesUtils.getProperty("dubbo"), equalTo("properties"));
     }
 
     @Test
     public void testGetPropertyDefaultValue() throws Exception {
-        assertThat(ConfigUtils.getProperty("not-exist", "default"), equalTo("default"));
+        assertThat(PropertiesUtils.getProperty("not-exist", "default"), equalTo("default"));
     }
 
     @Test
     public void testGetPropertyFromSystem() throws Exception {
         try {
             System.setProperty("dubbo", "system");
-            assertThat(ConfigUtils.getProperty("dubbo"), equalTo("system"));
+            assertThat(PropertiesUtils.getProperty("dubbo"), equalTo("system"));
         } finally {
             System.clearProperty("dubbo");
         }
@@ -179,7 +179,7 @@ public class ConfigUtilsTest {
     public void testGetSystemProperty() throws Exception {
         try {
             System.setProperty("dubbo", "system-only");
-            assertThat(ConfigUtils.getSystemProperty("dubbo"), equalTo("system-only"));
+            assertThat(PropertiesUtils.getSystemProperty("dubbo"), equalTo("system-only"));
         } finally {
             System.clearProperty("dubbo");
         }
@@ -187,13 +187,13 @@ public class ConfigUtilsTest {
 
     @Test
     public void testLoadProperties() throws Exception {
-        Properties p = ConfigUtils.loadProperties("dubbo.properties");
+        Properties p = PropertiesUtils.loadProperties("dubbo.properties");
         assertThat((String)p.get("dubbo"), equalTo("properties"));
     }
 
     @Test
     public void testLoadPropertiesOneFile() throws Exception {
-        Properties p = ConfigUtils.loadProperties("properties.load", false);
+        Properties p = PropertiesUtils.loadProperties("properties.load", false);
 
         Properties expected = new Properties();
         expected.put("a", "12");
@@ -205,7 +205,7 @@ public class ConfigUtilsTest {
 
     @Test
     public void testLoadPropertiesOneFileAllowMulti() throws Exception {
-        Properties p = ConfigUtils.loadProperties("properties.load", true);
+        Properties p = PropertiesUtils.loadProperties("properties.load", true);
 
         Properties expected = new Properties();
         expected.put("a", "12");
@@ -217,7 +217,7 @@ public class ConfigUtilsTest {
 
     @Test
     public void testLoadPropertiesOneFileNotRootPath() throws Exception {
-        Properties p = ConfigUtils.loadProperties("META-INF/dubbo/internal/org.apache.dubbo.common.threadpool.ThreadPool", false);
+        Properties p = PropertiesUtils.loadProperties("META-INF/dubbo/internal/org.apache.dubbo.common.threadpool.ThreadPool", false);
 
         Properties expected = new Properties();
         expected.put("fixed", "org.apache.dubbo.common.threadpool.support.fixed.FixedThreadPool");
@@ -233,7 +233,7 @@ public class ConfigUtilsTest {
     @Test
     public void testLoadPropertiesMultiFileNotRootPathException() throws Exception {
         try {
-            ConfigUtils.loadProperties("META-INF/services/org.apache.dubbo.common.status.StatusChecker", false);
+            PropertiesUtils.loadProperties("META-INF/services/org.apache.dubbo.common.status.StatusChecker", false);
             Assertions.fail();
         } catch (IllegalStateException expected) {
             assertThat(expected.getMessage(), containsString("only 1 META-INF/services/org.apache.dubbo.common.status.StatusChecker file is expected, but 2 dubbo.properties files found on class path:"));
@@ -243,7 +243,7 @@ public class ConfigUtilsTest {
     @Test
     public void testLoadPropertiesMultiFileNotRootPath() throws Exception {
 
-        Properties p = ConfigUtils.loadProperties("META-INF/dubbo/internal/org.apache.dubbo.common.status.StatusChecker", true);
+        Properties p = PropertiesUtils.loadProperties("META-INF/dubbo/internal/org.apache.dubbo.common.status.StatusChecker", true);
 
         Properties expected = new Properties();
         expected.put("memory", "org.apache.dubbo.common.status.support.MemoryStatusChecker");
@@ -255,6 +255,6 @@ public class ConfigUtilsTest {
 
     @Test
     public void testGetPid() throws Exception {
-        assertThat(ConfigUtils.getPid(), greaterThan(0));
+        assertThat(PropertiesUtils.getPid(), greaterThan(0));
     }
 }

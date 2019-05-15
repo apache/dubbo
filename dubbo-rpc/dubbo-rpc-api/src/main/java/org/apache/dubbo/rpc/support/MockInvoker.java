@@ -18,11 +18,11 @@ package org.apache.dubbo.rpc.support;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.PojoUtils;
+import org.apache.dubbo.common.utils.PropertiesUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
@@ -39,12 +39,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.dubbo.common.constants.RpcConstants.MOCK_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.RETURN_PREFIX;
-import static org.apache.dubbo.common.constants.RpcConstants.THROW_PREFIX;
 import static org.apache.dubbo.common.constants.RpcConstants.FAIL_PREFIX;
 import static org.apache.dubbo.common.constants.RpcConstants.FORCE_PREFIX;
+import static org.apache.dubbo.common.constants.RpcConstants.MOCK_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.RETURN_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.RETURN_PREFIX;
+import static org.apache.dubbo.common.constants.RpcConstants.THROW_PREFIX;
 
 final public class MockInvoker<T> implements Invoker<T> {
     private final static ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
@@ -174,7 +174,7 @@ final public class MockInvoker<T> implements Invoker<T> {
 
     @SuppressWarnings("unchecked")
     public static Object getMockObject(String mockService, Class serviceType) {
-        if (ConfigUtils.isDefault(mockService)) {
+        if (PropertiesUtils.isDefault(mockService)) {
             mockService = serviceType.getName() + "Mock";
         }
 
@@ -223,7 +223,7 @@ final public class MockInvoker<T> implements Invoker<T> {
             return RETURN_PREFIX + "null";
         }
 
-        if (ConfigUtils.isDefault(mock) || "fail".equalsIgnoreCase(mock) || "force".equalsIgnoreCase(mock)) {
+        if (PropertiesUtils.isDefault(mock) || "fail".equalsIgnoreCase(mock) || "force".equalsIgnoreCase(mock)) {
             return "default";
         }
 

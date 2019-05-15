@@ -17,9 +17,9 @@
 package org.apache.dubbo.registry.sofa;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.support.FailbackRegistry;
@@ -89,7 +89,7 @@ public class SofaRegistry extends FailbackRegistry {
             LOGGER.info("Build sofa registry by url:" + url);
         }
         this.registryClient = buildClient(url);
-        this.waitAddressTimeout = Integer.parseInt(ConfigUtils.getProperty(ADDRESS_WAIT_TIME_KEY, "5000"));
+        this.waitAddressTimeout = Integer.parseInt(ConfigurationUtils.getProperty(ADDRESS_WAIT_TIME_KEY, "5000"));
     }
 
     /**

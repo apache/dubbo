@@ -30,14 +30,30 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Environment {
     private static final Environment INSTANCE = new Environment();
 
+    /**
+     * configurations representing different sources, for each source type, usually there's only one source content.
+     * The reason we maintained multiple source instances in Map structure is that Dubbo uses a prefixed naming convention for it's property key.
+     * Despite of all those instances, ultimately, all instances of the same source type point to the same source content.
+     */
     private Map<String, PropertiesConfiguration> propertiesConfigs = new ConcurrentHashMap<>();
     private Map<String, SystemConfiguration> systemConfigs = new ConcurrentHashMap<>();
     private Map<String, EnvironmentConfiguration> environmentConfigs = new ConcurrentHashMap<>();
     private Map<String, InmemoryConfiguration> externalConfigs = new ConcurrentHashMap<>();
     private Map<String, InmemoryConfiguration> appExternalConfigs = new ConcurrentHashMap<>();
-
+    /**
+     * representing the source content of the external configuration, they are updated by external config centers
+     * and are exposed by {@link #externalConfigs} and {@link #appExternalConfigs} respectively.
+     */
     private Map<String, String> externalConfigurationMap = new HashMap<>();
     private Map<String, String> appExternalConfigurationMap = new HashMap<>();
+
+    // ApplicationConfig
+    private InmemoryConfiguration applicationConfig;
+    /**
+     * The final configuration exposed to framework, try to fetch config values from this instance,
+     * it hides the complexity of checking each configuration source and the precedence of one source over another.
+     */
+    private CompositeConfiguration globalConfiguration = new CompositeConfiguration();
 
     private boolean configCenterFirst = true;
 
@@ -102,6 +118,14 @@ public class Environment {
         this.appExternalConfigurationMap.putAll(externalMap);
     }
 
+    public InmemoryConfiguration getApplicationConfig() {
+        return applicationConfig;
+    }
+
+    public void setApplicationConfig(InmemoryConfiguration applicationConfig) {
+        this.applicationConfig = applicationConfig;
+    }
+
     /**
      * Create new instance for each call, since it will be called only at startup, I think there's no big deal of the potential cost.
      * Otherwise, if use cache, we should make sure each Config has a unique id which is difficult to guarantee because is on the user's side,
@@ -121,8 +145,17 @@ public class Environment {
         return compositeConfiguration;
     }
 
-    public Configuration getConfiguration() {
-        return getConfiguration(null, null);
+    public CompositeConfiguration getConfiguration() {
+        if (globalConfiguration == null) {
+            globalConfiguration = new CompositeConfiguration();
+            globalConfiguration.addConfiguration(this.getEnvironmentConfig(null, null));
+            globalConfiguration.addConfiguration(this.getSystemConfig(null, null));
+            globalConfiguration.addConfiguration(this.applicationConfig);
+            globalConfiguration.addConfiguration(this.getAppExternalConfig(null, null));
+            globalConfiguration.addConfiguration(this.getExternalConfig(null, null));
+            globalConfiguration.addConfiguration(this.getPropertiesConfig(null, null));
+        }
+        return globalConfiguration;
     }
 
     private static String toKey(String prefix, String id) {

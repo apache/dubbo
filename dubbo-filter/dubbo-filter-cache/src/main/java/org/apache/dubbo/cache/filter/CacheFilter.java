@@ -19,7 +19,7 @@ package org.apache.dubbo.cache.filter;
 import org.apache.dubbo.cache.Cache;
 import org.apache.dubbo.cache.CacheFactory;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.PropertiesUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
@@ -91,7 +91,7 @@ public class CacheFilter implements Filter {
      */
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        if (cacheFactory != null && ConfigUtils.isNotEmpty(invoker.getUrl().getMethodParameter(invocation.getMethodName(), CACHE_KEY))) {
+        if (cacheFactory != null && PropertiesUtils.isNotEmpty(invoker.getUrl().getMethodParameter(invocation.getMethodName(), CACHE_KEY))) {
             Cache cache = cacheFactory.getCache(invoker.getUrl(), invocation);
             if (cache != null) {
                 String key = StringUtils.toArgumentString(invocation.getArguments());

@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.PropertiesUtils;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -43,7 +43,7 @@ public class TokenFilter implements Filter {
     public Result invoke(Invoker<?> invoker, Invocation inv)
             throws RpcException {
         String token = invoker.getUrl().getParameter(TOKEN_KEY);
-        if (ConfigUtils.isNotEmpty(token)) {
+        if (PropertiesUtils.isNotEmpty(token)) {
             Class<?> serviceType = invoker.getInterface();
             Map<String, String> attachments = inv.getAttachments();
             String remoteToken = attachments == null ? null : attachments.get(TOKEN_KEY);
