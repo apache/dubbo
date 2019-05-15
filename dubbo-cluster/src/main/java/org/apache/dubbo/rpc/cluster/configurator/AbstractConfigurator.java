@@ -38,6 +38,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.COMPATIBLE_CONFIG_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 
 /**
@@ -126,6 +127,7 @@ public abstract class AbstractConfigurator implements Configurator {
                     conditionKeys.add(APPLICATION_KEY);
                     conditionKeys.add(SIDE_KEY);
                     conditionKeys.add(CONFIG_VERSION_KEY);
+                    conditionKeys.add(COMPATIBLE_CONFIG_KEY);
                     for (Map.Entry<String, String> entry : configuratorUrl.getParameters().entrySet()) {
                         String key = entry.getKey();
                         String value = entry.getValue();
