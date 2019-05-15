@@ -21,9 +21,7 @@ import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import static org.apache.dubbo.common.constants.ClusterConstants.TAG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ALIVE_KEY;
@@ -40,7 +38,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.ASYNC_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.INVOKER_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.REFERENCE_FILTER_KEY;
@@ -81,20 +78,6 @@ public class ClusterUtils {
 
             map.remove(RemotingConstants.TRANSPORTER_KEY);
             map.remove(DEFAULT_KEY_PREFIX + RemotingConstants.TRANSPORTER_KEY);
-
-            map.remove(ASYNC_KEY);
-            map.remove(DEFAULT_KEY_PREFIX + ASYNC_KEY);
-
-            // remove method async entry.
-            Set<String> methodAsyncKey = new HashSet<>();
-            for (String key : map.keySet()) {
-                if (key != null && key.endsWith("." + ASYNC_KEY)) {
-                    methodAsyncKey.add(key);
-                }
-            }
-            for (String needRemove : methodAsyncKey) {
-                map.remove(needRemove);
-            }
         }
 
         if (localMap != null && localMap.size() > 0) {
