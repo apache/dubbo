@@ -19,7 +19,6 @@ package org.apache.dubbo.common.config;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.StringUtils;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -44,8 +43,8 @@ public class Environment {
      * representing the source content of the external configuration, they are updated by external config centers
      * and are exposed by {@link #externalConfigs} and {@link #appExternalConfigs} respectively.
      */
-    private Map<String, String> externalConfigurationMap = new HashMap<>();
-    private Map<String, String> appExternalConfigurationMap = new HashMap<>();
+    private Map<String, String> externalConfigurationMap = new ConcurrentHashMap<>();
+    private Map<String, String> appExternalConfigurationMap = new ConcurrentHashMap<>();
 
     // ApplicationConfig
     private InmemoryConfiguration applicationConfig;
@@ -111,11 +110,11 @@ public class Environment {
         return appExternalConfigurationMap;
     }
 
-    public synchronized void updateExternalConfigurationMap(Map<String, String> externalMap) {
+    public void updateExternalConfigurationMap(Map<String, String> externalMap) {
         this.externalConfigurationMap.putAll(externalMap);
     }
 
-    public synchronized void updateAppExternalConfigurationMap(Map<String, String> externalMap) {
+    public void updateAppExternalConfigurationMap(Map<String, String> externalMap) {
         this.appExternalConfigurationMap.putAll(externalMap);
     }
 

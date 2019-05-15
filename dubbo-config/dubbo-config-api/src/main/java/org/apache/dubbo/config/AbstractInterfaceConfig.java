@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.Assert;
@@ -30,6 +31,9 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.configcenter.ConfigChangeEvent;
+import org.apache.dubbo.configcenter.ConfigChangeType;
+import org.apache.dubbo.configcenter.ConfigurationListener;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.metadata.integration.MetadataReportService;
@@ -46,6 +50,7 @@ import org.apache.dubbo.rpc.support.MockInvoker;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -287,15 +292,20 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 return;
             }
             DynamicConfiguration dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
+            ConfigurationListener listener = new PropertiesListener();
+            // listen to properties change.
+            dynamicConfiguration.addListener(configCenter.getConfigFile(), configCenter.getGroup(), listener);
             String configContent = dynamicConfiguration.getConfig(configCenter.getConfigFile(), configCenter.getGroup());
 
             String appGroup = application != null ? application.getName() : null;
             String appConfigContent = null;
             if (StringUtils.isNotEmpty(appGroup)) {
-                appConfigContent = dynamicConfiguration.getConfig
-                        (StringUtils.isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile(),
-                         appGroup
-                        );
+                String appConfigFile = StringUtils.isNotEmpty(configCenter.getAppConfigFile())
+                        ? configCenter.getAppConfigFile()
+                        : configCenter.getConfigFile();
+                // listen to properties change.
+                dynamicConfiguration.addListener(appConfigFile, appGroup, listener);
+                appConfigContent = dynamicConfiguration.getConfig(appConfigFile, appGroup);
             }
             try {
                 Environment.getInstance().setConfigCenterFirst(configCenter.isHighestPriority());
@@ -303,6 +313,28 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 Environment.getInstance().updateAppExternalConfigurationMap(parseProperties(appConfigContent));
             } catch (IOException e) {
                 throw new IllegalStateException("Failed to parse configurations from Config Center.", e);
+            }
+        }
+    }
+
+    private static class PropertiesListener implements ConfigurationListener {
+        @Override
+        public synchronized void process(ConfigChangeEvent event) {
+            if (ConfigChangeType.DELETED == event.getChangeType()) {
+                Environment.getInstance().updateExternalConfigurationMap(Collections.emptyMap());
+                Environment.getInstance().updateAppExternalConfigurationMap(Collections.emptyMap());
+            } else {
+                String content = event.getValue();
+                if (StringUtils.isEmpty(content)) {
+                    return;
+                }
+                try {
+                    Environment.getInstance().updateExternalConfigurationMap(parseProperties(content));
+                    Environment.getInstance().updateAppExternalConfigurationMap(parseProperties(content));
+                } catch (Exception e) {
+                    logger.warn("Received" + event.getKey() + " change notification, but failed when trying to parse it." +
+                            "The original content is: " + content, e);
+                }
             }
         }
     }
@@ -372,7 +404,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         map.put(INTERFACE_KEY, MonitorService.class.getName());
         appendRuntimeParameters(map);
         //set ip
-        String hostToRegistry = PropertiesUtils.getSystemProperty(DUBBO_IP_TO_REGISTRY);
+        String hostToRegistry = ConfigurationUtils.getSystemProperty(DUBBO_IP_TO_REGISTRY);
         if (StringUtils.isEmpty(hostToRegistry)) {
             hostToRegistry = NetUtils.getLocalHost();
         } else if (NetUtils.isInvalidLocalHost(hostToRegistry)) {
