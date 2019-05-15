@@ -20,14 +20,20 @@ package org.apache.dubbo.registry.multiple;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMER_PROTOCOL;
 
 /**
  * AbstractDynamicMultipleRegistry
@@ -48,8 +54,8 @@ public class AbstractDynamicMultipleRegistry extends MultipleRegistry {
             return;
         }
         // fetch registriedURLs
-        Set<URL> registerOrSubscriberData = getRegisteredURLs();
-        if (registerOrSubscriberData == null) {
+        Set<URL> registerOrSubscriberData = getRegisteredProviderURLs();
+        if (CollectionUtils.isEmpty(registerOrSubscriberData)) {
             logger.info("Cannot fetch registered URL.");
             return;
         }
@@ -61,6 +67,8 @@ public class AbstractDynamicMultipleRegistry extends MultipleRegistry {
             if (registry == null) {
                 registry = registryFactory.getRegistry(URL.valueOf(serviceRegistryURL));
                 newRegistryMap.put(serviceRegistryURL, registry);
+
+                logger.info("Add new registry for service:" + serviceRegistryURL);
                 // registry all
                 for (URL url : registerOrSubscriberData) {
                     registry.register(url);
@@ -79,6 +87,7 @@ public class AbstractDynamicMultipleRegistry extends MultipleRegistry {
         }
         // unregister/unsubscribe by remove registry
         for (Registry removedRegistry : removedRegistries) {
+            logger.info("Remove original registry for service:" + removedRegistry.getUrl());
             for (URL url : registerOrSubscriberData) {
                 removedRegistry.unregister(url);
             }
@@ -96,6 +105,7 @@ public class AbstractDynamicMultipleRegistry extends MultipleRegistry {
         }
         // fetch register or subscriber
         Map<URL, Set<NotifyListener>> registerOrSubscriberData = getSubscribedURLMap();
+        Set<URL> consumerURLs = getRegisteredConsumerURLs();
         if (registerOrSubscriberData == null) {
             logger.info("Cannot fetch registered URL.");
             return;
@@ -108,11 +118,17 @@ public class AbstractDynamicMultipleRegistry extends MultipleRegistry {
             if (registry == null) {
                 registry = registryFactory.getRegistry(URL.valueOf(serviceRegistryURL));
                 newRegistryMap.put(serviceRegistryURL, registry);
+
+                logger.info("Add new registry for reference:" + serviceRegistryURL);
                 // registry all
                 for (Map.Entry<URL, Set<NotifyListener>> urlNotifyListenerMap : registerOrSubscriberData.entrySet()) {
                     for (NotifyListener notifyListener : urlNotifyListenerMap.getValue()) {
                         NotifyListener singleNotifyListener = fetchNotifyListenerAndAddMultipleSubscribed(notifyListener, registry);
                         registry.subscribe(urlNotifyListenerMap.getKey(), singleNotifyListener);
+                    }
+                    // register consumer for ops
+                    for (URL url : consumerURLs) {
+                        registry.register(url);
                     }
                 }
             }
@@ -129,6 +145,13 @@ public class AbstractDynamicMultipleRegistry extends MultipleRegistry {
         }
         // unregister/unsubscribe by remove registry
         for (Registry removedRegistry : removedRegistries) {
+            logger.info("Remove original registry for reference:" + removedRegistry.getUrl());
+
+            // unregistry registried consumer data
+            for (URL url : consumerURLs) {
+                removedRegistry.unregister(url);
+            }
+            // unsubscriber
             for (Map.Entry<URL, Set<NotifyListener>> urlNotifyListenerMap : registerOrSubscriberData.entrySet()) {
                 for (NotifyListener notifyListener : urlNotifyListenerMap.getValue()) {
                     doRemoveMultipleSubscribed(notifyListener, removedRegistry);
@@ -150,8 +173,31 @@ public class AbstractDynamicMultipleRegistry extends MultipleRegistry {
         }
     }
 
-    private Set<URL> getRegisteredURLs() {
-        return super.getRegistered();
+    private Set<URL> getRegisteredProviderURLs() {
+        Set<URL> urlSet = new HashSet<URL>();
+        for (URL url : super.getRegistered()) {
+            if (url == null) {
+                continue;
+            }
+            if (CONSUMER_PROTOCOL.equals(url.getProtocol()) || CONSUMERS_CATEGORY.equals(url.getParameter(CATEGORY_KEY))) {
+                continue;
+            }
+            urlSet.add(url);
+        }
+        return urlSet;
+    }
+
+    private Set<URL> getRegisteredConsumerURLs() {
+        Set<URL> urlSet = new HashSet<URL>();
+        for (URL url : super.getRegistered()) {
+            if (url == null) {
+                continue;
+            }
+            if (CONSUMER_PROTOCOL.equals(url.getProtocol()) || CONSUMERS_CATEGORY.equals(url.getParameter(CATEGORY_KEY))) {
+                urlSet.add(url);
+            }
+        }
+        return urlSet;
     }
 
 
