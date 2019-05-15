@@ -98,11 +98,11 @@ import static org.apache.dubbo.common.constants.RemotingConstants.CODEC_KEY;
 import static org.apache.dubbo.common.constants.RemotingConstants.EXCHANGER_KEY;
 import static org.apache.dubbo.common.constants.RemotingConstants.SERIALIZATION_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.CONNECTIONS_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.DEPRECATED_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.INTERFACES;
-import static org.apache.dubbo.common.constants.RpcConstants.MOCK_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.TOKEN_KEY;
+import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
+import static org.apache.dubbo.rpc.Constants.INTERFACES;
+import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
+import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.apache.dubbo.common.utils.UrlUtils.classifyUrls;
 
 /**

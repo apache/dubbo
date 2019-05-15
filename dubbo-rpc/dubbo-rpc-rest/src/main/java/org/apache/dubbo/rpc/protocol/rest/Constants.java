@@ -15,33 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.constants;
+package org.apache.dubbo.rpc.protocol.rest;
 
 /**
- * RpcConstants
+ *
  */
-public interface RpcConstants {
+public interface Constants {
+    String KEEP_ALIVE_KEY = "keepalive";
 
-    String INPUT_KEY = "input";
+    boolean DEFAULT_KEEP_ALIVE = true;
 
-    String OUTPUT_KEY = "output";
-
-    /**
-     * The limit of callback service instances for one interface on every client
-     */
-    String CALLBACK_INSTANCES_LIMIT_KEY = "callbacks";
-
-    /**
-     * The default limit number for callback service instances
-     *
-     * @see #CALLBACK_INSTANCES_LIMIT_KEY
-     */
-    int DEFAULT_CALLBACK_INSTANCES = 1;
-
-    String DUBBO_VERSION_KEY = "dubbo";
-
-    String $INVOKE = "$invoke";
-
-    String CONNECTIONS_KEY = "connections";
-
+    String EXTENSION_KEY = "extension";
 }

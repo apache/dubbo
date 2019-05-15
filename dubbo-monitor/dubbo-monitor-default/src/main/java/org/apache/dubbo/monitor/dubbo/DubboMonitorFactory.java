@@ -29,7 +29,7 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.RemotingConstants.CHECK_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.REFERENCE_FILTER_KEY;
+import static org.apache.dubbo.rpc.Constants.REFERENCE_FILTER_KEY;
 
 /**
  * DefaultMonitorFactory

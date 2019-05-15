@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-import static org.apache.dubbo.common.constants.RpcConstants.AUTO_ATTACH_INVOCATIONID_KEY;
+import static org.apache.dubbo.rpc.Constants.AUTO_ATTACH_INVOCATIONID_KEY;
 
 public class RpcUtilsTest {
 

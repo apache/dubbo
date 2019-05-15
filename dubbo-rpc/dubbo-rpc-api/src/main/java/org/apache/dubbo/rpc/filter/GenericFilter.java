@@ -44,10 +44,10 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 
 import static org.apache.dubbo.common.constants.RpcConstants.$INVOKE;
-import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_SERIALIZATION_NATIVE_JAVA;
-import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_SERIALIZATION_BEAN;
-import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_SERIALIZATION_PROTOBUF;
-import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_KEY;
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_NATIVE_JAVA;
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_BEAN;
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_PROTOBUF;
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 /**
  * GenericInvokerFilter.

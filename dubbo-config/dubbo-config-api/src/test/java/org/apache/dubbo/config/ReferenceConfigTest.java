@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.apache.dubbo.common.constants.RpcConstants.LOCAL_PROTOCOL;
+import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 
 public class ReferenceConfigTest {
 

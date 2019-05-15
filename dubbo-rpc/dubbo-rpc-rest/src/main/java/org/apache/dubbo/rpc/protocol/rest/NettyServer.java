@@ -30,8 +30,8 @@ import java.util.Map;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREADS;
 import static org.apache.dubbo.common.constants.CommonConstants.IO_THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.KEEP_ALIVE_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.DEFAULT_KEEP_ALIVE;
+import static org.apache.dubbo.rpc.protocol.rest.Constants.KEEP_ALIVE_KEY;
+import static org.apache.dubbo.rpc.protocol.rest.Constants.DEFAULT_KEEP_ALIVE;
 
 /**
  * Netty server can't support @Context injection of servlet objects since it's not a servlet container

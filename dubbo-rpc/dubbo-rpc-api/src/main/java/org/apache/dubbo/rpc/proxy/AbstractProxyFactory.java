@@ -25,7 +25,7 @@ import org.apache.dubbo.rpc.service.GenericService;
 import com.alibaba.dubbo.rpc.service.EchoService;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
-import static org.apache.dubbo.common.constants.RpcConstants.INTERFACES;
+import static org.apache.dubbo.rpc.Constants.INTERFACES;
 
 /**
  * AbstractProxyFactory

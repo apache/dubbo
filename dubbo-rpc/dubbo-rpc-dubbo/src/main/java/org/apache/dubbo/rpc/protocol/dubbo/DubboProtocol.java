@@ -66,16 +66,17 @@ import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.ConfigConstants.LAZY_CONNECT_KEY;
 import static org.apache.dubbo.common.constants.ConfigConstants.ON_CONNECT_KEY;
 import static org.apache.dubbo.common.constants.ConfigConstants.ON_DISCONNECT_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.CALLBACK_SERVICE_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.CALLBACK_SERVICE_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.CONNECTIONS_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.DEFAULT_SHARE_CONNECTIONS;
-import static org.apache.dubbo.common.constants.RpcConstants.DEFAULT_STUB_EVENT;
-import static org.apache.dubbo.common.constants.RpcConstants.IS_CALLBACK_SERVICE;
-import static org.apache.dubbo.common.constants.RpcConstants.IS_SERVER_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.OPTIMIZER_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.SHARE_CONNECTIONS_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.STUB_EVENT_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.STUB_EVENT_METHODS_KEY;
+import static org.apache.dubbo.rpc.Constants.DEFAULT_STUB_EVENT;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.IS_CALLBACK_SERVICE;
+import static org.apache.dubbo.rpc.Constants.IS_SERVER_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.OPTIMIZER_KEY;
+import static org.apache.dubbo.rpc.Constants.STUB_EVENT_KEY;
+import static org.apache.dubbo.rpc.Constants.STUB_EVENT_METHODS_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.SHARE_CONNECTIONS_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.DEFAULT_SHARE_CONNECTIONS;
+
 
 /**
  * dubbo protocol support.

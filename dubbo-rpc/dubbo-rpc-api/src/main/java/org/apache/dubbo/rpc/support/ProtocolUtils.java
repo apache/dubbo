@@ -21,10 +21,10 @@ import org.apache.dubbo.common.utils.StringUtils;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_SERIALIZATION_NATIVE_JAVA;
-import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_SERIALIZATION_DEFAULT;
-import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_SERIALIZATION_BEAN;
-import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_SERIALIZATION_PROTOBUF;
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_NATIVE_JAVA;
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_DEFAULT;
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_BEAN;
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_PROTOBUF;
 
 public class ProtocolUtils {
 

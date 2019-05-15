@@ -15,33 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.constants;
+package org.apache.dubbo.rpc.protocol.hessian;
 
 /**
- * RpcConstants
+ *
  */
-public interface RpcConstants {
+public interface Constants {
 
-    String INPUT_KEY = "input";
+    String HESSIAN2_REQUEST_KEY = "hessian2.request";
 
-    String OUTPUT_KEY = "output";
+    boolean DEFAULT_HESSIAN2_REQUEST = false;
 
-    /**
-     * The limit of callback service instances for one interface on every client
-     */
-    String CALLBACK_INSTANCES_LIMIT_KEY = "callbacks";
+    String HESSIAN_OVERLOAD_METHOD_KEY = "hessian.overload.method";
 
-    /**
-     * The default limit number for callback service instances
-     *
-     * @see #CALLBACK_INSTANCES_LIMIT_KEY
-     */
-    int DEFAULT_CALLBACK_INSTANCES = 1;
+    boolean DEFAULT_HESSIAN_OVERLOAD_METHOD = false;
 
-    String DUBBO_VERSION_KEY = "dubbo";
-
-    String $INVOKE = "$invoke";
-
-    String CONNECTIONS_KEY = "connections";
+    String DEFAULT_HTTP_CLIENT = "jdk";
 
 }
