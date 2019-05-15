@@ -129,4 +129,8 @@ public interface RegistryConstants {
     String SESSION_TIMEOUT_KEY = "session";
 
     int DEFAULT_SESSION_TIMEOUT = 60 * 1000;
+    /**
+     * key for router type, for e.g., "script"/"file",  corresponding to ScriptRouterFactory.NAME, FileRouterFactory.NAME
+     */
+    String ROUTER_KEY = "router";
 }

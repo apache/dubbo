@@ -49,12 +49,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
-import static org.apache.dubbo.common.constants.ClusterConstants.INVOCATION_NEED_MOCK;
-import static org.apache.dubbo.common.constants.ClusterConstants.LOADBALANCE_KEY;
-import static org.apache.dubbo.common.constants.ClusterConstants.MOCK_PROTOCOL;
-import static org.apache.dubbo.common.constants.ClusterConstants.ROUTER_KEY;
-import static org.apache.dubbo.common.constants.ClusterConstants.RULE_KEY;
-import static org.apache.dubbo.common.constants.ClusterConstants.TYPE_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
+import static org.apache.dubbo.rpc.cluster.Constants.LOADBALANCE_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.MOCK_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.ROUTER_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.TYPE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;

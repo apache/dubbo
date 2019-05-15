@@ -47,8 +47,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.apache.dubbo.common.constants.ClusterConstants.CLUSTER_AVAILABLE_CHECK_KEY;
-import static org.apache.dubbo.common.constants.ClusterConstants.INVOCATION_NEED_MOCK;
+import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_AVAILABLE_CHECK_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
 import static org.apache.dubbo.common.constants.ConfigConstants.REFER_KEY;
 import static org.apache.dubbo.common.constants.MonitorConstants.MONITOR_KEY;
 import static org.mockito.BDDMockito.given;

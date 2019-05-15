@@ -28,7 +28,6 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.ClusterConstants.TAG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
@@ -50,6 +49,7 @@ import static org.apache.dubbo.common.constants.RpcConstants.TOKEN_KEY;
  */
 @Activate(group = PROVIDER, order = -10000)
 public class ContextFilter implements Filter {
+    private static final String TAG_KEY = "dubbo.tag";
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {

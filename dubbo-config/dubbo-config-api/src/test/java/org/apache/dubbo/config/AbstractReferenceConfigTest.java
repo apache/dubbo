@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.ClusterConstants.CLUSTER_STICKY_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_STICKY_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.INVOKER_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.REFERENCE_FILTER_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.STUB_EVENT_KEY;
