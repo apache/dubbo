@@ -16,11 +16,14 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.status.StatusChecker;
 import org.apache.dubbo.common.threadpool.ThreadPool;
+import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.PropertiesUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.remoting.Codec;
@@ -30,14 +33,30 @@ import org.apache.dubbo.remoting.exchange.Exchanger;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.rpc.Protocol;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketAddress;
+import java.net.UnknownHostException;
+import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_IP_TO_BIND;
+import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_IP_TO_REGISTRY;
+import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_PORT_TO_BIND;
+import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_PORT_TO_REGISTRY;
 import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.ConfigConstants.HOST_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.MULTICAST;
 import static org.apache.dubbo.common.constants.ConfigConstants.PROTOCOLS_SUFFIX;
 import static org.apache.dubbo.common.constants.ConfigConstants.TELNET;
 import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.common.utils.NetUtils.getAvailablePort;
+import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
+import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
+import static org.apache.dubbo.common.utils.NetUtils.isInvalidPort;
 
 /**
  * ProtocolConfig
@@ -217,6 +236,149 @@ public class ProtocolConfig extends AbstractConfig {
     public ProtocolConfig(String name, int port) {
         setName(name);
         setPort(port);
+    }
+
+    /**
+     * Register & bind IP address for service provider, can be configured separately.
+     * Configuration priority: environment variables -> java system properties -> host property in config file ->
+     * /etc/hosts -> default network address -> first available network address
+     *
+     * @param registryURLs
+     * @param map
+     * @return
+     */
+    public String findConfigedHosts(List<URL> registryURLs, Map<String, String> map) {
+        boolean anyhost = false;
+
+        String hostToBind = getValueFromConfig(DUBBO_IP_TO_BIND);
+        if (hostToBind != null && hostToBind.length() > 0 && isInvalidLocalHost(hostToBind)) {
+            throw new IllegalArgumentException("Specified invalid bind ip from property:" + DUBBO_IP_TO_BIND + ", value:" + hostToBind);
+        }
+
+        // if bind ip is not found in environment, keep looking up
+        if (StringUtils.isEmpty(hostToBind)) {
+            hostToBind = this.getHost();
+            if (provider != null && StringUtils.isEmpty(hostToBind)) {
+                hostToBind = provider.getHost();
+            }
+            if (isInvalidLocalHost(hostToBind)) {
+                anyhost = true;
+                try {
+                    hostToBind = InetAddress.getLocalHost().getHostAddress();
+                } catch (UnknownHostException e) {
+                    logger.warn(e.getMessage(), e);
+                }
+                if (isInvalidLocalHost(hostToBind)) {
+                    if (CollectionUtils.isNotEmpty(registryURLs)) {
+                        for (URL registryURL : registryURLs) {
+                            if (MULTICAST.equalsIgnoreCase(registryURL.getParameter("registry"))) {
+                                // skip multicast registry since we cannot connect to it via Socket
+                                continue;
+                            }
+                            try (Socket socket = new Socket()) {
+                                SocketAddress addr = new InetSocketAddress(registryURL.getHost(), registryURL.getPort());
+                                socket.connect(addr, 1000);
+                                hostToBind = socket.getLocalAddress().getHostAddress();
+                                break;
+                            } catch (Exception e) {
+                                logger.warn(e.getMessage(), e);
+                            }
+                        }
+                    }
+                    if (isInvalidLocalHost(hostToBind)) {
+                        hostToBind = getLocalHost();
+                    }
+                }
+            }
+        }
+
+        map.put(RemotingConstants.BIND_IP_KEY, hostToBind);
+
+        // registry ip is not used for bind ip by default
+        String hostToRegistry = getValueFromConfig(protocolConfig, DUBBO_IP_TO_REGISTRY);
+        if (hostToRegistry != null && hostToRegistry.length() > 0 && isInvalidLocalHost(hostToRegistry)) {
+            throw new IllegalArgumentException("Specified invalid registry ip from property:" + DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
+        } else if (StringUtils.isEmpty(hostToRegistry)) {
+            // bind ip is used as registry ip by default
+            hostToRegistry = hostToBind;
+        }
+
+        map.put(ANYHOST_KEY, String.valueOf(anyhost));
+
+        return hostToRegistry;
+    }
+
+    /**
+     * Register port and bind port for the provider, can be configured separately
+     * Configuration priority: environment variable -> java system properties -> port property in protocol config file
+     * -> protocol default port
+     *
+     * @param protocolConfig
+     * @param name
+     * @return
+     */
+    private Integer findConfigedPorts(ProtocolConfig protocolConfig, String name, Map<String, String> map) {
+        Integer portToBind = null;
+
+        // parse bind port from environment
+        String port = getValueFromConfig(protocolConfig, DUBBO_PORT_TO_BIND);
+        portToBind = parsePort(port);
+
+        // if there's no bind port found from environment, keep looking up.
+        if (portToBind == null) {
+            portToBind = protocolConfig.getPort();
+            if (provider != null && (portToBind == null || portToBind == 0)) {
+                portToBind = provider.getPort();
+            }
+            final int defaultPort = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(name).getDefaultPort();
+            if (portToBind == null || portToBind == 0) {
+                portToBind = defaultPort;
+            }
+            if (portToBind == null || portToBind <= 0) {
+                portToBind = getRandomPort(name);
+                if (portToBind == null || portToBind < 0) {
+                    portToBind = getAvailablePort(defaultPort);
+                    putRandomPort(name, portToBind);
+                }
+            }
+        }
+
+        // save bind port, used as url's key later
+        map.put(RemotingConstants.BIND_PORT_KEY, String.valueOf(portToBind));
+
+        // registry port, not used as bind port by default
+        String portToRegistryStr = getValueFromConfig(protocolConfig, DUBBO_PORT_TO_REGISTRY);
+        Integer portToRegistry = parsePort(portToRegistryStr);
+        if (portToRegistry == null) {
+            portToRegistry = portToBind;
+        }
+
+        return portToRegistry;
+    }
+
+    private Integer parsePort(String configPort) {
+        Integer port = null;
+        if (configPort != null && configPort.length() > 0) {
+            try {
+                Integer intPort = Integer.parseInt(configPort);
+                if (isInvalidPort(intPort)) {
+                    throw new IllegalArgumentException("Specified invalid port from env value:" + configPort);
+                }
+                port = intPort;
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Specified invalid port from env value:" + configPort);
+            }
+        }
+        return port;
+    }
+
+    private String getValueFromConfig(String key) {
+        String protocolPrefix = getName().toUpperCase() + "_";
+        String port = PropertiesUtils.getSystemProperty(protocolPrefix + key);
+        if (StringUtils.isEmpty(port)) {
+            port = PropertiesUtils.getSystemProperty(key);
+        }
+        return port;
     }
 
     @Parameter(excluded = true)

@@ -21,12 +21,11 @@ import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.bytecode.Wrapper;
 import org.apache.dubbo.common.config.Environment;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.common.utils.PropertiesUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.context.ConfigManager;
@@ -44,11 +43,6 @@ import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -61,7 +55,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
@@ -71,12 +64,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_IP_TO_BIND;
-import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_IP_TO_REGISTRY;
-import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_PORT_TO_BIND;
-import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_PORT_TO_REGISTRY;
 import static org.apache.dubbo.common.constants.ConfigConstants.EXPORT_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.MULTICAST;
 import static org.apache.dubbo.common.constants.ConfigConstants.PROTOCOLS_SUFFIX;
 import static org.apache.dubbo.common.constants.ConfigConstants.SCOPE_KEY;
 import static org.apache.dubbo.common.constants.ConfigConstants.SCOPE_LOCAL;
@@ -88,10 +76,6 @@ import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.common.constants.RpcConstants.PROXY_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.TOKEN_KEY;
-import static org.apache.dubbo.common.utils.NetUtils.getAvailablePort;
-import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
-import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
-import static org.apache.dubbo.common.utils.NetUtils.isInvalidPort;
 
 /**
  * ServiceConfig
@@ -549,8 +533,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 map.put(METHODS_KEY, StringUtils.join(new HashSet<String>(Arrays.asList(methods)), ","));
             }
         }
-        if (!ConfigUtils.isEmpty(token)) {
-            if (ConfigUtils.isDefault(token)) {
+        if (!PropertiesUtils.isEmpty(token)) {
+            if (PropertiesUtils.isDefault(token)) {
                 map.put(TOKEN_KEY, UUID.randomUUID().toString());
             } else {
                 map.put(TOKEN_KEY, token);
@@ -653,150 +637,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     protected Class getServiceClass(T ref) {
         return ref.getClass();
-    }
-
-    /**
-     * Register & bind IP address for service provider, can be configured separately.
-     * Configuration priority: environment variables -> java system properties -> host property in config file ->
-     * /etc/hosts -> default network address -> first available network address
-     *
-     * @param protocolConfig
-     * @param registryURLs
-     * @param map
-     * @return
-     */
-    private String findConfigedHosts(ProtocolConfig protocolConfig, List<URL> registryURLs, Map<String, String> map) {
-        boolean anyhost = false;
-
-        String hostToBind = getValueFromConfig(protocolConfig, DUBBO_IP_TO_BIND);
-        if (hostToBind != null && hostToBind.length() > 0 && isInvalidLocalHost(hostToBind)) {
-            throw new IllegalArgumentException("Specified invalid bind ip from property:" + DUBBO_IP_TO_BIND + ", value:" + hostToBind);
-        }
-
-        // if bind ip is not found in environment, keep looking up
-        if (StringUtils.isEmpty(hostToBind)) {
-            hostToBind = protocolConfig.getHost();
-            if (provider != null && StringUtils.isEmpty(hostToBind)) {
-                hostToBind = provider.getHost();
-            }
-            if (isInvalidLocalHost(hostToBind)) {
-                anyhost = true;
-                try {
-                    hostToBind = InetAddress.getLocalHost().getHostAddress();
-                } catch (UnknownHostException e) {
-                    logger.warn(e.getMessage(), e);
-                }
-                if (isInvalidLocalHost(hostToBind)) {
-                    if (CollectionUtils.isNotEmpty(registryURLs)) {
-                        for (URL registryURL : registryURLs) {
-                            if (MULTICAST.equalsIgnoreCase(registryURL.getParameter("registry"))) {
-                                // skip multicast registry since we cannot connect to it via Socket
-                                continue;
-                            }
-                            try (Socket socket = new Socket()) {
-                                SocketAddress addr = new InetSocketAddress(registryURL.getHost(), registryURL.getPort());
-                                socket.connect(addr, 1000);
-                                hostToBind = socket.getLocalAddress().getHostAddress();
-                                break;
-                            } catch (Exception e) {
-                                logger.warn(e.getMessage(), e);
-                            }
-                        }
-                    }
-                    if (isInvalidLocalHost(hostToBind)) {
-                        hostToBind = getLocalHost();
-                    }
-                }
-            }
-        }
-
-        map.put(RemotingConstants.BIND_IP_KEY, hostToBind);
-
-        // registry ip is not used for bind ip by default
-        String hostToRegistry = getValueFromConfig(protocolConfig, DUBBO_IP_TO_REGISTRY);
-        if (hostToRegistry != null && hostToRegistry.length() > 0 && isInvalidLocalHost(hostToRegistry)) {
-            throw new IllegalArgumentException("Specified invalid registry ip from property:" + DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
-        } else if (StringUtils.isEmpty(hostToRegistry)) {
-            // bind ip is used as registry ip by default
-            hostToRegistry = hostToBind;
-        }
-
-        map.put(ANYHOST_KEY, String.valueOf(anyhost));
-
-        return hostToRegistry;
-    }
-
-    /**
-     * Register port and bind port for the provider, can be configured separately
-     * Configuration priority: environment variable -> java system properties -> port property in protocol config file
-     * -> protocol default port
-     *
-     * @param protocolConfig
-     * @param name
-     * @return
-     */
-    private Integer findConfigedPorts(ProtocolConfig protocolConfig, String name, Map<String, String> map) {
-        Integer portToBind = null;
-
-        // parse bind port from environment
-        String port = getValueFromConfig(protocolConfig, DUBBO_PORT_TO_BIND);
-        portToBind = parsePort(port);
-
-        // if there's no bind port found from environment, keep looking up.
-        if (portToBind == null) {
-            portToBind = protocolConfig.getPort();
-            if (provider != null && (portToBind == null || portToBind == 0)) {
-                portToBind = provider.getPort();
-            }
-            final int defaultPort = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(name).getDefaultPort();
-            if (portToBind == null || portToBind == 0) {
-                portToBind = defaultPort;
-            }
-            if (portToBind == null || portToBind <= 0) {
-                portToBind = getRandomPort(name);
-                if (portToBind == null || portToBind < 0) {
-                    portToBind = getAvailablePort(defaultPort);
-                    putRandomPort(name, portToBind);
-                }
-            }
-        }
-
-        // save bind port, used as url's key later
-        map.put(RemotingConstants.BIND_PORT_KEY, String.valueOf(portToBind));
-
-        // registry port, not used as bind port by default
-        String portToRegistryStr = getValueFromConfig(protocolConfig, DUBBO_PORT_TO_REGISTRY);
-        Integer portToRegistry = parsePort(portToRegistryStr);
-        if (portToRegistry == null) {
-            portToRegistry = portToBind;
-        }
-
-        return portToRegistry;
-    }
-
-    private Integer parsePort(String configPort) {
-        Integer port = null;
-        if (configPort != null && configPort.length() > 0) {
-            try {
-                Integer intPort = Integer.parseInt(configPort);
-                if (isInvalidPort(intPort)) {
-                    throw new IllegalArgumentException("Specified invalid port from env value:" + configPort);
-                }
-                port = intPort;
-            } catch (Exception e) {
-                throw new IllegalArgumentException("Specified invalid port from env value:" + configPort);
-            }
-        }
-        return port;
-    }
-
-    private String getValueFromConfig(ProtocolConfig protocolConfig, String key) {
-        String protocolPrefix = protocolConfig.getName().toUpperCase() + "_";
-        String port = ConfigUtils.getSystemProperty(protocolPrefix + key);
-        if (StringUtils.isEmpty(port)) {
-            port = ConfigUtils.getSystemProperty(key);
-        }
-        return port;
     }
 
     private void completeCompoundConfigs() {
