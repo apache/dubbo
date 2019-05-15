@@ -27,7 +27,7 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import java.io.IOException;
 import java.net.ServerSocket;
 
-import static org.apache.dubbo.common.constants.ClusterConstants.CLUSTER_STICKY_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_STICKY_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.RpcConstants.CALLBACK_INSTANCES_LIMIT_KEY;

@@ -27,10 +27,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-import static org.apache.dubbo.common.constants.ClusterConstants.ROUTER_KEY;
-import static org.apache.dubbo.common.constants.ClusterConstants.RULE_KEY;
-import static org.apache.dubbo.common.constants.ClusterConstants.RUNTIME_KEY;
-import static org.apache.dubbo.common.constants.ClusterConstants.TYPE_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.ROUTER_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.RUNTIME_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.TYPE_KEY;
 
 public class FileRouterFactory implements RouterFactory {
 
