@@ -32,7 +32,7 @@ public class Environment {
     /**
      * configurations representing different sources, for each source type, usually there's only one source content.
      * The reason we maintained multiple source instances in Map structure is that Dubbo uses a prefixed naming convention for it's property key.
-     * Despite of all those instances, ultimately, all instances of the same source type point to the same source content.
+     * So, ultimately, all instances of the same source type point to the same source content.
      */
     private Map<String, PropertiesConfiguration> propertiesConfigs = new ConcurrentHashMap<>();
     private Map<String, SystemConfiguration> systemConfigs = new ConcurrentHashMap<>();
@@ -40,13 +40,15 @@ public class Environment {
     private Map<String, InmemoryConfiguration> externalConfigs = new ConcurrentHashMap<>();
     private Map<String, InmemoryConfiguration> appExternalConfigs = new ConcurrentHashMap<>();
     /**
-     * representing the source content of the external configuration, they are updated by external config centers
+     * representing the source content of the external configuration, they are inited by external config centers
      * and are exposed by {@link #externalConfigs} and {@link #appExternalConfigs} respectively.
      */
     private Map<String, String> externalConfigurationMap = new ConcurrentHashMap<>();
     private Map<String, String> appExternalConfigurationMap = new ConcurrentHashMap<>();
 
-    // ApplicationConfig
+    /**
+     * configuration source comes from ApplicationConfig
+     */
     private InmemoryConfiguration applicationConfig;
 
     /**
