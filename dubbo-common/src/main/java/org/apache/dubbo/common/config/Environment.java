@@ -159,7 +159,9 @@ public class Environment {
             globalConfiguration = new CompositeConfiguration();
             globalConfiguration.addConfiguration(this.getEnvironmentConfig(null, null));
             globalConfiguration.addConfiguration(this.getSystemConfig(null, null));
-            globalConfiguration.addConfiguration(this.applicationConfig);
+            if (this.applicationConfig != null) {
+                globalConfiguration.addConfiguration(this.applicationConfig);
+            }
             globalConfiguration.addConfiguration(this.getAppExternalConfig(null, null));
             globalConfiguration.addConfiguration(this.getExternalConfig(null, null));
             globalConfiguration.addConfiguration(this.getPropertiesConfig(null, null));
