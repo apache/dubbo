@@ -36,6 +36,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREADPO
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREADS;
+import static org.apache.dubbo.remoting.Constants.BUFFER_KEY;
+import static org.apache.dubbo.remoting.Constants.DEFAULT_BUFFER_SIZE;
 
 /**
  * PerformanceServer
@@ -71,7 +73,7 @@ public class PerformanceServerTest  {
         final String threadpool = PerformanceUtils.getProperty(THREADPOOL_KEY, DEFAULT_THREADPOOL);
         final int threads = PerformanceUtils.getIntProperty(THREADS_KEY, DEFAULT_THREADS);
         final int iothreads = PerformanceUtils.getIntProperty(IO_THREADS_KEY, RemotingConstants.DEFAULT_IO_THREADS);
-        final int buffer = PerformanceUtils.getIntProperty(RemotingConstants.BUFFER_KEY, RemotingConstants.DEFAULT_BUFFER_SIZE);
+        final int buffer = PerformanceUtils.getIntProperty(BUFFER_KEY, DEFAULT_BUFFER_SIZE);
         final String channelHandler = PerformanceUtils.getProperty(RemotingConstants.DISPATCHER_KEY, ExecutionDispatcher.NAME);
 
 

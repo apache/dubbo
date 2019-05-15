@@ -37,6 +37,10 @@ import java.util.concurrent.ThreadPoolExecutor;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
+import static org.apache.dubbo.remoting.Constants.IDLE_TIMEOUT_KEY;
+import static org.apache.dubbo.remoting.Constants.DEFAULT_IDLE_TIMEOUT;
+import static org.apache.dubbo.remoting.Constants.ACCEPTS_KEY;
+import static org.apache.dubbo.remoting.Constants.DEFAULT_ACCEPTS;
 
 /**
  * AbstractServer
@@ -61,8 +65,8 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
             bindIp = ANYHOST_VALUE;
         }
         bindAddress = new InetSocketAddress(bindIp, bindPort);
-        this.accepts = url.getParameter(RemotingConstants.ACCEPTS_KEY, RemotingConstants.DEFAULT_ACCEPTS);
-        this.idleTimeout = url.getParameter(RemotingConstants.IDLE_TIMEOUT_KEY, RemotingConstants.DEFAULT_IDLE_TIMEOUT);
+        this.accepts = url.getParameter(ACCEPTS_KEY, DEFAULT_ACCEPTS);
+        this.idleTimeout = url.getParameter(IDLE_TIMEOUT_KEY, DEFAULT_IDLE_TIMEOUT);
         try {
             doOpen();
             if (logger.isInfoEnabled()) {
@@ -87,8 +91,8 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
             return;
         }
         try {
-            if (url.hasParameter(RemotingConstants.ACCEPTS_KEY)) {
-                int a = url.getParameter(RemotingConstants.ACCEPTS_KEY, 0);
+            if (url.hasParameter(ACCEPTS_KEY)) {
+                int a = url.getParameter(ACCEPTS_KEY, 0);
                 if (a > 0) {
                     this.accepts = a;
                 }
@@ -97,8 +101,8 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
             logger.error(t.getMessage(), t);
         }
         try {
-            if (url.hasParameter(RemotingConstants.IDLE_TIMEOUT_KEY)) {
-                int t = url.getParameter(RemotingConstants.IDLE_TIMEOUT_KEY, 0);
+            if (url.hasParameter(IDLE_TIMEOUT_KEY)) {
+                int t = url.getParameter(IDLE_TIMEOUT_KEY, 0);
                 if (t > 0) {
                     this.idleTimeout = t;
                 }
