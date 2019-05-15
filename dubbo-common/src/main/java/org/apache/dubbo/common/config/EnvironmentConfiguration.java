@@ -31,7 +31,7 @@ public class EnvironmentConfiguration extends AbstractPrefixConfiguration {
 
     @Override
     public Object getInternalProperty(String key) {
-        key = key.replaceAll(".", "_");
+        key = key.replaceAll("\\.", "_");
         return System.getenv(key.toUpperCase());
     }
 
