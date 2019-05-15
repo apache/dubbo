@@ -25,7 +25,6 @@ import org.apache.dubbo.registry.support.AbstractRegistryFactory;
  */
 public class MultipleRegistryFactory extends AbstractRegistryFactory {
 
-
     @Override
     protected Registry createRegistry(URL url) {
         return new MultipleRegistry(url);

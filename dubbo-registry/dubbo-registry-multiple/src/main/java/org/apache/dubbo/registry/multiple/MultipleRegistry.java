@@ -17,8 +17,8 @@
 package org.apache.dubbo.registry.multiple;
 
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -29,29 +29,28 @@ import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.support.AbstractRegistry;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 
 /**
  * MultipleRegistry
  */
-public class MultipleRegistry implements Registry {
+public class MultipleRegistry extends AbstractRegistry {
 
     private static final Logger logger = LoggerFactory.getLogger(MultipleRegistry.class);
-    private static final String REGISTRY_FOR_SERVICE = "service-registry";
-    private static final String REGISTRY_FOR_REFERENCE = "reference-registry";
+    static final String REGISTRY_FOR_SERVICE = "service-registry";
+    static final String REGISTRY_FOR_REFERENCE = "reference-registry";
 
-    private RegistryFactory registryFactory = ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
-    private Map<String, Registry> serviceRegistries = new HashMap<String, Registry>(4);
-    private Map<String, Registry> referenceRegistries = new HashMap<String, Registry>(4);
+    RegistryFactory registryFactory = ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
+    private final Map<String, Registry> serviceRegistries = new ConcurrentHashMap<>(4);
+    private final Map<String, Registry> referenceRegistries = new ConcurrentHashMap<String, Registry>(4);
+    private final Map<NotifyListener, MultipleNotifyListenerWrapper> multipleNotifyListenerMap = new ConcurrentHashMap<NotifyListener, MultipleNotifyListenerWrapper>(32);
     List<String> origServiceRegistryURLs;
     List<String> origReferenceRegistryURLs;
     List<String> effectServiceRegistryURLs;
@@ -61,8 +60,9 @@ public class MultipleRegistry implements Registry {
 
 
     public MultipleRegistry(URL url) {
+        super(url);
         this.registryUrl = url;
-        this.applicationName = url.getParameter(Constants.APPLICATION_KEY);
+        this.applicationName = url.getParameter(CommonConstants.APPLICATION_KEY);
         init();
         checkApplicationName(this.applicationName);
         // This urls contain parameter and it donot inherit from the parameter of url in MultipleRegistry
@@ -71,7 +71,7 @@ public class MultipleRegistry implements Registry {
         effectServiceRegistryURLs = this.filterServiceRegistry(origServiceRegistryURLs);
         effectReferenceRegistryURLs = this.filterReferenceRegistry(origReferenceRegistryURLs);
 
-        boolean defaultRegistry = url.getParameter(Constants.DEFAULT_KEY, true);
+        boolean defaultRegistry = url.getParameter(CommonConstants.DEFAULT_KEY, true);
         if (defaultRegistry && effectServiceRegistryURLs.isEmpty() && effectReferenceRegistryURLs.isEmpty()) {
             throw new IllegalArgumentException("Illegal registry url. You need to configure parameter " +
                     REGISTRY_FOR_SERVICE + " or " + REGISTRY_FOR_REFERENCE);
@@ -131,6 +131,7 @@ public class MultipleRegistry implements Registry {
 
     @Override
     public void register(URL url) {
+        super.register(url);
         for (Registry registry : serviceRegistries.values()) {
             registry.register(url);
         }
@@ -138,6 +139,7 @@ public class MultipleRegistry implements Registry {
 
     @Override
     public void unregister(URL url) {
+        super.unregister(url);
         for (Registry registry : serviceRegistries.values()) {
             registry.unregister(url);
         }
@@ -145,15 +147,25 @@ public class MultipleRegistry implements Registry {
 
     @Override
     public void subscribe(URL url, NotifyListener listener) {
+        MultipleNotifyListenerWrapper multipleNotifyListenerWrapper = new MultipleNotifyListenerWrapper(listener);
+        multipleNotifyListenerMap.put(listener, multipleNotifyListenerWrapper);
         for (Registry registry : referenceRegistries.values()) {
-            registry.subscribe(url, listener);
+            SingleNotifyListener singleNotifyListener = new SingleNotifyListener(multipleNotifyListenerWrapper, registry);
+            multipleNotifyListenerWrapper.putRegistryMap(registry.getUrl(), singleNotifyListener);
+            registry.subscribe(url, singleNotifyListener);
         }
+        super.subscribe(url, multipleNotifyListenerWrapper);
     }
 
     @Override
     public void unsubscribe(URL url, NotifyListener listener) {
         for (Registry registry : referenceRegistries.values()) {
             registry.unsubscribe(url, listener);
+        }
+        MultipleNotifyListenerWrapper notifyListener = multipleNotifyListenerMap.remove(listener);
+        if (notifyListener != null) {
+            super.unsubscribe(url, notifyListener);
+            notifyListener.destroy();
         }
     }
 
@@ -169,7 +181,7 @@ public class MultipleRegistry implements Registry {
         return urls;
     }
 
-    protected void init(){
+    protected void init() {
     }
 
     protected List<String> filterServiceRegistry(List<String> serviceRegistryURLs) {
@@ -180,126 +192,6 @@ public class MultipleRegistry implements Registry {
         return referenceRegistryURLs;
     }
 
-    protected synchronized void refreshServiceRegistry(List<String> serviceRegistryURLs) {
-        this.effectServiceRegistryURLs = serviceRegistryURLs;
-        doRefreshRegistry(serviceRegistryURLs, serviceRegistries, () -> this.getRegisteredURLs(),
-                (registry, registeredURLs) -> {
-                    for (URL url : (Set<URL>) registeredURLs) {
-                        registry.register(url);
-                    }
-                },
-                (registry, registeredURLs) -> {
-                    for (URL url : (Set<URL>) registeredURLs) {
-                        registry.unregister(url);
-                    }
-                },
-                newRegistryMap -> this.serviceRegistries = newRegistryMap
-
-        );
-    }
-
-    protected synchronized void refreshReferenceRegistry(List<String> referenceRegistryURLs) {
-        this.effectReferenceRegistryURLs = referenceRegistryURLs;
-        doRefreshRegistry(referenceRegistryURLs, referenceRegistries, () -> this.getSubscribedURLMap(),
-                (registry, registeredURLs) -> {
-                    for (Map.Entry<URL, Set<NotifyListener>> urlNotifyListenerMap : ((Map<URL, Set<NotifyListener>>) registeredURLs).entrySet()) {
-                        for (NotifyListener notifyListener : urlNotifyListenerMap.getValue()) {
-                            registry.subscribe(urlNotifyListenerMap.getKey(), notifyListener);
-                        }
-                    }
-                },
-                (registry, registeredURLs) -> {
-                    for (Map.Entry<URL, Set<NotifyListener>> urlNotifyListenerMap : ((Map<URL, Set<NotifyListener>>) registeredURLs).entrySet()) {
-                        for (NotifyListener notifyListener : urlNotifyListenerMap.getValue()) {
-                            registry.unsubscribe(urlNotifyListenerMap.getKey(), notifyListener);
-                        }
-                    }
-                },
-                newRegistryMap -> this.referenceRegistries = newRegistryMap
-
-        );
-    }
-
-    /**
-     * @param newRegistryURLs
-     * @param oldRegistryMap
-     * @param getURLSupplier    if result is empty, please return null
-     * @param joinConsumer
-     * @param leftConsumer
-     * @param setResultConsumer
-     */
-    private synchronized void doRefreshRegistry(List<String> newRegistryURLs, Map<String, Registry> oldRegistryMap,
-                                                Supplier<Object> getURLSupplier,
-                                                BiConsumer<Registry, Object> joinConsumer, BiConsumer<Registry, Object> leftConsumer,
-                                                Consumer<Map<String, Registry>> setResultConsumer
-    ) {
-        // If new registry is empty or registry running is empty , it will not be freshed.
-        if (newRegistryURLs == null || newRegistryURLs.isEmpty() || oldRegistryMap.isEmpty()) {
-            return;
-        }
-        // fetch register or subscriber
-        Object registeredURLs = this.getRegisteredURLs();
-        if (registeredURLs == null) {
-            logger.info("Cannot fetch registered URL.");
-            return;
-        }
-
-        Map<String, Registry> newRegistryMap = new HashMap<String, Registry>(4);
-        for (String serviceRegistryURL : newRegistryURLs) {
-            Registry registry = oldRegistryMap.get(serviceRegistryURL);
-            if (registry == null) {
-                registry = registryFactory.getRegistry(URL.valueOf(serviceRegistryURL));
-                newRegistryMap.put(serviceRegistryURL, registry);
-                // registry all
-                joinConsumer.accept(registry, registeredURLs);
-            }
-        }
-
-        // get removed registry and keep the registry that is the same as new Configuration.
-        List<Registry> removedRegistries = new ArrayList<>();
-        for (Map.Entry<String, Registry> origRegistryEntry : oldRegistryMap.entrySet()) {
-            if (newRegistryURLs.contains(origRegistryEntry.getKey())) {
-                newRegistryMap.put(origRegistryEntry.getKey(), origRegistryEntry.getValue());
-            } else {
-                removedRegistries.add(origRegistryEntry.getValue());
-            }
-        }
-        // unregister/unsubscribe by remove registry
-        for (Registry removedRegistry : removedRegistries) {
-            leftConsumer.accept(removedRegistry, registeredURLs);
-        }
-        setResultConsumer.accept(newRegistryMap);
-    }
-
-    private Set<URL> getRegisteredURLs() {
-        // registry all
-        Iterator<Registry> iterator = serviceRegistries.values().iterator();
-        while (iterator.hasNext()) {
-            Registry tmpRegistry = iterator.next();
-            if (tmpRegistry instanceof AbstractRegistry) {
-                AbstractRegistry tmpAbstractRegistry = (AbstractRegistry) tmpRegistry;
-                if (!CollectionUtils.isEmpty(tmpAbstractRegistry.getRegistered())) {
-                    return tmpAbstractRegistry.getRegistered();
-                }
-            }
-        }
-        return Collections.emptySet();
-    }
-
-    private Map<URL, Set<NotifyListener>> getSubscribedURLMap() {
-        // registry all
-        Iterator<Registry> iterator = referenceRegistries.values().iterator();
-        while (iterator.hasNext()) {
-            Registry tmpRegistry = iterator.next();
-            if (tmpRegistry instanceof AbstractRegistry) {
-                AbstractRegistry tmpAbstractRegistry = (AbstractRegistry) tmpRegistry;
-                if (CollectionUtils.isEmptyMap(tmpAbstractRegistry.getSubscribed())) {
-                    return tmpAbstractRegistry.getSubscribed();
-                }
-            }
-        }
-        return null;
-    }
 
     protected void checkApplicationName(String applicationName) {
     }
@@ -330,5 +222,90 @@ public class MultipleRegistry implements Registry {
 
     public List<String> getEffectReferenceRegistryURLs() {
         return effectReferenceRegistryURLs;
+    }
+
+    static class MultipleNotifyListenerWrapper implements NotifyListener {
+
+        Map<URL, SingleNotifyListener> registryMap = new ConcurrentHashMap<URL, SingleNotifyListener>(4);
+        NotifyListener sourceNotifyListener;
+
+        public MultipleNotifyListenerWrapper(NotifyListener sourceNotifyListener) {
+            this.sourceNotifyListener = sourceNotifyListener;
+        }
+
+        public void putRegistryMap(URL registryURL, SingleNotifyListener singleNotifyListener) {
+            this.registryMap.put(registryURL, singleNotifyListener);
+        }
+
+        public void destroy() {
+            for (SingleNotifyListener singleNotifyListener : registryMap.values()) {
+                if (singleNotifyListener != null) {
+                    singleNotifyListener.destroy();
+                }
+            }
+            registryMap.clear();
+            sourceNotifyListener = null;
+        }
+
+        public synchronized void notifySourceListener() {
+            List<URL> notifyURLs = new ArrayList<URL>();
+            URL emptyURL = null;
+            for (SingleNotifyListener singleNotifyListener : registryMap.values()) {
+                List<URL> tmpUrls = singleNotifyListener.getUrlList();
+                if (CollectionUtils.isEmpty(tmpUrls)) {
+                    continue;
+                }
+                // empty protocol
+                if (tmpUrls.size() == 1
+                        && tmpUrls.get(0) != null
+                        && EMPTY_PROTOCOL.equals(tmpUrls.get(0).getProtocol())) {
+                    // if only one empty
+                    if (emptyURL == null) {
+                        emptyURL = tmpUrls.get(0);
+                    }
+                    continue;
+                }
+                notifyURLs.addAll(tmpUrls);
+            }
+            // if no notify URL, add empty protocol URL
+            if (emptyURL != null && notifyURLs.isEmpty()) {
+                notifyURLs.add(emptyURL);
+            }
+            this.notify(notifyURLs);
+        }
+
+        @Override
+        public void notify(List<URL> urls) {
+            sourceNotifyListener.notify(urls);
+        }
+    }
+
+    static class SingleNotifyListener implements NotifyListener {
+
+        MultipleNotifyListenerWrapper multipleNotifyListenerWrapper;
+        Registry registry;
+        volatile List<URL> urlList;
+
+        public SingleNotifyListener(MultipleNotifyListenerWrapper multipleNotifyListenerWrapper, Registry registry) {
+            this.registry = registry;
+            this.multipleNotifyListenerWrapper = multipleNotifyListenerWrapper;
+        }
+
+        @Override
+        public void notify(List<URL> urls) {
+            this.urlList = urls;
+            if (multipleNotifyListenerWrapper != null) {
+                this.multipleNotifyListenerWrapper.notifySourceListener();
+            }
+        }
+
+        public void destroy() {
+            this.multipleNotifyListenerWrapper = null;
+            this.registry = null;
+        }
+
+        public List<URL> getUrlList() {
+            return urlList;
+        }
     }
 }
