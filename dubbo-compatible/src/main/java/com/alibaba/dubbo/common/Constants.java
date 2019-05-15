@@ -26,6 +26,6 @@ import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.constants.RpcConstants;
 
 @Deprecated
-public class Constants implements CommonConstants, ConfigConstants, FilterConstants,
-        MonitorConstants, RegistryConstants, RemotingConstants, RpcConstants, org.apache.dubbo.rpc.cluster.Constants {
+public class Constants implements CommonConstants, ConfigConstants, FilterConstants, RegistryConstants,
+        RemotingConstants, RpcConstants, org.apache.dubbo.rpc.cluster.Constants, org.apache.dubbo.monitor.Constants {
 }

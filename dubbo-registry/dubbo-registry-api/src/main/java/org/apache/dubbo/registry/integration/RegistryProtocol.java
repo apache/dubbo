@@ -75,7 +75,7 @@ import static org.apache.dubbo.common.constants.ConfigConstants.QOS_PORT;
 import static org.apache.dubbo.common.constants.ConfigConstants.REFER_KEY;
 import static org.apache.dubbo.common.constants.ConfigConstants.REGISTER_IP_KEY;
 import static org.apache.dubbo.common.constants.FilterConstants.VALIDATION_KEY;
-import static org.apache.dubbo.common.constants.MonitorConstants.MONITOR_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_SUFFIX;

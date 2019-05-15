@@ -44,8 +44,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.MonitorConstants.COUNT_PROTOCOL;
-import static org.apache.dubbo.common.constants.MonitorConstants.MONITOR_KEY;
+import static org.apache.dubbo.monitor.Constants.COUNT_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.INPUT_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.OUTPUT_KEY;
 /**

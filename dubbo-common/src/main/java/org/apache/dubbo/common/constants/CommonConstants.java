@@ -157,4 +157,6 @@ public interface CommonConstants {
     String RELEASE_KEY = "release";
 
     int MAX_PROXY_COUNT = 65535;
+
+    String MONITOR_KEY = "monitor";
 }
