@@ -37,12 +37,10 @@ import org.apache.dubbo.rpc.support.RpcUtils;
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.CALLBACK_SERVICE_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.ASYNC_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.TOKEN_KEY;
 
 /**
