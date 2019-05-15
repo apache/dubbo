@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.registry.integration;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
@@ -59,6 +58,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.ClusterConstants.ROUTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
@@ -66,6 +66,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_PROTOCOL;
+import static org.apache.dubbo.common.constants.ConfigConstants.REFER_KEY;
+import static org.apache.dubbo.common.constants.MonitorConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.COMPATIBLE_CONFIG_KEY;
@@ -134,7 +137,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         }
         this.serviceType = serviceType;
         this.serviceKey = url.getServiceKey();
-        this.queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(Constants.REFER_KEY));
+        this.queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY));
         this.overrideDirectoryUrl = this.directoryUrl = turnRegistryUrlToConsumerUrl(url);
         String group = directoryUrl.getParameter(GROUP_KEY, "");
         this.multiGroup = group != null && (ANY_VALUE.equals(group) || group.contains(","));
@@ -150,7 +153,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 .setPath(url.getServiceInterface())
                 .clearParameters()
                 .addParameters(queryMap)
-                .removeParameter(Constants.MONITOR_KEY)
+                .removeParameter(MONITOR_KEY)
                 .build();
     }
 
@@ -343,7 +346,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             if (EMPTY_PROTOCOL.equals(url.getProtocol())) {
                 continue;
             }
-            String routerType = url.getParameter(Constants.ROUTER_KEY);
+            String routerType = url.getParameter(ROUTER_KEY);
             if (routerType != null && routerType.length() > 0) {
                 url = url.setProtocol(routerType);
             }
@@ -450,7 +453,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         this.overrideDirectoryUrl = this.overrideDirectoryUrl.addParametersIfAbsent(providerUrl.getParameters()); // Merge the provider side parameters
 
         if ((providerUrl.getPath() == null || providerUrl.getPath()
-                .length() == 0) && Constants.DUBBO_PROTOCOL.equals(providerUrl.getProtocol())) { // Compatible version 1.0
+                .length() == 0) && DUBBO_PROTOCOL.equals(providerUrl.getProtocol())) { // Compatible version 1.0
             //fix by tony.chenl DUBBO-44
             String path = directoryUrl.getParameter(INTERFACE_KEY);
             if (path != null) {

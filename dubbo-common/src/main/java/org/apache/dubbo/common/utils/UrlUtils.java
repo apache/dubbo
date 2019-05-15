@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.RemotingConstants;
 
@@ -39,6 +38,11 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_PROTOCOL;
+import static org.apache.dubbo.common.constants.ConfigConstants.HOST_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.PASSWORD_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.PORT_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.USERNAME_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
@@ -78,19 +82,19 @@ public class UrlUtils {
         }
         String defaultProtocol = defaults == null ? null : defaults.get(PROTOCOL_KEY);
         if (defaultProtocol == null || defaultProtocol.length() == 0) {
-            defaultProtocol = Constants.DUBBO_PROTOCOL;
+            defaultProtocol = DUBBO_PROTOCOL;
         }
-        String defaultUsername = defaults == null ? null : defaults.get(Constants.USERNAME_KEY);
-        String defaultPassword = defaults == null ? null : defaults.get(Constants.PASSWORD_KEY);
-        int defaultPort = StringUtils.parseInteger(defaults == null ? null : defaults.get(Constants.PORT_KEY));
+        String defaultUsername = defaults == null ? null : defaults.get(USERNAME_KEY);
+        String defaultPassword = defaults == null ? null : defaults.get(PASSWORD_KEY);
+        int defaultPort = StringUtils.parseInteger(defaults == null ? null : defaults.get(PORT_KEY));
         String defaultPath = defaults == null ? null : defaults.get(PATH_KEY);
         Map<String, String> defaultParameters = defaults == null ? null : new HashMap<String, String>(defaults);
         if (defaultParameters != null) {
             defaultParameters.remove(PROTOCOL_KEY);
-            defaultParameters.remove(Constants.USERNAME_KEY);
-            defaultParameters.remove(Constants.PASSWORD_KEY);
-            defaultParameters.remove(Constants.HOST_KEY);
-            defaultParameters.remove(Constants.PORT_KEY);
+            defaultParameters.remove(USERNAME_KEY);
+            defaultParameters.remove(PASSWORD_KEY);
+            defaultParameters.remove(HOST_KEY);
+            defaultParameters.remove(PORT_KEY);
             defaultParameters.remove(PATH_KEY);
         }
         URL u = URL.valueOf(url);

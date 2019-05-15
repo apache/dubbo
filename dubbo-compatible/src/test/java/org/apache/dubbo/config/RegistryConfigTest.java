@@ -17,21 +17,20 @@
 
 package org.apache.dubbo.config;
 
-import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.config.RegistryConfig;
-
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.ConfigConstants.SHUTDOWN_WAIT_KEY;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 public class RegistryConfigTest {
     @Test
@@ -70,7 +69,7 @@ public class RegistryConfigTest {
         RegistryConfig registry = new RegistryConfig();
         registry.setWait(10);
         assertThat(registry.getWait(), is(10));
-        assertThat(System.getProperty(Constants.SHUTDOWN_WAIT_KEY), equalTo("10"));
+        assertThat(System.getProperty(SHUTDOWN_WAIT_KEY), equalTo("10"));
     }
 
     @Test

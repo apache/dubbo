@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.remoting.Channel;
@@ -39,6 +38,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.CALLBACK_SERVICE_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.ASYNC_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.TOKEN_KEY;
 
 /**
  * Wrap the existing invoker on the channel.
@@ -50,7 +52,7 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
     private final ExchangeClient currentClient;
 
     ChannelWrappedInvoker(Class<T> serviceType, Channel channel, URL url, String serviceKey) {
-        super(serviceType, url, new String[]{GROUP_KEY, Constants.TOKEN_KEY, TIMEOUT_KEY});
+        super(serviceType, url, new String[]{GROUP_KEY, TOKEN_KEY, TIMEOUT_KEY});
         this.channel = channel;
         this.serviceKey = serviceKey;
         this.currentClient = new HeaderExchangeClient(new ChannelWrapper(this.channel), false);
@@ -61,10 +63,10 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
         RpcInvocation inv = (RpcInvocation) invocation;
         // use interface's name as service path to export if it's not found on client side
         inv.setAttachment(PATH_KEY, getInterface().getName());
-        inv.setAttachment(Constants.CALLBACK_SERVICE_KEY, serviceKey);
+        inv.setAttachment(CALLBACK_SERVICE_KEY, serviceKey);
 
         try {
-            if (getUrl().getMethodParameter(invocation.getMethodName(), Constants.ASYNC_KEY, false)) { // may have concurrency issue
+            if (getUrl().getMethodParameter(invocation.getMethodName(), ASYNC_KEY, false)) { // may have concurrency issue
                 currentClient.send(inv, getUrl().getMethodParameter(invocation.getMethodName(), RemotingConstants.SENT_KEY, false));
                 return new RpcResult();
             }

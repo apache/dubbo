@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 
@@ -33,6 +32,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_PROTOCOL;
+import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
 
 public class ClusterUtilsTest {
 
@@ -46,7 +47,7 @@ public class ClusterUtilsTest {
         providerURL = URLBuilder.from(providerURL)
                 .addParameter(GROUP_KEY, "dubbo")
                 .addParameter(VERSION_KEY, "1.2.3")
-                .addParameter(Constants.DUBBO_VERSION_KEY, "2.3.7")
+                .addParameter(DUBBO_VERSION_KEY, "2.3.7")
                 .addParameter(THREADPOOL_KEY, "fixed")
                 .addParameter(THREADS_KEY, Integer.MAX_VALUE)
                 .addParameter(THREAD_NAME_KEY, "test")
@@ -61,7 +62,7 @@ public class ClusterUtilsTest {
                 .addParameter(DEFAULT_KEY_PREFIX + THREAD_NAME_KEY, "test")
                 .build();
 
-        URL consumerURL = new URLBuilder(Constants.DUBBO_PROTOCOL, "localhost", 55555)
+        URL consumerURL = new URLBuilder(DUBBO_PROTOCOL, "localhost", 55555)
                 .addParameter(PID_KEY, "1234")
                 .addParameter(THREADPOOL_KEY, "foo")
                 .build();

@@ -17,15 +17,6 @@
 
 package org.apache.dubbo.configcenter.support.etcd;
 
-import com.google.protobuf.ByteString;
-import io.etcd.jetcd.api.Event;
-import io.etcd.jetcd.api.WatchCancelRequest;
-import io.etcd.jetcd.api.WatchCreateRequest;
-import io.etcd.jetcd.api.WatchGrpc;
-import io.etcd.jetcd.api.WatchRequest;
-import io.etcd.jetcd.api.WatchResponse;
-import io.grpc.ManagedChannel;
-import io.grpc.stub.StreamObserver;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.configcenter.ConfigChangeEvent;
@@ -35,12 +26,22 @@ import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.remoting.etcd.StateListener;
 import org.apache.dubbo.remoting.etcd.jetcd.JEtcdClient;
 
+import com.google.protobuf.ByteString;
+import io.etcd.jetcd.api.Event;
+import io.etcd.jetcd.api.WatchCancelRequest;
+import io.etcd.jetcd.api.WatchCreateRequest;
+import io.etcd.jetcd.api.WatchGrpc;
+import io.etcd.jetcd.api.WatchRequest;
+import io.etcd.jetcd.api.WatchResponse;
+import io.grpc.ManagedChannel;
+import io.grpc.stub.StreamObserver;
+
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.dubbo.common.Constants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.common.constants.ConfigConstants.CONFIG_NAMESPACE_KEY;
 
 /**
  * The etcd implementation of {@link DynamicConfiguration}

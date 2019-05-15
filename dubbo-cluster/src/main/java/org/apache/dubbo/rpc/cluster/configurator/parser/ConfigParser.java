@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.configurator.parser;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -31,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.ClusterConstants.OVERRIDE_PROVIDERS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.RegistryConstants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_CONFIGURATORS_CATEGORY;
@@ -148,7 +148,7 @@ public class ConfigParser {
 
         if (CollectionUtils.isNotEmpty(item.getProviderAddresses())) {
             sb.append("&");
-            sb.append(Constants.OVERRIDE_PROVIDERS_KEY);
+            sb.append(OVERRIDE_PROVIDERS_KEY);
             sb.append("=");
             sb.append(CollectionUtils.join(item.getProviderAddresses(), ","));
         }
