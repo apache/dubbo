@@ -69,7 +69,7 @@ public class ThriftProtocol extends AbstractProxyProtocol {
     }
 
     @Override
-    protected <T> T getFrameworkProxy(Class<T> type, URL url) throws RpcException {
+    protected <T> T doRefer(Class<T> type, URL url) throws RpcException {
         return doReferFrameAndCompact(type, url);
     }
 

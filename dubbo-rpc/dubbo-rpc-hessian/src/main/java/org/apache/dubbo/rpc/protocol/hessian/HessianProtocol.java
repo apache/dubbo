@@ -46,12 +46,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.HESSIAN2_REQUEST_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.DEFAULT_HESSIAN2_REQUEST;
-import static org.apache.dubbo.common.constants.RpcConstants.HESSIAN_OVERLOAD_METHOD_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.DEFAULT_HESSIAN_OVERLOAD_METHOD;
 import static org.apache.dubbo.common.constants.RpcConstants.DEFAULT_HTTP_CLIENT;
 import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.HESSIAN2_REQUEST_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.HESSIAN_OVERLOAD_METHOD_KEY;
 /**
  * http rpc support.
  */
@@ -102,7 +102,7 @@ public class HessianProtocol extends AbstractProxyProtocol {
 
     @Override
     @SuppressWarnings("unchecked")
-    protected <T> T getFrameworkProxy(Class<T> serviceType, URL url) throws RpcException {
+    protected <T> T doRefer(Class<T> serviceType, URL url) throws RpcException {
         String generic = url.getParameter(GENERIC_KEY);
         boolean isGeneric = ProtocolUtils.isGeneric(generic) || serviceType.equals(GenericService.class);
         if (isGeneric) {

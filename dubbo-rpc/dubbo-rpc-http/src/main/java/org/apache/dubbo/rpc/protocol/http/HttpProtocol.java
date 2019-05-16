@@ -116,7 +116,7 @@ public class HttpProtocol extends AbstractProxyProtocol {
 
     @Override
     @SuppressWarnings("unchecked")
-    protected <T> T getFrameworkProxy(final Class<T> serviceType, final URL url) throws RpcException {
+    protected <T> T doRefer(final Class<T> serviceType, final URL url) throws RpcException {
         final String generic = url.getParameter(GENERIC_KEY);
         final boolean isGeneric = ProtocolUtils.isGeneric(generic) || serviceType.equals(GenericService.class);
 

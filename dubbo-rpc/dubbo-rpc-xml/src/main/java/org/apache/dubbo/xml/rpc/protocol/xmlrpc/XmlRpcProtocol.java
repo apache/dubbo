@@ -144,7 +144,7 @@ public class XmlRpcProtocol extends AbstractProxyProtocol {
     }
 
     @SuppressWarnings("unchecked")
-    protected <T> T getFrameworkProxy(final Class<T> serviceType, URL url) throws RpcException {
+    protected <T> T doRefer(final Class<T> serviceType, URL url) throws RpcException {
         XmlRpcProxyFactoryBean xmlRpcProxyFactoryBean = new XmlRpcProxyFactoryBean();
         xmlRpcProxyFactoryBean.setServiceUrl(url.setProtocol("http").toIdentityString());
         xmlRpcProxyFactoryBean.setServiceInterface(serviceType);

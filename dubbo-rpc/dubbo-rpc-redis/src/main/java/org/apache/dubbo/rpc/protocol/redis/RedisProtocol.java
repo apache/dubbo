@@ -71,7 +71,7 @@ public class RedisProtocol extends AbstractProtocol {
     }
 
     @Override
-    protected <T> Invoker<T> doRefer(final Class<T> type, final URL url) throws RpcException {
+    protected <T> Invoker<T> protocolBindingRefer(final Class<T> type, final URL url) throws RpcException {
         try {
             GenericObjectPoolConfig config = new GenericObjectPoolConfig();
             config.setTestOnBorrow(url.getParameter("test.on.borrow", true));

@@ -31,11 +31,11 @@ import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.rmi.RemoteException;
 
+import static org.apache.dubbo.common.Version.isRelease263OrHigher;
+import static org.apache.dubbo.common.Version.isRelease270OrHigher;
 import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_KEY;
-import static org.apache.dubbo.common.Version.isRelease263OrHigher;
-import static org.apache.dubbo.common.Version.isRelease270OrHigher;
 
 /**
  * RmiProtocol.
@@ -72,7 +72,7 @@ public class RmiProtocol extends AbstractProxyProtocol {
 
     @Override
     @SuppressWarnings("unchecked")
-    protected <T> T getFrameworkProxy(final Class<T> serviceType, final URL url) throws RpcException {
+    protected <T> T doRefer(final Class<T> serviceType, final URL url) throws RpcException {
         final RmiProxyFactoryBean rmiProxyFactoryBean = new RmiProxyFactoryBean();
         final String generic = url.getParameter(GENERIC_KEY);
         final boolean isGeneric = ProtocolUtils.isGeneric(generic) || serviceType.equals(GenericService.class);

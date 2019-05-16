@@ -64,7 +64,7 @@ public class DubboInvokerAvilableTest {
         URL url = URL.valueOf("dubbo://127.0.0.1:20883/org.apache.dubbo.rpc.protocol.dubbo.IDemoService");
         ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
 
-        DubboInvoker<?> invoker = (DubboInvoker<?>) protocol.doRefer(IDemoService.class, url);
+        DubboInvoker<?> invoker = (DubboInvoker<?>) protocol.protocolBindingRefer(IDemoService.class, url);
         Assertions.assertEquals(true, invoker.isAvailable());
         invoker.destroy();
         Assertions.assertEquals(false, invoker.isAvailable());
@@ -75,7 +75,7 @@ public class DubboInvokerAvilableTest {
         URL url = URL.valueOf("dubbo://127.0.0.1:20883/org.apache.dubbo.rpc.protocol.dubbo.IDemoService");
         ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
 
-        DubboInvoker<?> invoker = (DubboInvoker<?>) protocol.doRefer(IDemoService.class, url);
+        DubboInvoker<?> invoker = (DubboInvoker<?>) protocol.protocolBindingRefer(IDemoService.class, url);
         Assertions.assertEquals(true, invoker.isAvailable());
 
         getClients(invoker)[0].setAttribute(RemotingConstants.CHANNEL_ATTRIBUTE_READONLY_KEY, Boolean.TRUE);
@@ -93,7 +93,7 @@ public class DubboInvokerAvilableTest {
         Exporter<IDemoService> exporter = ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
         Exporter<IDemoService> exporter0 = ProtocolUtils.export(new DemoServiceImpl0(), IDemoService.class, url);
 
-        DubboInvoker<?> invoker = (DubboInvoker<?>) protocol.doRefer(IDemoService.class, url);
+        DubboInvoker<?> invoker = (DubboInvoker<?>) protocol.protocolBindingRefer(IDemoService.class, url);
 
         long start = System.currentTimeMillis();
 
@@ -115,7 +115,7 @@ public class DubboInvokerAvilableTest {
         URL url = URL.valueOf("dubbo://127.0.0.1:20883/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?connections=1");
         ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
 
-        DubboInvoker<?> invoker = (DubboInvoker<?>) protocol.doRefer(IDemoService.class, url);
+        DubboInvoker<?> invoker = (DubboInvoker<?>) protocol.protocolBindingRefer(IDemoService.class, url);
 
         ExchangeClient[] clients = getClients(invoker);
         clients[0].close();

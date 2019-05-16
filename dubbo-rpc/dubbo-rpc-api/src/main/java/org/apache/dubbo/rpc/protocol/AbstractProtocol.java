@@ -88,8 +88,8 @@ public abstract class AbstractProtocol implements Protocol {
 
     @Override
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
-        return new AsyncToSyncInvoker<>(doRefer(type, url));
+        return new AsyncToSyncInvoker<>(protocolBindingRefer(type, url));
     }
 
-    protected abstract <T> Invoker<T> doRefer(Class<T> type, URL url) throws RpcException;
+    protected abstract <T> Invoker<T> protocolBindingRefer(Class<T> type, URL url) throws RpcException;
 }
