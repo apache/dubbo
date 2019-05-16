@@ -126,6 +126,6 @@ public interface Constants {
     String CHECK_KEY = "check";
 
     String PROMPT_KEY = "prompt";
-   
+
     String DEFAULT_PROMPT = "dubbo>";
 }

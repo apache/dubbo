@@ -55,6 +55,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.CONNECTIONS_KEY;
+import static org.apache.dubbo.remoting.Constants.CONNECT_TIMEOUT_KEY;
+import static org.apache.dubbo.remoting.Constants.DEFAULT_CONNECT_TIMEOUT;
+import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
 import static org.apache.dubbo.rpc.protocol.rest.Constants.EXTENSION_KEY;
 
 public class RestProtocol extends AbstractProxyProtocol {
@@ -95,13 +98,13 @@ public class RestProtocol extends AbstractProxyProtocol {
         String addr = getAddr(url);
         Class implClass = ApplicationModel.getProviderModel(url.getPathKey()).getServiceInstance().getClass();
         RestServer server = servers.computeIfAbsent(addr, restServer -> {
-            RestServer s = serverFactory.createServer(url.getParameter(org.apache.dubbo.remoting.Constants.SERVER_KEY, DEFAULT_SERVER));
+            RestServer s = serverFactory.createServer(url.getParameter(SERVER_KEY, DEFAULT_SERVER));
             s.start(url);
             return s;
         });
 
         String contextPath = getContextPath(url);
-        if ("servlet".equalsIgnoreCase(url.getParameter(org.apache.dubbo.remoting.Constants.SERVER_KEY, DEFAULT_SERVER))) {
+        if ("servlet".equalsIgnoreCase(url.getParameter(SERVER_KEY, DEFAULT_SERVER))) {
             ServletContext servletContext = ServletManager.getInstance().getServletContext(ServletManager.EXTERNAL_SERVER_PORT);
             if (servletContext == null) {
                 throw new RpcException("No servlet context found. Since you are using server='servlet', " +
@@ -148,7 +151,7 @@ public class RestProtocol extends AbstractProxyProtocol {
         }
         connectionMonitor.addConnectionManager(connectionManager);
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(url.getParameter(org.apache.dubbo.remoting.Constants.CONNECT_TIMEOUT_KEY, org.apache.dubbo.remoting.Constants.DEFAULT_CONNECT_TIMEOUT))
+                .setConnectTimeout(url.getParameter(CONNECT_TIMEOUT_KEY, DEFAULT_CONNECT_TIMEOUT))
                 .setSocketTimeout(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT))
                 .build();
 
