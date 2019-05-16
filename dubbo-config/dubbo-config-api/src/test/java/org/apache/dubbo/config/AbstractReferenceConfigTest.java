@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.constants.RemotingConstants;
+import org.apache.dubbo.remoting.Constants;
 
 import org.junit.jupiter.api.Test;
 
@@ -129,7 +129,7 @@ public class AbstractReferenceConfigTest {
         Map<String, String> parameters = new HashMap<String, String>();
         AbstractInterfaceConfig.appendParameters(parameters, referenceConfig);
         assertThat(referenceConfig.getReconnect(), equalTo("reconnect"));
-        assertThat(parameters, hasKey(RemotingConstants.RECONNECT_KEY));
+        assertThat(parameters, hasKey(Constants.RECONNECT_KEY));
     }
 
     @Test

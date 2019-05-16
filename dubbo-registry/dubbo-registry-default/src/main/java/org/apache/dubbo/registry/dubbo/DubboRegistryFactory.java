@@ -46,8 +46,8 @@ import static org.apache.dubbo.common.constants.ConfigConstants.LAZY_CONNECT_KEY
 import static org.apache.dubbo.common.constants.ConfigConstants.REFER_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
-import static org.apache.dubbo.common.constants.RemotingConstants.CONNECT_TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.RemotingConstants.RECONNECT_KEY;
+import static org.apache.dubbo.remoting.Constants.CONNECT_TIMEOUT_KEY;
+import static org.apache.dubbo.remoting.Constants.RECONNECT_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.CALLBACK_INSTANCES_LIMIT_KEY;
 
 /**

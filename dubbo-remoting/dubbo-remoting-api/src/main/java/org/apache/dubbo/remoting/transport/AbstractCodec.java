@@ -20,13 +20,13 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Codec2;
+import org.apache.dubbo.remoting.Constants;
 
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 
@@ -42,9 +42,9 @@ public abstract class AbstractCodec implements Codec2 {
     private static final String SERVER_SIDE = "server";
 
     protected static void checkPayload(Channel channel, long size) throws IOException {
-        int payload = RemotingConstants.DEFAULT_PAYLOAD;
+        int payload = Constants.DEFAULT_PAYLOAD;
         if (channel != null && channel.getUrl() != null) {
-            payload = channel.getUrl().getParameter(RemotingConstants.PAYLOAD_KEY, RemotingConstants.DEFAULT_PAYLOAD);
+            payload = channel.getUrl().getParameter(Constants.PAYLOAD_KEY, Constants.DEFAULT_PAYLOAD);
         }
         if (payload > 0 && size > payload) {
             ExceedPayloadLimitException e = new ExceedPayloadLimitException(
