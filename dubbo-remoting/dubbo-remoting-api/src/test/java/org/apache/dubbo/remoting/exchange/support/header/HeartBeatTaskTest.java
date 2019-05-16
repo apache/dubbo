@@ -18,7 +18,6 @@
 package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.exchange.Request;
@@ -31,6 +30,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.remoting.Constants.HEARTBEAT_CHECK_TICK;
 
 public class HeartBeatTaskTest {
 
@@ -44,7 +44,7 @@ public class HeartBeatTaskTest {
     @BeforeEach
     public void setup() throws Exception {
         long tickDuration = 1000;
-        heartbeatTimer = new HashedWheelTimer(tickDuration / RemotingConstants.HEARTBEAT_CHECK_TICK, TimeUnit.MILLISECONDS);
+        heartbeatTimer = new HashedWheelTimer(tickDuration / HEARTBEAT_CHECK_TICK, TimeUnit.MILLISECONDS);
 
         channel = new MockChannel() {
 
@@ -55,7 +55,7 @@ public class HeartBeatTaskTest {
         };
 
         AbstractTimerTask.ChannelProvider cp = () -> Collections.<Channel>singletonList(channel);
-        heartbeatTimerTask = new HeartbeatTimerTask(cp, tickDuration / RemotingConstants.HEARTBEAT_CHECK_TICK, (int) tickDuration);
+        heartbeatTimerTask = new HeartbeatTimerTask(cp, tickDuration / HEARTBEAT_CHECK_TICK, (int) tickDuration);
     }
 
     @Test

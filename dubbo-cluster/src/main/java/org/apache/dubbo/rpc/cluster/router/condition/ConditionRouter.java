@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.router.condition;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -39,15 +38,16 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.apache.dubbo.common.constants.ClusterConstants.ADDRESS_KEY;
-import static org.apache.dubbo.common.constants.ClusterConstants.FORCE_KEY;
-import static org.apache.dubbo.common.constants.ClusterConstants.PRIORITY_KEY;
-import static org.apache.dubbo.common.constants.ClusterConstants.RULE_KEY;
-import static org.apache.dubbo.common.constants.ClusterConstants.RUNTIME_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.ADDRESS_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.FORCE_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.PRIORITY_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.RUNTIME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.HOST_KEY;
 
 /**
  * ConditionRouter
@@ -233,7 +233,7 @@ public class ConditionRouter extends AbstractRouter {
                 sampleValue = invocation.getMethodName();
             } else if (ADDRESS_KEY.equals(key)) {
                 sampleValue = url.getAddress();
-            } else if (Constants.HOST_KEY.equals(key)) {
+            } else if (HOST_KEY.equals(key)) {
                 sampleValue = url.getHost();
             } else {
                 sampleValue = sample.get(key);

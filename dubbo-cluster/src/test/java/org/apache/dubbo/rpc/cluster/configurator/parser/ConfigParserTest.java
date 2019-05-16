@@ -30,9 +30,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import static org.apache.dubbo.common.constants.ClusterConstants.LOADBALANCE_KEY;
-import static org.apache.dubbo.common.constants.ClusterConstants.OVERRIDE_PROVIDERS_KEY;
-import static org.apache.dubbo.common.constants.ClusterConstants.WEIGHT_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.LOADBALANCE_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.WEIGHT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;

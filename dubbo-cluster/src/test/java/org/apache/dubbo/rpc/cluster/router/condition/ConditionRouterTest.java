@@ -33,8 +33,8 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.dubbo.common.constants.ClusterConstants.FORCE_KEY;
-import static org.apache.dubbo.common.constants.ClusterConstants.RULE_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.FORCE_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
 
 public class ConditionRouterTest {
 
