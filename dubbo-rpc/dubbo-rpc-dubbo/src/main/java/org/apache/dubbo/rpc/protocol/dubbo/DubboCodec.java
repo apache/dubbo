@@ -41,8 +41,8 @@ import java.io.InputStream;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.CallbackServiceCodec.encodeInvocationArgument;
-import static org.apache.dubbo.common.constants.RpcConstants.DECODE_IN_IO_THREAD_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.DEFAULT_DECODE_IN_IO_THREAD;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.DECODE_IN_IO_THREAD_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.DEFAULT_DECODE_IN_IO_THREAD;
 import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
 
 /**

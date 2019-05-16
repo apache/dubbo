@@ -27,7 +27,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.filter.tps.DefaultTPSLimiter;
 import org.apache.dubbo.rpc.filter.tps.TPSLimiter;
 
-import static org.apache.dubbo.common.constants.RpcConstants.TPS_LIMIT_RATE_KEY;
+import static org.apache.dubbo.rpc.Constants.TPS_LIMIT_RATE_KEY;
 
 /**
  * TpsLimitFilter limit the TPS (transaction per second) for all method of a service or a particular method.

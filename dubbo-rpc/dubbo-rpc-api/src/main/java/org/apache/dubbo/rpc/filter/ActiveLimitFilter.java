@@ -27,7 +27,7 @@ import org.apache.dubbo.rpc.RpcStatus;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.ACTIVES_KEY;
+import static org.apache.dubbo.rpc.Constants.ACTIVES_KEY;
 
 /**
  * ActiveLimitFilter restrict the concurrent client invocation for a service or service's method from client side.
