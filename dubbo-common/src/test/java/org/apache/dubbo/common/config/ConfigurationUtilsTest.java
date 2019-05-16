@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.common.config;
 
-import org.apache.dubbo.common.Constants;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
+
+import static org.apache.dubbo.common.constants.ConfigConstants.SHUTDOWN_WAIT_KEY;
 
 /**
  *
@@ -30,16 +30,16 @@ public class ConfigurationUtilsTest {
 
     @Test
     public void testGetServerShutdownTimeout () {
-        System.setProperty(Constants.SHUTDOWN_WAIT_KEY, " 10000");
+        System.setProperty(SHUTDOWN_WAIT_KEY, " 10000");
         Assertions.assertEquals(10000, ConfigurationUtils.getServerShutdownTimeout());
-        System.clearProperty(Constants.SHUTDOWN_WAIT_KEY);
+        System.clearProperty(SHUTDOWN_WAIT_KEY);
     }
 
     @Test
     public void testGetProperty () {
-        System.setProperty(Constants.SHUTDOWN_WAIT_KEY, " 10000");
-        Assertions.assertEquals("10000", ConfigurationUtils.getProperty(Constants.SHUTDOWN_WAIT_KEY));
-        System.clearProperty(Constants.SHUTDOWN_WAIT_KEY);
+        System.setProperty(SHUTDOWN_WAIT_KEY, " 10000");
+        Assertions.assertEquals("10000", ConfigurationUtils.getProperty(SHUTDOWN_WAIT_KEY));
+        System.clearProperty(SHUTDOWN_WAIT_KEY);
     }
 
     @Test

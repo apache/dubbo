@@ -21,7 +21,6 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.gen.dubbo.$__DemoStub;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

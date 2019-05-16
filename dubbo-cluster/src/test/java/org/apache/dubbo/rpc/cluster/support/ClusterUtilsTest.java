@@ -16,12 +16,24 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
-
 import org.apache.dubbo.common.URLBuilder;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.apache.dubbo.common.constants.CommonConstants.ALIVE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CORE_THREADS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.QUEUES_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_PROTOCOL;
+import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
 
 public class ClusterUtilsTest {
 
@@ -33,52 +45,52 @@ public class ClusterUtilsTest {
                 .setPassword("password");
 
         providerURL = URLBuilder.from(providerURL)
-                .addParameter(Constants.GROUP_KEY, "dubbo")
-                .addParameter(Constants.VERSION_KEY, "1.2.3")
-                .addParameter(Constants.DUBBO_VERSION_KEY, "2.3.7")
-                .addParameter(Constants.THREADPOOL_KEY, "fixed")
-                .addParameter(Constants.THREADS_KEY, Integer.MAX_VALUE)
-                .addParameter(Constants.THREAD_NAME_KEY, "test")
-                .addParameter(Constants.CORE_THREADS_KEY, Integer.MAX_VALUE)
-                .addParameter(Constants.QUEUES_KEY, Integer.MAX_VALUE)
-                .addParameter(Constants.ALIVE_KEY, Integer.MAX_VALUE)
-                .addParameter(Constants.DEFAULT_KEY_PREFIX + Constants.THREADS_KEY, Integer.MAX_VALUE)
-                .addParameter(Constants.DEFAULT_KEY_PREFIX + Constants.THREADPOOL_KEY, "fixed")
-                .addParameter(Constants.DEFAULT_KEY_PREFIX + Constants.CORE_THREADS_KEY, Integer.MAX_VALUE)
-                .addParameter(Constants.DEFAULT_KEY_PREFIX + Constants.QUEUES_KEY, Integer.MAX_VALUE)
-                .addParameter(Constants.DEFAULT_KEY_PREFIX + Constants.ALIVE_KEY, Integer.MAX_VALUE)
-                .addParameter(Constants.DEFAULT_KEY_PREFIX + Constants.THREAD_NAME_KEY, "test")
+                .addParameter(GROUP_KEY, "dubbo")
+                .addParameter(VERSION_KEY, "1.2.3")
+                .addParameter(DUBBO_VERSION_KEY, "2.3.7")
+                .addParameter(THREADPOOL_KEY, "fixed")
+                .addParameter(THREADS_KEY, Integer.MAX_VALUE)
+                .addParameter(THREAD_NAME_KEY, "test")
+                .addParameter(CORE_THREADS_KEY, Integer.MAX_VALUE)
+                .addParameter(QUEUES_KEY, Integer.MAX_VALUE)
+                .addParameter(ALIVE_KEY, Integer.MAX_VALUE)
+                .addParameter(DEFAULT_KEY_PREFIX + THREADS_KEY, Integer.MAX_VALUE)
+                .addParameter(DEFAULT_KEY_PREFIX + THREADPOOL_KEY, "fixed")
+                .addParameter(DEFAULT_KEY_PREFIX + CORE_THREADS_KEY, Integer.MAX_VALUE)
+                .addParameter(DEFAULT_KEY_PREFIX + QUEUES_KEY, Integer.MAX_VALUE)
+                .addParameter(DEFAULT_KEY_PREFIX + ALIVE_KEY, Integer.MAX_VALUE)
+                .addParameter(DEFAULT_KEY_PREFIX + THREAD_NAME_KEY, "test")
                 .build();
 
-        URL consumerURL = new URLBuilder(Constants.DUBBO_PROTOCOL, "localhost", 55555)
-                .addParameter(Constants.PID_KEY, "1234")
-                .addParameter(Constants.THREADPOOL_KEY, "foo")
+        URL consumerURL = new URLBuilder(DUBBO_PROTOCOL, "localhost", 55555)
+                .addParameter(PID_KEY, "1234")
+                .addParameter(THREADPOOL_KEY, "foo")
                 .build();
 
         URL url = ClusterUtils.mergeUrl(providerURL, consumerURL.getParameters());
 
-        Assertions.assertFalse(url.hasParameter(Constants.THREADS_KEY));
-        Assertions.assertFalse(url.hasParameter(Constants.DEFAULT_KEY_PREFIX + Constants.THREADS_KEY));
+        Assertions.assertFalse(url.hasParameter(THREADS_KEY));
+        Assertions.assertFalse(url.hasParameter(DEFAULT_KEY_PREFIX + THREADS_KEY));
 
-        Assertions.assertFalse(url.hasParameter(Constants.DEFAULT_KEY_PREFIX + Constants.THREADPOOL_KEY));
+        Assertions.assertFalse(url.hasParameter(DEFAULT_KEY_PREFIX + THREADPOOL_KEY));
 
-        Assertions.assertFalse(url.hasParameter(Constants.CORE_THREADS_KEY));
-        Assertions.assertFalse(url.hasParameter(Constants.DEFAULT_KEY_PREFIX + Constants.CORE_THREADS_KEY));
+        Assertions.assertFalse(url.hasParameter(CORE_THREADS_KEY));
+        Assertions.assertFalse(url.hasParameter(DEFAULT_KEY_PREFIX + CORE_THREADS_KEY));
 
-        Assertions.assertFalse(url.hasParameter(Constants.QUEUES_KEY));
-        Assertions.assertFalse(url.hasParameter(Constants.DEFAULT_KEY_PREFIX + Constants.QUEUES_KEY));
+        Assertions.assertFalse(url.hasParameter(QUEUES_KEY));
+        Assertions.assertFalse(url.hasParameter(DEFAULT_KEY_PREFIX + QUEUES_KEY));
 
-        Assertions.assertFalse(url.hasParameter(Constants.ALIVE_KEY));
-        Assertions.assertFalse(url.hasParameter(Constants.DEFAULT_KEY_PREFIX + Constants.ALIVE_KEY));
+        Assertions.assertFalse(url.hasParameter(ALIVE_KEY));
+        Assertions.assertFalse(url.hasParameter(DEFAULT_KEY_PREFIX + ALIVE_KEY));
 
-        Assertions.assertFalse(url.hasParameter(Constants.THREAD_NAME_KEY));
-        Assertions.assertFalse(url.hasParameter(Constants.DEFAULT_KEY_PREFIX + Constants.THREAD_NAME_KEY));
+        Assertions.assertFalse(url.hasParameter(THREAD_NAME_KEY));
+        Assertions.assertFalse(url.hasParameter(DEFAULT_KEY_PREFIX + THREAD_NAME_KEY));
 
         Assertions.assertEquals(url.getPath(), "path");
         Assertions.assertEquals(url.getUsername(), "username");
         Assertions.assertEquals(url.getPassword(), "password");
-        Assertions.assertEquals(url.getParameter(Constants.PID_KEY), "1234");
-        Assertions.assertEquals(url.getParameter(Constants.THREADPOOL_KEY), "foo");
+        Assertions.assertEquals(url.getParameter(PID_KEY), "1234");
+        Assertions.assertEquals(url.getParameter(THREADPOOL_KEY), "foo");
     }
 
 }

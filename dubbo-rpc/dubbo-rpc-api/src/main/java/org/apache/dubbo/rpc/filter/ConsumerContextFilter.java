@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.filter;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Filter;
@@ -34,7 +34,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
  * @see org.apache.dubbo.rpc.Filter
  * @see RpcContext
  */
-@Activate(group = Constants.CONSUMER, order = -10000)
+@Activate(group = CommonConstants.CONSUMER, order = -10000)
 public class ConsumerContextFilter implements Filter {
 
     @Override

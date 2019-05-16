@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.remoting.exchange.support.header;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.remoting.Channel;
@@ -29,6 +28,9 @@ import org.junit.jupiter.api.Test;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.remoting.Constants.HEARTBEAT_CHECK_TICK;
 
 public class HeartBeatTaskTest {
 
@@ -42,7 +44,7 @@ public class HeartBeatTaskTest {
     @BeforeEach
     public void setup() throws Exception {
         long tickDuration = 1000;
-        heartbeatTimer = new HashedWheelTimer(tickDuration / Constants.HEARTBEAT_CHECK_TICK, TimeUnit.MILLISECONDS);
+        heartbeatTimer = new HashedWheelTimer(tickDuration / HEARTBEAT_CHECK_TICK, TimeUnit.MILLISECONDS);
 
         channel = new MockChannel() {
 
@@ -53,14 +55,14 @@ public class HeartBeatTaskTest {
         };
 
         AbstractTimerTask.ChannelProvider cp = () -> Collections.<Channel>singletonList(channel);
-        heartbeatTimerTask = new HeartbeatTimerTask(cp, tickDuration / Constants.HEARTBEAT_CHECK_TICK, (int) tickDuration);
+        heartbeatTimerTask = new HeartbeatTimerTask(cp, tickDuration / HEARTBEAT_CHECK_TICK, (int) tickDuration);
     }
 
     @Test
     public void testHeartBeat() throws Exception {
         long now = System.currentTimeMillis();
 
-        url = url.addParameter(Constants.DUBBO_VERSION_KEY, "2.1.1");
+        url = url.addParameter(DUBBO_VERSION_KEY, "2.1.1");
         channel.setAttribute(
                 HeaderExchangeHandler.KEY_READ_TIMESTAMP, now);
         channel.setAttribute(

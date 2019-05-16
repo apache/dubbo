@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
@@ -35,6 +34,11 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_FAILBACK_TIMES;
+import static org.apache.dubbo.rpc.cluster.Constants.RETRIES_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_FAILBACK_TASKS;
+import static org.apache.dubbo.rpc.cluster.Constants.FAIL_BACK_TASKS_KEY;
 
 /**
  * When fails, record failure requests and schedule for retry on a regular interval.
@@ -57,13 +61,13 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
     public FailbackClusterInvoker(Directory<T> directory) {
         super(directory);
 
-        int retriesConfig = getUrl().getParameter(Constants.RETRIES_KEY, Constants.DEFAULT_FAILBACK_TIMES);
+        int retriesConfig = getUrl().getParameter(RETRIES_KEY, DEFAULT_FAILBACK_TIMES);
         if (retriesConfig <= 0) {
-            retriesConfig = Constants.DEFAULT_FAILBACK_TIMES;
+            retriesConfig = DEFAULT_FAILBACK_TIMES;
         }
-        int failbackTasksConfig = getUrl().getParameter(Constants.FAIL_BACK_TASKS_KEY, Constants.DEFAULT_FAILBACK_TASKS);
+        int failbackTasksConfig = getUrl().getParameter(FAIL_BACK_TASKS_KEY, DEFAULT_FAILBACK_TASKS);
         if (failbackTasksConfig <= 0) {
-            failbackTasksConfig = Constants.DEFAULT_FAILBACK_TASKS;
+            failbackTasksConfig = DEFAULT_FAILBACK_TASKS;
         }
         retries = retriesConfig;
         failbackTasks = failbackTasksConfig;
