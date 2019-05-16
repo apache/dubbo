@@ -62,4 +62,8 @@ public interface Constants {
 
     String OPTIMIZER_KEY = "optimizer";
 
+    String ON_CONNECT_KEY = "onconnect";
+
+    String ON_DISCONNECT_KEY = "ondisconnect";
+
 }

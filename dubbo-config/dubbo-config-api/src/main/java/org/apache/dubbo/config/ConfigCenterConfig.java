@@ -28,14 +28,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.CONFIG_APPNAME_KEY;
+import static org.apache.dubbo.config.Constants.CONFIG_APPNAME_KEY;
 import static org.apache.dubbo.common.constants.ConfigConstants.CONFIG_CHECK_KEY;
 import static org.apache.dubbo.common.constants.ConfigConstants.CONFIG_CLUSTER_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.CONFIG_CONFIGFILE_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.CONFIG_ENABLE_KEY;
+import static org.apache.dubbo.config.Constants.CONFIG_CONFIGFILE_KEY;
+import static org.apache.dubbo.config.Constants.CONFIG_ENABLE_KEY;
 import static org.apache.dubbo.common.constants.ConfigConstants.CONFIG_GROUP_KEY;
 import static org.apache.dubbo.common.constants.ConfigConstants.CONFIG_NAMESPACE_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.CONFIG_TIMEOUT_KEY;
+import static org.apache.dubbo.config.Constants.CONFIG_TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.ConfigConstants.ZOOKEEPER_PROTOCOL;
 
 /**
