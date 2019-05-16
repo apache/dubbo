@@ -33,8 +33,8 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import static org.apache.dubbo.common.constants.RpcConstants.SERVICE_FILTER_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.EXPORTER_LISTENER_KEY;
+import static org.apache.dubbo.rpc.Constants.SERVICE_FILTER_KEY;
+import static org.apache.dubbo.rpc.Constants.EXPORTER_LISTENER_KEY;
 
 public class AbstractServiceConfigTest {
     @Test

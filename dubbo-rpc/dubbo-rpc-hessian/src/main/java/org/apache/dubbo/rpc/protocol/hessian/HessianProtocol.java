@@ -46,12 +46,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.HESSIAN2_REQUEST_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.DEFAULT_HESSIAN2_REQUEST;
-import static org.apache.dubbo.common.constants.RpcConstants.HESSIAN_OVERLOAD_METHOD_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.DEFAULT_HESSIAN_OVERLOAD_METHOD;
-import static org.apache.dubbo.common.constants.RpcConstants.DEFAULT_HTTP_CLIENT;
-import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_KEY;
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
+import static org.apache.dubbo.rpc.protocol.hessian.Constants.HESSIAN2_REQUEST_KEY;
+import static org.apache.dubbo.rpc.protocol.hessian.Constants.DEFAULT_HESSIAN2_REQUEST;
+import static org.apache.dubbo.rpc.protocol.hessian.Constants.HESSIAN_OVERLOAD_METHOD_KEY;
+import static org.apache.dubbo.rpc.protocol.hessian.Constants.DEFAULT_HESSIAN_OVERLOAD_METHOD;
+import static org.apache.dubbo.rpc.protocol.hessian.Constants.DEFAULT_HTTP_CLIENT;
+
 /**
  * http rpc support.
  */

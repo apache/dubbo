@@ -52,10 +52,10 @@ import static org.apache.dubbo.common.constants.ConfigConstants.SHUTDOWN_TIMEOUT
 import static org.apache.dubbo.common.constants.ConfigConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.RemotingConstants.BIND_IP_KEY;
 import static org.apache.dubbo.common.constants.RemotingConstants.BIND_PORT_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_SERIALIZATION_BEAN;
-import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_SERIALIZATION_DEFAULT;
-import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_SERIALIZATION_NATIVE_JAVA;
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_BEAN;
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_DEFAULT;
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_NATIVE_JAVA;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;

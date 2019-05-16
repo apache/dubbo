@@ -95,7 +95,7 @@ public @interface Reference {
     /**
      * Export an stub service for event dispatch, default value is false.
      *
-     * @see RpcConstants#STUB_EVENT_METHODS_KEY
+     * @see org.apache.dubbo.rpc.Constants#STUB_EVENT_METHODS_KEY
      */
     boolean stubevent() default false;
 
