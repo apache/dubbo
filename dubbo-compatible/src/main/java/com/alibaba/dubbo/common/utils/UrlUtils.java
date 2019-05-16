@@ -24,7 +24,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * @author cvictory ON 2019-04-17
+ * 2019-04-17
  */
 @Deprecated
 public class UrlUtils {
@@ -34,7 +34,7 @@ public class UrlUtils {
     }
 
     public static List<URL> parseURLs(String address, Map<String, String> defaults) {
-        return UrlUtils.parseURLs(address, defaults).stream().map(e -> new URL(e)).collect(Collectors.toList());
+        return org.apache.dubbo.common.utils.UrlUtils.parseURLs(address, defaults).stream().map(e -> new URL(e)).collect(Collectors.toList());
     }
 
     public static Map<String, Map<String, String>> convertRegister(Map<String, Map<String, String>> register) {

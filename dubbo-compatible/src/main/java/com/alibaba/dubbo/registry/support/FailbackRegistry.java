@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * @author cvictory ON 2019-04-17
+ * 2019-04-17
  */
 @Deprecated
 public abstract class FailbackRegistry implements org.apache.dubbo.registry.Registry, Registry {
