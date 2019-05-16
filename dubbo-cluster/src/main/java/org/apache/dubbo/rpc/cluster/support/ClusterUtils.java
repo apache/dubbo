@@ -17,8 +17,8 @@
 package org.apache.dubbo.rpc.cluster.support;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.Constants;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -76,8 +76,8 @@ public class ClusterUtils {
             map.remove(ALIVE_KEY);
             map.remove(DEFAULT_KEY_PREFIX + ALIVE_KEY);
 
-            map.remove(RemotingConstants.TRANSPORTER_KEY);
-            map.remove(DEFAULT_KEY_PREFIX + RemotingConstants.TRANSPORTER_KEY);
+            map.remove(Constants.TRANSPORTER_KEY);
+            map.remove(DEFAULT_KEY_PREFIX + Constants.TRANSPORTER_KEY);
         }
 
         if (localMap != null && localMap.size() > 0) {

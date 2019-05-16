@@ -19,7 +19,6 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.bytecode.Wrapper;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -30,6 +29,7 @@ import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.metadata.integration.MetadataReportService;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
@@ -579,7 +579,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     }
 
     public void setClient(String client) {
-        checkName(RemotingConstants.CLIENT_KEY, client);
+        checkName(Constants.CLIENT_KEY, client);
         this.client = client;
     }
 

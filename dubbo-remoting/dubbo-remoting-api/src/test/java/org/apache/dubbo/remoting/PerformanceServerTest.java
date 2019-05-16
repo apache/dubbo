@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting;
 
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
@@ -68,13 +67,13 @@ public class PerformanceServerTest  {
 
     private static ExchangeServer statServer() throws Exception {
         final int port = PerformanceUtils.getIntProperty("port", 9911);
-        final String transporter = PerformanceUtils.getProperty(RemotingConstants.TRANSPORTER_KEY, RemotingConstants.DEFAULT_TRANSPORTER);
-        final String serialization = PerformanceUtils.getProperty(RemotingConstants.SERIALIZATION_KEY, RemotingConstants.DEFAULT_REMOTING_SERIALIZATION);
+        final String transporter = PerformanceUtils.getProperty(Constants.TRANSPORTER_KEY, Constants.DEFAULT_TRANSPORTER);
+        final String serialization = PerformanceUtils.getProperty(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION);
         final String threadpool = PerformanceUtils.getProperty(THREADPOOL_KEY, DEFAULT_THREADPOOL);
         final int threads = PerformanceUtils.getIntProperty(THREADS_KEY, DEFAULT_THREADS);
-        final int iothreads = PerformanceUtils.getIntProperty(IO_THREADS_KEY, RemotingConstants.DEFAULT_IO_THREADS);
+        final int iothreads = PerformanceUtils.getIntProperty(IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS);
         final int buffer = PerformanceUtils.getIntProperty(BUFFER_KEY, DEFAULT_BUFFER_SIZE);
-        final String channelHandler = PerformanceUtils.getProperty(RemotingConstants.DISPATCHER_KEY, ExecutionDispatcher.NAME);
+        final String channelHandler = PerformanceUtils.getProperty(Constants.DISPATCHER_KEY, ExecutionDispatcher.NAME);
 
 
         // Start server

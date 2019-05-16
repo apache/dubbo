@@ -23,7 +23,7 @@ import org.apache.dubbo.remoting.transport.ChannelHandlerAdapter;
 
 import org.junit.jupiter.api.Test;
 
-import static org.apache.dubbo.common.constants.RemotingConstants.BIND_PORT_KEY;
+import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 

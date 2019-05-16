@@ -17,9 +17,6 @@
 
 package org.apache.dubbo.rpc;
 
-/**
- *
- */
 public interface Constants {
     String LOCAL_KEY = "local";
 
@@ -101,5 +98,5 @@ public interface Constants {
 
     String LOCAL_PROTOCOL = "injvm";
 
-
+    String DEFAULT_REMOTING_SERVER = "netty";
 }

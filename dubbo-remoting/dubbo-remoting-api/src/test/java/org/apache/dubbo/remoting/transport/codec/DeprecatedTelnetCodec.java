@@ -17,7 +17,6 @@
 package org.apache.dubbo.remoting.transport.codec;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.ObjectOutput;
@@ -25,6 +24,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Codec;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.transport.CodecSupport;
 
@@ -58,9 +58,9 @@ public class DeprecatedTelnetCodec implements Codec {
     private static final List<?> EXIT = Arrays.asList(new Object[]{new byte[]{3} /* Windows Ctrl+C */, new byte[]{-1, -12, -1, -3, 6} /* Linux Ctrl+C */, new byte[]{-1, -19, -1, -3, 6} /* Linux Pause */});
 
     static void checkPayload(Channel channel, long size) throws IOException {
-        int payload = RemotingConstants.DEFAULT_PAYLOAD;
+        int payload = Constants.DEFAULT_PAYLOAD;
         if (channel != null && channel.getUrl() != null) {
-            payload = channel.getUrl().getPositiveParameter(RemotingConstants.PAYLOAD_KEY, RemotingConstants.DEFAULT_PAYLOAD);
+            payload = channel.getUrl().getPositiveParameter(Constants.PAYLOAD_KEY, Constants.DEFAULT_PAYLOAD);
         }
         if (size > payload) {
             IOException e = new IOException("Data length too large: " + size + ", max payload: " + payload + ", channel: " + channel);

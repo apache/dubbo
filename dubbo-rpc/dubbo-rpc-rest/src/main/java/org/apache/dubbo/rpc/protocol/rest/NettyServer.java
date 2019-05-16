@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.NetUtils;
 
 import io.netty.channel.ChannelOption;
@@ -30,6 +29,11 @@ import java.util.Map;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREADS;
 import static org.apache.dubbo.common.constants.CommonConstants.IO_THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
+import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
+import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
+import static org.apache.dubbo.remoting.Constants.DEFAULT_IO_THREADS;
+import static org.apache.dubbo.remoting.Constants.DEFAULT_PAYLOAD;
+import static org.apache.dubbo.remoting.Constants.PAYLOAD_KEY;
 import static org.apache.dubbo.rpc.protocol.rest.Constants.KEEP_ALIVE_KEY;
 import static org.apache.dubbo.rpc.protocol.rest.Constants.DEFAULT_KEEP_ALIVE;
 
@@ -43,17 +47,17 @@ public class NettyServer extends BaseRestServer {
 
     @Override
     protected void doStart(URL url) {
-        String bindIp = url.getParameter(RemotingConstants.BIND_IP_KEY, url.getHost());
+        String bindIp = url.getParameter(BIND_IP_KEY, url.getHost());
         if (!url.isAnyHost() && NetUtils.isValidLocalHost(bindIp)) {
             server.setHostname(bindIp);
         }
-        server.setPort(url.getParameter(RemotingConstants.BIND_PORT_KEY, url.getPort()));
+        server.setPort(url.getParameter(BIND_PORT_KEY, url.getPort()));
         Map<ChannelOption, Object> channelOption = new HashMap<ChannelOption, Object>();
         channelOption.put(ChannelOption.SO_KEEPALIVE, url.getParameter(KEEP_ALIVE_KEY, DEFAULT_KEEP_ALIVE));
         server.setChildChannelOptions(channelOption);
         server.setExecutorThreadCount(url.getParameter(THREADS_KEY, DEFAULT_THREADS));
-        server.setIoWorkerCount(url.getParameter(IO_THREADS_KEY, RemotingConstants.DEFAULT_IO_THREADS));
-        server.setMaxRequestSize(url.getParameter(RemotingConstants.PAYLOAD_KEY, RemotingConstants.DEFAULT_PAYLOAD));
+        server.setIoWorkerCount(url.getParameter(IO_THREADS_KEY, DEFAULT_IO_THREADS));
+        server.setMaxRequestSize(url.getParameter(PAYLOAD_KEY, DEFAULT_PAYLOAD));
         server.start();
     }
 
