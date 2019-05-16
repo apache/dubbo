@@ -17,8 +17,8 @@
 package org.apache.dubbo.rpc.protocol.dubbo;
 
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
@@ -96,8 +96,8 @@ public class DubboProtocolTest {
     @Test
     public void testDubboProtocolWithMina() throws Exception {
         DemoService service = new DemoServiceImpl();
-        protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:9011/" + DemoService.class.getName()).addParameter(Constants.SERVER_KEY, "mina")));
-        service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:9011/" + DemoService.class.getName()).addParameter(Constants.CLIENT_KEY, "mina").addParameter("timeout", 3000l)));
+        protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:9011/" + DemoService.class.getName()).addParameter(RemotingConstants.SERVER_KEY, "mina")));
+        service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:9011/" + DemoService.class.getName()).addParameter(RemotingConstants.CLIENT_KEY, "mina").addParameter("timeout", 3000l)));
         for (int i = 0; i < 10; i++) {
             assertEquals(service.enumlength(new Type[]{}), Type.Lower);
             assertEquals(service.getSize(null), -1);

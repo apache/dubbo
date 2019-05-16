@@ -97,7 +97,7 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
                 handleAttachment(in);
                 break;
             default:
-                throw new IOException("Unknown result flag, expect '0' '1' '2', get " + flag);
+                throw new IOException("Unknown result flag, expect '0' '1' '2' '3' '4' '5', but received: " + flag);
         }
         if (in instanceof Cleanable) {
             ((Cleanable) in).cleanup();

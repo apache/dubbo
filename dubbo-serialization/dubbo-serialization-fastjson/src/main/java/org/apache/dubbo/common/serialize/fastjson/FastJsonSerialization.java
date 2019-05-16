@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import static org.apache.dubbo.common.serialize.Constants.FASTJSON_SERIALIZATION_ID;
+
 /**
  * FastJson serialization implementation
  *
@@ -36,7 +38,7 @@ public class FastJsonSerialization implements Serialization {
 
     @Override
     public byte getContentTypeId() {
-        return 6;
+        return FASTJSON_SERIALIZATION_ID;
     }
 
     @Override

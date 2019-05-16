@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.remoting.transport;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Endpoint;
@@ -50,7 +50,7 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
 
     @Override
     public void send(Object message) throws RemotingException {
-        send(message, url.getParameter(Constants.SENT_KEY, false));
+        send(message, url.getParameter(RemotingConstants.SENT_KEY, false));
     }
 
     @Override

@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,18 +27,35 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.common.Constants.CATEGORY_KEY;
-import static org.apache.dubbo.common.Constants.CONFIGURATORS_CATEGORY;
-import static org.apache.dubbo.common.Constants.DEFAULT_CATEGORY;
-import static org.apache.dubbo.common.Constants.OVERRIDE_PROTOCOL;
-import static org.apache.dubbo.common.Constants.PROVIDERS_CATEGORY;
-import static org.apache.dubbo.common.Constants.ROUTERS_CATEGORY;
-import static org.apache.dubbo.common.Constants.ROUTE_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.CLASSIFIER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PREFIX;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_PROTOCOL;
+import static org.apache.dubbo.common.constants.ConfigConstants.HOST_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.PASSWORD_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.PORT_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.USERNAME_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.OVERRIDE_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL;
 
 public class UrlUtils {
 
     /**
-     *  in the url string,mark the param begin
+     * in the url string,mark the param begin
      */
     private final static String URL_PARAM_STARTING_SYMBOL = "?";
 
@@ -50,7 +67,7 @@ public class UrlUtils {
         if (address.contains("://") || address.contains(URL_PARAM_STARTING_SYMBOL)) {
             url = address;
         } else {
-            String[] addresses = Constants.COMMA_SPLIT_PATTERN.split(address);
+            String[] addresses = COMMA_SPLIT_PATTERN.split(address);
             url = addresses[0];
             if (addresses.length > 1) {
                 StringBuilder backup = new StringBuilder();
@@ -60,25 +77,25 @@ public class UrlUtils {
                     }
                     backup.append(addresses[i]);
                 }
-                url += URL_PARAM_STARTING_SYMBOL + Constants.BACKUP_KEY + "=" + backup.toString();
+                url += URL_PARAM_STARTING_SYMBOL + RemotingConstants.BACKUP_KEY + "=" + backup.toString();
             }
         }
-        String defaultProtocol = defaults == null ? null : defaults.get(Constants.PROTOCOL_KEY);
+        String defaultProtocol = defaults == null ? null : defaults.get(PROTOCOL_KEY);
         if (defaultProtocol == null || defaultProtocol.length() == 0) {
-            defaultProtocol = Constants.DUBBO_PROTOCOL;
+            defaultProtocol = DUBBO_PROTOCOL;
         }
-        String defaultUsername = defaults == null ? null : defaults.get(Constants.USERNAME_KEY);
-        String defaultPassword = defaults == null ? null : defaults.get(Constants.PASSWORD_KEY);
-        int defaultPort = StringUtils.parseInteger(defaults == null ? null : defaults.get(Constants.PORT_KEY));
-        String defaultPath = defaults == null ? null : defaults.get(Constants.PATH_KEY);
+        String defaultUsername = defaults == null ? null : defaults.get(USERNAME_KEY);
+        String defaultPassword = defaults == null ? null : defaults.get(PASSWORD_KEY);
+        int defaultPort = StringUtils.parseInteger(defaults == null ? null : defaults.get(PORT_KEY));
+        String defaultPath = defaults == null ? null : defaults.get(PATH_KEY);
         Map<String, String> defaultParameters = defaults == null ? null : new HashMap<String, String>(defaults);
         if (defaultParameters != null) {
-            defaultParameters.remove(Constants.PROTOCOL_KEY);
-            defaultParameters.remove(Constants.USERNAME_KEY);
-            defaultParameters.remove(Constants.PASSWORD_KEY);
-            defaultParameters.remove(Constants.HOST_KEY);
-            defaultParameters.remove(Constants.PORT_KEY);
-            defaultParameters.remove(Constants.PATH_KEY);
+            defaultParameters.remove(PROTOCOL_KEY);
+            defaultParameters.remove(USERNAME_KEY);
+            defaultParameters.remove(PASSWORD_KEY);
+            defaultParameters.remove(HOST_KEY);
+            defaultParameters.remove(PORT_KEY);
+            defaultParameters.remove(PATH_KEY);
         }
         URL u = URL.valueOf(url);
         boolean changed = false;
@@ -143,7 +160,7 @@ public class UrlUtils {
         if (address == null || address.length() == 0) {
             return null;
         }
-        String[] addresses = Constants.REGISTRY_SPLIT_PATTERN.split(address);
+        String[] addresses = REGISTRY_SPLIT_PATTERN.split(address);
         if (addresses == null || addresses.length == 0) {
             return null; //here won't be empty
         }
@@ -350,19 +367,19 @@ public class UrlUtils {
             version = service.substring(i + 1);
             service = service.substring(0, i);
         }
-        return URL.valueOf(Constants.EMPTY_PROTOCOL + "://0.0.0.0/" + service + URL_PARAM_STARTING_SYMBOL
+        return URL.valueOf(EMPTY_PROTOCOL + "://0.0.0.0/" + service + URL_PARAM_STARTING_SYMBOL
                 + CATEGORY_KEY + "=" + category
-                + (group == null ? "" : "&" + Constants.GROUP_KEY + "=" + group)
-                + (version == null ? "" : "&" + Constants.VERSION_KEY + "=" + version));
+                + (group == null ? "" : "&" + GROUP_KEY + "=" + group)
+                + (version == null ? "" : "&" + VERSION_KEY + "=" + version));
     }
 
     public static boolean isMatchCategory(String category, String categories) {
         if (categories == null || categories.length() == 0) {
             return DEFAULT_CATEGORY.equals(category);
-        } else if (categories.contains(Constants.ANY_VALUE)) {
+        } else if (categories.contains(ANY_VALUE)) {
             return true;
-        } else if (categories.contains(Constants.REMOVE_VALUE_PREFIX)) {
-            return !categories.contains(Constants.REMOVE_VALUE_PREFIX + category);
+        } else if (categories.contains(REMOVE_VALUE_PREFIX)) {
+            return !categories.contains(REMOVE_VALUE_PREFIX + category);
         } else {
             return categories.contains(category);
         }
@@ -372,8 +389,8 @@ public class UrlUtils {
         String consumerInterface = consumerUrl.getServiceInterface();
         String providerInterface = providerUrl.getServiceInterface();
         //FIXME accept providerUrl with '*' as interface name, after carefully thought about all possible scenarios I think it's ok to add this condition.
-        if (!(Constants.ANY_VALUE.equals(consumerInterface)
-                || Constants.ANY_VALUE.equals(providerInterface)
+        if (!(ANY_VALUE.equals(consumerInterface)
+                || ANY_VALUE.equals(providerInterface)
                 || StringUtils.isEquals(consumerInterface, providerInterface))) {
             return false;
         }
@@ -382,21 +399,21 @@ public class UrlUtils {
                 consumerUrl.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY))) {
             return false;
         }
-        if (!providerUrl.getParameter(Constants.ENABLED_KEY, true)
-                && !Constants.ANY_VALUE.equals(consumerUrl.getParameter(Constants.ENABLED_KEY))) {
+        if (!providerUrl.getParameter(ENABLED_KEY, true)
+                && !ANY_VALUE.equals(consumerUrl.getParameter(ENABLED_KEY))) {
             return false;
         }
 
-        String consumerGroup = consumerUrl.getParameter(Constants.GROUP_KEY);
-        String consumerVersion = consumerUrl.getParameter(Constants.VERSION_KEY);
-        String consumerClassifier = consumerUrl.getParameter(Constants.CLASSIFIER_KEY, Constants.ANY_VALUE);
+        String consumerGroup = consumerUrl.getParameter(GROUP_KEY);
+        String consumerVersion = consumerUrl.getParameter(VERSION_KEY);
+        String consumerClassifier = consumerUrl.getParameter(CLASSIFIER_KEY, ANY_VALUE);
 
-        String providerGroup = providerUrl.getParameter(Constants.GROUP_KEY);
-        String providerVersion = providerUrl.getParameter(Constants.VERSION_KEY);
-        String providerClassifier = providerUrl.getParameter(Constants.CLASSIFIER_KEY, Constants.ANY_VALUE);
-        return (Constants.ANY_VALUE.equals(consumerGroup) || StringUtils.isEquals(consumerGroup, providerGroup) || StringUtils.isContains(consumerGroup, providerGroup))
-                && (Constants.ANY_VALUE.equals(consumerVersion) || StringUtils.isEquals(consumerVersion, providerVersion))
-                && (consumerClassifier == null || Constants.ANY_VALUE.equals(consumerClassifier) || StringUtils.isEquals(consumerClassifier, providerClassifier));
+        String providerGroup = providerUrl.getParameter(GROUP_KEY);
+        String providerVersion = providerUrl.getParameter(VERSION_KEY);
+        String providerClassifier = providerUrl.getParameter(CLASSIFIER_KEY, ANY_VALUE);
+        return (ANY_VALUE.equals(consumerGroup) || StringUtils.isEquals(consumerGroup, providerGroup) || StringUtils.isContains(consumerGroup, providerGroup))
+                && (ANY_VALUE.equals(consumerVersion) || StringUtils.isEquals(consumerVersion, providerVersion))
+                && (consumerClassifier == null || ANY_VALUE.equals(consumerClassifier) || StringUtils.isEquals(consumerClassifier, providerClassifier));
     }
 
     public static boolean isMatchGlobPattern(String pattern, String value, URL param) {
@@ -439,12 +456,12 @@ public class UrlUtils {
     }
 
     public static boolean isServiceKeyMatch(URL pattern, URL value) {
-        return pattern.getParameter(Constants.INTERFACE_KEY).equals(
-                value.getParameter(Constants.INTERFACE_KEY))
-                && isItemMatch(pattern.getParameter(Constants.GROUP_KEY),
-                value.getParameter(Constants.GROUP_KEY))
-                && isItemMatch(pattern.getParameter(Constants.VERSION_KEY),
-                value.getParameter(Constants.VERSION_KEY));
+        return pattern.getParameter(INTERFACE_KEY).equals(
+                value.getParameter(INTERFACE_KEY))
+                && isItemMatch(pattern.getParameter(GROUP_KEY),
+                value.getParameter(GROUP_KEY))
+                && isItemMatch(pattern.getParameter(VERSION_KEY),
+                value.getParameter(VERSION_KEY));
     }
 
     public static List<URL> classifyUrls(List<URL> urls, Predicate<URL> predicate) {
@@ -468,12 +485,12 @@ public class UrlUtils {
     }
 
     public static int getHeartbeat(URL url) {
-        return url.getParameter(Constants.HEARTBEAT_KEY, Constants.DEFAULT_HEARTBEAT);
+        return url.getParameter(RemotingConstants.HEARTBEAT_KEY, RemotingConstants.DEFAULT_HEARTBEAT);
     }
 
     public static int getIdleTimeout(URL url) {
         int heartBeat = getHeartbeat(url);
-        int idleTimeout = url.getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartBeat * 3);
+        int idleTimeout = url.getParameter(RemotingConstants.HEARTBEAT_TIMEOUT_KEY, heartBeat * 3);
         if (idleTimeout < heartBeat * 2) {
             throw new IllegalStateException("idleTimeout < heartbeatInterval * 2");
         }

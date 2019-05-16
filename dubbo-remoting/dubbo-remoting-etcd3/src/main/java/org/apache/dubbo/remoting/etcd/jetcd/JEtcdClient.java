@@ -17,8 +17,6 @@
 
 package org.apache.dubbo.remoting.etcd.jetcd;
 
-import io.grpc.ManagedChannel;
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -39,6 +37,7 @@ import io.etcd.jetcd.api.WatchGrpc;
 import io.etcd.jetcd.api.WatchRequest;
 import io.etcd.jetcd.api.WatchResponse;
 import io.etcd.jetcd.common.exception.ClosedClientException;
+import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import io.netty.util.internal.ConcurrentSet;
@@ -60,6 +59,14 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static java.util.stream.Collectors.toList;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTRY_RETRY_PERIOD;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_SESSION_TIMEOUT;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_RETRY_PERIOD_KEY;
+import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_ETCD3_NOTIFY_QUEUES_KEY;
+import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_ETCD3_NOTIFY_THREADS;
+import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_GRPC_QUEUES;
+import static org.apache.dubbo.remoting.etcd.Constants.ETCD3_NOTIFY_MAXTHREADS_KEYS;
 import static org.apache.dubbo.remoting.etcd.jetcd.JEtcdClientWrapper.UTF_8;
 
 /**
@@ -86,16 +93,16 @@ public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
                     JEtcdClient.this.stateChanged(StateListener.DISCONNECTED);
                 }
             });
-            delayPeriod = getUrl().getParameter(Constants.REGISTRY_RETRY_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RETRY_PERIOD);
+            delayPeriod = getUrl().getParameter(REGISTRY_RETRY_PERIOD_KEY, DEFAULT_REGISTRY_RETRY_PERIOD);
             reconnectSchedule = Executors.newScheduledThreadPool(1,
                     new NamedThreadFactory("etcd3-watch-auto-reconnect"));
 
             notifyExecutor = new ThreadPoolExecutor(
                     1
-                    , url.getParameter(Constants.ETCD3_NOTIFY_MAXTHREADS_KEYS, Constants.DEFAULT_ETCD3_NOTIFY_THREADS)
-                    , Constants.DEFAULT_SESSION_TIMEOUT
+                    , url.getParameter(ETCD3_NOTIFY_MAXTHREADS_KEYS, DEFAULT_ETCD3_NOTIFY_THREADS)
+                    , DEFAULT_SESSION_TIMEOUT
                     , TimeUnit.MILLISECONDS
-                    , new LinkedBlockingQueue<Runnable>(url.getParameter(Constants.DEFAULT_ETCD3_NOTIFY_QUEUES_KEY, Constants.DEFAULT_GRPC_QUEUES * 3))
+                    , new LinkedBlockingQueue<Runnable>(url.getParameter(DEFAULT_ETCD3_NOTIFY_QUEUES_KEY, DEFAULT_GRPC_QUEUES * 3))
                     , new NamedThreadFactory("etcd3-notify", true));
 
             clientWrapper.start();
@@ -235,12 +242,16 @@ public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
                     switch (event.getType()) {
                         case PUT: {
                             if (((service = find(event)) != null)
-                                    && safeUpdate(service, true)) modified++;
+                                    && safeUpdate(service, true)) {
+                                modified++;
+                            }
                             break;
                         }
                         case DELETE: {
                             if (((service = find(event)) != null)
-                                    && safeUpdate(service, false)) modified++;
+                                    && safeUpdate(service, false)) {
+                                modified++;
+                            }
                             break;
                         }
                         default:
@@ -330,8 +341,10 @@ public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
 
             int len = path.length(), index = len, count = 0;
             if (key.length() >= index) {
-                for (; (index = key.indexOf(Constants.PATH_SEPARATOR, index)) != -1; ++index) {
-                    if (count++ > 1) break;
+                for (; (index = key.indexOf(PATH_SEPARATOR, index)) != -1; ++index) {
+                    if (count++ > 1) {
+                        break;
+                    }
                 }
             }
 
@@ -349,15 +362,21 @@ public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
         }
 
         private List<String> filterChildren(List<String> children) {
-            if (children == null) return Collections.emptyList();
-            if (children.size() <= 0) return children;
+            if (children == null) {
+                return Collections.emptyList();
+            }
+            if (children.size() <= 0) {
+                return children;
+            }
             final int len = path.length();
             return children.stream().parallel()
                     .filter(child -> {
                         int index = len, count = 0;
                         if (child.length() > len) {
-                            for (; (index = child.indexOf(Constants.PATH_SEPARATOR, index)) != -1; ++index) {
-                                if (count++ > 1) break;
+                            for (; (index = child.indexOf(PATH_SEPARATOR, index)) != -1; ++index) {
+                                if (count++ > 1) {
+                                    break;
+                                }
                             }
                         }
                         return count == 1;

@@ -16,11 +16,20 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 
 import java.util.Map;
+
+import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.PASSWORD_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.REGISTRIES_SUFFIX;
+import static org.apache.dubbo.common.constants.ConfigConstants.SHUTDOWN_WAIT_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.USERNAME_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.ZOOKEEPER_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.EXTRA_KEYS_KEY;
 
 /**
  * RegistryConfig
@@ -157,7 +166,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setProtocol(String protocol) {
-        checkName(Constants.PROTOCOL_KEY, protocol);
+        checkName(PROTOCOL_KEY, protocol);
         this.protocol = protocol;
         this.updateIdIfAbsent(protocol);
     }
@@ -190,7 +199,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setUsername(String username) {
-        checkName(Constants.USERNAME_KEY, username);
+        checkName(USERNAME_KEY, username);
         this.username = username;
     }
 
@@ -199,7 +208,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setPassword(String password) {
-        checkLength(Constants.PASSWORD_KEY, password);
+        checkLength(PASSWORD_KEY, password);
         this.password = password;
     }
 
@@ -222,7 +231,7 @@ public class RegistryConfig extends AbstractConfig {
     public void setWait(Integer wait) {
         this.wait = wait;
         if (wait != null && wait > 0) {
-            System.setProperty(Constants.SHUTDOWN_WAIT_KEY, String.valueOf(wait));
+            System.setProperty(SHUTDOWN_WAIT_KEY, String.valueOf(wait));
         }
     }
 
@@ -239,7 +248,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setFile(String file) {
-        checkPathLength(Constants.FILE_KEY, file);
+        checkPathLength(FILE_KEY, file);
         this.file = file;
     }
 
@@ -269,7 +278,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setTransporter(String transporter) {
-        checkName(Constants.TRANSPORTER_KEY, transporter);
+        checkName(RemotingConstants.TRANSPORTER_KEY, transporter);
         /*if(transporter != null && transporter.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(transporter)){
             throw new IllegalStateException("No such transporter type : " + transporter);
         }*/
@@ -281,7 +290,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setServer(String server) {
-        checkName(Constants.SERVER_KEY, server);
+        checkName(RemotingConstants.SERVER_KEY, server);
         /*if(server != null && server.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(server)){
             throw new IllegalStateException("No such server type : " + server);
         }*/
@@ -293,7 +302,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setClient(String client) {
-        checkName(Constants.CLIENT_KEY, client);
+        checkName(RemotingConstants.CLIENT_KEY, client);
         /*if(client != null && client.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(client)){
             throw new IllegalStateException("No such client type : " + client);
         }*/
@@ -389,7 +398,7 @@ public class RegistryConfig extends AbstractConfig {
         this.simplified = simplified;
     }
 
-    @Parameter(key = Constants.EXTRA_KEYS_KEY)
+    @Parameter(key = EXTRA_KEYS_KEY)
     public String getExtraKeys() {
         return extraKeys;
     }
@@ -403,15 +412,15 @@ public class RegistryConfig extends AbstractConfig {
         if (!isValid()) {
             return false;
         }
-        return Constants.ZOOKEEPER_PROTOCOL.equals(getProtocol())
-                || getAddress().startsWith(Constants.ZOOKEEPER_PROTOCOL);
+        return ZOOKEEPER_PROTOCOL.equals(getProtocol())
+                || getAddress().startsWith(ZOOKEEPER_PROTOCOL);
     }
 
     @Override
     public void refresh() {
         super.refresh();
         if (StringUtils.isNotEmpty(this.getId())) {
-            this.setPrefix(Constants.REGISTRIES_SUFFIX);
+            this.setPrefix(REGISTRIES_SUFFIX);
             super.refresh();
         }
     }

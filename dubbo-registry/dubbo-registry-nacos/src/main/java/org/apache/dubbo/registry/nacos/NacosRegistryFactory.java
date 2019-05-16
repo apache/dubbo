@@ -37,7 +37,7 @@ import static com.alibaba.nacos.api.PropertyKeyConst.NAMESPACE;
 import static com.alibaba.nacos.api.PropertyKeyConst.SECRET_KEY;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
 import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG_NAME;
-import static org.apache.dubbo.common.Constants.BACKUP_KEY;
+import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 
 /**
  * Nacos {@link RegistryFactory}
@@ -48,6 +48,7 @@ public class NacosRegistryFactory extends AbstractRegistryFactory {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+    @Override
     protected Registry createRegistry(URL url) {
         return new NacosRegistry(url, buildNamingService(url));
     }
