@@ -17,9 +17,8 @@
 package org.apache.dubbo.rpc.protocol.http;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http.HttpBinder;
 import org.apache.dubbo.remoting.http.HttpHandler;
@@ -48,8 +47,8 @@ import java.net.SocketTimeoutException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_KEY;
