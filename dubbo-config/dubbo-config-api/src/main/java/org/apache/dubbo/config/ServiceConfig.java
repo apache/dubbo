@@ -82,7 +82,7 @@ import static org.apache.dubbo.common.constants.ConfigConstants.SCOPE_KEY;
 import static org.apache.dubbo.common.constants.ConfigConstants.SCOPE_LOCAL;
 import static org.apache.dubbo.common.constants.ConfigConstants.SCOPE_NONE;
 import static org.apache.dubbo.common.constants.ConfigConstants.SCOPE_REMOTE;
-import static org.apache.dubbo.common.constants.MonitorConstants.MONITOR_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.LOCAL_PROTOCOL;

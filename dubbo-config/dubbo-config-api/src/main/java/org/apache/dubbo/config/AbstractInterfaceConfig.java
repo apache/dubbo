@@ -74,7 +74,7 @@ import static org.apache.dubbo.common.constants.ConfigConstants.REGISTER_IP_KEY;
 import static org.apache.dubbo.common.constants.ConfigConstants.REGISTRIES_SUFFIX;
 import static org.apache.dubbo.common.constants.ConfigConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.ConfigConstants.SHUTDOWN_WAIT_SECONDS_KEY;
-import static org.apache.dubbo.common.constants.MonitorConstants.LOGSTAT_PROTOCOL;
+import static org.apache.dubbo.monitor.Constants.LOGSTAT_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;

@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.constants.ConfigConstants;
 import org.apache.dubbo.common.constants.FilterConstants;
-import org.apache.dubbo.common.constants.MonitorConstants;
 import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.constants.RemotingConstants;
 
@@ -29,7 +28,7 @@ import org.apache.dubbo.common.constants.RemotingConstants;
  * @deprecated Replace to org.apache.dubbo.common.Constants
  */
 @Deprecated
-public final class RpcConstants implements CommonConstants, ConfigConstants, FilterConstants, MonitorConstants,
+public final class RpcConstants implements CommonConstants, ConfigConstants, FilterConstants,
         RegistryConstants, RemotingConstants, org.apache.dubbo.common.constants.RpcConstants {
 
     private RpcConstants() {
