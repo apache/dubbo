@@ -18,9 +18,9 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.ProxyFactory;
@@ -77,12 +77,12 @@ public class DubboInvokerAvilableTest {
         DubboInvoker<?> invoker = (DubboInvoker<?>) protocol.refer(IDemoService.class, url);
         Assertions.assertEquals(true, invoker.isAvailable());
 
-        getClients(invoker)[0].setAttribute(RemotingConstants.CHANNEL_ATTRIBUTE_READONLY_KEY, Boolean.TRUE);
+        getClients(invoker)[0].setAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY, Boolean.TRUE);
 
         Assertions.assertEquals(false, invoker.isAvailable());
 
         // reset status since connection is shared among invokers
-        getClients(invoker)[0].removeAttribute(RemotingConstants.CHANNEL_ATTRIBUTE_READONLY_KEY);
+        getClients(invoker)[0].removeAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY);
     }
 
     @Disabled
@@ -131,7 +131,7 @@ public class DubboInvokerAvilableTest {
         Assertions.assertEquals(true, invoker.isAvailable());
 
         try {
-            getClients(invoker)[0].setAttribute(RemotingConstants.CHANNEL_ATTRIBUTE_READONLY_KEY, Boolean.TRUE);
+            getClients(invoker)[0].setAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY, Boolean.TRUE);
             fail();
         } catch (IllegalStateException e) {
 
@@ -141,7 +141,7 @@ public class DubboInvokerAvilableTest {
         Assertions.assertEquals("ok", service.get());
 
         Assertions.assertEquals(true, invoker.isAvailable());
-        getClients(invoker)[0].setAttribute(RemotingConstants.CHANNEL_ATTRIBUTE_READONLY_KEY, Boolean.TRUE);
+        getClients(invoker)[0].setAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY, Boolean.TRUE);
         Assertions.assertEquals(false, invoker.isAvailable());
     }
 

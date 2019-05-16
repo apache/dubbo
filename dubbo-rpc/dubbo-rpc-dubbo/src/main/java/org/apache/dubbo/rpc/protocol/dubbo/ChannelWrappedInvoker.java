@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
@@ -67,7 +66,7 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
 
         try {
             if (getUrl().getMethodParameter(invocation.getMethodName(), ASYNC_KEY, false)) { // may have concurrency issue
-                currentClient.send(inv, getUrl().getMethodParameter(invocation.getMethodName(), RemotingConstants.SENT_KEY, false));
+                currentClient.send(inv, getUrl().getMethodParameter(invocation.getMethodName(), org.apache.dubbo.remoting.Constants.SENT_KEY, false));
                 return new RpcResult();
             }
             int timeout = getUrl().getMethodParameter(invocation.getMethodName(), TIMEOUT_KEY, DEFAULT_TIMEOUT);

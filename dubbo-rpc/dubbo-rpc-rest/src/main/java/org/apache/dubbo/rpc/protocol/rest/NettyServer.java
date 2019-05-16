@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.NetUtils;
 
 import io.netty.channel.ChannelOption;
@@ -43,17 +42,17 @@ public class NettyServer extends BaseRestServer {
 
     @Override
     protected void doStart(URL url) {
-        String bindIp = url.getParameter(RemotingConstants.BIND_IP_KEY, url.getHost());
+        String bindIp = url.getParameter(org.apache.dubbo.remoting.Constants.BIND_IP_KEY, url.getHost());
         if (!url.isAnyHost() && NetUtils.isValidLocalHost(bindIp)) {
             server.setHostname(bindIp);
         }
-        server.setPort(url.getParameter(RemotingConstants.BIND_PORT_KEY, url.getPort()));
+        server.setPort(url.getParameter(org.apache.dubbo.remoting.Constants.BIND_PORT_KEY, url.getPort()));
         Map<ChannelOption, Object> channelOption = new HashMap<ChannelOption, Object>();
         channelOption.put(ChannelOption.SO_KEEPALIVE, url.getParameter(KEEP_ALIVE_KEY, DEFAULT_KEEP_ALIVE));
         server.setChildChannelOptions(channelOption);
         server.setExecutorThreadCount(url.getParameter(THREADS_KEY, DEFAULT_THREADS));
-        server.setIoWorkerCount(url.getParameter(IO_THREADS_KEY, RemotingConstants.DEFAULT_IO_THREADS));
-        server.setMaxRequestSize(url.getParameter(RemotingConstants.PAYLOAD_KEY, RemotingConstants.DEFAULT_PAYLOAD));
+        server.setIoWorkerCount(url.getParameter(IO_THREADS_KEY, org.apache.dubbo.remoting.Constants.DEFAULT_IO_THREADS));
+        server.setMaxRequestSize(url.getParameter(org.apache.dubbo.remoting.Constants.PAYLOAD_KEY, org.apache.dubbo.remoting.Constants.DEFAULT_PAYLOAD));
         server.start();
     }
 

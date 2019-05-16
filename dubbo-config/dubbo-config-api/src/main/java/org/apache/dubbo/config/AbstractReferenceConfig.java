@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.InvokerListener;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
@@ -187,7 +187,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         return stubevent;
     }
 
-    @Parameter(key = RemotingConstants.RECONNECT_KEY)
+    @Parameter(key = Constants.RECONNECT_KEY)
     public String getReconnect() {
         return reconnect;
     }

@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.annotation;
 
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.constants.RpcConstants;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Filter;
@@ -103,7 +102,7 @@ public @interface Reference {
      * Whether to reconnect if connection is lost, if not specify, reconnect is enabled by default, and the interval
      * for retry connecting is 2000 ms
      *
-     * @see RemotingConstants#DEFAULT_RECONNECT_PERIOD
+     * @see org.apache.dubbo.remoting.Constants#DEFAULT_RECONNECT_PERIOD
      */
     String reconnect() default "";
 

@@ -333,12 +333,12 @@ public class DubboProtocol extends AbstractProtocol {
     private ExchangeServer createServer(URL url) {
         url = URLBuilder.from(url)
                 // send readonly event when server closes, it's enabled by default
-                .addParameterIfAbsent(RemotingConstants.CHANNEL_READONLYEVENT_SENT_KEY, Boolean.TRUE.toString())
+                .addParameterIfAbsent(org.apache.dubbo.remoting.Constants.CHANNEL_READONLYEVENT_SENT_KEY, Boolean.TRUE.toString())
                 // enable heartbeat by default
                 .addParameterIfAbsent(RemotingConstants.HEARTBEAT_KEY, String.valueOf(RemotingConstants.DEFAULT_HEARTBEAT))
-                .addParameter(RemotingConstants.CODEC_KEY, DubboCodec.NAME)
+                .addParameter(org.apache.dubbo.remoting.Constants.CODEC_KEY, DubboCodec.NAME)
                 .build();
-        String str = url.getParameter(RemotingConstants.SERVER_KEY, RemotingConstants.DEFAULT_REMOTING_SERVER);
+        String str = url.getParameter(org.apache.dubbo.remoting.Constants.SERVER_KEY, org.apache.dubbo.rpc.Constants.DEFAULT_REMOTING_SERVER);
 
         if (str != null && str.length() > 0 && !ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(str)) {
             throw new RpcException("Unsupported server type: " + str + ", url: " + url);
@@ -351,7 +351,7 @@ public class DubboProtocol extends AbstractProtocol {
             throw new RpcException("Fail to start server(url: " + url + ") " + e.getMessage(), e);
         }
 
-        str = url.getParameter(RemotingConstants.CLIENT_KEY);
+        str = url.getParameter(org.apache.dubbo.remoting.Constants.CLIENT_KEY);
         if (str != null && str.length() > 0) {
             Set<String> supportedTypes = ExtensionLoader.getExtensionLoader(Transporter.class).getSupportedExtensions();
             if (!supportedTypes.contains(str)) {
@@ -573,9 +573,9 @@ public class DubboProtocol extends AbstractProtocol {
     private ExchangeClient initClient(URL url) {
 
         // client type setting.
-        String str = url.getParameter(RemotingConstants.CLIENT_KEY, url.getParameter(RemotingConstants.SERVER_KEY, RemotingConstants.DEFAULT_REMOTING_CLIENT));
+        String str = url.getParameter(org.apache.dubbo.remoting.Constants.CLIENT_KEY, url.getParameter(org.apache.dubbo.remoting.Constants.SERVER_KEY, org.apache.dubbo.remoting.Constants.DEFAULT_REMOTING_CLIENT));
 
-        url = url.addParameter(RemotingConstants.CODEC_KEY, DubboCodec.NAME);
+        url = url.addParameter(org.apache.dubbo.remoting.Constants.CODEC_KEY, DubboCodec.NAME);
         // enable heartbeat by default
         url = url.addParameterIfAbsent(RemotingConstants.HEARTBEAT_KEY, String.valueOf(RemotingConstants.DEFAULT_HEARTBEAT));
 
