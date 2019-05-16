@@ -24,7 +24,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.store.DataStore;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.monitor.MetricsService;
-import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -235,12 +235,9 @@ public class MetricsFilter implements Filter {
                     collector.collect(entry.getKey(), entry.getValue(), timestamp);
                 }
 
-                AppResponse appResponse = new AppResponse();
-
                 List res = collector.build();
                 res.addAll(getThreadPoolMessage());
-                appResponse.setValue(JSON.toJSONString(res));
-                return appResponse;
+                return AsyncRpcResult.newDefaultAsyncResult(JSON.toJSONString(res), invocation);
             }
 
             @Override
