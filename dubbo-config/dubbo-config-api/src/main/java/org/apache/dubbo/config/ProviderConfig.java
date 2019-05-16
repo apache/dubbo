@@ -29,8 +29,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.CONTEXTPATH_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.STATUS_KEY;
+import static org.apache.dubbo.config.Constants.CONTEXTPATH_KEY;
+import static org.apache.dubbo.config.Constants.STATUS_KEY;
 import static org.apache.dubbo.common.constants.ConfigConstants.TELNET;
 
 /**
