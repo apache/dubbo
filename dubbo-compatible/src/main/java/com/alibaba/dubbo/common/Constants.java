@@ -20,7 +20,6 @@ package com.alibaba.dubbo.common;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.constants.ConfigConstants;
 import org.apache.dubbo.common.constants.FilterConstants;
-import org.apache.dubbo.common.constants.MonitorConstants;
 import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.constants.RpcConstants;
