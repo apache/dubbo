@@ -16,19 +16,25 @@
  */
 package com.alibaba.dubbo.common.serialize.fastjson;
 
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
+import com.alibaba.dubbo.common.serialize.fastjson.model.Organization;
 import com.alibaba.dubbo.common.serialize.fastjson.model.Person;
 import com.alibaba.fastjson.JSONObject;
-import org.junit.Test;
-
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.StringReader;
-
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.List;
+import javax.lang.model.util.Types;
+import org.junit.Test;
 
 public class FastJsonObjectInputTest {
     private FastJsonObjectInput fastJsonObjectInput;
@@ -143,5 +149,44 @@ public class FastJsonObjectInputTest {
         assertThat(readObject, not(nullValue()));
         assertThat(readObject.getString("name"), is("John"));
         assertThat(readObject.getInteger("age"), is(30));
+    }
+
+    @Test
+    public void testReadObjectWithTowType() throws Exception {
+        fastJsonObjectInput = new FastJsonObjectInput(new StringReader("[{\"name\":\"John\",\"age\":30},{\"name\":\"Born\",\"age\":24}]"));
+
+        Method methodReturnType = getClass().getMethod("towLayer");
+        Type type = methodReturnType.getGenericReturnType();
+        List<Person> o = fastJsonObjectInput.readObject(List.class, type);
+
+        assertTrue(o instanceof List);
+        assertTrue(o.get(0) instanceof Person);
+
+        assertThat(o.size(), is(2));
+        assertThat(o.get(1).getName(), is("Born"));
+    }
+
+    @Test
+    public void testReadObjectWithThreeType() throws Exception {
+        fastJsonObjectInput = new FastJsonObjectInput(new StringReader("{\"data\":[{\"name\":\"John\",\"age\":30},{\"name\":\"Born\",\"age\":24}]}"));
+
+        Method methodReturnType = getClass().getMethod("threeLayer");
+        Type type = methodReturnType.getGenericReturnType();
+        Organization<List<Person>> o = fastJsonObjectInput.readObject(Organization.class, type);
+
+        assertTrue(o instanceof Organization);
+        assertTrue(o.getData() instanceof List);
+        assertTrue(o.getData().get(0) instanceof Person);
+
+        assertThat(o.getData().size(), is(2));
+        assertThat(o.getData().get(1).getName(), is("Born"));
+    }
+
+    public List<Person> towLayer() {
+        return null;
+    }
+
+    public Organization<List<Person>> threeLayer() {
+        return null;
     }
 }
