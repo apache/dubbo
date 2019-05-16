@@ -16,9 +16,11 @@
  */
 package org.apache.dubbo.config.annotation;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.RemotingConstants;
+import org.apache.dubbo.common.constants.RpcConstants;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Filter;
+import org.apache.dubbo.rpc.cluster.Constants;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -93,7 +95,7 @@ public @interface Reference {
     /**
      * Export an stub service for event dispatch, default value is false.
      *
-     * @see Constants#STUB_EVENT_METHODS_KEY
+     * @see RpcConstants#STUB_EVENT_METHODS_KEY
      */
     boolean stubevent() default false;
 
@@ -101,7 +103,7 @@ public @interface Reference {
      * Whether to reconnect if connection is lost, if not specify, reconnect is enabled by default, and the interval
      * for retry connecting is 2000 ms
      *
-     * @see Constants#DEFAULT_RECONNECT_PERIOD
+     * @see RemotingConstants#DEFAULT_RECONNECT_PERIOD
      */
     String reconnect() default "";
 
@@ -135,7 +137,7 @@ public @interface Reference {
     /**
      * The callback instance limit peer connection
      *
-     * @see Constants#DEFAULT_CALLBACK_INSTANCES
+     * @see RpcConstants#DEFAULT_CALLBACK_INSTANCES
      */
     int callbacks() default 0;
 
@@ -256,6 +258,11 @@ public @interface Reference {
      * Protocol spring bean names
      */
     String protocol() default "";
+
+    /**
+     * Service tag name
+     */
+    String tag() default "";
 
     /**
      * methods support

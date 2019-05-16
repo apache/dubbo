@@ -16,7 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo.filter;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.RemotingConstants;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -41,7 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * TraceFilter
  */
-@Activate(group = Constants.PROVIDER)
+@Activate(group = CommonConstants.PROVIDER)
 public class TraceFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(TraceFilter.class);
@@ -103,7 +104,7 @@ public class TraceFilter implements Filter {
                             }
                             count = c.getAndIncrement();
                             if (count < max) {
-                                String prompt = channel.getUrl().getParameter(Constants.PROMPT_KEY, Constants.DEFAULT_PROMPT);
+                                String prompt = channel.getUrl().getParameter(RemotingConstants.PROMPT_KEY, RemotingConstants.DEFAULT_PROMPT);
                                 channel.send("\r\n" + RpcContext.getContext().getRemoteAddress() + " -> "
                                         + invoker.getInterface().getName()
                                         + "." + invocation.getMethodName()
