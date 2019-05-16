@@ -159,6 +159,7 @@ public class Environment {
             globalConfiguration = new CompositeConfiguration();
             globalConfiguration.addConfiguration(this.getEnvironmentConfig(null, null));
             globalConfiguration.addConfiguration(this.getSystemConfig(null, null));
+            // applicationconfig must never be null, check for unit test
             if (this.applicationConfig != null) {
                 globalConfiguration.addConfiguration(this.applicationConfig);
             }
