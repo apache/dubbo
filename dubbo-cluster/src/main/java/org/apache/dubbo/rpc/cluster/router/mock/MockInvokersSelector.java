@@ -26,8 +26,8 @@ import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.dubbo.common.constants.ClusterConstants.INVOCATION_NEED_MOCK;
-import static org.apache.dubbo.common.constants.ClusterConstants.MOCK_PROTOCOL;
+import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
+import static org.apache.dubbo.rpc.cluster.Constants.MOCK_PROTOCOL;
 
 /**
  * A specific Router designed to realize mock feature.

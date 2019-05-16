@@ -30,17 +30,6 @@ public interface RemotingConstants {
      */
     int DEFAULT_PAYLOAD = 8 * 1024 * 1024;
 
-    String BUFFER_KEY = "buffer";
-
-    /**
-     * default buffer size is 8k.
-     */
-    int DEFAULT_BUFFER_SIZE = 8 * 1024;
-
-    int MAX_BUFFER_SIZE = 16 * 1024;
-
-    int MIN_BUFFER_SIZE = 1 * 1024;
-
     String CONNECT_TIMEOUT_KEY = "connect.timeout";
 
     int DEFAULT_CONNECT_TIMEOUT = 3000;
@@ -49,21 +38,11 @@ public interface RemotingConstants {
 
     int DEFAULT_HEARTBEAT = 60 * 1000;
 
-    String IDLE_TIMEOUT_KEY = "idle.timeout";
-
-    int DEFAULT_IDLE_TIMEOUT = 600 * 1000;
-
-    String ACCEPTS_KEY = "accepts";
-
-    int DEFAULT_ACCEPTS = 0;
-
     String SERIALIZATION_KEY = "serialization";
 
     String DEFAULT_REMOTING_SERIALIZATION = "hessian2";
 
     String CODEC_KEY = "codec";
-
-    String DEFAULT_REMOTING_CODEC = "dubbo";
 
     String SERVER_KEY = "server";
 
@@ -91,21 +70,7 @@ public interface RemotingConstants {
 
     String SENT_KEY = "sent";
 
-    boolean DEFAULT_SENT = false;
-
     String DISPATCHER_KEY = "dispatcher";
-
-    String CHANNEL_HANDLER_KEY = "channel.handler";
-
-    String DEFAULT_CHANNEL_HANDLER = "default";
-
-    String SERVICE_DESCIPTOR_KEY = "serviceDescriptor";
-
-    String CONNECT_QUEUE_CAPACITY = "connect.queue.capacity";
-
-    String CONNECT_QUEUE_WARNING_SIZE = "connect.queue.warning.size";
-
-    int DEFAULT_CONNECT_QUEUE_WARNING_SIZE = 1000;
 
     String CHANNEL_ATTRIBUTE_READONLY_KEY = "channel.readonly";
 
@@ -115,28 +80,7 @@ public interface RemotingConstants {
 
     String EXECUTOR_SERVICE_COMPONENT_KEY = ExecutorService.class.getName();
 
-    String CHARSET_KEY = "charset";
-
-    String DEFAULT_CHARSET = "UTF-8";
-
     String BACKUP_KEY = "backup";
-
-    /**
-     * Every heartbeat duration / HEATBEAT_CHECK_TICK, check if a heartbeat should be sent. Every heartbeat timeout
-     * duration / HEATBEAT_CHECK_TICK, check if a connection should be closed on server side, and if reconnect on
-     * client side
-     */
-    int HEARTBEAT_CHECK_TICK = 3;
-
-    /**
-     * the least heartbeat during is 1000 ms.
-     */
-    long LEAST_HEARTBEAT_DURATION = 1000;
-
-    /**
-     * ticks per wheel.
-     */
-    int TICKS_PER_WHEEL = 128;
 
     String HEARTBEAT_TIMEOUT_KEY = "heartbeat.timeout";
 

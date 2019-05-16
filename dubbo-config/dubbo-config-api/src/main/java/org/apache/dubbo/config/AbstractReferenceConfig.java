@@ -21,7 +21,7 @@ import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.InvokerListener;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
-import static org.apache.dubbo.common.constants.ClusterConstants.CLUSTER_STICKY_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_STICKY_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.ConfigConstants.LAZY_CONNECT_KEY;

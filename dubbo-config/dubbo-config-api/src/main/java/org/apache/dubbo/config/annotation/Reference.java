@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.config.annotation;
 
-import org.apache.dubbo.common.constants.ClusterConstants;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.constants.RpcConstants;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Filter;
+import org.apache.dubbo.rpc.cluster.Constants;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -110,7 +110,7 @@ public @interface Reference {
     /**
      * Whether to stick to the same node in the cluster, the default value is false
      *
-     * @see ClusterConstants#DEFAULT_CLUSTER_STICKY
+     * @see Constants#DEFAULT_CLUSTER_STICKY
      */
     boolean sticky() default false;
 
@@ -164,14 +164,14 @@ public @interface Reference {
     /**
      * Service invocation retry times
      *
-     * @see ClusterConstants#DEFAULT_RETRIES
+     * @see Constants#DEFAULT_RETRIES
      */
     int retries() default 2;
 
     /**
      * Load balance strategy, legal values include: random, roundrobin, leastactive
      *
-     * @see ClusterConstants#DEFAULT_LOADBALANCE
+     * @see Constants#DEFAULT_LOADBALANCE
      */
     String loadbalance() default "";
 
