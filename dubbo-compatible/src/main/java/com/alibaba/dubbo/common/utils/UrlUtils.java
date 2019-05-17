@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 public class UrlUtils {
 
     public static URL parseURL(String address, Map<String, String> defaults) {
-        return new URL(UrlUtils.parseURL(address, defaults));
+        return new URL(org.apache.dubbo.common.utils.UrlUtils.parseURL(address, defaults));
     }
 
     public static List<URL> parseURLs(String address, Map<String, String> defaults) {
