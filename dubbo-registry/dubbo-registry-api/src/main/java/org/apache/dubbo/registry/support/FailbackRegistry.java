@@ -206,23 +206,23 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
     }
 
-    public ConcurrentMap<URL, FailedRegisteredTask> getFailedRegistered() {
+    ConcurrentMap<URL, FailedRegisteredTask> getFailedRegistered() {
         return failedRegistered;
     }
 
-    public ConcurrentMap<URL, FailedUnregisteredTask> getFailedUnregistered() {
+    ConcurrentMap<URL, FailedUnregisteredTask> getFailedUnregistered() {
         return failedUnregistered;
     }
 
-    public ConcurrentMap<Holder, FailedSubscribedTask> getFailedSubscribed() {
+    ConcurrentMap<Holder, FailedSubscribedTask> getFailedSubscribed() {
         return failedSubscribed;
     }
 
-    public ConcurrentMap<Holder, FailedUnsubscribedTask> getFailedUnsubscribed() {
+    ConcurrentMap<Holder, FailedUnsubscribedTask> getFailedUnsubscribed() {
         return failedUnsubscribed;
     }
 
-    public ConcurrentMap<Holder, FailedNotifiedTask> getFailedNotified() {
+    ConcurrentMap<Holder, FailedNotifiedTask> getFailedNotified() {
         return failedNotified;
     }
 
