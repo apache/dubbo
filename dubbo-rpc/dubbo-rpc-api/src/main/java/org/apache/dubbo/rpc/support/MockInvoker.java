@@ -39,12 +39,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.dubbo.common.constants.RpcConstants.MOCK_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.RETURN_PREFIX;
-import static org.apache.dubbo.common.constants.RpcConstants.THROW_PREFIX;
-import static org.apache.dubbo.common.constants.RpcConstants.FAIL_PREFIX;
-import static org.apache.dubbo.common.constants.RpcConstants.FORCE_PREFIX;
-import static org.apache.dubbo.common.constants.RpcConstants.RETURN_KEY;
+import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
+import static org.apache.dubbo.rpc.Constants.RETURN_PREFIX;
+import static org.apache.dubbo.rpc.Constants.THROW_PREFIX;
+import static org.apache.dubbo.rpc.Constants.FAIL_PREFIX;
+import static org.apache.dubbo.rpc.Constants.FORCE_PREFIX;
+import static org.apache.dubbo.rpc.Constants.RETURN_KEY;
 
 final public class MockInvoker<T> implements Invoker<T> {
     private final static ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();

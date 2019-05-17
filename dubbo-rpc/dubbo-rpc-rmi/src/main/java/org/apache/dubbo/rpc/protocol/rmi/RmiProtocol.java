@@ -35,7 +35,9 @@ import static org.apache.dubbo.common.Version.isRelease263OrHigher;
 import static org.apache.dubbo.common.Version.isRelease270OrHigher;
 import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_KEY;
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
+import static org.apache.dubbo.common.Version.isRelease263OrHigher;
+import static org.apache.dubbo.common.Version.isRelease270OrHigher;
 
 /**
  * RmiProtocol.

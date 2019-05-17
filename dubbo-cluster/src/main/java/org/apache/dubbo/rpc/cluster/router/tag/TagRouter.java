@@ -41,7 +41,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.rpc.cluster.Constants.TAG_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.FORCE_USE_TAG;
+import static org.apache.dubbo.rpc.Constants.FORCE_USE_TAG;
 
 /**
  * TagRouter, "application.tag-router"

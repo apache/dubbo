@@ -32,8 +32,8 @@ import java.util.List;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
 
-import static org.apache.dubbo.common.constants.RpcConstants.REFERENCE_FILTER_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.SERVICE_FILTER_KEY;
+import static org.apache.dubbo.rpc.Constants.REFERENCE_FILTER_KEY;
+import static org.apache.dubbo.rpc.Constants.SERVICE_FILTER_KEY;
 
 /**
  * ListenerProtocol

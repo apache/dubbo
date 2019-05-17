@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting;
 
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
 
@@ -45,7 +44,7 @@ public interface Codec {
      * @param output  output stream.
      * @param message message.
      */
-    @Adaptive({RemotingConstants.CODEC_KEY})
+    @Adaptive({Constants.CODEC_KEY})
     void encode(Channel channel, OutputStream output, Object message) throws IOException;
 
     /**
@@ -56,7 +55,7 @@ public interface Codec {
      * @return message or <code>NEED_MORE_INPUT</code> poison.
      * @see #NEED_MORE_INPUT
      */
-    @Adaptive({RemotingConstants.CODEC_KEY})
+    @Adaptive({Constants.CODEC_KEY})
     Object decode(Channel channel, InputStream input) throws IOException;
 
 }

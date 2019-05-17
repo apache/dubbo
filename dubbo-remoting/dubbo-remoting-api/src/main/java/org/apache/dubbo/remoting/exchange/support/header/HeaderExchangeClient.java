@@ -17,12 +17,12 @@
 package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Client;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
@@ -217,7 +217,7 @@ public class HeaderExchangeClient implements ExchangeClient {
     }
 
     private boolean shouldReconnect(URL url) {
-        return url.getParameter(RemotingConstants.RECONNECT_KEY, true);
+        return url.getParameter(Constants.RECONNECT_KEY, true);
     }
 
     @Override

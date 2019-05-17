@@ -49,13 +49,13 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.MonitorConstants.DUBBO_CONSUMER;
-import static org.apache.dubbo.common.constants.MonitorConstants.DUBBO_CONSUMER_METHOD;
-import static org.apache.dubbo.common.constants.MonitorConstants.DUBBO_GROUP;
-import static org.apache.dubbo.common.constants.MonitorConstants.DUBBO_PROVIDER;
-import static org.apache.dubbo.common.constants.MonitorConstants.DUBBO_PROVIDER_METHOD;
-import static org.apache.dubbo.common.constants.MonitorConstants.METHOD;
-import static org.apache.dubbo.common.constants.MonitorConstants.SERVICE;
+import static org.apache.dubbo.monitor.Constants.DUBBO_CONSUMER;
+import static org.apache.dubbo.monitor.Constants.DUBBO_CONSUMER_METHOD;
+import static org.apache.dubbo.monitor.Constants.DUBBO_GROUP;
+import static org.apache.dubbo.monitor.Constants.DUBBO_PROVIDER;
+import static org.apache.dubbo.monitor.Constants.DUBBO_PROVIDER_METHOD;
+import static org.apache.dubbo.monitor.Constants.METHOD;
+import static org.apache.dubbo.monitor.Constants.SERVICE;
 
 public class MetricsFilterTest {
 

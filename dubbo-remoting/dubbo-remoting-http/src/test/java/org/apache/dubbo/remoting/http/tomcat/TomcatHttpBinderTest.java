@@ -17,8 +17,8 @@
 package org.apache.dubbo.remoting.http.tomcat;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.http.HttpHandler;
 import org.apache.dubbo.remoting.http.HttpServer;
 
@@ -37,7 +37,7 @@ public class TomcatHttpBinderTest {
     public void shouldAbleHandleRequestForTomcatBinder() throws Exception {
         int port = NetUtils.getAvailablePort();
         URL url = new URL("http", "localhost", port,
-                new String[]{RemotingConstants.BIND_PORT_KEY, String.valueOf(port)});
+                new String[]{Constants.BIND_PORT_KEY, String.valueOf(port)});
 
         HttpServer httpServer = new TomcatHttpBinder().bind(url, new HttpHandler() {
             @Override

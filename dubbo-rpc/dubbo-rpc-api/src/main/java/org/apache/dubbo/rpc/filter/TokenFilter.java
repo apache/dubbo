@@ -28,7 +28,7 @@ import org.apache.dubbo.rpc.RpcException;
 
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.RpcConstants.TOKEN_KEY;
+import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
 /**
  * Perform check whether given provider token is matching with remote token or not. If it does not match

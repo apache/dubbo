@@ -23,9 +23,9 @@ import org.apache.dubbo.config.support.Parameter;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.dubbo.common.constants.ConfigConstants.NAME;
-import static org.apache.dubbo.common.constants.ConfigConstants.ORGANIZATION;
-import static org.apache.dubbo.common.constants.ConfigConstants.OWNER;
+import static org.apache.dubbo.config.Constants.NAME;
+import static org.apache.dubbo.config.Constants.ORGANIZATION;
+import static org.apache.dubbo.config.Constants.OWNER;
 
 /**
  * The module info

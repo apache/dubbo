@@ -50,6 +50,8 @@ public class DefaultFuture extends CompletableFuture<Object> {
 
     private static final Map<Long, DefaultFuture> FUTURES = new ConcurrentHashMap<>();
 
+    private static final Map<Long, Timeout> PENDING_TASKS = new ConcurrentHashMap<>();
+
     public static final Timer TIME_OUT_TIMER = new HashedWheelTimer(
             new NamedThreadFactory("dubbo-future-timeout", true),
             30,
@@ -71,6 +73,15 @@ public class DefaultFuture extends CompletableFuture<Object> {
         // put into waiting map.
         FUTURES.put(id, this);
         CHANNELS.put(id, channel);
+    }
+
+    /**
+     * check time out of the future
+     */
+    private static void timeoutCheck(DefaultFuture future) {
+        TimeoutCheckTask task = new TimeoutCheckTask(future);
+        Timeout t = TIME_OUT_TIMER.newTimeout(task, future.getTimeout(), TimeUnit.MILLISECONDS);
+        PENDING_TASKS.put(future.getId(), t);
     }
 
     /**
@@ -133,6 +144,11 @@ public class DefaultFuture extends CompletableFuture<Object> {
             DefaultFuture future = FUTURES.remove(response.getId());
             if (future != null) {
                 future.doReceived(response);
+                Timeout t = PENDING_TASKS.remove(future.getId());
+                if (t != null) {
+                    // decrease Time
+                    t.cancel();
+                }
             } else {
                 logger.warn("The timeout response finally returned at "
                         + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()))

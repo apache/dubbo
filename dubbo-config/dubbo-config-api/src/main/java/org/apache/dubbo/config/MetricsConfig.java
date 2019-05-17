@@ -19,8 +19,8 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.config.support.Parameter;
 
-import static org.apache.dubbo.common.constants.MonitorConstants.METRICS_PORT;
-import static org.apache.dubbo.common.constants.MonitorConstants.METRICS_PROTOCOL;
+import static org.apache.dubbo.monitor.Constants.METRICS_PORT;
+import static org.apache.dubbo.monitor.Constants.METRICS_PROTOCOL;
 
 public class MetricsConfig extends AbstractConfig {
 
