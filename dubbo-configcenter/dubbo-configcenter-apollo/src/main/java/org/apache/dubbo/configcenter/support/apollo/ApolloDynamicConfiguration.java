@@ -47,7 +47,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.ConfigConstants.CONFIG_CHECK_KEY;
 import static org.apache.dubbo.common.constants.ConfigConstants.CONFIG_CLUSTER_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.CONFIG_GROUP_KEY;
 import static org.apache.dubbo.common.constants.ConfigConstants.CONFIG_NAMESPACE_KEY;
 
 /**
@@ -83,7 +82,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
         }
 
         dubboConfig = ConfigService.getConfig(url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP));
-        dubboConfigFile = ConfigService.getConfigFile(url.getParameter(Constants.CONFIG_NAMESPACE_KEY, DEFAULT_GROUP), ConfigFileFormat.Properties);
+        dubboConfigFile = ConfigService.getConfigFile(url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP), ConfigFileFormat.Properties);
         // Decide to fail or to continue when failed to connect to remote server.
         boolean check = url.getParameter(CONFIG_CHECK_KEY, true);
         if (dubboConfig.getSourceType() != ConfigSourceType.REMOTE) {
