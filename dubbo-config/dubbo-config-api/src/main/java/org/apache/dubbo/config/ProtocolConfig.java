@@ -41,12 +41,24 @@ import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_IP_TO_BIND;
 import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.ConfigConstants.HOST_KEY;
-import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
 import static org.apache.dubbo.common.constants.ConfigConstants.TELNET;
 import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.common.utils.NetUtils.getAvailablePort;
+import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
+import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
+import static org.apache.dubbo.common.utils.NetUtils.isInvalidPort;
+import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
+import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_BIND;
+import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_REGISTRY;
+import static org.apache.dubbo.config.Constants.MULTICAST;
+import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
+import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
+import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 
 /**
  * ProtocolConfig
@@ -285,7 +297,7 @@ public class ProtocolConfig extends AbstractConfig {
         }
 
         // save binding ip, this key will appear in url.
-        map.put(RemotingConstants.BIND_IP_KEY, hostToBind);
+        map.put(BIND_IP_KEY, hostToBind);
 
         // registry ip is not used for binding by default
         String hostToRegistry = getValueFromConfig(DUBBO_IP_TO_REGISTRY);
@@ -304,7 +316,6 @@ public class ProtocolConfig extends AbstractConfig {
      * priority (from high to low): environment variable -> java system properties -> {@link #port} -> protocol default port
      *
      * @param provider
-     * @param name
      * @return
      */
     public Integer calRegistryAndBindingPort(ProviderConfig provider, Map<String, String> map) {
@@ -326,7 +337,7 @@ public class ProtocolConfig extends AbstractConfig {
         }
 
         // save binding port, this key will also appear in url.
-        map.put(RemotingConstants.BIND_PORT_KEY, String.valueOf(portToBind));
+        map.put(BIND_PORT_KEY, String.valueOf(portToBind));
 
         // registry port, use binding port if not specified.
         // but registry port will not being used as the default binding port.
