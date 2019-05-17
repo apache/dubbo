@@ -85,14 +85,6 @@ public class DefaultFuture extends CompletableFuture<Object> {
     }
 
     /**
-     * check time out of the future
-     */
-    private static void timeoutCheck(DefaultFuture future) {
-        TimeoutCheckTask task = new TimeoutCheckTask(future.getId());
-        future.timeoutCheckTask = TIME_OUT_TIMER.newTimeout(task, future.getTimeout(), TimeUnit.MILLISECONDS);
-    }
-
-    /**
      * init a DefaultFuture
      * 1.init a DefaultFuture
      * 2.timeout check
@@ -236,6 +228,16 @@ public class DefaultFuture extends CompletableFuture<Object> {
         sent = System.currentTimeMillis();
     }
 
+
+    /**
+     * check time out of the future
+     */
+    private static void timeoutCheck(DefaultFuture future) {
+        TimeoutCheckTask task = new TimeoutCheckTask(future.getId());
+        TIME_OUT_TIMER.newTimeout(task, future.getTimeout(), TimeUnit.MILLISECONDS);
+    }
+
+
     private String getTimeoutMessage(boolean scan) {
         long nowTimestamp = System.currentTimeMillis();
         return (sent > 0 ? "Waiting server-side response timeout" : "Sending request timeout in client-side")
@@ -259,7 +261,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
 
         @Override
         public void run(Timeout timeout) {
-            DefaultFuture future = DefaultFuture.getFuture(requestID);
+            DefaultFuture future = FUTURES.remove(requestID);
             if (future == null || future.isDone()) {
                 return;
             }
