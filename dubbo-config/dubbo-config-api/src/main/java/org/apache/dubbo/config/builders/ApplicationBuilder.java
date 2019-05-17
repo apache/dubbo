@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.ConfigConstants.PRODUCTION_ENVIRONMENT;
+import static org.apache.dubbo.config.Constants.PRODUCTION_ENVIRONMENT;
 
 /**
  * This is a builder for build {@link ApplicationConfig}.

@@ -29,7 +29,7 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
         return null;
     }
 
-    class CompatibleInvocation implements Invocation {
+    class CompatibleInvocation implements Invocation, org.apache.dubbo.rpc.Invocation {
 
         private org.apache.dubbo.rpc.Invocation delegate;
 

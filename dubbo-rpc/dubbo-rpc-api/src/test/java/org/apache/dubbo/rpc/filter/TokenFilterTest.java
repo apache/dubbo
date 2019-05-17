@@ -33,7 +33,7 @@ import java.util.Map;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import static org.apache.dubbo.common.constants.RpcConstants.TOKEN_KEY;
+import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
 public class TokenFilterTest {
 

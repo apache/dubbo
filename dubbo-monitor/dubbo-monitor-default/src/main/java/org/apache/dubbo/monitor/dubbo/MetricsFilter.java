@@ -17,13 +17,13 @@
 package org.apache.dubbo.monitor.dubbo;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.store.DataStore;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.monitor.MetricsService;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -57,15 +57,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL;
-import static org.apache.dubbo.common.constants.MonitorConstants.DUBBO_CONSUMER;
-import static org.apache.dubbo.common.constants.MonitorConstants.DUBBO_CONSUMER_METHOD;
-import static org.apache.dubbo.common.constants.MonitorConstants.DUBBO_GROUP;
-import static org.apache.dubbo.common.constants.MonitorConstants.DUBBO_PROVIDER;
-import static org.apache.dubbo.common.constants.MonitorConstants.DUBBO_PROVIDER_METHOD;
-import static org.apache.dubbo.common.constants.MonitorConstants.METHOD;
-import static org.apache.dubbo.common.constants.MonitorConstants.METRICS_PORT;
-import static org.apache.dubbo.common.constants.MonitorConstants.METRICS_PROTOCOL;
-import static org.apache.dubbo.common.constants.MonitorConstants.SERVICE;
+import static org.apache.dubbo.monitor.Constants.DUBBO_CONSUMER;
+import static org.apache.dubbo.monitor.Constants.DUBBO_CONSUMER_METHOD;
+import static org.apache.dubbo.monitor.Constants.DUBBO_GROUP;
+import static org.apache.dubbo.monitor.Constants.DUBBO_PROVIDER;
+import static org.apache.dubbo.monitor.Constants.DUBBO_PROVIDER_METHOD;
+import static org.apache.dubbo.monitor.Constants.METHOD;
+import static org.apache.dubbo.monitor.Constants.METRICS_PORT;
+import static org.apache.dubbo.monitor.Constants.METRICS_PROTOCOL;
+import static org.apache.dubbo.monitor.Constants.SERVICE;
 
 public class MetricsFilter implements Filter {
 
@@ -178,7 +178,7 @@ public class MetricsFilter implements Filter {
 
     private List<MetricObject> getThreadPoolMessage() {
         DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
-        Map<String, Object> executors = dataStore.get(RemotingConstants.EXECUTOR_SERVICE_COMPONENT_KEY);
+        Map<String, Object> executors = dataStore.get(Constants.EXECUTOR_SERVICE_COMPONENT_KEY);
 
         List<MetricObject> threadPoolMtricList = new ArrayList<>();
         for (Map.Entry<String, Object> entry : executors.entrySet()) {

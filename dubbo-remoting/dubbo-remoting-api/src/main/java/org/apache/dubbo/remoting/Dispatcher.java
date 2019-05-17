@@ -17,7 +17,6 @@
 package org.apache.dubbo.remoting;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.remoting.transport.dispatcher.all.AllDispatcher;
@@ -35,7 +34,7 @@ public interface Dispatcher {
      * @param url
      * @return channel handler
      */
-    @Adaptive({RemotingConstants.DISPATCHER_KEY, "dispather", "channel.handler"})
+    @Adaptive({Constants.DISPATCHER_KEY, "dispather", "channel.handler"})
     // The last two parameters are reserved for compatibility with the old configuration
     ChannelHandler dispatch(ChannelHandler handler, URL url);
 

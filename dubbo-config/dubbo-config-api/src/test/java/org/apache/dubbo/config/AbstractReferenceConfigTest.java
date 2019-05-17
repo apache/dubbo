@@ -17,17 +17,17 @@
 
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.constants.RemotingConstants;
+import org.apache.dubbo.remoting.Constants;
 
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.ClusterConstants.CLUSTER_STICKY_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.INVOKER_LISTENER_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.REFERENCE_FILTER_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.STUB_EVENT_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_STICKY_KEY;
+import static org.apache.dubbo.rpc.Constants.INVOKER_LISTENER_KEY;
+import static org.apache.dubbo.rpc.Constants.REFERENCE_FILTER_KEY;
+import static org.apache.dubbo.rpc.Constants.STUB_EVENT_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
@@ -129,7 +129,7 @@ public class AbstractReferenceConfigTest {
         Map<String, String> parameters = new HashMap<String, String>();
         AbstractInterfaceConfig.appendParameters(parameters, referenceConfig);
         assertThat(referenceConfig.getReconnect(), equalTo("reconnect"));
-        assertThat(parameters, hasKey(RemotingConstants.RECONNECT_KEY));
+        assertThat(parameters, hasKey(Constants.RECONNECT_KEY));
     }
 
     @Test

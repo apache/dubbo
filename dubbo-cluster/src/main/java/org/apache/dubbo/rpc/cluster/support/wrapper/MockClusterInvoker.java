@@ -32,8 +32,8 @@ import org.apache.dubbo.rpc.support.MockInvoker;
 
 import java.util.List;
 
-import static org.apache.dubbo.common.constants.ClusterConstants.INVOCATION_NEED_MOCK;
-import static org.apache.dubbo.common.constants.RpcConstants.MOCK_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
+import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
 
 public class MockClusterInvoker<T> implements Invoker<T> {
 

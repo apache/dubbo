@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.remoting.etcd;
 
-import static org.apache.dubbo.common.constants.RemotingConstants.DEFAULT_IO_THREADS;
+import static org.apache.dubbo.remoting.Constants.DEFAULT_IO_THREADS;
 
 public interface Constants {
     String ETCD3_NOTIFY_MAXTHREADS_KEYS = "etcd3.notify.maxthreads";

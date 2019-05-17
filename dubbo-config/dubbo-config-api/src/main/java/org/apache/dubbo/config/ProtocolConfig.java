@@ -18,7 +18,6 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.status.StatusChecker;
@@ -27,6 +26,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.remoting.Codec;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.Dispatcher;
 import org.apache.dubbo.remoting.Transporter;
 import org.apache.dubbo.remoting.exchange.Exchanger;
@@ -41,22 +41,12 @@ import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_IP_TO_BIND;
-import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_IP_TO_REGISTRY;
-import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_PORT_TO_BIND;
-import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_PORT_TO_REGISTRY;
 import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.ConfigConstants.HOST_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.MULTICAST;
-import static org.apache.dubbo.common.constants.ConfigConstants.PROTOCOLS_SUFFIX;
+import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
 import static org.apache.dubbo.common.constants.ConfigConstants.TELNET;
 import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
-import static org.apache.dubbo.common.utils.NetUtils.getAvailablePort;
-import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
-import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
-import static org.apache.dubbo.common.utils.NetUtils.isInvalidPort;
 
 /**
  * ProtocolConfig
@@ -484,7 +474,7 @@ public class ProtocolConfig extends AbstractConfig {
 
     public void setCodec(String codec) {
         if (DUBBO_PROTOCOL.equals(name)) {
-            checkMultiExtension(Codec.class, RemotingConstants.CODEC_KEY, codec);
+            checkMultiExtension(Codec.class, Constants.CODEC_KEY, codec);
         }
         this.codec = codec;
     }
@@ -495,7 +485,7 @@ public class ProtocolConfig extends AbstractConfig {
 
     public void setSerialization(String serialization) {
         if (DUBBO_PROTOCOL.equals(name)) {
-            checkMultiExtension(Serialization.class, RemotingConstants.SERIALIZATION_KEY, serialization);
+            checkMultiExtension(Serialization.class, Constants.SERIALIZATION_KEY, serialization);
         }
         this.serialization = serialization;
     }
@@ -538,7 +528,7 @@ public class ProtocolConfig extends AbstractConfig {
 
     public void setServer(String server) {
         if (DUBBO_PROTOCOL.equals(name)) {
-            checkMultiExtension(Transporter.class, RemotingConstants.SERVER_KEY, server);
+            checkMultiExtension(Transporter.class, Constants.SERVER_KEY, server);
         }
         this.server = server;
     }
@@ -549,7 +539,7 @@ public class ProtocolConfig extends AbstractConfig {
 
     public void setClient(String client) {
         if (DUBBO_PROTOCOL.equals(name)) {
-            checkMultiExtension(Transporter.class, RemotingConstants.CLIENT_KEY, client);
+            checkMultiExtension(Transporter.class, Constants.CLIENT_KEY, client);
         }
         this.client = client;
     }
@@ -602,7 +592,7 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     public void setTransporter(String transporter) {
-        checkExtension(Transporter.class, RemotingConstants.TRANSPORTER_KEY, transporter);
+        checkExtension(Transporter.class, Constants.TRANSPORTER_KEY, transporter);
         this.transporter = transporter;
     }
 
@@ -611,7 +601,7 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     public void setExchanger(String exchanger) {
-        checkExtension(Exchanger.class, RemotingConstants.EXCHANGER_KEY, exchanger);
+        checkExtension(Exchanger.class, Constants.EXCHANGER_KEY, exchanger);
         this.exchanger = exchanger;
     }
 
@@ -641,7 +631,7 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     public void setDispatcher(String dispatcher) {
-        checkExtension(Dispatcher.class, RemotingConstants.DISPACTHER_KEY, dispatcher);
+        checkExtension(Dispatcher.class, Constants.DISPACTHER_KEY, dispatcher);
         this.dispatcher = dispatcher;
     }
 

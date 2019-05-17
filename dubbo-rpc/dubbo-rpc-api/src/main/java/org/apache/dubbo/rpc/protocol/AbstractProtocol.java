@@ -17,10 +17,10 @@
 package org.apache.dubbo.rpc.protocol;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -47,7 +47,7 @@ public abstract class AbstractProtocol implements Protocol {
     protected final Set<Invoker<?>> invokers = new ConcurrentHashSet<Invoker<?>>();
 
     protected static String serviceKey(URL url) {
-        int port = url.getParameter(RemotingConstants.BIND_PORT_KEY, url.getPort());
+        int port = url.getParameter(Constants.BIND_PORT_KEY, url.getPort());
         return serviceKey(port, url.getPath(), url.getParameter(VERSION_KEY), url.getParameter(GROUP_KEY));
     }
 

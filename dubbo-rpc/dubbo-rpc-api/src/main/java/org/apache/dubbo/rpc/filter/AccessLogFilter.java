@@ -47,7 +47,7 @@ import java.util.concurrent.TimeUnit;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.ACCESS_LOG_KEY;
+import static org.apache.dubbo.rpc.Constants.ACCESS_LOG_KEY;
 
 /**
  * Record access log for the service.

@@ -29,7 +29,7 @@ import org.apache.dubbo.rpc.RpcException;
 
 import java.util.Set;
 
-import static org.apache.dubbo.common.constants.RpcConstants.DEPRECATED_KEY;
+import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
 
 /**
  * DeprecatedFilter logs error message if a invoked method has been marked as deprecated. To check whether a method

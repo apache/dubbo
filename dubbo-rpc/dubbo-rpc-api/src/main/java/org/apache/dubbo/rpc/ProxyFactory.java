@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
 
-import static org.apache.dubbo.common.constants.RpcConstants.PROXY_KEY;
+import static org.apache.dubbo.rpc.Constants.PROXY_KEY;
 
 /**
  * ProxyFactory. (API/SPI, Singleton, ThreadSafe)

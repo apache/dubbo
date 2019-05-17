@@ -22,7 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 
-import static org.apache.dubbo.common.constants.RpcConstants.DEPRECATED_KEY;
+import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
 
 /**
  * DeprecatedProtocolFilter

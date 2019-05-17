@@ -49,7 +49,7 @@ import java.util.concurrent.TimeUnit;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.MERGER_KEY;
+import static org.apache.dubbo.rpc.Constants.MERGER_KEY;
 
 @SuppressWarnings("unchecked")
 public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
