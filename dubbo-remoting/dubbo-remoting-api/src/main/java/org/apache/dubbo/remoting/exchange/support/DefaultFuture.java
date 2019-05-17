@@ -54,8 +54,6 @@ public class DefaultFuture implements ResponseFuture {
 
     private static final Map<Long, DefaultFuture> FUTURES = new ConcurrentHashMap<>();
 
-    private static final Map<Long, Timeout> PENDING_TASKS = new ConcurrentHashMap<>();
-
     public static final Timer TIME_OUT_TIMER = new HashedWheelTimer(
             new NamedThreadFactory("dubbo-future-timeout", true),
             30,
@@ -72,6 +70,7 @@ public class DefaultFuture implements ResponseFuture {
     private volatile long sent;
     private volatile Response response;
     private volatile ResponseCallback callback;
+    private Timeout timeoutCheckTask;
 
     private DefaultFuture(Channel channel, Request request, int timeout) {
         this.channel = channel;
@@ -88,8 +87,7 @@ public class DefaultFuture implements ResponseFuture {
      */
     private static void timeoutCheck(DefaultFuture future) {
         TimeoutCheckTask task = new TimeoutCheckTask(future);
-        Timeout t = TIME_OUT_TIMER.newTimeout(task, future.getTimeout(), TimeUnit.MILLISECONDS);
-        PENDING_TASKS.put(future.getId(), t);
+        future.timeoutCheckTask = TIME_OUT_TIMER.newTimeout(task, future.getTimeout(), TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -148,15 +146,18 @@ public class DefaultFuture implements ResponseFuture {
     }
 
     public static void received(Channel channel, Response response) {
+        received(channel, response, false);
+    }
+
+    private static void received(Channel channel, Response response, boolean timeout) {
         try {
             DefaultFuture future = FUTURES.remove(response.getId());
             if (future != null) {
-                future.doReceived(response);
-                Timeout t = PENDING_TASKS.remove(future.getId());
-                if (t != null) {
-                    // decrease Time
+                Timeout t = future.timeoutCheckTask;
+                if (!timeout) {
                     t.cancel();
                 }
+                future.doReceived(response);
             } else {
                 logger.warn("The timeout response finally returned at "
                         + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()))
@@ -246,9 +247,6 @@ public class DefaultFuture implements ResponseFuture {
 
         @Override
         public void run(Timeout timeout) {
-            // remove from pending task
-            PENDING_TASKS.remove(future.getId());
-
             if (future.isDone()) {
                 return;
             }
@@ -258,7 +256,7 @@ public class DefaultFuture implements ResponseFuture {
             timeoutResponse.setStatus(future.isSent() ? Response.SERVER_TIMEOUT : Response.CLIENT_TIMEOUT);
             timeoutResponse.setErrorMessage(future.getTimeoutMessage(true));
             // handle response.
-            DefaultFuture.received(future.getChannel(), timeoutResponse);
+            DefaultFuture.received(future.getChannel(), timeoutResponse, true);
         }
     }
 
