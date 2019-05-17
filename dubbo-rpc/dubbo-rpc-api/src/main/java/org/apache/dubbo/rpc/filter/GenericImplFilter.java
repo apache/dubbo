@@ -41,6 +41,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
 import static org.apache.dubbo.common.constants.RpcConstants.$INVOKE;
+import static org.apache.dubbo.common.constants.RpcConstants.$INVOKE_ASYNC;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 /**

@@ -33,11 +33,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.common.constants.RpcConstants.$INVOKE;
-import static org.apache.dubbo.rpc.Constants.AUTO_ATTACH_INVOCATIONID_KEY;
-import static org.apache.dubbo.rpc.Constants.ID_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.$INVOKE_ASYNC;
 import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
+import static org.apache.dubbo.rpc.Constants.AUTO_ATTACH_INVOCATIONID_KEY;
 import static org.apache.dubbo.rpc.Constants.FUTURE_GENERATED_KEY;
-import static org.apache.dubbo.rpc.Constants.FUTURE_RETURNTYPE_KEY;
+import static org.apache.dubbo.rpc.Constants.ID_KEY;
 import static org.apache.dubbo.rpc.Constants.RETURN_KEY;
 /**
  * RpcUtils

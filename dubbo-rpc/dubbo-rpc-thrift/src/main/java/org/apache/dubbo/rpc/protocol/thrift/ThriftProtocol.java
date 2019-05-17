@@ -46,9 +46,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
-import static org.apache.dubbo.rpc.Constants.IS_SERVER_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.CONNECTIONS_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.IS_SERVER_KEY;
+import static org.apache.dubbo.rpc.Constants.IS_SERVER_KEY;
 
 /**
  * @since 2.7.0, use https://github.com/dubbo/dubbo-rpc-native-thrift instead

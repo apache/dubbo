@@ -65,6 +65,7 @@ import static org.apache.dubbo.monitor.Constants.METHOD;
 import static org.apache.dubbo.monitor.Constants.METRICS_PORT;
 import static org.apache.dubbo.monitor.Constants.METRICS_PROTOCOL;
 import static org.apache.dubbo.monitor.Constants.SERVICE;
+import static org.apache.dubbo.remoting.Constants.EXECUTOR_SERVICE_COMPONENT_KEY;
 
 public class MetricsFilter implements Filter {
 
@@ -177,7 +178,7 @@ public class MetricsFilter implements Filter {
 
     private List<MetricObject> getThreadPoolMessage() {
         DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
-        Map<String, Object> executors = dataStore.get(Constants.EXECUTOR_SERVICE_COMPONENT_KEY);
+        Map<String, Object> executors = dataStore.get(EXECUTOR_SERVICE_COMPONENT_KEY);
 
         List<MetricObject> threadPoolMtricList = new ArrayList<>();
         for (Map.Entry<String, Object> entry : executors.entrySet()) {
