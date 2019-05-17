@@ -273,7 +273,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         if (initialized) {
             return;
         }
-        initialized = true;
         checkStubAndLocal(interfaceClass);
         checkMock(interfaceClass);
         Map<String, String> map = new HashMap<String, String>();
@@ -331,6 +330,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
         String serviceKey = URL.buildKey(interfaceName, group, version);
         ApplicationModel.initConsumerModel(serviceKey, buildConsumerModel(serviceKey, attributes));
+        initialized = true;
     }
 
     private ConsumerModel buildConsumerModel(String serviceKey, Map<String, Object> attributes) {
@@ -414,8 +414,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
 
         if (shouldCheck() && !invoker.isAvailable()) {
-            // make it possible for consumer to retry later if provider is temporarily unavailable
-            initialized = false;
             throw new IllegalStateException("Failed to check the status of the service " + interfaceName + ". No provider available for the service " + (group == null ? "" : group + "/") + interfaceName + (version == null ? "" : ":" + version) + " from the url " + invoker.getUrl() + " to the consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion());
         }
         if (logger.isInfoEnabled()) {
