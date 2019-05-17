@@ -758,6 +758,10 @@ public class RpcContext {
         return currentContext.asyncContext;
     }
 
+    protected void setAsyncContext(AsyncContext asyncContext) {
+        this.asyncContext = asyncContext;
+    }
+
     public boolean isAsyncStarted() {
         if (this.asyncContext == null) {
             return false;
