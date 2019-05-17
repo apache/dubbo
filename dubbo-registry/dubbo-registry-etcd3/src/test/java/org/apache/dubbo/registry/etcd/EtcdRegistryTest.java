@@ -50,6 +50,9 @@
  */
 package org.apache.dubbo.registry.etcd;
 
+import io.etcd.jetcd.Client;
+import io.etcd.jetcd.launcher.EtcdCluster;
+import io.etcd.jetcd.launcher.EtcdClusterFactory;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -61,9 +64,9 @@ import org.apache.dubbo.remoting.Constants;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -86,15 +89,16 @@ import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATE
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
 
-@Disabled
 public class EtcdRegistryTest {
 
     String service = "org.apache.dubbo.internal.test.DemoServie";
     String outerService = "org.apache.dubbo.outer.test.OuterDemoServie";
+    public EtcdCluster etcdCluster = EtcdClusterFactory.buildCluster(getClass().getSimpleName(), 3, false, false);
+    private static Client client;
+
     URL serviceUrl = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + "/" + service + "?methods=test1,test2");
     URL serviceUrl2 = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + "/" + service + "?methods=test1,test2,test3");
     URL serviceUrl3 = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + "/" + outerService + "?methods=test1,test2");
-    URL registryUrl = URL.valueOf("etcd3://127.0.0.1:2379/org.apache.dubbo.registry.RegistryService");
     URL consumerUrl = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":2018" + "/" + service + "?methods=test1,test2");
     RegistryFactory registryFactory = ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
     EtcdRegistry registry;
@@ -304,6 +308,11 @@ public class EtcdRegistryTest {
 
     @BeforeEach
     public void setUp() {
+        etcdCluster.start();
+        client = Client.builder().endpoints(etcdCluster.getClientEndpoints()).build();
+        List<URI> clientEndPoints = etcdCluster.getClientEndpoints();
+        String ipAddress = clientEndPoints.get(0).getHost() + ":" + clientEndPoints.get(0).getPort();
+        URL registryUrl = URL.valueOf("etcd3://"+ ipAddress + "/org.apache.dubbo.registry.RegistryService");
         registry = (EtcdRegistry) registryFactory.getRegistry(registryUrl);
         Assertions.assertTrue(registry != null);
         if (!registry.isAvailable()) {
