@@ -85,7 +85,7 @@ public interface DynamicConfiguration extends Configuration {
      * @return target configuration mapped to the given key
      */
     default String getConfig(String key) {
-        return getConfig(key, null, 0L);
+        return getConfig(key, null, -1L);
     }
 
     /**
@@ -96,7 +96,7 @@ public interface DynamicConfiguration extends Configuration {
      * @return target configuration mapped to the given key and the given group
      */
     default String getConfig(String key, String group) {
-        return getConfig(key, group, 0L);
+        return getConfig(key, group, -1L);
     }
 
     /**
@@ -117,7 +117,7 @@ public interface DynamicConfiguration extends Configuration {
      * This method are mostly used to get a compound config file, such as a complete dubbo.properties file.
      */
     default String getConfigs(String key, String group) throws IllegalStateException {
-        return getConfigs(key, group, 0L);
+        return getConfigs(key, group, -1L);
     }
 
     /**
