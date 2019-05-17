@@ -39,7 +39,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
 import static org.apache.dubbo.common.constants.RpcConstants.$INVOKE;
-import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_KEY;
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 public class GenericImplFilterTest {
 

@@ -16,15 +16,19 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.remoting.Constants;
 
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.PASSWORD_KEY;
+import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
+import static org.apache.dubbo.common.constants.ConfigConstants.SHUTDOWN_WAIT_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.USERNAME_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.ZOOKEEPER_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.EXTRA_KEYS_KEY;
 
 /**
@@ -195,7 +199,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setUsername(String username) {
-        checkName(Constants.USERNAME_KEY, username);
+        checkName(USERNAME_KEY, username);
         this.username = username;
     }
 
@@ -204,7 +208,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setPassword(String password) {
-        checkLength(Constants.PASSWORD_KEY, password);
+        checkLength(PASSWORD_KEY, password);
         this.password = password;
     }
 
@@ -227,7 +231,7 @@ public class RegistryConfig extends AbstractConfig {
     public void setWait(Integer wait) {
         this.wait = wait;
         if (wait != null && wait > 0) {
-            System.setProperty(Constants.SHUTDOWN_WAIT_KEY, String.valueOf(wait));
+            System.setProperty(SHUTDOWN_WAIT_KEY, String.valueOf(wait));
         }
     }
 
@@ -274,7 +278,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setTransporter(String transporter) {
-        checkName(RemotingConstants.TRANSPORTER_KEY, transporter);
+        checkName(Constants.TRANSPORTER_KEY, transporter);
         /*if(transporter != null && transporter.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(transporter)){
             throw new IllegalStateException("No such transporter type : " + transporter);
         }*/
@@ -286,7 +290,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setServer(String server) {
-        checkName(RemotingConstants.SERVER_KEY, server);
+        checkName(Constants.SERVER_KEY, server);
         /*if(server != null && server.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(server)){
             throw new IllegalStateException("No such server type : " + server);
         }*/
@@ -298,7 +302,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setClient(String client) {
-        checkName(RemotingConstants.CLIENT_KEY, client);
+        checkName(Constants.CLIENT_KEY, client);
         /*if(client != null && client.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(client)){
             throw new IllegalStateException("No such client type : " + client);
         }*/
@@ -408,15 +412,15 @@ public class RegistryConfig extends AbstractConfig {
         if (!isValid()) {
             return false;
         }
-        return Constants.ZOOKEEPER_PROTOCOL.equals(getProtocol())
-                || getAddress().startsWith(Constants.ZOOKEEPER_PROTOCOL);
+        return ZOOKEEPER_PROTOCOL.equals(getProtocol())
+                || getAddress().startsWith(ZOOKEEPER_PROTOCOL);
     }
 
     @Override
     public void refresh() {
         super.refresh();
         if (StringUtils.isNotEmpty(this.getId())) {
-            this.setPrefix(Constants.REGISTRIES_SUFFIX);
+            this.setPrefix(REGISTRIES_SUFFIX);
             super.refresh();
         }
     }

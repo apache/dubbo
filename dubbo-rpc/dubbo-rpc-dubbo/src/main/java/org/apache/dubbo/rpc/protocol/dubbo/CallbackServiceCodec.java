@@ -40,13 +40,13 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.CALLBACK_SERVICE_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.CALLBACK_SERVICE_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.CALLBACK_INSTANCES_LIMIT_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.DEFAULT_CALLBACK_INSTANCES;
-import static org.apache.dubbo.common.constants.RpcConstants.CALLBACK_SERVICE_PROXY_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.IS_CALLBACK_SERVICE;
-import static org.apache.dubbo.common.constants.RpcConstants.CHANNEL_CALLBACK_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.IS_SERVER_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.CALLBACK_SERVICE_PROXY_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.IS_CALLBACK_SERVICE;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.CHANNEL_CALLBACK_KEY;
+import static org.apache.dubbo.rpc.Constants.IS_SERVER_KEY;
 
 /**
  * callback service helper

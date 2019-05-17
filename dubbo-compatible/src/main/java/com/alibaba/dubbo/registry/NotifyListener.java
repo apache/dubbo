@@ -42,4 +42,20 @@ public interface NotifyListener {
             }
         }
     }
+
+    class ReverseCompatibleNotifyListener implements org.apache.dubbo.registry.NotifyListener {
+
+        private NotifyListener listener;
+
+        public ReverseCompatibleNotifyListener(NotifyListener listener) {
+            this.listener = listener;
+        }
+
+        @Override
+        public void notify(List<org.apache.dubbo.common.URL> urls) {
+            if (listener != null) {
+                listener.notify(urls.stream().map(url -> new URL(url)).collect(Collectors.toList()));
+            }
+        }
+    }
 }
