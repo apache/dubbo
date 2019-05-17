@@ -14,17 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.zookeeper;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Adaptive;
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.remoting.Constants;
+package org.apache.dubbo.rpc.protocol.hessian;
 
-@SPI("curator")
-public interface ZookeeperTransporter {
+/**
+ *
+ */
+public interface Constants {
 
-    @Adaptive({Constants.CLIENT_KEY, Constants.TRANSPORTER_KEY})
-    ZookeeperClient connect(URL url);
+    String HESSIAN2_REQUEST_KEY = "hessian2.request";
+
+    boolean DEFAULT_HESSIAN2_REQUEST = false;
+
+    String HESSIAN_OVERLOAD_METHOD_KEY = "hessian.overload.method";
+
+    boolean DEFAULT_HESSIAN_OVERLOAD_METHOD = false;
+
+    String DEFAULT_HTTP_CLIENT = "jdk";
 
 }

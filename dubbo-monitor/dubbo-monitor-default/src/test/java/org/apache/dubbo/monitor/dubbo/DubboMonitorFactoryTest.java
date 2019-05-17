@@ -34,7 +34,7 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import static org.apache.dubbo.common.constants.RpcConstants.REFERENCE_FILTER_KEY;
+import static org.apache.dubbo.rpc.Constants.REFERENCE_FILTER_KEY;
 
 public class DubboMonitorFactoryTest {
     private DubboMonitorFactory dubboMonitorFactory;

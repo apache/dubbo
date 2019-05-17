@@ -19,7 +19,6 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.bytecode.Wrapper;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -30,6 +29,7 @@ import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.metadata.integration.MetadataReportService;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
@@ -66,13 +66,13 @@ import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SEMICOLON_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.ConfigConstants.CLUSTER_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_IP_TO_REGISTRY;
+import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.common.constants.ConfigConstants.REFER_KEY;
 import static org.apache.dubbo.common.constants.ConfigConstants.REGISTER_IP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
-import static org.apache.dubbo.common.constants.RpcConstants.LOCAL_PROTOCOL;
+import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
 
 /**
@@ -579,7 +579,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     }
 
     public void setClient(String client) {
-        checkName(RemotingConstants.CLIENT_KEY, client);
+        checkName(Constants.CLIENT_KEY, client);
         this.client = client;
     }
 

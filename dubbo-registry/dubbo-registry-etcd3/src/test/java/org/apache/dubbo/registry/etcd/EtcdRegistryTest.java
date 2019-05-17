@@ -51,12 +51,12 @@
 package org.apache.dubbo.registry.etcd;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
+import org.apache.dubbo.remoting.Constants;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -106,7 +106,7 @@ public class EtcdRegistryTest {
             CLASSIFIER_KEY, ANY_VALUE,
             CATEGORY_KEY, PROVIDERS_CATEGORY + "," + CONSUMERS_CATEGORY + "," + ROUTERS_CATEGORY + "," + CONFIGURATORS_CATEGORY,
             ENABLED_KEY, ANY_VALUE,
-            RemotingConstants.CHECK_KEY, String.valueOf(false));
+            Constants.CHECK_KEY, String.valueOf(false));
 
     @Test
     public void test_register() {

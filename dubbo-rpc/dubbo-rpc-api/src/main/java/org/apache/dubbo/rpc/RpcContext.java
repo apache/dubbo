@@ -38,8 +38,8 @@ import java.util.concurrent.TimeoutException;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.ASYNC_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.RETURN_KEY;
+import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
+import static org.apache.dubbo.rpc.Constants.RETURN_KEY;
 
 
 /**

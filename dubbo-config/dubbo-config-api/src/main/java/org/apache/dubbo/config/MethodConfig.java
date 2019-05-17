@@ -25,12 +25,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.apache.dubbo.common.constants.ConfigConstants.ON_INVOKE_INSTANCE_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.ON_INVOKE_METHOD_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.ON_RETURN_INSTANCE_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.ON_RETURN_METHOD_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.ON_THROW_INSTANCE_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.ON_THROW_METHOD_KEY;
+import static org.apache.dubbo.config.Constants.ON_INVOKE_INSTANCE_KEY;
+import static org.apache.dubbo.config.Constants.ON_INVOKE_METHOD_KEY;
+import static org.apache.dubbo.config.Constants.ON_RETURN_INSTANCE_KEY;
+import static org.apache.dubbo.config.Constants.ON_RETURN_METHOD_KEY;
+import static org.apache.dubbo.config.Constants.ON_THROW_INSTANCE_KEY;
+import static org.apache.dubbo.config.Constants.ON_THROW_METHOD_KEY;
 
 /**
  * The method configuration

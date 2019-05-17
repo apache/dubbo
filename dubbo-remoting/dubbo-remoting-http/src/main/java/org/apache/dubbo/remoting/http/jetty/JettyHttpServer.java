@@ -17,10 +17,10 @@
 package org.apache.dubbo.remoting.http.jetty;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.http.HttpHandler;
 import org.apache.dubbo.remoting.http.servlet.DispatcherServlet;
 import org.apache.dubbo.remoting.http.servlet.ServletManager;
@@ -54,7 +54,7 @@ public class JettyHttpServer extends AbstractHttpServer {
         Log.setLog(new StdErrLog());
         Log.getLog().setDebugEnabled(false);
 
-        DispatcherServlet.addHttpHandler(url.getParameter(RemotingConstants.BIND_PORT_KEY, url.getPort()), handler);
+        DispatcherServlet.addHttpHandler(url.getParameter(Constants.BIND_PORT_KEY, url.getPort()), handler);
 
         int threads = url.getParameter(THREADS_KEY, DEFAULT_THREADS);
         QueuedThreadPool threadPool = new QueuedThreadPool();
@@ -66,11 +66,11 @@ public class JettyHttpServer extends AbstractHttpServer {
 
         ServerConnector connector = new ServerConnector(server);
 
-        String bindIp = url.getParameter(RemotingConstants.BIND_IP_KEY, url.getHost());
+        String bindIp = url.getParameter(Constants.BIND_IP_KEY, url.getHost());
         if (!url.isAnyHost() && NetUtils.isValidLocalHost(bindIp)) {
             connector.setHost(bindIp);
         }
-        connector.setPort(url.getParameter(RemotingConstants.BIND_PORT_KEY, url.getPort()));
+        connector.setPort(url.getParameter(Constants.BIND_PORT_KEY, url.getPort()));
 
         server.addConnector(connector);
 
@@ -83,12 +83,12 @@ public class JettyHttpServer extends AbstractHttpServer {
         // TODO Context.SESSIONS is the best option here? (In jetty 9.x, it becomes ServletContextHandler.SESSIONS)
         ServletContextHandler context = new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
         context.setServletHandler(servletHandler);
-        ServletManager.getInstance().addServletContext(url.getParameter(RemotingConstants.BIND_PORT_KEY, url.getPort()), context.getServletContext());
+        ServletManager.getInstance().addServletContext(url.getParameter(Constants.BIND_PORT_KEY, url.getPort()), context.getServletContext());
 
         try {
             server.start();
         } catch (Exception e) {
-            throw new IllegalStateException("Failed to start jetty server on " + url.getParameter(RemotingConstants.BIND_IP_KEY) + ":" + url.getParameter(RemotingConstants.BIND_PORT_KEY) + ", cause: "
+            throw new IllegalStateException("Failed to start jetty server on " + url.getParameter(Constants.BIND_IP_KEY) + ":" + url.getParameter(Constants.BIND_PORT_KEY) + ", cause: "
                 + e.getMessage(), e);
         }
     }
@@ -98,7 +98,7 @@ public class JettyHttpServer extends AbstractHttpServer {
         super.close();
 
         //
-        ServletManager.getInstance().removeServletContext(url.getParameter(RemotingConstants.BIND_PORT_KEY, url.getPort()));
+        ServletManager.getInstance().removeServletContext(url.getParameter(Constants.BIND_PORT_KEY, url.getPort()));
 
         if (server != null) {
             try {

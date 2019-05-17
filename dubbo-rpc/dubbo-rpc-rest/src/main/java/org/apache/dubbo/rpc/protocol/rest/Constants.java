@@ -14,17 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.zookeeper;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Adaptive;
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.remoting.Constants;
+package org.apache.dubbo.rpc.protocol.rest;
 
-@SPI("curator")
-public interface ZookeeperTransporter {
+/**
+ *
+ */
+public interface Constants {
+    String KEEP_ALIVE_KEY = "keepalive";
 
-    @Adaptive({Constants.CLIENT_KEY, Constants.TRANSPORTER_KEY})
-    ZookeeperClient connect(URL url);
+    boolean DEFAULT_KEEP_ALIVE = true;
 
+    String EXTENSION_KEY = "extension";
 }

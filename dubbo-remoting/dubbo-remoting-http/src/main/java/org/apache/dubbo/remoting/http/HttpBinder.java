@@ -17,9 +17,9 @@
 package org.apache.dubbo.remoting.http;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.remoting.Constants;
 
 /**
  * HttpBinder
@@ -33,7 +33,7 @@ public interface HttpBinder {
      * @param url server url.
      * @return server.
      */
-    @Adaptive({RemotingConstants.SERVER_KEY})
+    @Adaptive({Constants.SERVER_KEY})
     HttpServer bind(URL url, HttpHandler handler);
 
 }

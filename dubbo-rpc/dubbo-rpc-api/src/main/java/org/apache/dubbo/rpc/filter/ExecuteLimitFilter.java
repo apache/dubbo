@@ -26,7 +26,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcStatus;
 
-import static org.apache.dubbo.common.constants.RpcConstants.EXECUTES_KEY;
+import static org.apache.dubbo.rpc.Constants.EXECUTES_KEY;
 
 
 /**
