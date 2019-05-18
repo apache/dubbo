@@ -205,7 +205,7 @@
                 <doclint>none</doclint>
             </properties>
         </profile>
-        <profile>
+<!--         <profile>
             <id>checkstyle</id>
             <activation>
                 <jdk>[1.8,)</jdk>
@@ -243,7 +243,7 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
+        </profile> -->
         <profile>
             <id>release</id>
             <properties>
@@ -471,7 +471,7 @@
                     <arguments>${arguments}</arguments>
                 </configuration>
             </plugin>
-            <plugin>
+<!--             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>flatten-maven-plugin</artifactId>
                 <version>${maven_flatten_version}</version>
@@ -495,7 +495,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin> -->
         </plugins>
 
         <pluginManagement>
