@@ -37,7 +37,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.RegistryConstants.SESSION_TIMEOUT_KEY;
 
-@Disabled
+//FIXME: waiting for embedded Nacos suport, then we can open the switch.
+@Disabled("https://github.com/alibaba/nacos/issues/1188")
 public class NacosMetadataReportTest {
     private static final String TEST_SERVICE = "org.apache.dubbo.metadata.store.nacos.NacosMetadata4TstService";
     private NacosMetadataReport nacosMetadataReport;
