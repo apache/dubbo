@@ -17,7 +17,6 @@
 package org.apache.dubbo.remoting.http.tomcat;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.http.HttpHandler;
@@ -33,6 +32,7 @@ import java.io.File;
 
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREADS;
+import static org.apache.dubbo.remoting.Constants.ACCEPTS_KEY;
 
 public class TomcatHttpServer extends AbstractHttpServer {
 
@@ -57,7 +57,7 @@ public class TomcatHttpServer extends AbstractHttpServer {
 //                "minSpareThreads", String.valueOf(url.getParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS)));
 
         tomcat.getConnector().setProperty(
-                "maxConnections", String.valueOf(url.getParameter(RemotingConstants.ACCEPTS_KEY, -1)));
+                "maxConnections", String.valueOf(url.getParameter(ACCEPTS_KEY, -1)));
 
         tomcat.getConnector().setProperty("URIEncoding", "UTF-8");
         tomcat.getConnector().setProperty("connectionTimeout", "60000");

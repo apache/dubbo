@@ -16,11 +16,10 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.AtomicPositiveInteger;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
@@ -46,6 +45,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
 /**
  * DubboInvoker
@@ -67,7 +67,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
     }
 
     public DubboInvoker(Class<T> serviceType, URL url, ExchangeClient[] clients, Set<Invoker<?>> invokers) {
-        super(serviceType, url, new String[]{INTERFACE_KEY, GROUP_KEY, Constants.TOKEN_KEY, TIMEOUT_KEY});
+        super(serviceType, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY, TIMEOUT_KEY});
         this.clients = clients;
         // get version.
         this.version = url.getParameter(VERSION_KEY, "0.0.0");
@@ -93,7 +93,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
             boolean isOneway = RpcUtils.isOneway(getUrl(), invocation);
             int timeout = getUrl().getMethodParameter(methodName, TIMEOUT_KEY, DEFAULT_TIMEOUT);
             if (isOneway) {
-                boolean isSent = getUrl().getMethodParameter(methodName, RemotingConstants.SENT_KEY, false);
+                boolean isSent = getUrl().getMethodParameter(methodName, Constants.SENT_KEY, false);
                 currentClient.send(inv, isSent);
                 RpcContext.getContext().setFuture(null);
                 return new RpcResult();
@@ -128,7 +128,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
             return false;
         }
         for (ExchangeClient client : clients) {
-            if (client.isConnected() && !client.hasAttribute(RemotingConstants.CHANNEL_ATTRIBUTE_READONLY_KEY)) {
+            if (client.isConnected() && !client.hasAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY)) {
                 //cannot write == not Available ?
                 return true;
             }

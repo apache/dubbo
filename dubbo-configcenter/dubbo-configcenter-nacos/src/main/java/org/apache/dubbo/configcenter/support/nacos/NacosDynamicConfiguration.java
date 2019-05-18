@@ -46,10 +46,10 @@ import static com.alibaba.nacos.api.PropertyKeyConst.NAMESPACE;
 import static com.alibaba.nacos.api.PropertyKeyConst.SECRET_KEY;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
 import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG_NAME;
-import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
-import static org.apache.dubbo.common.Constants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPERATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PROPERTIES_CHAR_SEPERATOR;
+import static org.apache.dubbo.common.constants.ConfigConstants.CONFIG_NAMESPACE_KEY;
+import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 
 /**
  * The nacos implementation of {@link DynamicConfiguration}

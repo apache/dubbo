@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.rpc.protocol.http;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.RpcContext;
 
@@ -27,6 +26,8 @@ import org.springframework.remoting.support.RemoteInvocation;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 public class HttpRemoteInvocation extends RemoteInvocation {
 
@@ -44,9 +45,9 @@ public class HttpRemoteInvocation extends RemoteInvocation {
         RpcContext context = RpcContext.getContext();
         context.setAttachments((Map<String, String>) getAttribute(DUBBO_ATTACHMENTS_ATTR_NAME));
 
-        String generic = (String) getAttribute(Constants.GENERIC_KEY);
+        String generic = (String) getAttribute(GENERIC_KEY);
         if (StringUtils.isNotEmpty(generic)) {
-            context.setAttachment(Constants.GENERIC_KEY, generic);
+            context.setAttachment(GENERIC_KEY, generic);
         }
         try {
             return super.invoke(targetObject);

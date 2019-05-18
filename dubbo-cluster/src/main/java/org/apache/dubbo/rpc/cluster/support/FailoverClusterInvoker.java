@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -34,6 +33,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_RETRIES;
+import static org.apache.dubbo.rpc.cluster.Constants.RETRIES_KEY;
 
 /**
  * When invoke fails, log the initial error and retry other invokers (retry n times, which means at most n different invokers will be invoked)
@@ -56,7 +58,7 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
         List<Invoker<T>> copyInvokers = invokers;
         checkInvokers(copyInvokers, invocation);
         String methodName = RpcUtils.getMethodName(invocation);
-        int len = getUrl().getMethodParameter(methodName, Constants.RETRIES_KEY, Constants.DEFAULT_RETRIES) + 1;
+        int len = getUrl().getMethodParameter(methodName, RETRIES_KEY, DEFAULT_RETRIES) + 1;
         if (len <= 0) {
             len = 1;
         }

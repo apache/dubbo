@@ -17,24 +17,27 @@
 
 package org.apache.dubbo.configcenter.support.nacos;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.ConfigurationListener;
-import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
+import static org.apache.dubbo.common.constants.RegistryConstants.SESSION_TIMEOUT_KEY;
+
 /**
  * Unit test for nacos config center support
  */
-@Disabled
+//FIXME: waiting for embedded Nacos suport, then we can open the switch.
+@Disabled("https://github.com/alibaba/nacos/issues/1188")
 public class NacosDynamicConfigurationTest {
 
     private static NacosDynamicConfiguration config;
@@ -98,7 +101,7 @@ public class NacosDynamicConfigurationTest {
         String urlForDubbo = "nacos://" + "127.0.0.1:8848" + "/org.apache.dubbo.nacos.testService";
         // timeout in 15 seconds.
         URL url = URL.valueOf(urlForDubbo)
-                .addParameter(Constants.SESSION_TIMEOUT_KEY, 15000);
+                .addParameter(SESSION_TIMEOUT_KEY, 15000);
         config = new NacosDynamicConfiguration(url);
     }
 

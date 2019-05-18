@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol.injvm;
 
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.rpc.Exporter;
@@ -35,6 +34,11 @@ import java.util.List;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.SCOPE_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.SCOPE_LOCAL;
+import static org.apache.dubbo.common.constants.ConfigConstants.SCOPE_REMOTE;
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
+import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -92,16 +96,16 @@ public class InjvmProtocolTest {
                 .addParameter(VERSION_KEY, "*");
         assertTrue(InjvmProtocol.getInjvmProtocol().isInjvmRefer(url));
 
-        url = URL.valueOf("fake://127.0.0.1/TestService").addParameter(Constants.SCOPE_KEY, Constants.SCOPE_LOCAL);
+        url = URL.valueOf("fake://127.0.0.1/TestService").addParameter(SCOPE_KEY, SCOPE_LOCAL);
         assertTrue(InjvmProtocol.getInjvmProtocol().isInjvmRefer(url));
 
-        url = URL.valueOf("fake://127.0.0.1/TestService").addParameter(Constants.LOCAL_PROTOCOL,true);
+        url = URL.valueOf("fake://127.0.0.1/TestService").addParameter(LOCAL_PROTOCOL,true);
         assertTrue(InjvmProtocol.getInjvmProtocol().isInjvmRefer(url));
 
-        url = URL.valueOf("fake://127.0.0.1/TestService").addParameter(Constants.SCOPE_KEY, Constants.SCOPE_REMOTE);
+        url = URL.valueOf("fake://127.0.0.1/TestService").addParameter(SCOPE_KEY, SCOPE_REMOTE);
         assertFalse(InjvmProtocol.getInjvmProtocol().isInjvmRefer(url));
 
-        url = URL.valueOf("fake://127.0.0.1/TestService").addParameter(Constants.GENERIC_KEY, true);
+        url = URL.valueOf("fake://127.0.0.1/TestService").addParameter(GENERIC_KEY, true);
         assertFalse(InjvmProtocol.getInjvmProtocol().isInjvmRefer(url));
 
     }

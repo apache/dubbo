@@ -22,6 +22,7 @@ import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
@@ -71,7 +72,7 @@ public class HeartbeatHandlerTest {
 
         // Let the client not reply to the heartbeat, and turn off automatic reconnect to simulate the client dropped.
         serverURL = serverURL.addParameter(RemotingConstants.HEARTBEAT_KEY, 600 * 1000);
-        serverURL = serverURL.addParameter(RemotingConstants.RECONNECT_KEY, false);
+        serverURL = serverURL.addParameter(Constants.RECONNECT_KEY, false);
 
         client = Exchangers.connect(serverURL);
         Thread.sleep(10000);

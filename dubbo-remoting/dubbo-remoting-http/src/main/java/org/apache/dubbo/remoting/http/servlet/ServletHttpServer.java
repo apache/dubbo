@@ -17,7 +17,7 @@
 package org.apache.dubbo.remoting.http.servlet;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.http.HttpHandler;
 import org.apache.dubbo.remoting.http.support.AbstractHttpServer;
 
@@ -25,7 +25,7 @@ public class ServletHttpServer extends AbstractHttpServer {
 
     public ServletHttpServer(URL url, HttpHandler handler) {
         super(url, handler);
-        DispatcherServlet.addHttpHandler(url.getParameter(RemotingConstants.BIND_PORT_KEY, 8080), handler);
+        DispatcherServlet.addHttpHandler(url.getParameter(Constants.BIND_PORT_KEY, 8080), handler);
     }
 
 }

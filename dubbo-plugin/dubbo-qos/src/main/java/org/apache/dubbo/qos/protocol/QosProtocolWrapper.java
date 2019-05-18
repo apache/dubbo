@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.qos.protocol;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -29,9 +28,10 @@ import org.apache.dubbo.rpc.RpcException;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.dubbo.common.Constants.ACCEPT_FOREIGN_IP;
-import static org.apache.dubbo.common.Constants.QOS_ENABLE;
-import static org.apache.dubbo.common.Constants.QOS_PORT;
+import static org.apache.dubbo.common.constants.ConfigConstants.ACCEPT_FOREIGN_IP;
+import static org.apache.dubbo.common.constants.ConfigConstants.QOS_ENABLE;
+import static org.apache.dubbo.common.constants.ConfigConstants.QOS_PORT;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
 
 
 public class QosProtocolWrapper implements Protocol {
@@ -56,7 +56,7 @@ public class QosProtocolWrapper implements Protocol {
 
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        if (Constants.REGISTRY_PROTOCOL.equals(invoker.getUrl().getProtocol())) {
+        if (REGISTRY_PROTOCOL.equals(invoker.getUrl().getProtocol())) {
             startQosServer(invoker.getUrl());
             return protocol.export(invoker);
         }
@@ -65,7 +65,7 @@ public class QosProtocolWrapper implements Protocol {
 
     @Override
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
-        if (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) {
+        if (REGISTRY_PROTOCOL.equals(url.getProtocol())) {
             startQosServer(url);
             return protocol.refer(type, url);
         }

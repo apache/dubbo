@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.filter;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.service.GenericService;
@@ -33,6 +32,9 @@ import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.apache.dubbo.common.constants.RpcConstants.$INVOKE;
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_NATIVE_JAVA;
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 public class GenericFilterTest {
     GenericFilter genericFilter = new GenericFilter();
@@ -46,7 +48,7 @@ public class GenericFilterTest {
         person.put("name", "dubbo");
         person.put("age", 10);
 
-        RpcInvocation invocation = new RpcInvocation(Constants.$INVOKE, genericInvoke.getParameterTypes(),
+        RpcInvocation invocation = new RpcInvocation($INVOKE, genericInvoke.getParameterTypes(),
                 new Object[]{"getPerson", new String[]{Person.class.getCanonicalName()}, new Object[]{person}});
 
         URL url = URL.valueOf("test://test:11/org.apache.dubbo.rpc.support.DemoService?" +
@@ -72,9 +74,9 @@ public class GenericFilterTest {
             person.put("name", "dubbo");
             person.put("age", 10);
 
-            RpcInvocation invocation = new RpcInvocation(Constants.$INVOKE, genericInvoke.getParameterTypes(),
+            RpcInvocation invocation = new RpcInvocation($INVOKE, genericInvoke.getParameterTypes(),
                     new Object[]{"getPerson", new String[]{Person.class.getCanonicalName()}, new Object[]{person}});
-            invocation.setAttachment(Constants.GENERIC_KEY, Constants.GENERIC_SERIALIZATION_NATIVE_JAVA);
+            invocation.setAttachment(GENERIC_KEY, GENERIC_SERIALIZATION_NATIVE_JAVA);
 
             URL url = URL.valueOf("test://test:11/org.apache.dubbo.rpc.support.DemoService?" +
                     "accesslog=true&group=dubbo&version=1.1");
@@ -120,7 +122,7 @@ public class GenericFilterTest {
         person.put("name", "dubbo");
         person.put("age", 10);
 
-        RpcInvocation invocation = new RpcInvocation(Constants.$INVOKE, genericInvoke.getParameterTypes()
+        RpcInvocation invocation = new RpcInvocation($INVOKE, genericInvoke.getParameterTypes()
                 , new Object[]{"getPerson", new String[]{Person.class.getCanonicalName()}});
 
         URL url = URL.valueOf("test://test:11/org.apache.dubbo.rpc.support.DemoService?" +

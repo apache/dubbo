@@ -16,14 +16,18 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.InvokerListener;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
+import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_STICKY_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.ConfigConstants.LAZY_CONNECT_KEY;
+import static org.apache.dubbo.rpc.Constants.INVOKER_LISTENER_KEY;
+import static org.apache.dubbo.rpc.Constants.REFERENCE_FILTER_KEY;
+import static org.apache.dubbo.rpc.Constants.STUB_EVENT_KEY;
 
 /**
  * AbstractConsumerConfig
@@ -136,13 +140,13 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     }
 
     @Override
-    @Parameter(key = Constants.REFERENCE_FILTER_KEY, append = true)
+    @Parameter(key = REFERENCE_FILTER_KEY, append = true)
     public String getFilter() {
         return super.getFilter();
     }
 
     @Override
-    @Parameter(key = Constants.INVOKER_LISTENER_KEY, append = true)
+    @Parameter(key = INVOKER_LISTENER_KEY, append = true)
     public String getListener() {
         return super.getListener();
     }
@@ -153,7 +157,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         super.setListener(listener);
     }
 
-    @Parameter(key = Constants.LAZY_CONNECT_KEY)
+    @Parameter(key = LAZY_CONNECT_KEY)
     public Boolean getLazy() {
         return lazy;
     }
@@ -178,12 +182,12 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         super.setOndisconnect(ondisconnect);
     }
 
-    @Parameter(key = Constants.STUB_EVENT_KEY)
+    @Parameter(key = STUB_EVENT_KEY)
     public Boolean getStubevent() {
         return stubevent;
     }
 
-    @Parameter(key = RemotingConstants.RECONNECT_KEY)
+    @Parameter(key = Constants.RECONNECT_KEY)
     public String getReconnect() {
         return reconnect;
     }
@@ -192,7 +196,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         this.reconnect = reconnect;
     }
 
-    @Parameter(key = Constants.CLUSTER_STICKY_KEY)
+    @Parameter(key = CLUSTER_STICKY_KEY)
     public Boolean getSticky() {
         return sticky;
     }

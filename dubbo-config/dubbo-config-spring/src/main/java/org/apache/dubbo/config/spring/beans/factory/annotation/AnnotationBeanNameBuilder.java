@@ -23,9 +23,9 @@ import org.apache.dubbo.registry.Registry;
 
 import org.springframework.core.env.Environment;
 
-import static org.apache.dubbo.common.Constants.CONSUMERS_CATEGORY;
-import static org.apache.dubbo.common.Constants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.config.spring.util.AnnotationUtils.resolveInterfaceName;
 import static org.springframework.util.StringUtils.arrayToCommaDelimitedString;
 import static org.springframework.util.StringUtils.hasText;

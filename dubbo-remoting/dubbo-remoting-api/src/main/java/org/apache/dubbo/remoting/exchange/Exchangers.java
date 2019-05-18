@@ -18,9 +18,9 @@ package org.apache.dubbo.remoting.exchange;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerDispatcher;
 import org.apache.dubbo.remoting.exchange.support.Replier;
@@ -66,7 +66,7 @@ public class Exchangers {
         if (handler == null) {
             throw new IllegalArgumentException("handler == null");
         }
-        url = url.addParameterIfAbsent(RemotingConstants.CODEC_KEY, "exchange");
+        url = url.addParameterIfAbsent(Constants.CODEC_KEY, "exchange");
         return getExchanger(url).bind(url, handler);
     }
 
@@ -105,12 +105,12 @@ public class Exchangers {
         if (handler == null) {
             throw new IllegalArgumentException("handler == null");
         }
-        url = url.addParameterIfAbsent(RemotingConstants.CODEC_KEY, "exchange");
+        url = url.addParameterIfAbsent(Constants.CODEC_KEY, "exchange");
         return getExchanger(url).connect(url, handler);
     }
 
     public static Exchanger getExchanger(URL url) {
-        String type = url.getParameter(RemotingConstants.EXCHANGER_KEY, RemotingConstants.DEFAULT_EXCHANGER);
+        String type = url.getParameter(Constants.EXCHANGER_KEY, Constants.DEFAULT_EXCHANGER);
         return getExchanger(type);
     }
 

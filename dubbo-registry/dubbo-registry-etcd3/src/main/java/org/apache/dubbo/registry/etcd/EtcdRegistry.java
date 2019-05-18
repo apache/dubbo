@@ -34,7 +34,6 @@
 package org.apache.dubbo.registry.etcd;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
@@ -61,6 +60,15 @@ import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
+import static org.apache.dubbo.remoting.Constants.CHECK_KEY;
 
 
 /**
@@ -120,7 +128,7 @@ public class EtcdRegistry extends FailbackRegistry {
     public void doRegister(URL url) {
         try {
             String path = toUrlPath(url);
-            if (url.getParameter(Constants.DYNAMIC_KEY, true)) {
+            if (url.getParameter(DYNAMIC_KEY, true)) {
                 etcdClient.createEphemeral(path);
                 return;
             }
@@ -185,7 +193,7 @@ public class EtcdRegistry extends FailbackRegistry {
                                                  *  eg: /dubbo/interface, /dubbo/interface and so on.
                                                  */
                                                 subscribe(url.setPath(child).addParameters(INTERFACE_KEY, child,
-                                                        RemotingConstants.CHECK_KEY, String.valueOf(false)), listener);
+                                                        CHECK_KEY, String.valueOf(false)), listener);
                                             }
                                         }
                                     });
@@ -202,7 +210,7 @@ public class EtcdRegistry extends FailbackRegistry {
                     service = URL.decode(service);
                     anyServices.add(service);
                     subscribe(url.setPath(service).addParameters(INTERFACE_KEY, service,
-                            RemotingConstants.CHECK_KEY, String.valueOf(false)), listener);
+                            CHECK_KEY, String.valueOf(false)), listener);
                 }
             } else {
                 List<URL> urls = new ArrayList<>();
@@ -304,11 +312,10 @@ public class EtcdRegistry extends FailbackRegistry {
 
     protected String[] toCategoriesPath(URL url) {
         String[] categories;
-        if (ANY_VALUE.equals(url.getParameter(Constants.CATEGORY_KEY))) {
-            categories = new String[]{Constants.PROVIDERS_CATEGORY, Constants.CONSUMERS_CATEGORY,
-                    Constants.ROUTERS_CATEGORY, Constants.CONFIGURATORS_CATEGORY};
+        if (ANY_VALUE.equals(url.getParameter(CATEGORY_KEY))) {
+            categories = new String[]{PROVIDERS_CATEGORY, CONSUMERS_CATEGORY, ROUTERS_CATEGORY, CONFIGURATORS_CATEGORY};
         } else {
-            categories = url.getParameter(Constants.CATEGORY_KEY, new String[]{Constants.DEFAULT_CATEGORY});
+            categories = url.getParameter(CATEGORY_KEY, new String[]{DEFAULT_CATEGORY});
         }
         String[] paths = new String[categories.length];
         for (int i = 0; i < categories.length; i++) {
@@ -318,7 +325,7 @@ public class EtcdRegistry extends FailbackRegistry {
     }
 
     protected String toCategoryPath(URL url) {
-        return toServicePath(url) + PATH_SEPARATOR + url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY);
+        return toServicePath(url) + PATH_SEPARATOR + url.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY);
     }
 
     protected String toUrlPath(URL url) {
@@ -361,7 +368,7 @@ public class EtcdRegistry extends FailbackRegistry {
         if (urls == null || urls.isEmpty()) {
             int i = path.lastIndexOf('/');
             String category = i < 0 ? path : path.substring(i + 1);
-            URL empty = consumer.setProtocol(Constants.EMPTY_PROTOCOL).addParameter(Constants.CATEGORY_KEY, category);
+            URL empty = consumer.setProtocol(EMPTY_PROTOCOL).addParameter(CATEGORY_KEY, category);
             urls.add(empty);
         }
         return urls;

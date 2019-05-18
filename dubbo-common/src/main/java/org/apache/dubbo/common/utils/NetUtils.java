@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
@@ -37,9 +36,10 @@ import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
 
-import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
+import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_IP_TO_BIND;
 
 /**
  * IP and Port Helper for RPC
@@ -208,7 +208,7 @@ public class NetUtils {
     }
 
     public static String getIpByConfig() {
-        String configIp = ConfigurationUtils.getProperty(Constants.DUBBO_IP_TO_BIND);
+        String configIp = ConfigurationUtils.getProperty(DUBBO_IP_TO_BIND);
         if (configIp != null) {
             return configIp;
         }
@@ -272,7 +272,7 @@ public class NetUtils {
                             Optional<InetAddress> addressOp = toValidAddress(addresses.nextElement());
                             if (addressOp.isPresent()) {
                                 try {
-                                    if (addressOp.get().isReachable(100)) {
+                                    if(addressOp.get().isReachable(100)){
                                         return addressOp.get();
                                     }
                                 } catch (IOException e) {
@@ -410,7 +410,7 @@ public class NetUtils {
             throw new IllegalArgumentException("Illegal Argument pattern or hostName. Pattern:" + pattern + ", Host:" + host);
         }
         pattern = pattern.trim();
-        if ("*.*.*.*".equals(pattern) || "*".equals(pattern)) {
+        if (pattern.equals("*.*.*.*") || pattern.equals("*")) {
             return true;
         }
 
@@ -446,7 +446,7 @@ public class NetUtils {
             }
         }
         for (int i = 0; i < mask.length; i++) {
-            if ("*".equals(mask[i]) || mask[i].equals(ipAddress[i])) {
+            if (mask[i].equals("*") || mask[i].equals(ipAddress[i])) {
                 continue;
             } else if (mask[i].contains("-")) {
                 String[] rangeNumStrs = mask[i].split("-");
