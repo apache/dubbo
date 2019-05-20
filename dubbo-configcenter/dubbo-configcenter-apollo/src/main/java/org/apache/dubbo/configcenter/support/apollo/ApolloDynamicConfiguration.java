@@ -45,9 +45,9 @@ import java.util.stream.Collectors;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
-import static org.apache.dubbo.common.constants.ConfigConstants.CONFIG_CHECK_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.CONFIG_CLUSTER_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.CONFIG_NAMESPACE_KEY;
+import static org.apache.dubbo.configcenter.Constants.CONFIG_CHECK_KEY;
+import static org.apache.dubbo.configcenter.Constants.CONFIG_CLUSTER_KEY;
+import static org.apache.dubbo.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 
 /**
  * Apollo implementation, https://github.com/ctripcorp/apollo

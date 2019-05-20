@@ -75,13 +75,13 @@ import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_IP_TO_BIND
 import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_BIND;
 import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_REGISTRY;
-import static org.apache.dubbo.common.constants.ConfigConstants.EXPORT_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.EXPORT_KEY;
 import static org.apache.dubbo.config.Constants.MULTICAST;
 import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
-import static org.apache.dubbo.common.constants.ConfigConstants.SCOPE_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.SCOPE_LOCAL;
+import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
+import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 import static org.apache.dubbo.config.Constants.SCOPE_NONE;
-import static org.apache.dubbo.common.constants.ConfigConstants.SCOPE_REMOTE;
+import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;

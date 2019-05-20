@@ -31,7 +31,7 @@ import java.util.Arrays;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.config.Constants.CONTEXTPATH_KEY;
 import static org.apache.dubbo.config.Constants.STATUS_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.TELNET;
+import static org.apache.dubbo.remoting.Constants.TELNET;
 
 /**
  * The service provider default configuration

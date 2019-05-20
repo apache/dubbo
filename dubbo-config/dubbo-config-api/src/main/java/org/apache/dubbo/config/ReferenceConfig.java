@@ -67,8 +67,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.SEMICOLON_SPLIT_
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.ConfigConstants.CLUSTER_KEY;
 import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
-import static org.apache.dubbo.common.constants.ConfigConstants.REFER_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.REGISTER_IP_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REFER_KEY;
+import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;

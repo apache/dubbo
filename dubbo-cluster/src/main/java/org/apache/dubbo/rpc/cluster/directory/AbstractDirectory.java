@@ -31,7 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.ConfigConstants.REFER_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REFER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
 
