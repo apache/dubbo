@@ -14,11 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.configcenter;
+package org.apache.dubbo.event;
 
-public interface Constants {
-    String CONFIG_CLUSTER_KEY = "config.cluster";
-    String CONFIG_NAMESPACE_KEY = "config.namespace";
-    String CONFIG_GROUP_KEY = "config.group";
-    String CONFIG_CHECK_KEY = "config.check";
+/**
+ * Generic {@link Event Dubbo event}
+ *
+ * @param <S> the type of event source
+ * @since 2.7.2
+ */
+public class GenericEvent<S> extends Event {
+
+    public GenericEvent(S source) {
+        super(source);
+    }
+
+    public S getSource() {
+        return (S) super.getSource();
+    }
 }

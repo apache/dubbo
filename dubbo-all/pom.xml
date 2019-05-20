@@ -500,6 +500,15 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- 2.7.2 new modules -->
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-event</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+
         <!-- Transitive dependencies -->
         <dependency>
             <groupId>org.springframework</groupId>
