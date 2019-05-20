@@ -24,8 +24,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static org.apache.dubbo.common.constants.ConfigConstants.EXPORT_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.REFER_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.EXPORT_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REFER_KEY;
 
 /**
  */

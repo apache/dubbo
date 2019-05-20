@@ -62,7 +62,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.LAZY_CONNECT_KEY;
+import static org.apache.dubbo.rpc.Constants.LAZY_CONNECT_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.ON_CONNECT_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.ON_DISCONNECT_KEY;
 import static org.apache.dubbo.common.constants.RemotingConstants.DEFAULT_HEARTBEAT;

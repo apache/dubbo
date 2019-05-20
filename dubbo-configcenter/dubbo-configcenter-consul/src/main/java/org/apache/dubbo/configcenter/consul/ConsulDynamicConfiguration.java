@@ -40,7 +40,7 @@ import java.util.concurrent.ExecutorService;
 
 import static java.util.concurrent.Executors.newCachedThreadPool;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
-import static org.apache.dubbo.common.constants.ConfigConstants.CONFIG_NAMESPACE_KEY;
+import static org.apache.dubbo.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.configcenter.ConfigChangeType.ADDED;
 
 /**

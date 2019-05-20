@@ -41,9 +41,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATT
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.EXPORT_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.LAZY_CONNECT_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.REFER_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.EXPORT_KEY;
+import static org.apache.dubbo.rpc.Constants.LAZY_CONNECT_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REFER_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.remoting.Constants.CONNECT_TIMEOUT_KEY;
