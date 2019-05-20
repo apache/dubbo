@@ -94,7 +94,6 @@ public class EtcdRegistryTest {
     String service = "org.apache.dubbo.internal.test.DemoServie";
     String outerService = "org.apache.dubbo.outer.test.OuterDemoServie";
     public EtcdCluster etcdCluster = EtcdClusterFactory.buildCluster(getClass().getSimpleName(), 3, false, false);
-    private static Client client;
 
     URL serviceUrl = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + "/" + service + "?methods=test1,test2");
     URL serviceUrl2 = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + "/" + service + "?methods=test1,test2,test3");
@@ -309,7 +308,6 @@ public class EtcdRegistryTest {
     @BeforeEach
     public void setUp() {
         etcdCluster.start();
-        client = Client.builder().endpoints(etcdCluster.getClientEndpoints()).build();
         List<URI> clientEndPoints = etcdCluster.getClientEndpoints();
         String ipAddress = clientEndPoints.get(0).getHost() + ":" + clientEndPoints.get(0).getPort();
         URL registryUrl = URL.valueOf("etcd3://"+ ipAddress + "/org.apache.dubbo.registry.RegistryService");
@@ -328,7 +326,6 @@ public class EtcdRegistryTest {
         registry.unregister(serviceUrl2);
         registry.unregister(serviceUrl3);
         registry.unregister(subscribe);
-
         registry.destroy();
     }
 
