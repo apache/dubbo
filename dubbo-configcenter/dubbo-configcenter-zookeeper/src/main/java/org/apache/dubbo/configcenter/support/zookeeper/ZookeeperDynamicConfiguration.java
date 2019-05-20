@@ -110,4 +110,18 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
 
         return (String) getInternalProperty(rootPath + "/" + key);
     }
+
+    /**
+     * For zookeeper, {@link #getConfig(String, String, long)} and {@link #getConfigs(String, String, long)} have the same meaning.
+     *
+     * @param key
+     * @param group
+     * @param timeout
+     * @return
+     * @throws IllegalStateException
+     */
+    @Override
+    public String getConfigs(String key, String group, long timeout) throws IllegalStateException {
+        return (String) getConfig(key, group, timeout);
+    }
 }

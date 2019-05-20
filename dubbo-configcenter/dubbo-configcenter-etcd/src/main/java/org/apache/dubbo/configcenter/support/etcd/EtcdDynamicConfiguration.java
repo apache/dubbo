@@ -107,6 +107,11 @@ public class EtcdDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
+    public String getConfigs(String key, String group, long timeout) throws IllegalStateException {
+        return getConfig(key, group, timeout);
+    }
+
+    @Override
     public Object getInternalProperty(String key) {
         return etcdClient.getKVValue(key);
     }

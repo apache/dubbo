@@ -24,7 +24,14 @@ import java.util.Optional;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
 /**
- * Dynamic configuration
+ * Dynamic Configuration
+ * <br/>
+ * From the use scenario internally in framework, there're mainly three kinds of methods:
+ * <ul>
+ *     <li>1. getConfig, get governance rules or single config item from Config Center.</li>
+ *     <li>2. getConfigFile, get configuration file from Config Center at start up.</li>
+ *     <li>3. addListener/removeListener, add or remove listeners for governance rules or config items that need to watch.</li>
+ * </ul>
  */
 public interface DynamicConfiguration extends Configuration {
     String DEFAULT_GROUP = "dubbo";
@@ -78,7 +85,7 @@ public interface DynamicConfiguration extends Configuration {
      * @return target configuration mapped to the given key
      */
     default String getConfig(String key) {
-        return getConfig(key, null, 0L);
+        return getConfig(key, null, -1L);
     }
 
     /**
@@ -89,7 +96,7 @@ public interface DynamicConfiguration extends Configuration {
      * @return target configuration mapped to the given key and the given group
      */
     default String getConfig(String key, String group) {
-        return getConfig(key, group, 0L);
+        return getConfig(key, group, -1L);
     }
 
     /**
@@ -103,6 +110,22 @@ public interface DynamicConfiguration extends Configuration {
      * if timeout exceeds.
      */
     String getConfig(String key, String group, long timeout) throws IllegalStateException;
+
+    /**
+     * {@see #getConfig(String, String, long)}
+     *
+     * This method are mostly used to get a compound config file, such as a complete dubbo.properties file.
+     */
+    default String getConfigs(String key, String group) throws IllegalStateException {
+        return getConfigs(key, group, -1L);
+    }
+
+    /**
+     * {@see #getConfig(String, String, long)}
+     *
+     * This method are mostly used to get a compound config file, such as a complete dubbo.properties file.
+     */
+    String getConfigs(String key, String group, long timeout) throws IllegalStateException;
 
     /**
      * Find DynamicConfiguration instance
