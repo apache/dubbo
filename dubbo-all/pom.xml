@@ -509,6 +509,14 @@
             <optional>true</optional>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metadata</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+
         <!-- Transitive dependencies -->
         <dependency>
             <groupId>org.springframework</groupId>
@@ -643,6 +651,7 @@
 
                                     <!-- 2.7.2 new modules -->
                                     <include>org.apache.dubbo:dubbo-event</include>
+                                    <include>org.apache.dubbo:dubbo-metadata</include>
                                 </includes>
                             </artifactSet>
                             <transformers>
@@ -771,6 +780,14 @@
                                 <!-- @since 2.7.2 -->
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>META-INF/dubbo/internal/org.apache.dubbo.event.EventDispatcher
+                                    </resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/dubbo/internal/org.apache.dubbo.metadata.export.MetadataServiceExporter
+                                    </resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/dubbo/internal/org.apache.dubbo.metadata.LocalMetadataService
                                     </resource>
                                 </transformer>
                             </transformers>
