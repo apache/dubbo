@@ -29,9 +29,9 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.ConfigConstants.SCOPE_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.SCOPE_LOCAL;
-import static org.apache.dubbo.common.constants.ConfigConstants.SCOPE_REMOTE;
+import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
+import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
+import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 
