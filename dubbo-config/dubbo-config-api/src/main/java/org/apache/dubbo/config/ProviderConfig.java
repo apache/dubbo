@@ -16,10 +16,10 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.status.StatusChecker;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.Dispatcher;
 import org.apache.dubbo.remoting.Transporter;
 import org.apache.dubbo.remoting.exchange.Exchanger;
@@ -29,9 +29,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.CONTEXTPATH_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.STATUS_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.TELNET;
+import static org.apache.dubbo.config.Constants.CONTEXTPATH_KEY;
+import static org.apache.dubbo.config.Constants.STATUS_KEY;
+import static org.apache.dubbo.remoting.Constants.TELNET;
 
 /**
  * The service provider default configuration
@@ -372,7 +372,7 @@ public class ProviderConfig extends AbstractServiceConfig {
     }
 
     public void setTransporter(String transporter) {
-        checkExtension(Transporter.class, RemotingConstants.TRANSPORTER_KEY, transporter);
+        checkExtension(Transporter.class, Constants.TRANSPORTER_KEY, transporter);
         this.transporter = transporter;
     }
 
@@ -381,7 +381,7 @@ public class ProviderConfig extends AbstractServiceConfig {
     }
 
     public void setExchanger(String exchanger) {
-        checkExtension(Exchanger.class, RemotingConstants.EXCHANGER_KEY, exchanger);
+        checkExtension(Exchanger.class, Constants.EXCHANGER_KEY, exchanger);
         this.exchanger = exchanger;
     }
 
@@ -411,7 +411,7 @@ public class ProviderConfig extends AbstractServiceConfig {
     }
 
     public void setDispatcher(String dispatcher) {
-        checkExtension(Dispatcher.class, RemotingConstants.DISPATCHER_KEY, dispatcher);
+        checkExtension(Dispatcher.class, Constants.DISPATCHER_KEY, dispatcher);
         checkExtension(Dispatcher.class, "dispather", dispatcher);
         this.dispatcher = dispatcher;
     }

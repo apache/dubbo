@@ -17,9 +17,9 @@
 package org.apache.dubbo.rpc.cluster.configurator;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.cluster.Configurator;
 
 import java.util.HashSet;
@@ -119,7 +119,7 @@ public abstract class AbstractConfigurator implements Configurator {
                         || configApplication.equals(currentApplication)) {
                     Set<String> conditionKeys = new HashSet<String>();
                     conditionKeys.add(CATEGORY_KEY);
-                    conditionKeys.add(RemotingConstants.CHECK_KEY);
+                    conditionKeys.add(Constants.CHECK_KEY);
                     conditionKeys.add(DYNAMIC_KEY);
                     conditionKeys.add(ENABLED_KEY);
                     conditionKeys.add(GROUP_KEY);

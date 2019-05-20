@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.constants.ConfigConstants;
 import org.apache.dubbo.config.annotation.Argument;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
@@ -30,11 +29,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.ConfigConstants.ON_INVOKE_INSTANCE_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.ON_RETURN_INSTANCE_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.ON_RETURN_METHOD_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.ON_THROW_INSTANCE_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.ON_THROW_METHOD_KEY;
+import static org.apache.dubbo.config.Constants.ON_INVOKE_INSTANCE_KEY;
+import static org.apache.dubbo.config.Constants.ON_RETURN_INSTANCE_KEY;
+import static org.apache.dubbo.config.Constants.ON_RETURN_METHOD_KEY;
+import static org.apache.dubbo.config.Constants.ON_THROW_INSTANCE_KEY;
+import static org.apache.dubbo.config.Constants.ON_THROW_METHOD_KEY;
+import static org.apache.dubbo.config.Constants.ON_INVOKE_METHOD_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
@@ -225,7 +225,7 @@ public class MethodConfigTest {
         assertThat(method.getOninvokeMethod(), equalTo("on-invoke-method"));
         Map<String, Object> attribute = new HashMap<String, Object>();
         MethodConfig.appendAttributes(attribute, method);
-        assertThat(attribute, hasEntry((Object) ConfigConstants.ON_INVOKE_METHOD_KEY, (Object) "on-invoke-method"));
+        assertThat(attribute, hasEntry((Object) ON_INVOKE_METHOD_KEY, (Object) "on-invoke-method"));
         Map<String, String> parameters = new HashMap<String, String>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters.size(), is(0));

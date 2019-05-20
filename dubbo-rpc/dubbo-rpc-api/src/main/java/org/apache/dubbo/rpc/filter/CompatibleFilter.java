@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.rpc.filter;
 
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CompatibleTypeUtils;
 import org.apache.dubbo.common.utils.PojoUtils;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -59,7 +59,7 @@ public class CompatibleFilter implements Filter {
                     Method method = invoker.getInterface().getMethod(invocation.getMethodName(), invocation.getParameterTypes());
                     Class<?> type = method.getReturnType();
                     Object newValue;
-                    String serialization = invoker.getUrl().getParameter(RemotingConstants.SERIALIZATION_KEY);
+                    String serialization = invoker.getUrl().getParameter(Constants.SERIALIZATION_KEY);
                     if ("json".equals(serialization)
                             || "fastjson".equals(serialization)) {
                         // If the serialization key is json or fastjson
