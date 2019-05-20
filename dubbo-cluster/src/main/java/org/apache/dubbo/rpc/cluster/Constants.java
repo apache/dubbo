@@ -100,4 +100,16 @@ public interface Constants {
     String OVERRIDE_PROVIDERS_KEY = "providerAddresses";
 
     String TAG_KEY = "dubbo.tag";
+    /**
+     * key for router type, for e.g., "script"/"file",  corresponding to ScriptRouterFactory.NAME, FileRouterFactory.NAME
+     */
+    String ROUTER_KEY = "router";
+    /**
+     * The key name for reference URL in register center
+     */
+    String REFER_KEY = "refer";
+    /**
+     * The key name for export URL in register center
+     */
+    String EXPORT_KEY = "export";
 }
