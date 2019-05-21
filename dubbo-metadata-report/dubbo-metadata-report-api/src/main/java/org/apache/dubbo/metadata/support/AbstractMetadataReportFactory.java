@@ -24,12 +24,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static org.apache.dubbo.common.constants.RegistryConstants.EXPORT_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REFER_KEY;
-
-/**
- */
 public abstract class AbstractMetadataReportFactory implements MetadataReportFactory {
+    private static final String EXPORT_KEY = "export";
+    private static final String REFER_KEY = "refer";
 
     // The lock for the acquisition process of the registry
     private static final ReentrantLock LOCK = new ReentrantLock();

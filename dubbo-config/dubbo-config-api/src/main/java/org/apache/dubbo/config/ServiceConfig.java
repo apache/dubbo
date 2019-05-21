@@ -75,7 +75,7 @@ import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_IP_TO_BIND
 import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_BIND;
 import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_REGISTRY;
-import static org.apache.dubbo.common.constants.RegistryConstants.EXPORT_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 import static org.apache.dubbo.config.Constants.MULTICAST;
 import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
 import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
