@@ -36,7 +36,7 @@
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-rpc-api</artifactId>
-            <version>${revision}</version>
+            <version>${project.parent.version}</version>
             <optional>true</optional>
         </dependency>
 
