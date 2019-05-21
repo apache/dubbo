@@ -105,7 +105,7 @@ public class AsyncRpcResult extends AbstractResult {
     public Result getAppResponse() {
         try {
             if (this.isDone()) {
-                return this.get();
+                return super.get();
             }
         } catch (Exception e) {
             // This should never happen;
@@ -142,10 +142,8 @@ public class AsyncRpcResult extends AbstractResult {
         RpcInvocation rpcInvocation = (RpcInvocation) invocation;
         if (InvokeMode.FUTURE == rpcInvocation.getInvokeMode()) {
             return RpcContext.getContext().getFuture();
-        } else if (this.isDone()) {
-            return this.get().recreate();
         }
-        return (new AppResponse()).recreate();
+        return getAppResponse().recreate();
     }
 
     /**
