@@ -14,16 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.export;
+package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.metadata.MetadataService;
 
 import java.util.List;
-
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
 /**
  * The exporter of {@link MetadataService}
@@ -33,7 +29,7 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
  * @see #unexport()
  * @since 2.7.2
  */
-@SPI("default")
+@SPI
 public interface MetadataServiceExporter {
 
     /**
@@ -47,17 +43,4 @@ public interface MetadataServiceExporter {
      * Unexports the {@link MetadataService}
      */
     void unexport();
-
-
-    /**
-     * Get {@link ExtensionLoader#getDefaultExtension() the defautl extension} of {@link MetadataServiceExporter}
-     *
-     * @return non-null
-     * @see MetadataServiceExporter
-     * @see ConfigurableMetadataServiceExporter
-     * @see ExtensionLoader
-     */
-    static MetadataServiceExporter getDefaultExtension() {
-        return getExtensionLoader(MetadataServiceExporter.class).getDefaultExtension();
-    }
 }
