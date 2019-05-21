@@ -705,7 +705,7 @@ public class Constants {
 
     public static final String DECODE_IN_IO_THREAD_KEY = "decode.in.io";
 
-    public static final boolean DEFAULT_DECODE_IN_IO_THREAD = true;
+    public static final boolean DEFAULT_DECODE_IN_IO_THREAD = false;
 
     public static final String INPUT_KEY = "input";
 

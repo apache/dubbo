@@ -476,11 +476,11 @@ class URL implements Serializable {
     }
 
     public String getParameter(String key) {
-        String value = parameters.get(key);
-        if (StringUtils.isEmpty(value)) {
-            value = parameters.get(Constants.DEFAULT_KEY_PREFIX + key);
-        }
-        return value;
+        return parameters.get(key);
+//        if (StringUtils.isEmpty(value)) {
+//            value = parameters.get(Constants.DEFAULT_KEY_PREFIX + key);
+//        }
+//        return value;
     }
 
     public String getParameter(String key, String defaultValue) {
@@ -1346,7 +1346,6 @@ class URL implements Serializable {
     public String toServiceStringWithoutResolving() {
         return buildString(true, false, false, true);
     }
-
     public String toServiceString() {
         return buildString(true, false, true, true);
     }
