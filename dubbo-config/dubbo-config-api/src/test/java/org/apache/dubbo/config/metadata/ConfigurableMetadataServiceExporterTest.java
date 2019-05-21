@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.export;
+package org.apache.dubbo.config.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.ApplicationConfig;
@@ -22,6 +22,7 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.MetadataServiceExporter;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -31,8 +32,6 @@ import java.util.List;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_PROTOCOL;
-import static org.apache.dubbo.metadata.export.MetadataServiceExporter.getDefaultExtension;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -57,20 +56,20 @@ public class ConfigurableMetadataServiceExporterTest {
 
     private static ProtocolConfig protocolConfig() {
         ProtocolConfig protocolConfig = new ProtocolConfig();
-        protocolConfig.setName(DUBBO_PROTOCOL);
+        protocolConfig.setName("mockprotocol");
         protocolConfig.setPort(20880);
         return protocolConfig;
     }
 
     private static RegistryConfig registryConfig() {
         RegistryConfig registryConfig = new RegistryConfig();
-        registryConfig.setAddress("mock://127.0.0.1");
+        registryConfig.setAddress("mockregistry://127.0.0.1");
         return registryConfig;
     }
 
     @Test
     public void testExportAndUnexport() {
-        MetadataServiceExporter exporter = getDefaultExtension();
+        MetadataServiceExporter exporter = new ConfigurableMetadataServiceExporter();
         List<URL> urls = exporter.export();
 
         assertEquals(1, urls.size());
@@ -81,7 +80,7 @@ public class ConfigurableMetadataServiceExporterTest {
         assertEquals(MetadataService.class.getName(), url.getServiceInterface());
         assertEquals("test", url.getParameter(GROUP_KEY));
         assertEquals(MetadataService.VERSION, url.getParameter(VERSION_KEY));
-        assertEquals(DUBBO_PROTOCOL, url.getProtocol());
+        assertEquals("mockprotocol", url.getProtocol());
 
         exporter.unexport();
     }

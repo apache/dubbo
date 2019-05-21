@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.export;
+package org.apache.dubbo.config.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
@@ -27,6 +27,7 @@ import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metadata.LocalMetadataService;
 import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.MetadataServiceExporter;
 
 import java.util.ArrayList;
 import java.util.List;
