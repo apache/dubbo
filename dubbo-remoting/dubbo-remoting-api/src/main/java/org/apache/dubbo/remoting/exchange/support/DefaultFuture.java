@@ -19,6 +19,7 @@ package org.apache.dubbo.remoting.exchange.support;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.timer.Timeout;
 import org.apache.dubbo.common.timer.Timer;
@@ -35,6 +36,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -63,6 +65,16 @@ public class DefaultFuture extends CompletableFuture<Object> {
     private final long start = System.currentTimeMillis();
     private volatile long sent;
 
+    private ExecutorService executor;
+
+    public ExecutorService getExecutor() {
+        return executor;
+    }
+
+    public void setExecutor(ExecutorService executor) {
+        this.executor = executor;
+    }
+
     private DefaultFuture(Channel channel, Request request, int timeout) {
         this.channel = channel;
         this.request = request;
@@ -83,8 +95,9 @@ public class DefaultFuture extends CompletableFuture<Object> {
      * @param timeout timeout
      * @return a new DefaultFuture
      */
-    public static DefaultFuture newFuture(Channel channel, Request request, int timeout) {
+    public static DefaultFuture newFuture(Channel channel, Request request, int timeout, ExecutorService executor) {
         final DefaultFuture future = new DefaultFuture(channel, request, timeout);
+        future.setExecutor(executor);
         // timeout check
         timeoutCheck(future);
         return future;
@@ -165,7 +178,6 @@ public class DefaultFuture extends CompletableFuture<Object> {
         this.cancel(true);
     }
 
-
     private void doReceived(Response res) {
         if (res == null) {
             throw new IllegalStateException("response cannot be null");
@@ -176,6 +188,15 @@ public class DefaultFuture extends CompletableFuture<Object> {
             this.completeExceptionally(new TimeoutException(res.getStatus() == Response.SERVER_TIMEOUT, channel, res.getErrorMessage()));
         } else {
             this.completeExceptionally(new RemotingException(channel, res.getErrorMessage()));
+        }
+
+        // the result is returning, but the caller thread may still waiting
+        // to avoid endless waiting for whatever reason, notify caller thread to return.
+        if (executor != null && executor instanceof ThreadlessExecutor) {
+            ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
+            if (threadlessExecutor.isWaiting()) {
+                threadlessExecutor.notifyReturn();
+            }
         }
     }
 
@@ -240,14 +261,17 @@ public class DefaultFuture extends CompletableFuture<Object> {
             if (future.isDone()) {
                 return;
             }
-            // create exception response.
-            Response timeoutResponse = new Response(future.getId());
-            // set timeout status.
-            timeoutResponse.setStatus(future.isSent() ? Response.SERVER_TIMEOUT : Response.CLIENT_TIMEOUT);
-            timeoutResponse.setErrorMessage(future.getTimeoutMessage(true));
-            // handle response.
-            DefaultFuture.received(future.getChannel(), timeoutResponse);
-
+            if (future.getExecutor() != null) {
+                future.getExecutor().execute(() -> {
+                    // create exception response.
+                    Response timeoutResponse = new Response(future.getId());
+                    // set timeout status.
+                    timeoutResponse.setStatus(future.isSent() ? Response.SERVER_TIMEOUT : Response.CLIENT_TIMEOUT);
+                    timeoutResponse.setErrorMessage(future.getTimeoutMessage(true));
+                    // handle response.
+                    DefaultFuture.received(future.getChannel(), timeoutResponse);
+                });
+            }
         }
     }
 }

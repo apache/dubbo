@@ -14,9 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.transport.dispatcher.message;
+package org.apache.dubbo.remoting.transport.dispatcher.direct;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.ExecutionException;
@@ -27,19 +28,23 @@ import org.apache.dubbo.remoting.transport.dispatcher.WrappedChannelHandler;
 
 import java.util.concurrent.ExecutorService;
 
-public class MessageOnlyChannelHandler extends WrappedChannelHandler {
+public class DirectChannelHandler extends WrappedChannelHandler {
 
-    public MessageOnlyChannelHandler(ChannelHandler handler, URL url) {
+    public DirectChannelHandler(ChannelHandler handler, URL url) {
         super(handler, url);
     }
 
     @Override
     public void received(Channel channel, Object message) throws RemotingException {
         ExecutorService executor = getPreferredExecutorService(message);
-        try {
-            executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
-        } catch (Throwable t) {
-            throw new ExecutionException(message, channel, getClass() + " error when process received event .", t);
+        if (executor instanceof ThreadlessExecutor) {
+            try {
+                executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
+            } catch (Throwable t) {
+                throw new ExecutionException(message, channel, getClass() + " error when process received event .", t);
+            }
+        } else {
+            handler.received(channel, message);
         }
     }
 

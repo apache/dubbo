@@ -95,7 +95,7 @@ public class DefaultFutureTest {
         // timeout after 5 seconds.
         Channel channel = new MockedChannel();
         Request request = new Request(10);
-        DefaultFuture f = DefaultFuture.newFuture(channel, request, 5000);
+        DefaultFuture f = DefaultFuture.newFuture(channel, request, 5000, null);
         //mark the future is sent
         DefaultFuture.sent(channel, request);
         while (!f.isDone()) {
@@ -119,7 +119,7 @@ public class DefaultFutureTest {
     private DefaultFuture defaultFuture(int timeout) {
         Channel channel = new MockedChannel();
         Request request = new Request(index.getAndIncrement());
-        return DefaultFuture.newFuture(channel, request, timeout);
+        return DefaultFuture.newFuture(channel, request, timeout, null);
     }
 
 }

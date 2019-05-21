@@ -18,10 +18,14 @@ package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 
 /**
@@ -47,6 +51,7 @@ public class AsyncRpcResult extends AbstractResult {
      */
     private RpcContext storedContext;
     private RpcContext storedServerContext;
+    private Executor executor;
 
     private Invocation invocation;
 
@@ -108,34 +113,46 @@ public class AsyncRpcResult extends AbstractResult {
         return new AppResponse();
     }
 
+    /**
+     * This method will always return after a maximum 'timeout' waiting:
+     * 1. if value returns before timeout, return normally.
+     * 2. if no value returns after timeout, throw TimeoutException.
+     *
+     * @return
+     * @throws InterruptedException
+     * @throws ExecutionException
+     */
+    @Override
+    public Result get() throws InterruptedException, ExecutionException {
+        if (executor != null) {
+            ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
+            threadlessExecutor.waitAndDrain();
+        }
+        return super.get();
+    }
+
+    @Override
+    public Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        return this.get();
+    }
+
     @Override
     public Object recreate() throws Throwable {
         RpcInvocation rpcInvocation = (RpcInvocation) invocation;
         if (InvokeMode.FUTURE == rpcInvocation.getInvokeMode()) {
-            AppResponse appResponse = new AppResponse();
-            CompletableFuture<Object> future = new CompletableFuture<>();
-            appResponse.setValue(future);
-            this.whenComplete((result, t) -> {
-                if (t != null) {
-                    if (t instanceof CompletionException) {
-                        t = t.getCause();
-                    }
-                    future.completeExceptionally(t);
-                } else {
-                    if (result.hasException()) {
-                        future.completeExceptionally(result.getException());
-                    } else {
-                        future.complete(result.getValue());
-                    }
-                }
-            });
-            return appResponse.recreate();
+            return RpcContext.getContext().getFuture();
         } else if (this.isDone()) {
             return this.get().recreate();
         }
         return (new AppResponse()).recreate();
     }
 
+    /**
+     * register a callback which will be executed under the same context when the RPC call returns.
+     *
+     * @param fn
+     * @return
+     */
     public Result thenApplyWithContext(Function<Result, Result> fn) {
         CompletableFuture<Result> future = this.thenApply(fn.compose(beforeContext).andThen(afterContext));
         AsyncRpcResult nextAsyncRpcResult = new AsyncRpcResult(this);
@@ -193,6 +210,14 @@ public class AsyncRpcResult extends AbstractResult {
 
     public Invocation getInvocation() {
         return invocation;
+    }
+
+    public Executor getExecutor() {
+        return executor;
+    }
+
+    public void setExecutor(Executor executor) {
+        this.executor = executor;
     }
 
     /**

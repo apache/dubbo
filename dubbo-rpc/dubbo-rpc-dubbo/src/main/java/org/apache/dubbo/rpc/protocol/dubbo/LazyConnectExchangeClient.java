@@ -30,6 +30,7 @@ import org.apache.dubbo.remoting.exchange.Exchangers;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -109,6 +110,20 @@ final class LazyConnectExchangeClient implements ExchangeClient {
         warning();
         initClient();
         return client.request(request, timeout);
+    }
+
+    @Override
+    public CompletableFuture<Object> request(Object request, ExecutorService executor) throws RemotingException {
+        warning();
+        initClient();
+        return client.request(request, executor);
+    }
+
+    @Override
+    public CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor) throws RemotingException {
+        warning();
+        initClient();
+        return client.request(request, timeout, executor);
     }
 
     /**
