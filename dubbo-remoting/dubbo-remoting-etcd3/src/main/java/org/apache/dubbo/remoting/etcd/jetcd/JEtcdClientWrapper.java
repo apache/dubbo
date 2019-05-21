@@ -70,6 +70,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_KEEPALIVE_TIMEOUT;
 import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_RECONNECT_PERIOD;
 import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_RETRY_PERIOD;
+import static org.apache.dubbo.remoting.etcd.Constants.HTTP_KEY;
+import static org.apache.dubbo.remoting.etcd.Constants.HTTP_SUBFIX_KEY;
 import static org.apache.dubbo.remoting.etcd.Constants.RETRY_PERIOD_KEY;
 import static org.apache.dubbo.remoting.etcd.Constants.SESSION_TIMEOUT_KEY;
 
@@ -487,9 +489,9 @@ public class JEtcdClientWrapper {
     public String[] endPoints(String backupAddress) {
         String[] endpoints = backupAddress.split(COMMA_SEPARATOR);
         List<String> addresses = Arrays.stream(endpoints)
-                .map(address -> address.contains(org.apache.dubbo.remoting.etcd.Constants.HTTP_SUBFIX_KEY)
+                .map(address -> address.contains(HTTP_SUBFIX_KEY)
                         ? address
-                        : org.apache.dubbo.remoting.etcd.Constants.HTTP_KEY + address)
+                        : HTTP_KEY + address)
                 .collect(toList());
         Collections.shuffle(addresses);
         return addresses.toArray(new String[0]);
