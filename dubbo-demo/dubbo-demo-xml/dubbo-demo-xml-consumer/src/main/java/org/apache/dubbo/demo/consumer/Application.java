@@ -31,10 +31,10 @@ public class Application {
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("spring/dubbo-consumer.xml");
         context.start();
         DemoService demoService = context.getBean("demoService", DemoService.class);
-//        String hello = demoService.sayHello("world");
-        CompletableFuture<String> helloFuture = demoService.sayHelloAsync("world");
-//        System.out.println("result: " + hello);
-        System.out.println("result: " + helloFuture.get());
+        String hello = demoService.sayHello("world");
+//        CompletableFuture<String> helloFuture = demoService.sayHelloAsync("world");
+        System.out.println("result: " + hello);
+//        System.out.println("result: " + helloFuture.get());
         System.in.read();
     }
 }
