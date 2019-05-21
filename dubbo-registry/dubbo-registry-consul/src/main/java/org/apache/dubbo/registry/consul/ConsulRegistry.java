@@ -49,8 +49,8 @@ import java.util.stream.Collectors;
 
 import static java.util.concurrent.Executors.newCachedThreadPool;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
-import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMER_PROTOCOL;
-import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDER_PROTOCOL;
+import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
+import static org.apache.dubbo.registry.Constants.PROVIDER_PROTOCOL;
 
 /**
  * registry center implementation for consul

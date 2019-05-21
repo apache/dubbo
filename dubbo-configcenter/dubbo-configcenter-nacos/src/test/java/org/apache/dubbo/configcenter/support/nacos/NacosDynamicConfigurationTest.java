@@ -31,7 +31,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
-import static org.apache.dubbo.common.constants.RegistryConstants.SESSION_TIMEOUT_KEY;
 
 /**
  * Unit test for nacos config center support
@@ -39,6 +38,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.SESSION_TIMEOU
 //FIXME: waiting for embedded Nacos suport, then we can open the switch.
 @Disabled("https://github.com/alibaba/nacos/issues/1188")
 public class NacosDynamicConfigurationTest {
+    private static final String SESSION_TIMEOUT_KEY = "session";
 
     private static NacosDynamicConfiguration config;
 

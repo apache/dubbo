@@ -31,8 +31,8 @@ import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.EXPORT_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REFER_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 /**
  * AbstractRegistryFactory. (SPI, Singleton, ThreadSafe)

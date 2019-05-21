@@ -29,7 +29,7 @@ import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
 import static org.apache.dubbo.common.constants.ConfigConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.ConfigConstants.USERNAME_KEY;
 import static org.apache.dubbo.config.Constants.ZOOKEEPER_PROTOCOL;
-import static org.apache.dubbo.common.constants.RegistryConstants.EXTRA_KEYS_KEY;
+import static org.apache.dubbo.registry.Constants.EXTRA_KEYS_KEY;
 
 /**
  * RegistryConfig
