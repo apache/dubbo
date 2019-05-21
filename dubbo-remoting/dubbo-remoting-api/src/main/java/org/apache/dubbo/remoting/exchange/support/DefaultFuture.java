@@ -50,7 +50,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
 
     private static final Map<Long, DefaultFuture> FUTURES = new ConcurrentHashMap<>();
 
-    private static final Map<Long, Timeout> PENDING_TASKS = new ConcurrentHashMap<>();
+//    private static final Map<Long, Timeout> PENDING_TASKS = new ConcurrentHashMap<>();
 
     public static final Timer TIME_OUT_TIMER = new HashedWheelTimer(
             new NamedThreadFactory("dubbo-future-timeout", true),
@@ -58,7 +58,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
             TimeUnit.MILLISECONDS);
 
     // invoke id.
-    private final long id;
+    private final Long id;
     private final Channel channel;
     private final Request request;
     private final int timeout;
@@ -146,11 +146,11 @@ public class DefaultFuture extends CompletableFuture<Object> {
             DefaultFuture future = FUTURES.remove(response.getId());
             if (future != null) {
                 future.doReceived(response);
-                Timeout t = PENDING_TASKS.remove(future.getId());
-                if (t != null) {
-                    // decrease Time
-                    t.cancel();
-                }
+//                Timeout t = PENDING_TASKS.remove(future.getId());
+//                if (t != null) {
+//                    // decrease Time
+//                    t.cancel();
+//                }
             } else {
                 logger.warn("The timeout response finally returned at "
                         + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()))
@@ -228,10 +228,11 @@ public class DefaultFuture extends CompletableFuture<Object> {
      * check time out of the future
      */
     private static void timeoutCheck(DefaultFuture future) {
-        TimeoutCheckTask task = new TimeoutCheckTask(future);
-        Timeout t = TIME_OUT_TIMER.newTimeout(task, future.getTimeout(), TimeUnit.MILLISECONDS);
-        PENDING_TASKS.put(future.getId(), t);
+        TimeoutCheckTask task = new TimeoutCheckTask(future.getId());
+        TIME_OUT_TIMER.newTimeout(task, future.getTimeout(), TimeUnit.MILLISECONDS);
+//        PENDING_TASKS.put(future.getId(), t);
     }
+
     private String getTimeoutMessage(boolean scan) {
         long nowTimestamp = System.currentTimeMillis();
         return (sent > 0 ? "Waiting server-side response timeout" : "Sending request timeout in client-side")
@@ -247,18 +248,19 @@ public class DefaultFuture extends CompletableFuture<Object> {
 
     private static class TimeoutCheckTask implements TimerTask {
 
-        private DefaultFuture future;
+        private final Long requestID;
 
-        TimeoutCheckTask(DefaultFuture future) {
-            this.future = future;
+        TimeoutCheckTask(Long requestID) {
+            this.requestID = requestID;
         }
 
         @Override
         public void run(Timeout timeout) {
             // remove from pending task
-            PENDING_TASKS.remove(future.getId());
+//            PENDING_TASKS.remove(future.getId());
 
-            if (future.isDone()) {
+            DefaultFuture future = FUTURES.remove(requestID);
+            if (future == null || future.isDone()) {
                 return;
             }
             if (future.getExecutor() != null) {
