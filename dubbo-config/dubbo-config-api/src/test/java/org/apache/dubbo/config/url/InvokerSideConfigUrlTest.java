@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
-import static org.apache.dubbo.common.constants.ConfigConstants.SCOPE_REMOTE;
+import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 
 
 public class InvokerSideConfigUrlTest extends UrlTestBase {

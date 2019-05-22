@@ -14,35 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.alibaba.dubbo.registry.support;
 
-package org.apache.dubbo.common.constants;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.registry.Registry;
 
 /**
- * ConfigConstants
+ * 2019-04-16
  */
-public interface ConfigConstants {
-    String CLUSTER_KEY = "cluster";
+@Deprecated
+public abstract class AbstractRegistryFactory extends org.apache.dubbo.registry.support.AbstractRegistryFactory {
 
-    String USERNAME_KEY = "username";
 
-    String PASSWORD_KEY = "password";
+    protected abstract com.alibaba.dubbo.registry.Registry createRegistry(com.alibaba.dubbo.common.URL url);
 
-    String HOST_KEY = "host";
-
-    String PORT_KEY = "port";
-
-    String DUBBO_IP_TO_BIND = "DUBBO_IP_TO_BIND";
-
-    @Deprecated
-    String SHUTDOWN_WAIT_SECONDS_KEY = "dubbo.service.shutdown.wait.seconds";
-
-    String SHUTDOWN_WAIT_KEY = "dubbo.service.shutdown.wait";
-
-    String DUBBO_PROTOCOL = "dubbo";
-
-    String QOS_ENABLE = "qos.enable";
-
-    String QOS_PORT = "qos.port";
-
-    String ACCEPT_FOREIGN_IP = "qos.accept.foreign.ip";
+    protected Registry createRegistry(URL url) {
+        return createRegistry(new com.alibaba.dubbo.common.URL(url));
+    }
 }

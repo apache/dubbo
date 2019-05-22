@@ -99,4 +99,12 @@ public interface Constants {
     String LOCAL_PROTOCOL = "injvm";
 
     String DEFAULT_REMOTING_SERVER = "netty";
+
+    String SCOPE_KEY = "scope";
+    String SCOPE_LOCAL = "local";
+    String SCOPE_REMOTE = "remote";
+    /**
+     * To decide whether to make connection when the client is created
+     */
+    String LAZY_CONNECT_KEY = "lazy";
 }

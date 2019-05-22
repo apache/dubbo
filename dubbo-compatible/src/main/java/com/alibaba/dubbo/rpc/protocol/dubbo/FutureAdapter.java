@@ -14,19 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.etcd.option;
 
-import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_SESSION_TIMEOUT;
+package com.alibaba.dubbo.rpc.protocol.dubbo;
+
+import org.apache.dubbo.remoting.exchange.ResponseFuture;
 
 /**
- * Etcd registry constants.
+ * 2019-04-18
  */
-public interface Constants {
-
-    String HTTP_SUBFIX_KEY = "://";
-
-    String HTTP_KEY = "http://";
-
-    int DEFAULT_KEEPALIVE_TIMEOUT = DEFAULT_SESSION_TIMEOUT / 2;
-
+public class FutureAdapter<V> extends org.apache.dubbo.rpc.protocol.dubbo.FutureAdapter<V> {
+    public FutureAdapter(ResponseFuture future) {
+        super(future);
+    }
 }

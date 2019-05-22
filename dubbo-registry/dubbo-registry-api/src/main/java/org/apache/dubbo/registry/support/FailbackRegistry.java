@@ -38,9 +38,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMER_PROTOCOL;
-import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTRY_RETRY_PERIOD;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_RETRY_PERIOD_KEY;
+import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
+import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY_RETRY_PERIOD;
+import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_PERIOD_KEY;
 
 /**
  * FailbackRegistry. (SPI, Prototype, ThreadSafe)
@@ -206,23 +206,23 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
     }
 
-    public ConcurrentMap<URL, FailedRegisteredTask> getFailedRegistered() {
+    ConcurrentMap<URL, FailedRegisteredTask> getFailedRegistered() {
         return failedRegistered;
     }
 
-    public ConcurrentMap<URL, FailedUnregisteredTask> getFailedUnregistered() {
+    ConcurrentMap<URL, FailedUnregisteredTask> getFailedUnregistered() {
         return failedUnregistered;
     }
 
-    public ConcurrentMap<Holder, FailedSubscribedTask> getFailedSubscribed() {
+    ConcurrentMap<Holder, FailedSubscribedTask> getFailedSubscribed() {
         return failedSubscribed;
     }
 
-    public ConcurrentMap<Holder, FailedUnsubscribedTask> getFailedUnsubscribed() {
+    ConcurrentMap<Holder, FailedUnsubscribedTask> getFailedUnsubscribed() {
         return failedUnsubscribed;
     }
 
-    public ConcurrentMap<Holder, FailedNotifiedTask> getFailedNotified() {
+    ConcurrentMap<Holder, FailedNotifiedTask> getFailedNotified() {
         return failedNotified;
     }
 
