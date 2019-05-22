@@ -49,7 +49,11 @@ public class AllChannelHandler extends WrappedChannelHandler {
     public void disconnected(Channel channel) throws RemotingException {
         ExecutorService executor = getExecutorService();
         try {
-            executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.DISCONNECTED));
+            if (!executor.isShutdown()) {
+                executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.DISCONNECTED));
+            } else {
+                handler.disconnected(channel);
+            }
         } catch (Throwable t) {
             throw new ExecutionException("disconnect event", channel, getClass() + " error when process disconnected event .", t);
         }
