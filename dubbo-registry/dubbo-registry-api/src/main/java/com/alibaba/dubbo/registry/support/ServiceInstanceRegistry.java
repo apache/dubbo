@@ -430,16 +430,19 @@ public abstract class ServiceInstanceRegistry<S> extends FailbackRegistry {
 
     private static String getServiceName(URL url, String category) {
         StringBuilder serviceNameBuilder = new StringBuilder(category);
-        appendIfPresent(serviceNameBuilder, url, Constants.INTERFACE_KEY);
-        appendIfPresent(serviceNameBuilder, url, Constants.VERSION_KEY);
-        appendIfPresent(serviceNameBuilder, url, Constants.GROUP_KEY);
+        append(serviceNameBuilder, url, Constants.INTERFACE_KEY);
+        append(serviceNameBuilder, url, Constants.VERSION_KEY);
+        append(serviceNameBuilder, url, Constants.GROUP_KEY);
         return serviceNameBuilder.toString();
     }
 
-    private static void appendIfPresent(StringBuilder target, URL url,
+    private static void append(StringBuilder target, URL url,
                                         String parameterName) {
+        target.append(SERVICE_NAME_SEPARATOR);
         String parameterValue = url.getParameter(parameterName);
-        appendIfPresent(target, parameterValue);
+        if (StringUtils.isNotEmpty(parameterValue)) {
+            target.append(parameterValue);
+        }
     }
 
     public static String[] getServiceSegments(String serviceName) {
@@ -464,11 +467,5 @@ public abstract class ServiceInstanceRegistry<S> extends FailbackRegistry {
 
     private static <T> T[] of(T... values) {
         return values;
-    }
-
-    private static void appendIfPresent(StringBuilder target, String parameterValue) {
-        if (StringUtils.isNotEmpty(parameterValue)) {
-            target.append(SERVICE_NAME_SEPARATOR).append(parameterValue);
-        }
     }
 }
