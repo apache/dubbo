@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.exchange.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
@@ -41,6 +40,9 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+
 /**
  * DefaultFuture.
  */
@@ -51,6 +53,8 @@ public class DefaultFuture implements ResponseFuture {
     private static final Map<Long, Channel> CHANNELS = new ConcurrentHashMap<>();
 
     private static final Map<Long, DefaultFuture> FUTURES = new ConcurrentHashMap<>();
+
+    private static final Map<Long, Timeout> PENDING_TASKS = new ConcurrentHashMap<>();
 
     public static final Timer TIME_OUT_TIMER = new HashedWheelTimer(
             new NamedThreadFactory("dubbo-future-timeout", true),
@@ -73,7 +77,7 @@ public class DefaultFuture implements ResponseFuture {
         this.channel = channel;
         this.request = request;
         this.id = request.getId();
-        this.timeout = timeout > 0 ? timeout : channel.getUrl().getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+        this.timeout = timeout > 0 ? timeout : channel.getUrl().getPositiveParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
         // put into waiting map.
         FUTURES.put(id, this);
         CHANNELS.put(id, channel);
@@ -84,7 +88,8 @@ public class DefaultFuture implements ResponseFuture {
      */
     private static void timeoutCheck(DefaultFuture future) {
         TimeoutCheckTask task = new TimeoutCheckTask(future);
-        TIME_OUT_TIMER.newTimeout(task, future.getTimeout(), TimeUnit.MILLISECONDS);
+        Timeout t = TIME_OUT_TIMER.newTimeout(task, future.getTimeout(), TimeUnit.MILLISECONDS);
+        PENDING_TASKS.put(future.getId(), t);
     }
 
     /**
@@ -147,6 +152,11 @@ public class DefaultFuture implements ResponseFuture {
             DefaultFuture future = FUTURES.remove(response.getId());
             if (future != null) {
                 future.doReceived(response);
+                Timeout t = PENDING_TASKS.remove(future.getId());
+                if (t != null) {
+                    // decrease Time
+                    t.cancel();
+                }
             } else {
                 logger.warn("The timeout response finally returned at "
                         + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()))
@@ -167,7 +177,7 @@ public class DefaultFuture implements ResponseFuture {
     @Override
     public Object get(int timeout) throws RemotingException {
         if (timeout <= 0) {
-            timeout = Constants.DEFAULT_TIMEOUT;
+            timeout = DEFAULT_TIMEOUT;
         }
         if (!isDone()) {
             long start = System.currentTimeMillis();
@@ -236,7 +246,10 @@ public class DefaultFuture implements ResponseFuture {
 
         @Override
         public void run(Timeout timeout) {
-            if (future == null || future.isDone()) {
+            // remove from pending task
+            PENDING_TASKS.remove(future.getId());
+
+            if (future.isDone()) {
                 return;
             }
             // create exception response.
@@ -246,13 +259,11 @@ public class DefaultFuture implements ResponseFuture {
             timeoutResponse.setErrorMessage(future.getTimeoutMessage(true));
             // handle response.
             DefaultFuture.received(future.getChannel(), timeoutResponse);
-
         }
     }
 
     private void invokeCallback(ResponseCallback c) {
-        ResponseCallback callbackCopy = c;
-        if (callbackCopy == null) {
+        if (c == null) {
             throw new NullPointerException("callback cannot be null.");
         }
         Response res = response;
@@ -262,21 +273,21 @@ public class DefaultFuture implements ResponseFuture {
 
         if (res.getStatus() == Response.OK) {
             try {
-                callbackCopy.done(res.getResult());
+                c.done(res.getResult());
             } catch (Exception e) {
                 logger.error("callback invoke error .result:" + res.getResult() + ",url:" + channel.getUrl(), e);
             }
         } else if (res.getStatus() == Response.CLIENT_TIMEOUT || res.getStatus() == Response.SERVER_TIMEOUT) {
             try {
                 TimeoutException te = new TimeoutException(res.getStatus() == Response.SERVER_TIMEOUT, channel, res.getErrorMessage());
-                callbackCopy.caught(te);
+                c.caught(te);
             } catch (Exception e) {
                 logger.error("callback invoke error ,url:" + channel.getUrl(), e);
             }
         } else {
             try {
                 RuntimeException re = new RuntimeException(res.getErrorMessage());
-                callbackCopy.caught(re);
+                c.caught(re);
             } catch (Exception e) {
                 logger.error("callback invoke error ,url:" + channel.getUrl(), e);
             }

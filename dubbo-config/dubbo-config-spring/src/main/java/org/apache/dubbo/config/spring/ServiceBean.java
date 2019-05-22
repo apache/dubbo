@@ -16,19 +16,18 @@
  */
 package org.apache.dubbo.config.spring;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.ProtocolConfig;
-import org.apache.dubbo.config.ProviderConfig;
-import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.MetricsConfig;
-import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
-import org.apache.dubbo.config.MonitorConfig;
+import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.ModuleConfig;
-import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.MonitorConfig;
+import org.apache.dubbo.config.ProtocolConfig;
+import org.apache.dubbo.config.ProviderConfig;
+import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.context.event.ServiceBeanExportedEvent;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
@@ -50,6 +49,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.config.spring.util.BeanFactoryUtils.addApplicationListener;
 
 /**
@@ -200,7 +200,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             if (CollectionUtils.isNotEmptyMap(registryConfigMap)) {
                 List<RegistryConfig> registryConfigs = new ArrayList<>();
                 if (StringUtils.isNotEmpty(registryIds)) {
-                    Arrays.stream(Constants.COMMA_SPLIT_PATTERN.split(registryIds)).forEach(id -> {
+                    Arrays.stream(COMMA_SPLIT_PATTERN.split(registryIds)).forEach(id -> {
                         if (registryConfigMap.containsKey(id)) {
                             registryConfigs.add(registryConfigMap.get(id));
                         }
@@ -285,7 +285,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             if (protocolConfigMap != null && protocolConfigMap.size() > 0) {
                 List<ProtocolConfig> protocolConfigs = new ArrayList<ProtocolConfig>();
                 if (StringUtils.isNotEmpty(getProtocolIds())) {
-                    Arrays.stream(Constants.COMMA_SPLIT_PATTERN.split(getProtocolIds()))
+                    Arrays.stream(COMMA_SPLIT_PATTERN.split(getProtocolIds()))
                             .forEach(id -> {
                                 if (protocolConfigMap.containsKey(id)) {
                                     protocolConfigs.add(protocolConfigMap.get(id));

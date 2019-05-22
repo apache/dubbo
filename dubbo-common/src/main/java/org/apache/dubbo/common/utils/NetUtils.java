@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
@@ -36,6 +35,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
+
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
+import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_IP_TO_BIND;
 
 /**
  * IP and Port Helper for RPC
@@ -99,18 +103,18 @@ public class NetUtils {
     public static boolean isLocalHost(String host) {
         return host != null
                 && (LOCAL_IP_PATTERN.matcher(host).matches()
-                || host.equalsIgnoreCase(Constants.LOCALHOST_KEY));
+                || host.equalsIgnoreCase(LOCALHOST_KEY));
     }
 
     public static boolean isAnyHost(String host) {
-        return Constants.ANYHOST_VALUE.equals(host);
+        return ANYHOST_VALUE.equals(host);
     }
 
     public static boolean isInvalidLocalHost(String host) {
         return host == null
                 || host.length() == 0
-                || host.equalsIgnoreCase(Constants.LOCALHOST_KEY)
-                || host.equals(Constants.ANYHOST_VALUE)
+                || host.equalsIgnoreCase(LOCALHOST_KEY)
+                || host.equals(ANYHOST_VALUE)
                 || (LOCAL_IP_PATTERN.matcher(host).matches());
     }
 
@@ -130,8 +134,8 @@ public class NetUtils {
         String name = address.getHostAddress();
         boolean result = (name != null
                 && IP_PATTERN.matcher(name).matches()
-                && !Constants.ANYHOST_VALUE.equals(name)
-                && !Constants.LOCALHOST_VALUE.equals(name));
+                && !ANYHOST_VALUE.equals(name)
+                && !LOCALHOST_VALUE.equals(name));
         return result;
     }
 
@@ -178,7 +182,7 @@ public class NetUtils {
 
     public static String getLocalHost() {
         InetAddress address = getLocalAddress();
-        return address == null ? Constants.LOCALHOST_VALUE : address.getHostAddress();
+        return address == null ? LOCALHOST_VALUE : address.getHostAddress();
     }
 
     public static String filterLocalHost(String host) {
@@ -204,7 +208,7 @@ public class NetUtils {
     }
 
     public static String getIpByConfig() {
-        String configIp = ConfigurationUtils.getProperty(Constants.DUBBO_IP_TO_BIND);
+        String configIp = ConfigurationUtils.getProperty(DUBBO_IP_TO_BIND);
         if (configIp != null) {
             return configIp;
         }
@@ -428,7 +432,7 @@ public class NetUtils {
 
         host = inetAddress.getHostAddress();
 
-        String[] ip_address = host.split(splitCharacter);
+        String[] ipAddress = host.split(splitCharacter);
         if (pattern.equals(host)) {
             return true;
         }
@@ -442,7 +446,7 @@ public class NetUtils {
             }
         }
         for (int i = 0; i < mask.length; i++) {
-            if (mask[i].equals("*") || mask[i].equals(ip_address[i])) {
+            if (mask[i].equals("*") || mask[i].equals(ipAddress[i])) {
                 continue;
             } else if (mask[i].contains("-")) {
                 String[] rangeNumStrs = mask[i].split("-");
@@ -451,13 +455,13 @@ public class NetUtils {
                 }
                 Integer min = getNumOfIpSegment(rangeNumStrs[0], isIpv4);
                 Integer max = getNumOfIpSegment(rangeNumStrs[1], isIpv4);
-                Integer ip = getNumOfIpSegment(ip_address[i], isIpv4);
+                Integer ip = getNumOfIpSegment(ipAddress[i], isIpv4);
                 if (ip < min || ip > max) {
                     return false;
                 }
-            } else if ("0".equals(ip_address[i]) && ("0".equals(mask[i]) || "00".equals(mask[i]) || "000".equals(mask[i]) || "0000".equals(mask[i]))) {
+            } else if ("0".equals(ipAddress[i]) && ("0".equals(mask[i]) || "00".equals(mask[i]) || "000".equals(mask[i]) || "0000".equals(mask[i]))) {
                 continue;
-            } else if (!mask[i].equals(ip_address[i])) {
+            } else if (!mask[i].equals(ipAddress[i])) {
                 return false;
             }
         }

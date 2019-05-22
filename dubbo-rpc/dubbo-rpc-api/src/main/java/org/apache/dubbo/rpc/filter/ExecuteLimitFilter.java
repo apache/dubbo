@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.rpc.filter;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
@@ -26,20 +26,22 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcStatus;
 
+import static org.apache.dubbo.rpc.Constants.EXECUTES_KEY;
+
+
 /**
  * The maximum parallel execution request count per method per service for the provider.If the max configured
  * <b>executes</b> is set to 10 and if invoke request where it is already 10 then it will throws exception. It
  * continue the same behaviour un till it is <10.
- *
  */
-@Activate(group = Constants.PROVIDER, value = Constants.EXECUTES_KEY)
+@Activate(group = CommonConstants.PROVIDER, value = EXECUTES_KEY)
 public class ExecuteLimitFilter implements Filter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         URL url = invoker.getUrl();
         String methodName = invocation.getMethodName();
-        int max = url.getMethodParameter(methodName, Constants.EXECUTES_KEY, 0);
+        int max = url.getMethodParameter(methodName, EXECUTES_KEY, 0);
         if (!RpcStatus.beginCount(url, methodName, max)) {
             throw new RpcException("Failed to invoke method " + invocation.getMethodName() + " in provider " +
                     url + ", cause: The service using threads greater than <dubbo:service executes=\"" + max +

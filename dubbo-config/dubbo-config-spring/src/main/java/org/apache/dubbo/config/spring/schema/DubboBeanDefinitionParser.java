@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.spring.schema;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -51,6 +50,8 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import static org.apache.dubbo.common.constants.CommonConstants.HIDE_KEY_PREFIX;
 
 /**
  * AbstractBeanDefinitionParser
@@ -316,7 +317,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                         String value = ((Element) node).getAttribute("value");
                         boolean hide = "true".equals(((Element) node).getAttribute("hide"));
                         if (hide) {
-                            key = Constants.HIDE_KEY_PREFIX + key;
+                            key = HIDE_KEY_PREFIX + key;
                         }
                         parameters.put(key, new TypedStringValue(value, String.class));
                     }

@@ -16,13 +16,13 @@
  */
 package org.apache.dubbo.rpc.protocol.redis;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -44,6 +44,9 @@ import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
+
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
 
 /**
@@ -99,7 +102,7 @@ public class RedisProtocol extends AbstractProtocol {
                 config.setMinEvictableIdleTimeMillis(url.getParameter("min.evictable.idle.time.millis", 0));
             }
             final JedisPool jedisPool = new JedisPool(config, url.getHost(), url.getPort(DEFAULT_PORT),
-                    url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT),
+                    url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT),
                     StringUtils.isBlank(url.getPassword()) ? null : url.getPassword(),
                     url.getParameter("db.index", 0));
             final int expiry = url.getParameter("expiry", 0);

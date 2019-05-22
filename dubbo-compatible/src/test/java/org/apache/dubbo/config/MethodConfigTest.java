@@ -20,10 +20,8 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 import org.apache.dubbo.service.Person;
 
-import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.config.ArgumentConfig;
 import com.alibaba.dubbo.config.MethodConfig;
-
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
@@ -31,13 +29,19 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.config.Constants.ON_INVOKE_INSTANCE_KEY;
+import static org.apache.dubbo.config.Constants.ON_INVOKE_METHOD_KEY;
+import static org.apache.dubbo.config.Constants.ON_RETURN_INSTANCE_KEY;
+import static org.apache.dubbo.config.Constants.ON_RETURN_METHOD_KEY;
+import static org.apache.dubbo.config.Constants.ON_THROW_INSTANCE_KEY;
+import static org.apache.dubbo.config.Constants.ON_THROW_METHOD_KEY;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MethodConfigTest {
@@ -120,7 +124,7 @@ public class MethodConfigTest {
         assertThat(method.getOnreturn(), equalTo((Object) "on-return-object"));
         Map<String, Object> attribute = new HashMap<String, Object>();
         MethodConfig.appendAttributes(attribute, method);
-        assertThat(attribute, hasEntry((Object) Constants.ON_RETURN_INSTANCE_KEY, (Object) "on-return-object"));
+        assertThat(attribute, hasEntry((Object) ON_RETURN_INSTANCE_KEY, (Object) "on-return-object"));
         Map<String, String> parameters = new HashMap<String, String>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters.size(), is(0));
@@ -133,7 +137,7 @@ public class MethodConfigTest {
         assertThat(method.getOnreturnMethod(), equalTo("on-return-method"));
         Map<String, Object> attribute = new HashMap<String, Object>();
         MethodConfig.appendAttributes(attribute, method);
-        assertThat(attribute, hasEntry((Object) Constants.ON_RETURN_METHOD_KEY, (Object) "on-return-method"));
+        assertThat(attribute, hasEntry((Object) ON_RETURN_METHOD_KEY, (Object) "on-return-method"));
         Map<String, String> parameters = new HashMap<String, String>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters.size(), is(0));
@@ -146,7 +150,7 @@ public class MethodConfigTest {
         assertThat(method.getOnthrow(), equalTo((Object) "on-throw-object"));
         Map<String, Object> attribute = new HashMap<String, Object>();
         MethodConfig.appendAttributes(attribute, method);
-        assertThat(attribute, hasEntry((Object) Constants.ON_THROW_INSTANCE_KEY, (Object) "on-throw-object"));
+        assertThat(attribute, hasEntry((Object) ON_THROW_INSTANCE_KEY, (Object) "on-throw-object"));
         Map<String, String> parameters = new HashMap<String, String>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters.size(), is(0));
@@ -159,7 +163,7 @@ public class MethodConfigTest {
         assertThat(method.getOnthrowMethod(), equalTo("on-throw-method"));
         Map<String, Object> attribute = new HashMap<String, Object>();
         MethodConfig.appendAttributes(attribute, method);
-        assertThat(attribute, hasEntry((Object) Constants.ON_THROW_METHOD_KEY, (Object) "on-throw-method"));
+        assertThat(attribute, hasEntry((Object) ON_THROW_METHOD_KEY, (Object) "on-throw-method"));
         Map<String, String> parameters = new HashMap<String, String>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters.size(), is(0));
@@ -172,7 +176,7 @@ public class MethodConfigTest {
         assertThat(method.getOninvoke(), equalTo((Object) "on-invoke-object"));
         Map<String, Object> attribute = new HashMap<String, Object>();
         MethodConfig.appendAttributes(attribute, method);
-        assertThat(attribute, hasEntry((Object) Constants.ON_INVOKE_INSTANCE_KEY, (Object) "on-invoke-object"));
+        assertThat(attribute, hasEntry((Object) ON_INVOKE_INSTANCE_KEY, (Object) "on-invoke-object"));
         Map<String, String> parameters = new HashMap<String, String>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters.size(), is(0));
@@ -185,7 +189,7 @@ public class MethodConfigTest {
         assertThat(method.getOninvokeMethod(), equalTo("on-invoke-method"));
         Map<String, Object> attribute = new HashMap<String, Object>();
         MethodConfig.appendAttributes(attribute, method);
-        assertThat(attribute, hasEntry((Object) Constants.ON_INVOKE_METHOD_KEY, (Object) "on-invoke-method"));
+        assertThat(attribute, hasEntry((Object) ON_INVOKE_METHOD_KEY, (Object) "on-invoke-method"));
         Map<String, String> parameters = new HashMap<String, String>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters.size(), is(0));

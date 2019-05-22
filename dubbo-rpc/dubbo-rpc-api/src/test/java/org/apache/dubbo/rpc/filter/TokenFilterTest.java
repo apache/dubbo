@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.filter;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -34,6 +33,8 @@ import java.util.Map;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
+
 public class TokenFilterTest {
 
     private TokenFilter tokenFilter = new TokenFilter();
@@ -48,7 +49,7 @@ public class TokenFilterTest {
         when(invoker.invoke(any(Invocation.class))).thenReturn(new RpcResult("result"));
 
         Map<String, String> attachments = new HashMap<String, String>();
-        attachments.put(Constants.TOKEN_KEY, token);
+        attachments.put(TOKEN_KEY, token);
         Invocation invocation = Mockito.mock(Invocation.class);
         when(invocation.getAttachments()).thenReturn(attachments);
 
@@ -67,7 +68,7 @@ public class TokenFilterTest {
             when(invoker.invoke(any(Invocation.class))).thenReturn(new RpcResult("result"));
 
             Map<String, String> attachments = new HashMap<String, String>();
-            attachments.put(Constants.TOKEN_KEY, "wrongToken");
+            attachments.put(TOKEN_KEY, "wrongToken");
             Invocation invocation = Mockito.mock(Invocation.class);
             when(invocation.getAttachments()).thenReturn(attachments);
 

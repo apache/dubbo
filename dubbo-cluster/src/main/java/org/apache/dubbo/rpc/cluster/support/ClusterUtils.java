@@ -16,14 +16,31 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.Constants;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
+
+import static org.apache.dubbo.rpc.cluster.Constants.TAG_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ALIVE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CORE_THREADS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.QUEUES_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.rpc.Constants.INVOKER_LISTENER_KEY;
+import static org.apache.dubbo.rpc.Constants.REFERENCE_FILTER_KEY;
 
 /**
  * ClusterUtils
@@ -41,81 +58,67 @@ public class ClusterUtils {
             map.putAll(remoteMap);
 
             // Remove configurations from provider, some items should be affected by provider.
-            map.remove(Constants.THREAD_NAME_KEY);
-            map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.THREAD_NAME_KEY);
+            map.remove(THREAD_NAME_KEY);
+            map.remove(DEFAULT_KEY_PREFIX + THREAD_NAME_KEY);
 
-            map.remove(Constants.THREADPOOL_KEY);
-            map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.THREADPOOL_KEY);
+            map.remove(THREADPOOL_KEY);
+            map.remove(DEFAULT_KEY_PREFIX + THREADPOOL_KEY);
 
-            map.remove(Constants.CORE_THREADS_KEY);
-            map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.CORE_THREADS_KEY);
+            map.remove(CORE_THREADS_KEY);
+            map.remove(DEFAULT_KEY_PREFIX + CORE_THREADS_KEY);
 
-            map.remove(Constants.THREADS_KEY);
-            map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.THREADS_KEY);
+            map.remove(THREADS_KEY);
+            map.remove(DEFAULT_KEY_PREFIX + THREADS_KEY);
 
-            map.remove(Constants.QUEUES_KEY);
-            map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.QUEUES_KEY);
+            map.remove(QUEUES_KEY);
+            map.remove(DEFAULT_KEY_PREFIX + QUEUES_KEY);
 
-            map.remove(Constants.ALIVE_KEY);
-            map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.ALIVE_KEY);
+            map.remove(ALIVE_KEY);
+            map.remove(DEFAULT_KEY_PREFIX + ALIVE_KEY);
 
             map.remove(Constants.TRANSPORTER_KEY);
-            map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.TRANSPORTER_KEY);
-
-            map.remove(Constants.ASYNC_KEY);
-            map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.ASYNC_KEY);
-
-            // remove method async entry.
-            Set<String> methodAsyncKey = new HashSet<>();
-            for (String key : map.keySet()) {
-                if (key != null && key.endsWith("." + Constants.ASYNC_KEY)) {
-                    methodAsyncKey.add(key);
-                }
-            }
-            for (String needRemove : methodAsyncKey) {
-                map.remove(needRemove);
-            }
+            map.remove(DEFAULT_KEY_PREFIX + Constants.TRANSPORTER_KEY);
         }
 
         if (localMap != null && localMap.size() > 0) {
             // All providers come to here have been filtered by group, which means only those providers that have the exact same group value with the consumer could come to here.
             // So, generally, we don't need to care about the group value here.
             // But when comes to group merger, there is an exception, the consumer group may be '*' while the provider group can be empty or any other values.
-            String remoteGroup = map.get(Constants.GROUP_KEY);
-            String remoteRelease = map.get(Constants.RELEASE_KEY);
+            String remoteGroup = map.get(GROUP_KEY);
+            String remoteRelease = map.get(RELEASE_KEY);
             map.putAll(localMap);
             if (StringUtils.isNotEmpty(remoteGroup)) {
-                map.put(Constants.GROUP_KEY, remoteGroup);
+                map.put(GROUP_KEY, remoteGroup);
             }
             // we should always keep the Provider RELEASE_KEY not overrode by the the value on Consumer side.
-            map.remove(Constants.RELEASE_KEY);
+            map.remove(RELEASE_KEY);
             if (StringUtils.isNotEmpty(remoteRelease)) {
-                map.put(Constants.RELEASE_KEY, remoteRelease);
+                map.put(RELEASE_KEY, remoteRelease);
             }
         }
         if (remoteMap != null && remoteMap.size() > 0) {
             // Use version passed from provider side
-            reserveRemoteValue(Constants.DUBBO_VERSION_KEY, map, remoteMap);
-            reserveRemoteValue(Constants.VERSION_KEY, map, remoteMap);
-            reserveRemoteValue(Constants.METHODS_KEY, map, remoteMap);
-            reserveRemoteValue(Constants.TIMESTAMP_KEY, map, remoteMap);
-            reserveRemoteValue(Constants.TAG_KEY, map, remoteMap);
+            reserveRemoteValue(DUBBO_VERSION_KEY, map, remoteMap);
+            reserveRemoteValue(VERSION_KEY, map, remoteMap);
+            reserveRemoteValue(METHODS_KEY, map, remoteMap);
+            reserveRemoteValue(TIMESTAMP_KEY, map, remoteMap);
+            reserveRemoteValue(TAG_KEY, map, remoteMap);
             // TODO, for compatibility consideration, we cannot simply change the value behind APPLICATION_KEY from Consumer to Provider. So just add an extra key here.
             // Reserve application name from provider.
-            map.put(Constants.REMOTE_APPLICATION_KEY, remoteMap.get(Constants.APPLICATION_KEY));
+            map.put(REMOTE_APPLICATION_KEY, remoteMap.get(APPLICATION_KEY));
 
             // Combine filters and listeners on Provider and Consumer
-            String remoteFilter = remoteMap.get(Constants.REFERENCE_FILTER_KEY);
-            String localFilter = localMap.get(Constants.REFERENCE_FILTER_KEY);
+            String remoteFilter = remoteMap.get(REFERENCE_FILTER_KEY);
+            String localFilter = localMap.get(REFERENCE_FILTER_KEY);
             if (remoteFilter != null && remoteFilter.length() > 0
                     && localFilter != null && localFilter.length() > 0) {
-                localMap.put(Constants.REFERENCE_FILTER_KEY, remoteFilter + "," + localFilter);
+                localMap.put(REFERENCE_FILTER_KEY, remoteFilter + "," + localFilter);
             }
-            String remoteListener = remoteMap.get(Constants.INVOKER_LISTENER_KEY);
-            String localListener = localMap.get(Constants.INVOKER_LISTENER_KEY);
+            String remoteListener = remoteMap.get(INVOKER_LISTENER_KEY);
+            String localListener = localMap.get(INVOKER_LISTENER_KEY);
             if (remoteListener != null && remoteListener.length() > 0
                     && localListener != null && localListener.length() > 0) {
-                localMap.put(Constants.INVOKER_LISTENER_KEY, remoteListener + "," + localListener);
+                localMap.put(INVOKER_LISTENER_KEY, remoteListener + "," + localListener);
             }
         }
 

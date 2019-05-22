@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.filter;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -38,6 +37,9 @@ import java.util.Map;
 
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
+
+import static org.apache.dubbo.common.constants.RpcConstants.$INVOKE;
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 public class GenericImplFilterTest {
 
@@ -97,7 +99,7 @@ public class GenericImplFilterTest {
         person.put("name", "dubbo");
         person.put("age", 10);
 
-        RpcInvocation invocation = new RpcInvocation(Constants.$INVOKE, genericInvoke.getParameterTypes(),
+        RpcInvocation invocation = new RpcInvocation($INVOKE, genericInvoke.getParameterTypes(),
                 new Object[]{"getPerson", new String[]{Person.class.getCanonicalName()}, new Object[]{person}});
 
         URL url = URL.valueOf("test://test:11/org.apache.dubbo.rpc.support.DemoService?" +
@@ -107,7 +109,7 @@ public class GenericImplFilterTest {
         when(invoker.getUrl()).thenReturn(url);
 
         genericImplFilter.invoke(invoker, invocation);
-        Assertions.assertEquals("true", invocation.getAttachment(Constants.GENERIC_KEY));
+        Assertions.assertEquals("true", invocation.getAttachment(GENERIC_KEY));
 
     }
 }

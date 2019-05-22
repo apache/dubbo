@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.rpc.protocol.thrift;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.Transporter;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
@@ -42,6 +42,11 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.rpc.Constants.IS_SERVER_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.CONNECTIONS_KEY;
+
 /**
  * @since 2.7.0, use https://github.com/dubbo/dubbo-rpc-native-thrift instead
  */
@@ -63,7 +68,7 @@ public class ThriftProtocol extends AbstractProtocol {
 
             if (msg instanceof Invocation) {
                 Invocation inv = (Invocation) msg;
-                String path = inv.getAttachments().get(Constants.PATH_KEY);
+                String path = inv.getAttachments().get(PATH_KEY);
                 String serviceKey = serviceKey(channel.getLocalAddress().getPort(),
                         path, null, null);
                 DubboExporter<?> exporter = (DubboExporter<?>) exporterMap.get(serviceKey);
@@ -120,7 +125,7 @@ public class ThriftProtocol extends AbstractProtocol {
         // find server.
         String key = url.getAddress();
         // client can expose a service for server to invoke only.
-        boolean isServer = url.getParameter(Constants.IS_SERVER_KEY, true);
+        boolean isServer = url.getParameter(IS_SERVER_KEY, true);
         if (isServer && !serverMap.containsKey(key)) {
             serverMap.put(key, getServer(url));
         }
@@ -169,7 +174,7 @@ public class ThriftProtocol extends AbstractProtocol {
 
     private ExchangeClient[] getClients(URL url) {
 
-        int connections = url.getParameter(Constants.CONNECTIONS_KEY, 1);
+        int connections = url.getParameter(CONNECTIONS_KEY, 1);
 
         ExchangeClient[] clients = new ExchangeClient[connections];
 
@@ -199,7 +204,7 @@ public class ThriftProtocol extends AbstractProtocol {
     private ExchangeServer getServer(URL url) {
         // enable sending readonly event when server closes by default
         url = url.addParameterIfAbsent(Constants.CHANNEL_READONLYEVENT_SENT_KEY, Boolean.TRUE.toString());
-        String str = url.getParameter(Constants.SERVER_KEY, Constants.DEFAULT_REMOTING_SERVER);
+        String str = url.getParameter(Constants.SERVER_KEY, org.apache.dubbo.rpc.Constants.DEFAULT_REMOTING_SERVER);
 
         if (str != null && str.length() > 0 && !ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(str)) {
             throw new RpcException("Unsupported server type: " + str + ", url: " + url);

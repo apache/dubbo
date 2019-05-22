@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.config.annotation.Argument;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
@@ -28,6 +27,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 
 public class ReferenceConfigTest {
 
@@ -70,7 +71,7 @@ public class ReferenceConfigTest {
             System.setProperty("java.net.preferIPv4Stack", "true");
             demoService.export();
             rc.get();
-            Assertions.assertTrue(!Constants.LOCAL_PROTOCOL.equalsIgnoreCase(
+            Assertions.assertTrue(!LOCAL_PROTOCOL.equalsIgnoreCase(
                     rc.getInvoker().getUrl().getProtocol()));
         } finally {
             System.clearProperty("java.net.preferIPv4Stack");

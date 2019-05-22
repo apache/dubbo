@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
@@ -25,6 +24,12 @@ import org.apache.dubbo.rpc.ExporterListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.rpc.Constants.SERVICE_FILTER_KEY;
+import static org.apache.dubbo.rpc.Constants.EXPORTER_LISTENER_KEY;
+import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
 /**
  * AbstractServiceConfig
@@ -116,7 +121,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     }
 
     public void setVersion(String version) {
-        checkKey(Constants.VERSION_KEY, version);
+        checkKey(VERSION_KEY, version);
         this.version = version;
     }
 
@@ -125,7 +130,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     }
 
     public void setGroup(String group) {
-        checkKey(Constants.GROUP_KEY, group);
+        checkKey(GROUP_KEY, group);
         this.group = group;
     }
 
@@ -175,7 +180,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     }
 
     public void setToken(String token) {
-        checkName(Constants.TOKEN_KEY, token);
+        checkName(TOKEN_KEY, token);
         this.token = token;
     }
 
@@ -247,13 +252,13 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     }
 
     @Override
-    @Parameter(key = Constants.SERVICE_FILTER_KEY, append = true)
+    @Parameter(key = SERVICE_FILTER_KEY, append = true)
     public String getFilter() {
         return super.getFilter();
     }
 
     @Override
-    @Parameter(key = Constants.EXPORTER_LISTENER_KEY, append = true)
+    @Parameter(key = EXPORTER_LISTENER_KEY, append = true)
     public String getListener() {
         return listener;
     }

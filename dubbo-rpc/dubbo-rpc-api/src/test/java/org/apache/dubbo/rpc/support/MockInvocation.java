@@ -16,12 +16,18 @@
  */
 package org.apache.dubbo.rpc.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
 /**
  * MockInvocation.java
@@ -42,12 +48,12 @@ public class MockInvocation implements Invocation {
 
     public Map<String, String> getAttachments() {
         Map<String, String> attachments = new HashMap<String, String>();
-        attachments.put(Constants.PATH_KEY, "dubbo");
-        attachments.put(Constants.GROUP_KEY, "dubbo");
-        attachments.put(Constants.VERSION_KEY, "1.0.0");
-        attachments.put(Constants.DUBBO_VERSION_KEY, "1.0.0");
-        attachments.put(Constants.TOKEN_KEY, "sfag");
-        attachments.put(Constants.TIMEOUT_KEY, "1000");
+        attachments.put(PATH_KEY, "dubbo");
+        attachments.put(GROUP_KEY, "dubbo");
+        attachments.put(VERSION_KEY, "1.0.0");
+        attachments.put(DUBBO_VERSION_KEY, "1.0.0");
+        attachments.put(TOKEN_KEY, "sfag");
+        attachments.put(TIMEOUT_KEY, "1000");
         return attachments;
     }
 

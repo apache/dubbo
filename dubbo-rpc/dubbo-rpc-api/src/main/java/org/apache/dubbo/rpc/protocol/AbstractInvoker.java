@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.Logger;
@@ -38,6 +37,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 
 /**
  * AbstractInvoker.
@@ -148,8 +149,8 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
              */
             invocation.addAttachments(contextAttachments);
         }
-        if (getUrl().getMethodParameter(invocation.getMethodName(), Constants.ASYNC_KEY, false)) {
-            invocation.setAttachment(Constants.ASYNC_KEY, Boolean.TRUE.toString());
+        if (getUrl().getMethodParameter(invocation.getMethodName(), ASYNC_KEY, false)) {
+            invocation.setAttachment(ASYNC_KEY, Boolean.TRUE.toString());
         }
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
 

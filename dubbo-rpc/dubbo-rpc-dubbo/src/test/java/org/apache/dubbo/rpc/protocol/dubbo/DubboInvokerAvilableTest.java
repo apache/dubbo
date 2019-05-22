@@ -17,24 +17,25 @@
 package org.apache.dubbo.rpc.protocol.dubbo;
 
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 
+import static org.apache.dubbo.common.constants.ConfigConstants.SHUTDOWN_WAIT_KEY;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
@@ -96,10 +97,10 @@ public class DubboInvokerAvilableTest {
         long start = System.currentTimeMillis();
 
         try{
-            System.setProperty(Constants.SHUTDOWN_WAIT_KEY, "2000");
+            System.setProperty(SHUTDOWN_WAIT_KEY, "2000");
             protocol.destroy();
         }finally {
-            System.getProperties().remove(Constants.SHUTDOWN_WAIT_KEY);
+            System.getProperties().remove(SHUTDOWN_WAIT_KEY);
         }
 
         long waitTime = System.currentTimeMillis() - start;

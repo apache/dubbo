@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.support.wrapper;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.rpc.Invocation;
@@ -39,6 +38,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
+
 public class MockClusterInvokerTest {
 
     List<Invoker<IHelloService>> invokers = new ArrayList<Invoker<IHelloService>>();
@@ -54,7 +55,7 @@ public class MockClusterInvokerTest {
     @Test
     public void testMockInvokerInvoke_normal() {
         URL url = URL.valueOf("remote://1.2.3.4/" + IHelloService.class.getName());
-        url = url.addParameter(Constants.MOCK_KEY, "fail");
+        url = url.addParameter(MOCK_KEY, "fail");
         Invoker<IHelloService> cluster = getClusterInvoker(url);
         URL mockUrl = URL.valueOf("mock://localhost/" + IHelloService.class.getName()
                 + "?getSomething.mock=return aa");
@@ -82,7 +83,7 @@ public class MockClusterInvokerTest {
     @Test
     public void testMockInvokerInvoke_failmock() {
         URL url = URL.valueOf("remote://1.2.3.4/" + IHelloService.class.getName())
-                .addParameter(Constants.MOCK_KEY, "fail:return null")
+                .addParameter(MOCK_KEY, "fail:return null")
                 .addParameter("invoke_return_error", "true");
         URL mockUrl = URL.valueOf("mock://localhost/" + IHelloService.class.getName()
                 + "?getSomething.mock=return aa").addParameters(url.getParameters());
@@ -117,7 +118,7 @@ public class MockClusterInvokerTest {
     @Test
     public void testMockInvokerInvoke_forcemock() {
         URL url = URL.valueOf("remote://1.2.3.4/" + IHelloService.class.getName());
-        url = url.addParameter(Constants.MOCK_KEY, "force:return null");
+        url = url.addParameter(MOCK_KEY, "force:return null");
 
         URL mockUrl = URL.valueOf("mock://localhost/" + IHelloService.class.getName()
                 + "?getSomething.mock=return aa&getSomething3xx.mock=return xx")
@@ -149,7 +150,7 @@ public class MockClusterInvokerTest {
     @Test
     public void testMockInvokerInvoke_forcemock_defaultreturn() {
         URL url = URL.valueOf("remote://1.2.3.4/" + IHelloService.class.getName());
-        url = url.addParameter(Constants.MOCK_KEY, "force");
+        url = url.addParameter(MOCK_KEY, "force");
         Invoker<IHelloService> cluster = getClusterInvoker(url);
         URL mockUrl = URL.valueOf("mock://localhost/" + IHelloService.class.getName()
                 + "?getSomething.mock=return aa&getSomething3xx.mock=return xx&sayHello.mock=return ")

@@ -33,7 +33,6 @@
  */
 package org.apache.dubbo.remoting.etcd.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -49,6 +48,12 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.remoting.etcd.Constants.CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.remoting.etcd.Constants.CONSUMERS_CATEGORY;
+import static org.apache.dubbo.remoting.etcd.Constants.PROVIDERS_CATEGORY;
+import static org.apache.dubbo.remoting.etcd.Constants.ROUTERS_CATEGORY;
+
 public abstract class AbstractEtcdClient<WatcherListener> implements EtcdClient {
 
     protected static final Logger logger = LoggerFactory.getLogger(AbstractEtcdClient.class);
@@ -58,10 +63,8 @@ public abstract class AbstractEtcdClient<WatcherListener> implements EtcdClient 
     private final Set<StateListener> stateListeners = new ConcurrentHashSet<>();
 
     private final ConcurrentMap<String, ConcurrentMap<ChildListener, WatcherListener>> childListeners = new ConcurrentHashMap<>();
-    private final List<String> categories = Arrays.asList(Constants.PROVIDERS_CATEGORY
-            , Constants.CONSUMERS_CATEGORY
-            , Constants.ROUTERS_CATEGORY
-            , Constants.CONFIGURATORS_CATEGORY);
+    private final List<String> categories = Arrays.asList(PROVIDERS_CATEGORY, CONSUMERS_CATEGORY, ROUTERS_CATEGORY,
+            CONFIGURATORS_CATEGORY);
     private volatile boolean closed = false;
 
     public AbstractEtcdClient(URL url) {
@@ -151,7 +154,7 @@ public abstract class AbstractEtcdClient<WatcherListener> implements EtcdClient 
         if (StringUtils.isEmpty(path)) {
             throw new IllegalArgumentException("path is required, actual null or ''");
         }
-        return (path.charAt(0) != '/') ? (Constants.PATH_SEPARATOR + path) : path;
+        return (path.charAt(0) != '/') ? (PATH_SEPARATOR + path) : path;
     }
 
     protected void createParentIfAbsent(String fixedPath) {

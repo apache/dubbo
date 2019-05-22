@@ -16,17 +16,19 @@
  */
 package org.apache.dubbo.remoting;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Random;
+
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.CONNECTIONS_KEY;
 
 public class PerformanceClientFixedTest  {
 
@@ -42,9 +44,9 @@ public class PerformanceClientFixedTest  {
         final String server = System.getProperty("server", "127.0.0.1:9911");
         final String transporter = PerformanceUtils.getProperty(Constants.TRANSPORTER_KEY, Constants.DEFAULT_TRANSPORTER);
         final String serialization = PerformanceUtils.getProperty(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION);
-        final int timeout = PerformanceUtils.getIntProperty(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+        final int timeout = PerformanceUtils.getIntProperty(TIMEOUT_KEY, DEFAULT_TIMEOUT);
         //final int length = PerformanceUtils.getIntProperty("length", 1024);
-        final int connectionCount = PerformanceUtils.getIntProperty(Constants.CONNECTIONS_KEY, 1);
+        final int connectionCount = PerformanceUtils.getIntProperty(CONNECTIONS_KEY, 1);
         //final int concurrent = PerformanceUtils.getIntProperty("concurrent", 100);
         //int r = PerformanceUtils.getIntProperty("runs", 10000);
         //final int runs = r > 0 ? r : Integer.MAX_VALUE;

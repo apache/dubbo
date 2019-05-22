@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.memcached;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -59,7 +59,7 @@ public class MemcachedProtocol extends AbstractProtocol {
     public <T> Invoker<T> refer(final Class<T> type, final URL url) throws RpcException {
         try {
             String address = url.getAddress();
-            String backup = url.getParameter(Constants.BACKUP_KEY);
+            String backup = url.getParameter(RemotingConstants.BACKUP_KEY);
             if (backup != null && backup.length() > 0) {
                 address += "," + backup;
             }

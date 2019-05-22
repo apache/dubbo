@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol.thrift;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.AtomicPositiveInteger;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
@@ -32,6 +32,15 @@ import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
+
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
+
+
 /**
  * @since 2.7.0, use https://github.com/dubbo/dubbo-rpc-native-thrift instead
  */
@@ -51,9 +60,7 @@ public class ThriftInvoker<T> extends AbstractInvoker<T> {
     }
 
     public ThriftInvoker(Class<T> type, URL url, ExchangeClient[] clients, Set<Invoker<?>> invokers) {
-        super(type, url,
-                new String[]{Constants.INTERFACE_KEY, Constants.GROUP_KEY,
-                        Constants.TOKEN_KEY, Constants.TIMEOUT_KEY});
+        super(type, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY, TIMEOUT_KEY});
         this.clients = clients;
         this.invokers = invokers;
     }
@@ -67,7 +74,7 @@ public class ThriftInvoker<T> extends AbstractInvoker<T> {
 
         methodName = invocation.getMethodName();
 
-        inv.setAttachment(Constants.PATH_KEY, getUrl().getPath());
+        inv.setAttachment(PATH_KEY, getUrl().getPath());
 
         // for thrift codec
         inv.setAttachment(ThriftCodec.PARAMETER_CLASS_NAME_GENERATOR, getUrl().getParameter(
@@ -82,8 +89,7 @@ public class ThriftInvoker<T> extends AbstractInvoker<T> {
         }
 
         try {
-            int timeout = getUrl().getMethodParameter(
-                    methodName, Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+            int timeout = getUrl().getMethodParameter(methodName, TIMEOUT_KEY, DEFAULT_TIMEOUT);
 
             RpcContext.getContext().setFuture(null);
 
