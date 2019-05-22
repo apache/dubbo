@@ -37,9 +37,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ProtobufTypeBuilder implements TypeBuilder {
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
-    private static final Pattern MAP_PATTERN = Pattern.compile("^java[.]util[.]Map<(\\w+[[.$]\\w*]+), (\\w+[[.$]\\w*]+)>$");
-    private static final Pattern LIST_PATTERN = Pattern.compile("^java[.]util[.]List<(\\w+([.$]\\w*)+)>$");
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Pattern MAP_PATTERN = Pattern.compile("^java\\.util\\.Map<(\\S+), (\\S+)>$");
+    private static final Pattern LIST_PATTERN = Pattern.compile("^java\\.util\\.List<(\\S+)>$");
     private static final List<String> list = null;
     /**
      * provide a List<String> type for TypeDefinitionBuilder.build(type,class,cache)
@@ -61,11 +61,7 @@ public class ProtobufTypeBuilder implements TypeBuilder {
             return false;
         }
 
-        if (GeneratedMessageV3.class.isAssignableFrom(clazz)) {
-            return true;
-        }
-
-        return false;
+        return GeneratedMessageV3.class.isAssignableFrom(clazz);
     }
 
     @Override
@@ -92,7 +88,7 @@ public class ProtobufTypeBuilder implements TypeBuilder {
             return typeDefinition;
         }
 
-        Map<String, TypeDefinition> properties = new HashMap();
+        Map<String, TypeDefinition> properties = new HashMap<>();
         Method[] methods = builder.getClass().getDeclaredMethods();
         for (Method method : methods) {
             String methodName = method.getName();
@@ -100,14 +96,12 @@ public class ProtobufTypeBuilder implements TypeBuilder {
             if (isSimplePropertySettingMethod(method)) {
                 // property of custom type or primitive type
                 properties.put(generateSimpleFiledName(methodName), TypeDefinitionBuilder.build(method.getGenericParameterTypes()[0], method.getParameterTypes()[0], typeCache));
-                continue;
             } else if (isMapPropertySettingMethod(method)) {
                 // property of map
                 Type type = method.getGenericParameterTypes()[0];
                 String fieldName = generateMapFieldName(methodName);
                 validateMapType(fieldName, type.toString());
                 properties.put(fieldName, TypeDefinitionBuilder.build(type, method.getParameterTypes()[0], typeCache));
-                continue;
             } else if (isListPropertySettingMethod(method)) {
                 // property of list
                 Type type = method.getGenericReturnType();
@@ -122,7 +116,6 @@ public class ProtobufTypeBuilder implements TypeBuilder {
                     td = TypeDefinitionBuilder.build(type, method.getReturnType(), typeCache);
                 }
                 properties.put(fieldName, td);
-                continue;
             }
         }
         typeDefinition.setProperties(properties);
