@@ -14,19 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.etcd.option;
+package org.apache.dubbo.configcenter;
 
-import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_SESSION_TIMEOUT;
-
-/**
- * Etcd registry constants.
- */
 public interface Constants {
-
-    String HTTP_SUBFIX_KEY = "://";
-
-    String HTTP_KEY = "http://";
-
-    int DEFAULT_KEEPALIVE_TIMEOUT = DEFAULT_SESSION_TIMEOUT / 2;
-
+    String CONFIG_CLUSTER_KEY = "config.cluster";
+    String CONFIG_NAMESPACE_KEY = "config.namespace";
+    String CONFIG_GROUP_KEY = "config.group";
+    String CONFIG_CHECK_KEY = "config.check";
 }

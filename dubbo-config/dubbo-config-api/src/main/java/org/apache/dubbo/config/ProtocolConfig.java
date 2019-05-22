@@ -36,7 +36,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.ConfigConstants.HOST_KEY;
 import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
-import static org.apache.dubbo.common.constants.ConfigConstants.TELNET;
+import static org.apache.dubbo.remoting.Constants.TELNET;
 import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
 
 /**
