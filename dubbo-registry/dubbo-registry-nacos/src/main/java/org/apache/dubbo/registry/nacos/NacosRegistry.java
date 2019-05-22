@@ -278,9 +278,9 @@ public class NacosRegistry extends FailbackRegistry {
 
         final String targetServiceInterface = url.getServiceInterface();
 
-        final String targetVersion = url.getParameter(VERSION_KEY);
+        final String targetVersion = url.getParameter(VERSION_KEY,"");
 
-        final String targetGroup = url.getParameter(GROUP_KEY);
+        final String targetGroup = url.getParameter(GROUP_KEY,"");
 
         filterData(serviceNames, serviceName -> {
             // split service name to segments
@@ -290,7 +290,7 @@ public class NacosRegistry extends FailbackRegistry {
             // (optional) segments[3] = group
             String[] segments = StringUtils.split(serviceName, SERVICE_NAME_SEPARATOR);
             int length = segments.length;
-            if (length < 2) { // must present 3 segments or more
+            if (length != 4) { // must present 4 segments
                 return false;
             }
 
@@ -311,8 +311,7 @@ public class NacosRegistry extends FailbackRegistry {
                 return false;
             }
 
-            String group = length > 3 ? segments[SERVICE_GROUP_INDEX] : null;
-            // no match service group
+            String group = segments[SERVICE_GROUP_INDEX];
             return group == null || WILDCARD.equals(targetGroup)
                     || StringUtils.equals(targetGroup, group);
         });
