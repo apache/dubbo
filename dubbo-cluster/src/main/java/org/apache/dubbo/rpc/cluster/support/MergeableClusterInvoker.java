@@ -44,10 +44,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 import static org.apache.dubbo.rpc.Constants.MERGER_KEY;
 
 /**
- * NOTICE! Does not work with async call.
  * @param <T>
  */
 @SuppressWarnings("unchecked")
@@ -91,7 +91,9 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
         Map<String, Result> results = new HashMap<>();
         for (final Invoker<T> invoker : invokers) {
-            results.put(invoker.getUrl().getServiceKey(), invoker.invoke(new RpcInvocation(invocation, invoker)));
+            RpcInvocation subInvocation = new RpcInvocation(invocation, invoker);
+            subInvocation.setAttachment(ASYNC_KEY, "true");
+            results.put(invoker.getUrl().getServiceKey(), invoker.invoke(subInvocation));
         }
 
         Object result = null;

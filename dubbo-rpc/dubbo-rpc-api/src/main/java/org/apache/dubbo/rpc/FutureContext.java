@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc;
 
+import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
+
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -27,7 +29,7 @@ import java.util.concurrent.CompletableFuture;
  */
 public class FutureContext {
 
-    public static ThreadLocal<CompletableFuture<?>> futureTL = new ThreadLocal<>();
+    public static InternalThreadLocal<CompletableFuture<?>> futureTL = new InternalThreadLocal<>();
 
     /**
      * get future.

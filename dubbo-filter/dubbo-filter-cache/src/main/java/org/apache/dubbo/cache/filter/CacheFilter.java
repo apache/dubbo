@@ -116,13 +116,13 @@ public class CacheFilter implements Filter {
     /**
      * Cache value wrapper.
      */
-    static class ValueWrapper implements Serializable{
+    static class ValueWrapper implements Serializable {
 
         private static final long serialVersionUID = -1777337318019193256L;
 
         private final Object value;
 
-        public ValueWrapper(Object value){
+        public ValueWrapper (Object value) {
             this.value = value;
         }
 
