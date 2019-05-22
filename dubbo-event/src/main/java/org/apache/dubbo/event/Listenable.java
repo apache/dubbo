@@ -69,7 +69,7 @@ public interface Listenable<E extends EventListener<?>> {
     }
 
     /**
-     * Remove a a {@link EventListener Dubbo event listener}
+     * Remove a {@link EventListener Dubbo event listener}
      *
      * @param listener a {@link EventListener Dubbo event listener}
      * @return If remove successfully, return <code>true</code>.
