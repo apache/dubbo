@@ -420,16 +420,17 @@ public class NacosRegistry extends FailbackRegistry {
 
     private String getServiceName(URL url, String category) {
         StringBuilder serviceNameBuilder = new StringBuilder(category);
-        appendIfPresent(serviceNameBuilder, url, INTERFACE_KEY);
-        appendIfPresent(serviceNameBuilder, url, VERSION_KEY);
-        appendIfPresent(serviceNameBuilder, url, GROUP_KEY);
+        append(serviceNameBuilder, url, INTERFACE_KEY);
+        append(serviceNameBuilder, url, VERSION_KEY);
+        append(serviceNameBuilder, url, GROUP_KEY);
         return serviceNameBuilder.toString();
     }
 
-    private void appendIfPresent(StringBuilder target, URL url, String parameterName) {
+    private void append(StringBuilder target, URL url, String parameterName) {
+        target.append(SERVICE_NAME_SEPARATOR);
         String parameterValue = url.getParameter(parameterName);
         if (!StringUtils.isBlank(parameterValue)) {
-            target.append(SERVICE_NAME_SEPARATOR).append(parameterValue);
+            target.append(parameterValue);
         }
     }
 
