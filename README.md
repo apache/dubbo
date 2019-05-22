@@ -1,4 +1,4 @@
-# Apache Dubbo (incubating) Project
+# Apache Dubbo Project
 
 [![Build Status](https://travis-ci.org/apache/incubator-dubbo.svg?branch=master)](https://travis-ci.org/apache/incubator-dubbo)
 [![codecov](https://codecov.io/gh/apache/incubator-dubbo/branch/master/graph/badge.svg)](https://codecov.io/gh/apache/incubator-dubbo)
@@ -10,7 +10,7 @@
 [![](https://img.shields.io/twitter/follow/ApacheDubbo.svg?label=Follow&style=social&logoWidth=0)](https://twitter.com/intent/follow?screen_name=ApacheDubbo)
 [![Gitter](https://badges.gitter.im/alibaba/dubbo.svg)](https://gitter.im/alibaba/dubbo?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-Apache Dubbo (incubating) is a high-performance, Java based open source RPC framework. Please visit [official site](http://dubbo.incubator.apache.org) for quick start and documentations, as well as [Wiki](https://github.com/apache/incubator-dubbo/wiki) for news, FAQ, and release notes.
+Apache Dubbo is a high-performance, Java based open source RPC framework. Please visit [official site](http://dubbo.apache.org) for quick start and documentations, as well as [Wiki](https://github.com/apache/incubator-dubbo/wiki) for news, FAQ, and release notes.
 
 We are now collecting dubbo user info in order to help us to improve Dubbo better, pls. kindly help us by providing yours on [issue#1012: Wanted: who's using dubbo](https://github.com/apache/incubator-dubbo/issues/1012), thanks :)
 
@@ -175,7 +175,7 @@ If you want to try out the cutting-edge features, you can built with the followi
 ## Contact
 
 * Mailing list: 
-  * dev list: for dev/user discussion. [subscribe](mailto:dev-subscribe@dubbo.incubator.apache.org), [unsubscribe](mailto:dev-unsubscribe@dubbo.incubator.apache.org), [archive](https://lists.apache.org/list.html?dev@dubbo.apache.org),  [guide](https://github.com/apache/incubator-dubbo/wiki/Mailing-list-subscription-guide)
+  * dev list: for dev/user discussion. [subscribe](mailto:dev-subscribe@dubbo.apache.org), [unsubscribe](mailto:dev-unsubscribe@dubbo.apache.org), [archive](https://lists.apache.org/list.html?dev@dubbo.apache.org),  [guide](https://github.com/apache/incubator-dubbo/wiki/Mailing-list-subscription-guide)
   
 * Bugs: [Issues](https://github.com/apache/incubator-dubbo/issues/new?template=dubbo-issue-report-template.md)
 * Gitter: [Gitter channel](https://gitter.im/alibaba/dubbo) 
@@ -199,7 +199,7 @@ See [CONTRIBUTING](https://github.com/apache/incubator-dubbo/blob/master/CONTRI
 * Improve the [dubbo-admin/dubbo-monitor](https://github.com/apache/incubator-dubbo-admin).
 * Contribute to the projects listed in [ecosystem](https://github.com/dubbo).
 * Any form of contribution that is not mentioned above.
-* If you would like to contribute, please send an email to dev@dubbo.incubator.apache.org to let us know!
+* If you would like to contribute, please send an email to dev@dubbo.apache.org to let us know!
 
 ## Reporting bugs
 
@@ -207,13 +207,13 @@ Please follow the [template](https://github.com/apache/incubator-dubbo/issues/ne
 
 ## Reporting a security vulnerability
 
-Please report security vulnerability to [us](mailto:security@dubbo.incubator.apache.org) privately.
+Please report security vulnerability to [us](mailto:security@dubbo.apache.org) privately.
 
 ## Dubbo ecosystem
 
 * [Dubbo Ecosystem Entry](https://github.com/dubbo) - A GitHub group `dubbo` to gather all Dubbo relevant projects not appropriate in [apache](https://github.com/apache) group yet
-* [Dubbo Website](https://github.com/apache/incubator-dubbo-website) - Apache Dubbo (incubating) official website
-* [Dubbo Samples](https://github.com/apache/incubator-dubbo-samples) - samples for Apache Dubbo (incubating)
+* [Dubbo Website](https://github.com/apache/incubator-dubbo-website) - Apache Dubbo official website
+* [Dubbo Samples](https://github.com/apache/incubator-dubbo-samples) - samples for Apache Dubbo
 * [Dubbo Spring Boot](https://github.com/apache/incubator-dubbo-spring-boot-project) - Spring Boot Project for Dubbo
 * [Dubbo Admin](https://github.com/apache/incubator-dubbo-admin) - The reference implementation for Dubbo admin
 
