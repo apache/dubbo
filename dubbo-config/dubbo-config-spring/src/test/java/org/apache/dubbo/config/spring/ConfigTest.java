@@ -65,8 +65,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.matchers.JUnitMatchers.containsString;
 
-import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_SERIALIZATION_BEAN;
-import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_KEY;
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_BEAN;
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 
 /**

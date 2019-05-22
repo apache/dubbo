@@ -17,11 +17,11 @@
 package org.apache.dubbo.remoting.p2p.exchange.support;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Client;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
@@ -105,7 +105,7 @@ public class ExchangeServerPeer extends ExchangeServerDelegate implements Exchan
 
     @Override
     public void send(Object message) throws RemotingException {
-        send(message, getUrl().getParameter(RemotingConstants.SENT_KEY, false));
+        send(message, getUrl().getParameter(Constants.SENT_KEY, false));
     }
 
     @Override

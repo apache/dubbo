@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import static org.apache.dubbo.common.constants.ConfigConstants.ON_THROW_METHOD_KEY;
+import static org.apache.dubbo.config.Constants.ON_THROW_METHOD_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;

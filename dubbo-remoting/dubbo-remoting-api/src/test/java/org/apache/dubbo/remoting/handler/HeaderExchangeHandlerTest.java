@@ -17,8 +17,8 @@
 package org.apache.dubbo.remoting.handler;
 
 
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
@@ -160,7 +160,7 @@ public class HeaderExchangeHandlerTest {
         final Channel mchannel = new MockedChannel();
         HeaderExchangeHandler hexhandler = new HeaderExchangeHandler(new MockedExchangeHandler());
         hexhandler.received(mchannel, request);
-        Assertions.assertTrue(mchannel.hasAttribute(RemotingConstants.CHANNEL_ATTRIBUTE_READONLY_KEY));
+        Assertions.assertTrue(mchannel.hasAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY));
     }
 
     @Test

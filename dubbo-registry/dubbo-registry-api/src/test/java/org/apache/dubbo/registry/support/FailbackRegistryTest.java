@@ -30,8 +30,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMER_PROTOCOL;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_RETRY_PERIOD_KEY;
+import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
+import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_PERIOD_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FailbackRegistryTest {

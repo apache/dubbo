@@ -60,13 +60,13 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import static java.util.stream.Collectors.toList;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
-import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTRY_RETRY_PERIOD;
-import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_SESSION_TIMEOUT;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_RETRY_PERIOD_KEY;
 import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_ETCD3_NOTIFY_QUEUES_KEY;
 import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_ETCD3_NOTIFY_THREADS;
 import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_GRPC_QUEUES;
+import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_RETRY_PERIOD;
+import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_SESSION_TIMEOUT;
 import static org.apache.dubbo.remoting.etcd.Constants.ETCD3_NOTIFY_MAXTHREADS_KEYS;
+import static org.apache.dubbo.remoting.etcd.Constants.RETRY_PERIOD_KEY;
 import static org.apache.dubbo.remoting.etcd.jetcd.JEtcdClientWrapper.UTF_8;
 
 /**
@@ -93,7 +93,7 @@ public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
                     JEtcdClient.this.stateChanged(StateListener.DISCONNECTED);
                 }
             });
-            delayPeriod = getUrl().getParameter(REGISTRY_RETRY_PERIOD_KEY, DEFAULT_REGISTRY_RETRY_PERIOD);
+            delayPeriod = getUrl().getParameter(RETRY_PERIOD_KEY, DEFAULT_RETRY_PERIOD);
             reconnectSchedule = Executors.newScheduledThreadPool(1,
                     new NamedThreadFactory("etcd3-watch-auto-reconnect"));
 

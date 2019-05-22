@@ -18,13 +18,13 @@ package org.apache.dubbo.remoting.transport;
 
 import org.apache.dubbo.common.Resetable;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Codec;
 import org.apache.dubbo.remoting.Codec2;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.transport.codec.CodecAdapter;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
@@ -47,11 +47,11 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
         super(url, handler);
         this.codec = getChannelCodec(url);
         this.timeout = url.getPositiveParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
-        this.connectTimeout = url.getPositiveParameter(RemotingConstants.CONNECT_TIMEOUT_KEY, RemotingConstants.DEFAULT_CONNECT_TIMEOUT);
+        this.connectTimeout = url.getPositiveParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT);
     }
 
     protected static Codec2 getChannelCodec(URL url) {
-        String codecName = url.getParameter(RemotingConstants.CODEC_KEY, "telnet");
+        String codecName = url.getParameter(Constants.CODEC_KEY, "telnet");
         if (ExtensionLoader.getExtensionLoader(Codec2.class).hasExtension(codecName)) {
             return ExtensionLoader.getExtensionLoader(Codec2.class).getExtension(codecName);
         } else {
@@ -77,8 +77,8 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
             logger.error(t.getMessage(), t);
         }
         try {
-            if (url.hasParameter(RemotingConstants.CONNECT_TIMEOUT_KEY)) {
-                int t = url.getParameter(RemotingConstants.CONNECT_TIMEOUT_KEY, 0);
+            if (url.hasParameter(Constants.CONNECT_TIMEOUT_KEY)) {
+                int t = url.getParameter(Constants.CONNECT_TIMEOUT_KEY, 0);
                 if (t > 0) {
                     this.connectTimeout = t;
                 }
@@ -87,7 +87,7 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
             logger.error(t.getMessage(), t);
         }
         try {
-            if (url.hasParameter(RemotingConstants.CODEC_KEY)) {
+            if (url.hasParameter(Constants.CODEC_KEY)) {
                 this.codec = getChannelCodec(url);
             }
         } catch (Throwable t) {

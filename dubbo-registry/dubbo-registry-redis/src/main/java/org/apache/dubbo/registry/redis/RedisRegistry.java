@@ -63,14 +63,14 @@ import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
-import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTRY_RECONNECT_PERIOD;
-import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_SESSION_TIMEOUT;
+import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY_RECONNECT_PERIOD;
+import static org.apache.dubbo.registry.Constants.DEFAULT_SESSION_TIMEOUT;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_RECONNECT_PERIOD_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.SESSION_TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.UNREGISTER;
+import static org.apache.dubbo.registry.Constants.REGISTER;
+import static org.apache.dubbo.registry.Constants.REGISTRY_RECONNECT_PERIOD_KEY;
+import static org.apache.dubbo.registry.Constants.SESSION_TIMEOUT_KEY;
+import static org.apache.dubbo.registry.Constants.UNREGISTER;
 
 /**
  * RedisRegistry

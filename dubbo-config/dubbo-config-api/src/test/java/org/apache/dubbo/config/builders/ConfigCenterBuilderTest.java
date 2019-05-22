@@ -97,13 +97,6 @@ class ConfigCenterBuilderTest {
     }
 
     @Test
-    void appName() {
-        ConfigCenterBuilder builder = new ConfigCenterBuilder();
-        builder.appName("appName");
-        Assertions.assertEquals("appName", builder.build().getAppName());
-    }
-
-    @Test
     void configFile() {
         ConfigCenterBuilder builder = new ConfigCenterBuilder();
         builder.configFile("configFile");
@@ -146,7 +139,7 @@ class ConfigCenterBuilderTest {
     @Test
     void build() {
         ConfigCenterBuilder builder = new ConfigCenterBuilder();
-        builder.check(true).protocol("protocol").address("address").appConfigFile("appConfigFile").appName("appName")
+        builder.check(true).protocol("protocol").address("address").appConfigFile("appConfigFile")
                 .cluster("cluster").configFile("configFile").group("group").highestPriority(false)
                 .namespace("namespace").password("password").timeout(1000L).username("usernama")
                 .appendParameter("default.num", "one").id("id").prefix("prefix");
@@ -160,7 +153,6 @@ class ConfigCenterBuilderTest {
         Assertions.assertEquals("protocol", config.getProtocol());
         Assertions.assertEquals("address", config.getAddress());
         Assertions.assertEquals("appConfigFile", config.getAppConfigFile());
-        Assertions.assertEquals("appName", config.getAppName());
         Assertions.assertEquals("cluster", config.getCluster());
         Assertions.assertEquals("configFile", config.getConfigFile());
         Assertions.assertEquals("group", config.getGroup());

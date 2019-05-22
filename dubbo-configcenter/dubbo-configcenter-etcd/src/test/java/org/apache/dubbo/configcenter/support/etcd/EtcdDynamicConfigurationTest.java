@@ -38,7 +38,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.dubbo.common.constants.RegistryConstants.SESSION_TIMEOUT_KEY;
+import static org.apache.dubbo.remoting.etcd.Constants.SESSION_TIMEOUT_KEY;
 
 /**
  * Unit test for etcd config center support

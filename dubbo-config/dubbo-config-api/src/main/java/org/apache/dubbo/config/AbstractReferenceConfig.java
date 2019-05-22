@@ -16,18 +16,18 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.InvokerListener;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
-import static org.apache.dubbo.common.constants.ClusterConstants.CLUSTER_STICKY_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_STICKY_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.LAZY_CONNECT_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.INVOKER_LISTENER_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.REFERENCE_FILTER_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.STUB_EVENT_KEY;
+import static org.apache.dubbo.rpc.Constants.LAZY_CONNECT_KEY;
+import static org.apache.dubbo.rpc.Constants.INVOKER_LISTENER_KEY;
+import static org.apache.dubbo.rpc.Constants.REFERENCE_FILTER_KEY;
+import static org.apache.dubbo.rpc.Constants.STUB_EVENT_KEY;
 
 /**
  * AbstractConsumerConfig
@@ -187,7 +187,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         return stubevent;
     }
 
-    @Parameter(key = RemotingConstants.RECONNECT_KEY)
+    @Parameter(key = Constants.RECONNECT_KEY)
     public String getReconnect() {
         return reconnect;
     }

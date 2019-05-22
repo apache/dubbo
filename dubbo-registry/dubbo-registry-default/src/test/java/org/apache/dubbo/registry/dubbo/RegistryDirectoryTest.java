@@ -17,7 +17,6 @@
 package org.apache.dubbo.registry.dubbo;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.LogUtil;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -25,6 +24,7 @@ import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.integration.RegistryDirectory;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.RpcException;
@@ -49,19 +49,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
-import static org.apache.dubbo.common.constants.ClusterConstants.INVOCATION_NEED_MOCK;
-import static org.apache.dubbo.common.constants.ClusterConstants.LOADBALANCE_KEY;
-import static org.apache.dubbo.common.constants.ClusterConstants.MOCK_PROTOCOL;
-import static org.apache.dubbo.common.constants.ClusterConstants.ROUTER_KEY;
-import static org.apache.dubbo.common.constants.ClusterConstants.RULE_KEY;
-import static org.apache.dubbo.common.constants.ClusterConstants.TYPE_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
+import static org.apache.dubbo.rpc.cluster.Constants.LOADBALANCE_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.MOCK_PROTOCOL;
+import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.TYPE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.REFER_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
@@ -69,7 +69,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATE
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL;
 import static org.apache.dubbo.common.constants.RpcConstants.$INVOKE;
-import static org.apache.dubbo.common.constants.RpcConstants.MOCK_KEY;
+import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
@@ -389,7 +389,7 @@ public class RegistryDirectoryTest {
 
             Invoker invoker = (Invoker) invokers.get(0);
             URL url = invoker.getUrl();
-            Assertions.assertEquals(false, url.getParameter(RemotingConstants.CHECK_KEY, false));
+            Assertions.assertEquals(false, url.getParameter(Constants.CHECK_KEY, false));
         }
         {
             serviceUrls.clear();

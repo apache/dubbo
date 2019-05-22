@@ -34,8 +34,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.dubbo.common.constants.ClusterConstants.DEFAULT_FORKS;
-import static org.apache.dubbo.common.constants.ClusterConstants.FORKS_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_FORKS;
+import static org.apache.dubbo.rpc.cluster.Constants.FORKS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 

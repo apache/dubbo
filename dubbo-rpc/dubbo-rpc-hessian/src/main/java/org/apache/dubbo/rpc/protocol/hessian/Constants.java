@@ -15,32 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.constants;
+package org.apache.dubbo.rpc.protocol.hessian;
 
-public interface MonitorConstants {
-    String MONITOR_KEY = "monitor";
+/**
+ *
+ */
+public interface Constants {
 
-    String LOGSTAT_PROTOCOL = "logstat";
+    String HESSIAN2_REQUEST_KEY = "hessian2.request";
 
-    String COUNT_PROTOCOL = "count";
+    boolean DEFAULT_HESSIAN2_REQUEST = false;
 
-    String DUBBO_PROVIDER = "dubbo.provider";
+    String HESSIAN_OVERLOAD_METHOD_KEY = "hessian.overload.method";
 
-    String DUBBO_CONSUMER = "dubbo.consumer";
+    boolean DEFAULT_HESSIAN_OVERLOAD_METHOD = false;
 
-    String DUBBO_PROVIDER_METHOD = "dubbo.provider.method";
+    String DEFAULT_HTTP_CLIENT = "jdk";
 
-    String DUBBO_CONSUMER_METHOD = "dubbo.consumer.method";
-
-    String SERVICE = "service";
-
-    String METHOD = "method";
-
-    String DUBBO_GROUP = "dubbo";
-
-    String METRICS_KEY = "metrics";
-
-    String METRICS_PORT = "metrics.port";
-
-    String METRICS_PROTOCOL = "metrics.protocol";
 }

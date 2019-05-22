@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.TPS_LIMIT_RATE_KEY;
+import static org.apache.dubbo.rpc.Constants.TPS_LIMIT_RATE_KEY;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TpsLimitFilterTest {
