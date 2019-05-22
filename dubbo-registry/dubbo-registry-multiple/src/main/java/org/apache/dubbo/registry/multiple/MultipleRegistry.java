@@ -20,8 +20,6 @@ package org.apache.dubbo.registry.multiple;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
@@ -43,18 +41,17 @@ import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL
  */
 public class MultipleRegistry extends AbstractRegistry {
 
-    private static final Logger logger = LoggerFactory.getLogger(MultipleRegistry.class);
-    static final String REGISTRY_FOR_SERVICE = "service-registry";
-    static final String REGISTRY_FOR_REFERENCE = "reference-registry";
+    public static final String REGISTRY_FOR_SERVICE = "service-registry";
+    public static final String REGISTRY_FOR_REFERENCE = "reference-registry";
 
-    RegistryFactory registryFactory = ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
+    protected RegistryFactory registryFactory = ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
     private final Map<String, Registry> serviceRegistries = new ConcurrentHashMap<>(4);
     private final Map<String, Registry> referenceRegistries = new ConcurrentHashMap<String, Registry>(4);
     private final Map<NotifyListener, MultipleNotifyListenerWrapper> multipleNotifyListenerMap = new ConcurrentHashMap<NotifyListener, MultipleNotifyListenerWrapper>(32);
-    List<String> origServiceRegistryURLs;
-    List<String> origReferenceRegistryURLs;
-    List<String> effectServiceRegistryURLs;
-    List<String> effectReferenceRegistryURLs;
+    protected List<String> origServiceRegistryURLs;
+    protected List<String> origReferenceRegistryURLs;
+    protected List<String> effectServiceRegistryURLs;
+    protected List<String> effectReferenceRegistryURLs;
     private URL registryUrl;
     private String applicationName;
 
@@ -159,10 +156,12 @@ public class MultipleRegistry extends AbstractRegistry {
 
     @Override
     public void unsubscribe(URL url, NotifyListener listener) {
-        for (Registry registry : referenceRegistries.values()) {
-            registry.unsubscribe(url, listener);
-        }
         MultipleNotifyListenerWrapper notifyListener = multipleNotifyListenerMap.remove(listener);
+        for (Registry registry : referenceRegistries.values()) {
+            SingleNotifyListener singleNotifyListener = notifyListener.registryMap.get(registry.getUrl());
+            registry.unsubscribe(url, singleNotifyListener);
+        }
+
         if (notifyListener != null) {
             super.unsubscribe(url, notifyListener);
             notifyListener.destroy();
@@ -224,7 +223,7 @@ public class MultipleRegistry extends AbstractRegistry {
         return effectReferenceRegistryURLs;
     }
 
-    static class MultipleNotifyListenerWrapper implements NotifyListener {
+    static protected class MultipleNotifyListenerWrapper implements NotifyListener {
 
         Map<URL, SingleNotifyListener> registryMap = new ConcurrentHashMap<URL, SingleNotifyListener>(4);
         NotifyListener sourceNotifyListener;
@@ -278,9 +277,13 @@ public class MultipleRegistry extends AbstractRegistry {
         public void notify(List<URL> urls) {
             sourceNotifyListener.notify(urls);
         }
+
+        public Map<URL, SingleNotifyListener> getRegistryMap() {
+            return registryMap;
+        }
     }
 
-    static class SingleNotifyListener implements NotifyListener {
+    static protected class SingleNotifyListener implements NotifyListener {
 
         MultipleNotifyListenerWrapper multipleNotifyListenerWrapper;
         Registry registry;
