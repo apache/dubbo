@@ -65,6 +65,7 @@ public class AsyncRpcResult extends AbstractResult {
         this.invocation = asyncRpcResult.getInvocation();
         this.storedContext = asyncRpcResult.getStoredContext();
         this.storedServerContext = asyncRpcResult.getStoredServerContext();
+        this.executor = asyncRpcResult.getExecutor();
     }
 
     /**
