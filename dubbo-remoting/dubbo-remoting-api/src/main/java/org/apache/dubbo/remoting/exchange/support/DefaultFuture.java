@@ -239,7 +239,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
 
         @Override
         public void run(Timeout timeout) {
-            DefaultFuture future = FUTURES.remove(requestID);
+            DefaultFuture future = DefaultFuture.getFuture(requestID);
             if (future.isDone()) {
                 return;
             }
