@@ -71,9 +71,9 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     }
 
     public ExecutorService getExecutor(URL url) {
-        String componentKey = Constants.EXECUTOR_SERVICE_COMPONENT_KEY;
-        if (Constants.CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(Constants.SIDE_KEY))) {
-            componentKey = Constants.CONSUMER_SIDE;
+        String componentKey = EXECUTOR_SERVICE_COMPONENT_KEY;
+        if (CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY))) {
+            componentKey = CONSUMER_SIDE;
         }
         Map<Integer, ExecutorService> executors = data.get(componentKey);
         if (executors == null) {
