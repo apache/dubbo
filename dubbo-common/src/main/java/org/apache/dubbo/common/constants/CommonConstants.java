@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.common.constants;
 
+import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
 
 public interface CommonConstants {
@@ -69,6 +70,8 @@ public interface CommonConstants {
     int DEFAULT_CORE_THREADS = 0;
 
     int DEFAULT_THREADS = 200;
+
+    String EXECUTOR_SERVICE_COMPONENT_KEY = ExecutorService.class.getName();
 
     String THREADPOOL_KEY = "threadpool";
 
