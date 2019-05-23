@@ -146,7 +146,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
             DefaultFuture future = FUTURES.remove(response.getId());
             if (future != null) {
                 Timeout t = future.timeoutCheckTask;
-                if (t != null) {
+                if (!timeout) {
                     // decrease Time
                     t.cancel();
                 }
