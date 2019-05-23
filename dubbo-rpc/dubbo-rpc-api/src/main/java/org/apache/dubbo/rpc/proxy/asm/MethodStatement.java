@@ -1,6 +1,8 @@
 package org.apache.dubbo.rpc.proxy.asm;
 
 import java.lang.reflect.Type;
+import java.sql.PreparedStatement;
+import java.util.List;
 
 public class MethodStatement {
 
@@ -11,7 +13,7 @@ public class MethodStatement {
 	private Type[] returnGeneric;
 	
 	//如果有泛型怎么办?
-	private ParameterSteaement[] parameterTypes;
+	private List<ParameterSteaement> parameterTypes;
 	
 	boolean futureReturnType;
 	
@@ -51,13 +53,13 @@ public class MethodStatement {
 
 
 
-	public ParameterSteaement[] getParameterTypes() {
+	public List<ParameterSteaement> getParameterTypes() {
 		return parameterTypes;
 	}
 
 
 
-	public void setParameterTypes(ParameterSteaement[] parameterTypes) {
+	public void setParameterTypes(List<ParameterSteaement> parameterTypes) {
 		this.parameterTypes = parameterTypes;
 	}
 

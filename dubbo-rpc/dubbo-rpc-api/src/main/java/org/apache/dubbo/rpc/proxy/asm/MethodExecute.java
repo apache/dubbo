@@ -1,6 +1,6 @@
 package org.apache.dubbo.rpc.proxy.asm;
 
-public interface MethodExecute {
+public interface MethodExecute<S> {
 
 	public <T> T execute(Object[] arguments);
 }
