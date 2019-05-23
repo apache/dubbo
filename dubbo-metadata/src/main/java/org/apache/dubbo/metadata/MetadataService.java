@@ -19,6 +19,8 @@ package org.apache.dubbo.metadata;
 import org.apache.dubbo.common.URL;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import static java.util.stream.StreamSupport.stream;
 
 /**
  * A framework interface of Dubbo Metadata Service defines the contract of Dubbo Services registartion and subscription
@@ -132,4 +134,16 @@ public interface MetadataService {
      * @see URL
      */
     List<String> getExportedURLs(String serviceInterface, String group, String version, String protocol);
+
+    /**
+     * Convert the multiple {@link URL urls} to a {@link List list} of {@link URL urls}
+     *
+     * @param urls the strings presents the {@link URL Dubbo URLs}
+     * @return non-null
+     */
+    static List<URL> toURLs(Iterable<String> urls) {
+        return stream(urls.spliterator(), false)
+                .map(URL::valueOf)
+                .collect(Collectors.toList());
+    }
 }
