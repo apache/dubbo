@@ -39,10 +39,6 @@ public interface ConfigConstants {
     String SHUTDOWN_WAIT_KEY = "dubbo.service.shutdown.wait";
 
     String DUBBO_PROTOCOL = "dubbo";
-  
-    String ZOOKEEPER_PROTOCOL = "zookeeper";
-
-    String TELNET = "telnet";
 
     String QOS_ENABLE = "qos-enable";
 
