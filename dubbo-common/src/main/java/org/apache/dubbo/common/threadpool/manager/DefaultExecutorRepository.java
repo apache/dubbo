@@ -46,7 +46,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 
     private ScheduledExecutorService reconnectScheduledExecutor;
 
-    private ConcurrentMap<String, ConcurrentMap<String, ExecutorService>> data = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, ConcurrentMap<Integer, ExecutorService>> data = new ConcurrentHashMap<>();
 
     public DefaultExecutorRepository() {
         for (int i = 0; i < DEFAULT_SCHEDULER_SIZE; i++) {
@@ -62,8 +62,20 @@ public class DefaultExecutorRepository implements ExecutorRepository {
         if (Constants.CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(Constants.SIDE_KEY))) {
             componentKey = Constants.CONSUMER_SIDE;
         }
-        Map<String, ExecutorService> executors = data.computeIfAbsent(componentKey, k -> new ConcurrentHashMap<>());
-        return executors.computeIfAbsent(Integer.toString(url.getPort()), k -> (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url));
+        Map<Integer, ExecutorService> executors = data.computeIfAbsent(componentKey, k -> new ConcurrentHashMap<>());
+        return executors.computeIfAbsent(url.getPort(), k -> (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url));
+    }
+
+    public ExecutorService getExecutor(URL url) {
+        String componentKey = Constants.EXECUTOR_SERVICE_COMPONENT_KEY;
+        if (Constants.CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(Constants.SIDE_KEY))) {
+            componentKey = Constants.CONSUMER_SIDE;
+        }
+        Map<Integer, ExecutorService> executors = data.get(componentKey);
+        if (executors == null) {
+            return null;
+        }
+        return executors.get(url.getPort());
     }
 
     @Override

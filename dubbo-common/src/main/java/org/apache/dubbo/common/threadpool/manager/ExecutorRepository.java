@@ -37,6 +37,8 @@ public interface ExecutorRepository {
      */
     ExecutorService createExecutorIfAbsent(URL url);
 
+    ExecutorService getExecutor(URL url);
+
     /**
      * Modify some of the threadpool's properties according to the url, for example, coreSize, maxSize, ...
      *
