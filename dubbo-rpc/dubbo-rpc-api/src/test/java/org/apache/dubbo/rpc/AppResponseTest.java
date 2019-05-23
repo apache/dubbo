@@ -20,13 +20,13 @@ package org.apache.dubbo.rpc;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class RpcResultTest {
+public class AppResponseTest {
     @Test
-    public void testRpcResultWithNormalException() {
+    public void testAppResponseWithNormalException() {
         NullPointerException npe = new NullPointerException();
-        RpcResult rpcResult = new RpcResult(npe);
+        AppResponse appResponse = new AppResponse(npe);
 
-        StackTraceElement[] stackTrace = rpcResult.getException().getStackTrace();
+        StackTraceElement[] stackTrace = appResponse.getException().getStackTrace();
         Assertions.assertNotNull(stackTrace);
         Assertions.assertTrue(stackTrace.length > 1);
     }
@@ -35,14 +35,14 @@ public class RpcResultTest {
      * please run this test in Run mode
      */
     @Test
-    public void testRpcResultWithEmptyStackTraceException() {
+    public void testAppResponseWithEmptyStackTraceException() {
         Throwable throwable = buildEmptyStackTraceException();
         if (throwable == null) {
             return;
         }
-        RpcResult rpcResult = new RpcResult(throwable);
+        AppResponse appResponse = new AppResponse(throwable);
 
-        StackTraceElement[] stackTrace = rpcResult.getException().getStackTrace();
+        StackTraceElement[] stackTrace = appResponse.getException().getStackTrace();
         Assertions.assertNotNull(stackTrace);
         Assertions.assertTrue(stackTrace.length == 0);
     }
@@ -50,10 +50,10 @@ public class RpcResultTest {
     @Test
     public void testSetExceptionWithNormalException() {
         NullPointerException npe = new NullPointerException();
-        RpcResult rpcResult = new RpcResult();
-        rpcResult.setException(npe);
+        AppResponse appResponse = new AppResponse();
+        appResponse.setException(npe);
 
-        StackTraceElement[] stackTrace = rpcResult.getException().getStackTrace();
+        StackTraceElement[] stackTrace = appResponse.getException().getStackTrace();
         Assertions.assertNotNull(stackTrace);
         Assertions.assertTrue(stackTrace.length > 1);
     }
@@ -67,10 +67,10 @@ public class RpcResultTest {
         if (throwable == null) {
             return;
         }
-        RpcResult rpcResult = new RpcResult();
-        rpcResult.setException(throwable);
+        AppResponse appResponse = new AppResponse();
+        appResponse.setException(throwable);
 
-        StackTraceElement[] stackTrace = rpcResult.getException().getStackTrace();
+        StackTraceElement[] stackTrace = appResponse.getException().getStackTrace();
         Assertions.assertNotNull(stackTrace);
         Assertions.assertTrue(stackTrace.length == 0);
     }

@@ -18,11 +18,30 @@
 package com.alibaba.dubbo.rpc;
 
 import java.util.Map;
+import java.util.function.Function;
 
 @Deprecated
 public interface Result extends org.apache.dubbo.rpc.Result {
 
-    class CompatibleResult implements Result {
+    @Override
+    default void setValue(Object value) {
+
+    }
+
+    @Override
+    default void setException(Throwable t) {
+
+    }
+
+    abstract class AbstractResult extends org.apache.dubbo.rpc.AbstractResult implements Result {
+
+        @Override
+        public org.apache.dubbo.rpc.Result thenApplyWithContext(Function<org.apache.dubbo.rpc.Result, org.apache.dubbo.rpc.Result> fn) {
+            return null;
+        }
+    }
+
+    class CompatibleResult extends AbstractResult {
         private org.apache.dubbo.rpc.Result delegate;
 
         public CompatibleResult(org.apache.dubbo.rpc.Result result) {
@@ -39,8 +58,18 @@ public interface Result extends org.apache.dubbo.rpc.Result {
         }
 
         @Override
+        public void setValue(Object value) {
+            delegate.setValue(value);
+        }
+
+        @Override
         public Throwable getException() {
             return delegate.getException();
+        }
+
+        @Override
+        public void setException(Throwable t) {
+            delegate.setException(t);
         }
 
         @Override
@@ -51,11 +80,6 @@ public interface Result extends org.apache.dubbo.rpc.Result {
         @Override
         public Object recreate() throws Throwable {
             return delegate.recreate();
-        }
-
-        @Override
-        public Object getResult() {
-            return delegate.getResult();
         }
 
         @Override

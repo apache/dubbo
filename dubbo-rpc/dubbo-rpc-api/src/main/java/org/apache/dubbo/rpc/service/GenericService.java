@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.service;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * Generic service interface
  *
@@ -34,5 +36,13 @@ public interface GenericService {
      * @throws GenericException potential exception thrown from the invocation
      */
     Object $invoke(String method, String[] parameterTypes, Object[] args) throws GenericException;
+
+    default CompletableFuture<Object> $invokeAsync(String method, String[] parameterTypes, Object[] args) throws GenericException {
+        Object object = $invoke(method, parameterTypes, args);
+        if (object instanceof CompletableFuture) {
+            return (CompletableFuture<Object>) object;
+        }
+        return CompletableFuture.completedFuture(object);
+    }
 
 }
