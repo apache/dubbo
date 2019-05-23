@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-package com.alibaba.dubbo.common;
+package org.apache.dubbo.common.constants;
 
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.constants.QosConstants;
-import org.apache.dubbo.common.constants.FilterConstants;
-import org.apache.dubbo.common.constants.RegistryConstants;
-import org.apache.dubbo.common.constants.RemotingConstants;
-import org.apache.dubbo.common.constants.RpcConstants;
+/**
+ * QosConstants
+ */
+public interface QosConstants {
 
-@Deprecated
-public class Constants implements CommonConstants, QosConstants, FilterConstants, RegistryConstants,
-        RemotingConstants, RpcConstants, org.apache.dubbo.rpc.cluster.Constants, org.apache.dubbo.monitor.Constants {
+    String QOS_ENABLE = "qos.enable";
+
+    String QOS_PORT = "qos.port";
+
+    String ACCEPT_FOREIGN_IP = "qos.accept.foreign.ip";
 }

@@ -40,8 +40,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
-import static org.apache.dubbo.common.constants.RpcConstants.$INVOKE;
-import static org.apache.dubbo.common.constants.RpcConstants.$INVOKE_ASYNC;
+import static org.apache.dubbo.rpc.Constants.$INVOKE;
+import static org.apache.dubbo.rpc.Constants.$INVOKE_ASYNC;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 /**
