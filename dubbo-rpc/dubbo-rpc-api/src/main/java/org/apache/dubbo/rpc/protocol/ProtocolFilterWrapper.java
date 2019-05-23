@@ -19,11 +19,11 @@ package org.apache.dubbo.rpc.protocol;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.ListenableFilter;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
@@ -75,14 +75,31 @@ public class ProtocolFilterWrapper implements Protocol {
 
                     @Override
                     public Result invoke(Invocation invocation) throws RpcException {
-                        Result result = filter.invoke(next, invocation);
-                        if (result instanceof AsyncRpcResult) {
-                            AsyncRpcResult asyncResult = (AsyncRpcResult) result;
-                            asyncResult.thenApplyWithContext(r -> filter.onResponse(r, invoker, invocation));
-                            return asyncResult;
-                        } else {
-                            return filter.onResponse(result, invoker, invocation);
+                        Result asyncResult;
+                        try {
+                            asyncResult = filter.invoke(next, invocation);
+                        } catch (Exception e) {
+                            // onError callback
+                            if (filter instanceof ListenableFilter) {
+                                Filter.Listener listener = ((ListenableFilter) filter).listener();
+                                if (listener != null) {
+                                    listener.onError(e, invoker, invocation);
+                                }
+                            }
+                            throw e;
                         }
+                        return asyncResult.thenApplyWithContext(r -> {
+                            // onResponse callback
+                            if (filter instanceof ListenableFilter) {
+                                Filter.Listener listener = ((ListenableFilter) filter).listener();
+                                if (listener != null) {
+                                    listener.onResponse(r, invoker, invocation);
+                                }
+                            } else {
+                                filter.onResponse(r, invoker, invocation);
+                            }
+                            return r;
+                        });
                     }
 
                     @Override

@@ -17,10 +17,11 @@
 package org.apache.dubbo.rpc.cluster.support;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.cluster.Directory;
 
 import org.junit.jupiter.api.Assertions;
@@ -120,7 +121,7 @@ public class MergeableClusterInvokerTest {
                     return MenuService.class;
                 }
                 if ("invoke".equals(method.getName())) {
-                    return new RpcResult(firstMenu);
+                    return AsyncRpcResult.newDefaultAsyncResult(firstMenu, invocation);
                 }
                 return null;
             }
@@ -136,7 +137,7 @@ public class MergeableClusterInvokerTest {
                     return MenuService.class;
                 }
                 if ("invoke".equals(method.getName())) {
-                    return new RpcResult(secondMenu);
+                    return AsyncRpcResult.newDefaultAsyncResult(secondMenu, invocation);
                 }
                 return null;
             }
@@ -196,14 +197,14 @@ public class MergeableClusterInvokerTest {
         given(firstInvoker.getUrl()).willReturn(
                 url.addParameter(GROUP_KEY, "first"));
         given(firstInvoker.getInterface()).willReturn(MenuService.class);
-        given(firstInvoker.invoke(invocation)).willReturn(new RpcResult())
+        given(firstInvoker.invoke(invocation)).willReturn(new AppResponse())
                 ;
         given(firstInvoker.isAvailable()).willReturn(true);
 
         given(secondInvoker.getUrl()).willReturn(
                 url.addParameter(GROUP_KEY, "second"));
         given(secondInvoker.getInterface()).willReturn(MenuService.class);
-        given(secondInvoker.invoke(invocation)).willReturn(new RpcResult())
+        given(secondInvoker.invoke(invocation)).willReturn(new AppResponse())
                 ;
         given(secondInvoker.isAvailable()).willReturn(true);
 
