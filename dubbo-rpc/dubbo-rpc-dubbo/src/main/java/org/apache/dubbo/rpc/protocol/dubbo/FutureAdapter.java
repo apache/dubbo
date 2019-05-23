@@ -16,12 +16,11 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo;
 
-import org.apache.dubbo.remoting.exchange.ResponseCallback;
-import org.apache.dubbo.remoting.exchange.ResponseFuture;
-import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -31,45 +30,35 @@ import java.util.concurrent.TimeoutException;
  */
 public class FutureAdapter<V> extends CompletableFuture<V> {
 
-    private final ResponseFuture future;
-    private CompletableFuture<Result> resultFuture;
+    private CompletableFuture<AppResponse> appResponseFuture;
 
-    public FutureAdapter(ResponseFuture future) {
-        this.future = future;
-        this.resultFuture = new CompletableFuture<>();
-        future.setCallback(new ResponseCallback() {
-            @Override
-            public void done(Object response) {
-                Result result = (Result) response;
-                FutureAdapter.this.resultFuture.complete(result);
-                V value = null;
-                try {
-                    value = (V) result.recreate();
-                } catch (Throwable t) {
-                    FutureAdapter.this.completeExceptionally(t);
+    public FutureAdapter(CompletableFuture<AppResponse> future) {
+        this.appResponseFuture = future;
+        future.whenComplete((appResponse, t) -> {
+            if (t != null) {
+                if (t instanceof CompletionException) {
+                    t = t.getCause();
                 }
-                FutureAdapter.this.complete(value);
-            }
-
-            @Override
-            public void caught(Throwable exception) {
-                FutureAdapter.this.completeExceptionally(exception);
+                this.completeExceptionally(t);
+            } else {
+                if (appResponse.hasException()) {
+                    this.completeExceptionally(appResponse.getException());
+                } else {
+                    this.complete((V) appResponse.getValue());
+                }
             }
         });
     }
 
-    public ResponseFuture getFuture() {
-        return future;
-    }
-
+    // TODO figure out the meaning of cancel in DefaultFuture.
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
-        return false;
+        return appResponseFuture.cancel(mayInterruptIfRunning);
     }
 
     @Override
     public boolean isCancelled() {
-        return false;
+        return appResponseFuture.isCancelled();
     }
 
     @Override
@@ -99,17 +88,6 @@ public class FutureAdapter<V> extends CompletableFuture<V> {
         } catch (Throwable e) {
             throw new RpcException(e);
         }
-    }
-
-    /**
-     * FIXME
-     * This method has no need open to the the end user.
-     * Mostly user use RpcContext.getFuture() to refer the instance of this class, so the user will get a CompletableFuture, this method will rarely be noticed.
-     *
-     * @return
-     */
-    public CompletableFuture<Result> getResultFuture() {
-        return resultFuture;
     }
 
 }

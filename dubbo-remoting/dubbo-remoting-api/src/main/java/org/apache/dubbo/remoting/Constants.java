@@ -128,4 +128,5 @@ public interface Constants {
     String PROMPT_KEY = "prompt";
 
     String DEFAULT_PROMPT = "dubbo>";
+    String TELNET = "telnet";
 }

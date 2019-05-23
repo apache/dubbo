@@ -94,11 +94,6 @@ public class ConfigCenterBuilder extends AbstractBuilder<ConfigCenterConfig, Con
         return getThis();
     }
 
-    public ConfigCenterBuilder appName(String appName) {
-        this.appName = appName;
-        return getThis();
-    }
-
     public ConfigCenterBuilder configFile(String configFile) {
         this.configFile = configFile;
         return getThis();
@@ -133,7 +128,6 @@ public class ConfigCenterBuilder extends AbstractBuilder<ConfigCenterConfig, Con
         configCenter.setTimeout(timeout);
         configCenter.setHighestPriority(highestPriority);
         configCenter.setCheck(check);
-        configCenter.setAppName(appName);
         configCenter.setConfigFile(configFile);
         configCenter.setAppConfigFile(appConfigFile);
         configCenter.setParameters(parameters);

@@ -14,12 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.configcenter;
 
-package com.alibaba.dubbo.remoting.exchange;
-
-/**
- * 2019-04-18
- */
-@Deprecated
-public interface ResponseCallback extends org.apache.dubbo.remoting.exchange.ResponseCallback {
+public interface Constants {
+    String CONFIG_CLUSTER_KEY = "config.cluster";
+    String CONFIG_NAMESPACE_KEY = "config.namespace";
+    String CONFIG_GROUP_KEY = "config.group";
+    String CONFIG_CHECK_KEY = "config.check";
 }

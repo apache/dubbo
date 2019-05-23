@@ -28,6 +28,7 @@ import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.net.URL;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
@@ -39,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -120,7 +122,7 @@ public final class ReflectUtils {
 
     private static final ConcurrentMap<String, Class<?>> NAME_CLASS_CACHE = new ConcurrentHashMap<String, Class<?>>();
 
-    private static final ConcurrentMap<String, Method> SIGNATURE_METHODS_CACHE = new ConcurrentHashMap<String, Method>();
+    private static final ConcurrentMap<String, Method> Signature_METHODS_CACHE = new ConcurrentHashMap<String, Method>();
 
     private ReflectUtils() {
     }
@@ -857,7 +859,7 @@ public final class ReflectUtils {
         if (parameterTypes != null && parameterTypes.length > 0) {
             signature += StringUtils.join(parameterTypes);
         }
-        Method method = SIGNATURE_METHODS_CACHE.get(signature);
+        Method method = Signature_METHODS_CACHE.get(signature);
         if (method != null) {
             return method;
         }
@@ -885,7 +887,7 @@ public final class ReflectUtils {
             method = clazz.getMethod(methodName, types);
 
         }
-        SIGNATURE_METHODS_CACHE.put(signature, method);
+        Signature_METHODS_CACHE.put(signature, method);
         return method;
     }
 
@@ -1095,5 +1097,26 @@ public final class ReflectUtils {
         }
 
         return properties;
+    }
+
+    public static Type[] getReturnTypes(Method method) {
+        Class<?> returnType = method.getReturnType();
+        Type genericReturnType = method.getGenericReturnType();
+        if (Future.class.isAssignableFrom(returnType)) {
+            if (genericReturnType instanceof ParameterizedType) {
+                Type actualArgType = ((ParameterizedType) genericReturnType).getActualTypeArguments()[0];
+                if (actualArgType instanceof ParameterizedType) {
+                    returnType = (Class<?>) ((ParameterizedType) actualArgType).getRawType();
+                    genericReturnType = actualArgType;
+                } else {
+                    returnType = (Class<?>) actualArgType;
+                    genericReturnType = returnType;
+                }
+            } else {
+                returnType = null;
+                genericReturnType = null;
+            }
+        }
+        return new Type[]{returnType, genericReturnType};
     }
 }
