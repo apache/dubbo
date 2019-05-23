@@ -87,6 +87,8 @@ public class DubboProtocol extends AbstractProtocol {
      */
     private final ConcurrentMap<String, String> stubServiceMethodsMap = new ConcurrentHashMap<>();
 
+    private final Map<DubboExporterKey, Exporter<?>> dubboExporterMap = new ConcurrentHashMap<DubboExporterKey, Exporter<?>>();
+
     private ExchangeHandler requestHandler = new ExchangeHandlerAdapter() {
 
         @Override
@@ -202,10 +204,6 @@ public class DubboProtocol extends AbstractProtocol {
         return Collections.unmodifiableCollection(exporterMap.values());
     }
 
-    Map<String, Exporter<?>> getExporterMap() {
-        return exporterMap;
-    }
-
     private boolean isClientSide(Channel channel) {
         InetSocketAddress address = channel.getRemoteAddress();
         URL url = channel.getUrl();
@@ -233,11 +231,16 @@ public class DubboProtocol extends AbstractProtocol {
             inv.getAttachments().put(IS_CALLBACK_SERVICE_INVOKE, Boolean.TRUE.toString());
         }
 
-        String serviceKey = serviceKey(port, path, inv.getAttachments().get(Constants.VERSION_KEY), inv.getAttachments().get(Constants.GROUP_KEY));
-        DubboExporter<?> exporter = (DubboExporter<?>) exporterMap.get(serviceKey);
+//        String serviceKey = ProtocolUtils.serviceKey(port, path, inv.getAttachments().get(Constants.VERSION_KEY), inv.getAttachments().get(Constants.GROUP_KEY));
+        String version = inv.getAttachments().get(Constants.VERSION_KEY);
+        if ("0.0.0".equals(version)) {
+            version = null;
+        }
+        DubboExporterKey dubboExporterKey = new DubboExporterKey(port, path, version, inv.getAttachments().get(Constants.GROUP_KEY));
+        DubboExporter<?> exporter = (DubboExporter<?>) dubboExporterMap.get(dubboExporterKey);
 
         if (exporter == null) {
-            throw new RemotingException(channel, "Not found exported service: " + serviceKey + " in " + exporterMap.keySet() + ", may be version or group mismatch " +
+            throw new RemotingException(channel, "Not found exported service: " + dubboExporterKey + " in " + dubboExporterMap.keySet() + ", may be version or group mismatch " +
                     ", channel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress() + ", message:" + inv);
         }
 
@@ -258,9 +261,14 @@ public class DubboProtocol extends AbstractProtocol {
         URL url = invoker.getUrl();
 
         // export service.
-        String key = serviceKey(url);
-        DubboExporter<T> exporter = new DubboExporter<T>(invoker, key, exporterMap);
-        exporterMap.put(key, exporter);
+//        String key = ProtocolUtils.serviceKey(url);
+        String version = url.getParameter(Constants.VERSION_KEY);
+        if ("0.0.0".equals(version)) {
+            version = null;
+        }
+        DubboExporterKey key = new DubboExporterKey(url.getPort(), url.getPath(), version, url.getParameter(Constants.GROUP_KEY));
+        DubboExporter<T> exporter = new DubboExporter<T>(invoker, key, dubboExporterMap);
+        dubboExporterMap.put(key, exporter);
 
         //export an stub service for dispatching event
         Boolean isStubSupportEvent = url.getParameter(Constants.STUB_EVENT_KEY, Constants.DEFAULT_STUB_EVENT);
@@ -641,4 +649,6 @@ public class DubboProtocol extends AbstractProtocol {
             logger.warn(t.getMessage(), t);
         }
     }
+
+
 }

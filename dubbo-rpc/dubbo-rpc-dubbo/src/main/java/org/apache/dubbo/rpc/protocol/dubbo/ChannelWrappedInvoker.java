@@ -25,7 +25,6 @@ import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeClient;
 import org.apache.dubbo.remoting.transport.ClientDelegate;
-import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
@@ -35,7 +34,6 @@ import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.net.InetSocketAddress;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Server push uses this Invoker to continuously push data to client.
@@ -66,15 +64,15 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
                 currentClient.send(inv, getUrl().getMethodParameter(invocation.getMethodName(), Constants.SENT_KEY, false));
                 return AsyncRpcResult.newDefaultAsyncResult(invocation);
             } else {
-                CompletableFuture<Object> responseFuture = currentClient.request(inv);
                 AsyncRpcResult asyncRpcResult = new AsyncRpcResult(inv);
-                responseFuture.whenComplete((appResponse, t) -> {
-                    if (t != null) {
-                        asyncRpcResult.completeExceptionally(t);
-                    } else {
-                        asyncRpcResult.complete((AppResponse) appResponse);
-                    }
-                });
+                currentClient.request(inv, asyncRpcResult);
+//                responseFuture.whenComplete((appResponse, t) -> {
+//                    if (t != null) {
+//                        asyncRpcResult.completeExceptionally(t);
+//                    } else {
+//                        asyncRpcResult.complete((AppResponse) appResponse);
+//                    }
+//                });
                 return asyncRpcResult;
             }
         } catch (RpcException e) {

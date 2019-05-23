@@ -37,8 +37,10 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboExporter;
+import org.apache.dubbo.rpc.protocol.dubbo.DubboExporterKey;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -59,6 +61,8 @@ public class ThriftProtocol extends AbstractProtocol {
     private final ConcurrentMap<String, ExchangeServer> serverMap =
             new ConcurrentHashMap<String, ExchangeServer>();
 
+    private final Map<DubboExporterKey, Exporter<?>> dubboExporterMap = new ConcurrentHashMap<DubboExporterKey, Exporter<?>>();
+
     private ExchangeHandler handler = new ExchangeHandlerAdapter() {
 
         @Override
@@ -67,15 +71,16 @@ public class ThriftProtocol extends AbstractProtocol {
             if (msg instanceof Invocation) {
                 Invocation inv = (Invocation) msg;
                 String path = inv.getAttachments().get(Constants.PATH_KEY);
-                String serviceKey = serviceKey(channel.getLocalAddress().getPort(),
-                        path, null, null);
-                DubboExporter<?> exporter = (DubboExporter<?>) exporterMap.get(serviceKey);
+//                String serviceKey = ProtocolUtils.serviceKey(channel.getLocalAddress().getPort(),
+//                        path, null, null);
+                DubboExporterKey serviceKey = new DubboExporterKey(channel.getLocalAddress().getPort(), path, null, null);
+                DubboExporter<?> exporter = (DubboExporter<?>) dubboExporterMap.get(serviceKey);
                 if (exporter == null) {
                     throw new RemotingException(channel,
                             "Not found exported service: "
                                     + serviceKey
                                     + " in "
-                                    + exporterMap.keySet()
+                                    + dubboExporterMap.keySet()
                                     + ", may be version or group mismatch "
                                     + ", channel: consumer: "
                                     + channel.getRemoteAddress()
@@ -121,16 +126,17 @@ public class ThriftProtocol extends AbstractProtocol {
         // can use thrift codec only
         URL url = invoker.getUrl().addParameter(Constants.CODEC_KEY, ThriftCodec.NAME);
         // find server.
-        String key = url.getAddress();
+        String serverkey = url.getAddress();
         // client can expose a service for server to invoke only.
         boolean isServer = url.getParameter(Constants.IS_SERVER_KEY, true);
-        if (isServer && !serverMap.containsKey(key)) {
-            serverMap.put(key, getServer(url));
+        if (isServer && !serverMap.containsKey(serverkey)) {
+            serverMap.put(serverkey, getServer(url));
         }
         // export service.
-        key = serviceKey(url);
-        DubboExporter<T> exporter = new DubboExporter<T>(invoker, key, exporterMap);
-        exporterMap.put(key, exporter);
+//        key = ProtocolUtils.serviceKey(url);
+        DubboExporterKey key = new DubboExporterKey(url.getPort(), url.getPath(), null, null);
+        DubboExporter<T> exporter = new DubboExporter<T>(invoker, key, dubboExporterMap);
+        dubboExporterMap.put(key, exporter);
 
         return exporter;
     }

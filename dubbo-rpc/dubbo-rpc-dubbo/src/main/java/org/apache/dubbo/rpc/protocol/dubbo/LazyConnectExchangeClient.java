@@ -85,10 +85,10 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     }
 
     @Override
-    public CompletableFuture<Object> request(Object request) throws RemotingException {
+    public CompletableFuture<Object> request(Object request, CompletableFuture cf) throws RemotingException {
         warning();
         initClient();
-        return client.request(request);
+        return client.request(request, cf);
     }
 
     @Override
@@ -106,24 +106,24 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     }
 
     @Override
-    public CompletableFuture<Object> request(Object request, int timeout) throws RemotingException {
+    public CompletableFuture<Object> request(Object request, int timeout, CompletableFuture cf) throws RemotingException {
         warning();
         initClient();
-        return client.request(request, timeout);
+        return client.request(request, timeout, cf);
     }
 
     @Override
-    public CompletableFuture<Object> request(Object request, ExecutorService executor) throws RemotingException {
+    public CompletableFuture<Object> request(Object request, ExecutorService executor, CompletableFuture cf) throws RemotingException {
         warning();
         initClient();
-        return client.request(request, executor);
+        return client.request(request, executor, cf);
     }
 
     @Override
-    public CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor) throws RemotingException {
+    public CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor, CompletableFuture cf) throws RemotingException {
         warning();
         initClient();
-        return client.request(request, timeout, executor);
+        return client.request(request, timeout, executor, cf);
     }
 
     /**

@@ -36,6 +36,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
+import org.apache.dubbo.rpc.support.ProtocolUtils;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import io.rsocket.AbstractRSocket;
@@ -105,7 +106,7 @@ public class RSocketProtocol extends AbstractProtocol {
 
     Invoker<?> getInvoker(int port, Map<String, Object> metadataMap) throws RemotingException {
         String path = (String) metadataMap.get(RSocketConstants.SERVICE_NAME_KEY);
-        String serviceKey = serviceKey(port, path, (String) metadataMap.get(RSocketConstants.SERVICE_VERSION_KEY), (String) metadataMap.get(Constants.GROUP_KEY));
+        String serviceKey = ProtocolUtils.serviceKey(port, path, (String) metadataMap.get(RSocketConstants.SERVICE_VERSION_KEY), (String) metadataMap.get(Constants.GROUP_KEY));
         RSocketExporter<?> exporter = (RSocketExporter<?>) exporterMap.get(serviceKey);
         if (exporter == null) {
             //throw new Throwable("Not found exported service: " + serviceKey + " in " + exporterMap.keySet() + ", may be version or group mismatch " + ", channel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress() + ", message:" + inv);
@@ -129,7 +130,7 @@ public class RSocketProtocol extends AbstractProtocol {
         URL url = invoker.getUrl();
 
         // export service.
-        String key = serviceKey(url);
+        String key = ProtocolUtils.serviceKey(url);
         RSocketExporter<T> exporter = new RSocketExporter<T>(invoker, key, exporterMap);
         exporterMap.put(key, exporter);
 

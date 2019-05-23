@@ -22,13 +22,13 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
 
-public class PerformanceClientFixedTest  {
+public class PerformanceClientFixedTest {
 
     private static final Logger logger = LoggerFactory.getLogger(PerformanceClientTest.class);
 
@@ -118,7 +118,9 @@ public class PerformanceClientFixedTest  {
                 int index = rd.nextInt(connectionCount);
                 ExchangeClient client = arrays.get(index);
                 // ExchangeClient client = arrays.get(0);
-                String output = (String) client.request(messageBlock).get();
+                CompletableFuture cf = new CompletableFuture();
+                client.request(messageBlock, cf);
+                String output = (String) cf.get();
 
                 if (output.lastIndexOf(messageBlock) < 0) {
                     System.out.println("send messageBlock;get " + output);

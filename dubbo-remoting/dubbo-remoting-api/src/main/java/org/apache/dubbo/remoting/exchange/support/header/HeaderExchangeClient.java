@@ -63,8 +63,9 @@ public class HeaderExchangeClient implements ExchangeClient {
     }
 
     @Override
-    public CompletableFuture<Object> request(Object request) throws RemotingException {
-        return channel.request(request);
+    public CompletableFuture<Object> request(Object request, CompletableFuture cf) throws RemotingException {
+        channel.request(request, cf);
+        return cf;
     }
 
     @Override
@@ -78,18 +79,21 @@ public class HeaderExchangeClient implements ExchangeClient {
     }
 
     @Override
-    public CompletableFuture<Object> request(Object request, int timeout) throws RemotingException {
-        return channel.request(request, timeout);
+    public CompletableFuture<Object> request(Object request, int timeout, CompletableFuture cf) throws RemotingException {
+        channel.request(request, timeout, cf);
+        return cf;
     }
 
     @Override
-    public CompletableFuture<Object> request(Object request, ExecutorService executor) throws RemotingException {
-        return channel.request(request, executor);
+    public CompletableFuture<Object> request(Object request, ExecutorService executor, CompletableFuture cf) throws RemotingException {
+        channel.request(request, executor, cf);
+        return cf;
     }
 
     @Override
-    public CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor) throws RemotingException {
-        return channel.request(request, timeout, executor);
+    public CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor, CompletableFuture cf) throws RemotingException {
+        channel.request(request, timeout, executor, cf);
+        return cf;
     }
 
     @Override

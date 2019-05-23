@@ -73,7 +73,9 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
 
     @Override
     public Object decode(Channel channel, InputStream input) throws IOException {
-        log.debug("Decoding in thread -- " + Thread.currentThread().getName());
+        if (log.isDebugEnabled()) {
+            log.debug("Decoding in thread -- " + Thread.currentThread().getName());
+        }
         ObjectInput in = CodecSupport.getSerialization(channel.getUrl(), serializationType)
                 .deserialize(channel.getUrl(), input);
 
@@ -108,7 +110,7 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
     }
 
     @Override
-    public void decode() throws Exception {
+    public void decode() {
         if (!hasDecoded && channel != null && inputStream != null) {
             try {
                 decode(channel, inputStream);
@@ -126,7 +128,7 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
 
     private void handleValue(ObjectInput in) throws IOException {
         try {
-            if(invocation instanceof RpcInvocation && serializationType == 2){
+            if (invocation instanceof RpcInvocation && serializationType == 2) {
                 setValue(in.readObject(((RpcInvocation) invocation).getReturnType()));
                 return;
             }

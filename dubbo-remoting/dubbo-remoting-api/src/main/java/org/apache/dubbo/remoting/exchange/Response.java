@@ -220,7 +220,7 @@ public class Response {
     public static class DecodeableAppResult implements Codec, Decodeable {
 
         @Override
-        public void decode() throws Exception {
+        public void decode() {
 
         }
 

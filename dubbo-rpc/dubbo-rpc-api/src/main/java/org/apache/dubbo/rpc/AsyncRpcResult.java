@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
+import org.apache.dubbo.remoting.Decodeable;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -53,7 +53,7 @@ public class AsyncRpcResult extends AbstractResult {
     private RpcContext storedServerContext;
     private Executor executor;
 
-    private Invocation invocation;
+    private final Invocation invocation;
 
     public AsyncRpcResult(Invocation invocation) {
         this.invocation = invocation;
@@ -104,7 +104,7 @@ public class AsyncRpcResult extends AbstractResult {
     public Result getAppResponse() {
         try {
             if (this.isDone()) {
-                return this.get();
+                return super.get();
             }
         } catch (Exception e) {
             // This should never happen;
@@ -124,16 +124,24 @@ public class AsyncRpcResult extends AbstractResult {
      */
     @Override
     public Result get() throws InterruptedException, ExecutionException {
-        if (executor != null) {
-            ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
-            threadlessExecutor.waitAndDrain();
+//        if (executor != null) {
+//            ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
+//            threadlessExecutor.waitAndDrain();
+//        }
+        Result result = super.get();
+        if (result instanceof Decodeable) {
+            ((Decodeable) result).decode();
         }
-        return super.get();
+        return result;
     }
 
     @Override
     public Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        return this.get();
+        Result result = super.get(timeout, unit);
+        if (result instanceof Decodeable) {
+            ((Decodeable) result).decode();
+        }
+        return result;
     }
 
     @Override
@@ -142,7 +150,7 @@ public class AsyncRpcResult extends AbstractResult {
         if (InvokeMode.FUTURE == rpcInvocation.getInvokeMode()) {
             return RpcContext.getContext().getFuture();
         } else if (this.isDone()) {
-            return this.get().recreate();
+            return super.get().recreate();
         }
         return (new AppResponse()).recreate();
     }

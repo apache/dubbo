@@ -64,7 +64,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
     }
 
     @Override
-    public void decode() throws Exception {
+    public void decode()  {
         if (!hasDecoded && channel != null && inputStream != null) {
             try {
                 decode(channel, inputStream);
