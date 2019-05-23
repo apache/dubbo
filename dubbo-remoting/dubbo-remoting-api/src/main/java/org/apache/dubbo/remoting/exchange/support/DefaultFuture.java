@@ -260,7 +260,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
         @Override
         public void run(Timeout timeout) {
             DefaultFuture future = DefaultFuture.getFuture(requestID);
-            if (future.isDone()) {
+            if (future != null && future.isDone()) {
                 return;
             }
             if (future.getExecutor() != null) {
