@@ -35,9 +35,30 @@
 
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-config-api</artifactId>
+            <version>${project.parent.version}</version>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-rpc-api</artifactId>
             <version>${project.parent.version}</version>
             <optional>true</optional>
+        </dependency>
+
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-configcenter-zookeeper</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-test</artifactId>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
