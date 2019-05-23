@@ -27,7 +27,6 @@ import org.apache.dubbo.rpc.ListenableFilter;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.filter.CallbackRegistrationFilter;
 
 import java.util.List;
 
@@ -54,10 +53,6 @@ public class ProtocolFilterWrapper implements Protocol {
         if (!filters.isEmpty()) {
             for (int i = filters.size() - 1; i >= 0; i--) {
                 final Filter filter = filters.get(i);
-                // register callback at CallbackRegistrationFilter
-                if (filter instanceof CallbackRegistrationFilter) {
-                    ((CallbackRegistrationFilter) filter).setFilters(filters);
-                }
                 final Invoker<T> next = last;
                 last = new Invoker<T>() {
 
@@ -106,7 +101,8 @@ public class ProtocolFilterWrapper implements Protocol {
                 };
             }
         }
-        return last;
+
+        return new CallbackRegistrationInvoker<>(last, filters);
     }
 
     @Override
@@ -135,4 +131,57 @@ public class ProtocolFilterWrapper implements Protocol {
         protocol.destroy();
     }
 
+    static class CallbackRegistrationInvoker<T> implements Invoker<T> {
+
+        private final Invoker<T> filterInvoker;
+        private final List<Filter> filters;
+
+        public CallbackRegistrationInvoker(Invoker<T> filterInvoker, List<Filter> filters) {
+            this.filterInvoker = filterInvoker;
+            this.filters = filters;
+        }
+
+        @Override
+        public Result invoke(Invocation invocation) throws RpcException {
+            Result asyncResult = filterInvoker.invoke(invocation);
+
+            asyncResult.thenApplyWithContext(r -> {
+                for (int i = filters.size() - 1; i >= 0; i--) {
+                    Filter filter = filters.get(i);
+                    // onResponse callback
+                    if (filter instanceof ListenableFilter) {
+                        Filter.Listener listener = ((ListenableFilter) filter).listener();
+                        if (listener != null) {
+                            listener.onResponse(r, filterInvoker, invocation);
+                        }
+                    } else {
+                        filter.onResponse(r, filterInvoker, invocation);
+                    }
+                }
+                return r;
+            });
+
+            return asyncResult;
+        }
+
+        @Override
+        public Class<T> getInterface() {
+            return filterInvoker.getInterface();
+        }
+
+        @Override
+        public URL getUrl() {
+            return filterInvoker.getUrl();
+        }
+
+        @Override
+        public boolean isAvailable() {
+            return filterInvoker.isAvailable();
+        }
+
+        @Override
+        public void destroy() {
+            filterInvoker.destroy();
+        }
+    }
 }
