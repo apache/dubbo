@@ -14,12 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.common.serialize.protobuf.support.model;
 
-package com.alibaba.dubbo.remoting.exchange;
-
-/**
- * 2019-04-18
- */
-@Deprecated
-public interface ResponseCallback extends org.apache.dubbo.remoting.exchange.ResponseCallback {
+public interface ServiceInterface {
+    GooglePB.PBResponseType sayHello(GooglePB.PBRequestType requestType);
 }

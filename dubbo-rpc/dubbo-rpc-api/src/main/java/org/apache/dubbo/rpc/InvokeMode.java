@@ -14,19 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.etcd.option;
+package org.apache.dubbo.rpc;
 
-import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_SESSION_TIMEOUT;
+public enum InvokeMode {
 
-/**
- * Etcd registry constants.
- */
-public interface Constants {
-
-    String HTTP_SUBFIX_KEY = "://";
-
-    String HTTP_KEY = "http://";
-
-    int DEFAULT_KEEPALIVE_TIMEOUT = DEFAULT_SESSION_TIMEOUT / 2;
+    SYNC, ASYNC, FUTURE;
 
 }

@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -1106,6 +1107,27 @@ public final class ReflectUtils {
         return properties;
     }
 
+    public static Type[] getReturnTypes(Method method) {
+        Class<?> returnType = method.getReturnType();
+        Type genericReturnType = method.getGenericReturnType();
+        if (Future.class.isAssignableFrom(returnType)) {
+            if (genericReturnType instanceof ParameterizedType) {
+                Type actualArgType = ((ParameterizedType) genericReturnType).getActualTypeArguments()[0];
+                if (actualArgType instanceof ParameterizedType) {
+                    returnType = (Class<?>) ((ParameterizedType) actualArgType).getRawType();
+                    genericReturnType = actualArgType;
+                } else {
+                    returnType = (Class<?>) actualArgType;
+                    genericReturnType = returnType;
+                }
+            } else {
+                returnType = null;
+                genericReturnType = null;
+            }
+        }
+        return new Type[]{returnType, genericReturnType};
+    }
+  
     /**
      * Find the {@link Set} of {@link ParameterizedType}
      *
