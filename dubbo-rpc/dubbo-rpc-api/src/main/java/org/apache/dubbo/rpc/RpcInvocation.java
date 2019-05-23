@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 
@@ -25,6 +24,14 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
 /**
  * RPC Invocation.
@@ -45,6 +52,10 @@ public class RpcInvocation implements Invocation, Serializable {
 
     private transient Invoker<?> invoker;
 
+    private transient Class<?> returnType;
+
+    private transient InvokeMode invokeMode;
+
     public RpcInvocation() {
     }
 
@@ -54,24 +65,24 @@ public class RpcInvocation implements Invocation, Serializable {
                 invocation.getInvoker());
         if (invoker != null) {
             URL url = invoker.getUrl();
-            setAttachment(Constants.PATH_KEY, url.getPath());
-            if (url.hasParameter(Constants.INTERFACE_KEY)) {
-                setAttachment(Constants.INTERFACE_KEY, url.getParameter(Constants.INTERFACE_KEY));
+            setAttachment(PATH_KEY, url.getPath());
+            if (url.hasParameter(INTERFACE_KEY)) {
+                setAttachment(INTERFACE_KEY, url.getParameter(INTERFACE_KEY));
             }
-            if (url.hasParameter(Constants.GROUP_KEY)) {
-                setAttachment(Constants.GROUP_KEY, url.getParameter(Constants.GROUP_KEY));
+            if (url.hasParameter(GROUP_KEY)) {
+                setAttachment(GROUP_KEY, url.getParameter(GROUP_KEY));
             }
-            if (url.hasParameter(Constants.VERSION_KEY)) {
-                setAttachment(Constants.VERSION_KEY, url.getParameter(Constants.VERSION_KEY, "0.0.0"));
+            if (url.hasParameter(VERSION_KEY)) {
+                setAttachment(VERSION_KEY, url.getParameter(VERSION_KEY, "0.0.0"));
             }
-            if (url.hasParameter(Constants.TIMEOUT_KEY)) {
-                setAttachment(Constants.TIMEOUT_KEY, url.getParameter(Constants.TIMEOUT_KEY));
+            if (url.hasParameter(TIMEOUT_KEY)) {
+                setAttachment(TIMEOUT_KEY, url.getParameter(TIMEOUT_KEY));
             }
-            if (url.hasParameter(Constants.TOKEN_KEY)) {
-                setAttachment(Constants.TOKEN_KEY, url.getParameter(Constants.TOKEN_KEY));
+            if (url.hasParameter(TOKEN_KEY)) {
+                setAttachment(TOKEN_KEY, url.getParameter(TOKEN_KEY));
             }
-            if (url.hasParameter(Constants.APPLICATION_KEY)) {
-                setAttachment(Constants.APPLICATION_KEY, url.getParameter(Constants.APPLICATION_KEY));
+            if (url.hasParameter(APPLICATION_KEY)) {
+                setAttachment(APPLICATION_KEY, url.getParameter(APPLICATION_KEY));
             }
         }
     }
@@ -87,6 +98,7 @@ public class RpcInvocation implements Invocation, Serializable {
 
     public RpcInvocation(Method method, Object[] arguments, Map<String, String> attachment) {
         this(method.getName(), method.getParameterTypes(), arguments, attachment, null);
+        this.returnType = method.getReturnType();
     }
 
     public RpcInvocation(String methodName, Class<?>[] parameterTypes, Object[] arguments) {
@@ -203,6 +215,22 @@ public class RpcInvocation implements Invocation, Serializable {
             return defaultValue;
         }
         return value;
+    }
+
+    public Class<?> getReturnType() {
+        return returnType;
+    }
+
+    public void setReturnType(Class<?> returnType) {
+        this.returnType = returnType;
+    }
+
+    public InvokeMode getInvokeMode() {
+        return invokeMode;
+    }
+
+    public void setInvokeMode(InvokeMode invokeMode) {
+        this.invokeMode = invokeMode;
     }
 
     @Override

@@ -16,10 +16,11 @@
  */
 package org.apache.dubbo.rpc.model;
 
-import org.apache.dubbo.common.Constants;
 
 import java.lang.reflect.Method;
 import java.util.Map;
+
+import static org.apache.dubbo.common.constants.RpcConstants.$INVOKE;
 
 public class ConsumerMethodModel {
     private final Method method;
@@ -40,7 +41,7 @@ public class ConsumerMethodModel {
         this.returnClass = method.getReturnType();
         this.parameterTypes = this.createParamSignature(parameterClasses);
         this.methodName = method.getName();
-        this.generic = methodName.equals(Constants.$INVOKE) && parameterTypes != null && parameterTypes.length == 3;
+        this.generic = methodName.equals($INVOKE) && parameterTypes != null && parameterTypes.length == 3;
 
         if (attributes != null) {
             asyncInfo = (AsyncMethodInfo) attributes.get(methodName);

@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metadata.integration;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -28,9 +27,21 @@ import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.store.MetadataReport;
 import org.apache.dubbo.metadata.store.MetadataReportFactory;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.util.function.Supplier;
+
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_DIRECTORY;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.metadata.support.Constants.METADATA_REPORT_KEY;
 
 /**
  * @since 2.7.0
@@ -47,11 +58,11 @@ public class MetadataReportService {
     URL metadataReportUrl;
 
     MetadataReportService(URL metadataReportURL) {
-        if (Constants.METADATA_REPORT_KEY.equals(metadataReportURL.getProtocol())) {
-            String protocol = metadataReportURL.getParameter(Constants.METADATA_REPORT_KEY, Constants.DEFAULT_DIRECTORY);
+        if (METADATA_REPORT_KEY.equals(metadataReportURL.getProtocol())) {
+            String protocol = metadataReportURL.getParameter(METADATA_REPORT_KEY, DEFAULT_DIRECTORY);
             metadataReportURL = URLBuilder.from(metadataReportURL)
                     .setProtocol(protocol)
-                    .removeParameter(Constants.METADATA_REPORT_KEY)
+                    .removeParameter(METADATA_REPORT_KEY)
                     .build();
         }
         this.metadataReportUrl = metadataReportURL;
@@ -78,16 +89,16 @@ public class MetadataReportService {
     public void publishProvider(URL providerUrl) throws RpcException {
         //first add into the list
         // remove the individul param
-        providerUrl = providerUrl.removeParameters(Constants.PID_KEY, Constants.TIMESTAMP_KEY, Constants.BIND_IP_KEY, Constants.BIND_PORT_KEY, Constants.TIMESTAMP_KEY);
+        providerUrl = providerUrl.removeParameters(PID_KEY, TIMESTAMP_KEY, Constants.BIND_IP_KEY, Constants.BIND_PORT_KEY, TIMESTAMP_KEY);
 
         try {
-            String interfaceName = providerUrl.getParameter(Constants.INTERFACE_KEY);
+            String interfaceName = providerUrl.getParameter(INTERFACE_KEY);
             if (StringUtils.isNotEmpty(interfaceName)) {
                 Class interfaceClass = Class.forName(interfaceName);
                 FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass, providerUrl.getParameters());
                 metadataReport.storeProviderMetadata(new MetadataIdentifier(providerUrl.getServiceInterface(),
-                        providerUrl.getParameter(Constants.VERSION_KEY), providerUrl.getParameter(Constants.GROUP_KEY),
-                        Constants.PROVIDER_SIDE,providerUrl.getParameter(Constants.APPLICATION_KEY)), fullServiceDefinition);
+                        providerUrl.getParameter(VERSION_KEY), providerUrl.getParameter(GROUP_KEY),
+                        PROVIDER_SIDE, providerUrl.getParameter(APPLICATION_KEY)), fullServiceDefinition);
                 return;
             }
             logger.error("publishProvider interfaceName is empty . providerUrl: " + providerUrl.toFullString());
@@ -98,10 +109,10 @@ public class MetadataReportService {
     }
 
     public void publishConsumer(URL consumerURL) throws RpcException {
-        consumerURL = consumerURL.removeParameters(Constants.PID_KEY, Constants.TIMESTAMP_KEY, Constants.BIND_IP_KEY, Constants.BIND_PORT_KEY, Constants.TIMESTAMP_KEY);
+        consumerURL = consumerURL.removeParameters(PID_KEY, TIMESTAMP_KEY, Constants.BIND_IP_KEY, Constants.BIND_PORT_KEY, TIMESTAMP_KEY);
         metadataReport.storeConsumerMetadata(new MetadataIdentifier(consumerURL.getServiceInterface(),
-                consumerURL.getParameter(Constants.VERSION_KEY), consumerURL.getParameter(Constants.GROUP_KEY),Constants.CONSUMER_SIDE,
-                consumerURL.getParameter(Constants.APPLICATION_KEY)), consumerURL.getParameters());
+                consumerURL.getParameter(VERSION_KEY), consumerURL.getParameter(GROUP_KEY), CONSUMER_SIDE,
+                consumerURL.getParameter(APPLICATION_KEY)), consumerURL.getParameters());
     }
 
 }

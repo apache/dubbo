@@ -17,13 +17,13 @@
 
 package org.apache.dubbo.registry.consul;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.support.FailbackRegistry;
+import org.apache.dubbo.rpc.RpcException;
 
 import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.QueryParams;
@@ -32,21 +32,25 @@ import com.ecwid.consul.v1.agent.model.NewService;
 import com.ecwid.consul.v1.catalog.CatalogServicesRequest;
 import com.ecwid.consul.v1.health.HealthServicesRequest;
 import com.ecwid.consul.v1.health.model.HealthService;
-import org.apache.dubbo.rpc.RpcException;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static java.util.concurrent.Executors.newCachedThreadPool;
-import static org.apache.dubbo.common.Constants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
+import static org.apache.dubbo.registry.Constants.PROVIDER_PROTOCOL;
 
 /**
  * registry center implementation for consul
@@ -57,31 +61,34 @@ public class ConsulRegistry extends FailbackRegistry {
     private static final String SERVICE_TAG = "dubbo";
     private static final String URL_META_KEY = "url";
     private static final String WATCH_TIMEOUT = "consul-watch-timeout";
-    private static final String CHECK_INTERVAL = "consul-check-interval";
-    private static final String CHECK_TIMEOUT = "consul-check-timeout";
+    private static final String CHECK_PASS_INTERVAL = "consul-check-pass-interval";
     private static final String DEREGISTER_AFTER = "consul-deregister-critical-service-after";
 
     private static final int DEFAULT_PORT = 8500;
     // default watch timeout in millisecond
     private static final int DEFAULT_WATCH_TIMEOUT = 60 * 1000;
-    // default tcp check interval
-    private static final String DEFAULT_CHECK_INTERVAL = "10s";
-    // default tcp check timeout
-    private static final String DEFAULT_CHECK_TIMEOUT = "1s";
+    // default time-to-live in millisecond
+    private static final long DEFAULT_CHECK_PASS_INTERVAL = 16000L;
     // default deregister critical server after
     private static final String DEFAULT_DEREGISTER_TIME = "20s";
 
     private ConsulClient client;
-
+    private long checkPassInterval;
     private ExecutorService notifierExecutor = newCachedThreadPool(
             new NamedThreadFactory("dubbo-consul-notifier", true));
     private ConcurrentMap<URL, ConsulNotifier> notifiers = new ConcurrentHashMap<>();
+    private ScheduledExecutorService ttlConsulCheckExecutor;
+
 
     public ConsulRegistry(URL url) {
         super(url);
         String host = url.getHost();
         int port = url.getPort() != 0 ? url.getPort() : DEFAULT_PORT;
         client = new ConsulClient(host, port);
+        checkPassInterval = url.getParameter(CHECK_PASS_INTERVAL, DEFAULT_CHECK_PASS_INTERVAL);
+        ttlConsulCheckExecutor = Executors.newSingleThreadScheduledExecutor();
+        ttlConsulCheckExecutor.scheduleAtFixedRate(this::checkPass, checkPassInterval / 8,
+                checkPassInterval / 8, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -164,7 +171,7 @@ public class ConsulRegistry extends FailbackRegistry {
         }
         try {
             String service = url.getServiceKey();
-            Response<List<HealthService>> result = client.getHealthServices(service, HealthServicesRequest.newBuilder().setTag(SERVICE_TAG).build());
+            Response<List<HealthService>> result = getHealthServices(service, -1, buildWatchTimeout(url));
             if (result == null || result.getValue() == null || result.getValue().isEmpty()) {
                 return new ArrayList<>();
             } else {
@@ -184,6 +191,21 @@ public class ConsulRegistry extends FailbackRegistry {
     public void destroy() {
         super.destroy();
         notifierExecutor.shutdown();
+        ttlConsulCheckExecutor.shutdown();
+    }
+
+    private void checkPass() {
+        for (URL url : getRegistered()) {
+            String checkId = buildId(url);
+            try {
+                client.agentCheckPass("service:" + checkId);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("check pass for url: " + url + " with check id: " + checkId);
+                }
+            } catch (Throwable t) {
+                logger.warn("fail to check pass for url: " + url + ", check id is: " + checkId);
+            }
+        }
     }
 
     private Response<List<HealthService>> getHealthServices(String service, long index, int watchTimeout) {
@@ -212,11 +234,11 @@ public class ConsulRegistry extends FailbackRegistry {
 
 
     private boolean isConsumerSide(URL url) {
-        return url.getProtocol().equals(Constants.CONSUMER_PROTOCOL);
+        return url.getProtocol().equals(CONSUMER_PROTOCOL);
     }
 
     private boolean isProviderSide(URL url) {
-        return url.getProtocol().equals(Constants.PROVIDER_PROTOCOL);
+        return url.getProtocol().equals(PROVIDER_PROTOCOL);
     }
 
     private List<URL> convert(List<HealthService> services) {
@@ -258,9 +280,7 @@ public class ConsulRegistry extends FailbackRegistry {
 
     private NewService.Check buildCheck(URL url) {
         NewService.Check check = new NewService.Check();
-        check.setTcp(url.getAddress());
-        check.setInterval(url.getParameter(CHECK_INTERVAL, DEFAULT_CHECK_INTERVAL));
-        check.setTimeout(url.getParameter(CHECK_TIMEOUT, DEFAULT_CHECK_TIMEOUT));
+        check.setTtl((checkPassInterval / 1000) + "s");
         check.setDeregisterCriticalServiceAfter(url.getParameter(DEREGISTER_AFTER, DEFAULT_DEREGISTER_TIME));
         return check;
     }

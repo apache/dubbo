@@ -17,8 +17,8 @@
 package org.apache.dubbo.remoting.handler;
 
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
@@ -178,7 +178,7 @@ public class HeaderExchangeHandlerTest {
         HeaderExchangeHandler hexhandler = new HeaderExchangeHandler(new MockedExchangeHandler() {
 
             @Override
-            public CompletableFuture reply(ExchangeChannel channel, Object request) throws RemotingException {
+            public CompletableFuture<Object> reply(ExchangeChannel channel, Object request) throws RemotingException {
                 Assertions.fail();
                 throw new RemotingException(channel, "");
             }

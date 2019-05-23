@@ -22,9 +22,10 @@ import org.apache.dubbo.cache.support.jcache.JCacheFactory;
 import org.apache.dubbo.cache.support.lru.LruCacheFactory;
 import org.apache.dubbo.cache.support.threadlocal.ThreadLocalCacheFactory;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.RpcResult;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -60,19 +61,19 @@ public class CacheFilterTest {
 
         URL url = URL.valueOf("test://test:11/test?cache=" + cacheType);
 
-        given(invoker.invoke(invocation)).willReturn(new RpcResult("value"));
+        given(invoker.invoke(invocation)).willReturn(AsyncRpcResult.newDefaultAsyncResult("value", invocation));
         given(invoker.getUrl()).willReturn(url);
 
-        given(invoker1.invoke(invocation)).willReturn(new RpcResult("value1"));
+        given(invoker1.invoke(invocation)).willReturn(AsyncRpcResult.newDefaultAsyncResult("value1", invocation));
         given(invoker1.getUrl()).willReturn(url);
 
-        given(invoker2.invoke(invocation)).willReturn(new RpcResult("value2"));
+        given(invoker2.invoke(invocation)).willReturn(AsyncRpcResult.newDefaultAsyncResult("value2", invocation));
         given(invoker2.getUrl()).willReturn(url);
 
-        given(invoker3.invoke(invocation)).willReturn(new RpcResult(new RuntimeException()));
+        given(invoker3.invoke(invocation)).willReturn(AsyncRpcResult.newDefaultAsyncResult(new RuntimeException(), invocation));
         given(invoker3.getUrl()).willReturn(url);
 
-        given(invoker4.invoke(invocation)).willReturn(new RpcResult());
+        given(invoker4.invoke(invocation)).willReturn(AsyncRpcResult.newDefaultAsyncResult(invocation));
         given(invoker4.getUrl()).willReturn(url);
     }
 
@@ -85,8 +86,8 @@ public class CacheFilterTest {
         invocation.setArguments(new Object[]{});
 
         cacheFilter.invoke(invoker, invocation);
-        RpcResult rpcResult1 = (RpcResult) cacheFilter.invoke(invoker1, invocation);
-        RpcResult rpcResult2 = (RpcResult) cacheFilter.invoke(invoker2, invocation);
+        Result rpcResult1 = cacheFilter.invoke(invoker1, invocation);
+        Result rpcResult2 = cacheFilter.invoke(invoker2, invocation);
         Assertions.assertEquals(rpcResult1.getValue(), rpcResult2.getValue());
         Assertions.assertEquals(rpcResult1.getValue(), "value");
     }
@@ -100,8 +101,8 @@ public class CacheFilterTest {
         invocation.setArguments(new Object[]{"arg1"});
 
         cacheFilter.invoke(invoker, invocation);
-        RpcResult rpcResult1 = (RpcResult) cacheFilter.invoke(invoker1, invocation);
-        RpcResult rpcResult2 = (RpcResult) cacheFilter.invoke(invoker2, invocation);
+        Result rpcResult1 = cacheFilter.invoke(invoker1, invocation);
+        Result rpcResult2 = cacheFilter.invoke(invoker2, invocation);
         Assertions.assertEquals(rpcResult1.getValue(), rpcResult2.getValue());
         Assertions.assertEquals(rpcResult1.getValue(), "value");
     }
@@ -115,7 +116,7 @@ public class CacheFilterTest {
         invocation.setArguments(new Object[]{"arg2"});
 
         cacheFilter.invoke(invoker3, invocation);
-        RpcResult rpcResult = (RpcResult) cacheFilter.invoke(invoker2, invocation);
+        Result rpcResult = cacheFilter.invoke(invoker2, invocation);
         Assertions.assertEquals(rpcResult.getValue(), "value2");
     }
 
@@ -128,9 +129,9 @@ public class CacheFilterTest {
         invocation.setArguments(new Object[]{"arg3"});
 
         cacheFilter.invoke(invoker4, invocation);
-        RpcResult rpcResult1 = (RpcResult) cacheFilter.invoke(invoker1, invocation);
-        RpcResult rpcResult2 = (RpcResult) cacheFilter.invoke(invoker2, invocation);
-        Assertions.assertEquals(rpcResult1.getValue(), null);
-        Assertions.assertEquals(rpcResult2.getValue(), null);
+        Result result1 = cacheFilter.invoke(invoker1, invocation);
+        Result result2 = cacheFilter.invoke(invoker2, invocation);
+        Assertions.assertEquals(result1.getValue(), null);
+        Assertions.assertEquals(result2.getValue(), null);
     }
 }

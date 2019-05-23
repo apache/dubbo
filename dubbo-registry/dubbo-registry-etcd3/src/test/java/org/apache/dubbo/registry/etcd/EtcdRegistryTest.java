@@ -50,13 +50,14 @@
  */
 package org.apache.dubbo.registry.etcd;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
+import org.apache.dubbo.remoting.Constants;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -72,6 +73,19 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.CLASSIFIER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.registry.Constants.ADMIN_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
+
 @Disabled
 public class EtcdRegistryTest {
 
@@ -85,16 +99,13 @@ public class EtcdRegistryTest {
     RegistryFactory registryFactory = ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
     EtcdRegistry registry;
     URL subscribe = new URL(
-            Constants.ADMIN_PROTOCOL, NetUtils.getLocalHost(), 0, "",
-            Constants.INTERFACE_KEY, Constants.ANY_VALUE,
-            Constants.GROUP_KEY, Constants.ANY_VALUE,
-            Constants.VERSION_KEY, Constants.ANY_VALUE,
-            Constants.CLASSIFIER_KEY, Constants.ANY_VALUE,
-            Constants.CATEGORY_KEY, Constants.PROVIDERS_CATEGORY + ","
-            + Constants.CONSUMERS_CATEGORY + ","
-            + Constants.ROUTERS_CATEGORY + ","
-            + Constants.CONFIGURATORS_CATEGORY,
-            Constants.ENABLED_KEY, Constants.ANY_VALUE,
+            ADMIN_PROTOCOL, NetUtils.getLocalHost(), 0, "",
+            INTERFACE_KEY, ANY_VALUE,
+            GROUP_KEY, ANY_VALUE,
+            VERSION_KEY, ANY_VALUE,
+            CLASSIFIER_KEY, ANY_VALUE,
+            CATEGORY_KEY, PROVIDERS_CATEGORY + "," + CONSUMERS_CATEGORY + "," + ROUTERS_CATEGORY + "," + CONFIGURATORS_CATEGORY,
+            ENABLED_KEY, ANY_VALUE,
             Constants.CHECK_KEY, String.valueOf(false));
 
     @Test

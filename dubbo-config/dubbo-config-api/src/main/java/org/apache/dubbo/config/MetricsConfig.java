@@ -17,8 +17,10 @@
 
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.config.support.Parameter;
+
+import static org.apache.dubbo.monitor.Constants.METRICS_PORT;
+import static org.apache.dubbo.monitor.Constants.METRICS_PROTOCOL;
 
 public class MetricsConfig extends AbstractConfig {
 
@@ -30,7 +32,7 @@ public class MetricsConfig extends AbstractConfig {
     public MetricsConfig() {
     }
 
-    @Parameter(key = Constants.METRICS_PORT)
+    @Parameter(key = METRICS_PORT)
     public String getPort() {
         return port;
     }
@@ -39,7 +41,7 @@ public class MetricsConfig extends AbstractConfig {
         this.port = port;
     }
 
-    @Parameter(key = Constants.METRICS_PROTOCOL)
+    @Parameter(key = METRICS_PROTOCOL)
     public String getProtocol() {
         return protocol;
     }

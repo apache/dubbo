@@ -33,8 +33,8 @@
  */
 package org.apache.dubbo.remoting.etcd.jetcd;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,6 +49,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.LockSupport;
 
+import static org.apache.dubbo.remoting.etcd.Constants.SESSION_TIMEOUT_KEY;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.spy;
@@ -91,7 +92,7 @@ public class JEtcdClientWrapperTest {
         String path = "/dubbo/org.apache.dubbo.demo.DemoService/providers";
 
         URL url = URL.valueOf("etcd3://127.0.0.1:2379/org.apache.dubbo.registry.RegistryService")
-                .addParameter(Constants.SESSION_TIMEOUT_KEY, 1000);
+                .addParameter(SESSION_TIMEOUT_KEY, 1000);
 
         JEtcdClientWrapper saved = clientWrapper;
 

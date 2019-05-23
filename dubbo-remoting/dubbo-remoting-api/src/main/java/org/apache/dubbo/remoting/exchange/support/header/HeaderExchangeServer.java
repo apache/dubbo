@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.exchange.support.header;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.Logger;
@@ -28,6 +27,7 @@ import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.Server;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
@@ -42,6 +42,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.unmodifiableCollection;
 
+import static org.apache.dubbo.remoting.Constants.HEARTBEAT_CHECK_TICK;
+import static org.apache.dubbo.remoting.Constants.LEAST_HEARTBEAT_DURATION;
+import static org.apache.dubbo.remoting.Constants.TICKS_PER_WHEEL;
+
 /**
  * ExchangeServerImpl
  */
@@ -53,7 +57,7 @@ public class HeaderExchangeServer implements ExchangeServer {
     private AtomicBoolean closed = new AtomicBoolean(false);
 
     private static final HashedWheelTimer IDLE_CHECK_TIMER = new HashedWheelTimer(new NamedThreadFactory("dubbo-server-idleCheck", true), 1,
-            TimeUnit.SECONDS, Constants.TICKS_PER_WHEEL);
+            TimeUnit.SECONDS, TICKS_PER_WHEEL);
 
     private CloseTimerTask closeTimerTask;
 
@@ -246,10 +250,10 @@ public class HeaderExchangeServer implements ExchangeServer {
      * Each interval cannot be less than 1000ms.
      */
     private long calculateLeastDuration(int time) {
-        if (time / Constants.HEARTBEAT_CHECK_TICK <= 0) {
-            return Constants.LEAST_HEARTBEAT_DURATION;
+        if (time / HEARTBEAT_CHECK_TICK <= 0) {
+            return LEAST_HEARTBEAT_DURATION;
         } else {
-            return time / Constants.HEARTBEAT_CHECK_TICK;
+            return time / HEARTBEAT_CHECK_TICK;
         }
     }
 

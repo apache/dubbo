@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.filter;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -45,6 +44,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.rpc.Constants.ACCESS_LOG_KEY;
+
 /**
  * Record access log for the service.
  * <p>
@@ -59,7 +63,7 @@ import java.util.concurrent.TimeUnit;
  * &lt;/logger&gt;
  * </pre></code>
  */
-@Activate(group = Constants.PROVIDER, value = Constants.ACCESS_LOG_KEY)
+@Activate(group = PROVIDER, value = ACCESS_LOG_KEY)
 public class AccessLogFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(AccessLogFilter.class);
@@ -75,16 +79,16 @@ public class AccessLogFilter implements Filter {
     // It's safe to declare it as singleton since it runs on single thread only
     private static final DateFormat FILE_NAME_FORMATTER = new SimpleDateFormat(FILE_DATE_FORMAT);
 
-    private static final Map<String, Set<AccessLogData>> logEntries = new ConcurrentHashMap<String, Set<AccessLogData>>();
+    private static final Map<String, Set<AccessLogData>> LOG_ENTRIES = new ConcurrentHashMap<String, Set<AccessLogData>>();
 
-    private static final ScheduledExecutorService logScheduled = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-Access-Log", true));
+    private static final ScheduledExecutorService LOG_SCHEDULED = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-Access-Log", true));
 
     /**
      * Default constructor initialize demon thread for writing into access log file with names with access log key
      * defined in url <b>accesslog</b>
      */
     public AccessLogFilter() {
-        logScheduled.scheduleWithFixedDelay(this::writeLogToFile, LOG_OUTPUT_INTERVAL, LOG_OUTPUT_INTERVAL, TimeUnit.MILLISECONDS);
+        LOG_SCHEDULED.scheduleWithFixedDelay(this::writeLogToFile, LOG_OUTPUT_INTERVAL, LOG_OUTPUT_INTERVAL, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -98,7 +102,7 @@ public class AccessLogFilter implements Filter {
     @Override
     public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
         try {
-            String accessLogKey = invoker.getUrl().getParameter(Constants.ACCESS_LOG_KEY);
+            String accessLogKey = invoker.getUrl().getParameter(ACCESS_LOG_KEY);
             if (ConfigUtils.isNotEmpty(accessLogKey)) {
                 AccessLogData logData = buildAccessLogData(invoker, inv);
                 log(accessLogKey, logData);
@@ -110,7 +114,7 @@ public class AccessLogFilter implements Filter {
     }
 
     private void log(String accessLog, AccessLogData accessLogData) {
-        Set<AccessLogData> logSet = logEntries.computeIfAbsent(accessLog, k -> new ConcurrentHashSet<>());
+        Set<AccessLogData> logSet = LOG_ENTRIES.computeIfAbsent(accessLog, k -> new ConcurrentHashSet<>());
 
         if (logSet.size() < LOG_MAX_BUFFER) {
             logSet.add(accessLogData);
@@ -121,8 +125,8 @@ public class AccessLogFilter implements Filter {
     }
 
     private void writeLogToFile() {
-        if (!logEntries.isEmpty()) {
-            for (Map.Entry<String, Set<AccessLogData>> entry : logEntries.entrySet()) {
+        if (!LOG_ENTRIES.isEmpty()) {
+            for (Map.Entry<String, Set<AccessLogData>> entry : LOG_ENTRIES.entrySet()) {
                 try {
                     String accessLog = entry.getKey();
                     Set<AccessLogData> logSet = entry.getValue();
@@ -162,8 +166,8 @@ public class AccessLogFilter implements Filter {
         AccessLogData logData = AccessLogData.newLogData();
         logData.setServiceName(invoker.getInterface().getName());
         logData.setMethodName(inv.getMethodName());
-        logData.setVersion(invoker.getUrl().getParameter(Constants.VERSION_KEY));
-        logData.setGroup(invoker.getUrl().getParameter(Constants.GROUP_KEY));
+        logData.setVersion(invoker.getUrl().getParameter(VERSION_KEY));
+        logData.setGroup(invoker.getUrl().getParameter(GROUP_KEY));
         logData.setInvocationTime(new Date());
         logData.setTypes(inv.getParameterTypes());
         logData.setArguments(inv.getArguments());

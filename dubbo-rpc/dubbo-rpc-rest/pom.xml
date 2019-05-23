@@ -91,22 +91,22 @@
         <dependency>
             <groupId>io.swagger</groupId>
             <artifactId>swagger-annotations</artifactId>
-            <exclusions> 
-                <exclusion> 
-                	<groupId>javax.ws.rs</groupId> 
-                    <artifactId>jsr311-api</artifactId> 
-                </exclusion> 
-            </exclusions> 
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.ws.rs</groupId>
+                    <artifactId>jsr311-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.swagger</groupId>
             <artifactId>swagger-jaxrs</artifactId>
-            <exclusions> 
-                <exclusion> 
-                    <groupId>javax.ws.rs</groupId> 
-                    <artifactId>jsr311-api</artifactId> 
-                </exclusion> 
-            </exclusions> 
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.ws.rs</groupId>
+                    <artifactId>jsr311-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

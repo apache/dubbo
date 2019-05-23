@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.transport.dispatcher;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -26,11 +25,15 @@ import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.transport.ChannelHandlerDelegate;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 
 public class WrappedChannelHandler implements ChannelHandlerDelegate {
 
@@ -50,8 +53,8 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
         executor = (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
 
         String componentKey = Constants.EXECUTOR_SERVICE_COMPONENT_KEY;
-        if (Constants.CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(Constants.SIDE_KEY))) {
-            componentKey = Constants.CONSUMER_SIDE;
+        if (CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY))) {
+            componentKey = CONSUMER_SIDE;
         }
         DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
         dataStore.put(componentKey, Integer.toString(url.getPort()), executor);
