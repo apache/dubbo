@@ -26,6 +26,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.util.List;
 import java.util.Objects;
@@ -64,7 +65,7 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
     @Override
     @SuppressWarnings("unchecked")
     public <T> Exporter<T> export(final Invoker<T> invoker) throws RpcException {
-        final String uri = serviceKey(invoker.getUrl());
+        final String uri = ProtocolUtils.serviceKey(invoker.getUrl());
         Exporter<T> exporter = (Exporter<T>) exporterMap.get(uri);
         if (exporter != null) {
             // When modifying the configuration through override, you need to re-expose the newly modified service.

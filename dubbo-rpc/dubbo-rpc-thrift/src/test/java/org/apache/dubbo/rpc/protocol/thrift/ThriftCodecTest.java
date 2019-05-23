@@ -29,6 +29,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.gen.thrift.Demo;
 import org.apache.dubbo.rpc.protocol.thrift.io.RandomAccessByteArrayOutputStream;
+
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TMessage;
@@ -40,6 +41,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
+import java.util.concurrent.CompletableFuture;
 
 public class ThriftCodecTest {
 
@@ -130,7 +132,7 @@ public class ThriftCodecTest {
 
         Request request = createRequest();
 
-        DefaultFuture future = DefaultFuture.newFuture(channel, request, 10, null);
+        DefaultFuture future = DefaultFuture.newFuture(channel, request, 10, null, new CompletableFuture());
 
         TMessage message = new TMessage("echoString", TMessageType.REPLY, ThriftCodec.getSeqId());
 
@@ -207,7 +209,7 @@ public class ThriftCodecTest {
 
         Request request = createRequest();
 
-        DefaultFuture future = DefaultFuture.newFuture(channel, request, 10, null);
+        DefaultFuture future = DefaultFuture.newFuture(channel, request, 10, null, new CompletableFuture());
 
         TMessage message = new TMessage("echoString", TMessageType.EXCEPTION, ThriftCodec.getSeqId());
 

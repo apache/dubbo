@@ -162,10 +162,10 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         } catch (Throwable t) {
             exception = t;
         }
-        if (message instanceof Request) {
-            Request request = (Request) message;
-            DefaultFuture.sent(channel, request);
-        }
+//        if (message instanceof Request) {
+//            Request request = (Request) message;
+//            DefaultFuture.sent(channel, request);
+//        }
         if (exception != null) {
             if (exception instanceof RuntimeException) {
                 throw (RuntimeException) exception;

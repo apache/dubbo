@@ -16,16 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rsocket;
 
-import io.rsocket.AbstractRSocket;
-import io.rsocket.ConnectionSetupPayload;
-import io.rsocket.Payload;
-import io.rsocket.RSocket;
-import io.rsocket.RSocketFactory;
-import io.rsocket.SocketAcceptor;
-import io.rsocket.transport.netty.client.TcpClientTransport;
-import io.rsocket.transport.netty.server.CloseableChannel;
-import io.rsocket.transport.netty.server.TcpServerTransport;
-import io.rsocket.util.DefaultPayload;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -46,7 +36,19 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
+import org.apache.dubbo.rpc.support.ProtocolUtils;
 import org.apache.dubbo.rpc.support.RpcUtils;
+
+import io.rsocket.AbstractRSocket;
+import io.rsocket.ConnectionSetupPayload;
+import io.rsocket.Payload;
+import io.rsocket.RSocket;
+import io.rsocket.RSocketFactory;
+import io.rsocket.SocketAcceptor;
+import io.rsocket.transport.netty.client.TcpClientTransport;
+import io.rsocket.transport.netty.server.CloseableChannel;
+import io.rsocket.transport.netty.server.TcpServerTransport;
+import io.rsocket.util.DefaultPayload;
 import org.reactivestreams.Publisher;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
@@ -104,7 +106,7 @@ public class RSocketProtocol extends AbstractProtocol {
 
     Invoker<?> getInvoker(int port, Map<String, Object> metadataMap) throws RemotingException {
         String path = (String) metadataMap.get(RSocketConstants.SERVICE_NAME_KEY);
-        String serviceKey = serviceKey(port, path, (String) metadataMap.get(RSocketConstants.SERVICE_VERSION_KEY), (String) metadataMap.get(Constants.GROUP_KEY));
+        String serviceKey = ProtocolUtils.serviceKey(port, path, (String) metadataMap.get(RSocketConstants.SERVICE_VERSION_KEY), (String) metadataMap.get(Constants.GROUP_KEY));
         RSocketExporter<?> exporter = (RSocketExporter<?>) exporterMap.get(serviceKey);
         if (exporter == null) {
             //throw new Throwable("Not found exported service: " + serviceKey + " in " + exporterMap.keySet() + ", may be version or group mismatch " + ", channel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress() + ", message:" + inv);
@@ -128,7 +130,7 @@ public class RSocketProtocol extends AbstractProtocol {
         URL url = invoker.getUrl();
 
         // export service.
-        String key = serviceKey(url);
+        String key = ProtocolUtils.serviceKey(url);
         RSocketExporter<T> exporter = new RSocketExporter<T>(invoker, key, exporterMap);
         exporterMap.put(key, exporter);
 
@@ -236,7 +238,7 @@ public class RSocketProtocol extends AbstractProtocol {
                                         ByteBuffer metadataBuffer = payload.getMetadata();
                                         byte[] metadataBytes = new byte[metadataBuffer.remaining()];
                                         metadataBuffer.get(metadataBytes, metadataBuffer.position(), metadataBuffer.remaining());
-                                        Map<String, Object> metadataMap = MetadataCodec.decodeMetadata(metadataBytes);
+                                        Map<String,Object> metadataMap = MetadataCodec.decodeMetadata(metadataBytes);
                                         Byte serializeId = ((Integer) metadataMap.get(RSocketConstants.SERIALIZE_TYPE_KEY)).byteValue();
 
 
@@ -284,7 +286,7 @@ public class RSocketProtocol extends AbstractProtocol {
                                             }
                                         });
 
-                                    } catch (Throwable t) {
+                                    }catch (Throwable t){
                                         throw new RuntimeException(t);
                                     }
                                 }
@@ -295,7 +297,7 @@ public class RSocketProtocol extends AbstractProtocol {
                                         ByteBuffer metadataBuffer = payload.getMetadata();
                                         byte[] metadataBytes = new byte[metadataBuffer.remaining()];
                                         metadataBuffer.get(metadataBytes, metadataBuffer.position(), metadataBuffer.remaining());
-                                        Map<String, Object> metadataMap = MetadataCodec.decodeMetadata(metadataBytes);
+                                        Map<String,Object> metadataMap = MetadataCodec.decodeMetadata(metadataBytes);
                                         Byte serializeId = ((Integer) metadataMap.get(RSocketConstants.SERIALIZE_TYPE_KEY)).byteValue();
 
 
@@ -327,7 +329,7 @@ public class RSocketProtocol extends AbstractProtocol {
                                                 }
                                             }
                                         });
-                                    } catch (Throwable t) {
+                                    }catch (Throwable t){
                                         throw new RuntimeException(t);
                                     }
                                 }

@@ -23,13 +23,13 @@ import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * <p>
  * mvn clean test -Dtest=*PerformanceClientTest -Dserver=10.20.153.187:9911
  */
-public class PerformanceClientTest  {
+public class PerformanceClientTest {
 
     private static final Logger logger = LoggerFactory.getLogger(PerformanceClientTest.class);
 
@@ -70,8 +70,10 @@ public class PerformanceClientTest  {
             exchangeClients[i] = Exchangers.connect(url);
         }
 
-        List<String> serverEnvironment = (List<String>) exchangeClients[0].request("environment").get();
-        List<String> serverScene = (List<String>) exchangeClients[0].request("scene").get();
+        CompletableFuture<Object> completableFuture = new CompletableFuture<Object>();
+        List<String> serverEnvironment = (List<String>) exchangeClients[0].request("environment", completableFuture).get();
+        completableFuture = new CompletableFuture<Object>();
+        List<String> serverScene = (List<String>) exchangeClients[0].request("scene", completableFuture).get();
 
         // Create some data for test
         StringBuilder buf = new StringBuilder(length);
@@ -99,7 +101,8 @@ public class PerformanceClientTest  {
                                 count.incrementAndGet();
                                 ExchangeClient client = exchangeClients[index.getAndIncrement() % connections];
                                 long start = System.currentTimeMillis();
-                                String result = (String) client.request(data).get();
+                                CompletableFuture<Object> completableFuture = new CompletableFuture<Object>();
+                                String result = (String) client.request(data, completableFuture).get();
                                 long end = System.currentTimeMillis();
                                 if (!data.equals(result)) {
                                     throw new IllegalStateException("Invalid result " + result);

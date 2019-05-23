@@ -33,6 +33,7 @@ import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.locks.ReentrantLock;
+
 /**
  * @since 2.7.0, use https://github.com/dubbo/dubbo-rpc-native-thrift instead
  */
@@ -87,7 +88,7 @@ public class ThriftInvoker<T> extends AbstractInvoker<T> {
                     methodName, Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
 
             AsyncRpcResult asyncRpcResult = new AsyncRpcResult(invocation);
-            CompletableFuture<Object> responseFuture = currentClient.request(inv, timeout);
+            CompletableFuture<Object> responseFuture = currentClient.request(inv, timeout, asyncRpcResult);
             asyncRpcResult.subscribeTo(responseFuture);
             return asyncRpcResult;
         } catch (TimeoutException e) {

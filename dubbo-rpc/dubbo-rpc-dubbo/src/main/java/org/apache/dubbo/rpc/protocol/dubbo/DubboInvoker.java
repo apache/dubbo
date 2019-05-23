@@ -91,14 +91,14 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 AsyncRpcResult asyncRpcResult = new AsyncRpcResult(inv);
                 ExecutorService executor = getCallbackExecutor(getUrl(), inv);
                 asyncRpcResult.setExecutor(executor);
-                CompletableFuture<Object> responseFuture = currentClient.request(inv, timeout, executor);
-                responseFuture.whenComplete((obj, t) -> {
-                    if (t != null) {
-                        asyncRpcResult.completeExceptionally(t);
-                    } else {
-                        asyncRpcResult.complete((AppResponse) obj);
-                    }
-                });
+                currentClient.request(inv, timeout, executor, asyncRpcResult);
+//                responseFuture.whenComplete((obj, t) -> {
+//                    if (t != null) {
+//                        asyncRpcResult.completeExceptionally(t);
+//                    } else {
+//                        asyncRpcResult.complete((AppResponse) obj);
+//                    }
+//                });
                 return asyncRpcResult;
             }
         } catch (TimeoutException e) {

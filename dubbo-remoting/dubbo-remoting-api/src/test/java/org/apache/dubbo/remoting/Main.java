@@ -62,7 +62,7 @@ public class Main {
                 sb.append("(" + random.nextLong() + ")");
             Main.Data d = new Main.Data();
             d.setData(sb.toString());
-            client.request(d).get();
+            client.request(d, new CompletableFuture()).get();
         }
         System.out.println("send finished.");
     }
@@ -83,18 +83,18 @@ public class Main {
 
     private static void test(int port) throws Exception {
         ExchangeChannel client = Exchangers.connect(URL.valueOf("dubbo://localhost:" + port));
-        MockResult result = (MockResult) client.request(new RpcMessage(DemoService.class.getName(), "plus", new Class<?>[]{int.class, int.class}, new Object[]{55, 25})).get();
+        MockResult result = (MockResult) client.request(new RpcMessage(DemoService.class.getName(), "plus", new Class<?>[]{int.class, int.class}, new Object[]{55, 25}), new CompletableFuture()).get();
         System.out.println("55+25=" + result.getResult());
 
         for (int i = 0; i < 100; i++)
-            client.request(new RpcMessage(DemoService.class.getName(), "sayHello", new Class<?>[]{String.class}, new Object[]{"qianlei" + i}));
+            client.request(new RpcMessage(DemoService.class.getName(), "sayHello", new Class<?>[]{String.class}, new Object[]{"qianlei" + i}), new CompletableFuture());
 
         for (int i = 0; i < 100; i++)
-            client.request(new Main.Data());
+            client.request(new Main.Data(), new CompletableFuture());
 
         System.out.println("=====test invoke=====");
         for (int i = 0; i < 100; i++) {
-            CompletableFuture<Object> future = client.request(new Main.Data());
+            CompletableFuture<Object> future = client.request(new Main.Data(), new CompletableFuture());
             System.out.println("invoke and get");
             System.out.println("invoke result:" + future.get());
         }

@@ -27,11 +27,11 @@ import java.util.Map;
  */
 public class DubboExporter<T> extends AbstractExporter<T> {
 
-    private final String key;
+    private final DubboExporterKey key;
 
-    private final Map<String, Exporter<?>> exporterMap;
+    private final Map<DubboExporterKey, Exporter<?>> exporterMap;
 
-    public DubboExporter(Invoker<T> invoker, String key, Map<String, Exporter<?>> exporterMap) {
+    public DubboExporter(Invoker<T> invoker, DubboExporterKey key, Map<DubboExporterKey, Exporter<?>> exporterMap) {
         super(invoker);
         this.key = key;
         this.exporterMap = exporterMap;

@@ -98,22 +98,25 @@ final class HeaderExchangeChannel implements ExchangeChannel {
     }
 
     @Override
-    public CompletableFuture<Object> request(Object request) throws RemotingException {
-        return request(request, null);
+    public CompletableFuture<Object> request(Object request, CompletableFuture cf) throws RemotingException {
+        request(request, null, cf);
+        return cf;
     }
 
     @Override
-    public CompletableFuture<Object> request(Object request, int timeout) throws RemotingException {
-        return request(request, timeout, null);
+    public CompletableFuture<Object> request(Object request, int timeout, CompletableFuture cf) throws RemotingException {
+        request(request, timeout, null, cf);
+        return cf;
     }
 
     @Override
-    public CompletableFuture<Object> request(Object request, ExecutorService executor) throws RemotingException {
-        return request(request, channel.getUrl().getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT), executor);
+    public CompletableFuture<Object> request(Object request, ExecutorService executor, CompletableFuture cf) throws RemotingException {
+        request(request, channel.getUrl().getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT), executor, cf);
+        return cf;
     }
 
     @Override
-    public CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor) throws RemotingException {
+    public CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor, CompletableFuture cf) throws RemotingException {
         if (closed) {
             throw new RemotingException(this.getLocalAddress(), null, "Failed to send request " + request + ", cause: The channel " + this + " is closed!");
         }
@@ -122,14 +125,14 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         req.setVersion(Version.getProtocolVersion());
         req.setTwoWay(true);
         req.setData(request);
-        DefaultFuture future = DefaultFuture.newFuture(channel, req, timeout, executor);
+        DefaultFuture future = DefaultFuture.newFuture(channel, req, timeout, executor, cf);
         try {
             channel.send(req);
         } catch (RemotingException e) {
             future.cancel();
             throw e;
         }
-        return future;
+        return cf;
     }
 
     @Override

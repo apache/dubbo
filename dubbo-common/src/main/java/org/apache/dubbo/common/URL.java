@@ -108,6 +108,10 @@ class URL implements Serializable {
 
     private volatile transient String string;
 
+    private final transient String serviceKey;
+    private final transient String serviceInterface;
+//    private final transient String serviceKeyForExporter;
+
     protected URL() {
         this.protocol = null;
         this.username = null;
@@ -116,6 +120,9 @@ class URL implements Serializable {
         this.port = 0;
         this.path = null;
         this.parameters = null;
+        this.serviceKey = null;
+        this.serviceInterface = null;
+//        this.serviceKeyForExporter = null;
     }
 
     public URL(String protocol, String host, int port) {
@@ -171,7 +178,33 @@ class URL implements Serializable {
             parameters = new HashMap<>(parameters);
         }
         this.parameters = Collections.unmodifiableMap(parameters);
+
+        this.serviceInterface = getParameter(Constants.INTERFACE_KEY, path);
+        if (this.serviceInterface == null) {
+            this.serviceKey = null;
+        } else {
+            this.serviceKey = buildKey(serviceInterface, getParameter(Constants.GROUP_KEY), getParameter(Constants.VERSION_KEY));
+        }
+//        this.serviceKeyForExporter = serviceKeyForExporter(port, path, this.getParameter(Constants.VERSION_KEY), this.getParameter(Constants.GROUP_KEY));
+
     }
+
+
+//    protected String serviceKeyForExporter(int port, String serviceName, String serviceVersion, String serviceGroup) {
+//        StringBuilder buf = new StringBuilder();
+//        if (StringUtils.isNotEmpty(serviceGroup)) {
+//            buf.append(serviceGroup);
+//            buf.append("/");
+//        }
+//        buf.append(serviceName);
+//        if (serviceVersion != null && serviceVersion.length() > 0 && !"0.0.0".equals(serviceVersion)) {
+//            buf.append(":");
+//            buf.append(serviceVersion);
+//        }
+//        buf.append(":");
+//        buf.append(port);
+//        return buf.toString();
+//    }
 
     /**
      * Parse url string
@@ -447,6 +480,10 @@ class URL implements Serializable {
         }
         return address;
     }
+
+//    public String getServiceKeyForExporter() {
+//        return serviceKeyForExporter;
+//    }
 
     public String getPath() {
         return path;
@@ -1309,18 +1346,16 @@ class URL implements Serializable {
 
     /**
      * The format of return value is '{group}/{interfaceName}:{version}'
+     *
      * @return
      */
     public String getServiceKey() {
-        String inf = getServiceInterface();
-        if (inf == null) {
-            return null;
-        }
-        return buildKey(inf, getParameter(Constants.GROUP_KEY), getParameter(Constants.VERSION_KEY));
+        return serviceKey;
     }
 
     /**
      * The format of return value is '{group}/{path/interfaceName}:{version}'
+     *
      * @return
      */
     public String getPathKey() {
@@ -1346,6 +1381,7 @@ class URL implements Serializable {
     public String toServiceStringWithoutResolving() {
         return buildString(true, false, false, true);
     }
+
     public String toServiceString() {
         return buildString(true, false, true, true);
     }
@@ -1356,7 +1392,7 @@ class URL implements Serializable {
     }
 
     public String getServiceInterface() {
-        return getParameter(Constants.INTERFACE_KEY, path);
+        return serviceInterface;
     }
 
     public URL setServiceInterface(String service) {

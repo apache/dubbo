@@ -49,6 +49,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public abstract class AbstractInvoker<T> implements Invoker<T> {
 
+    public static final ThreadlessExecutor THREADLESS_EXECUTOR = new ThreadlessExecutor();
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final Class<T> type;
@@ -186,7 +187,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
     protected ExecutorService getCallbackExecutor(URL url, Invocation inv) {
         ExecutorService sharedExecutor = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension().createExecutorIfAbsent(url);
         if (InvokeMode.SYNC == RpcUtils.getInvokeMode(getUrl(), inv)) {
-            return new ThreadlessExecutor(sharedExecutor);
+            return THREADLESS_EXECUTOR;
         } else {
             return sharedExecutor;
         }

@@ -34,7 +34,6 @@ import java.util.concurrent.TimeoutException;
 
 /**
  * MockedClient
- *
  */
 public class MockedClient implements ExchangeClient {
 
@@ -81,21 +80,21 @@ public class MockedClient implements ExchangeClient {
         this.sent = msg;
     }
 
-    public CompletableFuture<Object> request(Object msg) throws RemotingException {
-        return request(msg, null);
+    public CompletableFuture<Object> request(Object msg, CompletableFuture cf) throws RemotingException {
+        return request(msg, null, cf);
     }
 
-    public CompletableFuture<Object> request(Object msg, int timeout) throws RemotingException {
-        return this.request(msg, timeout, null);
-    }
-
-    @Override
-    public CompletableFuture<Object> request(Object msg, ExecutorService executor) throws RemotingException {
-        return this.request(msg, 0, executor);
+    public CompletableFuture<Object> request(Object msg, int timeout, CompletableFuture cf) throws RemotingException {
+        return this.request(msg, timeout, null, cf);
     }
 
     @Override
-    public CompletableFuture<Object> request(Object msg, int timeout, ExecutorService executor) throws RemotingException {
+    public CompletableFuture<Object> request(Object msg, ExecutorService executor, CompletableFuture cf) throws RemotingException {
+        return this.request(msg, 0, executor, cf);
+    }
+
+    @Override
+    public CompletableFuture<Object> request(Object msg, int timeout, ExecutorService executor, CompletableFuture cf) throws RemotingException {
         this.invoked = msg;
         return new CompletableFuture<Object>() {
             public Object get() throws InterruptedException, ExecutionException {
