@@ -27,16 +27,25 @@ import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import static java.util.Collections.emptySortedSet;
+import static java.util.Collections.unmodifiableSortedSet;
+import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 
 /**
  *
  */
 public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
+
+    private static final String EMPTY_STRING = "";
+
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperDynamicConfiguration.class);
 
     private Executor executor;
@@ -91,24 +100,8 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public String getConfig(String key, String group, long timeout) throws IllegalStateException {
-        /**
-         * when group is not null, we are getting startup configs from Config Center, for example:
-         * group=dubbo, key=dubbo.properties
-         */
-        if (StringUtils.isNotEmpty(group)) {
-            key = group + "/" + key;
-        }
-        /**
-         * when group is null, we are fetching governance rules, for example:
-         * 1. key=org.apache.dubbo.DemoService.configurators
-         * 2. key = org.apache.dubbo.DemoService.condition-router
-         */
-        else {
-            int i = key.lastIndexOf(".");
-            key = key.substring(0, i) + "/" + key.substring(i + 1);
-        }
-
-        return (String) getInternalProperty(rootPath + "/" + key);
+        String path = buildPath(key, group);
+        return (String) getInternalProperty(path);
     }
 
     /**
@@ -122,6 +115,54 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
      */
     @Override
     public String getConfigs(String key, String group, long timeout) throws IllegalStateException {
-        return (String) getConfig(key, group, timeout);
+        return getConfig(key, group, timeout);
     }
+
+    @Override
+    public boolean publishConfig(String key, String group, String content) {
+        String path = buildPath(key, group);
+        zkClient.create(path, content, true);
+        return true;
+    }
+
+    @Override
+    public SortedSet<String> getConfigKeys(String group) {
+        String path = buildPath(group);
+        List<String> nodes = zkClient.getChildren(path);
+        return isEmpty(nodes) ? emptySortedSet() : unmodifiableSortedSet(new TreeSet<>(nodes));
+    }
+
+    /**
+     * Build the config node path by the specified <code>key</code> and <code>group</code>
+     *
+     * @param key   the key to represent a configuration
+     * @param group the group where the key belongs to
+     * @return
+     */
+    protected String buildPath(String key, String group) {
+        String path = null;
+        /**
+         * when group is not null, we are getting startup configs from Config Center, for example:
+         * group=dubbo, key=dubbo.properties
+         */
+        if (StringUtils.isNotEmpty(group)) {
+            path = group + "/" + key;
+        }
+        /**
+         * when group is null, we are fetching governance rules, for example:
+         * 1. key=org.apache.dubbo.DemoService.configurators
+         * 2. key = org.apache.dubbo.DemoService.condition-router
+         */
+        else {
+            int i = key.lastIndexOf(".");
+            path = key.substring(0, i) + "/" + key.substring(i + 1);
+        }
+        return buildPath(path);
+    }
+
+    protected String buildPath(String relativePath) {
+        String path = rootPath + "/" + relativePath;
+        return path;
+    }
+
 }
