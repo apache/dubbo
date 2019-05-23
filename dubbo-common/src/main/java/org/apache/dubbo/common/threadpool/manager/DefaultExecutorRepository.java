@@ -53,12 +53,12 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     private ConcurrentMap<String, ConcurrentMap<Integer, ExecutorService>> data = new ConcurrentHashMap<>();
 
     public DefaultExecutorRepository() {
-        for (int i = 0; i < DEFAULT_SCHEDULER_SIZE; i++) {
-            ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-framework-scheduler"));
-            scheduledExecutors.addItem(scheduler);
-        }
-
-        reconnectScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-reconnect-scheduler"));
+//        for (int i = 0; i < DEFAULT_SCHEDULER_SIZE; i++) {
+//            ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-framework-scheduler"));
+//            scheduledExecutors.addItem(scheduler);
+//        }
+//
+//        reconnectScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-reconnect-scheduler"));
     }
 
     public ExecutorService createExecutorIfAbsent(URL url) {
