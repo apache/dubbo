@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.ListenableFilter;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.filter.CallbackRegistrationFilter;
 
 import java.util.List;
 
@@ -44,12 +45,19 @@ public class ProtocolFilterWrapper implements Protocol {
         this.protocol = protocol;
     }
 
+
+
     private static <T> Invoker<T> buildInvokerChain(final Invoker<T> invoker, String key, String group) {
         Invoker<T> last = invoker;
         List<Filter> filters = ExtensionLoader.getExtensionLoader(Filter.class).getActivateExtension(invoker.getUrl(), key, group);
+
         if (!filters.isEmpty()) {
             for (int i = filters.size() - 1; i >= 0; i--) {
                 final Filter filter = filters.get(i);
+                // register callback at CallbackRegistrationFilter
+                if (filter instanceof CallbackRegistrationFilter) {
+                    ((CallbackRegistrationFilter) filter).setFilters(filters);
+                }
                 final Invoker<T> next = last;
                 last = new Invoker<T>() {
 
@@ -83,18 +91,7 @@ public class ProtocolFilterWrapper implements Protocol {
                             }
                             throw e;
                         }
-                        return asyncResult.thenApplyWithContext(r -> {
-                            // onResponse callback
-                            if (filter instanceof ListenableFilter) {
-                                Filter.Listener listener = ((ListenableFilter) filter).listener();
-                                if (listener != null) {
-                                    listener.onResponse(r, invoker, invocation);
-                                }
-                            } else {
-                                filter.onResponse(r, invoker, invocation);
-                            }
-                            return r;
-                        });
+                        return asyncResult;
                     }
 
                     @Override
