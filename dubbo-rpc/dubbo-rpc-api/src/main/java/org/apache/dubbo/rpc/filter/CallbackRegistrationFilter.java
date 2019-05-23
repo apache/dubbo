@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.filter;
 
-import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
@@ -27,7 +27,7 @@ import org.apache.dubbo.rpc.RpcException;
 
 import java.util.List;
 
-@Activate(group = {CommonConstants.PROVIDER, CommonConstants.CONSUMER}, order = -999999)
+@Activate(group = {Constants.PROVIDER, Constants.CONSUMER}, order = -999999)
 public class CallbackRegistrationFilter implements Filter {
 
     private List<Filter> filters;
