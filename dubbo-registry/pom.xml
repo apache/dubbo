@@ -37,6 +37,7 @@
         <module>dubbo-registry-consul</module>
         <module>dubbo-registry-etcd3</module>
         <module>dubbo-registry-nacos</module>
+        <module>dubbo-registry-multiple</module>
         <module>dubbo-registry-sofa</module>
     </modules>
 </project>
