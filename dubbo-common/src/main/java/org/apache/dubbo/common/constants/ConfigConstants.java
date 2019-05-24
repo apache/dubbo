@@ -40,9 +40,9 @@ public interface ConfigConstants {
 
     String DUBBO_PROTOCOL = "dubbo";
 
-    String QOS_ENABLE = "qos.enable";
+    String QOS_ENABLE = "qos-enable";
 
-    String QOS_PORT = "qos.port";
+    String QOS_PORT = "qos-port";
 
-    String ACCEPT_FOREIGN_IP = "qos.accept.foreign.ip";
+    String ACCEPT_FOREIGN_IP = "qos-accept-foreign-ip";
 }
