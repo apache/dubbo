@@ -279,7 +279,7 @@ public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
 
             try {
                 /**
-                 * issue : https://github.com/apache/incubator-dubbo/issues/4115
+                 * issue : https://github.com/apache/dubbo/issues/4115
                  *
                  * When the network is reconnected, the listener is empty
                  * and the data cannot be received.

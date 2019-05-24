@@ -31,7 +31,7 @@
 
     <name>${project.artifactId}</name>
     <description>The parent project of dubbo</description>
-    <url>https://github.com/apache/incubator-dubbo</url>
+    <url>https://github.com/apache/dubbo</url>
     <inceptionYear>2011</inceptionYear>
     <licenses>
         <license>
@@ -42,9 +42,9 @@
     </licenses>
 
     <scm>
-        <url>https://github.com/apache/incubator-dubbo</url>
-        <connection>scm:git:https://github.com/apache/incubator-dubbo.git</connection>
-        <developerConnection>scm:git:https://github.com/apache/incubator-dubbo.git</developerConnection>
+        <url>https://github.com/apache/dubbo</url>
+        <connection>scm:git:https://github.com/apache/dubbo.git</connection>
+        <developerConnection>scm:git:https://github.com/apache/dubbo.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
     <mailingLists>
@@ -83,7 +83,7 @@
 
     <issueManagement>
         <system>Github Issues</system>
-        <url>https://github.com/apache/incubator-dubbo/issues</url>
+        <url>https://github.com/apache/dubbo/issues</url>
     </issueManagement>
 
     <properties>

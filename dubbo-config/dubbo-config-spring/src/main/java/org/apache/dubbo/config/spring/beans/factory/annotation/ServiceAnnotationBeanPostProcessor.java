@@ -320,7 +320,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
         if (interfaceClass == null) {
             // Find all interfaces from the annotated class
-            // To resolve an issue : https://github.com/apache/incubator-dubbo/issues/3251
+            // To resolve an issue : https://github.com/apache/dubbo/issues/3251
             Class<?>[] allInterfaces = ClassUtils.getAllInterfacesForClass(annotatedServiceBeanClass);
 
             if (allInterfaces.length > 0) {
