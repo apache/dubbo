@@ -11,9 +11,9 @@ Before we accept a non-trivial patch or pull request we will need you to sign th
 
 The mailing list is the recommended way for discussing almost anything that related to Dubbo. Please refer to this [guide](https://github.com/apache/dubbo/wiki/Mailing-list-subscription-guide) for detailed documentation on how to subscribe.
 
-- [dev@dubbo.incubator.apache.org](mailto:dev-subscribe@dubbo.incubator.apache.org): the develop mailing list, you can ask question here if you have encountered any problem when using or developing Dubbo.
-- [commits@dubbo.incubator.apache.org](mailto:commits-subscribe@dubbo.incubator.apache.org): all the commits will be sent to this mailing list. You can subscribe to it if you are interested in Dubbo's development.
-- [notifications@dubbo.incubator.apache.org](mailto:notifications-subscribe@dubbo.incubator.apache.org): all the Github [issue](https://github.com/apache/dubbo/issues) updates and [pull request](https://github.com/apache/dubbo/pulls) updates will be sent to this mailing list.
+- [dev@dubbo.apache.org](mailto:dev-subscribe@dubbo.apache.org): the develop mailing list, you can ask question here if you have encountered any problem when using or developing Dubbo.
+- [commits@dubbo.apache.org](mailto:commits-subscribe@dubbo.apache.org): all the commits will be sent to this mailing list. You can subscribe to it if you are interested in Dubbo's development.
+- [notifications@dubbo.apache.org](mailto:notifications-subscribe@dubbo.apache.org): all the Github [issue](https://github.com/apache/dubbo/issues) updates and [pull request](https://github.com/apache/dubbo/pulls) updates will be sent to this mailing list.
 
 ### Reporting issue
 
