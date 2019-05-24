@@ -14,35 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.registry.multiple;
 
-package org.apache.dubbo.common.constants;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 
 /**
- * ConfigConstants
+ * MultipleRegistryFactory
  */
-public interface ConfigConstants {
-    String CLUSTER_KEY = "cluster";
+public class MultipleRegistryFactory extends AbstractRegistryFactory {
 
-    String USERNAME_KEY = "username";
+    @Override
+    protected Registry createRegistry(URL url) {
+        return new MultipleRegistry(url);
+    }
 
-    String PASSWORD_KEY = "password";
-
-    String HOST_KEY = "host";
-
-    String PORT_KEY = "port";
-
-    String DUBBO_IP_TO_BIND = "DUBBO_IP_TO_BIND";
-
-    @Deprecated
-    String SHUTDOWN_WAIT_SECONDS_KEY = "dubbo.service.shutdown.wait.seconds";
-
-    String SHUTDOWN_WAIT_KEY = "dubbo.service.shutdown.wait";
-
-    String DUBBO_PROTOCOL = "dubbo";
-
-    String QOS_ENABLE = "qos-enable";
-
-    String QOS_PORT = "qos-port";
-
-    String ACCEPT_FOREIGN_IP = "qos-accept-foreign-ip";
 }
