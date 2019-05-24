@@ -16,7 +16,7 @@ public class RpcContextFilterTest {
         String v = "k1=v1,v2,k3=v3";
         Map<String, String> m = RpcContextFilter.parse(v);
         assertEquals("v1", m.get("k1"));
-        assertEquals("v3", m.get("k2"));
+        assertEquals("v3", m.get("k3"));
     }
 
     @Test
