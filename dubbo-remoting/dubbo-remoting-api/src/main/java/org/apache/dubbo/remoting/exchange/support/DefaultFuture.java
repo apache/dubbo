@@ -63,8 +63,6 @@ public class DefaultFuture {
     private final Channel channel;
     private final Request request;
     private final int timeout;
-    private final long start = System.currentTimeMillis();
-//    private volatile long sent;
 
     private final ExecutorService executor;
 
@@ -109,13 +107,6 @@ public class DefaultFuture {
         return CHANNELS.containsValue(channel);
     }
 
-//    public static void sent(Request request) {
-//        DefaultFuture future = FUTURES.get(request.getId());
-//        if (future != null) {
-//            future.doSent();
-//        }
-//    }
-
     /**
      * close a channel when a channel is inactive
      * directly return the unfinished requests.
@@ -140,15 +131,14 @@ public class DefaultFuture {
     }
 
     public static void received(Channel channel, Response response) {
+        received(channel, response, false);
+    }
+
+    public static void received(Channel channel, Response response, boolean timeout) {
         try {
             DefaultFuture future = FUTURES.remove(response.getId());
             if (future != null) {
                 future.doReceived(response);
-//                Timeout t = PENDING_TASKS.remove(future.getId());
-//                if (t != null) {
-//                    // decrease Time
-//                    t.cancel();
-//                }
             } else {
                 logger.warn("The timeout response finally returned at "
                         + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()))
@@ -174,6 +164,7 @@ public class DefaultFuture {
     public void cancel() {
         this.cancel(true);
     }
+
 
     private void doReceived(Response res) {
         if (res == null) {
@@ -266,7 +257,7 @@ public class DefaultFuture {
                     timeoutResponse.setStatus(Response.SERVER_TIMEOUT);
                     timeoutResponse.setErrorMessage(getTimeoutMessage(true));
                     // handle response.
-                    DefaultFuture.received(future.getChannel(), timeoutResponse);
+                    DefaultFuture.received(future.getChannel(), timeoutResponse, true);
                 });
             }
         }
