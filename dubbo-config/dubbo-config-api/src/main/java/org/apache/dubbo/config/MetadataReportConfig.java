@@ -71,6 +71,11 @@ public class MetadataReportConfig extends AbstractConfig {
      */
     private Boolean syncReport;
 
+    /**
+     * cluster
+     */
+    private Boolean cluster;
+
     public MetadataReportConfig() {
     }
 
@@ -173,5 +178,13 @@ public class MetadataReportConfig extends AbstractConfig {
 
     public void setGroup(String group) {
         this.group = group;
+    }
+
+    public Boolean getCluster() {
+        return cluster;
+    }
+
+    public void setCluster(Boolean cluster) {
+        this.cluster = cluster;
     }
 }
