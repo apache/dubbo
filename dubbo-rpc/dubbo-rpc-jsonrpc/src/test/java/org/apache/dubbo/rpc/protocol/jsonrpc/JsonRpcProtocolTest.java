@@ -23,6 +23,7 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.RpcContext;
 
 import org.junit.jupiter.api.Test;
 
@@ -55,7 +56,7 @@ public class JsonRpcProtocolTest {
         assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        URL url = URL.valueOf("jsonrpc://127.0.0.1:5342/" + JsonRpcService.class.getName() + "?version=1.0.0&server=jetty9");
+        URL url = URL.valueOf("jsonrpc://127.0.0.1:5342/" + JsonRpcService.class.getName() + "?version=1.0.0&server=jetty");
         Exporter<JsonRpcService> exporter = protocol.export(proxyFactory.getInvoker(server, JsonRpcService.class, url));
         Invoker<JsonRpcService> invoker = protocol.refer(JsonRpcService.class, url);
         JsonRpcService client = proxyFactory.getProxy(invoker);
@@ -66,4 +67,25 @@ public class JsonRpcProtocolTest {
         exporter.unexport();
     }
 
+    @Test
+    public void testJsonrpcProtocolForTransferAttachment() {
+        String aatrKey = "jsonrpc-attr-key";
+        String aatrValue = "jsonrpc-attr-value";
+
+        JsonRpcServiceImpl server = new JsonRpcServiceImpl();
+        assertFalse(server.isCalled());
+        ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        URL url = URL.valueOf("jsonrpc://127.0.0.1:5342/" + JsonRpcService.class.getName() + "?version=1.0.0&server=jetty");
+        Exporter<JsonRpcService> exporter = protocol.export(proxyFactory.getInvoker(server, JsonRpcService.class, url));
+
+        Invoker<JsonRpcService> invoker = protocol.refer(JsonRpcService.class, url);
+        JsonRpcService client = proxyFactory.getProxy(invoker);
+
+        RpcContext.getContext().setAttachment(aatrKey, aatrValue);
+        String result = client.findAttachment(aatrKey);
+        assertEquals(aatrValue, result);
+        invoker.destroy();
+        exporter.unexport();
+    }
 }

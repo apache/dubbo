@@ -20,14 +20,13 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.http.HttpBinder;
 import org.apache.dubbo.remoting.http.HttpHandler;
 import org.apache.dubbo.remoting.http.HttpServer;
-import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
+import org.apache.dubbo.rpc.protocol.jsonrpc.support.DubboJsonProxyFactory;
 
 import com.googlecode.jsonrpc4j.HttpException;
 import com.googlecode.jsonrpc4j.JsonRpcClientException;
 import com.googlecode.jsonrpc4j.JsonRpcServer;
-import com.googlecode.jsonrpc4j.spring.JsonProxyFactoryBean;
 import org.springframework.remoting.RemoteAccessException;
 
 import javax.servlet.ServletException;
@@ -48,6 +47,8 @@ public class JsonRpcProtocol extends AbstractProxyProtocol {
     private final Map<String, HttpServer> serverMap = new ConcurrentHashMap<>();
 
     private final Map<String, JsonRpcServer> skeletonMap = new ConcurrentHashMap<>();
+
+    private final RpcContextFilter filter = new RpcContextFilter();
 
     private HttpBinder httpBinder;
 
@@ -85,8 +86,7 @@ public class JsonRpcProtocol extends AbstractProxyProtocol {
             if (request.getMethod().equalsIgnoreCase("OPTIONS")) {
                 response.setStatus(200);
             } else if (request.getMethod().equalsIgnoreCase("POST")) {
-
-                RpcContext.getContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
+                filter.preHandle(request, response);
                 try {
                     skeleton.handle(request.getInputStream(), response.getOutputStream());
                 } catch (Throwable e) {
@@ -116,12 +116,10 @@ public class JsonRpcProtocol extends AbstractProxyProtocol {
     @SuppressWarnings("unchecked")
     @Override
     protected <T> T doRefer(final Class<T> serviceType, URL url) throws RpcException {
-        JsonProxyFactoryBean jsonProxyFactoryBean = new JsonProxyFactoryBean();
-        jsonProxyFactoryBean.setServiceUrl(url.setProtocol("http").toIdentityString());
-        jsonProxyFactoryBean.setServiceInterface(serviceType);
-
-        jsonProxyFactoryBean.afterPropertiesSet();
-        return (T) jsonProxyFactoryBean.getObject();
+        DubboJsonProxyFactory factory = new DubboJsonProxyFactory(serviceType,
+                url.setProtocol("http").toIdentityString());
+        factory.init();
+        return (T) factory.getObject();
     }
 
     @Override

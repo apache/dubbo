@@ -16,6 +16,11 @@
  */
 package org.apache.dubbo.rpc.protocol.jsonrpc;
 
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.RpcContext;
+
+import java.util.Map;
+
 public class JsonRpcServiceImpl implements JsonRpcService {
     private boolean called;
 
@@ -38,6 +43,15 @@ public class JsonRpcServiceImpl implements JsonRpcService {
 
     public String customException() {
         throw new MyException("custom exception");
+    }
+
+    @Override
+    public String findAttachment(String key) {
+        Map<String, String> map = RpcContext.getContext().getAttachments();
+        if (map == null || !map.containsKey(key)) {
+            return StringUtils.EMPTY;
+        }
+        return map.get(key);
     }
 
     static class MyException extends RuntimeException{

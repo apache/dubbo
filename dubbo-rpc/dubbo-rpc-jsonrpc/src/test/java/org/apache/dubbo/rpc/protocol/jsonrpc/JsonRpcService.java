@@ -22,4 +22,7 @@ public interface JsonRpcService {
     void timeOut(int millis);
 
     String customException();
+
+    String findAttachment(String key);
+
 }
