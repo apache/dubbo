@@ -295,7 +295,7 @@ public class MultipleRegistry extends AbstractRegistry {
         }
 
         @Override
-        public void notify(List<URL> urls) {
+        public synchronized void notify(List<URL> urls) {
             this.urlList = urls;
             if (multipleNotifyListenerWrapper != null) {
                 this.multipleNotifyListenerWrapper.notifySourceListener();
