@@ -143,6 +143,16 @@ public class AsyncRpcResult extends AbstractResult {
         return this;
     }
 
+    public void subscribeTo(CompletableFuture<?> future) {
+        future.whenComplete((obj, t) -> {
+            if (t != null) {
+                this.completeExceptionally(t);
+            } else {
+                this.complete((Result) obj);
+            }
+        });
+    }
+
     @Override
     public Map<String, String> getAttachments() {
         return getAppResponse().getAttachments();
