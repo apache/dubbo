@@ -137,20 +137,10 @@ public class AsyncRpcResult extends AbstractResult {
     }
 
     public Result thenApplyWithContext(Function<Result, Result> fn) {
-        CompletableFuture<Result> future = this.thenApply(fn.compose(beforeContext).andThen(afterContext));
-        AsyncRpcResult nextAsyncRpcResult = new AsyncRpcResult(this);
-        nextAsyncRpcResult.subscribeTo(future);
-        return nextAsyncRpcResult;
-    }
-
-    public void subscribeTo(CompletableFuture<?> future) {
-        future.whenComplete((obj, t) -> {
-            if (t != null) {
-                this.completeExceptionally(t);
-            } else {
-                this.complete((Result) obj);
-            }
-        });
+        this.thenApply(fn.compose(beforeContext).andThen(afterContext));
+        // You may need to return a new Result instance representing the next async stage,
+        // like thenApply will return a new CompletableFuture.
+        return this;
     }
 
     @Override
