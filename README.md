@@ -219,9 +219,9 @@ Please report security vulnerability to [us](mailto:security@dubbo.apache.org) p
 
 #### Language
 
-* [Node.js](https://github.com/dubbo/dubbo2.js)
-* [Python](https://github.com/dubbo/dubbo-client-py)
-* [PHP](https://github.com/dubbo/dubbo-php-framework)
+* [Node.js](https://github.com/apache/dubbo-js)
+* [Python](https://github.com/apache/dubbo-client-py)
+* [PHP](https://github.com/apache/dubbo-php-framework)
 * [Go](https://github.com/dubbo/dubbo-go)
 * [Erlang](https://github.com/apache/dubbo-erlang)
 
