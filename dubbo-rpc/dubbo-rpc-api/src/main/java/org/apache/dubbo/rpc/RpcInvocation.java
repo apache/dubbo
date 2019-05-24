@@ -89,6 +89,7 @@ public class RpcInvocation implements Invocation, Serializable {
 
     public RpcInvocation(Method method, Object[] arguments) {
         this(method.getName(), method.getParameterTypes(), arguments, null, null);
+        this.returnType = method.getReturnType();
     }
 
     public RpcInvocation(Method method, Object[] arguments, Map<String, String> attachment, Map<Object, Object> attributes) {
@@ -228,10 +229,6 @@ public class RpcInvocation implements Invocation, Serializable {
 
     public Class<?> getReturnType() {
         return returnType;
-    }
-
-    public void setReturnType(Class<?> returnType) {
-        this.returnType = returnType;
     }
 
     public InvokeMode getInvokeMode() {
