@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;

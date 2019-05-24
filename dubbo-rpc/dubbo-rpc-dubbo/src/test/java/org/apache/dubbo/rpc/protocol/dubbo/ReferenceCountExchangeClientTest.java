@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.DubboAppender;
@@ -26,7 +25,9 @@ import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.protocol.AsyncToSyncInvoker;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -39,6 +40,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.SHARE_CONNECTIONS_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.CONNECTIONS_KEY;
 
 
 public class ReferenceCountExchangeClientTest {
@@ -208,8 +212,8 @@ public class ReferenceCountExchangeClientTest {
         Assertions.assertTrue(shareConnections >= 1);
 
         int port = NetUtils.getAvailablePort();
-        URL demoUrl = URL.valueOf("dubbo://127.0.0.1:" + port + "/demo?" + Constants.CONNECTIONS_KEY + "=" + connections + "&" + Constants.SHARE_CONNECTIONS_KEY + "=" + shareConnections);
-        URL helloUrl = URL.valueOf("dubbo://127.0.0.1:" + port + "/hello?" + Constants.CONNECTIONS_KEY + "=" + connections + "&" + Constants.SHARE_CONNECTIONS_KEY + "=" + shareConnections);
+        URL demoUrl = URL.valueOf("dubbo://127.0.0.1:" + port + "/demo?" + CONNECTIONS_KEY + "=" + connections + "&" + SHARE_CONNECTIONS_KEY + "=" + shareConnections);
+        URL helloUrl = URL.valueOf("dubbo://127.0.0.1:" + port + "/hello?" + CONNECTIONS_KEY + "=" + connections + "&" + SHARE_CONNECTIONS_KEY + "=" + shareConnections);
 
         demoExporter = export(new DemoServiceImpl(), IDemoService.class, demoUrl);
         helloExporter = export(new HelloServiceImpl(), IHelloService.class, helloUrl);
@@ -234,7 +238,7 @@ public class ReferenceCountExchangeClientTest {
     }
 
     private ExchangeClient getClient(Invoker<?> invoker) {
-        if (invoker.getUrl().getParameter(Constants.CONNECTIONS_KEY, 1) == 1) {
+        if (invoker.getUrl().getParameter(CONNECTIONS_KEY, 1) == 1) {
             return getInvokerClient(invoker);
         } else {
             ReferenceCountExchangeClient client = getReferenceClient(invoker);
@@ -271,8 +275,7 @@ public class ReferenceCountExchangeClientTest {
     }
 
     private List<ExchangeClient> getInvokerClientList(Invoker<?> invoker) {
-        @SuppressWarnings("rawtypes")
-        DubboInvoker dInvoker = (DubboInvoker) invoker;
+        @SuppressWarnings("rawtypes") DubboInvoker dInvoker = (DubboInvoker) ((AsyncToSyncInvoker) invoker).getInvoker();
         try {
             Field clientField = DubboInvoker.class.getDeclaredField("clients");
             clientField.setAccessible(true);

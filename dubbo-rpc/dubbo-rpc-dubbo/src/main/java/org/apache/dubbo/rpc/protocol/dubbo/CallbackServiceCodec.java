@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.bytecode.Wrapper;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -31,11 +30,24 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.protocol.AsyncToSyncInvoker;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.CALLBACK_SERVICE_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.CALLBACK_INSTANCES_LIMIT_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.DEFAULT_CALLBACK_INSTANCES;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.CALLBACK_SERVICE_PROXY_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.IS_CALLBACK_SERVICE;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.CHANNEL_CALLBACK_KEY;
+import static org.apache.dubbo.rpc.Constants.IS_SERVER_KEY;
 
 /**
  * callback service helper
@@ -82,20 +94,20 @@ class CallbackServiceCodec {
 
         Map<String, String> params = new HashMap<>(3);
         // no need to new client again
-        params.put(Constants.IS_SERVER_KEY, Boolean.FALSE.toString());
+        params.put(IS_SERVER_KEY, Boolean.FALSE.toString());
         // mark it's a callback, for troubleshooting
-        params.put(Constants.IS_CALLBACK_SERVICE, Boolean.TRUE.toString());
-        String group = (url == null ? null : url.getParameter(Constants.GROUP_KEY));
+        params.put(IS_CALLBACK_SERVICE, Boolean.TRUE.toString());
+        String group = (url == null ? null : url.getParameter(GROUP_KEY));
         if (group != null && group.length() > 0) {
-            params.put(Constants.GROUP_KEY, group);
+            params.put(GROUP_KEY, group);
         }
         // add method, for verifying against method, automatic fallback (see dubbo protocol)
-        params.put(Constants.METHODS_KEY, StringUtils.join(Wrapper.getWrapper(clazz).getDeclaredMethodNames(), ","));
+        params.put(METHODS_KEY, StringUtils.join(Wrapper.getWrapper(clazz).getDeclaredMethodNames(), ","));
 
         Map<String, String> tmpMap = new HashMap<>(url.getParameters());
         tmpMap.putAll(params);
-        tmpMap.remove(Constants.VERSION_KEY);// doesn't need to distinguish version for callback
-        tmpMap.put(Constants.INTERFACE_KEY, clazz.getName());
+        tmpMap.remove(VERSION_KEY);// doesn't need to distinguish version for callback
+        tmpMap.put(INTERFACE_KEY, clazz.getName());
         URL exportUrl = new URL(DubboProtocol.NAME, channel.getLocalAddress().getAddress().getHostAddress(), channel.getLocalAddress().getPort(), clazz.getName() + "." + instid, tmpMap);
 
         // no need to generate multiple exporters for different channel in the same JVM, cache key cannot collide.
@@ -139,23 +151,23 @@ class CallbackServiceCodec {
         String countkey = getServerSideCountKey(channel, clazz.getName());
         if (isRefer) {
             if (proxy == null) {
-                URL referurl = URL.valueOf("callback://" + url.getAddress() + "/" + clazz.getName() + "?" + Constants.INTERFACE_KEY + "=" + clazz.getName());
-                referurl = referurl.addParametersIfAbsent(url.getParameters()).removeParameter(Constants.METHODS_KEY);
+                URL referurl = URL.valueOf("callback://" + url.getAddress() + "/" + clazz.getName() + "?" + INTERFACE_KEY + "=" + clazz.getName());
+                referurl = referurl.addParametersIfAbsent(url.getParameters()).removeParameter(METHODS_KEY);
                 if (!isInstancesOverLimit(channel, referurl, clazz.getName(), instid, true)) {
                     @SuppressWarnings("rawtypes")
                     Invoker<?> invoker = new ChannelWrappedInvoker(clazz, channel, referurl, String.valueOf(instid));
-                    proxy = PROXY_FACTORY.getProxy(invoker);
+                    proxy = PROXY_FACTORY.getProxy(new AsyncToSyncInvoker<>(invoker));
                     channel.setAttribute(proxyCacheKey, proxy);
                     channel.setAttribute(invokerCacheKey, invoker);
                     increaseInstanceCount(channel, countkey);
 
                     //convert error fail fast .
                     //ignore concurrent problem.
-                    Set<Invoker<?>> callbackInvokers = (Set<Invoker<?>>) channel.getAttribute(Constants.CHANNEL_CALLBACK_KEY);
+                    Set<Invoker<?>> callbackInvokers = (Set<Invoker<?>>) channel.getAttribute(CHANNEL_CALLBACK_KEY);
                     if (callbackInvokers == null) {
                         callbackInvokers = new ConcurrentHashSet<Invoker<?>>(1);
                         callbackInvokers.add(invoker);
-                        channel.setAttribute(Constants.CHANNEL_CALLBACK_KEY, callbackInvokers);
+                        channel.setAttribute(CHANNEL_CALLBACK_KEY, callbackInvokers);
                     }
                     logger.info("method " + inv.getMethodName() + " include a callback service :" + invoker.getUrl() + ", a proxy :" + invoker + " has been created.");
                 }
@@ -164,7 +176,7 @@ class CallbackServiceCodec {
             if (proxy != null) {
                 Invoker<?> invoker = (Invoker<?>) channel.getAttribute(invokerCacheKey);
                 try {
-                    Set<Invoker<?>> callbackInvokers = (Set<Invoker<?>>) channel.getAttribute(Constants.CHANNEL_CALLBACK_KEY);
+                    Set<Invoker<?>> callbackInvokers = (Set<Invoker<?>>) channel.getAttribute(CHANNEL_CALLBACK_KEY);
                     if (callbackInvokers != null) {
                         callbackInvokers.remove(invoker);
                     }
@@ -182,11 +194,11 @@ class CallbackServiceCodec {
     }
 
     private static String getClientSideCallbackServiceCacheKey(int instid) {
-        return Constants.CALLBACK_SERVICE_KEY + "." + instid;
+        return CALLBACK_SERVICE_KEY + "." + instid;
     }
 
     private static String getServerSideCallbackServiceCacheKey(Channel channel, String interfaceClass, int instid) {
-        return Constants.CALLBACK_SERVICE_PROXY_KEY + "." + System.identityHashCode(channel) + "." + interfaceClass + "." + instid;
+        return CALLBACK_SERVICE_PROXY_KEY + "." + System.identityHashCode(channel) + "." + interfaceClass + "." + instid;
     }
 
     private static String getServerSideCallbackInvokerCacheKey(Channel channel, String interfaceClass, int instid) {
@@ -194,16 +206,16 @@ class CallbackServiceCodec {
     }
 
     private static String getClientSideCountKey(String interfaceClass) {
-        return Constants.CALLBACK_SERVICE_KEY + "." + interfaceClass + ".COUNT";
+        return CALLBACK_SERVICE_KEY + "." + interfaceClass + ".COUNT";
     }
 
     private static String getServerSideCountKey(Channel channel, String interfaceClass) {
-        return Constants.CALLBACK_SERVICE_PROXY_KEY + "." + System.identityHashCode(channel) + "." + interfaceClass + ".COUNT";
+        return CALLBACK_SERVICE_PROXY_KEY + "." + System.identityHashCode(channel) + "." + interfaceClass + ".COUNT";
     }
 
     private static boolean isInstancesOverLimit(Channel channel, URL url, String interfaceClass, int instid, boolean isServer) {
         Integer count = (Integer) channel.getAttribute(isServer ? getServerSideCountKey(channel, interfaceClass) : getClientSideCountKey(interfaceClass));
-        int limit = url.getParameter(Constants.CALLBACK_INSTANCES_LIMIT_KEY, Constants.DEFAULT_CALLBACK_INSTANCES);
+        int limit = url.getParameter(CALLBACK_INSTANCES_LIMIT_KEY, DEFAULT_CALLBACK_INSTANCES);
         if (count != null && count >= limit) {
             //client side error
             throw new IllegalStateException("interface " + interfaceClass + " `s callback instances num exceed providers limit :" + limit

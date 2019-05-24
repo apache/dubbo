@@ -35,7 +35,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.dubbo.common.Constants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 
 /**
  * TODO

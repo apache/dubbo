@@ -18,11 +18,11 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.context.annotation.DubboClassPathBeanDefinitionScanner;
 
 import com.alibaba.dubbo.config.annotation.Service;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -54,8 +54,10 @@ import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.apache.dubbo.config.spring.util.ObjectUtils.of;
@@ -389,7 +391,8 @@ public class CompatibleServiceAnnotationBeanPostProcessor implements BeanDefinit
 
         MutablePropertyValues propertyValues = beanDefinition.getPropertyValues();
 
-        String[] ignoreAttributeNames = of("provider", "monitor", "application", "module", "registry", "protocol", "interface");
+        String[] ignoreAttributeNames = of("provider", "monitor", "application", "module", "registry", "protocol",
+                "interface", "parameters");
 
         propertyValues.addPropertyValues(new AnnotationPropertyValuesAdapter(service, environment, ignoreAttributeNames));
 
@@ -397,6 +400,8 @@ public class CompatibleServiceAnnotationBeanPostProcessor implements BeanDefinit
         addPropertyReference(builder, "ref", annotatedServiceBeanName);
         // Set interface
         builder.addPropertyValue("interface", interfaceClass.getName());
+        // Convert parameters into map
+        builder.addPropertyValue("parameters", convertParameters(service.parameters()));
 
         /**
          * Add {@link org.apache.dubbo.config.ProviderConfig} Bean reference
@@ -482,6 +487,21 @@ public class CompatibleServiceAnnotationBeanPostProcessor implements BeanDefinit
         builder.addPropertyReference(propertyName, resolvedBeanName);
     }
 
+    private Map<String, String> convertParameters(String[] parameters) {
+        if (ArrayUtils.isEmpty(parameters)) {
+            return null;
+        }
+
+        if (parameters.length % 2 != 0) {
+            throw new IllegalArgumentException("parameter attribute must be paired with key followed by value");
+        }
+
+        Map<String, String> map = new HashMap<>();
+        for (int i = 0; i < parameters.length; i += 2) {
+            map.put(parameters[i], parameters[i + 1]);
+        }
+        return map;
+    }
 
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
@@ -502,5 +522,4 @@ public class CompatibleServiceAnnotationBeanPostProcessor implements BeanDefinit
     public void setBeanClassLoader(ClassLoader classLoader) {
         this.classLoader = classLoader;
     }
-
 }

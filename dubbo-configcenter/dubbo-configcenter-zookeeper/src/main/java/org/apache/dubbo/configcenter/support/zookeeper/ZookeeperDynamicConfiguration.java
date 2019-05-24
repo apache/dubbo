@@ -31,7 +31,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-import static org.apache.dubbo.common.Constants.CONFIG_NAMESPACE_KEY;
+import static org.apache.dubbo.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 
 /**
  *
@@ -109,5 +109,19 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
         }
 
         return (String) getInternalProperty(rootPath + "/" + key);
+    }
+
+    /**
+     * For zookeeper, {@link #getConfig(String, String, long)} and {@link #getConfigs(String, String, long)} have the same meaning.
+     *
+     * @param key
+     * @param group
+     * @param timeout
+     * @return
+     * @throws IllegalStateException
+     */
+    @Override
+    public String getConfigs(String key, String group, long timeout) throws IllegalStateException {
+        return (String) getConfig(key, group, timeout);
     }
 }

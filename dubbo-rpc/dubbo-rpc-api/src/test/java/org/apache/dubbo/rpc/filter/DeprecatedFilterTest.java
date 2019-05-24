@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.filter;
 
-import org.apache.dubbo.common.Constants;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.LogUtil;
 import org.apache.dubbo.rpc.Filter;
@@ -28,6 +28,8 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
+
 /**
  * DeprecatedFilterTest.java
  */
@@ -37,7 +39,7 @@ public class DeprecatedFilterTest {
 
     @Test
     public void testDeprecatedFilter() {
-        URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1&echo." + Constants.DEPRECATED_KEY + "=true");
+        URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1&echo." + DEPRECATED_KEY + "=true");
         LogUtil.start();
         deprecatedFilter.invoke(new MyInvoker<DemoService>(url), new MockInvocation());
         assertEquals(1,

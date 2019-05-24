@@ -31,7 +31,7 @@
 
     <name>${project.artifactId}</name>
     <description>The parent project of dubbo</description>
-    <url>https://github.com/apache/incubator-dubbo</url>
+    <url>https://github.com/apache/dubbo</url>
     <inceptionYear>2011</inceptionYear>
     <licenses>
         <license>
@@ -42,9 +42,9 @@
     </licenses>
 
     <scm>
-        <url>https://github.com/apache/incubator-dubbo</url>
-        <connection>scm:git:https://github.com/apache/incubator-dubbo.git</connection>
-        <developerConnection>scm:git:https://github.com/apache/incubator-dubbo.git</developerConnection>
+        <url>https://github.com/apache/dubbo</url>
+        <connection>scm:git:https://github.com/apache/dubbo.git</connection>
+        <developerConnection>scm:git:https://github.com/apache/dubbo.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
     <mailingLists>
@@ -83,7 +83,7 @@
 
     <issueManagement>
         <system>Github Issues</system>
-        <url>https://github.com/apache/incubator-dubbo/issues</url>
+        <url>https://github.com/apache/dubbo/issues</url>
     </issueManagement>
 
     <properties>
@@ -296,6 +296,41 @@
                                 <goals>
                                     <goal>sign</goal>
                                 </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>licenseCheck</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>license-maven-plugin</artifactId>
+                        <version>1.20</version>
+                        <executions>
+                            <execution>
+                                <id>license-check</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>add-third-party</goal>
+                                </goals>
+                                <configuration>
+                                    <includeOptional>false</includeOptional>
+                                    <useMissingFile>false</useMissingFile>
+                                    <failOnMissing>false</failOnMissing>
+                                    <licenseMerges>
+                                        <licenseMerge>Apache License, Version 2.0|The Apache Software License, Version
+                                            2.0|ASF 2.0|Apache 2|Apache-2.0|Apache 2.0 License|Apache 2.0|Apache License v2.0|Apache License 2.0|The Apache License, Version 2.0|The Apache Software License, Version 2.0
+                                        </licenseMerge>
+                                        <licenseMerge>The MIT License|MIT License</licenseMerge>
+                                        <licenseMerge>The 3-Clause BSD License|New BSD License|3-Clause BSD
+                                            License|BSD|3-Clause BSD License|The New BSD License
+                                        </licenseMerge>
+                                    </licenseMerges>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>

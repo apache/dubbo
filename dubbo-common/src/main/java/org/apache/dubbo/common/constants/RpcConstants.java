@@ -21,43 +21,10 @@ package org.apache.dubbo.common.constants;
  * RpcConstants
  */
 public interface RpcConstants {
-    // BEGIN dubbo-rpc-hessian
-    String HESSIAN2_REQUEST_KEY = "hessian2.request";
-
-    boolean DEFAULT_HESSIAN2_REQUEST = false;
-
-    String HESSIAN_OVERLOAD_METHOD_KEY = "hessian.overload.method";
-
-    boolean DEFAULT_HESSIAN_OVERLOAD_METHOD = false;
-
-    String DEFAULT_HTTP_CLIENT = "jdk";
-
-    String DEFAULT_HTTP_SERVER = "servlet";
-
-    String DEFAULT_HTTP_SERIALIZATION = "json";
-    // END dubbo-rpc-hessian
-
-    // BEGIN dubbo-rpc-dubbo
-    String SHARE_CONNECTIONS_KEY = "shareconnections";
-
-    /**
-     * By default, a consumer JVM instance and a provider JVM instance share a long TCP connection (except when connections are set),
-     * which can set the number of long TCP connections shared to avoid the bottleneck of sharing a single long TCP connection.
-     */
-    String DEFAULT_SHARE_CONNECTIONS = "1";
 
     String INPUT_KEY = "input";
 
     String OUTPUT_KEY = "output";
-
-    String DECODE_IN_IO_THREAD_KEY = "decode.in.io";
-
-    boolean DEFAULT_DECODE_IN_IO_THREAD = true;
-
-    /**
-     * callback inst id
-     */
-    String CALLBACK_SERVICE_KEY = "callback.service.instid";
 
     /**
      * The limit of callback service instances for one interface on every client
@@ -71,43 +38,11 @@ public interface RpcConstants {
      */
     int DEFAULT_CALLBACK_INSTANCES = 1;
 
-    String CALLBACK_SERVICE_PROXY_KEY = "callback.service.proxy";
-
-    String IS_CALLBACK_SERVICE = "is_callback_service";
-
-    /**
-     * Invokers in channel's callback
-     */
-    String CHANNEL_CALLBACK_KEY = "channel.callback.invokers.key";
-
-    /**
-     * The initial state for lazy connection
-     */
-    String LAZY_CONNECT_INITIAL_STATE_KEY = "connect.lazy.initial.state";
-
-    /**
-     * The default value of lazy connection's initial state: true
-     *
-     * @see #LAZY_CONNECT_INITIAL_STATE_KEY
-     */
-    boolean DEFAULT_LAZY_CONNECT_INITIAL_STATE = true;
-
-    String OPTIMIZER_KEY = "optimizer";
-    // END dubbo-rpc-dubbo
-
-
-    // BEGIN dubbo-rpc-api
     String DUBBO_VERSION_KEY = "dubbo";
 
-    String LOCAL_KEY = "local";
-
-    String STUB_KEY = "stub";
-
-    String MOCK_KEY = "mock";
-
-    String DEPRECATED_KEY = "deprecated";
-
     String $INVOKE = "$invoke";
+
+    String $INVOKE_ASYNC = "$invokeAsync";
 
     String $ECHO = "$echo";
 
@@ -165,31 +100,4 @@ public interface RpcConstants {
 
     String CONNECTIONS_KEY = "connections";
 
-    String ID_KEY = "id";
-
-    String ASYNC_KEY = "async";
-
-    String FUTURE_GENERATED_KEY = "future_generated";
-
-    String FUTURE_RETURNTYPE_KEY = "future_returntype";
-
-    String RETURN_KEY = "return";
-
-    String TOKEN_KEY = "token";
-
-    String INTERFACES = "interfaces";
-
-    String GENERIC_KEY = "generic";
-
-    String LOCAL_PROTOCOL = "injvm";
-    // END dubbo-rpc-api
-
-
-    // BEGIN dubbo-rpc-rest
-    String KEEP_ALIVE_KEY = "keepalive";
-
-    boolean DEFAULT_KEEP_ALIVE = true;
-
-    String EXTENSION_KEY = "extension";
-    // END dubbo-rpc-rest
 }

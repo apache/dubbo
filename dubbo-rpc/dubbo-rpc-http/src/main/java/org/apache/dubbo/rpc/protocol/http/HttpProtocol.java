@@ -16,10 +16,10 @@
  */
 package org.apache.dubbo.rpc.protocol.http;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.http.HttpBinder;
 import org.apache.dubbo.remoting.http.HttpHandler;
 import org.apache.dubbo.remoting.http.HttpServer;
@@ -46,6 +46,12 @@ import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 /**
  * HttpProtocol
@@ -84,7 +90,7 @@ public class HttpProtocol extends AbstractProxyProtocol {
         final String path = url.getAbsolutePath();
         skeletonMap.put(path, createExporter(impl, type));
 
-        final String genericPath = path + "/" + Constants.GENERIC_KEY;
+        final String genericPath = path + "/" + GENERIC_KEY;
 
         skeletonMap.put(genericPath, createExporter(impl, GenericService.class));
         return new Runnable() {
@@ -111,7 +117,7 @@ public class HttpProtocol extends AbstractProxyProtocol {
     @Override
     @SuppressWarnings("unchecked")
     protected <T> T doRefer(final Class<T> serviceType, final URL url) throws RpcException {
-        final String generic = url.getParameter(Constants.GENERIC_KEY);
+        final String generic = url.getParameter(GENERIC_KEY);
         final boolean isGeneric = ProtocolUtils.isGeneric(generic) || serviceType.equals(GenericService.class);
 
         final HttpInvokerProxyFactoryBean httpProxyFactoryBean = new HttpInvokerProxyFactoryBean();
@@ -123,24 +129,24 @@ public class HttpProtocol extends AbstractProxyProtocol {
                   package was renamed to 'org.apache.dubbo' in v2.7.0, so only provider versions after v2.7.0 can
                   recognize org.apache.xxx.HttpRemoteInvocation'.
                  */
-                if (Version.isRelease270OrHigher(url.getParameter(Constants.RELEASE_KEY))) {
+                if (Version.isRelease270OrHigher(url.getParameter(RELEASE_KEY))) {
                     invocation = new HttpRemoteInvocation(methodInvocation);
                 } else {
                     /*
                       The customized 'com.alibaba.dubbo.rpc.protocol.http.HttpRemoteInvocation' was firstly introduced
                       in v2.6.3. The main purpose is to support transformation of attachments in HttpProtocol, see
-                      https://github.com/apache/incubator-dubbo/pull/1827. To guarantee interoperability with lower
+                      https://github.com/apache/dubbo/pull/1827. To guarantee interoperability with lower
                       versions, we need to check if the provider is v2.6.3 or higher before sending customized
                       HttpRemoteInvocation.
                      */
-                    if (Version.isRelease263OrHigher(url.getParameter(Constants.DUBBO_VERSION_KEY))) {
+                    if (Version.isRelease263OrHigher(url.getParameter(DUBBO_VERSION_KEY))) {
                         invocation = new com.alibaba.dubbo.rpc.protocol.http.HttpRemoteInvocation(methodInvocation);
                     } else {
                         invocation = new RemoteInvocation(methodInvocation);
                     }
                 }
                 if (isGeneric) {
-                    invocation.addAttribute(Constants.GENERIC_KEY, generic);
+                    invocation.addAttribute(GENERIC_KEY, generic);
                 }
                 return invocation;
             }
@@ -148,7 +154,7 @@ public class HttpProtocol extends AbstractProxyProtocol {
 
         String key = url.toIdentityString();
         if (isGeneric) {
-            key = key + "/" + Constants.GENERIC_KEY;
+            key = key + "/" + GENERIC_KEY;
         }
 
         httpProxyFactoryBean.setServiceUrl(key);
@@ -160,14 +166,14 @@ public class HttpProtocol extends AbstractProxyProtocol {
                 protected void prepareConnection(HttpURLConnection con,
                                                  int contentLength) throws IOException {
                     super.prepareConnection(con, contentLength);
-                    con.setReadTimeout(url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
+                    con.setReadTimeout(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT));
                     con.setConnectTimeout(url.getParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT));
                 }
             };
             httpProxyFactoryBean.setHttpInvokerRequestExecutor(httpInvokerRequestExecutor);
         } else if ("commons".equals(client)) {
             HttpComponentsHttpInvokerRequestExecutor httpInvokerRequestExecutor = new HttpComponentsHttpInvokerRequestExecutor();
-            httpInvokerRequestExecutor.setReadTimeout(url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
+            httpInvokerRequestExecutor.setReadTimeout(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT));
             httpInvokerRequestExecutor.setConnectTimeout(url.getParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT));
             httpProxyFactoryBean.setHttpInvokerRequestExecutor(httpInvokerRequestExecutor);
         } else {

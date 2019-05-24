@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.filter;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -29,13 +29,15 @@ import org.apache.dubbo.rpc.RpcException;
 
 import java.util.Set;
 
+import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
+
 /**
  * DeprecatedFilter logs error message if a invoked method has been marked as deprecated. To check whether a method
  * is deprecated or not it looks for <b>deprecated</b> attribute value and consider it is deprecated it value is <b>true</b>
  *
  * @see Filter
  */
-@Activate(group = Constants.CONSUMER, value = Constants.DEPRECATED_KEY)
+@Activate(group = CommonConstants.CONSUMER, value = DEPRECATED_KEY)
 public class DeprecatedFilter implements Filter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeprecatedFilter.class);
@@ -47,7 +49,7 @@ public class DeprecatedFilter implements Filter {
         String key = invoker.getInterface().getName() + "." + invocation.getMethodName();
         if (!logged.contains(key)) {
             logged.add(key);
-            if (invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.DEPRECATED_KEY, false)) {
+            if (invoker.getUrl().getMethodParameter(invocation.getMethodName(), DEPRECATED_KEY, false)) {
                 LOGGER.error("The service method " + invoker.getInterface().getName() + "." + getMethodSignature(invocation) + " is DEPRECATED! Declare from " + invoker.getUrl());
             }
         }

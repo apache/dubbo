@@ -16,22 +16,24 @@
  */
 package org.apache.dubbo.rpc.cluster.support.wrapper;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.support.MockInvoker;
 
 import java.util.List;
+
+import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
+import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
 
 public class MockClusterInvoker<T> implements Invoker<T> {
 
@@ -70,7 +72,7 @@ public class MockClusterInvoker<T> implements Invoker<T> {
     public Result invoke(Invocation invocation) throws RpcException {
         Result result = null;
 
-        String value = directory.getUrl().getMethodParameter(invocation.getMethodName(), Constants.MOCK_KEY, Boolean.FALSE.toString()).trim();
+        String value = directory.getUrl().getMethodParameter(invocation.getMethodName(), MOCK_KEY, Boolean.FALSE.toString()).trim();
         if (value.length() == 0 || value.equalsIgnoreCase("false")) {
             //no mock
             result = this.invoker.invoke(invocation);
@@ -113,7 +115,7 @@ public class MockClusterInvoker<T> implements Invoker<T> {
             result = minvoker.invoke(invocation);
         } catch (RpcException me) {
             if (me.isBiz()) {
-                result = new RpcResult(me.getCause());
+                result = AsyncRpcResult.newDefaultAsyncResult(me.getCause(), invocation);
             } else {
                 throw new RpcException(me.getCode(), getMockExceptionMessage(e, me), me.getCause());
             }
@@ -145,7 +147,7 @@ public class MockClusterInvoker<T> implements Invoker<T> {
         //TODO generic invoker？
         if (invocation instanceof RpcInvocation) {
             //Note the implicit contract (although the description is added to the interface declaration, but extensibility is a problem. The practice placed in the attachment needs to be improved)
-            ((RpcInvocation) invocation).setAttachment(Constants.INVOCATION_NEED_MOCK, Boolean.TRUE.toString());
+            ((RpcInvocation) invocation).setAttachment(INVOCATION_NEED_MOCK, Boolean.TRUE.toString());
             //directory will return a list of normal invokers if Constants.INVOCATION_NEED_MOCK is present in invocation, otherwise, a list of mock invokers will return.
             try {
                 invokers = directory.list(invocation);

@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol.dubbo;
 
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Exporter;
@@ -237,7 +236,7 @@ public class ImplicitCallBackTest {
         Person ret = demoProxy.get(requestId);
         Assertions.assertEquals(requestId, ret.getId());
         Future<Person> pFuture = RpcContext.getContext().getFuture();
-        Assertions.assertEquals(null, pFuture);
+        Assertions.assertEquals(ret, pFuture.get());
         destroyService();
     }
 

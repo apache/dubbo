@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.thrift;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -26,10 +25,11 @@ import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 import org.apache.dubbo.remoting.buffer.ChannelBufferInputStream;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.protocol.thrift.io.RandomAccessByteArrayOutputStream;
+
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TException;
@@ -50,6 +50,9 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 
 /**
  * Thrift framed protocol codec.
@@ -181,8 +184,8 @@ public class ThriftCodec implements Codec2 {
         if (message.type == TMessageType.CALL) {
 
             RpcInvocation result = new RpcInvocation();
-            result.setAttachment(Constants.INTERFACE_KEY, serviceName);
-            result.setAttachment(Constants.PATH_KEY, path);
+            result.setAttachment(INTERFACE_KEY, serviceName);
+            result.setAttachment(PATH_KEY, path);
             result.setMethodName(message.name);
 
             String argsClassName = ExtensionLoader.getExtensionLoader(ClassNameGenerator.class)
@@ -284,7 +287,7 @@ public class ThriftCodec implements Codec2 {
                 throw new IOException(e.getMessage(), e);
             }
 
-            RpcResult result = new RpcResult();
+            AppResponse result = new AppResponse();
 
             result.setException(new RpcException(exception.getMessage()));
 
@@ -375,15 +378,15 @@ public class ThriftCodec implements Codec2 {
 
             response.setId(id);
 
-            RpcResult rpcResult = new RpcResult();
+            AppResponse appResponse = new AppResponse();
 
             if (realResult instanceof Throwable) {
-                rpcResult.setException((Throwable) realResult);
+                appResponse.setException((Throwable) realResult);
             } else {
-                rpcResult.setValue(realResult);
+                appResponse.setValue(realResult);
             }
 
-            response.setResult(rpcResult);
+            response.setResult(appResponse);
 
             return response;
 
@@ -401,11 +404,11 @@ public class ThriftCodec implements Codec2 {
 
         int seqId = nextSeqId();
 
-        String serviceName = inv.getAttachment(Constants.INTERFACE_KEY);
+        String serviceName = inv.getAttachment(INTERFACE_KEY);
 
         if (StringUtils.isEmpty(serviceName)) {
             throw new IllegalArgumentException("Could not find service name in attachment with key "
-                    + Constants.INTERFACE_KEY);
+                    + INTERFACE_KEY);
         }
 
         TMessage message = new TMessage(
@@ -499,7 +502,7 @@ public class ThriftCodec implements Codec2 {
             // service name
             protocol.writeString(serviceName);
             // path
-            protocol.writeString(inv.getAttachment(Constants.PATH_KEY));
+            protocol.writeString(inv.getAttachment(PATH_KEY));
             // dubbo request id
             protocol.writeI64(request.getId());
             protocol.getTransport().flush();
@@ -536,7 +539,7 @@ public class ThriftCodec implements Codec2 {
     private void encodeResponse(Channel channel, ChannelBuffer buffer, Response response)
             throws IOException {
 
-        RpcResult result = (RpcResult) response.getResult();
+        AppResponse result = (AppResponse) response.getResult();
 
         RequestData rd = CACHED_REQUEST.get(response.getId());
 
@@ -610,7 +613,7 @@ public class ThriftCodec implements Codec2 {
             }
 
         } else {
-            Object realResult = result.getResult();
+            Object realResult = result.getValue();
             // result field id is 0
             String fieldName = resultObj.fieldForId(0).getFieldName();
             String setMethodName = ThriftUtils.generateSetMethodName(fieldName);

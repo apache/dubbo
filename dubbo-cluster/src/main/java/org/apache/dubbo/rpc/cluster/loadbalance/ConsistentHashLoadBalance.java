@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.loadbalance;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -30,6 +29,8 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 
 /**
  * ConsistentHashLoadBalance
@@ -78,7 +79,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
             this.identityHashCode = identityHashCode;
             URL url = invokers.get(0).getUrl();
             this.replicaNumber = url.getMethodParameter(methodName, HASH_NODES, 160);
-            String[] index = Constants.COMMA_SPLIT_PATTERN.split(url.getMethodParameter(methodName, HASH_ARGUMENTS, "0"));
+            String[] index = COMMA_SPLIT_PATTERN.split(url.getMethodParameter(methodName, HASH_ARGUMENTS, "0"));
             argumentIndex = new int[index.length];
             for (int i = 0; i < index.length; i++) {
                 argumentIndex[i] = Integer.parseInt(index[i]);

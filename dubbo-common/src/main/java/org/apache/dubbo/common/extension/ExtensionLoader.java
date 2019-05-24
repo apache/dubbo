@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.extension;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.support.ActivateComparator;
 import org.apache.dubbo.common.logger.Logger;
@@ -47,6 +46,10 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
+
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PREFIX;
 
 /**
  * Load dubbo extensions
@@ -190,7 +193,7 @@ public class ExtensionLoader<T> {
      */
     public List<T> getActivateExtension(URL url, String key, String group) {
         String value = url.getParameter(key);
-        return getActivateExtension(url, StringUtils.isEmpty(value) ? null : Constants.COMMA_SPLIT_PATTERN.split(value), group);
+        return getActivateExtension(url, StringUtils.isEmpty(value) ? null : COMMA_SPLIT_PATTERN.split(value), group);
     }
 
     /**
@@ -205,7 +208,7 @@ public class ExtensionLoader<T> {
     public List<T> getActivateExtension(URL url, String[] values, String group) {
         List<T> exts = new ArrayList<>();
         List<String> names = values == null ? new ArrayList<>(0) : Arrays.asList(values);
-        if (!names.contains(Constants.REMOVE_VALUE_PREFIX + Constants.DEFAULT_KEY)) {
+        if (!names.contains(REMOVE_VALUE_PREFIX + DEFAULT_KEY)) {
             getExtensionClasses();
             for (Map.Entry<String, Object> entry : cachedActivates.entrySet()) {
                 String name = entry.getKey();
@@ -225,7 +228,7 @@ public class ExtensionLoader<T> {
                 if (isMatchGroup(group, activateGroup)) {
                     T ext = getExtension(name);
                     if (!names.contains(name)
-                            && !names.contains(Constants.REMOVE_VALUE_PREFIX + name)
+                            && !names.contains(REMOVE_VALUE_PREFIX + name)
                             && isActive(activateValue, url)) {
                         exts.add(ext);
                     }
@@ -236,9 +239,9 @@ public class ExtensionLoader<T> {
         List<T> usrs = new ArrayList<>();
         for (int i = 0; i < names.size(); i++) {
             String name = names.get(i);
-            if (!name.startsWith(Constants.REMOVE_VALUE_PREFIX)
-                    && !names.contains(Constants.REMOVE_VALUE_PREFIX + name)) {
-                if (Constants.DEFAULT_KEY.equals(name)) {
+            if (!name.startsWith(REMOVE_VALUE_PREFIX)
+                    && !names.contains(REMOVE_VALUE_PREFIX + name)) {
+                if (DEFAULT_KEY.equals(name)) {
                     if (!usrs.isEmpty()) {
                         exts.addAll(0, usrs);
                         usrs.clear();

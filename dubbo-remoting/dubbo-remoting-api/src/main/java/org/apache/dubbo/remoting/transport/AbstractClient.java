@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.transport;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -28,6 +27,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Client;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
 
@@ -35,6 +35,10 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
+import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 
 /**
  * AbstractClient
@@ -82,14 +86,14 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         }
 
         executor = (ExecutorService) ExtensionLoader.getExtensionLoader(DataStore.class)
-                .getDefaultExtension().get(Constants.CONSUMER_SIDE, Integer.toString(url.getPort()));
+                .getDefaultExtension().get(CONSUMER_SIDE, Integer.toString(url.getPort()));
         ExtensionLoader.getExtensionLoader(DataStore.class)
-                .getDefaultExtension().remove(Constants.CONSUMER_SIDE, Integer.toString(url.getPort()));
+                .getDefaultExtension().remove(CONSUMER_SIDE, Integer.toString(url.getPort()));
     }
 
     protected static ChannelHandler wrapChannelHandler(URL url, ChannelHandler handler) {
         url = ExecutorUtil.setThreadName(url, CLIENT_THREAD_POOL_NAME);
-        url = url.addParameterIfAbsent(Constants.THREADPOOL_KEY, Constants.DEFAULT_CLIENT_THREADPOOL);
+        url = url.addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
         return ChannelHandlers.wrap(handler, url);
     }
 

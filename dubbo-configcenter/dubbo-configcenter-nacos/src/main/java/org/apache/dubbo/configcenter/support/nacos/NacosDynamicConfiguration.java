@@ -17,10 +17,6 @@
 
 package org.apache.dubbo.configcenter.support.nacos;
 
-import com.alibaba.nacos.api.NacosFactory;
-import com.alibaba.nacos.api.config.ConfigService;
-import com.alibaba.nacos.api.config.listener.AbstractSharedListener;
-import com.alibaba.nacos.api.exception.NacosException;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -30,24 +26,30 @@ import org.apache.dubbo.configcenter.ConfigChangeType;
 import org.apache.dubbo.configcenter.ConfigurationListener;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 
+import com.alibaba.nacos.api.NacosFactory;
+import com.alibaba.nacos.api.config.ConfigService;
+import com.alibaba.nacos.api.config.listener.AbstractSharedListener;
+import com.alibaba.nacos.api.exception.NacosException;
+
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.Executor;
+
 import static com.alibaba.nacos.api.PropertyKeyConst.ACCESS_KEY;
 import static com.alibaba.nacos.api.PropertyKeyConst.CLUSTER_NAME;
 import static com.alibaba.nacos.api.PropertyKeyConst.ENDPOINT;
+import static com.alibaba.nacos.api.PropertyKeyConst.NAMESPACE;
 import static com.alibaba.nacos.api.PropertyKeyConst.SECRET_KEY;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
-import static com.alibaba.nacos.api.PropertyKeyConst.NAMESPACE;
 import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG_NAME;
-import static org.apache.dubbo.common.Constants.BACKUP_KEY;
-import static org.apache.dubbo.common.Constants.CONFIG_NAMESPACE_KEY;
-import static org.apache.dubbo.common.Constants.GROUP_CHAR_SEPERATOR;
-import static org.apache.dubbo.common.Constants.PROPERTIES_CHAR_SEPERATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPERATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.PROPERTIES_CHAR_SEPERATOR;
+import static org.apache.dubbo.configcenter.Constants.CONFIG_NAMESPACE_KEY;
+import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 
 /**
  * The nacos implementation of {@link DynamicConfiguration}
@@ -197,6 +199,11 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     public String getConfig(String key, String group, long timeout) throws IllegalStateException {
         key = generateKey(key, group);
         return (String) getInternalProperty(rootPath + PROPERTIES_CHAR_SEPERATOR + key);
+    }
+
+    @Override
+    public String getConfigs(String key, String group, long timeout) throws IllegalStateException {
+        return getConfig(key, group, timeout);
     }
 
     @Override
