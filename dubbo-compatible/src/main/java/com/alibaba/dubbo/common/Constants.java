@@ -18,13 +18,12 @@
 package com.alibaba.dubbo.common;
 
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.constants.QosConstants;
 import org.apache.dubbo.common.constants.FilterConstants;
+import org.apache.dubbo.common.constants.QosConstants;
 import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.constants.RemotingConstants;
-import org.apache.dubbo.common.constants.RpcConstants;
 
 @Deprecated
 public class Constants implements CommonConstants, QosConstants, FilterConstants, RegistryConstants,
-        RemotingConstants, RpcConstants, org.apache.dubbo.rpc.cluster.Constants, org.apache.dubbo.monitor.Constants {
+        RemotingConstants, org.apache.dubbo.rpc.cluster.Constants, org.apache.dubbo.monitor.Constants {
 }
