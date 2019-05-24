@@ -35,7 +35,7 @@ import io.netty.handler.timeout.IdleStateEvent;
  */
 @io.netty.channel.ChannelHandler.Sharable
 public class NettyClientHandler extends ChannelDuplexHandler {
-    private static final Logger logger = LoggerFactory.getLogger(NettyClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(NettyClientHandler.class);
 
     private final URL url;
 
