@@ -14,17 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.registry.multiple;
 
-package org.apache.dubbo.common.constants;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 
 /**
- * QosConstants
+ * MultipleRegistryFactory
  */
-public interface QosConstants {
+public class MultipleRegistryFactory extends AbstractRegistryFactory {
 
-    String QOS_ENABLE = "qos-enable";
+    @Override
+    protected Registry createRegistry(URL url) {
+        return new MultipleRegistry(url);
+    }
 
-    String QOS_PORT = "qos-port";
-
-    String ACCEPT_FOREIGN_IP = "qos-accept-foreign-ip";
 }
