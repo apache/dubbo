@@ -278,19 +278,19 @@ public class NacosRegistry extends FailbackRegistry {
 
         final String targetServiceInterface = url.getServiceInterface();
 
-        final String targetVersion = url.getParameter(VERSION_KEY);
+        final String targetVersion = url.getParameter(VERSION_KEY,"");
 
-        final String targetGroup = url.getParameter(GROUP_KEY);
+        final String targetGroup = url.getParameter(GROUP_KEY,"");
 
         filterData(serviceNames, serviceName -> {
             // split service name to segments
             // (required) segments[0] = category
             // (required) segments[1] = serviceInterface
-            // (required) segments[2] = version
+            // (optional) segments[2] = version
             // (optional) segments[3] = group
             String[] segments = StringUtils.split(serviceName, SERVICE_NAME_SEPARATOR);
             int length = segments.length;
-            if (length < 3) { // must present 3 segments or more
+            if (length != 4) { // must present 4 segments
                 return false;
             }
 
@@ -311,8 +311,7 @@ public class NacosRegistry extends FailbackRegistry {
                 return false;
             }
 
-            String group = length > 3 ? segments[SERVICE_GROUP_INDEX] : null;
-            // no match service group
+            String group = segments[SERVICE_GROUP_INDEX];
             return group == null || WILDCARD.equals(targetGroup)
                     || StringUtils.equals(targetGroup, group);
         });
@@ -420,16 +419,17 @@ public class NacosRegistry extends FailbackRegistry {
 
     private String getServiceName(URL url, String category) {
         StringBuilder serviceNameBuilder = new StringBuilder(category);
-        appendIfPresent(serviceNameBuilder, url, INTERFACE_KEY);
-        appendIfPresent(serviceNameBuilder, url, VERSION_KEY);
-        appendIfPresent(serviceNameBuilder, url, GROUP_KEY);
+        append(serviceNameBuilder, url, INTERFACE_KEY);
+        append(serviceNameBuilder, url, VERSION_KEY);
+        append(serviceNameBuilder, url, GROUP_KEY);
         return serviceNameBuilder.toString();
     }
 
-    private void appendIfPresent(StringBuilder target, URL url, String parameterName) {
+    private void append(StringBuilder target, URL url, String parameterName) {
+        target.append(SERVICE_NAME_SEPARATOR);
         String parameterValue = url.getParameter(parameterName);
         if (!StringUtils.isBlank(parameterValue)) {
-            target.append(SERVICE_NAME_SEPARATOR).append(parameterValue);
+            target.append(parameterValue);
         }
     }
 
