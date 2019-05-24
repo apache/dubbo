@@ -31,7 +31,6 @@ import org.apache.dubbo.rpc.RpcException;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
-
 import static org.apache.dubbo.rpc.Constants.REFERENCE_FILTER_KEY;
 import static org.apache.dubbo.rpc.Constants.SERVICE_FILTER_KEY;
 
@@ -49,9 +48,12 @@ public class ProtocolFilterWrapper implements Protocol {
         this.protocol = protocol;
     }
 
+
+
     private static <T> Invoker<T> buildInvokerChain(final Invoker<T> invoker, String key, String group) {
         Invoker<T> last = invoker;
         List<Filter> filters = ExtensionLoader.getExtensionLoader(Filter.class).getActivateExtension(invoker.getUrl(), key, group);
+
         if (!filters.isEmpty()) {
             for (int i = filters.size() - 1; i >= 0; i--) {
                 final Filter filter = filters.get(i);
@@ -88,18 +90,7 @@ public class ProtocolFilterWrapper implements Protocol {
                             }
                             throw e;
                         }
-                        return asyncResult.thenApplyWithContext(r -> {
-                            // onResponse callback
-                            if (filter instanceof ListenableFilter) {
-                                Filter.Listener listener = ((ListenableFilter) filter).listener();
-                                if (listener != null) {
-                                    listener.onResponse(r, invoker, invocation);
-                                }
-                            } else {
-                                filter.onResponse(r, invoker, invocation);
-                            }
-                            return r;
-                        });
+                        return asyncResult;
                     }
 
                     @Override
@@ -114,7 +105,8 @@ public class ProtocolFilterWrapper implements Protocol {
                 };
             }
         }
-        return last;
+
+        return new CallbackRegistrationInvoker<>(last, filters);
     }
 
     @Override
@@ -143,4 +135,57 @@ public class ProtocolFilterWrapper implements Protocol {
         protocol.destroy();
     }
 
+    static class CallbackRegistrationInvoker<T> implements Invoker<T> {
+
+        private final Invoker<T> filterInvoker;
+        private final List<Filter> filters;
+
+        public CallbackRegistrationInvoker(Invoker<T> filterInvoker, List<Filter> filters) {
+            this.filterInvoker = filterInvoker;
+            this.filters = filters;
+        }
+
+        @Override
+        public Result invoke(Invocation invocation) throws RpcException {
+            Result asyncResult = filterInvoker.invoke(invocation);
+
+            asyncResult.thenApplyWithContext(r -> {
+                for (int i = filters.size() - 1; i >= 0; i--) {
+                    Filter filter = filters.get(i);
+                    // onResponse callback
+                    if (filter instanceof ListenableFilter) {
+                        Filter.Listener listener = ((ListenableFilter) filter).listener();
+                        if (listener != null) {
+                            listener.onResponse(r, filterInvoker, invocation);
+                        }
+                    } else {
+                        filter.onResponse(r, filterInvoker, invocation);
+                    }
+                }
+                return r;
+            });
+
+            return asyncResult;
+        }
+
+        @Override
+        public Class<T> getInterface() {
+            return filterInvoker.getInterface();
+        }
+
+        @Override
+        public URL getUrl() {
+            return filterInvoker.getUrl();
+        }
+
+        @Override
+        public boolean isAvailable() {
+            return filterInvoker.isAvailable();
+        }
+
+        @Override
+        public void destroy() {
+            filterInvoker.destroy();
+        }
+    }
 }
