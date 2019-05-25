@@ -1,5 +1,6 @@
 package org.apache.dubbo.rpc.proxy.asm;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -17,10 +18,10 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 public class ReflectUtils extends ClassLoader implements Opcodes {
-	
-	private final static String  HAVE_PARAMETER = "(Lorg/apache/dubbo/rpc/proxy/asm/MethodStatement;[Ljava/lang/Object;)Ljava/lang/Object;";
-	
-	private final static String  NOT_PARAMETER = "(Lorg/apache/dubbo/rpc/proxy/asm/MethodStatement;)Ljava/lang/Object;";
+
+	private final static String HAVE_PARAMETER = "(Lorg/apache/dubbo/rpc/proxy/asm/MethodStatement;[Ljava/lang/Object;)Ljava/lang/Object;";
+
+	private final static String NOT_PARAMETER = "(Lorg/apache/dubbo/rpc/proxy/asm/MethodStatement;)Ljava/lang/Object;";
 
 	private final static AtomicInteger CLASS_NAME_ATOMIC = new AtomicInteger();
 
@@ -29,14 +30,14 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 	private final static Map<Type, String> TYPE_TO_ASM_TYPE = new ConcurrentHashMap<>();
 
 	static {
-		BEASE_TO_PACKAGING.put(boolean.class, new String[] { "java/lang/Boolean", "(Z)Ljava/lang/Boolean;" });
-		BEASE_TO_PACKAGING.put(char.class, new String[] { "java/lang/Character", "(C)Ljava/lang/Character;" });
-		BEASE_TO_PACKAGING.put(byte.class, new String[] { "java/lang/Byte", "(B)Ljava/lang/Byte;" });
-		BEASE_TO_PACKAGING.put(short.class, new String[] { "java/lang/Short", "(S)Ljava/lang/Short;" });
-		BEASE_TO_PACKAGING.put(int.class, new String[] { "java/lang/Integer", "(I)Ljava/lang/Integer;" });
-		BEASE_TO_PACKAGING.put(long.class, new String[] { "java/lang/Long", "(J)Ljava/lang/Long;" });
-		BEASE_TO_PACKAGING.put(float.class, new String[] { "java/lang/Float", "(D)Ljava/lang/Float;" });
-		BEASE_TO_PACKAGING.put(double.class, new String[] { "java/lang/Double", "(F)Ljava/lang/Double;" });
+		BEASE_TO_PACKAGING.put(boolean.class, new String[] { "java/lang/Boolean", "(Z)Ljava/lang/Boolean;","booleanValue" ,"()Z"});
+		BEASE_TO_PACKAGING.put(char.class,    new String[] { "java/lang/Character", "(C)Ljava/lang/Character;" , "charValue" , "()C" });
+		BEASE_TO_PACKAGING.put(byte.class,    new String[] { "java/lang/Byte", "(B)Ljava/lang/Byte;" ,"byteValue", "()B"});
+		BEASE_TO_PACKAGING.put(short.class,   new String[] { "java/lang/Short", "(S)Ljava/lang/Short;" , "shortValue" , "()S" });
+		BEASE_TO_PACKAGING.put(int.class,     new String[] { "java/lang/Integer", "(I)Ljava/lang/Integer;" , "intValue", "()I"});
+		BEASE_TO_PACKAGING.put(long.class,    new String[] { "java/lang/Long", "(J)Ljava/lang/Long;" ,"longValue" ,"()J"});
+		BEASE_TO_PACKAGING.put(float.class,   new String[] { "java/lang/Float", "(D)Ljava/lang/Float;" ,"floatValue" , "()D"});
+		BEASE_TO_PACKAGING.put(double.class,  new String[] { "java/lang/Double", "(F)Ljava/lang/Double;" ,"dubbleValue" , "()F"});
 
 		TYPE_TO_ASM_TYPE.put(void.class, "V");
 		TYPE_TO_ASM_TYPE.put(boolean.class, "Z");
@@ -96,13 +97,14 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 							"Lorg/apache/dubbo/rpc/proxy/asm/MethodStatement;", null, null).visitEnd();
 				}
 				MethodVisitor mw = cw.visitMethod(Opcodes.ACC_PUBLIC, ms.getMethod(),
-						getMethodStatement(ms.getParameterTypes(), ms.getReturnType()), null, getClassName(ms.getAbnormalTypes()));
+						getMethodStatement(ms.getParameterTypes(), ms.getReturnType()), null,
+						getClassName(ms.getAbnormalTypes()));
 				List<ParameterSteaement> parameter = ms.getParameterTypes();
 				mw.visitVarInsn(Opcodes.ALOAD, 0);
 				mw.visitVarInsn(Opcodes.ALOAD, 0);
 				mw.visitFieldInsn(Opcodes.GETFIELD, className, ms.getMethod() + "_statement",
 						"Lorg/apache/dubbo/rpc/proxy/asm/MethodStatement;");
-				int maxStack = 2,maxLocals = 1;
+				int maxStack = 2, maxLocals = 1;
 				boolean is64Type = true;
 				String desc = NOT_PARAMETER;
 				if (parameter != null && parameter.size() != 0) {
@@ -124,9 +126,10 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 						}
 						Class<?> parameterClass = parameter.get(i).getClass();
 						if (parameterClass.isPrimitive()) {// 判断是基本类型
-							if(is64Type == true &&(parameterClass.equals(long.class) ||parameterClass.equals(double.class) )) {
+							if (is64Type == true
+									&& (parameterClass.equals(long.class) || parameterClass.equals(double.class))) {
 								is64Type = false;
-								maxStack = maxStack+1;
+								maxStack = maxStack + 1;
 							}
 							String[] amsStrArray = BEASE_TO_PACKAGING.get(parameter.get(i).getClass());
 							mw.visitMethodInsn(Opcodes.INVOKESTATIC, amsStrArray[0], "valueOf", amsStrArray[1], false);
@@ -136,14 +139,15 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 						mw.visitInsn(Opcodes.AASTORE);
 					}
 				}
-				mw.visitMethodInsn(Opcodes.INVOKESPECIAL, "org/apache/dubbo/rpc/proxy/asm/AbstractAsmProxy", "invoke",desc,false);
-				if(void.class.equals(ms.getReturnType())) {
+				mw.visitMethodInsn(Opcodes.INVOKESPECIAL, "org/apache/dubbo/rpc/proxy/asm/AbstractAsmProxy", "invoke",
+						desc, false);
+				if (void.class.equals(ms.getReturnType())) {
 					mw.visitInsn(Opcodes.RETURN);
-				}else {
+				} else {
 					mw.visitTypeInsn(Opcodes.CHECKCAST, getClassName(ms.getReturnType()));
 					mw.visitInsn(Opcodes.ARETURN);
 				}
-				mw.visitMaxs( maxStack, maxLocals);
+				mw.visitMaxs(maxStack, maxLocals);
 				mw.visitEnd();
 			}
 		}
@@ -152,11 +156,90 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 		return this.defineClass(className, data, 0, data.length);
 	}
 
+	public Map<String, MethodExecute<?>> getInvoke(Object proxy, Class<?> type) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+		Map<String, MethodExecute<?>> map = new HashMap<>();
+		List<MethodStatement> methodStatementList = analysisMethod(type);
+		String invokerClassName = getClassName(type);
+		for (MethodStatement methodStatement : methodStatementList) {
+			Class<?> clazz = doGetInvoke(methodStatement, invokerClassName);
+			map.put(methodStatement.getMethod(), (MethodExecute<?>)(clazz.getConstructor(Object.class).newInstance(proxy)));
+		}
+
+		return map;
+	}
+
+	public Class<?> doGetInvoke(MethodStatement methodStatement, String invokerClassName) {
+		ClassWriter cw = new ClassWriter(0);
+		MethodVisitor mv;
+		String invokerObjectName = methodStatement.getMethod() + "MethodExecute";
+		cw.visit(V1_8, ACC_PUBLIC + ACC_SUPER, invokerObjectName,
+				"Lorg/apache/dubbo/rpc/proxy/asm/AbstractMethodExecute<L" + invokerClassName + ";>;",
+				"org/apache/dubbo/rpc/proxy/asm/AbstractMethodExecute", null);
+
+		{
+			mv = cw.visitMethod(ACC_PUBLIC, "<init>", "(L" + invokerClassName + ";)V", null, null);
+			mv.visitCode();
+			mv.visitVarInsn(ALOAD, 0);
+			mv.visitVarInsn(ALOAD, 1);
+			mv.visitMethodInsn(INVOKESPECIAL, "org/apache/dubbo/rpc/proxy/asm/AbstractMethodExecute", "<init>",
+					"(Ljava/lang/Object;)V", false);
+			mv.visitInsn(RETURN);
+			mv.visitMaxs(2, 2);
+			mv.visitEnd();
+		}
+		{
+			mv = cw.visitMethod(ACC_PUBLIC, "execute", "([Ljava/lang/Object;)Ljava/lang/Object;",
+					"<T:Ljava/lang/Object;>([Ljava/lang/Object;)TT;", new String[] { "java/lang/Throwable" });
+			mv.visitVarInsn(ALOAD, 0);
+			mv.visitFieldInsn(GETFIELD, invokerObjectName, "object", "Ljava/lang/Object;");
+			mv.visitTypeInsn(CHECKCAST, invokerClassName);
+			List<ParameterSteaement> parameterList = methodStatement.getParameterTypes();
+			int maxStack = 1;
+			if(parameterList != null && !parameterList.isEmpty()) {
+				maxStack = maxStack +1 + parameterList.size();
+				for (int i = 0; i < parameterList.size(); i++) {
+					ParameterSteaement parameter = parameterList.get(i);
+					mv.visitVarInsn(ALOAD, 1);
+					if (i < 7) {
+						mv.visitInsn(3 + i);
+					} else {
+						mv.visitIincInsn(Opcodes.BIPUSH, i + 1);
+					}
+					mv.visitInsn(AALOAD);
+					Class<?> tpye = (Class<?>)parameter.getType();
+					if(tpye.isPrimitive()) {
+						maxStack = maxStack + 1;
+						String[] amsStrArray = BEASE_TO_PACKAGING.get(tpye);
+						mv.visitTypeInsn(CHECKCAST, amsStrArray[0]);
+						mv.visitMethodInsn(INVOKEVIRTUAL, amsStrArray[0], amsStrArray[2], amsStrArray[3], false);
+					}else {
+						mv.visitTypeInsn(CHECKCAST, getClassName(parameter.getType()));
+					}
+				}
+			}
+			
+			mv.visitMethodInsn(INVOKEINTERFACE, invokerClassName, methodStatement.getMethod(),
+					getMethodStatement(parameterList,methodStatement.getReturnType()), true);
+			if(methodStatement.getReturnType() == null) {
+				mv.visitInsn(RETURN);				
+			}else {
+				mv.visitInsn(ARETURN);
+			}
+			mv.visitMaxs(maxStack, 2);
+			mv.visitEnd();
+		}
+		cw.visitEnd();
+		byte[] data = cw.toByteArray();
+		return this.defineClass(invokerObjectName, data, 0, data.length);
+	}
+
 	public static List<MethodStatement> analysisMethod(Class<?> type) {
 		Method[] methods = type.getMethods();
 		List<MethodStatement> msList = new ArrayList<MethodStatement>();
 		for (Method method : methods) {
-			msList.add(analysisMethod(method));
+			if( method.getModifiers() == 1) {
+				msList.add(analysisMethod(method));
+			}
 		}
 		return msList;
 	}
@@ -221,7 +304,7 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 		sb.append("(");
 		if (types != null && types.size() != 0) {
 			for (ParameterSteaement t : types) {
-				sb.append(getStatementName( t.getType() ));
+				sb.append(getStatementName(t.getType()));
 			}
 		}
 		sb.append(")");
@@ -233,9 +316,9 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 	public static String getStatementName(Type type) {
 		String typeName = TYPE_TO_ASM_TYPE.get(type);
 		if (typeName == null) {
-			if(((Class<?>)type).isArray()) {
+			if (((Class<?>) type).isArray()) {
 				typeName = getClassName(type);
-			}else {
+			} else {
 				typeName = "L" + getClassName(type) + ";";
 			}
 			TYPE_TO_ASM_TYPE.put(type, typeName);

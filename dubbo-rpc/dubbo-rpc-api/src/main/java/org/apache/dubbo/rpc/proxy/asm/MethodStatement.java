@@ -1,11 +1,12 @@
 package org.apache.dubbo.rpc.proxy.asm;
 
 import java.lang.reflect.Type;
-import java.sql.PreparedStatement;
 import java.util.List;
 
 public class MethodStatement {
 
+	
+	
 	private String method;
 	
 	private Type returnType;
