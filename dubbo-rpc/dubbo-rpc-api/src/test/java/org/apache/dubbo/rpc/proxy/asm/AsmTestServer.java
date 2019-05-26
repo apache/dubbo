@@ -5,35 +5,55 @@ import java.util.Map;
 
 public interface AsmTestServer {
 
-	void notReturn();
+//	void notReturn();
+//	
+//	void notThrowable() throws Throwable;
+//	
+//	int  returnInt();
+//	
+//	long returnLong();
+//	
+//	String returnObject();
+//	
+//	int[] returnIntArray();
+//	
+//	long[] returnLongArray();
+//	
+//	String[] returnObjectArray();
+//	
+//	void parameterInt(int i);
+//	
+//	void parameterLong(long l);
+//	
+//	void parameterIntArray(int[] intArray);
+//
+//	void parameterLongArray(long[] longArray);
+//	
+//	void parameterObject(String string);
+//	
+//	void parameterObjectArray(String[] stringArray);
 	
-	void notThrowable() throws Throwable;
+//	String execte(int str , int list);
 	
-	int  returnInt();
 	
-	long returnLong();
+//	String execte(long str , long list , long l);
 	
-	String returnObject();
+//	String execte(String str , List<String> list);
 	
-	int[] returnIntArray();
+//	String execute(int in , long lo);
 	
-	long[] returnLongArray();
+//	String execute(int in , long lo, Integer integer);
 	
-	String[] returnObjectArray();
+//	String execute(int in , long lo, Integer integer, Long lon );
 	
-	void parameterInt(int i);
+//	String execute(int in , long lo, Integer integer, Long lon , String str );
 	
-	void parameterLong(long l);
+	String execute(int in, long lo , Integer integer , Long lon , String str ,List<String> list);
+
 	
-	void parameterIntArray(int[] intArray);
+//	String execute(List<String> list);
 	
-	void parameterLongArray(long[] longArray);
-	
-	void parameterObject(String string);
-	
-	void parameterObjectArray(String[] stringArray);
-	
-	String execute(int in , long lo , Integer integer , Long lon , String string,List<String> list , Map<String,String> map);
+//	String execute(int in , long lo , Integer integer , Long lon , String string,List<String> list , Map<String,String> map);
 	
 	
 	

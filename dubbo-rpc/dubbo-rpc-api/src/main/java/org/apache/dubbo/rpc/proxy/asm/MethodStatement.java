@@ -5,26 +5,22 @@ import java.util.List;
 
 public class MethodStatement {
 
-	
-	
 	private String method;
-	
+
 	private Type returnType;
-	
+
 	private Type[] returnGeneric;
-	
-	//如果有泛型怎么办?
+
+	// 如果有泛型怎么办?
 	private List<ParameterSteaement> parameterTypes;
-	
+
 	boolean futureReturnType;
-	
-	private Type[]  abnormalTypes;
-	
+
+	private Type[] abnormalTypes;
+
 	public String getMethod() {
 		return method;
 	}
-
-
 
 	public void setMethod(String method) {
 		this.method = method;
@@ -34,71 +30,50 @@ public class MethodStatement {
 		return returnType;
 	}
 
-
-
 	public void setReturnType(Type returnType) {
 		this.returnType = returnType;
 	}
-
-
 
 	public Type[] getReturnGeneric() {
 		return returnGeneric;
 	}
 
-
-
 	public void setReturnGeneric(Type[] returnGeneric) {
 		this.returnGeneric = returnGeneric;
 	}
-
-
 
 	public List<ParameterSteaement> getParameterTypes() {
 		return parameterTypes;
 	}
 
-
-
 	public void setParameterTypes(List<ParameterSteaement> parameterTypes) {
 		this.parameterTypes = parameterTypes;
 	}
-
-
 
 	public boolean isFutureReturnType() {
 		return futureReturnType;
 	}
 
-
-
 	public void setFutureReturnType(boolean futureReturnType) {
 		this.futureReturnType = futureReturnType;
 	}
-
-
 
 	public Type[] getAbnormalTypes() {
 		return abnormalTypes;
 	}
 
-
-
 	public void setAbnormalTypes(Type[] abnormalTypes) {
 		this.abnormalTypes = abnormalTypes;
 	}
 
+	static class ParameterSteaement {
 
-
-	static class ParameterSteaement{
-		
 		private String parameterName;
-		
+
 		private Type clazz;
-		
-		private Type[]  genericTypes;
-		
-		
+
+		private Type[] genericTypes;
+
 		public String getParameterName() {
 			return parameterName;
 		}
@@ -122,7 +97,6 @@ public class MethodStatement {
 		public void setGenericTypes(Type[] genericTypes) {
 			this.genericTypes = genericTypes;
 		}
-		
-		
+
 	}
 }

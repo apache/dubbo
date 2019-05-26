@@ -1,56 +1,53 @@
 package org.apache.dubbo.rpc.proxy.asm;
 
 import java.lang.reflect.Field;
-import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.proxy.RemoteService;
 import org.junit.jupiter.api.Test;
 
 public class ReflectUtilsTest {
 
-	private String[] strArray = new String[0];
-	
-	
+	ReflectUtils reflect = new ReflectUtils();
+ 
 	@Test
-	public void testArrayType() throws NoSuchFieldException, SecurityException {
-		Field field = this.getClass().getDeclaredField("strArray");
-		System.out.println(field.getGenericType());
+	public void getProxy() throws Throwable {
+		Class<?>[] clazzArray = new Class<?>[] { AsmTestServer.class };
+
+		AsmTestServer remote = (AsmTestServer) reflect.getProxy(clazzArray, in);
+//		remote.notReturn();
+//		remote.notThrowable();
+//		
+//		remote.returnInt();
+//		remote.returnIntArray();
+//		remote.returnLong();
+//		remote.returnLongArray();
+//		remote.returnObject();
+//		remote.returnObjectArray();
+//		
+//		remote.parameterInt(1);
+//		remote.parameterIntArray(new int[1]);
+//		remote.parameterLong(2L);
+//		remote.parameterLongArray(new long[2]);
+//		remote.parameterObject("123");
+//		remote.parameterObjectArray(new String[]{"123123"});
+//		remote.execte(1, 1);
+//		remote.execte("sdf", new ArrayList<>());
+//		remote.execute(1, 2L);
+//		remote.execute(1, 2L,3);
+//		remote.execute(1, 2L, new Integer(3), new Long(4));
+//		remote.execute(1, 2L, new Integer(3), new Long(4), "123");
+		remote.execute(1, 3,3, 5L, "6", new ArrayList<>());
+//		remote.execute(3, 5L, "6", new ArrayList<>(), new HashMap<>());
+//		remote.execute(new ArrayList<>());
+//		remote.execute(1, 2L, 3, 5L, "6", new ArrayList<>(), new HashMap<>());
 	}
-	
-	@Test
-	public void getProxy() {
-		Class<?>[] clazzArray = new Class<?>[] {RemoteService.class};
-		
-		ReflectUtils reflect = new ReflectUtils();
-		
-		RemoteService remote = (RemoteService)reflect.getProxy(clazzArray , in);
-		try {
-			//remote.sayHello("1");
-			//remote.getThreadName();
-			//remote.setThreadName();
-			remote.setThreadGroup(null);
-		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
-	@Test
-	public void test() {
-		TestAsmProxyDump testAsmProxyDump = new TestAsmProxyDump();
-		try {
-			testAsmProxyDump.dump();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
+
 	Invoker<String> in = new Invoker<String>() {
 
 		@Override
@@ -68,7 +65,7 @@ public class ReflectUtilsTest {
 		@Override
 		public void destroy() {
 			// TODO Auto-generated method stub
-			
+
 		}
 
 		@Override

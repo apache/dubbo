@@ -22,18 +22,18 @@ public abstract class AbstractAsmProxy {
 	@SuppressWarnings("unchecked")
 	public <T> T invoke(MethodStatement ms, Object[] args) {
 		try {
-			return (T) invoker.invoke(createInvocation(ms, args)).recreate();
+			return (T) null;//invoker.invoke(createInvocation(ms, args)).recreate();
 		} catch (Throwable e) {
 			throw new RuntimeException(e);
 		}
 	}
 
 	private RpcInvocation createInvocation(MethodStatement ms, Object[] args) {
-		RpcInvocation invocation = new RpcInvocation(ms.getMethod(), null, args);
-		if (ms.isFutureReturnType()) {
+		RpcInvocation invocation = new RpcInvocation("1", null, args);
+		/*if (ms.isFutureReturnType()) {
 			invocation.setAttachment(Constants.FUTURE_RETURNTYPE_KEY, "true");
 			invocation.setAttachment(Constants.ASYNC_KEY, "true");
-		}
+		}*/
 		return invocation;
 	}
 }

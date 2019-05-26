@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.proxy.asm.MethodStatement.ParameterSteaement;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -28,16 +29,22 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 	private final static Map<Class<?>, String[]> BEASE_TO_PACKAGING = new HashMap<>();
 
 	private final static Map<Type, String> TYPE_TO_ASM_TYPE = new ConcurrentHashMap<>();
+	
+	private final static Map<Type, Integer> TYPE_TO_RETURN = new ConcurrentHashMap<>();
+	
+	private final static Map<Type, Integer> TYPE_TO_CONST = new ConcurrentHashMap<>();
 
+	private final static Map<Type , Integer> TYPE_TO_LOAD = new ConcurrentHashMap<>();
+	
 	static {
-		BEASE_TO_PACKAGING.put(boolean.class, new String[] { "java/lang/Boolean", "(Z)Ljava/lang/Boolean;","booleanValue" ,"()Z"});
+		BEASE_TO_PACKAGING.put(boolean.class, new String[] { "java/lang/Boolean",   "(Z)Ljava/lang/Boolean;","booleanValue" ,"()Z"});
 		BEASE_TO_PACKAGING.put(char.class,    new String[] { "java/lang/Character", "(C)Ljava/lang/Character;" , "charValue" , "()C" });
-		BEASE_TO_PACKAGING.put(byte.class,    new String[] { "java/lang/Byte", "(B)Ljava/lang/Byte;" ,"byteValue", "()B"});
-		BEASE_TO_PACKAGING.put(short.class,   new String[] { "java/lang/Short", "(S)Ljava/lang/Short;" , "shortValue" , "()S" });
-		BEASE_TO_PACKAGING.put(int.class,     new String[] { "java/lang/Integer", "(I)Ljava/lang/Integer;" , "intValue", "()I"});
-		BEASE_TO_PACKAGING.put(long.class,    new String[] { "java/lang/Long", "(J)Ljava/lang/Long;" ,"longValue" ,"()J"});
-		BEASE_TO_PACKAGING.put(float.class,   new String[] { "java/lang/Float", "(D)Ljava/lang/Float;" ,"floatValue" , "()D"});
-		BEASE_TO_PACKAGING.put(double.class,  new String[] { "java/lang/Double", "(F)Ljava/lang/Double;" ,"dubbleValue" , "()F"});
+		BEASE_TO_PACKAGING.put(byte.class,    new String[] { "java/lang/Byte",      "(B)Ljava/lang/Byte;" ,"byteValue", "()B"});
+		BEASE_TO_PACKAGING.put(short.class,   new String[] { "java/lang/Short",     "(S)Ljava/lang/Short;" , "shortValue" , "()S" });
+		BEASE_TO_PACKAGING.put(int.class,     new String[] { "java/lang/Integer",   "(I)Ljava/lang/Integer;" , "intValue", "()I"});
+		BEASE_TO_PACKAGING.put(long.class,    new String[] { "java/lang/Long",      "(J)Ljava/lang/Long;" ,"longValue" ,"()J"});
+		BEASE_TO_PACKAGING.put(float.class,   new String[] { "java/lang/Float",     "(D)Ljava/lang/Float;" ,"floatValue" , "()D"});
+		BEASE_TO_PACKAGING.put(double.class,  new String[] { "java/lang/Double",    "(F)Ljava/lang/Double;" ,"dubbleValue" , "()F"});
 
 		TYPE_TO_ASM_TYPE.put(void.class, "V");
 		TYPE_TO_ASM_TYPE.put(boolean.class, "Z");
@@ -54,23 +61,47 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 		TYPE_TO_ASM_TYPE.put(Byte.class, "Ljava/lang/Byte;");
 		TYPE_TO_ASM_TYPE.put(Short.class, "Ljava/lang/Short;");
 		TYPE_TO_ASM_TYPE.put(Integer.class, "Ljava/lang/Integer;");
-		TYPE_TO_ASM_TYPE.put(Long.class, "Ljava/lang/Integer;");
+		TYPE_TO_ASM_TYPE.put(Long.class, "Ljava/lang/Long;");
 		TYPE_TO_ASM_TYPE.put(Float.class, "Ljava/lang/Float;");
 		TYPE_TO_ASM_TYPE.put(Double.class, "Ljava/lang/Double;");
 
 		TYPE_TO_ASM_TYPE.put(List.class, "Ljava/util/List;");
 		TYPE_TO_ASM_TYPE.put(Map.class, "Ljava/util/Map;");
+		
+		TYPE_TO_RETURN.put(void.class, Opcodes.RETURN);
+		TYPE_TO_RETURN.put(boolean.class, Opcodes.IRETURN);
+		TYPE_TO_RETURN.put(char.class, Opcodes.IRETURN);
+		TYPE_TO_RETURN.put(byte.class, Opcodes.IRETURN);
+		TYPE_TO_RETURN.put(short.class, Opcodes.IRETURN);
+		TYPE_TO_RETURN.put(int.class, Opcodes.IRETURN);
+		TYPE_TO_RETURN.put(long.class, Opcodes.LRETURN);
+		TYPE_TO_RETURN.put(float.class, Opcodes.FRETURN);
+		TYPE_TO_RETURN.put(double.class, Opcodes.DRETURN);
+		
+		
+		TYPE_TO_CONST.put(boolean.class, Opcodes.ICONST_0);
+		TYPE_TO_CONST.put(char.class, Opcodes.ICONST_0);
+		TYPE_TO_CONST.put(byte.class, Opcodes.ICONST_0);
+		TYPE_TO_CONST.put(short.class, Opcodes.ICONST_0);
+		TYPE_TO_CONST.put(int.class, Opcodes.ICONST_0);
+		TYPE_TO_CONST.put(long.class, Opcodes.LCONST_0);
+		TYPE_TO_CONST.put(float.class, Opcodes.FCONST_0);
+		TYPE_TO_CONST.put(double.class, Opcodes.DCONST_0);
+		
+		TYPE_TO_LOAD.put(boolean.class, Opcodes.ILOAD);
+		TYPE_TO_LOAD.put(char.class, Opcodes.ILOAD);
+		TYPE_TO_LOAD.put(byte.class, Opcodes.ILOAD);
+		TYPE_TO_LOAD.put(short.class, Opcodes.ILOAD);
+		TYPE_TO_LOAD.put(int.class, Opcodes.ILOAD);
+		TYPE_TO_LOAD.put(long.class, Opcodes.LLOAD);
+		TYPE_TO_LOAD.put(float.class, Opcodes.FLOAD);
+		TYPE_TO_LOAD.put(double.class, Opcodes.DLOAD);
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T getProxy(Class<?>[] types, Invoker<?> handler) {
-		try {
+	public <T> T getProxy(Class<?>[] types, Invoker<?> handler) throws Exception, SecurityException {
 			Class<?> clazz = getProxyClass(types);
 			return (T) clazz.getConstructor(Invoker.class).newInstance(handler);
-		} catch (Throwable e) {
-			throw new RuntimeException(e);
-
-		}
 	}
 
 	public Class<?> getProxyClass(Class<?>[] types) {
@@ -104,49 +135,77 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 				mw.visitVarInsn(Opcodes.ALOAD, 0);
 				mw.visitFieldInsn(Opcodes.GETFIELD, className, ms.getMethod() + "_statement",
 						"Lorg/apache/dubbo/rpc/proxy/asm/MethodStatement;");
-				int maxStack = 2, maxLocals = 1;
+				int maxStack = 2, maxLocals = 1 , loadIndex = 1;
 				boolean is64Type = true;
 				String desc = NOT_PARAMETER;
 				if (parameter != null && parameter.size() != 0) {
 					desc = HAVE_PARAMETER;
 					maxStack = 6;
 					maxLocals = maxLocals + parameter.size();
-					if (parameter.size() < 7) {
+					if (parameter.size() < 6) {
 						mw.visitInsn(3 + parameter.size());
 					} else {
-						mw.visitIincInsn(Opcodes.BIPUSH, parameter.size() + 1);
+						System.out.println("bipush : " +  parameter.size());
+						mw.visitIincInsn(Opcodes.BIPUSH, parameter.size());
 					}
 					mw.visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/Object");
-					mw.visitInsn(Opcodes.DUP);
 					for (int i = 0; i < parameter.size(); i++) {
-						if (parameter.size() < 7) {
+						mw.visitInsn(Opcodes.DUP);
+						if ( i  < 7) {
+							System.out.println("const : " + i);
 							mw.visitInsn(3 + i);
 						} else {
-							mw.visitIincInsn(Opcodes.BIPUSH, i + 1);
+							mw.visitIincInsn(Opcodes.BIPUSH, i);
 						}
-						Class<?> parameterClass = parameter.get(i).getClass();
+						Class<?> parameterClass = (Class<?>)parameter.get(i).getType();
 						if (parameterClass.isPrimitive()) {// 判断是基本类型
-							if (is64Type == true
-									&& (parameterClass.equals(long.class) || parameterClass.equals(double.class))) {
+							System.out.println("load : "  + TYPE_TO_LOAD.get(parameterClass) + " loadIndex : " + loadIndex);
+							mw.visitVarInsn(TYPE_TO_LOAD.get(parameterClass), loadIndex++);
+							String[] amsStrArray = BEASE_TO_PACKAGING.get(parameterClass);
+							mw.visitMethodInsn(Opcodes.INVOKESTATIC, amsStrArray[0], "valueOf", amsStrArray[1], false);
+							if (parameterClass.equals(long.class) || parameterClass.equals(double.class)) {
+								maxLocals = maxLocals +1;
+								loadIndex++;
+							}
+							if(is64Type) {
 								is64Type = false;
 								maxStack = maxStack + 1;
 							}
-							String[] amsStrArray = BEASE_TO_PACKAGING.get(parameter.get(i).getClass());
-							mw.visitMethodInsn(Opcodes.INVOKESTATIC, amsStrArray[0], "valueOf", amsStrArray[1], false);
 						} else {
-							mw.visitVarInsn(Opcodes.ALOAD, 1);
+							System.out.println("load : ALOAD  loadIndex + "  + loadIndex);
+							mw.visitVarInsn(Opcodes.ALOAD, loadIndex++);
 						}
 						mw.visitInsn(Opcodes.AASTORE);
 					}
 				}
 				mw.visitMethodInsn(Opcodes.INVOKESPECIAL, "org/apache/dubbo/rpc/proxy/asm/AbstractAsmProxy", "invoke",
 						desc, false);
-				if (void.class.equals(ms.getReturnType())) {
+				if (ms.getReturnType() == null || void.class.equals(ms.getReturnType())) {
+					mw.visitInsn(POP);
 					mw.visitInsn(Opcodes.RETURN);
 				} else {
-					mw.visitTypeInsn(Opcodes.CHECKCAST, getClassName(ms.getReturnType()));
-					mw.visitInsn(Opcodes.ARETURN);
+					Class<?> type = (Class<?>)ms.getReturnType();
+					if(type.isPrimitive()) {
+						String[] amsStrArray = BEASE_TO_PACKAGING.get(type);
+						mw.visitTypeInsn(CHECKCAST, amsStrArray[0]);
+						mw.visitVarInsn(ASTORE, 1);
+						mw.visitVarInsn(ALOAD, maxLocals);
+						Label l2 = new Label();
+						mw.visitJumpInsn(IFNULL, l2);
+						mw.visitVarInsn(ALOAD, maxLocals);
+						mw.visitMethodInsn(INVOKEVIRTUAL, amsStrArray[0], amsStrArray[2], amsStrArray[3], false);
+						mw.visitInsn(TYPE_TO_RETURN.get(type));	
+						mw.visitLabel(l2);
+						mw.visitFrame(Opcodes.F_APPEND,1, new Object[] {amsStrArray[0]}, 0, null);
+						mw.visitInsn(TYPE_TO_CONST.get(type));
+						mw.visitInsn(TYPE_TO_RETURN.get(type));
+						maxLocals++;
+					}else {
+						mw.visitTypeInsn(CHECKCAST, getClassName(type));
+						mw.visitInsn(ARETURN);
+					}					
 				}
+				System.out.println("maxStack :" + maxStack + " maxLocals : " + maxLocals );
 				mw.visitMaxs(maxStack, maxLocals);
 				mw.visitEnd();
 			}
@@ -220,10 +279,19 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 			
 			mv.visitMethodInsn(INVOKEINTERFACE, invokerClassName, methodStatement.getMethod(),
 					getMethodStatement(parameterList,methodStatement.getReturnType()), true);
-			if(methodStatement.getReturnType() == null) {
+			if(void.class.equals(methodStatement.getReturnType())) {
 				mv.visitInsn(RETURN);				
 			}else {
-				mv.visitInsn(ARETURN);
+				Class<?> tpye = (Class<?>)methodStatement.getReturnType();
+				if(tpye.isPrimitive()) {
+					String[] amsStrArray = BEASE_TO_PACKAGING.get(tpye);
+					mv.visitTypeInsn(CHECKCAST, amsStrArray[0]);
+					mv.visitMethodInsn(INVOKEVIRTUAL, amsStrArray[0], amsStrArray[2], amsStrArray[3], false);
+					mv.visitInsn(TYPE_TO_RETURN.get(tpye));					
+				}else {
+					mv.visitTypeInsn(CHECKCAST, getClassName(tpye));
+					mv.visitInsn(ARETURN);
+				}
 			}
 			mv.visitMaxs(maxStack, 2);
 			mv.visitEnd();
@@ -234,10 +302,11 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 	}
 
 	public static List<MethodStatement> analysisMethod(Class<?> type) {
+		boolean boo = type.isInterface();
 		Method[] methods = type.getMethods();
 		List<MethodStatement> msList = new ArrayList<MethodStatement>();
 		for (Method method : methods) {
-			if( method.getModifiers() == 1) {
+			if(boo ||  method.getModifiers() == 1) {
 				msList.add(analysisMethod(method));
 			}
 		}
@@ -258,9 +327,8 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 	}
 
 	public static List<ParameterSteaement> analysisParameterized(Method method) {
-		Type[] types = method.getGenericParameterTypes();// 获取参数，可能是多个，所以是数组
+		Type[] types = method.getParameterTypes();//method.getGenericParameterTypes();// 获取参数，可能是多个，所以是数组
 		List<ParameterSteaement> psList = new ArrayList<>(types.length);
-		;
 		for (Type type2 : types) {
 			ParameterSteaement ps = new ParameterSteaement();
 			psList.add(ps);
@@ -316,12 +384,14 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 	public static String getStatementName(Type type) {
 		String typeName = TYPE_TO_ASM_TYPE.get(type);
 		if (typeName == null) {
-			if (((Class<?>) type).isArray()) {
-				typeName = getClassName(type);
-			} else {
-				typeName = "L" + getClassName(type) + ";";
+			if(type instanceof Class) {
+				if (((Class<?>) type).isArray()) {
+					typeName = getClassName(type);
+				} else {
+					typeName = "L" + getClassName(type) + ";";
+				}
+				TYPE_TO_ASM_TYPE.put(type, typeName);
 			}
-			TYPE_TO_ASM_TYPE.put(type, typeName);
 		}
 		return typeName;
 

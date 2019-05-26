@@ -20,17 +20,8 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 public interface RemoteService extends Remote {
-    //String sayHello(String name) throws RemoteException;
+    String sayHello(String name) throws RemoteException;
 
-    int getThreadName() throws RemoteException;
+	public String getThreadName() throws RemoteException ;
     
-    void setThreadName() throws RemoteException;
-    
-    void setThreadGroup(String threadGroup)throws RemoteException;
-    
-    String[] setThreadGroup(String[] threadGroup)throws RemoteException;
-    
-    String setTesttest(int i , Integer in , long l , Long lo) throws RemoteException;
-    
-    public String setTesttest(String s , String ss , String sss ,String ssss) throws RemoteException;
 }
