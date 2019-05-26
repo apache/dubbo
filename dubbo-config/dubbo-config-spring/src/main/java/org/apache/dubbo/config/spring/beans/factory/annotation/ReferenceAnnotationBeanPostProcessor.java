@@ -156,7 +156,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
             Object result;
             try {
                 if (bean == null) { // If the bean is not initialized, invoke init()
-                    // issue: https://github.com/apache/incubator-dubbo/issues/3429
+                    // issue: https://github.com/apache/dubbo/issues/3429
                     init();
                 }
                 result = method.invoke(bean, args);
