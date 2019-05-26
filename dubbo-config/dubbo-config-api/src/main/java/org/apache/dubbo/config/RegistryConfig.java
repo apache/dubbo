@@ -149,6 +149,21 @@ public class RegistryConfig extends AbstractConfig {
      */
     private String extraKeys;
 
+    /**
+     * Simple the registry. kubernetes namespace
+     *
+     * @since 2.7.0
+     */
+    private String kubernetesNamespace;
+
+
+    /**
+     * Simple the registry. the kubernetes pod app label
+     *
+     * @since 2.7.0
+     */
+    private String kubernetesLabel;
+
     public RegistryConfig() {
     }
 
@@ -405,6 +420,22 @@ public class RegistryConfig extends AbstractConfig {
 
     public void setExtraKeys(String extraKeys) {
         this.extraKeys = extraKeys;
+    }
+
+    public String getKubernetesNamespace() {
+        return kubernetesNamespace;
+    }
+
+    public void setKubernetesNamespace(String kubernetesNamespace) {
+        this.kubernetesNamespace = kubernetesNamespace;
+    }
+
+    public String getKubernetesLabel() {
+        return kubernetesLabel;
+    }
+
+    public void setKubernetesLabel(String kubernetesLabel) {
+        this.kubernetesLabel = kubernetesLabel;
     }
 
     @Parameter(excluded = true)

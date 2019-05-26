@@ -569,6 +569,16 @@
                 <xsd:documentation><![CDATA[ Extra Parameter Keys. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="kubernetes-namespace" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Extra Parameter Keys. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="kubernetes-label" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Extra Parameter Keys. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="metadataReportType">
