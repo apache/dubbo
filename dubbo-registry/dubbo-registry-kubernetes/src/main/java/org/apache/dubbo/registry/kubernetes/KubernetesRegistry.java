@@ -23,7 +23,6 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -39,11 +38,14 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.common.Constants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
+import static org.apache.dubbo.registry.Constants.PROVIDER_PROTOCOL;
 
 /**
  * registry center implementation for kubernetes
- *
  */
 public class KubernetesRegistry extends FailbackRegistry {
 
@@ -63,14 +65,11 @@ public class KubernetesRegistry extends FailbackRegistry {
 
     private static final String SERVICE_KEY_PREFIX = "dubbo_service_";
 
-    private static final ScheduledExecutorService KUBERNETS_EVENT_EXECUTOR =
-            Executors.newScheduledThreadPool(8, new NamedThreadFactory("kubernetes-event-thread"));
-
+    private static final ScheduledExecutorService KUBERNETS_EVENT_EXECUTOR = Executors.newScheduledThreadPool(8, new NamedThreadFactory("kubernetes-event-thread"));
 
     private final Map<URL, Watch> kubernetesWatcherMap = new ConcurrentHashMap<>(16);
 
-    public KubernetesRegistry(KubernetesClient kubernetesClient, URL url
-            , String namespaces, String podWithLabel) {
+    public KubernetesRegistry(KubernetesClient kubernetesClient, URL url, String namespaces, String podWithLabel) {
         super(url);
         this.kubernetesClient = kubernetesClient;
         this.namespaces = namespaces;
@@ -181,23 +180,23 @@ public class KubernetesRegistry extends FailbackRegistry {
     }
 
     private boolean isConsumerSide(URL url) {
-        return url.getProtocol().equals(Constants.CONSUMER_PROTOCOL);
+        return url.getProtocol().equals(CONSUMER_PROTOCOL);
     }
 
     private boolean isProviderSide(URL url) {
-        return url.getProtocol().equals(Constants.PROVIDER_PROTOCOL);
+        return url.getProtocol().equals(PROVIDER_PROTOCOL);
     }
 
     private void registry(URL url, Pod pod) {
         JSONObject meta = new JSONObject() {{
-            put(Constants.INTERFACE_KEY, url.getServiceInterface());
+            put(INTERFACE_KEY, url.getServiceInterface());
             put(FULL_URL, url.toFullString());
             putAll(url.getParameters());
         }};
         kubernetesClient.pods().inNamespace(pod.getMetadata().getNamespace()).withName(pod.getMetadata().getName())
                 .edit()
                 .editMetadata()
-                .addToLabels(MARK, Constants.DEFAULT_PROTOCOL)
+                .addToLabels(MARK, DEFAULT_PROTOCOL)
                 .addToAnnotations(serviceKey2UniqId(url.getServiceKey()), meta.toJSONString())
                 .and()
                 .done();
@@ -242,7 +241,7 @@ public class KubernetesRegistry extends FailbackRegistry {
         return kubernetesClient.pods()
                 .inNamespace(namespaces)
                 .withLabel(APP_LABEL, podWithLabel)
-                .withLabel(MARK, Constants.DEFAULT_PROTOCOL)
+                .withLabel(MARK, DEFAULT_PROTOCOL)
                 .list().getItems().stream()
                 .filter(pod -> pod.getMetadata().getAnnotations().containsKey(serviceKey2UniqId(url.getServiceKey())))
                 .collect(Collectors.toList());
@@ -252,7 +251,7 @@ public class KubernetesRegistry extends FailbackRegistry {
         final List<URL> urls = new ArrayList<>();
         kubernetesClient.pods()
                 .inNamespace(namespaces)
-                .withLabel(MARK, Constants.DEFAULT_PROTOCOL)
+                .withLabel(MARK, DEFAULT_PROTOCOL)
                 .list().getItems().stream()
                 .filter(pod -> pod.getStatus().getPhase().equals(KubernetesStatus.Running.name()))
                 .forEach(pod ->
@@ -270,7 +269,7 @@ public class KubernetesRegistry extends FailbackRegistry {
         final List<URL> urls = new ArrayList<>();
         kubernetesClient.pods()
                 .inNamespace(namespaces)
-                .withLabel(MARK, Constants.DEFAULT_PROTOCOL)
+                .withLabel(MARK, DEFAULT_PROTOCOL)
                 .list().getItems()
                 .forEach(pod -> {
                     pod.getMetadata().getAnnotations().forEach((key, value) -> {

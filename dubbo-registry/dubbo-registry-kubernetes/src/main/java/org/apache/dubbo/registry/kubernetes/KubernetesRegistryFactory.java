@@ -19,12 +19,13 @@ package org.apache.dubbo.registry.kubernetes;
 
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 
 import java.util.Map;
+
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 
 /**
  * registry center implementation for kubernetes
@@ -48,7 +49,7 @@ public class KubernetesRegistryFactory extends AbstractRegistryFactory {
         }
         kubernetesNamespace = meta.getOrDefault(KUBERNETES_NAMESPACE,"default");
 
-        podWithLabel = meta.getOrDefault(POD_WITH_LABEL,meta.get(Constants.APPLICATION_KEY));
+        podWithLabel = meta.getOrDefault(POD_WITH_LABEL,meta.get(APPLICATION_KEY));
 
         KubernetesClient client = new DefaultKubernetesClient();
 

@@ -26,10 +26,6 @@
 
     <artifactId>dubbo-registry-kubernetes</artifactId>
 
-    <properties>
-        <kubernetes.version>4.1.0</kubernetes.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
@@ -40,7 +36,6 @@
         <dependency>
             <groupId>io.fabric8</groupId>
             <artifactId>kubernetes-client</artifactId>
-            <version>${kubernetes.version}</version>
         </dependency>
     </dependencies>
 
