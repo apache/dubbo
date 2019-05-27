@@ -61,9 +61,9 @@ public class MetadataIdentifier {
 
     public String getUniqueKey(KeyTypeEnum keyType) {
         if (keyType == KeyTypeEnum.PATH) {
-            return getFilePathKey() + PATH_SEPARATOR + DEFAULT_PATH_TAG;
+            return getFilePathKey();
         }
-        return getIdentifierKey() + META_DATA_STORE_TAG;
+        return getIdentifierKey();
     }
 
     public String getIdentifierKey() {
