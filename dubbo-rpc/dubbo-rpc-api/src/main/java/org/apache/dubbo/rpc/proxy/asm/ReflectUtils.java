@@ -29,22 +29,30 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 	private final static Map<Class<?>, String[]> BEASE_TO_PACKAGING = new HashMap<>();
 
 	private final static Map<Type, String> TYPE_TO_ASM_TYPE = new ConcurrentHashMap<>();
-	
+
 	private final static Map<Type, Integer> TYPE_TO_RETURN = new ConcurrentHashMap<>();
-	
+
 	private final static Map<Type, Integer> TYPE_TO_CONST = new ConcurrentHashMap<>();
 
-	private final static Map<Type , Integer> TYPE_TO_LOAD = new ConcurrentHashMap<>();
-	
+	private final static Map<Type, Integer> TYPE_TO_LOAD = new ConcurrentHashMap<>();
+
 	static {
-		BEASE_TO_PACKAGING.put(boolean.class, new String[] { "java/lang/Boolean",   "(Z)Ljava/lang/Boolean;","booleanValue" ,"()Z"});
-		BEASE_TO_PACKAGING.put(char.class,    new String[] { "java/lang/Character", "(C)Ljava/lang/Character;" , "charValue" , "()C" });
-		BEASE_TO_PACKAGING.put(byte.class,    new String[] { "java/lang/Byte",      "(B)Ljava/lang/Byte;" ,"byteValue", "()B"});
-		BEASE_TO_PACKAGING.put(short.class,   new String[] { "java/lang/Short",     "(S)Ljava/lang/Short;" , "shortValue" , "()S" });
-		BEASE_TO_PACKAGING.put(int.class,     new String[] { "java/lang/Integer",   "(I)Ljava/lang/Integer;" , "intValue", "()I"});
-		BEASE_TO_PACKAGING.put(long.class,    new String[] { "java/lang/Long",      "(J)Ljava/lang/Long;" ,"longValue" ,"()J"});
-		BEASE_TO_PACKAGING.put(float.class,   new String[] { "java/lang/Float",     "(D)Ljava/lang/Float;" ,"floatValue" , "()D"});
-		BEASE_TO_PACKAGING.put(double.class,  new String[] { "java/lang/Double",    "(F)Ljava/lang/Double;" ,"dubbleValue" , "()F"});
+		BEASE_TO_PACKAGING.put(boolean.class,
+				new String[] { "java/lang/Boolean", "(Z)Ljava/lang/Boolean;", "booleanValue", "()Z" });
+		BEASE_TO_PACKAGING.put(char.class,
+				new String[] { "java/lang/Character", "(C)Ljava/lang/Character;", "charValue", "()C" });
+		BEASE_TO_PACKAGING.put(byte.class,
+				new String[] { "java/lang/Byte", "(B)Ljava/lang/Byte;", "byteValue", "()B" });
+		BEASE_TO_PACKAGING.put(short.class,
+				new String[] { "java/lang/Short", "(S)Ljava/lang/Short;", "shortValue", "()S" });
+		BEASE_TO_PACKAGING.put(int.class,
+				new String[] { "java/lang/Integer", "(I)Ljava/lang/Integer;", "intValue", "()I" });
+		BEASE_TO_PACKAGING.put(long.class,
+				new String[] { "java/lang/Long", "(J)Ljava/lang/Long;", "longValue", "()J" });
+		BEASE_TO_PACKAGING.put(float.class,
+				new String[] { "java/lang/Float", "(D)Ljava/lang/Float;", "floatValue", "()D" });
+		BEASE_TO_PACKAGING.put(double.class,
+				new String[] { "java/lang/Double", "(F)Ljava/lang/Double;", "dubbleValue", "()F" });
 
 		TYPE_TO_ASM_TYPE.put(void.class, "V");
 		TYPE_TO_ASM_TYPE.put(boolean.class, "Z");
@@ -67,7 +75,7 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 
 		TYPE_TO_ASM_TYPE.put(List.class, "Ljava/util/List;");
 		TYPE_TO_ASM_TYPE.put(Map.class, "Ljava/util/Map;");
-		
+
 		TYPE_TO_RETURN.put(void.class, Opcodes.RETURN);
 		TYPE_TO_RETURN.put(boolean.class, Opcodes.IRETURN);
 		TYPE_TO_RETURN.put(char.class, Opcodes.IRETURN);
@@ -77,8 +85,7 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 		TYPE_TO_RETURN.put(long.class, Opcodes.LRETURN);
 		TYPE_TO_RETURN.put(float.class, Opcodes.FRETURN);
 		TYPE_TO_RETURN.put(double.class, Opcodes.DRETURN);
-		
-		
+
 		TYPE_TO_CONST.put(boolean.class, Opcodes.ICONST_0);
 		TYPE_TO_CONST.put(char.class, Opcodes.ICONST_0);
 		TYPE_TO_CONST.put(byte.class, Opcodes.ICONST_0);
@@ -87,7 +94,7 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 		TYPE_TO_CONST.put(long.class, Opcodes.LCONST_0);
 		TYPE_TO_CONST.put(float.class, Opcodes.FCONST_0);
 		TYPE_TO_CONST.put(double.class, Opcodes.DCONST_0);
-		
+
 		TYPE_TO_LOAD.put(boolean.class, Opcodes.ILOAD);
 		TYPE_TO_LOAD.put(char.class, Opcodes.ILOAD);
 		TYPE_TO_LOAD.put(byte.class, Opcodes.ILOAD);
@@ -100,8 +107,8 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 
 	@SuppressWarnings("unchecked")
 	public <T> T getProxy(Class<?>[] types, Invoker<?> handler) throws Exception, SecurityException {
-			Class<?> clazz = getProxyClass(types);
-			return (T) clazz.getConstructor(Invoker.class).newInstance(handler);
+		Class<?> clazz = getProxyClass(types);
+		return (T) clazz.getConstructor(Invoker.class).newInstance(handler);
 	}
 
 	public Class<?> getProxyClass(Class<?>[] types) {
@@ -123,19 +130,19 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 		for (Class<?> clazz : types) {
 			List<MethodStatement> msList = analysisMethod(clazz);
 			for (MethodStatement ms : msList) {
+				String alias = getMethodStatement(ms.getParameterTypes(), ms.getReturnType());
+				ms.setAlias(ms.getMethod() + "_" + alias);
 				{
-					cw.visitField(Opcodes.ACC_PRIVATE, ms.getMethod() + "_statement",
-							"Lorg/apache/dubbo/rpc/proxy/asm/MethodStatement;", null, null).visitEnd();
+					cw.visitField(Opcodes.ACC_PRIVATE, ms.getAlias(),"Lorg/apache/dubbo/rpc/proxy/asm/MethodStatement;", null, null).visitEnd();
 				}
-				MethodVisitor mw = cw.visitMethod(Opcodes.ACC_PUBLIC, ms.getMethod(),
-						getMethodStatement(ms.getParameterTypes(), ms.getReturnType()), null,
+				MethodVisitor mw = cw.visitMethod(Opcodes.ACC_PUBLIC, ms.getMethod(), alias, null,
 						getClassName(ms.getAbnormalTypes()));
 				List<ParameterSteaement> parameter = ms.getParameterTypes();
 				mw.visitVarInsn(Opcodes.ALOAD, 0);
 				mw.visitVarInsn(Opcodes.ALOAD, 0);
 				mw.visitFieldInsn(Opcodes.GETFIELD, className, ms.getMethod() + "_statement",
 						"Lorg/apache/dubbo/rpc/proxy/asm/MethodStatement;");
-				int maxStack = 2, maxLocals = 1 , loadIndex = 1;
+				int maxStack = 2, maxLocals = 1, loadIndex = 1;
 				boolean is64Type = true;
 				String desc = NOT_PARAMETER;
 				if (parameter != null && parameter.size() != 0) {
@@ -145,34 +152,35 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 					if (parameter.size() < 6) {
 						mw.visitInsn(3 + parameter.size());
 					} else {
-						System.out.println("bipush : " +  parameter.size());
+						System.out.println("bipush : " + parameter.size());
 						mw.visitIincInsn(Opcodes.BIPUSH, parameter.size());
 					}
 					mw.visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/Object");
 					for (int i = 0; i < parameter.size(); i++) {
 						mw.visitInsn(Opcodes.DUP);
-						if ( i  < 7) {
+						if (i < 7) {
 							System.out.println("const : " + i);
 							mw.visitInsn(3 + i);
 						} else {
 							mw.visitIincInsn(Opcodes.BIPUSH, i);
 						}
-						Class<?> parameterClass = (Class<?>)parameter.get(i).getType();
+						Class<?> parameterClass = (Class<?>) parameter.get(i).getType();
 						if (parameterClass.isPrimitive()) {// 判断是基本类型
-							System.out.println("load : "  + TYPE_TO_LOAD.get(parameterClass) + " loadIndex : " + loadIndex);
+							System.out.println(
+									"load : " + TYPE_TO_LOAD.get(parameterClass) + " loadIndex : " + loadIndex);
 							mw.visitVarInsn(TYPE_TO_LOAD.get(parameterClass), loadIndex++);
 							String[] amsStrArray = BEASE_TO_PACKAGING.get(parameterClass);
 							mw.visitMethodInsn(Opcodes.INVOKESTATIC, amsStrArray[0], "valueOf", amsStrArray[1], false);
 							if (parameterClass.equals(long.class) || parameterClass.equals(double.class)) {
-								maxLocals = maxLocals +1;
+								maxLocals = maxLocals + 1;
 								loadIndex++;
 							}
-							if(is64Type) {
+							if (is64Type) {
 								is64Type = false;
 								maxStack = maxStack + 1;
 							}
 						} else {
-							System.out.println("load : ALOAD  loadIndex + "  + loadIndex);
+							System.out.println("load : ALOAD  loadIndex + " + loadIndex);
 							mw.visitVarInsn(Opcodes.ALOAD, loadIndex++);
 						}
 						mw.visitInsn(Opcodes.AASTORE);
@@ -184,8 +192,8 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 					mw.visitInsn(POP);
 					mw.visitInsn(Opcodes.RETURN);
 				} else {
-					Class<?> type = (Class<?>)ms.getReturnType();
-					if(type.isPrimitive()) {
+					Class<?> type = (Class<?>) ms.getReturnType();
+					if (type.isPrimitive()) {
 						String[] amsStrArray = BEASE_TO_PACKAGING.get(type);
 						mw.visitTypeInsn(CHECKCAST, amsStrArray[0]);
 						mw.visitVarInsn(ASTORE, 1);
@@ -194,18 +202,18 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 						mw.visitJumpInsn(IFNULL, l2);
 						mw.visitVarInsn(ALOAD, maxLocals);
 						mw.visitMethodInsn(INVOKEVIRTUAL, amsStrArray[0], amsStrArray[2], amsStrArray[3], false);
-						mw.visitInsn(TYPE_TO_RETURN.get(type));	
+						mw.visitInsn(TYPE_TO_RETURN.get(type));
 						mw.visitLabel(l2);
-						mw.visitFrame(Opcodes.F_APPEND,1, new Object[] {amsStrArray[0]}, 0, null);
+						mw.visitFrame(Opcodes.F_APPEND, 1, new Object[] { amsStrArray[0] }, 0, null);
 						mw.visitInsn(TYPE_TO_CONST.get(type));
 						mw.visitInsn(TYPE_TO_RETURN.get(type));
 						maxLocals++;
-					}else {
+					} else {
 						mw.visitTypeInsn(CHECKCAST, getClassName(type));
 						mw.visitInsn(ARETURN);
-					}					
+					}
 				}
-				System.out.println("maxStack :" + maxStack + " maxLocals : " + maxLocals );
+				System.out.println("maxStack :" + maxStack + " maxLocals : " + maxLocals);
 				mw.visitMaxs(maxStack, maxLocals);
 				mw.visitEnd();
 			}
@@ -215,13 +223,16 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 		return this.defineClass(className, data, 0, data.length);
 	}
 
-	public Map<String, MethodExecute<?>> getInvoke(Object proxy, Class<?> type) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+	public Map<String, MethodExecute<?>> getInvoke(Object proxy, Class<?> type)
+			throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
+			NoSuchMethodException, SecurityException {
 		Map<String, MethodExecute<?>> map = new HashMap<>();
 		List<MethodStatement> methodStatementList = analysisMethod(type);
 		String invokerClassName = getClassName(type);
 		for (MethodStatement methodStatement : methodStatementList) {
 			Class<?> clazz = doGetInvoke(methodStatement, invokerClassName);
-			map.put(methodStatement.getMethod(), (MethodExecute<?>)(clazz.getConstructor(Object.class).newInstance(proxy)));
+			map.put(methodStatement.getMethod(),
+					(MethodExecute<?>) (clazz.getConstructor(Object.class).newInstance(proxy)));
 		}
 
 		return map;
@@ -254,8 +265,8 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 			mv.visitTypeInsn(CHECKCAST, invokerClassName);
 			List<ParameterSteaement> parameterList = methodStatement.getParameterTypes();
 			int maxStack = 1;
-			if(parameterList != null && !parameterList.isEmpty()) {
-				maxStack = maxStack +1 + parameterList.size();
+			if (parameterList != null && !parameterList.isEmpty()) {
+				maxStack = maxStack + 1 + parameterList.size();
 				for (int i = 0; i < parameterList.size(); i++) {
 					ParameterSteaement parameter = parameterList.get(i);
 					mv.visitVarInsn(ALOAD, 1);
@@ -265,30 +276,30 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 						mv.visitIincInsn(Opcodes.BIPUSH, i + 1);
 					}
 					mv.visitInsn(AALOAD);
-					Class<?> tpye = (Class<?>)parameter.getType();
-					if(tpye.isPrimitive()) {
+					Class<?> tpye = (Class<?>) parameter.getType();
+					if (tpye.isPrimitive()) {
 						maxStack = maxStack + 1;
 						String[] amsStrArray = BEASE_TO_PACKAGING.get(tpye);
 						mv.visitTypeInsn(CHECKCAST, amsStrArray[0]);
 						mv.visitMethodInsn(INVOKEVIRTUAL, amsStrArray[0], amsStrArray[2], amsStrArray[3], false);
-					}else {
+					} else {
 						mv.visitTypeInsn(CHECKCAST, getClassName(parameter.getType()));
 					}
 				}
 			}
-			
+
 			mv.visitMethodInsn(INVOKEINTERFACE, invokerClassName, methodStatement.getMethod(),
-					getMethodStatement(parameterList,methodStatement.getReturnType()), true);
-			if(void.class.equals(methodStatement.getReturnType())) {
-				mv.visitInsn(RETURN);				
-			}else {
-				Class<?> tpye = (Class<?>)methodStatement.getReturnType();
-				if(tpye.isPrimitive()) {
+					getMethodStatement(parameterList, methodStatement.getReturnType()), true);
+			if (void.class.equals(methodStatement.getReturnType())) {
+				mv.visitInsn(RETURN);
+			} else {
+				Class<?> tpye = (Class<?>) methodStatement.getReturnType();
+				if (tpye.isPrimitive()) {
 					String[] amsStrArray = BEASE_TO_PACKAGING.get(tpye);
 					mv.visitTypeInsn(CHECKCAST, amsStrArray[0]);
 					mv.visitMethodInsn(INVOKEVIRTUAL, amsStrArray[0], amsStrArray[2], amsStrArray[3], false);
-					mv.visitInsn(TYPE_TO_RETURN.get(tpye));					
-				}else {
+					mv.visitInsn(TYPE_TO_RETURN.get(tpye));
+				} else {
 					mv.visitTypeInsn(CHECKCAST, getClassName(tpye));
 					mv.visitInsn(ARETURN);
 				}
@@ -306,7 +317,7 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 		Method[] methods = type.getMethods();
 		List<MethodStatement> msList = new ArrayList<MethodStatement>();
 		for (Method method : methods) {
-			if(boo ||  method.getModifiers() == 1) {
+			if (boo || method.getModifiers() == 1) {
 				msList.add(analysisMethod(method));
 			}
 		}
@@ -327,7 +338,7 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 	}
 
 	public static List<ParameterSteaement> analysisParameterized(Method method) {
-		Type[] types = method.getParameterTypes();//method.getGenericParameterTypes();// 获取参数，可能是多个，所以是数组
+		Type[] types = method.getParameterTypes();// method.getGenericParameterTypes();// 获取参数，可能是多个，所以是数组
 		List<ParameterSteaement> psList = new ArrayList<>(types.length);
 		for (Type type2 : types) {
 			ParameterSteaement ps = new ParameterSteaement();
@@ -384,7 +395,7 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 	public static String getStatementName(Type type) {
 		String typeName = TYPE_TO_ASM_TYPE.get(type);
 		if (typeName == null) {
-			if(type instanceof Class) {
+			if (type instanceof Class) {
 				if (((Class<?>) type).isArray()) {
 					typeName = getClassName(type);
 				} else {

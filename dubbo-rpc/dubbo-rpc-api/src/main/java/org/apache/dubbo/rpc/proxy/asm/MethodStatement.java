@@ -7,6 +7,8 @@ public class MethodStatement {
 
 	private String method;
 
+	private String alias;
+	
 	private Type returnType;
 
 	private Type[] returnGeneric;
@@ -24,6 +26,14 @@ public class MethodStatement {
 
 	public void setMethod(String method) {
 		this.method = method;
+	}
+	
+	public String getAlias() {
+		return alias;
+	}
+
+	public void setAlias(String alias) {
+		this.alias = alias;
 	}
 
 	public Type getReturnType() {
