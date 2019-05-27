@@ -28,15 +28,15 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
-import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 import static org.apache.dubbo.rpc.Constants.FORCE_USE_TAG;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
@@ -77,7 +77,7 @@ public class ContextFilter extends ListenableFilter {
                 .setInvocation(invocation)
 //                .setAttachments(attachments)  // merged from dubbox
                 .setLocalAddress(invoker.getUrl().getHost(), invoker.getUrl().getPort())
-                .setRemoteApplicationName(invoker.getUrl().getParameter(REMOTE_APPLICATION_KEY));
+                .setConsumerApplicationName(invoker.getUrl().getParameter(CONSUMER_APPLICATION_KEY));
 
         // merged from dubbox
         // we may already added some attachments into RpcContext before this filter (e.g. in rest protocol)
