@@ -30,6 +30,14 @@ public interface CommonConstants {
 
     String REMOTE_APPLICATION_KEY = "remote.application";
 
+    /**
+     * This constant is used when the consumer calls the provider, and the application name of the consumer is passed to the consumer.
+     * The provider can be used to analyze which consumer applications are called by the consumer.
+     *
+     * Note that the "_" is added here to avoid the same as the user-defined parameter name.
+     */
+    String CONSUMER_APPLICATION_KEY = "_consumerApplication";
+
     String ENABLED_KEY = "enabled";
 
     String DISABLED_KEY = "disabled";
@@ -44,9 +52,9 @@ public interface CommonConstants {
 
     Pattern COMMA_SPLIT_PATTERN = Pattern.compile("\\s*[,]+\\s*");
 
-    public final static String PATH_SEPARATOR = "/";
+    String PATH_SEPARATOR = "/";
 
-    public final static String PROTOCOL_SEPARATOR = "://";
+    String PROTOCOL_SEPARATOR = "://";
 
     String REGISTRY_SEPARATOR = "|";
 
