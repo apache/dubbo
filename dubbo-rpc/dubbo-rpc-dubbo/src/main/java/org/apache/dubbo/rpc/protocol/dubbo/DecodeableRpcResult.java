@@ -30,6 +30,7 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.io.IOException;
@@ -124,6 +125,11 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
 
     private void handleValue(ObjectInput in) throws IOException {
         try {
+            //TODO, should not rely on 'serializationType == 2' directly
+            if (invocation instanceof RpcInvocation && serializationType == 2) {
+                setValue(in.readObject(((RpcInvocation) invocation).getReturnType()));
+                return;
+            }
             Type[] returnTypes = RpcUtils.getReturnTypes(invocation);
             Object value = null;
             if (ArrayUtils.isEmpty(returnTypes)) {
