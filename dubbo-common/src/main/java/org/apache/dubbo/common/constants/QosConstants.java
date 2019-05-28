@@ -14,15 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.demo.service;
+
+package org.apache.dubbo.common.constants;
 
 /**
- * DemoService
- *
- * @since 2.6.5
+ * QosConstants
  */
-public interface DemoService {
+public interface QosConstants {
 
-    String sayName(String name);
+    String QOS_ENABLE = "qos-enable";
 
+    String QOS_PORT = "qos-port";
+
+    String ACCEPT_FOREIGN_IP = "qos-accept-foreign-ip";
 }
