@@ -47,7 +47,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREF
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.HOST_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 
 /**
  * ConditionRouter
