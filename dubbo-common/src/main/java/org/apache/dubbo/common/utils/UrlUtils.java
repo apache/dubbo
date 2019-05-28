@@ -490,6 +490,7 @@ public class UrlUtils {
 
     public static int getIdleTimeout(URL url) {
         int heartBeat = getHeartbeat(url);
+        // why the default value is heartBeat*3 ? because of the retry if client.
         int idleTimeout = url.getParameter(RemotingConstants.HEARTBEAT_TIMEOUT_KEY, heartBeat * 3);
         if (idleTimeout < heartBeat * 2) {
             throw new IllegalStateException("idleTimeout < heartbeatInterval * 2");
