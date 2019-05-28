@@ -24,7 +24,6 @@ import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
-import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
@@ -41,10 +40,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.unmodifiableCollection;
-
 import static org.apache.dubbo.remoting.Constants.HEARTBEAT_CHECK_TICK;
 import static org.apache.dubbo.remoting.Constants.LEAST_HEARTBEAT_DURATION;
 import static org.apache.dubbo.remoting.Constants.TICKS_PER_WHEEL;
+import static org.apache.dubbo.remoting.utils.UrlUtils.getHeartbeat;
+import static org.apache.dubbo.remoting.utils.UrlUtils.getIdleTimeout;
 
 /**
  * ExchangeServerImpl
@@ -209,10 +209,10 @@ public class HeaderExchangeServer implements ExchangeServer {
     public void reset(URL url) {
         server.reset(url);
         try {
-            int currHeartbeat = UrlUtils.getHeartbeat(getUrl());
-            int currIdleTimeout = UrlUtils.getIdleTimeout(getUrl());
-            int heartbeat = UrlUtils.getHeartbeat(url);
-            int idleTimeout = UrlUtils.getIdleTimeout(url);
+            int currHeartbeat = getHeartbeat(getUrl());
+            int currIdleTimeout = getIdleTimeout(getUrl());
+            int heartbeat = getHeartbeat(url);
+            int idleTimeout = getIdleTimeout(url);
             if (currHeartbeat != heartbeat || currIdleTimeout != idleTimeout) {
                 cancelCloseTask();
                 startIdleCheckTask(url);
@@ -260,7 +260,7 @@ public class HeaderExchangeServer implements ExchangeServer {
     private void startIdleCheckTask(URL url) {
         if (!server.canHandleIdle()) {
             AbstractTimerTask.ChannelProvider cp = () -> unmodifiableCollection(HeaderExchangeServer.this.getChannels());
-            int idleTimeout = UrlUtils.getIdleTimeout(url);
+            int idleTimeout = getIdleTimeout(url);
             long idleTimeoutTick = calculateLeastDuration(idleTimeout);
             CloseTimerTask closeTimerTask = new CloseTimerTask(cp, idleTimeoutTick, idleTimeout);
             this.closeTimerTask = closeTimerTask;

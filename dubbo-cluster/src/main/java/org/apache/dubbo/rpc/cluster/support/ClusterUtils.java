@@ -38,7 +38,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.remoting.Constants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.rpc.Constants.INVOKER_LISTENER_KEY;
 import static org.apache.dubbo.rpc.Constants.REFERENCE_FILTER_KEY;
 
