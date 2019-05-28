@@ -18,9 +18,13 @@
 package org.apache.dubbo.common.constants;
 
 /**
- * RemotingConstants
+ * QosConstants
  */
-public interface RemotingConstants {
+public interface QosConstants {
 
-    String BACKUP_KEY = "backup";
+    String QOS_ENABLE = "qos-enable";
+
+    String QOS_PORT = "qos-port";
+
+    String ACCEPT_FOREIGN_IP = "qos-accept-foreign-ip";
 }

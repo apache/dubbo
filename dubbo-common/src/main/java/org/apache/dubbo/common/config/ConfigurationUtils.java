@@ -27,8 +27,8 @@ import java.util.Map;
 import java.util.Properties;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
-import static org.apache.dubbo.common.constants.ConfigConstants.SHUTDOWN_WAIT_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.SHUTDOWN_WAIT_SECONDS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SECONDS_KEY;
 
 /**
  * Utilities for manipulating configurations from different sources

@@ -68,7 +68,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL;
-import static org.apache.dubbo.common.constants.RpcConstants.$INVOKE;
+import static org.apache.dubbo.rpc.Constants.$INVOKE;
 import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
 import static org.junit.jupiter.api.Assertions.fail;
 
