@@ -32,7 +32,6 @@ import org.apache.dubbo.remoting.Server;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.Request;
-import org.apache.dubbo.remoting.utils.UrlUtils;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -41,10 +40,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.unmodifiableCollection;
-
 import static org.apache.dubbo.remoting.Constants.HEARTBEAT_CHECK_TICK;
 import static org.apache.dubbo.remoting.Constants.LEAST_HEARTBEAT_DURATION;
 import static org.apache.dubbo.remoting.Constants.TICKS_PER_WHEEL;
+import static org.apache.dubbo.remoting.utils.UrlUtils.getHeartbeat;
+import static org.apache.dubbo.remoting.utils.UrlUtils.getIdleTimeout;
 
 /**
  * ExchangeServerImpl
@@ -209,10 +209,10 @@ public class HeaderExchangeServer implements ExchangeServer {
     public void reset(URL url) {
         server.reset(url);
         try {
-            int currHeartbeat = org.apache.dubbo.remoting.utils.UrlUtils.getHeartbeat(getUrl());
-            int currIdleTimeout = org.apache.dubbo.remoting.utils.UrlUtils.getIdleTimeout(getUrl());
-            int heartbeat = UrlUtils.getHeartbeat(url);
-            int idleTimeout = org.apache.dubbo.remoting.utils.UrlUtils.getIdleTimeout(url);
+            int currHeartbeat = getHeartbeat(getUrl());
+            int currIdleTimeout = getIdleTimeout(getUrl());
+            int heartbeat = getHeartbeat(url);
+            int idleTimeout = getIdleTimeout(url);
             if (currHeartbeat != heartbeat || currIdleTimeout != idleTimeout) {
                 cancelCloseTask();
                 startIdleCheckTask(url);
@@ -260,7 +260,7 @@ public class HeaderExchangeServer implements ExchangeServer {
     private void startIdleCheckTask(URL url) {
         if (!server.canHandleIdle()) {
             AbstractTimerTask.ChannelProvider cp = () -> unmodifiableCollection(HeaderExchangeServer.this.getChannels());
-            int idleTimeout = org.apache.dubbo.remoting.utils.UrlUtils.getIdleTimeout(url);
+            int idleTimeout = getIdleTimeout(url);
             long idleTimeoutTick = calculateLeastDuration(idleTimeout);
             CloseTimerTask closeTimerTask = new CloseTimerTask(cp, idleTimeoutTick, idleTimeout);
             this.closeTimerTask = closeTimerTask;
