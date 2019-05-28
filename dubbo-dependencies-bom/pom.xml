@@ -363,12 +363,6 @@
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-jaxrs</artifactId>
                 <version>${resteasy_version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>net.jcip</groupId>
-                        <artifactId>jcip-annotations</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
