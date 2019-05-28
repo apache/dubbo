@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.remoting.transport.netty;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.utils.DubboAppender;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Client;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.Server;
 import org.apache.dubbo.remoting.exchange.Exchangers;

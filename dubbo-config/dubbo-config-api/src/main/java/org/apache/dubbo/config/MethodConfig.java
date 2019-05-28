@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.support.Parameter;
@@ -24,6 +24,13 @@ import org.apache.dubbo.config.support.Parameter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static org.apache.dubbo.config.Constants.ON_INVOKE_INSTANCE_KEY;
+import static org.apache.dubbo.config.Constants.ON_INVOKE_METHOD_KEY;
+import static org.apache.dubbo.config.Constants.ON_RETURN_INSTANCE_KEY;
+import static org.apache.dubbo.config.Constants.ON_RETURN_METHOD_KEY;
+import static org.apache.dubbo.config.Constants.ON_THROW_INSTANCE_KEY;
+import static org.apache.dubbo.config.Constants.ON_THROW_METHOD_KEY;
 
 /**
  * The method configuration
@@ -230,7 +237,7 @@ public class MethodConfig extends AbstractMethodConfig {
         this.sticky = sticky;
     }
 
-    @Parameter(key = Constants.ON_RETURN_INSTANCE_KEY, excluded = true, attribute = true)
+    @Parameter(key = ON_RETURN_INSTANCE_KEY, excluded = true, attribute = true)
     public Object getOnreturn() {
         return onreturn;
     }
@@ -239,7 +246,7 @@ public class MethodConfig extends AbstractMethodConfig {
         this.onreturn = onreturn;
     }
 
-    @Parameter(key = Constants.ON_RETURN_METHOD_KEY, excluded = true, attribute = true)
+    @Parameter(key = ON_RETURN_METHOD_KEY, excluded = true, attribute = true)
     public String getOnreturnMethod() {
         return onreturnMethod;
     }
@@ -248,7 +255,7 @@ public class MethodConfig extends AbstractMethodConfig {
         this.onreturnMethod = onreturnMethod;
     }
 
-    @Parameter(key = Constants.ON_THROW_INSTANCE_KEY, excluded = true, attribute = true)
+    @Parameter(key = ON_THROW_INSTANCE_KEY, excluded = true, attribute = true)
     public Object getOnthrow() {
         return onthrow;
     }
@@ -257,7 +264,7 @@ public class MethodConfig extends AbstractMethodConfig {
         this.onthrow = onthrow;
     }
 
-    @Parameter(key = Constants.ON_THROW_METHOD_KEY, excluded = true, attribute = true)
+    @Parameter(key = ON_THROW_METHOD_KEY, excluded = true, attribute = true)
     public String getOnthrowMethod() {
         return onthrowMethod;
     }
@@ -266,7 +273,7 @@ public class MethodConfig extends AbstractMethodConfig {
         this.onthrowMethod = onthrowMethod;
     }
 
-    @Parameter(key = Constants.ON_INVOKE_INSTANCE_KEY, excluded = true, attribute = true)
+    @Parameter(key = ON_INVOKE_INSTANCE_KEY, excluded = true, attribute = true)
     public Object getOninvoke() {
         return oninvoke;
     }
@@ -275,7 +282,7 @@ public class MethodConfig extends AbstractMethodConfig {
         this.oninvoke = oninvoke;
     }
 
-    @Parameter(key = Constants.ON_INVOKE_METHOD_KEY, excluded = true, attribute = true)
+    @Parameter(key = ON_INVOKE_METHOD_KEY, excluded = true, attribute = true)
     public String getOninvokeMethod() {
         return oninvokeMethod;
     }
@@ -318,7 +325,7 @@ public class MethodConfig extends AbstractMethodConfig {
     @Override
     @Parameter(excluded = true)
     public String getPrefix() {
-        return Constants.DUBBO + "." + service
+        return CommonConstants.DUBBO + "." + service
                 + (StringUtils.isEmpty(serviceId) ? "" : ("." + serviceId))
                 + "." + getName();
     }

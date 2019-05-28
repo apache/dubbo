@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.zookeeper.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
@@ -31,6 +30,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
@@ -74,7 +74,7 @@ public class AbstractZookeeperTransporterTest {
         Assertions.assertEquals(newUrl.getPort(), zkServerPort);
         Assertions.assertNull(newUrl.getUsername());
         Assertions.assertNull(newUrl.getPassword());
-        Assertions.assertEquals(newUrl.getParameter(Constants.TIMEOUT_KEY, 5000), 2300);
+        Assertions.assertEquals(newUrl.getParameter(TIMEOUT_KEY, 5000), 2300);
         Assertions.assertEquals(newUrl.getParameters().size(), 1);
         Assertions.assertEquals(newUrl.getPath(), ZookeeperTransporter.class.getName());
     }

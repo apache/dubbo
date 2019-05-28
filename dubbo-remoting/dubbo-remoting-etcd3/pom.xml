@@ -23,7 +23,7 @@
     <parent>
         <artifactId>dubbo-remoting</artifactId>
         <groupId>org.apache.dubbo</groupId>
-        <version>2.7.2-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
     <artifactId>dubbo-remoting-etcd3</artifactId>
     <packaging>jar</packaging>
@@ -33,6 +33,11 @@
         <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
     <dependencies>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-remoting-api</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-common</artifactId>

@@ -16,8 +16,9 @@
  */
 package org.apache.dubbo.remoting.zookeeper.curator;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.zookeeper.ChildListener;
 import org.apache.dubbo.remoting.zookeeper.DataListener;
@@ -46,9 +47,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+
 public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZookeeperClient.CuratorWatcherImpl, CuratorZookeeperClient.CuratorWatcherImpl> {
 
-    static final Charset charset = Charset.forName("UTF-8");
+    protected static final Logger logger = LoggerFactory.getLogger(CuratorZookeeperClient.class);
+
+    static final Charset CHARSET = Charset.forName("UTF-8");
     private final CuratorFramework client;
     private Map<String, TreeCache> treeCacheMap = new ConcurrentHashMap<>();
 
@@ -56,7 +61,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
     public CuratorZookeeperClient(URL url) {
         super(url);
         try {
-            int timeout = url.getParameter(Constants.TIMEOUT_KEY, 5000);
+            int timeout = url.getParameter(TIMEOUT_KEY, 5000);
             CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
                     .connectString(url.getBackupAddress())
                     .retryPolicy(new RetryNTimes(1, 1000))
@@ -106,7 +111,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
 
     @Override
     protected void createPersistent(String path, String data) {
-        byte[] dataBytes = data.getBytes(charset);
+        byte[] dataBytes = data.getBytes(CHARSET);
         try {
             client.create().forPath(path, dataBytes);
         } catch (NodeExistsException e) {
@@ -122,7 +127,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
 
     @Override
     protected void createEphemeral(String path, String data) {
-        byte[] dataBytes = data.getBytes(charset);
+        byte[] dataBytes = data.getBytes(CHARSET);
         try {
             client.create().withMode(CreateMode.EPHEMERAL).forPath(path, dataBytes);
         } catch (NodeExistsException e) {
@@ -177,7 +182,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
     public String doGetContent(String path) {
         try {
             byte[] dataBytes = client.getData().forPath(path);
-            return (dataBytes == null || dataBytes.length == 0) ? null : new String(dataBytes, charset);
+            return (dataBytes == null || dataBytes.length == 0) ? null : new String(dataBytes, CHARSET);
         } catch (NoNodeException e) {
             // ignore NoNode Exception.
         } catch (Exception e) {
@@ -287,6 +292,9 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
         @Override
         public void childEvent(CuratorFramework client, TreeCacheEvent event) throws Exception {
             if (dataListener != null) {
+                if (logger.isInfoEnabled()) {
+                    logger.info("listen the zookeeper changed. The changed data:" + event.getData());
+                }
                 TreeCacheEvent.Type type = event.getType();
                 EventType eventType = null;
                 String content = null;
@@ -295,12 +303,12 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
                     case NODE_ADDED:
                         eventType = EventType.NodeCreated;
                         path = event.getData().getPath();
-                        content = new String(event.getData().getData(), charset);
+                        content = event.getData().getData() == null ? "" : new String(event.getData().getData(), CHARSET);
                         break;
                     case NODE_UPDATED:
                         eventType = EventType.NodeDataChanged;
                         path = event.getData().getPath();
-                        content = new String(event.getData().getData(), charset);
+                        content = event.getData().getData() == null ? "" : new String(event.getData().getData(), CHARSET);
                         break;
                     case NODE_REMOVED:
                         path = event.getData().getPath();

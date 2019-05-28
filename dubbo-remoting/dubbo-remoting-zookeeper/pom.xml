@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-remoting</artifactId>
-        <version>2.7.2-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
     <artifactId>dubbo-remoting-zookeeper</artifactId>
     <packaging>jar</packaging>
@@ -29,6 +29,11 @@
         <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
     <dependencies>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-remoting-api</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-common</artifactId>

@@ -127,7 +127,7 @@ public class ZookeeperRegistryTest {
     @Test
     /*
       This UT is unstable, consider remove it later.
-      @see https://github.com/apache/incubator-dubbo/issues/1787
+      @see https://github.com/apache/dubbo/issues/1787
      */
     public void testStatusChecker() {
         RegistryStatusChecker registryStatusChecker = new RegistryStatusChecker();

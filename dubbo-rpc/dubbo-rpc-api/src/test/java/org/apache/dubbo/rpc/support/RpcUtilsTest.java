@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -35,6 +34,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+
+import static org.apache.dubbo.rpc.Constants.AUTO_ATTACH_INVOCATIONID_KEY;
 
 public class RpcUtilsTest {
 
@@ -87,7 +88,7 @@ public class RpcUtilsTest {
      */
     @Test
     public void testAttachInvocationIdIfAsync_forceNotAttache() {
-        URL url = URL.valueOf("dubbo://localhost/?test.async=true&" + Constants.AUTO_ATTACH_INVOCATIONID_KEY + "=false");
+        URL url = URL.valueOf("dubbo://localhost/?test.async=true&" + AUTO_ATTACH_INVOCATIONID_KEY + "=false");
         Invocation inv = new RpcInvocation("test", new Class[]{}, new String[]{});
         RpcUtils.attachInvocationIdIfAsync(url, inv);
         assertNull(RpcUtils.getInvocationId(inv));
@@ -99,7 +100,7 @@ public class RpcUtilsTest {
      */
     @Test
     public void testAttachInvocationIdIfAsync_forceAttache() {
-        URL url = URL.valueOf("dubbo://localhost/?" + Constants.AUTO_ATTACH_INVOCATIONID_KEY + "=true");
+        URL url = URL.valueOf("dubbo://localhost/?" + AUTO_ATTACH_INVOCATIONID_KEY + "=true");
         Invocation inv = new RpcInvocation("test", new Class[]{}, new String[]{});
         RpcUtils.attachInvocationIdIfAsync(url, inv);
         assertNotNull(RpcUtils.getInvocationId(inv));

@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.registry.nacos;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -47,16 +46,19 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.common.Constants.ADMIN_PROTOCOL;
-import static org.apache.dubbo.common.Constants.CATEGORY_KEY;
-import static org.apache.dubbo.common.Constants.CONFIGURATORS_CATEGORY;
-import static org.apache.dubbo.common.Constants.CONSUMERS_CATEGORY;
-import static org.apache.dubbo.common.Constants.DEFAULT_CATEGORY;
-import static org.apache.dubbo.common.Constants.GROUP_KEY;
-import static org.apache.dubbo.common.Constants.INTERFACE_KEY;
-import static org.apache.dubbo.common.Constants.PROVIDERS_CATEGORY;
-import static org.apache.dubbo.common.Constants.ROUTERS_CATEGORY;
-import static org.apache.dubbo.common.Constants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.registry.Constants.ADMIN_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
 
 /**
  * Nacos {@link Registry}
@@ -276,19 +278,19 @@ public class NacosRegistry extends FailbackRegistry {
 
         final String targetServiceInterface = url.getServiceInterface();
 
-        final String targetVersion = url.getParameter(VERSION_KEY);
+        final String targetVersion = url.getParameter(VERSION_KEY,"");
 
-        final String targetGroup = url.getParameter(GROUP_KEY);
+        final String targetGroup = url.getParameter(GROUP_KEY,"");
 
         filterData(serviceNames, serviceName -> {
             // split service name to segments
             // (required) segments[0] = category
             // (required) segments[1] = serviceInterface
-            // (required) segments[2] = version
+            // (optional) segments[2] = version
             // (optional) segments[3] = group
             String[] segments = StringUtils.split(serviceName, SERVICE_NAME_SEPARATOR);
             int length = segments.length;
-            if (length < 3) { // must present 3 segments or more
+            if (length != 4) { // must present 4 segments
                 return false;
             }
 
@@ -309,8 +311,7 @@ public class NacosRegistry extends FailbackRegistry {
                 return false;
             }
 
-            String group = length > 3 ? segments[SERVICE_GROUP_INDEX] : null;
-            // no match service group
+            String group = segments[SERVICE_GROUP_INDEX];
             return group == null || WILDCARD.equals(targetGroup)
                     || StringUtils.equals(targetGroup, group);
         });
@@ -381,14 +382,14 @@ public class NacosRegistry extends FailbackRegistry {
      * @return non-null array
      */
     private String[] getCategories(URL url) {
-        return Constants.ANY_VALUE.equals(url.getServiceInterface()) ?
-                ALL_SUPPORTED_CATEGORIES : of(Constants.DEFAULT_CATEGORY);
+        return ANY_VALUE.equals(url.getServiceInterface()) ?
+                ALL_SUPPORTED_CATEGORIES : of(DEFAULT_CATEGORY);
     }
 
     private URL buildURL(Instance instance) {
         Map<String, String> metadata = instance.getMetadata();
-        String protocol = metadata.get(Constants.PROTOCOL_KEY);
-        String path = metadata.get(Constants.PATH_KEY);
+        String protocol = metadata.get(PROTOCOL_KEY);
+        String path = metadata.get(PATH_KEY);
         return new URL(protocol,
                 instance.getIp(),
                 instance.getPort(),
@@ -398,10 +399,10 @@ public class NacosRegistry extends FailbackRegistry {
 
     private Instance createInstance(URL url) {
         // Append default category if absent
-        String category = url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY);
-        URL newURL = url.addParameter(Constants.CATEGORY_KEY, category);
-        newURL = newURL.addParameter(Constants.PROTOCOL_KEY, url.getProtocol());
-        newURL = newURL.addParameter(Constants.PATH_KEY, url.getPath());
+        String category = url.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY);
+        URL newURL = url.addParameter(CATEGORY_KEY, category);
+        newURL = newURL.addParameter(PROTOCOL_KEY, url.getProtocol());
+        newURL = newURL.addParameter(PATH_KEY, url.getPath());
         String ip = url.getHost();
         int port = url.getPort();
         Instance instance = new Instance();
@@ -418,16 +419,17 @@ public class NacosRegistry extends FailbackRegistry {
 
     private String getServiceName(URL url, String category) {
         StringBuilder serviceNameBuilder = new StringBuilder(category);
-        appendIfPresent(serviceNameBuilder, url, INTERFACE_KEY);
-        appendIfPresent(serviceNameBuilder, url, VERSION_KEY);
-        appendIfPresent(serviceNameBuilder, url, GROUP_KEY);
+        append(serviceNameBuilder, url, INTERFACE_KEY);
+        append(serviceNameBuilder, url, VERSION_KEY);
+        append(serviceNameBuilder, url, GROUP_KEY);
         return serviceNameBuilder.toString();
     }
 
-    private void appendIfPresent(StringBuilder target, URL url, String parameterName) {
+    private void append(StringBuilder target, URL url, String parameterName) {
+        target.append(SERVICE_NAME_SEPARATOR);
         String parameterValue = url.getParameter(parameterName);
         if (!StringUtils.isBlank(parameterValue)) {
-            target.append(SERVICE_NAME_SEPARATOR).append(parameterValue);
+            target.append(parameterValue);
         }
     }
 

@@ -64,7 +64,7 @@ public final class ClassUtils {
      * @return field list
      */
     public static List<Field> getNonStaticFields(final Class<?> clazz) {
-        List<Field> result = new ArrayList<Field>();
+        List<Field> result = new ArrayList<>();
         Class<?> target = clazz;
         while (target != null) {
             if (JaketConfigurationUtils.isExcludedType(target)) {

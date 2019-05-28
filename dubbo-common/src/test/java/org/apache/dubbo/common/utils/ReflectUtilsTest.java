@@ -22,12 +22,14 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -399,6 +401,32 @@ public class ReflectUtilsTest {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             ReflectUtils.forName("a.c.d.e.F");
         });
+    }
+
+    @Test
+    public void testGetReturnTypes () throws Exception{
+        Class clazz = TypeClass.class;
+
+        Type[] types = ReflectUtils.getReturnTypes(clazz.getMethod("getFuture"));
+        Assertions.assertEquals("java.lang.String", types[0].getTypeName());
+        Assertions.assertEquals("java.lang.String", types[1].getTypeName());
+
+        Type[] types1 = ReflectUtils.getReturnTypes(clazz.getMethod("getString"));
+        Assertions.assertEquals("java.lang.String", types1[0].getTypeName());
+        Assertions.assertEquals("java.lang.String", types1[1].getTypeName());
+
+        Type[] types2 = ReflectUtils.getReturnTypes(clazz.getMethod("getListFuture"));
+        Assertions.assertEquals("java.util.List", types2[0].getTypeName());
+        Assertions.assertEquals("java.util.List<java.lang.String>", types2[1].getTypeName());
+    }
+
+    public static interface TypeClass {
+
+        CompletableFuture<String> getFuture();
+
+        String getString();
+
+        CompletableFuture<List<String>> getListFuture();
     }
 
     public static class EmptyClass {

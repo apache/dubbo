@@ -28,6 +28,7 @@ import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.net.URL;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
@@ -39,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -665,7 +667,7 @@ public final class ReflectUtils {
      * @return Class instance.
      */
     public static Class<?> name2class(String name) throws ClassNotFoundException {
-        return name2class(ClassHelper.getClassLoader(), name);
+        return name2class(ClassUtils.getClassLoader(), name);
     }
 
     /**
@@ -734,7 +736,7 @@ public final class ReflectUtils {
         }
 
         if (cl == null) {
-            cl = ClassHelper.getClassLoader();
+            cl = ClassUtils.getClassLoader();
         }
         Class<?> clazz = NAME_CLASS_CACHE.get(name);
         if (clazz == null) {
@@ -754,7 +756,7 @@ public final class ReflectUtils {
      * @throws ClassNotFoundException
      */
     public static Class<?> desc2class(String desc) throws ClassNotFoundException {
-        return desc2class(ClassHelper.getClassLoader(), desc);
+        return desc2class(ClassUtils.getClassLoader(), desc);
     }
 
     /**
@@ -798,7 +800,7 @@ public final class ReflectUtils {
         }
 
         if (cl == null) {
-            cl = ClassHelper.getClassLoader();
+            cl = ClassUtils.getClassLoader();
         }
         Class<?> clazz = DESC_CLASS_CACHE.get(desc);
         if (clazz == null) {
@@ -816,7 +818,7 @@ public final class ReflectUtils {
      * @throws ClassNotFoundException
      */
     public static Class<?>[] desc2classArray(String desc) throws ClassNotFoundException {
-        Class<?>[] ret = desc2classArray(ClassHelper.getClassLoader(), desc);
+        Class<?>[] ret = desc2classArray(ClassUtils.getClassLoader(), desc);
         return ret;
     }
 
@@ -1095,5 +1097,26 @@ public final class ReflectUtils {
         }
 
         return properties;
+    }
+
+    public static Type[] getReturnTypes(Method method) {
+        Class<?> returnType = method.getReturnType();
+        Type genericReturnType = method.getGenericReturnType();
+        if (Future.class.isAssignableFrom(returnType)) {
+            if (genericReturnType instanceof ParameterizedType) {
+                Type actualArgType = ((ParameterizedType) genericReturnType).getActualTypeArguments()[0];
+                if (actualArgType instanceof ParameterizedType) {
+                    returnType = (Class<?>) ((ParameterizedType) actualArgType).getRawType();
+                    genericReturnType = actualArgType;
+                } else {
+                    returnType = (Class<?>) actualArgType;
+                    genericReturnType = returnType;
+                }
+            } else {
+                returnType = null;
+                genericReturnType = null;
+            }
+        }
+        return new Type[]{returnType, genericReturnType};
     }
 }

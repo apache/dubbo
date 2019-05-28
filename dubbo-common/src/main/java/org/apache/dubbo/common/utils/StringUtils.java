@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.io.UnsafeStringWriter;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -32,6 +31,12 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
 /**
  * StringUtils
@@ -458,7 +463,7 @@ public final class StringUtils {
     }
 
     public static boolean isContains(String values, String value) {
-        return isNotEmpty(values) && isContains(Constants.COMMA_SPLIT_PATTERN.split(values), value);
+        return isNotEmpty(values) && isContains(COMMA_SPLIT_PATTERN.split(values), value);
     }
 
     /**
@@ -714,12 +719,12 @@ public final class StringUtils {
 
     public static String getServiceKey(Map<String, String> ps) {
         StringBuilder buf = new StringBuilder();
-        String group = ps.get(Constants.GROUP_KEY);
+        String group = ps.get(GROUP_KEY);
         if (isNotEmpty(group)) {
             buf.append(group).append("/");
         }
-        buf.append(ps.get(Constants.INTERFACE_KEY));
-        String version = ps.get(Constants.VERSION_KEY);
+        buf.append(ps.get(INTERFACE_KEY));
+        String version = ps.get(VERSION_KEY);
         if (isNotEmpty(group)) {
             buf.append(":").append(version);
         }
@@ -774,7 +779,7 @@ public final class StringUtils {
         StringBuilder buf = new StringBuilder();
         for (Object arg : args) {
             if (buf.length() > 0) {
-                buf.append(Constants.COMMA_SEPARATOR);
+                buf.append(COMMA_SEPARATOR);
             }
             if (arg == null || ReflectUtils.isPrimitives(arg.getClass())) {
                 buf.append(arg);
