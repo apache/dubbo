@@ -50,7 +50,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.remoting.Constants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 /**
@@ -135,7 +135,7 @@ public class HttpProtocol extends AbstractProxyProtocol {
                     /*
                       The customized 'com.alibaba.dubbo.rpc.protocol.http.HttpRemoteInvocation' was firstly introduced
                       in v2.6.3. The main purpose is to support transformation of attachments in HttpProtocol, see
-                      https://github.com/apache/incubator-dubbo/pull/1827. To guarantee interoperability with lower
+                      https://github.com/apache/dubbo/pull/1827. To guarantee interoperability with lower
                       versions, we need to check if the provider is v2.6.3 or higher before sending customized
                       HttpRemoteInvocation.
                      */

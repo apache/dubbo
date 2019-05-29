@@ -28,8 +28,8 @@ import org.apache.dubbo.rpc.RpcInvocation;
 
 import java.io.IOException;
 
-import static org.apache.dubbo.common.constants.RpcConstants.INPUT_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.OUTPUT_KEY;
+import static org.apache.dubbo.rpc.Constants.INPUT_KEY;
+import static org.apache.dubbo.rpc.Constants.OUTPUT_KEY;
 
 public final class DubboCountCodec implements Codec2 {
 
