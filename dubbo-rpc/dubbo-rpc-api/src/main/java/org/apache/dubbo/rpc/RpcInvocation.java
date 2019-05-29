@@ -18,9 +18,11 @@ package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,8 +45,10 @@ public class RpcInvocation implements Invocation, Serializable {
     private static final long serialVersionUID = -4355285085441097045L;
 
     private String methodName;
+    private String serviceName;
 
-    private Class<?>[] parameterTypes;
+    private transient Class<?>[] parameterTypes;
+    private String parameterTypesDesc;
 
     private Object[] arguments;
 
@@ -53,6 +57,8 @@ public class RpcInvocation implements Invocation, Serializable {
     private transient Invoker<?> invoker;
 
     private transient Class<?> returnType;
+
+    private transient Type[] returnTypes;
 
     private transient InvokeMode invokeMode;
 
@@ -115,6 +121,12 @@ public class RpcInvocation implements Invocation, Serializable {
         this.arguments = arguments == null ? new Object[0] : arguments;
         this.attachments = attachments == null ? new HashMap<String, String>() : attachments;
         this.invoker = invoker;
+        ApplicationModel.getServiceModel(serviceName)
+                .getMethod(methodName, parameterTypes)
+                .ifPresent(methodModel -> {
+                    this.parameterTypesDesc = methodModel.getParamDesc();
+                    this.returnTypes = methodModel.getReturnTypes();
+                });
     }
 
     @Override
@@ -142,6 +154,14 @@ public class RpcInvocation implements Invocation, Serializable {
 
     public void setParameterTypes(Class<?>[] parameterTypes) {
         this.parameterTypes = parameterTypes == null ? new Class<?>[0] : parameterTypes;
+    }
+
+    public String getParameterTypesDesc() {
+        return parameterTypesDesc;
+    }
+
+    public void setParameterTypesDesc(String parameterTypesDesc) {
+        this.parameterTypesDesc = parameterTypesDesc;
     }
 
     @Override
@@ -223,6 +243,14 @@ public class RpcInvocation implements Invocation, Serializable {
 
     public void setReturnType(Class<?> returnType) {
         this.returnType = returnType;
+    }
+
+    public Type[] getReturnTypes() {
+        return returnTypes;
+    }
+
+    public void setReturnTypes(Type[] returnTypes) {
+        this.returnTypes = returnTypes;
     }
 
     public InvokeMode getInvokeMode() {

@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.utils.CollectionUtils;
+
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,7 +28,10 @@ import java.util.Set;
 public class ServiceModel {
     private final String serviceName;
     private final Class<?> serviceInterfaceClass;
+    // to accelarate search
     private final Map<String, Set<MethodModel>> methods = new HashMap<>();
+    private final Map<String, Map<String, MethodModel>> descToMethods = new HashMap<>();
+    private final Map<String, Map<Class<?>[], MethodModel>> typeToMethods = new HashMap<>();
 
     public ServiceModel (Class<?> interfaceClass) {
         this.serviceInterfaceClass = interfaceClass;
@@ -44,6 +49,14 @@ public class ServiceModel {
             Set<MethodModel> methodModels = methods.computeIfAbsent(method.getName(), (k) ->new HashSet<>(1));
             methodModels.add(new MethodModel(method));
         }
+
+        methods.forEach((methodName, methodList) -> {
+            Map<String, MethodModel> descMap = descToMethods.computeIfAbsent(methodName, k -> new HashMap<>());
+            methodList.forEach(methodModel -> descMap.put(methodModel.getParamDesc(), methodModel));
+
+            Map<Class<?>[], MethodModel> typesMap = typeToMethods.computeIfAbsent(methodName, k -> new HashMap<>());
+            methodList.forEach(methodModel -> typesMap.put(methodModel.getParameterClasses(), methodModel));
+        });
     }
 
     public String getServiceName() {
@@ -61,9 +74,19 @@ public class ServiceModel {
     }
 
     public Optional<MethodModel> getMethod (String methodName, String params) {
-        return methods.get(methodName).stream()
-                .filter((methodModel) -> methodModel.matchParams(params))
-                .findFirst();
+        Map<String, MethodModel> methods = descToMethods.get(methodName);
+        if (CollectionUtils.isNotEmptyMap(methods)) {
+            return Optional.ofNullable(methods.get(params));
+        }
+        return Optional.empty();
+    }
+
+    public Optional<MethodModel> getMethod (String methodName, Class<?>[] paramTypes) {
+        Map<Class<?>[], MethodModel> methods = typeToMethods.get(methodName);
+        if (CollectionUtils.isNotEmptyMap(methods)) {
+            return Optional.ofNullable(methods.get(paramTypes));
+        }
+        return Optional.empty();
     }
 
     public Set<MethodModel> getMethods (String methodName) {
