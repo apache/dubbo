@@ -89,7 +89,7 @@ public class KubernetesRegistry extends FailbackRegistry {
     public void doRegister(URL url) {
         List<Pod> pods = queryPodsByUnRegistryUrl(url);
         if (pods != null && pods.size() > 0) {
-            pods.forEach(pod -> registry(url, pod));
+            pods.forEach(pod -> register(url, pod));
         }
     }
 
@@ -105,7 +105,7 @@ public class KubernetesRegistry extends FailbackRegistry {
     public void doUnregister(URL url) {
         List<Pod> pods = queryPodNameByRegistriedUrl(url);
         if (pods != null && pods.size() > 0) {
-            pods.forEach(pod -> unregistry(pod, url));
+            pods.forEach(pod -> unregister(pod, url));
         }
     }
 
@@ -187,7 +187,7 @@ public class KubernetesRegistry extends FailbackRegistry {
         return url.getProtocol().equals(PROVIDER_PROTOCOL);
     }
 
-    private void registry(URL url, Pod pod) {
+    private void register(URL url, Pod pod) {
         JSONObject meta = new JSONObject() {{
             put(INTERFACE_KEY, url.getServiceInterface());
             put(FULL_URL, url.toFullString());
@@ -206,7 +206,7 @@ public class KubernetesRegistry extends FailbackRegistry {
         return SERVICE_KEY_PREFIX + Integer.toHexString(serviecKey.hashCode());
     }
 
-    private void unregistry(Pod pod, URL url) {
+    private void unregister(Pod pod, URL url) {
         Pod registedPod = kubernetesClient.pods()
                 .inNamespace(pod.getMetadata().getNamespace())
                 .withName(pod.getMetadata().getName()).get();
