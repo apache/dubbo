@@ -15,6 +15,9 @@
 - Merge rpc-native-thrift-for-apache-dubbo into incubator-dubbo [#3960](https://github.com/apache/dubbo/issues/3960)
 - add socks5 proxy support [#3624](https://github.com/apache/dubbo/issues/3624)
 - Integrate with SOFARegistry [#3874](https://github.com/apache/dubbo/issues/3874)
+- Introduce CompletableFuture<Object> $invokeAsync for GenericService, now, for generic call, you can use:
+    $invoke for sync method call with normal return type.
+    $invokeAsync for async method call with CompletableFuture<T> signature. [#3163](https://github.com/apache/dubbo/issues/3163)
 
 ### Enhancement
 
@@ -84,7 +87,7 @@
 - fix fastjson serialization with generic return type [#3771](https://github.com/apache/dubbo/issues/3771)
 - The dubbo-serialization -api modules should not dependency on third-party jar packages [#3762](https://github.com/apache/dubbo/issues/3762)
 - when using protostuff to serialize, there is not to check whether the data is null [#3727](https://github.com/apache/dubbo/issues/3727)
-
+- bugfix and enhancement [#3287](https://github.com/apache/dubbo/issues/3287)
 
 ## 2.7.1
 
