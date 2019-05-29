@@ -30,8 +30,7 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.MethodModel;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,7 +38,6 @@ import java.io.OutputStream;
 import java.lang.reflect.Type;
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 
 public class DecodeableRpcResult extends AppResponse implements Codec, Decodeable {
 
@@ -127,8 +125,7 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
 
     private void handleValue(ObjectInput in) throws IOException {
         try {
-            Map<String, String> attachments = invocation.getAttachments();
-            Type[] returnTypes = ApplicationModel.getServiceModel(attachments.get(INTERFACE_KEY)).getMethod(invocation.getMethodName(), attachments.get()).ifPresent(MethodModel::getReturnTypes);
+            Type[] returnTypes = RpcUtils.getReturnTypes(invocation);
             Object value = null;
             if (ArrayUtils.isEmpty(returnTypes)) {
                 value = in.readObject();
