@@ -22,22 +22,22 @@ import java.util.Set;
  * ProviderModel which is about published services
  */
 public class ProviderModel {
-    private final String serviceName;
+    private final String serviceKey;
     private final Object serviceInstance;
     private final ServiceModel serviceModel;
 
-    public ProviderModel(String serviceName, Object serviceInstance, ServiceModel serviceModel) {
+    public ProviderModel(String serviceKey, Object serviceInstance, ServiceModel serviceModel) {
         if (null == serviceInstance) {
-            throw new IllegalArgumentException("Service[" + serviceName + "]Target is NULL.");
+            throw new IllegalArgumentException("Service[" + serviceKey + "]Target is NULL.");
         }
 
-        this.serviceName = serviceName;
+        this.serviceKey = serviceKey;
         this.serviceInstance = serviceInstance;
         this.serviceModel = serviceModel;
     }
 
-    public String getServiceName() {
-        return serviceName;
+    public String getServiceKey() {
+        return serviceKey;
     }
 
     public Class<?> getServiceInterfaceClass() {

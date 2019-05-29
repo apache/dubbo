@@ -53,9 +53,9 @@ public class Online implements BaseCommand {
 
         Collection<ProviderModel> providerModelList = ApplicationModel.allProviderModels();
         for (ProviderModel providerModel : providerModelList) {
-            if (providerModel.getServiceName().matches(servicePattern)) {
+            if (providerModel.getServiceKey().matches(servicePattern)) {
                 hasService = true;
-                Set<ProviderInvokerWrapper> providerInvokerWrapperSet = ProviderConsumerRegTable.getProviderInvoker(providerModel.getServiceName());
+                Set<ProviderInvokerWrapper> providerInvokerWrapperSet = ProviderConsumerRegTable.getProviderInvoker(providerModel.getServiceKey());
                 for (ProviderInvokerWrapper providerInvokerWrapper : providerInvokerWrapperSet) {
                     if (providerInvokerWrapper.isReg()) {
                         continue;

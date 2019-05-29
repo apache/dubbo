@@ -86,11 +86,11 @@ public class ListTelnetHandler implements TelnetHandler {
         }
 
         for (ProviderModel provider : ApplicationModel.allProviderModels()) {
-            buf.append(provider.getServiceName());
+            buf.append(provider.getServiceKey());
             if (detail) {
                 buf.append(" -> ");
                 buf.append(" published: ");
-                buf.append(isRegistered(provider.getServiceName()) ? "Y" : "N");
+                buf.append(isRegistered(provider.getServiceKey()) ? "Y" : "N");
             }
             buf.append("\r\n");
         }
@@ -119,7 +119,7 @@ public class ListTelnetHandler implements TelnetHandler {
     private void printSpecifiedProvidedService(String service, StringBuilder buf, boolean detail) {
         for (ProviderModel provider : ApplicationModel.allProviderModels()) {
             if (isProviderMatched(service,provider)) {
-                buf.append(provider.getServiceName()).append(" (as provider):\r\n");
+                buf.append(provider.getServiceKey()).append(" (as provider):\r\n");
                 for (MethodModel method : provider.getAllMethods()) {
                     printMethod(method.getMethod(), buf, detail);
                 }
@@ -148,7 +148,7 @@ public class ListTelnetHandler implements TelnetHandler {
     }
 
     private boolean isProviderMatched(String service, ProviderModel provider) {
-        return service.equalsIgnoreCase(provider.getServiceName())
+        return service.equalsIgnoreCase(provider.getServiceKey())
                 || service.equalsIgnoreCase(provider.getServiceInterfaceClass().getName())
                 || service.equalsIgnoreCase(provider.getServiceInterfaceClass().getSimpleName());
     }

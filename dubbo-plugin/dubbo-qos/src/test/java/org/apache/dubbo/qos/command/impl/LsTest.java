@@ -43,7 +43,7 @@ public class LsTest {
         ConsumerModel consumerModel = mock(ConsumerModel.class);
         when(consumerModel.getServiceKey()).thenReturn("org.apache.dubbo.FooService");
         ProviderModel providerModel = mock(ProviderModel.class);
-        when(providerModel.getServiceName()).thenReturn("org.apache.dubbo.BarService");
+        when(providerModel.getServiceKey()).thenReturn("org.apache.dubbo.BarService");
         ApplicationModel.initConsumerModel("org.apache.dubbo.FooService", consumerModel);
         ApplicationModel.initProviderModel("org.apache.dubbo.BarService", providerModel);
 
