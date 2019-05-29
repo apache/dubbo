@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.model;
 import org.apache.dubbo.common.utils.ReflectUtils;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 
 import static org.apache.dubbo.rpc.Constants.$INVOKE;
 
@@ -32,6 +33,7 @@ public class MethodModel {
     private final String paramTypes;
     private final Class<?>[] parameterClasses;
     private final Class<?> returnClass;
+    private final Type[] returnTypes;
     private final String methodName;
     private final boolean generic;
 
@@ -39,6 +41,7 @@ public class MethodModel {
         this.method = method;
         this.parameterClasses = method.getParameterTypes();
         this.returnClass = method.getReturnType();
+        this.returnTypes = ReflectUtils.getReturnTypes(method);
         this.paramTypes = ReflectUtils.getDesc(method);
         this.methodName = method.getName();
         this.generic = methodName.equals($INVOKE) && parameterClasses.length == 3;
@@ -62,6 +65,10 @@ public class MethodModel {
 
     public Class<?> getReturnClass() {
         return returnClass;
+    }
+
+    public Type[] getReturnTypes() {
+        return returnTypes;
     }
 
     public String getMethodName() {

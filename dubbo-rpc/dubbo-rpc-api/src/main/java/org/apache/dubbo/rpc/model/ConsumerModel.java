@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.common.utils.CollectionUtils;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -55,9 +56,11 @@ public class ConsumerModel {
         this.proxyObject = proxyObject;
         this.serviceModel = serviceModel;
 
-        attributes.forEach((method, object) -> {
-            methodConfigs.put(method, (AsyncMethodInfo) object);
-        });
+        if (CollectionUtils.isNotEmptyMap(attributes)) {
+            attributes.forEach((method, object) -> {
+                methodConfigs.put(method, (AsyncMethodInfo) object);
+            });
+        }
     }
 
     /**
