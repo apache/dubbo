@@ -129,4 +129,9 @@ public interface Constants {
 
     String DEFAULT_PROMPT = "dubbo>";
     String TELNET = "telnet";
+    String HEARTBEAT_KEY = "heartbeat";
+    int DEFAULT_HEARTBEAT = 60 * 1000;
+    String HEARTBEAT_TIMEOUT_KEY = "heartbeat.timeout";
+    String CONNECTIONS_KEY = "connections";
+    String DUBBO_VERSION_KEY = "dubbo";
 }

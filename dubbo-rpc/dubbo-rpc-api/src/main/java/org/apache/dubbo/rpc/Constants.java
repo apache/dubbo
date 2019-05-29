@@ -107,4 +107,22 @@ public interface Constants {
      * To decide whether to make connection when the client is created
      */
     String LAZY_CONNECT_KEY = "lazy";
+    String $INVOKE = "$invoke";
+    String $INVOKE_ASYNC = "$invokeAsync";
+
+    String INPUT_KEY = "input";
+    String OUTPUT_KEY = "output";
+    /**
+     * The limit of callback service instances for one interface on every client
+     */
+    String CALLBACK_INSTANCES_LIMIT_KEY = "callbacks";
+
+    /**
+     * The default limit number for callback service instances
+     *
+     * @see #CALLBACK_INSTANCES_LIMIT_KEY
+     */
+    int DEFAULT_CALLBACK_INSTANCES = 1;
+
+
 }
