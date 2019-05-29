@@ -37,13 +37,20 @@ public class ApplicationModel {
     protected static final Logger LOGGER = LoggerFactory.getLogger(ApplicationModel.class);
 
     /**
-     * full qualified class name -> provided service
+     * serviceKey -> exported service
+     * each service may has different group, version, path, instance and so on, but they point to the same {@link ServiceModel}
      */
     private static final ConcurrentMap<String, ProviderModel> PROVIDED_SERVICES = new ConcurrentHashMap<>();
     /**
-     * full qualified class name -> subscribe service
+     * serviceKey -> referred service
+     * each service may has different group, version, path, instance and so on, but they point to the same {@link ServiceModel}
      */
     private static final ConcurrentMap<String, ConsumerModel> CONSUMED_SERVICES = new ConcurrentHashMap<>();
+
+    /**
+     * The description of a unique service (interface definition in Dubbo)
+     */
+    private static final ConcurrentHashMap<String, ServiceModel> SERVICES = new ConcurrentHashMap<>();
 
     private static String application;
 
@@ -73,6 +80,10 @@ public class ApplicationModel {
         if (PROVIDED_SERVICES.putIfAbsent(serviceName, providerModel) != null) {
             LOGGER.warn("Already register the same:" + serviceName);
         }
+    }
+
+    public static ServiceModel initServiceModel (Class<?> interfaceClass) {
+        return SERVICES.computeIfAbsent(interfaceClass.getName(), (k) -> new ServiceModel(interfaceClass));
     }
 
     public static String getApplication() {

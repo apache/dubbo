@@ -80,7 +80,7 @@ public class Ls implements BaseCommand {
         //Content
         //TODO to calculate consumerAddressNum
         for (ConsumerModel consumerModel : consumerModelList) {
-            tTable.addRow(consumerModel.getServiceName(), getConsumerAddressNum(consumerModel.getServiceName()));
+            tTable.addRow(consumerModel.getServiceKey(), getConsumerAddressNum(consumerModel.getServiceKey()));
         }
 
         stringBuilder.append(tTable.rendering());
