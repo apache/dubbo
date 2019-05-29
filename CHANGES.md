@@ -87,7 +87,7 @@
 - fix fastjson serialization with generic return type [#3771](https://github.com/apache/dubbo/issues/3771)
 - The dubbo-serialization -api modules should not dependency on third-party jar packages [#3762](https://github.com/apache/dubbo/issues/3762)
 - when using protostuff to serialize, there is not to check whether the data is null [#3727](https://github.com/apache/dubbo/issues/3727)
-- bugfix and enhancement [#3287](https://github.com/apache/dubbo/issues/3287)
+- bugfix and enhancement for async [#3287](https://github.com/apache/dubbo/issues/3287)
 
 ## 2.7.1
 
