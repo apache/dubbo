@@ -15,9 +15,9 @@
 - Merge rpc-native-thrift-for-apache-dubbo into incubator-dubbo [#3960](https://github.com/apache/dubbo/issues/3960)
 - add socks5 proxy support [#3624](https://github.com/apache/dubbo/issues/3624)
 - Integrate with SOFARegistry [#3874](https://github.com/apache/dubbo/issues/3874)
-- Introduce CompletableFuture<Object> $invokeAsync for GenericService, now, for generic call, you can use:
-    $invoke for sync method call with normal return type.
-    $invokeAsync for async method call with CompletableFuture<T> signature. [#3163](https://github.com/apache/dubbo/issues/3163)
+- Introduce CompletableFuture $invokeAsync for GenericService, now, for generic call, you can use:  
+  $invoke for sync method call with normal return type.
+  $invokeAsync for async method call with CompletableFuture<T> signature. [#3163](https://github.com/apache/dubbo/issues/3163)
 
 ### Enhancement
 
