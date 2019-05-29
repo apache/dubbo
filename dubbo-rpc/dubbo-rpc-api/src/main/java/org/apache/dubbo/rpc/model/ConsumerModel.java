@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Consumer Model which is about subscribed services.
+ * This model is bind to your reference's configuration, for example, group, version or method level configuration.
  */
 public class ConsumerModel {
     private final String serviceKey;

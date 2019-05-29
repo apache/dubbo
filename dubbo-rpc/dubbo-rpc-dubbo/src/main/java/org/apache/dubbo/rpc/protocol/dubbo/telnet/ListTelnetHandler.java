@@ -25,7 +25,6 @@ import org.apache.dubbo.remoting.telnet.support.Help;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.MethodModel;
-import org.apache.dubbo.rpc.model.ProviderMethodModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
 
 import java.lang.reflect.Method;
@@ -121,7 +120,7 @@ public class ListTelnetHandler implements TelnetHandler {
         for (ProviderModel provider : ApplicationModel.allProviderModels()) {
             if (isProviderMatched(service,provider)) {
                 buf.append(provider.getServiceName()).append(" (as provider):\r\n");
-                for (ProviderMethodModel method : provider.getAllMethods()) {
+                for (MethodModel method : provider.getAllMethods()) {
                     printMethod(method.getMethod(), buf, detail);
                 }
             }

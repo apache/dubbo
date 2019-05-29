@@ -62,12 +62,12 @@ public class ApplicationModel {
         return PROVIDED_SERVICES.values();
     }
 
-    public static ProviderModel getProviderModel(String serviceName) {
-        return PROVIDED_SERVICES.get(serviceName);
+    public static ProviderModel getProviderModel(String serviceKey) {
+        return PROVIDED_SERVICES.get(serviceKey);
     }
 
-    public static ConsumerModel getConsumerModel(String serviceName) {
-        return CONSUMED_SERVICES.get(serviceName);
+    public static ConsumerModel getConsumerModel(String serviceKey) {
+        return CONSUMED_SERVICES.get(serviceKey);
     }
 
     public static void initConsumerModel(String serviceName, ConsumerModel consumerModel) {
@@ -84,6 +84,14 @@ public class ApplicationModel {
 
     public static ServiceModel initServiceModel (Class<?> interfaceClass) {
         return SERVICES.computeIfAbsent(interfaceClass.getName(), (k) -> new ServiceModel(interfaceClass));
+    }
+
+    public static ServiceModel getServiceModel (String interfaceName) {
+        return SERVICES.get(interfaceName);
+    }
+
+    public static ServiceModel getServiceModel (Class<?> interfaceClass) {
+        return SERVICES.get(interfaceClass.getName());
     }
 
     public static String getApplication() {
