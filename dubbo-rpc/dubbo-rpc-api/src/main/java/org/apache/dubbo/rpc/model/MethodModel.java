@@ -20,7 +20,7 @@ import org.apache.dubbo.common.utils.ReflectUtils;
 
 import java.lang.reflect.Method;
 
-import static org.apache.dubbo.common.constants.RpcConstants.$INVOKE;
+import static org.apache.dubbo.rpc.Constants.$INVOKE;
 
 /**
  *
