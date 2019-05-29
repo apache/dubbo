@@ -56,34 +56,34 @@ import static org.apache.dubbo.common.constants.CommonConstants.IO_THREADS_KEY;
 public class NettyServer extends AbstractServer implements Server {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyServer.class);
-	/**
-	 * the cache for alive worker channel.
-	 * <ip:port, dubbo channel>
-	 */
+    /**
+     * the cache for alive worker channel.
+     * <ip:port, dubbo channel>
+     */
     private Map<String, Channel> channels;
-	/**
-	 * netty server bootstrap.
-	 */
+    /**
+     * netty server bootstrap.
+     */
     private ServerBootstrap bootstrap;
-	/**
-	 * the boss channel that receive connections and dispatch these to worker channel.
-	 */
+    /**
+     * the boss channel that receive connections and dispatch these to worker channel.
+     */
 	private io.netty.channel.Channel channel;
 
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
 
     public NettyServer(URL url, ChannelHandler handler) throws RemotingException {
-		// you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in CommonConstants.
-		// the handler will be warped: MultiMessageHandler->HeartbeatHandler->handler
+        // you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in CommonConstants.
+        // the handler will be warped: MultiMessageHandler->HeartbeatHandler->handler
         super(url, ChannelHandlers.wrap(handler, ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME)));
     }
 
-	/**
-	 * Init and start netty server
-	 *
-	 * @throws Throwable
-	 */
+    /**
+     * Init and start netty server
+     *
+     * @throws Throwable
+     */
     @Override
     protected void doOpen() throws Throwable {
         bootstrap = new ServerBootstrap();
