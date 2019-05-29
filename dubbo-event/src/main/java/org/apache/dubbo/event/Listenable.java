@@ -27,7 +27,7 @@ import static java.util.stream.StreamSupport.stream;
  * Dubbo Event Listenable
  *
  * @see EventDispatcher
- * @since 2.7.2
+ * @since 2.7.3
  */
 public interface Listenable<E extends EventListener<?>> {
 

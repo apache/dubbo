@@ -27,7 +27,7 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
  * Local {@link MetadataService} that extends {@link MetadataService} and provides the modification, which is used for
  * Dubbo's consumers and providers.
  *
- * @since 2.7.2
+ * @since 2.7.3
  */
 @SPI("default")
 public interface LocalMetadataService extends MetadataService {

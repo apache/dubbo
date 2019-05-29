@@ -33,7 +33,7 @@ import static java.util.stream.StreamSupport.stream;
  * also providers the fine-grain methods for the precise queries.
  *
  * @see InMemoryLocalMetadataService
- * @since 2.7.2
+ * @since 2.7.3
  */
 public interface MetadataService {
 

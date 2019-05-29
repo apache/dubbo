@@ -37,7 +37,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
  * exported.
  *
  * @see MetadataService
- * @since 2.7.2
+ * @since 2.7.3
  */
 public class InMemoryLocalMetadataService implements LocalMetadataService {
 

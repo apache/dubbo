@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * {@link LocalMetadataService} Test
  *
- * @since 2.7.2
+ * @since 2.7.3
  */
 public class LocalMetadataServiceTest {
 

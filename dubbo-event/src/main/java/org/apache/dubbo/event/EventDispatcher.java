@@ -27,7 +27,7 @@ import java.util.concurrent.Executor;
  * @see Event
  * @see EventListener
  * @see DirectEventDispatcher
- * @since 2.7.2
+ * @since 2.7.3
  */
 @SPI("direct")
 public interface EventDispatcher extends Listenable<EventListener<?>> {

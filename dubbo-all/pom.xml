@@ -500,7 +500,7 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- 2.7.2 new modules -->
+        <!-- 2.7.3 new modules -->
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-event</artifactId>
@@ -649,7 +649,7 @@
                                     <include>org.apache.dubbo:dubbo-serialization-native-hession</include>
                                     <include>org.apache.dubbo:dubbo-rpc-native-thrift</include>
 
-                                    <!-- 2.7.2 new modules -->
+                                    <!-- 2.7.3 new modules -->
                                     <include>org.apache.dubbo:dubbo-event</include>
                                     <include>org.apache.dubbo:dubbo-metadata</include>
                                 </includes>
@@ -777,13 +777,13 @@
                                     <resource>META-INF/dubbo/internal/org.apache.dubbo.metadata.store.MetadataReportFactory
                                     </resource>
                                 </transformer>
-                                <!-- @since 2.7.2 -->
+                                <!-- @since 2.7.3 -->
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>META-INF/dubbo/internal/org.apache.dubbo.event.EventDispatcher
                                     </resource>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>META-INF/dubbo/internal/org.apache.dubbo.metadata.export.MetadataServiceExporter
+                                    <resource>META-INF/dubbo/internal/org.apache.dubbo.metadata.MetadataServiceExporter
                                     </resource>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">

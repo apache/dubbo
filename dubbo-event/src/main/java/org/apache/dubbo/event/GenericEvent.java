@@ -20,7 +20,7 @@ package org.apache.dubbo.event;
  * Generic {@link Event Dubbo event}
  *
  * @param <S> the type of event source
- * @since 2.7.2
+ * @since 2.7.3
  */
 public class GenericEvent<S> extends Event {
 
