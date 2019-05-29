@@ -72,9 +72,9 @@ public class ProviderConsumerRegTable {
             return null;
         }
 
-        for (Invoker inv : invokers.keySet()) {
-            if (inv == invoker) {
-                return invokers.get(inv);
+        for (Map.Entry<Invoker, ProviderInvokerWrapper> entry : invokers.entrySet()) {
+            if (entry.getKey() == invoker) {
+                return entry.getValue();
             }
         }
 

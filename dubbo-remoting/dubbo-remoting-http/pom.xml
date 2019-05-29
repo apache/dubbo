@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-remoting</artifactId>
-        <version>2.7.1-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
     <artifactId>dubbo-remoting-http</artifactId>
     <packaging>jar</packaging>
@@ -32,6 +32,11 @@
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-common</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-remoting-api</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>

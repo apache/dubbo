@@ -208,15 +208,6 @@ Apache Dubbo includes a number of submodules with separate copyright notices
 and license terms. Your use of these submodules is subject to the terms and
 conditions of the following licenses.
 
-For the org.apache.dubbo.common.concurrent package:
-
-This product bundles and repackages the following code in Google Guava 16.0.1, which is available under a
-"Apache License 2.0" license. For details, see https://github.com/google/guava/blob/v16.0.1/COPYING.
-
- * com.google.common.util.concurrent.ExecutionList
- * com.google.common.util.concurrent.ListenableFuture
- * com.google.common.util.concurrent.ListenableFutureTask
-
 For the package org.apache.dubbo.common.threadlocal and org.apache.dubbo.common.timer:
 
 This product contains a modified portion of 'Netty', an event-driven asynchronous network application framework also
@@ -228,4 +219,9 @@ This product contains a modified portion of 'Netty', an event-driven asynchronou
  * io.netty.util.TimerTask
  * io.netty.util.Timeout
  * io.netty.util.HashedWheelTimer
+
+For the org.apache.dubbo.common.utils.CIDRUtils :
+
+This product contains a modified portion of 'edazdarevic.commons.net.CIDRUtils',
+ under a "MIT License" license, see https://github.com/edazdarevic/CIDRUtils/blob/master/CIDRUtils.java
 

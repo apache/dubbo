@@ -35,7 +35,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.dubbo.common.Constants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 
 /**
  * TODO
@@ -73,7 +73,7 @@ import static org.apache.dubbo.common.Constants.DEFAULT_KEY;
  */
 public class ConfigManager {
     private static final Logger logger = LoggerFactory.getLogger(ConfigManager.class);
-    private static final ConfigManager configManager = new ConfigManager();
+    private static final ConfigManager CONFIG_MANAGER = new ConfigManager();
 
     private ApplicationConfig application;
     private MonitorConfig monitor;
@@ -86,7 +86,7 @@ public class ConfigManager {
     private Map<String, ConsumerConfig> consumers = new ConcurrentHashMap<>();
 
     public static ConfigManager getInstance() {
-        return configManager;
+        return CONFIG_MANAGER;
     }
 
     private ConfigManager() {

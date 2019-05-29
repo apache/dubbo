@@ -17,15 +17,15 @@
 package org.apache.dubbo.configcenter;
 
 /**
- * Config change event.
+ * Config change event, immutable.
  *
  * @see ConfigChangeType
  */
 public class ConfigChangeEvent {
-    private String key;
+    private final String key;
 
-    private String value;
-    private ConfigChangeType changeType;
+    private final String value;
+    private final ConfigChangeType changeType;
 
     public ConfigChangeEvent(String key, String value) {
         this(key, value, ConfigChangeType.MODIFIED);
@@ -41,23 +41,20 @@ public class ConfigChangeEvent {
         return key;
     }
 
-    public void setKey(String key) {
-        this.key = key;
-    }
-
     public String getValue() {
         return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
     }
 
     public ConfigChangeType getChangeType() {
         return changeType;
     }
 
-    public void setChangeType(ConfigChangeType changeType) {
-        this.changeType = changeType;
+    @Override
+    public String toString() {
+        return "ConfigChangeEvent{" +
+                "key='" + key + '\'' +
+                ", value='" + value + '\'' +
+                ", changeType=" + changeType +
+                '}';
     }
 }

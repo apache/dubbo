@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -37,8 +36,8 @@ import org.apache.dubbo.rpc.cluster.loadbalance.RoundRobinLoadBalance;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -48,6 +47,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_AVAILABLE_CHECK_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
+import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -129,7 +132,7 @@ public class AbstractClusterInvokerTest {
             }
         };
 
-        cluster_nocheck = new AbstractClusterInvoker(dic, url.addParameterIfAbsent(Constants.CLUSTER_AVAILABLE_CHECK_KEY, Boolean.FALSE.toString())) {
+        cluster_nocheck = new AbstractClusterInvoker(dic, url.addParameterIfAbsent(CLUSTER_AVAILABLE_CHECK_KEY, Boolean.FALSE.toString())) {
             @Override
             protected Result doInvoke(Invocation invocation, List invokers, LoadBalance loadbalance)
                     throws RpcException {
@@ -222,8 +225,8 @@ public class AbstractClusterInvokerTest {
     @Test
     public void testCloseAvailablecheck() {
         LoadBalance lb = mock(LoadBalance.class);
-        Map<String, String> queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(Constants.REFER_KEY));
-        URL tmpUrl = url.addParameters(queryMap).removeParameter(Constants.MONITOR_KEY);
+        Map<String, String> queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY));
+        URL tmpUrl = url.addParameters(queryMap).removeParameter(MONITOR_KEY);
         given(lb.select(invokers, tmpUrl, invocation)).willReturn(invoker1);
         initlistsize5();
 
@@ -523,7 +526,7 @@ public class AbstractClusterInvokerTest {
 
         RpcInvocation mockedInvocation = new RpcInvocation();
         mockedInvocation.setMethodName("sayHello");
-        mockedInvocation.setAttachment(Constants.INVOCATION_NEED_MOCK, "true");
+        mockedInvocation.setAttachment(INVOCATION_NEED_MOCK, "true");
         List<Invoker<IHelloService>> mockedInvokers = dic.list(mockedInvocation);
         Assertions.assertEquals(1, mockedInvokers.size());
 

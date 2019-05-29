@@ -24,15 +24,16 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MulticastRegistryTest {
@@ -91,7 +92,9 @@ public class MulticastRegistryTest {
         Set<URL> registered;
         // clear first
         registered = registry.getRegistered();
-        registered.clear();
+        for (URL url : registered) {
+            registry.unregister(url);
+        }
 
         for (int i = 0; i < 2; i++) {
             registry.register(serviceUrl);
@@ -218,6 +221,43 @@ public class MulticastRegistryTest {
         } finally {
             multicastRegistry.destroy();
         }
+    }
+
+    @Test
+    public void testMulticastAddress() {
+        InetAddress multicastAddress = null;
+        MulticastSocket multicastSocket = null;
+        try {
+            // ipv4 multicast address
+            multicastAddress = InetAddress.getByName("224.55.66.77");
+            multicastSocket = new MulticastSocket(2345);
+            multicastSocket.setLoopbackMode(false);
+            NetUtils.setInterface(multicastSocket, false);
+            multicastSocket.joinGroup(multicastAddress);
+        } catch (Exception e) {
+            Assertions.fail(e);
+        } finally {
+            if (multicastSocket != null) {
+                multicastSocket.close();
+            }
+        }
+
+        // multicast ipv6 address,
+        try {
+            multicastAddress = InetAddress.getByName("ff01::1");
+
+            multicastSocket = new MulticastSocket();
+            multicastSocket.setLoopbackMode(false);
+            NetUtils.setInterface(multicastSocket, true);
+            multicastSocket.joinGroup(multicastAddress);
+        } catch (Throwable t) {
+            t.printStackTrace();
+        } finally {
+            if (multicastSocket != null) {
+                multicastSocket.close();
+            }
+        }
+
     }
 
 }

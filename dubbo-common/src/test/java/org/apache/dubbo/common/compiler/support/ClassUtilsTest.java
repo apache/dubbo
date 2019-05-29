@@ -146,6 +146,13 @@ public class ClassUtilsTest {
     public void testGetSizeMethod() {
         Assertions.assertEquals("getLength()", ClassUtils.getSizeMethod(GenericClass3.class));
     }
+    
+    @Test
+    public void testGetSimpleClassName() {
+        Assertions.assertNull(ClassUtils.getSimpleClassName(null));
+        Assertions.assertEquals("Map", ClassUtils.getSimpleClassName(Map.class.getName()));
+        Assertions.assertEquals("Map", ClassUtils.getSimpleClassName(Map.class.getSimpleName()));
+    }
 
     private interface GenericInterface<T> {
     }

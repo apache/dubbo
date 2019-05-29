@@ -16,81 +16,54 @@
  */
 package org.apache.dubbo.configcenter.support.zookeeper;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.configcenter.ConfigurationListener;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
+import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
+import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
-import org.apache.curator.RetryPolicy;
-import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.recipes.cache.ChildData;
-import org.apache.curator.framework.recipes.cache.TreeCache;
-import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
-import static org.apache.curator.framework.CuratorFrameworkFactory.newClient;
-import static org.apache.dubbo.common.Constants.CONFIG_NAMESPACE_KEY;
+import static org.apache.dubbo.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 
 /**
  *
  */
 public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperDynamicConfiguration.class);
-    private Executor executor;
-    private CuratorFramework client;
 
+    private Executor executor;
     // The final root path would be: /configRootPath/"config"
     private String rootPath;
-    private TreeCache treeCache;
+    private final ZookeeperClient zkClient;
     private CountDownLatch initializedLatch;
 
     private CacheListener cacheListener;
     private URL url;
 
 
-    ZookeeperDynamicConfiguration(URL url) {
+    ZookeeperDynamicConfiguration(URL url, ZookeeperTransporter zookeeperTransporter) {
         this.url = url;
         rootPath = "/" + url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP) + "/config";
-
-        RetryPolicy policy = new ExponentialBackoffRetry(1000, 3);
-        int sessionTimeout = url.getParameter("config.session.timeout", 60 * 1000);
-        int connectTimeout = url.getParameter("config.connect.timeout", 10 * 1000);
-        String connectString = url.getBackupAddress();
-        client = newClient(connectString, sessionTimeout, connectTimeout, policy);
-        client.start();
-
-        try {
-            boolean connected = client.blockUntilConnected(3 * connectTimeout, TimeUnit.MILLISECONDS);
-            if (!connected) {
-                if (url.getParameter(Constants.CONFIG_CHECK_KEY, true)) {
-                    throw new IllegalStateException("Failed to connect to config center (zookeeper): "
-                            + connectString + " in " + 3 * connectTimeout + "ms.");
-                } else {
-                    logger.warn("The config center (zookeeper) is not fully initialized in " + 3 * connectTimeout + "ms, address is: " + connectString);
-                }
-            }
-        } catch (InterruptedException e) {
-            throw new IllegalStateException("The thread was interrupted unexpectedly when trying connecting to zookeeper "
-                    + connectString + " config center, ", e);
-        }
 
         initializedLatch = new CountDownLatch(1);
         this.cacheListener = new CacheListener(rootPath, initializedLatch);
         this.executor = Executors.newFixedThreadPool(1, new NamedThreadFactory(this.getClass().getSimpleName(), true));
-        // build local cache
+
+        zkClient = zookeeperTransporter.connect(url);
+        zkClient.addDataListener(rootPath, cacheListener, executor);
         try {
-            this.buildCache();
-        } catch (Exception e) {
-            logger.warn("Failed to build local cache for config center (zookeeper), address is ." + connectString);
+            // Wait for connection
+            this.initializedLatch.await();
+        } catch (InterruptedException e) {
+            logger.warn("Failed to build local cache for config center (zookeeper)." + url);
         }
     }
 
@@ -100,11 +73,7 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
      */
     @Override
     public Object getInternalProperty(String key) {
-        ChildData childData = treeCache.getCurrentData(key);
-        if (childData != null) {
-            return new String(childData.getData(), StandardCharsets.UTF_8);
-        }
-        return null;
+        return zkClient.getContent(key);
     }
 
     /**
@@ -143,16 +112,16 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
     }
 
     /**
-     * Adds a listener to the pathChildrenCache, initializes the cache, then starts the cache-management background
-     * thread
+     * For zookeeper, {@link #getConfig(String, String, long)} and {@link #getConfigs(String, String, long)} have the same meaning.
+     *
+     * @param key
+     * @param group
+     * @param timeout
+     * @return
+     * @throws IllegalStateException
      */
-    private void buildCache() throws Exception {
-        this.treeCache = new TreeCache(client, rootPath);
-        // create the watcher for future configuration updates
-        treeCache.getListenable().addListener(cacheListener, executor);
-
-        // it's not blocking, so we use an extra latch 'initializedLatch' to make sure cache fully initialized before use.
-        treeCache.start();
-        initializedLatch.await();
+    @Override
+    public String getConfigs(String key, String group, long timeout) throws IllegalStateException {
+        return (String) getConfig(key, group, timeout);
     }
 }

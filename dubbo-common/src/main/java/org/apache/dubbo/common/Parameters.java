@@ -28,6 +28,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
+import static org.apache.dubbo.common.constants.CommonConstants.HIDE_KEY_PREFIX;
+
 /**
  * Parameters for backward compatibility for version prior to 2.0.5
  *
@@ -97,13 +100,13 @@ public class Parameters {
     public String getParameter(String key) {
         String value = parameters.get(key);
         if (StringUtils.isEmpty(value)) {
-            value = parameters.get(Constants.HIDE_KEY_PREFIX + key);
+            value = parameters.get(HIDE_KEY_PREFIX + key);
         }
         if (StringUtils.isEmpty(value)) {
-            value = parameters.get(Constants.DEFAULT_KEY_PREFIX + key);
+            value = parameters.get(DEFAULT_KEY_PREFIX + key);
         }
         if (StringUtils.isEmpty(value)) {
-            value = parameters.get(Constants.HIDE_KEY_PREFIX + Constants.DEFAULT_KEY_PREFIX + key);
+            value = parameters.get(HIDE_KEY_PREFIX + DEFAULT_KEY_PREFIX + key);
         }
         return value;
     }
@@ -171,7 +174,7 @@ public class Parameters {
     public String getMethodParameter(String method, String key) {
         String value = parameters.get(method + "." + key);
         if (StringUtils.isEmpty(value)) {
-            value = parameters.get(Constants.HIDE_KEY_PREFIX + method + "." + key);
+            value = parameters.get(HIDE_KEY_PREFIX + method + "." + key);
         }
         if (StringUtils.isEmpty(value)) {
             return getParameter(key);

@@ -20,6 +20,7 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.spring.context.annotation.DubboConfigBindingRegistrar;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubboConfigBinding;
+import org.apache.dubbo.config.spring.context.config.DubboConfigBeanCustomizer;
 import org.apache.dubbo.config.spring.context.properties.DefaultDubboConfigBinder;
 import org.apache.dubbo.config.spring.context.properties.DubboConfigBinder;
 
@@ -30,7 +31,15 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.core.env.Environment;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncludingAncestors;
 
 /**
  * Dubbo Config Binding {@link BeanPostProcessor}
@@ -62,6 +71,8 @@ public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, A
 
     private boolean ignoreInvalidFields = true;
 
+    private List<DubboConfigBeanCustomizer> configBeanCustomizers = Collections.emptyList();
+
     /**
      * @param prefix   the prefix of Configuration Properties
      * @param beanName the binding Bean Name
@@ -80,15 +91,31 @@ public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, A
 
             AbstractConfig dubboConfig = (AbstractConfig) bean;
 
-            dubboConfigBinder.bind(prefix, dubboConfig);
+            bind(prefix, dubboConfig);
 
-            if (log.isInfoEnabled()) {
-                log.info("The properties of bean [name : " + beanName + "] have been binding by prefix of " +
-                        "configuration properties : " + prefix);
-            }
+            customize(beanName, dubboConfig);
+
         }
 
         return bean;
+
+    }
+
+    private void bind(String prefix, AbstractConfig dubboConfig) {
+
+        dubboConfigBinder.bind(prefix, dubboConfig);
+
+        if (log.isInfoEnabled()) {
+            log.info("The properties of bean [name : " + beanName + "] have been binding by prefix of " +
+                    "configuration properties : " + prefix);
+        }
+    }
+
+    private void customize(String beanName, AbstractConfig dubboConfig) {
+
+        for (DubboConfigBeanCustomizer customizer : configBeanCustomizers) {
+            customizer.customize(beanName, dubboConfig);
+        }
 
     }
 
@@ -129,6 +156,14 @@ public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, A
     @Override
     public void afterPropertiesSet() throws Exception {
 
+        initDubboConfigBinder();
+
+        initConfigBeanCustomizers();
+
+    }
+
+    private void initDubboConfigBinder() {
+
         if (dubboConfigBinder == null) {
             try {
                 dubboConfigBinder = applicationContext.getBean(DubboConfigBinder.class);
@@ -144,6 +179,16 @@ public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, A
         dubboConfigBinder.setIgnoreUnknownFields(ignoreUnknownFields);
         dubboConfigBinder.setIgnoreInvalidFields(ignoreInvalidFields);
 
+    }
+
+    private void initConfigBeanCustomizers() {
+
+        Collection<DubboConfigBeanCustomizer> configBeanCustomizers =
+                beansOfTypeIncludingAncestors(applicationContext, DubboConfigBeanCustomizer.class).values();
+
+        this.configBeanCustomizers = new ArrayList<>(configBeanCustomizers);
+
+        AnnotationAwareOrderComparator.sort(this.configBeanCustomizers);
     }
 
     /**

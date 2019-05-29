@@ -87,7 +87,7 @@ public class ZookeeperDynamicConfigurationTest {
     @Test
     public void testGetConfig() throws Exception {
         Assertions.assertEquals("Never change value from configurators", configuration.getConfig("never.change.DemoService.configurators"));
-        Assertions.assertEquals("The content from dubbo.properties", configuration.getConfig("dubbo.properties", "dubbo"));
+        Assertions.assertEquals("The content from dubbo.properties", configuration.getConfigs("dubbo.properties", "dubbo"));
     }
 
     @Test
@@ -133,6 +133,7 @@ public class ZookeeperDynamicConfigurationTest {
 
         @Override
         public void process(ConfigChangeEvent event) {
+            System.out.println(this + ": " + event);
             Integer count = countMap.computeIfAbsent(event.getKey(), k -> new Integer(0));
             countMap.put(event.getKey(), ++count);
 

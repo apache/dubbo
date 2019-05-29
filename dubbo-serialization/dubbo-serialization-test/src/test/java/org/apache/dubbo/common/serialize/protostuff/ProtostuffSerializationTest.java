@@ -25,9 +25,4 @@ public class ProtostuffSerializationTest extends AbstractSerializationTest {
         serialization = new ProtostuffSerialization();
     }
 
-    @Override
-    @Test
-    public void test_LoopReference() throws Exception {
-        // FIXME: cannot make this test pass on protostuff
-    }
 }

@@ -60,7 +60,7 @@ public class ExpiringMap<K, V> implements Map<K, V> {
     }
 
     public ExpiringMap(int timeToLive, int expirationInterval) {
-        this(new ConcurrentHashMap<K, ExpiryObject>(), timeToLive, expirationInterval);
+        this(new ConcurrentHashMap<>(), timeToLive, expirationInterval);
     }
 
     private ExpiringMap(ConcurrentHashMap<K, ExpiryObject> delegateMap, int timeToLive, int expirationInterval) {

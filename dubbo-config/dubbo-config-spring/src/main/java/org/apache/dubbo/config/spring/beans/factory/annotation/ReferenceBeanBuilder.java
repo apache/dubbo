@@ -18,6 +18,8 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.ConsumerConfig;
+import org.apache.dubbo.config.MethodConfig;
+import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.ReferenceBean;
 
@@ -29,6 +31,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.validation.DataBinder;
 
 import java.beans.PropertyEditorSupport;
+import java.util.List;
 import java.util.Map;
 
 import static org.apache.dubbo.config.spring.util.BeanFactoryUtils.getOptionalBean;
@@ -89,6 +92,14 @@ class ReferenceBeanBuilder extends AbstractAnnotationConfigBeanBuilder<Reference
 
     }
 
+    void configureMethodConfig(Reference reference, ReferenceBean<?> referenceBean){
+        Method[] methods = reference.methods();
+        List<MethodConfig> methodConfigs = MethodConfig.constructMethodConfig(methods);
+        if(!methodConfigs.isEmpty()){
+            referenceBean.setMethods(methodConfigs);
+        }
+    }
+
     @Override
     protected ReferenceBean doBuild() {
         return new ReferenceBean<Object>();
@@ -102,7 +113,7 @@ class ReferenceBeanBuilder extends AbstractAnnotationConfigBeanBuilder<Reference
         dataBinder.registerCustomEditor(String.class, "filter", new StringTrimmerEditor(true));
         dataBinder.registerCustomEditor(String.class, "listener", new StringTrimmerEditor(true));
         dataBinder.registerCustomEditor(Map.class, "parameters", new PropertyEditorSupport() {
-
+            @Override
             public void setAsText(String text) throws java.lang.IllegalArgumentException {
                 // Trim all whitespace
                 String content = StringUtils.trimAllWhitespace(text);
@@ -153,6 +164,8 @@ class ReferenceBeanBuilder extends AbstractAnnotationConfigBeanBuilder<Reference
         configureInterface(annotation, bean);
 
         configureConsumerConfig(annotation, bean);
+
+        configureMethodConfig(annotation, bean);
 
         bean.afterPropertiesSet();
 

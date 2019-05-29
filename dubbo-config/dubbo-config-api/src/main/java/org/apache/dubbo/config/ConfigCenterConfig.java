@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.support.Parameter;
@@ -26,28 +26,64 @@ import org.apache.dubbo.config.support.Parameter;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.configcenter.Constants.CONFIG_CHECK_KEY;
+import static org.apache.dubbo.configcenter.Constants.CONFIG_CLUSTER_KEY;
+import static org.apache.dubbo.configcenter.Constants.CONFIG_GROUP_KEY;
+import static org.apache.dubbo.configcenter.Constants.CONFIG_NAMESPACE_KEY;
+import static org.apache.dubbo.config.Constants.ZOOKEEPER_PROTOCOL;
+import static org.apache.dubbo.config.Constants.CONFIG_CONFIGFILE_KEY;
+import static org.apache.dubbo.config.Constants.CONFIG_ENABLE_KEY;
+import static org.apache.dubbo.config.Constants.CONFIG_TIMEOUT_KEY;
+
 /**
- *
+ * ConfigCenterConfig
  */
 public class ConfigCenterConfig extends AbstractConfig {
     private AtomicBoolean inited = new AtomicBoolean(false);
 
     private String protocol;
     private String address;
+
+    /* The config center cluster, it's real meaning may very on different Config Center products. */
     private String cluster;
-    private String namespace = "dubbo";
-    private String group = "dubbo";
+
+    /* The namespace of the config center, generally it's used for multi-tenant,
+    but it's real meaning depends on the actual Config Center you use.
+    */
+
+    private String namespace = CommonConstants.DUBBO;
+    /* The group of the config center, generally it's used to identify an isolated space for a batch of config items,
+    but it's real meaning depends on the actual Config Center you use.
+    */
+    private String group = CommonConstants.DUBBO;
     private String username;
     private String password;
     private Long timeout = 3000L;
+
+    // If the Config Center is given the highest priority, it will override all the other configurations
     private Boolean highestPriority = true;
+
+    // Decide the behaviour when initial connection try fails, 'true' means interrupt the whole process once fail.
     private Boolean check = true;
 
-    private String appName;
-    private String configFile = "dubbo.properties";
+    /* Used to specify the key that your properties file mapping to, most of the time you do not need to change this parameter.
+    Notice that for Apollo, this parameter is meaningless, set the 'namespace' is enough.
+    */
+    private String configFile = CommonConstants.DEFAULT_DUBBO_PROPERTIES;
+
+    /* the .properties file under 'configFile' is global shared while .properties under this one is limited only to this application
+    */
     private String appConfigFile;
 
-    // customized parameters
+    /* If the Config Center product you use have some special parameters that is not covered by this class, you can add it to here.
+    For example, with XML:
+      <dubbo:config-center>
+           <dubbo:parameter key="config.{your key}" value="{your value}" />
+      </dubbo:config-center>
+     */
     private Map<String, String> parameters;
 
     public ConfigCenterConfig() {
@@ -56,12 +92,12 @@ public class ConfigCenterConfig extends AbstractConfig {
     public URL toUrl() {
         Map<String, String> map = this.getMetaData();
         if (StringUtils.isEmpty(address)) {
-            address = Constants.ANYHOST_VALUE;
+            address = ANYHOST_VALUE;
         }
-        map.put(Constants.PATH_KEY, ConfigCenterConfig.class.getSimpleName());
+        map.put(PATH_KEY, ConfigCenterConfig.class.getSimpleName());
         // use 'zookeeper' as the default configcenter.
-        if (StringUtils.isEmpty(map.get(Constants.PROTOCOL_KEY))) {
-            map.put(Constants.PROTOCOL_KEY, Constants.ZOOKEEPER_PROTOCOL);
+        if (StringUtils.isEmpty(map.get(PROTOCOL_KEY))) {
+            map.put(PROTOCOL_KEY, ZOOKEEPER_PROTOCOL);
         }
         return UrlUtils.parseURL(address, map);
     }
@@ -95,7 +131,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.address = address;
     }
 
-    @Parameter(key = Constants.CONFIG_CLUSTER_KEY, useKeyAsProperty = false)
+    @Parameter(key = CONFIG_CLUSTER_KEY, useKeyAsProperty = false)
     public String getCluster() {
         return cluster;
     }
@@ -104,7 +140,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.cluster = cluster;
     }
 
-    @Parameter(key = Constants.CONFIG_NAMESPACE_KEY, useKeyAsProperty = false)
+    @Parameter(key = CONFIG_NAMESPACE_KEY, useKeyAsProperty = false)
     public String getNamespace() {
         return namespace;
     }
@@ -113,7 +149,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.namespace = namespace;
     }
 
-    @Parameter(key = Constants.CONFIG_GROUP_KEY, useKeyAsProperty = false)
+    @Parameter(key = CONFIG_GROUP_KEY, useKeyAsProperty = false)
     public String getGroup() {
         return group;
     }
@@ -122,7 +158,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.group = group;
     }
 
-    @Parameter(key = Constants.CONFIG_CHECK_KEY, useKeyAsProperty = false)
+    @Parameter(key = CONFIG_CHECK_KEY, useKeyAsProperty = false)
     public Boolean isCheck() {
         return check;
     }
@@ -131,7 +167,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.check = check;
     }
 
-    @Parameter(key = Constants.CONFIG_ENABLE_KEY, useKeyAsProperty = false)
+    @Parameter(key = CONFIG_ENABLE_KEY, useKeyAsProperty = false)
     public Boolean isHighestPriority() {
         return highestPriority;
     }
@@ -156,7 +192,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.password = password;
     }
 
-    @Parameter(key = Constants.CONFIG_TIMEOUT_KEY, useKeyAsProperty = false)
+    @Parameter(key = CONFIG_TIMEOUT_KEY, useKeyAsProperty = false)
     public Long getTimeout() {
         return timeout;
     }
@@ -165,7 +201,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.timeout = timeout;
     }
 
-    @Parameter(key = Constants.CONFIG_CONFIGFILE_KEY, useKeyAsProperty = false)
+    @Parameter(key = CONFIG_CONFIGFILE_KEY, useKeyAsProperty = false)
     public String getConfigFile() {
         return configFile;
     }
@@ -181,15 +217,6 @@ public class ConfigCenterConfig extends AbstractConfig {
 
     public void setAppConfigFile(String appConfigFile) {
         this.appConfigFile = appConfigFile;
-    }
-
-    @Parameter(key = Constants.CONFIG_APPNAME_KEY, useKeyAsProperty = false)
-    public String getAppName() {
-        return appName;
-    }
-
-    public void setAppName(String appName) {
-        this.appName = appName;
     }
 
     public Map<String, String> getParameters() {

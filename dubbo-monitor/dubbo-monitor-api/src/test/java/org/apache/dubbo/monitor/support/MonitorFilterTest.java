@@ -16,18 +16,19 @@
  */
 package org.apache.dubbo.monitor.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.monitor.Monitor;
 import org.apache.dubbo.monitor.MonitorFactory;
 import org.apache.dubbo.monitor.MonitorService;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -37,6 +38,10 @@ import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -60,7 +65,7 @@ public class MonitorFilterTest {
 
         public URL getUrl() {
             try {
-                return URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880?" + Constants.APPLICATION_KEY + "=abc&" + Constants.SIDE_KEY + "=" + Constants.CONSUMER_SIDE + "&" + Constants.MONITOR_KEY + "=" + URLEncoder.encode("dubbo://" + NetUtils.getLocalHost() + ":7070", "UTF-8"));
+                return URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880?" + APPLICATION_KEY + "=abc&" + SIDE_KEY + "=" + CONSUMER_SIDE + "&" + MONITOR_KEY + "=" + URLEncoder.encode("dubbo://" + NetUtils.getLocalHost() + ":7070", "UTF-8"));
             } catch (UnsupportedEncodingException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
@@ -73,7 +78,7 @@ public class MonitorFilterTest {
 
         public Result invoke(Invocation invocation) throws RpcException {
             lastInvocation = invocation;
-            return null;
+            return AsyncRpcResult.newDefaultAsyncResult(invocation);
         }
 
         @Override
@@ -115,7 +120,11 @@ public class MonitorFilterTest {
         monitorFilter.setMonitorFactory(monitorFactory);
         Invocation invocation = new RpcInvocation("aaa", new Class<?>[0], new Object[0]);
         RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
-        monitorFilter.invoke(serviceInvoker, invocation);
+        Result result = monitorFilter.invoke(serviceInvoker, invocation);
+        result.thenApplyWithContext((r) -> {
+            monitorFilter.listener().onResponse(r, serviceInvoker, invocation);
+            return r;
+        });
         while (lastStatistics == null) {
             Thread.sleep(10);
         }
@@ -138,7 +147,7 @@ public class MonitorFilterTest {
         monitorFilter.setMonitorFactory(mockMonitorFactory);
         Invocation invocation = new RpcInvocation("aaa", new Class<?>[0], new Object[0]);
         Invoker invoker = mock(Invoker.class);
-        given(invoker.getUrl()).willReturn(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880?" + Constants.APPLICATION_KEY + "=abc&" + Constants.SIDE_KEY + "=" + Constants.CONSUMER_SIDE));
+        given(invoker.getUrl()).willReturn(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880?" + APPLICATION_KEY + "=abc&" + SIDE_KEY + "=" + CONSUMER_SIDE));
 
         monitorFilter.invoke(invoker, invocation);
 
@@ -151,7 +160,11 @@ public class MonitorFilterTest {
         monitorFilter.setMonitorFactory(monitorFactory);
         Invocation invocation = new RpcInvocation("$invoke", new Class<?>[]{String.class, String[].class, Object[].class}, new Object[]{"xxx", new String[]{}, new Object[]{}});
         RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
-        monitorFilter.invoke(serviceInvoker, invocation);
+        Result result = monitorFilter.invoke(serviceInvoker, invocation);
+        result.thenApplyWithContext((r) -> {
+            monitorFilter.listener().onResponse(r, serviceInvoker, invocation);
+            return r;
+        });
         while (lastStatistics == null) {
             Thread.sleep(10);
         }
