@@ -57,8 +57,11 @@ public class NacosDynamicConfigurationTest {
         Thread.sleep(200);
         put("dubbo.properties", "test", "aaa=bbb");
         Thread.sleep(200);
+        put("xxxx:org.apache.dubbo.demo.DemoService:1.0.0.test.configurators", "helloworld");
+        Thread.sleep(200);
         Assertions.assertEquals("hello", config.getConfig("org.apache.dubbo.nacos.testService.configurators"));
         Assertions.assertEquals("aaa=bbb", config.getConfig("dubbo.properties", "test"));
+        Assertions.assertEquals("helloworld", config.getConfig("xxxx*org.apache.dubbo.demo.DemoService:1.0.0.test.configurators"));
     }
 
     @Test

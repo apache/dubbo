@@ -134,17 +134,44 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
      * @return
      */
     private NacosConfigListener createTargetListener(String key, String group) {
+        String normalizedKey = normalizedKey(key);
         NacosConfigListener configListener = new NacosConfigListener();
-        configListener.fillContext(key, group);
+        configListener.fillContext(normalizedKey, group);
         return configListener;
+    }
+
+
+    /**
+     * FIXME: 2019-05-30 to remove this function
+     * Nacos server does not support * as valid character of data-id.
+     * If a Dubbo service specifies group. For example:
+     *
+     *  <dubbo:service interface="org.apache.dubbo.demo.DemoService" ref="demoService"
+     *      version="1.0.0.test" group="test"/>
+     *
+     * The key passed to NacosDynamicConfiguration will be sth. like:
+     *   test*org.apache.dubbo.demo.DemoService:1.0.0.test.configurators
+     *
+     * See logic in org.apache.dubbo.common.URL#getEncodedServiceKey()
+     *
+     * The purpose of this function is to convert the * into :, to keep align with
+     * the implementation in NacosRegistry.
+     *
+     * In the future this logic should be removed if Dubbo core can handle this.
+     * @param key
+     * @return
+     */
+    private String normalizedKey(String key) {
+        return key.replaceFirst("\\*", ":");
     }
 
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
-        NacosConfigListener nacosConfigListener = watchListenerMap.computeIfAbsent(key, k -> createTargetListener(key, group));
+        String normalizedKey = normalizedKey(key);
+        NacosConfigListener nacosConfigListener = watchListenerMap.computeIfAbsent(normalizedKey, k -> createTargetListener(normalizedKey, group));
         nacosConfigListener.addListener(listener);
         try {
-            configService.addListener(key, group, nacosConfigListener);
+            configService.addListener(normalizedKey, group, nacosConfigListener);
         } catch (NacosException e) {
             logger.error(e.getMessage());
         }
@@ -152,7 +179,8 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public void removeListener(String key, String group, ConfigurationListener listener) {
-        NacosConfigListener eventListener = watchListenerMap.get(key);
+        String normalizedKey = normalizedKey(key);
+        NacosConfigListener eventListener = watchListenerMap.get(normalizedKey);
         if (eventListener != null) {
             eventListener.removeListener(listener);
         }
@@ -161,8 +189,9 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     @Override
     public String getConfig(String key, String group, long timeout) throws IllegalStateException {
         try {
+            String normalizedKey = normalizedKey(key);
             long nacosTimeout = timeout < 0 ?  DEFAULT_TIMEOUT : timeout;
-            return configService.getConfig(key, group, nacosTimeout);
+            return configService.getConfig(normalizedKey, group, nacosTimeout);
         } catch (NacosException e) {
             logger.error(e.getMessage());
         }
@@ -177,7 +206,8 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     @Override
     public Object getInternalProperty(String key) {
         try {
-            return configService.getConfig(key, DEFAULT_GROUP, DEFAULT_TIMEOUT);
+            String normalizedKey = normalizedKey(key);
+            return configService.getConfig(normalizedKey, DEFAULT_GROUP, DEFAULT_TIMEOUT);
         } catch (NacosException e) {
             logger.error(e.getMessage());
         }
