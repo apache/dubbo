@@ -103,14 +103,14 @@ public class XmlRpcProtocol extends AbstractProxyProtocol {
 
     @Override
     protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
-        final URL http_url = url.setProtocol("http");
-        String addr = http_url.getIp() + ":" + http_url.getPort();
+        final URL httpUrl = url.setProtocol("http");
+        String addr = httpUrl.getIp() + ":" + httpUrl.getPort();
         HttpServer server = serverMap.get(addr);
         if (server == null) {
-            server = httpBinder.bind(http_url, new InternalHandler(http_url.getParameter("cors", false)));
+            server = httpBinder.bind(httpUrl, new InternalHandler(httpUrl.getParameter("cors", false)));
             serverMap.put(addr, server);
         }
-        final String path = http_url.getAbsolutePath();
+        final String path = httpUrl.getAbsolutePath();
 
         XmlRpcServletServer xmlRpcServer = new XmlRpcServletServer();
 
