@@ -5,7 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * @author slievrly
+ * The type System configuration test.
  */
 class SystemConfigurationTest {
 
@@ -21,12 +21,18 @@ class SystemConfigurationTest {
     private static final Byte MOCK_BYTE_VALUE = Byte.MIN_VALUE;
     private static final String NOT_EXIST_KEY = "NOTEXIST";
 
+    /**
+     * Init.
+     */
     @BeforeEach
     public void init() {
 
         sysConfig = new SystemConfiguration();
     }
 
+    /**
+     * Test get sys property.
+     */
     @Test
     public void testGetSysProperty() {
         Assertions.assertNull(sysConfig.getInternalProperty(MOCK_KEY));
@@ -41,6 +47,9 @@ class SystemConfigurationTest {
 
     }
 
+    /**
+     * Test convert.
+     */
     @Test
     public void testConvert() {
         Assertions.assertEquals(
@@ -65,11 +74,18 @@ class SystemConfigurationTest {
         Assertions.assertEquals(ConfigMock.MockOne, sysConfig.convert(ConfigMock.class, MOCK_KEY, null));
     }
 
+    /**
+     * The enum Config mock.
+     */
     enum ConfigMock {
+        /**
+         * Mock one config mock.
+         */
         MockOne,
+        /**
+         * Mock two config mock.
+         */
         MockTwo
     }
-
-
 
 }

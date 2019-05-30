@@ -8,7 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * @author slievrly
+ * The type Inmemory configuration test.
  */
 class InmemoryConfigurationTest {
 
@@ -19,12 +19,18 @@ class InmemoryConfigurationTest {
     private static final String MOCK_TWO_KEY = "two";
     private static final String MOCK_THREE_KEY = "three";
 
+    /**
+     * Init.
+     */
     @BeforeEach
     public void init() {
 
         memConfig = new InmemoryConfiguration();
     }
 
+    /**
+     * Test get mem property.
+     */
     @Test
     public void testGetMemProperty() {
         Assertions.assertNull(memConfig.getInternalProperty(MOCK_KEY));
@@ -39,6 +45,9 @@ class InmemoryConfigurationTest {
 
     }
 
+    /**
+     * Test get properties.
+     */
     @Test
     public void testGetProperties() {
         Assertions.assertNull(memConfig.getInternalProperty(MOCK_ONE_KEY));
@@ -57,4 +66,5 @@ class InmemoryConfigurationTest {
         Assertions.assertNull(memConfig.getInternalProperty(MOCK_TWO_KEY));
 
     }
+
 }
