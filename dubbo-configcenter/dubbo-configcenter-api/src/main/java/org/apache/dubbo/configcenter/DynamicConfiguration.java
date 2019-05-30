@@ -85,7 +85,7 @@ public interface DynamicConfiguration extends Configuration {
      * @return target configuration mapped to the given key
      */
     default String getConfig(String key) {
-        return getConfig(key, null, -1L);
+        return getConfig(key, DEFAULT_GROUP, -1L);
     }
 
     /**
