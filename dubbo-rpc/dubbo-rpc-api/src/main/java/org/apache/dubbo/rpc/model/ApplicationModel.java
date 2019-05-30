@@ -20,6 +20,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -86,12 +87,12 @@ public class ApplicationModel {
         return SERVICES.computeIfAbsent(interfaceClass.getName(), (k) -> new ServiceModel(interfaceClass));
     }
 
-    public static ServiceModel getServiceModel (String interfaceName) {
-        return SERVICES.get(interfaceName);
+    public static Optional<ServiceModel> getServiceModel (String interfaceName) {
+        return Optional.ofNullable(SERVICES.get(interfaceName));
     }
 
-    public static ServiceModel getServiceModel (Class<?> interfaceClass) {
-        return SERVICES.get(interfaceClass.getName());
+    public static Optional<ServiceModel> getServiceModel (Class<?> interfaceClass) {
+        return Optional.ofNullable(SERVICES.get(interfaceClass.getName()));
     }
 
     public static String getApplication() {
@@ -109,4 +110,5 @@ public class ApplicationModel {
         PROVIDED_SERVICES.clear();
         CONSUMED_SERVICES.clear();
     }
+
 }

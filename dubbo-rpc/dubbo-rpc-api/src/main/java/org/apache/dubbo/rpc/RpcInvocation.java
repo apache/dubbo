@@ -66,7 +66,7 @@ public class RpcInvocation implements Invocation, Serializable {
     }
 
     public RpcInvocation(Invocation invocation, Invoker<?> invoker) {
-        this(invocation.getMethodName(), invocation.getParameterTypes(),
+        this(invocation.getMethodName(), invocation.getServiceName(), invocation.getParameterTypes(),
                 invocation.getArguments(), new HashMap<String, String>(invocation.getAttachments()),
                 invocation.getInvoker());
         if (invoker != null) {
@@ -94,39 +94,40 @@ public class RpcInvocation implements Invocation, Serializable {
     }
 
     public RpcInvocation(Invocation invocation) {
-        this(invocation.getMethodName(), invocation.getParameterTypes(),
+        this(invocation.getMethodName(), invocation.getServiceName(), invocation.getParameterTypes(),
                 invocation.getArguments(), invocation.getAttachments(), invocation.getInvoker());
     }
 
-    public RpcInvocation(Method method, Object[] arguments) {
-        this(method, arguments, null);
+    public RpcInvocation(Method method, String serviceName, Object[] arguments) {
+        this(method, serviceName, arguments, null);
     }
 
-    public RpcInvocation(Method method, Object[] arguments, Map<String, String> attachment) {
-        this(method.getName(), method.getParameterTypes(), arguments, attachment, null);
+    public RpcInvocation(Method method, String serviceName, Object[] arguments, Map<String, String> attachment) {
+        this(method.getName(), serviceName, method.getParameterTypes(), arguments, attachment, null);
         this.returnType = method.getReturnType();
     }
 
-    public RpcInvocation(String methodName, Class<?>[] parameterTypes, Object[] arguments) {
-        this(methodName, parameterTypes, arguments, null, null);
+    public RpcInvocation(String methodName, String serviceName, Class<?>[] parameterTypes, Object[] arguments) {
+        this(methodName, serviceName, parameterTypes, arguments, null, null);
     }
 
-    public RpcInvocation(String methodName, Class<?>[] parameterTypes, Object[] arguments, Map<String, String> attachments) {
-        this(methodName, parameterTypes, arguments, attachments, null);
+    public RpcInvocation(String methodName, String serviceName, Class<?>[] parameterTypes, Object[] arguments, Map<String, String> attachments) {
+        this(methodName, serviceName, parameterTypes, arguments, attachments, null);
     }
 
-    public RpcInvocation(String methodName, Class<?>[] parameterTypes, Object[] arguments, Map<String, String> attachments, Invoker<?> invoker) {
+    public RpcInvocation(String methodName, String serviceName, Class<?>[] parameterTypes, Object[] arguments, Map<String, String> attachments, Invoker<?> invoker) {
         this.methodName = methodName;
         this.parameterTypes = parameterTypes == null ? new Class<?>[0] : parameterTypes;
         this.arguments = arguments == null ? new Object[0] : arguments;
         this.attachments = attachments == null ? new HashMap<String, String>() : attachments;
         this.invoker = invoker;
-        ApplicationModel.getServiceModel(serviceName)
-                .getMethod(methodName, parameterTypes)
-                .ifPresent(methodModel -> {
-                    this.parameterTypesDesc = methodModel.getParamDesc();
-                    this.returnTypes = methodModel.getReturnTypes();
-                });
+        ApplicationModel.getServiceModel(serviceName).ifPresent(serviceModel ->
+             serviceModel.getMethod(methodName, parameterTypes)
+                    .ifPresent(methodModel -> {
+                        this.parameterTypesDesc = methodModel.getParamDesc();
+                        this.returnTypes = methodModel.getReturnTypes();
+                    })
+        );
     }
 
     @Override
@@ -141,6 +142,15 @@ public class RpcInvocation implements Invocation, Serializable {
     @Override
     public String getMethodName() {
         return methodName;
+    }
+
+    @Override
+    public String getServiceName() {
+        return serviceName;
+    }
+
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
     }
 
     public void setMethodName(String methodName) {

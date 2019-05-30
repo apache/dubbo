@@ -31,6 +31,7 @@ import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.MethodModel;
+import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -122,22 +123,25 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             Object[] args = DubboCodec.EMPTY_OBJECT_ARRAY;
             Class<?>[] pts = DubboCodec.EMPTY_CLASS_ARRAY;
             if (desc.length() > 0) {
-                Optional<MethodModel> methodOptional = ApplicationModel.getServiceModel(getAttachment(INTERFACE_KEY)).getMethod(getMethodName(), desc);
                 // TODO, lambda function requires variables to be final.
-                if (methodOptional.isPresent()) {
-                    pts = methodOptional.get().getParameterClasses();
-                    args = new Object[pts.length];
-                    for (int i = 0; i < args.length; i++) {
-                        try {
-                            args[i] = in.readObject(pts[i]);
-                        } catch (Exception e) {
-                            if (log.isWarnEnabled()) {
-                                log.warn("Decode argument failed: " + e.getMessage(), e);
+                Optional<ServiceModel> serviceModel = ApplicationModel.getServiceModel(getAttachment(INTERFACE_KEY));
+                if (serviceModel.isPresent()) {
+                    Optional<MethodModel> methodOptional = serviceModel.get().getMethod(getMethodName(), desc);
+                    if (methodOptional.isPresent()) {
+                        pts = methodOptional.get().getParameterClasses();
+                        args = new Object[pts.length];
+                        for (int i = 0; i < args.length; i++) {
+                            try {
+                                args[i] = in.readObject(pts[i]);
+                            } catch (Exception e) {
+                                if (log.isWarnEnabled()) {
+                                    log.warn("Decode argument failed: " + e.getMessage(), e);
+                                }
                             }
                         }
-                    }
 
-                    this.setReturnTypes(methodOptional.get().getReturnTypes());
+                        this.setReturnTypes(methodOptional.get().getReturnTypes());
+                    }
                 }
             }
             setParameterTypes(pts);
