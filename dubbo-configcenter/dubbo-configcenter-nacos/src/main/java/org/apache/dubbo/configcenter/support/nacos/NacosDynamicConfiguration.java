@@ -57,6 +57,10 @@ import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
+    /**
+     * the default timeout in millis to get config from nacos
+     */
+    private static final long DEFAULT_TIMEOUT = 5000L;
 
     /**
      * The final root path would be: /$NAME_SPACE/config
@@ -93,21 +97,11 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         return configService;
     }
 
-    public void publishNacosConfig(String key, String value) {
+    public void publishNacosConfig(String key, String group, String value) {
         try {
-            String[] keyAndGroup = getKeyAndGroup(key);
-            configService.publishConfig(keyAndGroup[0], keyAndGroup[1], value);
+            configService.publishConfig(key, group, value);
         } catch (NacosException e) {
             logger.error(e.getErrMsg());
-        }
-    }
-
-    private String[] getKeyAndGroup(String key) {
-        int i = key.lastIndexOf(GROUP_CHAR_SEPERATOR);
-        if (i < 0) {
-            return new String[]{key, null};
-        } else {
-            return new String[]{key.substring(0, i), key.substring(i+1)};
         }
     }
 
@@ -164,32 +158,19 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
-        String[] keyAndGroup = getKeyAndGroup(key);
-        if (keyAndGroup[1] != null) {
-            group = keyAndGroup[1];
-        }
-        String finalGroup = group;
-        NacosConfigListener nacosConfigListener = watchListenerMap.computeIfAbsent(generateKey(key, group), k -> createTargetListener(key, finalGroup));
         String keyInNacos = rootPath + PROPERTIES_CHAR_SEPERATOR + key;
+        NacosConfigListener nacosConfigListener = watchListenerMap.computeIfAbsent(key, k -> createTargetListener(keyInNacos, group));
         nacosConfigListener.addListener(listener);
         try {
             configService.addListener(keyInNacos, group, nacosConfigListener);
-            System.out.println("1");
         } catch (NacosException e) {
             logger.error(e.getMessage());
         }
     }
 
-    private String generateKey(String key, String group) {
-        if (StringUtils.isNotEmpty(group)) {
-            key = key + GROUP_CHAR_SEPERATOR + group;
-        }
-        return key;
-    }
-
     @Override
     public void removeListener(String key, String group, ConfigurationListener listener) {
-        NacosConfigListener eventListener = watchListenerMap.get(generateKey(key, group));
+        NacosConfigListener eventListener = watchListenerMap.get(key);
         if (eventListener != null) {
             eventListener.removeListener(listener);
         }
@@ -197,8 +178,14 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public String getConfig(String key, String group, long timeout) throws IllegalStateException {
-        key = generateKey(key, group);
-        return (String) getInternalProperty(rootPath + PROPERTIES_CHAR_SEPERATOR + key);
+        try {
+            String keyInNacos = rootPath + PROPERTIES_CHAR_SEPERATOR + key;
+            long nacosTimeout = timeout < 0 ?  DEFAULT_TIMEOUT : timeout;
+            return configService.getConfig(keyInNacos, group, nacosTimeout);
+        } catch (NacosException e) {
+            logger.error(e.getMessage());
+        }
+        return null;
     }
 
     @Override
@@ -209,8 +196,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     @Override
     public Object getInternalProperty(String key) {
         try {
-            String[] keyAndGroup = getKeyAndGroup(key);
-            return configService.getConfig(keyAndGroup[0], keyAndGroup[1], 5000L);
+            return configService.getConfig(key, null, 5000L);
         } catch (NacosException e) {
             logger.error(e.getMessage());
         }

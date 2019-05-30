@@ -47,7 +47,7 @@ public class NacosDynamicConfigurationTest {
 
         put("dubbo-config-org.apache.dubbo.nacos.testService.configurators", "hello");
         Thread.sleep(200);
-        put("dubbo-config-dubbo.properties:test", "aaa=bbb");
+        put("dubbo-config-dubbo.properties", "test", "aaa=bbb");
         Thread.sleep(200);
         Assertions.assertEquals("hello", config.getConfig("org.apache.dubbo.nacos.testService.configurators"));
         Assertions.assertEquals("aaa=bbb", config.getConfig("dubbo.properties", "test"));
@@ -89,8 +89,12 @@ public class NacosDynamicConfigurationTest {
     }
 
     private void put(String key, String value) {
+        put(key, "", value);
+    }
+
+    private void put(String key, String group, String value) {
         try {
-            config.publishNacosConfig(key, value);
+            config.publishNacosConfig(key, "dubbo", value);
         } catch (Exception e) {
             System.out.println("Error put value to nacos.");
         }
@@ -121,7 +125,7 @@ public class NacosDynamicConfigurationTest {
         @Override
         public void process(ConfigChangeEvent event) {
             System.out.println(this + ": " + event);
-            Integer count = countMap.computeIfAbsent(event.getKey(), k -> new Integer(0));
+            Integer count = countMap.computeIfAbsent(event.getKey(), k -> 0);
             countMap.put(event.getKey(), ++count);
             value = event.getValue();
             latch.countDown();
